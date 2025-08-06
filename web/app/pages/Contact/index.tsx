@@ -30,7 +30,7 @@ const Contact = () => {
 
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto w-11/12 px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
+      <div className='mx-auto px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.contact')}</h1>
         <div className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
           <Trans
@@ -41,20 +41,14 @@ const Contact = () => {
               mail: (
                 <a
                   href={`mailto:${CONTACT_EMAIL}`}
-                  className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                  className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                 />
               ),
               twitter: (
-                <a
-                  href={TWITTER_URL}
-                  className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
-                />
+                <a href={TWITTER_URL} className='font-medium text-indigo-600 hover:underline dark:text-indigo-400' />
               ),
               discord: (
-                <a
-                  href={DISCORD_URL}
-                  className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
-                />
+                <a href={DISCORD_URL} className='font-medium text-indigo-600 hover:underline dark:text-indigo-400' />
               ),
             }}
           />

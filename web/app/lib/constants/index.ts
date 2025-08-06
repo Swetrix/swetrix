@@ -106,13 +106,13 @@ export const tbPeriodPairs = (
   {
     label: t('project.lastXMonths', { amount: 3 }),
     period: '3M',
-    tbs: ['month'],
+    tbs: ['day', 'month'],
     countDays: 90,
   },
   {
     label: t('project.lastXMonths', { amount: 12 }),
     period: '12M',
-    tbs: ['month'],
+    tbs: ['day', 'month'],
     countDays: 365,
   },
   {
@@ -247,11 +247,11 @@ export const PERIOD_PAIRS_COMPARE = {
 } as const
 
 // the order of panels in the project view
-export const TRAFFIC_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'ref', 'lc', 'dv', 'so']
+export const TRAFFIC_PANELS_ORDER = ['location', 'pg', 'devices', 'traffic-sources']
+export const PERFORMANCE_PANELS_ORDER = ['location', 'pg', 'devices']
+export const ERROR_PANELS_ORDER = ['location', 'pg', 'devices']
 export const FILTERS_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'ref', 'lc', 'dv']
 export const ERRORS_FILTERS_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'lc', 'dv']
-export const PERFORMANCE_PANELS_ORDER = ['cc', 'pg', 'br', 'dv']
-export const ERROR_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'lc', 'dv']
 
 // the maximum amount of months user can go back when picking a date in flat picker (project view)
 export const MAX_MONTHS_IN_PAST = 24
@@ -264,7 +264,7 @@ export const timeBucketToDays: {
   { lt: 1, tb: ['hour'] }, // 1 days
   { lt: 7, tb: ['hour', 'day'] }, // 7 days
   { lt: 28, tb: ['day'] }, // 4 weeks
-  { lt: 366, tb: ['month'] }, // 12 months
+  { lt: 366, tb: ['day', 'month'] }, // 12 months
   { lt: 732, tb: ['month'] }, // 24 months
 ]
 
@@ -349,6 +349,7 @@ export const PERFORMANCE_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=performance
 export const ERROR_TRACKING_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=errors'
 export const MARKETPLACE_URL = 'https://marketplace.swetrix.com'
 export const DOCS_URL = 'https://docs.swetrix.com'
+export const INTEGRATIONS_URL = 'https://docs.swetrix.com/integrations'
 export const ERROR_TRACKING_DOCS_URL = 'https://docs.swetrix.com/error-tracking'
 export const CAPTCHA_URL = 'https://captcha.swetrix.com'
 export const DOCS_CAPTCHA_URL = `${DOCS_URL}/captcha/introduction`

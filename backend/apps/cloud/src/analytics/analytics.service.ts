@@ -142,7 +142,7 @@ const timeBucketToDays = [
     lt: 28,
     tb: [TimeBucketType.DAY, TimeBucketType.MONTH],
   }, // 4 weeks
-  { lt: 366, tb: [TimeBucketType.MONTH] }, // 12 months
+  { lt: 366, tb: [TimeBucketType.DAY, TimeBucketType.MONTH] }, // 12 months
   { lt: 732, tb: [TimeBucketType.MONTH] }, // 24 months
   { lt: 1464, tb: [TimeBucketType.MONTH, TimeBucketType.YEAR] }, // 48 months
   { lt: 99999, tb: [TimeBucketType.YEAR] },
@@ -244,6 +244,8 @@ export const getLowestPossibleTimeBucket = (
   return _head(tbMap.tb)
 }
 
+const EXCLUDE_NULL_FOR = ['so', 'me', 'ca', 'te', 'co']
+
 const generateParamsQuery = (
   col: string,
   subQuery: string,
@@ -278,19 +280,19 @@ const generateParamsQuery = (
       return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
     }
 
-    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'errors') {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'captcha') {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${col}`
   }
 
   if (customEVFilterApplied) {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
 
   if (col === 'pg' || col === 'host') {
@@ -298,10 +300,10 @@ const generateParamsQuery = (
   }
 
   if (isPageInclusiveFilterSet) {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
-  return `SELECT ${columnsQuery}, count(DISTINCT psid) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+  return `SELECT ${columnsQuery}, count(DISTINCT psid) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
 }
 
 export enum DataType {
@@ -521,6 +523,7 @@ export class AnalyticsService {
     period: string,
     safeTimezone: string,
     diff?: number,
+    checkTimebucket = true,
   ): IGetGroupFromTo {
     let groupFrom: dayjs.Dayjs
     let groupTo: dayjs.Dayjs
@@ -551,27 +554,10 @@ export class AnalyticsService {
         )
       }
 
-      if (!_isEmpty(timeBucket)) {
+      if (!_isEmpty(timeBucket) && checkTimebucket) {
         checkIfTBAllowed(timeBucket, from, to)
       }
 
-      // TODO:
-      // THE FOLLOWING CODE SHOULD BE TIMEZONE SPECIFIC BUT HAS SOME ISSUES WITH DATE SHIFTS
-      // IT SHOULD BE REFACTORED AND USED IN THE FUTURE
-      // if (from === to) {
-      //   // When from and to are the same we need to return timezone specific data for 1 specified day
-      //   groupFrom = dayjs.tz(from, safeTimezone).startOf('d')
-      //   groupTo = groupFrom.endOf('d')
-      //   groupFromUTC = groupFrom.utc().format(formatFrom)
-      //   groupToUTC = groupTo.utc().format(formatTo)
-      // } else {
-      //   groupFrom = dayjs.tz(from, safeTimezone)
-      //   groupTo = dayjs.tz(to, safeTimezone)
-      //   groupFromUTC = groupFrom.utc().startOf(timeBucket).format(formatFrom)
-      //   groupToUTC = groupTo.utc().endOf(timeBucket).format(formatTo)
-      // }
-
-      // THIS SHOULD BE REPLACED BY THE CODE ABOVE WHEN IT'S FIXED
       if (from === to) {
         groupFrom = dayjs.tz(from, safeTimezone).startOf('d')
         groupTo = dayjs.tz(from, safeTimezone).endOf('d')
@@ -613,7 +599,7 @@ export class AnalyticsService {
         groupTo = djsNow
       }
 
-      if (!_isEmpty(timeBucket)) {
+      if (!_isEmpty(timeBucket) && checkTimebucket) {
         checkIfTBAllowed(
           timeBucket,
           groupFrom.format(formatFrom),
@@ -1425,30 +1411,26 @@ export class AnalyticsService {
 
   async getAnalyticsSummary(
     pids: string[],
+    timeBucket?: string,
     period?: string,
     from?: string,
     to?: string,
     timezone?: string,
     filters?: string,
   ): Promise<IOverall> {
-    let _from: string
+    const safeTimezone = this.getSafeTimezone(timezone)
 
-    let _to: string
-
-    if (_isEmpty(period) || ['today', 'yesterday', 'custom'].includes(period)) {
-      const safeTimezone = this.getSafeTimezone(timezone)
-
-      const { groupFrom, groupTo } = this.getGroupFromTo(
-        from,
-        to,
-        ['today', 'yesterday'].includes(period) ? TimeBucketType.HOUR : null,
-        period,
-        safeTimezone,
-      )
-
-      _from = groupFrom
-      _to = groupTo
-    }
+    const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
+      from,
+      to,
+      ['today', 'yesterday', 'custom'].includes(period)
+        ? TimeBucketType.HOUR
+        : (timeBucket as TimeBucketType) || TimeBucketType.DAY,
+      period,
+      safeTimezone,
+      undefined,
+      false,
+    )
 
     const result = {}
 
@@ -1528,30 +1510,13 @@ export class AnalyticsService {
           return
         }
 
-        let now: string
-        let periodFormatted: string
-        let periodSubtracted: string
-
-        if (_from && _to) {
-          // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
-          const diff = dayjs(_to).diff(dayjs(_from), 'days') || 1
-
-          now = _to
-          periodFormatted = _from
-          periodSubtracted = dayjs(_from)
-            .subtract(diff, 'days')
-            .format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          const amountToSubtract = parseInt(period, 10)
-          const unit = _replace(period, /[0-9]/g, '') as dayjs.ManipulateType
-
-          now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-          const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
-          periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
-          periodSubtracted = periodRaw
-            .subtract(amountToSubtract, unit)
-            .format('YYYY-MM-DD HH:mm:ss')
-        }
+        const periodSubtracted = dayjs
+          .utc(groupToUTC)
+          .subtract(
+            dayjs.utc(groupFromUTC).diff(dayjs.utc(groupToUTC), 'minutes'),
+            'minutes',
+          )
+          .format('YYYY-MM-DD HH:mm:ss')
 
         let queryCurrent = `
           WITH analytics_counts AS (
@@ -1562,7 +1527,7 @@ export class AnalyticsService {
             FROM analytics
             WHERE
               pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodFormatted:String} AND {now:String}
+              AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
               ${filtersQuery}
           ),
           duration_avg AS (
@@ -1573,7 +1538,7 @@ export class AnalyticsService {
               SELECT DISTINCT psid
               FROM analytics
               WHERE pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodFormatted:String} AND {now:String}
+              AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
               ${filtersQuery}
             )
           )
@@ -1592,7 +1557,7 @@ export class AnalyticsService {
             FROM analytics
             WHERE
               pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
+              AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
               ${filtersQuery}
           ),
           duration_avg AS (
@@ -1603,7 +1568,7 @@ export class AnalyticsService {
               SELECT DISTINCT psid
               FROM analytics
               WHERE pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
+              AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
               ${filtersQuery}
             )
           )
@@ -1619,7 +1584,7 @@ export class AnalyticsService {
             FROM customEV
             WHERE
               pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodFormatted:String} AND {now:String}
+              AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
               ${filtersQuery}
           `
           queryPrevious = `
@@ -1627,7 +1592,7 @@ export class AnalyticsService {
             FROM customEV
             WHERE
               pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
+              AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
               ${filtersQuery}
           `
         }
@@ -1639,9 +1604,9 @@ export class AnalyticsService {
             query,
             query_params: {
               pid,
-              periodFormatted,
+              groupFromUTC,
+              groupToUTC,
               periodSubtracted,
-              now,
               ...filtersParams,
             },
           })
@@ -2652,19 +2617,93 @@ export class AnalyticsService {
     }
   }
 
+  async getEntryPages(
+    subQuery: string,
+    paramsData: any,
+  ): Promise<{ name: string; count: number }[]> {
+    const query = `
+      WITH session_first_pages AS (
+        SELECT 
+          psid,
+          argMin(pg, created) as entry_page
+        ${subQuery}
+        GROUP BY psid
+      )
+      SELECT
+        entry_page as name,
+        count() as count
+      FROM session_first_pages
+      GROUP BY entry_page
+      ORDER BY count DESC
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: paramsData.params,
+      })
+      .then(resultSet => resultSet.json<any>())
+
+    return data || []
+  }
+
+  async getExitPages(
+    subQuery: string,
+    paramsData: any,
+  ): Promise<{ name: string; count: number }[]> {
+    const query = `
+      WITH session_last_pages AS (
+        SELECT
+          psid,
+          argMax(pg, created) as exit_page
+        ${subQuery}
+        GROUP BY psid
+      )
+      SELECT
+        exit_page as name,
+        count() as count
+      FROM session_last_pages
+      GROUP BY exit_page
+      ORDER BY count DESC
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: paramsData.params,
+      })
+      .then(resultSet => resultSet.json<any>())
+
+    return data || []
+  }
+
   async groupParamsByTimeBucket(
     subQuery: string,
     paramsData: any,
     customEVFilterApplied: boolean,
     parsedFilters: Array<{ [key: string]: string }>,
   ): Promise<object | void> {
-    return this.generateParams(
-      parsedFilters,
-      subQuery,
-      customEVFilterApplied,
-      paramsData,
-      'traffic',
-    )
+    const [params, entryPage, exitPage] = await Promise.all([
+      this.generateParams(
+        parsedFilters,
+        subQuery,
+        customEVFilterApplied,
+        paramsData,
+        'traffic',
+      ),
+      customEVFilterApplied
+        ? Promise.resolve([])
+        : this.getEntryPages(subQuery, paramsData),
+      customEVFilterApplied
+        ? Promise.resolve([])
+        : this.getExitPages(subQuery, paramsData),
+    ])
+
+    return {
+      ...params,
+      entryPage,
+      exitPage,
+    }
   }
 
   async groupChartByTimeBucket(
@@ -2724,6 +2763,18 @@ export class AnalyticsService {
       .then(resultSet => resultSet.json<TrafficCHResponse>())
 
     const { visits, uniques, sdur } = this.extractChartData(data, xShifted)
+
+    // Propagate the previous cumulative value forward for empty buckets
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      for (let i = 1; i < visits.length; ++i) {
+        if (visits[i] === 0) {
+          visits[i] = visits[i - 1]
+        }
+        if (uniques[i] === 0) {
+          uniques[i] = uniques[i - 1]
+        }
+      }
+    }
 
     return Promise.resolve({
       chart: {

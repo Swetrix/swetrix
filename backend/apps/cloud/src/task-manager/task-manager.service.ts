@@ -343,6 +343,7 @@ export class TaskManagerService {
       const data = this.analyticsService.convertSummaryToObsoleteFormat(
         await this.analyticsService.getAnalyticsSummary(
           ids,
+          undefined,
           params.analyticsParam,
         ),
       )
@@ -401,6 +402,7 @@ export class TaskManagerService {
       const data = this.analyticsService.convertSummaryToObsoleteFormat(
         await this.analyticsService.getAnalyticsSummary(
           ids,
+          undefined,
           params.analyticsParam,
         ),
       )

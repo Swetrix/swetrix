@@ -18,6 +18,14 @@ export class GetOverallStatsDto {
   @Matches(PID_REGEX, { message: 'The provided Project ID (pid) is incorrect' })
   pid?: string
 
+  @ApiProperty({
+    description: 'Time bucket to display data in',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  timeBucket?: string
+
   @ApiProperty({ required: false })
   @IsOptional()
   @ValidatePeriod()

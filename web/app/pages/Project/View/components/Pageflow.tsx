@@ -1,10 +1,11 @@
-import clsx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _toUpper from 'lodash/toUpper'
 import { BugIcon, FileTextIcon, MousePointerClickIcon } from 'lucide-react'
 import React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+
+import { cn } from '~/utils/generic'
 
 interface Metadata {
   key: string
@@ -87,7 +88,7 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange }: PageflowProps) 
                 <div className='relative flex space-x-3'>
                   <div>
                     <span
-                      className={clsx('flex h-8 w-8 items-center justify-center rounded-full', {
+                      className={cn('flex h-8 w-8 items-center justify-center rounded-full', {
                         'bg-slate-400 dark:bg-slate-800': type !== 'error',
                         'bg-red-400 dark:bg-red-800': type === 'error',
                       })}
@@ -120,7 +121,7 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange }: PageflowProps) 
                           span: <span />,
                         }}
                         values={{
-                          x: value || _toUpper(t('project.redactedPage')),
+                          x: value || _toUpper(t('common.notSet')),
                         }}
                       />
                     </div>

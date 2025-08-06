@@ -1,6 +1,10 @@
-import { memo, useMemo } from 'react'
+import { LinkIcon } from 'lucide-react'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const RefRow = ({ rowName }: { rowName: string }) => {
+  const { t } = useTranslation('common')
+
   const { isUrl, url } = useMemo(() => {
     try {
       const urlObj = new URL(rowName)
@@ -11,6 +15,15 @@ const RefRow = ({ rowName }: { rowName: string }) => {
   }, [rowName])
 
   const linkClassName = 'text-blue-600 hover:underline dark:text-blue-500'
+
+  if (rowName === null) {
+    return (
+      <div className='scrollbar-thin hover-always-overflow flex items-center'>
+        <LinkIcon className='float-left mr-1.5 size-5' strokeWidth={1.5} />
+        <span className='italic'>{t('project.directNone')}</span>
+      </div>
+    )
+  }
 
   return (
     <div className='scrollbar-thin hover-always-overflow flex items-center'>
@@ -35,10 +48,10 @@ const RefRow = ({ rowName }: { rowName: string }) => {
           {rowName}
         </a>
       ) : (
-        <span className={linkClassName}>{rowName}</span>
+        <span>{rowName}</span>
       )}
     </div>
   )
 }
 
-export default memo(RefRow)
+export default RefRow

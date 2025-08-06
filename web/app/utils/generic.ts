@@ -1,4 +1,4 @@
-import clsx, { type ClassValue } from 'clsx'
+import { clsx, type ClassValue } from 'clsx'
 import _find from 'lodash/find'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
@@ -147,4 +147,33 @@ export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve
 
 export const cn = (...args: ClassValue[]) => {
   return twMerge(clsx(args))
+}
+
+export const removeDuplicates = (arr: any[], keys: string[]) => {
+  const uniqueObjects: any[] = []
+
+  const isDuplicate = (obj: any) => {
+    for (const uniqueObj of uniqueObjects) {
+      let isMatch = true
+
+      for (const key of keys) {
+        if (uniqueObj[key] !== obj[key]) {
+          isMatch = false
+          break
+        }
+      }
+      if (isMatch) {
+        return true
+      }
+    }
+    return false
+  }
+
+  for (const obj of arr) {
+    if (!isDuplicate(obj)) {
+      uniqueObjects.push(obj)
+    }
+  }
+
+  return uniqueObjects
 }

@@ -49,6 +49,7 @@ import {
   PlanCode,
   Theme,
   FeatureFlag,
+  OnboardingStep,
 } from './entities/user.entity'
 import { Pagination } from '../common/pagination/pagination'
 import {
@@ -1142,6 +1143,36 @@ export class UserController {
 
     await this.userService.update(userId, {
       reportFrequency: ReportFrequency.NEVER,
+    })
+  }
+
+  @ApiBearerAuth()
+  @Post('onboarding/step')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204 })
+  async updateOnboardingStep(
+    @CurrentUserId() userId: string,
+    @Body('step') step: OnboardingStep,
+  ): Promise<void> {
+    this.logger.log({ userId, step }, 'POST /user/onboarding/step')
+
+    await this.userService.update(userId, {
+      onboardingStep: step,
+    })
+  }
+
+  @ApiBearerAuth()
+  @Post('onboarding/complete')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204 })
+  async completeOnboarding(@CurrentUserId() userId: string): Promise<void> {
+    this.logger.log({ userId }, 'POST /user/onboarding/complete')
+
+    await this.userService.update(userId, {
+      onboardingStep: OnboardingStep.COMPLETED,
+      hasCompletedOnboarding: true,
     })
   }
 }

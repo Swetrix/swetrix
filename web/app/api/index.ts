@@ -266,11 +266,11 @@ export const verifyShare = ({ path, id }: { path: string; id: string }) =>
 export const getProjects = (
   take = 0,
   skip = 0,
-  search?: string,
-  mode?: string,
-  period?: string,
-  useHostnameNavigation?: boolean,
-  sort?: string,
+  search = '',
+  mode = 'default',
+  period = '7d',
+  useHostnameNavigation = false,
+  sort = 'alpha_asc',
 ) =>
   api
     .get(
@@ -790,6 +790,7 @@ export const getCaptchaData = (pid: string, tb = 'hour', period = '3d', filters:
 
 export const getOverallStats = (
   pids: string[],
+  tb: string,
   period: string,
   from = '',
   to = '',
@@ -801,7 +802,7 @@ export const getOverallStats = (
     .get(
       `log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(
         ',',
-      )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
+      )}]&timeBucket=${tb}&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
       {
         headers: {
           'x-password': password,
@@ -1513,6 +1514,22 @@ export const updateErrorStatus = (pid: string, status: 'resolved' | 'active', ei
 export const setFeatureFlags = (featureFlags: FeatureFlag[]) =>
   api
     .put('/user/feature-flags', { featureFlags })
+    .then((response): User => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const updateOnboardingStep = (step: string) =>
+  api
+    .post('/user/onboarding/step', { step })
+    .then((response): User => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const completeOnboarding = () =>
+  api
+    .post('/user/onboarding/complete')
     .then((response): User => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message

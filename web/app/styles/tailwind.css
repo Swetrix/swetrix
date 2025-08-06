@@ -43,6 +43,7 @@
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *));
 
 @keyframes move-x {
   0% {

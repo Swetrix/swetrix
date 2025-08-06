@@ -127,7 +127,9 @@
     "pagination": "Showing <0>{{start}}</0> to <0>{{end}}</0> of <0>{{total}}</0> results",
     "resultsPerPage": "Results per page",
     "communityEdition": "Community Edition",
-    "allPosts": "All posts"
+    "allPosts": "All posts",
+    "details": "Details",
+    "unknown": "Unknown"
   },
   "featureFlags": {
     "title": "Feature Flags",
@@ -466,14 +468,9 @@
       "noCC": "No credit card required.",
       "alreadyAMember": "Already a member? <url>Sign in</url>"
     },
-    "confirm": {
-      "title": "Check your inbox",
-      "linkSent": "We've sent an account confirmation link to {{email}}, please click the link to confirm your email address.",
-      "spam": "Can't see the email? Please check your spam folder.",
-      "wrongEmail": "Wrong email? <url>Create a new account.</url>"
-    },
     "verification": {
-      "success": "Your email has been successfully verified!"
+      "success": "Your email has been successfully verified!",
+      "continueToOnboarding": "Continue to onboarding"
     },
     "socialisation": {
       "authSuccess": "Authentication successful",
@@ -830,8 +827,11 @@
     "support": "Contact support"
   },
   "project": {
+    "directNone": "Direct / None",
+    "loadingMapData": "Loading map data...",
     "copy": "Copy",
     "copied": "Copied!",
+    "percentage": "Percentage",
     "stackTraceXFrames": "Stack trace ({{x}} frames)",
     "metadata": "Metadata",
     "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
@@ -849,6 +849,10 @@
     "removeFilter": "Remove filter",
     "toggleFilterToIs": "Change filter from '{{column}} is not \"{{filter}}\"' to '{{column}} is \"{{filter}}\"'",
     "toggleFilterToIsNot": "Change filter from '{{column}} is \"{{filter}}\"' to '{{column}} is not \"{{filter}}\"'",
+    "location": "Location",
+    "pages": "Pages",
+    "devices": "Devices",
+    "trafficSources": "Traffic sources",
     "metrics": {
       "xAvg": "\"{{x}}\" average",
       "xTotal": "\"{{x}}\" total",
@@ -908,9 +912,15 @@
     "occurrences": "Occurrences",
     "visitPage": "Visit {{page}}",
     "visitors": "Visitors",
+    "loadTime": "Load time",
+    "currentTimeX": "Current time: <url>{{time}}</url>",
+    "timezoneX": "Timezone: {{timezone}}",
+    "signInToChange": "Sign in to change it",
+    "changeInSettings": "Change this in your account settings",
     "events": "Events",
     "dropoff": "Dropoff",
     "neverEnteredTheFunnel": "Never entered the funnel",
+    "aggregation": "Aggregation",
     "locked": {
       "title": "Dashboard locked",
       "descExceedingTier": "This dashboard is locked because your traffic has exceeded your subscription plan.\nIn order to continue using Swetrix and have access to your stats, you need to upgrade your subscription plan to reflect your usage.",
@@ -951,8 +961,11 @@
       "me": "UTM Medium",
       "ca": "UTM Campaign",
       "te": "UTM Term",
-      "co": "UTM Content"
+      "co": "UTM Content",
+      "userFlow": "User flow"
     },
+    "entryPages": "Entry pages",
+    "exitPages": "Exit pages",
     "metamapping": {
       "ev": {
         "key": "Event key",
@@ -965,7 +978,6 @@
         "dynamicKey": "Property \"{{key}}\""
       }
     },
-    "redactedPage": "Redacted page",
     "unknownHost": "Unknown host",
     "noData": "No data to display",
     "overview": "Overview",
@@ -1169,7 +1181,13 @@
     "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
     "changePlan": "You can change or cancel your subscription plan at any time here.",
     "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
-    "xMonthsFree": "{{amount}} months free"
+    "xMonthsFree": "{{amount}} months free",
+    "trialDescription": "Your free trial includes access to all features and unlimited data collection limits. When your trial ends, you'll need to select a paid plan that matches your usage to continue using Swetrix.",
+    "usageWarningHigh": "You've used {{percentage}}% of your monthly event limit. Consider upgrading your plan to avoid service interruption.",
+    "usageWarningCritical": "Warning: You've used {{percentage}}% of your monthly event limit! Upgrade now to ensure uninterrupted service.",
+    "daysUntilReset": "{{days}} days until reset",
+    "xPercentUsed": "{{percentage}}% used",
+    "xPercentRemaining": "{{percentage}}% remaining"
   },
   "modals": {
     "paidFeature": {
@@ -1274,6 +1292,49 @@
       "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
     }
   },
+  "onboarding": {
+    "welcome": "Welcome to Swetrix",
+    "title": "Get started",
+    "skipOnboarding": "Skip onboarding",
+    "finishOnboarding": "Finish onboarding",
+    "confirm": {
+      "navTitle": "Confirm your email",
+      "navDesc": "Check your inbox and click the confirmation link.",
+      "title": "Check your inbox",
+      "linkSent": "We've sent an account confirmation link to {{email}}, please click the link to confirm your email address.",
+      "spam": "Can't see the email? Please check your spam folder.",
+      "wrongEmail": "Wrong email? <url>Create a new account.</url>"
+    },
+    "createProject": {
+      "navTitle": "Create a project",
+      "navDesc": "Add a website to start tracking analytics.",
+      "title": "Let's set up your first project",
+      "desc": "We'll help you get started with Swetrix by creating your first project. You will be able to set up your project more thoroughly after you have created it."
+    },
+    "installTracking": {
+      "navTitle": "Install tracking script",
+      "navDesc": "Add the Swetrix script to your website.",
+      "title": "Set up Swetrix on your website",
+      "desc": "Add the Swetrix script to your website. You can also use Swetrix for tracking events on your mobile or desktop apps, send events directly to our API. Learn more about more advanced integrations in our <url>documentation</url>.",
+      "websiteInstallation": "Website installation",
+      "pasteScript": "Paste the script to your website",
+      "weAlsoSupport": "We also support intalling Swetrix via NPM (for React, Vue, etc.), provide Events API to send events directly to our API, and many different integrations with other services like WordPress or Google Tag Manager. <url>Learn more</url>."
+    },
+    "verifyInstallation": {
+      "navTitle": "Verify installation",
+      "navDesc": "We're waiting for your first event to arrive.",
+      "desc": "Deploy your changes, and try visiting your website to send the first event.",
+      "needInstructionsAgain": "Need to see the instructions again? <btn>Click here</btn>",
+      "orContactUs": "Or <url>contact us</url> for further help with your setup.",
+      "waitingForEvents": "Waiting for events",
+      "onTheXProject": "On the {{project}} project",
+      "onYourProject": "On your project",
+      "perfect": "Perfect!",
+      "perfectDesc": "We're receiving data 🎉",
+      "waitingForAnEvent": "We're waiting for your first event! If your integration is set up correctly, you should see it within 1 minute.",
+      "eventReceived": "We've received your first event! Your integration works correctly. Welcome to Swetrix :)"
+    }
+  },
   "titles": {
     "recovery": "Account recovery",
     "signin": "Sign in",
@@ -1291,7 +1352,6 @@
     "socialisation": "Socialisation",
     "open": "Open startup",
     "passwordProtected": "This project is password protected",
-    "confirm": "Check your inbox",
     "performance": "End user performance monitoring to deliver fast websites",
     "errors": "End user error tracking tool to deliver bug-free experiences",
     "forMarketers": "For marketers",

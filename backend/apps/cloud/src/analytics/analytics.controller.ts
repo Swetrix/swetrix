@@ -781,6 +781,7 @@ export class AnalyticsController {
       from,
       to,
       timezone = DEFAULT_TIMEZONE,
+      timeBucket,
       filters,
     } = data
     const pidsArray = getPIDsArray(pids, pid)
@@ -814,6 +815,7 @@ export class AnalyticsController {
 
     return this.analyticsService.getAnalyticsSummary(
       validPids,
+      timeBucket,
       period,
       from,
       to,

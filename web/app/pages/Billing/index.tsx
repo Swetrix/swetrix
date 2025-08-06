@@ -19,7 +19,6 @@ import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import MultiProgress from '~/ui/MultiProgress'
-import Tooltip from '~/ui/Tooltip'
 import { loadScript } from '~/utils/generic'
 
 import Pricing from '../../components/marketing/Pricing'
@@ -139,7 +138,7 @@ const Billing = () => {
     return diff < 0
   }, [trialEndDate])
 
-  const trialMessage = useMemo(() => {
+  const trialEndsOnMessage = useMemo(() => {
     if (!trialEndDate || !isTrial) {
       return null
     }
@@ -215,11 +214,11 @@ const Billing = () => {
     <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
       <DashboardLockedBanner />
 
-      <div className='mx-auto w-11/12 px-4 pt-12 whitespace-pre-line sm:px-6 md:w-5/6'>
+      <div className='mx-auto px-4 pt-12 whitespace-pre-line sm:px-6 md:w-5/6'>
         <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>{t('billing.title')}</h1>
       </div>
 
-      <div className='mx-auto mt-5 grid w-11/12 gap-x-10 gap-y-8 px-4 pb-16 whitespace-pre-line sm:px-6 md:w-5/6 lg:grid-cols-2'>
+      <div className='mx-auto mt-5 grid gap-x-10 gap-y-8 px-4 pb-16 whitespace-pre-line sm:px-6 md:w-5/6 lg:grid-cols-2'>
         <div>
           <h2 id='billing' className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'>
             {t('billing.subscription')}
@@ -267,13 +266,16 @@ const Billing = () => {
               </div>
             </div>
           ) : null}
-          {isTrial && trialMessage ? (
+          {isTrial && trialEndsOnMessage ? (
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
                   <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
                 </div>
-                <p className='ml-3 text-sm font-medium text-blue-700 dark:text-blue-100'>{trialMessage}</p>
+                <div className='ml-3'>
+                  <h3 className='text-sm font-medium text-blue-700 dark:text-blue-100'>{trialEndsOnMessage}</h3>
+                  <p className='mt-1 text-sm text-blue-700 dark:text-blue-100'>{t('billing.trialDescription')}</p>
+                </div>
               </div>
             </div>
           ) : null}
@@ -317,7 +319,7 @@ const Billing = () => {
         </div>
 
         <div>
-          <h2 id='usage' className='text-2xl font-medium text-gray-900 dark:text-gray-50'>
+          <h2 id='usage' className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'>
             {t('billing.planUsage')}
           </h2>
           <p className='mt-1 max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('billing.planUsageDesc')}</p>
@@ -325,77 +327,139 @@ const Billing = () => {
           {isLoading ? (
             <Loader />
           ) : (
-            <div className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
-              <p className='mb-1 text-base font-medium text-gray-900 dark:text-gray-50'>
-                {t('billing.xofy', {
-                  x: usageInfo.total || 0,
-                  y: maxEventsCount || 0,
+            <div className='mt-4 text-gray-900 dark:text-gray-50'>
+              {totalUsage >= 80 ? (
+                <div className='mb-4 rounded-md bg-amber-50 p-4 dark:bg-amber-600/30'>
+                  <div className='flex'>
+                    <div className='shrink-0'>
+                      <ExclamationTriangleIcon
+                        aria-hidden='true'
+                        className='h-5 w-5 text-amber-400 dark:text-amber-100'
+                      />
+                    </div>
+                    <div className='ml-3'>
+                      <p className='text-sm text-amber-800 dark:text-amber-100'>
+                        {totalUsage >= 90
+                          ? t('billing.usageWarningCritical', { percentage: totalUsage })
+                          : t('billing.usageWarningHigh', { percentage: totalUsage })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              <p className='mb-4 max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                {t('billing.usageOverview', {
+                  tracked: (usageInfo.total || 0).toLocaleString(),
+                  trackedPerc: totalUsage || 0,
+                  maxEvents: (maxEventsCount || 0).toLocaleString(),
                 })}
               </p>
 
-              <Tooltip
-                text={
-                  <div>
-                    <p>
-                      {t('billing.usageOverview', {
-                        tracked: usageInfo.total || 0,
-                        trackedPerc: totalUsage || 0,
-                        maxEvents: maxEventsCount || 0,
+              <div className='mb-4 space-y-2'>
+                <div className='flex items-center justify-between'>
+                  <div className='flex items-center'>
+                    <div className='size-2 rounded-full bg-blue-600 dark:bg-blue-500' />
+                    <span className='ml-2 text-sm'>
+                      {t('billing.pageviews', {
+                        quantity: usageInfo.traffic || 0,
+                        percentage: usageInfo.trafficPerc || 0,
                       })}
-                    </p>
-                    <ul className='mt-2 list-inside list-disc'>
-                      <li className='marker:text-blue-600 dark:marker:text-blue-800'>
-                        {t('billing.pageviews', {
-                          quantity: usageInfo.traffic || 0,
-                          percentage: usageInfo.trafficPerc || 0,
-                        })}
-                      </li>
-                      <li className='marker:text-fuchsia-600 dark:marker:text-fuchsia-800'>
-                        {t('billing.customEvents', {
-                          quantity: usageInfo.customEvents || 0,
-                          percentage: usageInfo.customEventsPerc || 0,
-                        })}
-                      </li>
-                      <li className='marker:text-lime-600 dark:marker:text-lime-800'>
-                        {t('billing.captcha', {
-                          quantity: usageInfo.captcha || 0,
-                          percentage: usageInfo.captchaPerc || 0,
-                        })}
-                      </li>
-                      <li className='marker:text-red-600 dark:marker:text-red-800'>
-                        {t('billing.errors', {
-                          quantity: usageInfo.errors || 0,
-                          percentage: usageInfo.errorsPerc || 0,
-                        })}
-                      </li>
-                    </ul>
+                    </span>
                   </div>
-                }
-                tooltipNode={
-                  <MultiProgress
-                    className='w-[85vw] max-w-[25rem]'
-                    progress={[
-                      {
-                        value: usageInfo.traffic === 0 ? 0 : (usageInfo.traffic / maxEventsCount) * 100,
-                        lightColour: '#2563eb',
-                        darkColour: '#1d4ed8',
-                      },
-                      {
-                        value: usageInfo.customEvents === 0 ? 0 : (usageInfo.customEvents / maxEventsCount) * 100,
-                        lightColour: '#c026d3',
-                        darkColour: '#a21caf',
-                      },
-                      {
-                        value: usageInfo.captcha === 0 ? 0 : (usageInfo.captcha / maxEventsCount) * 100,
-                        lightColour: '#65a30d',
-                        darkColour: '#4d7c0f',
-                      },
-                    ]}
-                  />
-                }
-                className='!h-auto !w-max max-w-max'
+                </div>
+
+                <div className='flex items-center justify-between'>
+                  <div className='flex items-center'>
+                    <div className='size-2 rounded-full bg-fuchsia-600 dark:bg-fuchsia-500' />
+                    <span className='ml-2 text-sm'>
+                      {t('billing.customEvents', {
+                        quantity: usageInfo.customEvents || 0,
+                        percentage: usageInfo.customEventsPerc || 0,
+                      })}
+                    </span>
+                  </div>
+                </div>
+
+                <div className='flex items-center justify-between'>
+                  <div className='flex items-center'>
+                    <div className='size-2 rounded-full bg-lime-600 dark:bg-lime-500' />
+                    <span className='ml-2 text-sm'>
+                      {t('billing.captcha', {
+                        quantity: usageInfo.captcha || 0,
+                        percentage: usageInfo.captchaPerc || 0,
+                      })}
+                    </span>
+                  </div>
+                </div>
+
+                <div className='flex items-center justify-between'>
+                  <div className='flex items-center'>
+                    <div className='size-2 rounded-full bg-red-600 dark:bg-red-500' />
+                    <span className='ml-2 text-sm'>
+                      {t('billing.errors', {
+                        quantity: usageInfo.errors || 0,
+                        percentage: usageInfo.errorsPerc || 0,
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <p className='mb-2 text-lg font-medium text-gray-900 dark:text-gray-50'>
+                {t('billing.xofy', {
+                  x: (usageInfo.total || 0).toLocaleString(),
+                  y: (maxEventsCount || 0).toLocaleString(),
+                })}
+              </p>
+
+              <MultiProgress
+                className='w-full'
+                progress={[
+                  {
+                    value: usageInfo.traffic === 0 ? 0 : (usageInfo.traffic / maxEventsCount) * 100,
+                    lightColour: '#2563eb',
+                    darkColour: '#1d4ed8',
+                  },
+                  {
+                    value: usageInfo.customEvents === 0 ? 0 : (usageInfo.customEvents / maxEventsCount) * 100,
+                    lightColour: '#c026d3',
+                    darkColour: '#a21caf',
+                  },
+                  {
+                    value: usageInfo.captcha === 0 ? 0 : (usageInfo.captcha / maxEventsCount) * 100,
+                    lightColour: '#65a30d',
+                    darkColour: '#4d7c0f',
+                  },
+                  {
+                    value: usageInfo.errors === 0 ? 0 : (usageInfo.errors / maxEventsCount) * 100,
+                    lightColour: '#dc2626',
+                    darkColour: '#b91c1c',
+                  },
+                ]}
               />
-              <p className='mt-1 text-base text-gray-900 dark:text-gray-50'>{t('billing.resetDate')}</p>
+
+              <div className='mt-2 flex items-center justify-between'>
+                <p className='text-sm text-gray-600 dark:text-gray-400'>
+                  {t('billing.xPercentUsed', { percentage: totalUsage })}
+                </p>
+                <p className='text-sm text-gray-600 dark:text-gray-400'>
+                  {t('billing.xPercentRemaining', { percentage: 100 - totalUsage })}
+                </p>
+              </div>
+
+              <div className='mt-4 flex items-center justify-between'>
+                <p className='text-sm text-gray-600 dark:text-gray-400'>{t('billing.resetDate')}</p>
+                <p className='text-sm text-gray-600 dark:text-gray-400'>
+                  {t('billing.daysUntilReset', {
+                    days: Math.ceil(
+                      (new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).getTime() -
+                        new Date().getTime()) /
+                        (1000 * 60 * 60 * 24),
+                    ),
+                  })}
+                </p>
+              </div>
             </div>
           )}
         </div>

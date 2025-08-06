@@ -18,7 +18,7 @@ import Select from '~/ui/Select'
 import { trackCustom } from '~/utils/analytics'
 import routes from '~/utils/routes'
 
-const MAX_NAME_LENGTH = 50
+export const MAX_PROJECT_NAME_LENGTH = 50
 
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
@@ -70,7 +70,9 @@ const NewProject = () => {
           name: data.name || DEFAULT_PROJECT_NAME,
           organisationId: data.organisationId,
         })
-        trackCustom('PROJECT_CREATED')
+        trackCustom('PROJECT_CREATED', {
+          from: 'new-project',
+        })
         navigate(routes.dashboard)
         toast.success(t('project.settings.created'))
       } catch (reason: any) {
@@ -90,8 +92,8 @@ const NewProject = () => {
       allErrors.name = t('project.settings.noNameError')
     }
 
-    if (_size(form.name) > MAX_NAME_LENGTH) {
-      allErrors.name = t('project.settings.pxCharsError', { amount: MAX_NAME_LENGTH })
+    if (_size(form.name) > MAX_PROJECT_NAME_LENGTH) {
+      allErrors.name = t('project.settings.pxCharsError', { amount: MAX_PROJECT_NAME_LENGTH })
     }
 
     const valid = _isEmpty(_keys(allErrors))
@@ -144,7 +146,7 @@ const NewProject = () => {
           name='name'
           label={t('project.settings.name')}
           value={form.name}
-          placeholder='My awesome project'
+          placeholder='My awesome website'
           className='mt-4'
           onChange={handleInput}
           error={beenSubmitted ? errors.name : null}

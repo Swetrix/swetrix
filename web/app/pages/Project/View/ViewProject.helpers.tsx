@@ -21,6 +21,8 @@ import _startsWith from 'lodash/startsWith'
 import _toNumber from 'lodash/toNumber'
 import _toString from 'lodash/toString'
 import {
+  CircleQuestionMark,
+  GlobeIcon,
   CompassIcon,
   CpuIcon,
   FileTextIcon,
@@ -28,6 +30,7 @@ import {
   MapPinIcon,
   MonitorCog,
   MonitorIcon,
+  ShareIcon,
   SmartphoneIcon,
   TabletIcon,
   TabletSmartphoneIcon,
@@ -44,6 +47,9 @@ import {
   tbsFormatMapperTooltip24h,
   PROJECT_TABS,
   isSelfhosted,
+  BROWSER_LOGO_MAP,
+  OS_LOGO_MAP,
+  OS_LOGO_MAP_DARK,
 } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import { AnalyticsFunnel } from '~/lib/models/Project'
@@ -61,6 +67,58 @@ const getAvg = (arr: any) => {
 
 const getSum = (arr: any) => {
   return _reduce(arr, (acc, c) => acc + c, 0)
+}
+
+const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
+  const min = Math.min(...data.filter((n) => n !== undefined && n !== null))
+  const max = Math.max(...data.filter((n) => n !== undefined && n !== null))
+
+  if (min === max) {
+    return max === 0 ? [0, 1] : [0, max * 1.2]
+  }
+
+  const upperBound = Math.ceil(max * 1.2)
+
+  const roughStep = upperBound / (targetCount - 1)
+
+  let niceStep: number
+  if (roughStep <= 1) {
+    niceStep = 1
+  } else if (roughStep <= 2) {
+    niceStep = 2
+  } else if (roughStep <= 5) {
+    niceStep = 5
+  } else if (roughStep <= 10) {
+    niceStep = 10
+  } else if (roughStep <= 20) {
+    niceStep = 20
+  } else if (roughStep <= 25) {
+    niceStep = 25
+  } else if (roughStep <= 50) {
+    niceStep = 50
+  } else {
+    // For larger numbers, round to nearest 10^n or 5*10^n
+    const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)))
+    const normalized = roughStep / magnitude
+    if (normalized <= 2) {
+      niceStep = 2 * magnitude
+    } else if (normalized <= 5) {
+      niceStep = 5 * magnitude
+    } else {
+      niceStep = 10 * magnitude
+    }
+  }
+
+  const ticks: number[] = []
+  for (let i = 0; i <= upperBound; i += niceStep) {
+    ticks.push(i)
+  }
+
+  if (ticks[ticks.length - 1] < max) {
+    ticks.push(ticks[ticks.length - 1] + niceStep)
+  }
+
+  return ticks
 }
 
 const trendline = (data: any[]): string[] => {
@@ -440,6 +498,8 @@ const getSettings = (
   chartType: string,
   customEvents?: Record<string, string[]>,
   compareChart?: TrafficLogResponse['chart'] & { [key: string]: number[] },
+  onZoom?: (domain: [Date, Date] | null) => void,
+  enableZoom?: boolean,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
   const lines: GridLineOptions[] = []
@@ -463,6 +523,20 @@ const getSettings = (
   }
 
   const columns = getColumns(modifiedChart, activeChartMetrics, compareChart)
+
+  // Calculate optimal Y axis ticks based on the data
+  const allYValues: number[] = []
+  if (activeChartMetrics.unique && chart.uniques) {
+    allYValues.push(...chart.uniques.filter((n) => n !== undefined && n !== null))
+  }
+  if (activeChartMetrics.views && chart.visits) {
+    allYValues.push(...chart.visits.filter((n) => n !== undefined && n !== null))
+  }
+  if (activeChartMetrics.occurrences && chart.occurrences) {
+    allYValues.push(...chart.occurrences.filter((n) => n !== undefined && n !== null))
+  }
+
+  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
   if (applyRegions) {
     let regionStart
@@ -551,6 +625,9 @@ const getSettings = (
       x: {
         lines,
       },
+      y: {
+        show: true,
+      },
     },
     transition: {
       duration: 500,
@@ -578,6 +655,7 @@ const getSettings = (
       y: {
         tick: {
           format: (d: number) => nFormatter(d, 1),
+          values: optimalTicks,
         },
         show: true,
         inner: true,
@@ -745,6 +823,15 @@ const getSettings = (
     bar: {
       linearGradient: true,
     },
+    zoom:
+      onZoom && enableZoom !== false
+        ? {
+            enabled: zoom(),
+            type: 'drag',
+            onzoom: onZoom,
+            resetButton: false,
+          }
+        : undefined,
     bindto: '#dataChart',
   }
 }
@@ -764,7 +851,6 @@ const getSettingsSession = (
   rotateXAxis: boolean,
   chartType: string,
   onZoom?: (domain: [Date, Date]) => void,
-  onresized?: () => void,
 ): ChartOptions => {
   const chartData = chartInput || { x: [] } // Default to an empty chart structure if undefined
   const xAxisSize = _size(chartData.x)
@@ -791,6 +877,20 @@ const getSettingsSession = (
     dataColors.errors = '#dc2626'
   }
 
+  // Calculate optimal Y axis ticks based on the data
+  const allYValues: number[] = []
+  if (chartData.pageviews && !_isEmpty(chartData.pageviews)) {
+    allYValues.push(...chartData.pageviews.filter((n) => n !== undefined && n !== null))
+  }
+  if (chartData.customEvents && !_isEmpty(chartData.customEvents)) {
+    allYValues.push(...chartData.customEvents.filter((n) => n !== undefined && n !== null))
+  }
+  if (chartData.errors && !_isEmpty(chartData.errors)) {
+    allYValues.push(...chartData.errors.filter((n) => n !== undefined && n !== null))
+  }
+
+  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+
   return {
     data: {
       x: 'x',
@@ -805,6 +905,11 @@ const getSettingsSession = (
       onzoom: onZoom,
       resetButton: false, // We render a custom button that also resets pageflow
     },
+    grid: {
+      y: {
+        show: true,
+      },
+    },
     transition: {
       duration: 500,
     },
@@ -812,7 +917,6 @@ const getSettingsSession = (
       auto: true,
       timer: false,
     },
-    onresized,
     axis: {
       x: {
         clipPath: false,
@@ -832,6 +936,7 @@ const getSettingsSession = (
       y: {
         tick: {
           format: (d: number) => nFormatter(d, 1),
+          values: optimalTicks,
         },
         show: true,
         inner: true,
@@ -903,6 +1008,13 @@ const getSettingsError = (
 
   const columns = getColumns(chart, { occurrences: true })
 
+  const allYValues: number[] = []
+  if (chart.occurrences) {
+    allYValues.push(...chart.occurrences.filter((n: any) => n !== undefined && n !== null))
+  }
+
+  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+
   let regionStart
 
   if (xAxisSize > 1) {
@@ -934,6 +1046,11 @@ const getSettingsError = (
         ],
       },
     },
+    grid: {
+      y: {
+        show: true,
+      },
+    },
     transition: {
       duration: 500,
     },
@@ -959,6 +1076,7 @@ const getSettingsError = (
       y: {
         tick: {
           format: (d: number) => nFormatter(d, 1),
+          values: optimalTicks,
         },
         show: true,
         inner: true,
@@ -1183,6 +1301,8 @@ const getSettingsPerf = (
   chartType: string,
   timeFormat: string,
   compareChart?: Record<string, string[]>,
+  onZoom?: (domain: [Date, Date] | null) => void,
+  enableZoom?: boolean,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
@@ -1262,6 +1382,11 @@ const getSettingsPerf = (
           'backendCompare',
         ],
       ],
+    },
+    grid: {
+      y: {
+        show: true,
+      },
     },
     axis: {
       x: {
@@ -1389,6 +1514,15 @@ const getSettingsPerf = (
     bar: {
       linearGradient: true,
     },
+    zoom:
+      onZoom && enableZoom !== false
+        ? {
+            enabled: zoom(),
+            type: 'drag',
+            onzoom: onZoom,
+            resetButton: false,
+          }
+        : undefined,
     bindto: '#dataChart',
   }
 }
@@ -1412,11 +1546,16 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   te: t('project.mapping.te'),
   co: t('project.mapping.co'),
   ev: t('project.event'),
-  userFlow: t('main.competitiveFeatures.usfl'),
+  userFlow: t('project.mapping.userFlow'),
   'tag:key': t('project.metamapping.tag.key'),
   'tag:value': t('project.metamapping.tag.value'),
   'ev:key': t('project.metamapping.ev.key'),
   'ev:value': t('project.metamapping.ev.value'),
+  // Combined panel types
+  location: t('project.location'),
+  browser: t('project.browser'),
+  devices: t('project.devices'),
+  map: t('project.map'),
 })
 
 const iconClassName = 'w-5 h-5'
@@ -1428,6 +1567,7 @@ const panelIconMapping = {
   dv: <TabletSmartphoneIcon className={iconClassName} strokeWidth={1.5} />,
   br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
   os: <MonitorCog className={iconClassName} strokeWidth={1.5} />,
+  so: <ShareIcon className={iconClassName} strokeWidth={1.5} />,
 }
 
 export const deviceIconMapping = {
@@ -1469,8 +1609,125 @@ const SHORTCUTS_GENERAL_LISTENERS = isSelfhosted
 
 const SHORTCUTS_TIMEBUCKETS_LISTENERS = 'h, t, y, d, w, m, q, l, z, a, u, c'
 
+export const getDeviceRowMapper = (activeTab: string, theme: string, t: typeof i18next.t) => {
+  if (activeTab === 'br') {
+    // eslint-disable-next-line
+    return (entry: any) => {
+      const { name: entryName, version } = entry
+      const logoKey = entryName
+      // @ts-expect-error
+      const logoUrl = BROWSER_LOGO_MAP[logoKey]
+      const displayName = version ? `${entryName} ${version}` : entryName
+
+      if (entryName === null) {
+        return (
+          <>
+            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            &nbsp;
+            <span className='italic'>{t('common.unknown')}</span>
+          </>
+        )
+      }
+
+      if (!logoUrl) {
+        return (
+          <>
+            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            &nbsp;
+            {displayName}
+          </>
+        )
+      }
+
+      return (
+        <>
+          <img src={logoUrl} className='h-5 w-5' alt='' />
+          &nbsp;
+          {displayName}
+        </>
+      )
+    }
+  }
+
+  if (activeTab === 'os') {
+    // eslint-disable-next-line
+    return (entry: any) => {
+      const { name: entryName, version } = entry
+      const logoKey = entryName
+      // @ts-expect-error
+      const logoPathLight = OS_LOGO_MAP[logoKey]
+      // @ts-expect-error
+      const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
+      const displayName = version ? `${entryName} ${version}` : entryName
+
+      let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
+      logoPath ||= logoPathLight
+
+      if (entryName === null) {
+        return (
+          <>
+            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            &nbsp;
+            <span className='italic'>{t('common.unknown')}</span>
+          </>
+        )
+      }
+
+      if (!logoPath) {
+        return (
+          <>
+            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            &nbsp;
+            {displayName}
+          </>
+        )
+      }
+
+      const logoUrl = `/${logoPath}`
+      return (
+        <>
+          <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
+          &nbsp;
+          {displayName}
+        </>
+      )
+    }
+  }
+
+  if (activeTab === 'dv') {
+    // eslint-disable-next-line
+    return (entry: { name: keyof typeof deviceIconMapping }) => {
+      const { name: entryName } = entry
+      const icon = deviceIconMapping[entryName]
+
+      if (entryName === null) {
+        return (
+          <>
+            <CircleQuestionMark className='h-5 w-5' strokeWidth={1.5} />
+            &nbsp;
+            <span className='italic'>{t('common.unknown')}</span>
+          </>
+        )
+      }
+
+      if (!icon) {
+        return entryName
+      }
+
+      return (
+        <>
+          {icon}
+          &nbsp;
+          {entryName}
+        </>
+      )
+    }
+  }
+
+  return undefined
+}
+
 export {
-  iconClassName,
   getFormatDate,
   panelIconMapping,
   typeNameMapping,

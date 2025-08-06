@@ -7,7 +7,7 @@ import _size from 'lodash/size'
 import { StretchHorizontal as StretchHorizontalIcon, LayoutGrid as LayoutGridIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLoaderData, useSearchParams } from 'react-router'
+import { Link, useLoaderData, useNavigate, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha } from '~/api'
@@ -17,7 +17,7 @@ import { withAuthentication, auth } from '~/hoc/protected'
 import useBreakpoint from '~/hooks/useBreakpoint'
 import useDebounce from '~/hooks/useDebounce'
 import useFeatureFlag from '~/hooks/useFeatureFlag'
-import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL } from '~/lib/constants'
+import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL, tbPeriodPairs } from '~/lib/constants'
 import { Overall, Project } from '~/lib/models/Project'
 import { FeatureFlag } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
@@ -43,6 +43,7 @@ const DASHBOARD_VIEW = {
 const Dashboard = () => {
   const { viewMode: defaultViewMode } = useLoaderData<any>()
   const { user, isLoading: authLoading } = useAuth()
+  const navigate = useNavigate()
   const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
   const showTabs = useFeatureFlag(FeatureFlag['dashboard-analytics-tabs'])
   const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
@@ -191,6 +192,14 @@ const Dashboard = () => {
     }
   }
 
+  // Redirect to onboarding if user hasn't completed it
+  useEffect(() => {
+    if (user && !user.hasCompletedOnboarding) {
+      navigate(routes.onboarding)
+      return
+    }
+  }, [user, navigate])
+
   useEffect(() => {
     if (authLoading) {
       return
@@ -227,7 +236,8 @@ const Dashboard = () => {
       if (!projectIds.length || isHostnameNavigationEnabled) return
 
       try {
-        const stats = await getOverallStats(projectIds, activePeriod)
+        const timeBucket = tbPeriodPairs(t).find((p) => p.period === activePeriod)?.tbs[0] || ''
+        const stats = await getOverallStats(projectIds, timeBucket, activePeriod)
         setOverallStats((prev) => ({ ...prev, ...stats }))
       } catch (reason) {
         console.error('Failed to fetch overall stats:', reason)
@@ -258,7 +268,7 @@ const Dashboard = () => {
     const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [projects, activePeriod, isHostnameNavigationEnabled]) // Reset interval when projects change
+  }, [projects, activePeriod, isHostnameNavigationEnabled, t]) // Reset interval when projects change
 
   if (error && isLoading === false) {
     return (

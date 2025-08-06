@@ -1,4 +1,3 @@
-import clsx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 import _keys from 'lodash/keys'
@@ -21,7 +20,7 @@ import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import { setAccessToken, removeAccessToken } from '~/utils/accessToken'
 import { deleteCookie, getCookie } from '~/utils/cookie'
-import { delay, openBrowserWindow } from '~/utils/generic'
+import { cn, delay, openBrowserWindow } from '~/utils/generic'
 import { setRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
 import routes from '~/utils/routes'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
@@ -136,7 +135,12 @@ const Signin = () => {
           setAccessToken(accessToken, false)
           setRefreshToken(refreshToken)
 
-          navigate(routes.dashboard)
+          // Redirect to onboarding if user hasn't completed it
+          if (!user.hasCompletedOnboarding) {
+            navigate(routes.onboarding)
+          } else {
+            navigate(routes.dashboard)
+          }
 
           return
         } catch {
@@ -183,6 +187,13 @@ const Signin = () => {
       setRefreshToken(refreshToken)
 
       setIsLoading(false)
+
+      // Redirect to onboarding if user hasn't completed it
+      if (!user.hasCompletedOnboarding) {
+        navigate(routes.onboarding)
+      } else {
+        navigate(routes.dashboard)
+      }
     } catch (reason) {
       toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
       setIsLoading(false)
@@ -321,7 +332,7 @@ const Signin = () => {
                 <div className='text-sm leading-6'>
                   <Link
                     to={routes.reset_password}
-                    className='font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    className='font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
                   >
                     {t('auth.signin.forgot')}
                   </Link>
@@ -345,7 +356,7 @@ const Signin = () => {
                 </span>
               </div>
             </div>
-            <div className={clsx('mt-6 grid gap-4', isSelfhosted ? 'grid-cols-1' : 'grid-cols-2')}>
+            <div className={cn('mt-6 grid gap-4', isSelfhosted ? 'grid-cols-1' : 'grid-cols-2')}>
               {isSelfhosted ? (
                 <OIDCAuth onClick={() => onSsoLogin('openid-connect')} disabled={isLoading} className='w-full' />
               ) : (
@@ -367,7 +378,7 @@ const Signin = () => {
                 url: (
                   <Link
                     to={routes.signup}
-                    className='leading-6 font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    className='leading-6 font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
                     aria-label={t('titles.signup')}
                   />
                 ),

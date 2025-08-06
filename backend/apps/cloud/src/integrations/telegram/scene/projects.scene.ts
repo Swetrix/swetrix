@@ -81,6 +81,7 @@ export class ProjectsScene {
     )
     const stats = await this.analyticsService.getAnalyticsSummary(
       [project.id],
+      undefined,
       '7d',
     )
 

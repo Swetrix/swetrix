@@ -26,7 +26,6 @@ import { SEO } from '~/components/SEO'
 import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
 import FlatpickerCss from '~/styles/Flatpicker.css?url'
 import mainCss from '~/styles/index.css?url'
-import sonnerCss from '~/styles/sonner.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
 import { trackViews, trackErrors, trackError } from '~/utils/analytics'
 import { getCookie } from '~/utils/cookie'
@@ -52,7 +51,6 @@ declare global {
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },
-  { rel: 'stylesheet', href: sonnerCss },
   { rel: 'stylesheet', href: mainCss },
   { rel: 'stylesheet', href: BillboardCss },
   { rel: 'stylesheet', href: FlatpickerCss },

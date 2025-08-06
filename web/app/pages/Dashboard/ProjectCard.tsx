@@ -56,19 +56,19 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
             <p className='text-xl text-gray-700 dark:text-gray-100'>{_isNumber(total) ? nFormatter(total) : total}</p>
             {_isNumber(percChange) ? (
               <p
-                className={cx('flex items-center text-xs', {
+                className={cx('flex items-start text-xs', {
                   'text-green-600': statsDidGrowUp,
-                  'text-red-600': !statsDidGrowUp,
+                  'text-slate-600 dark:text-slate-400': !statsDidGrowUp,
                 })}
               >
                 {statsDidGrowUp ? (
                   <>
-                    <ChevronUpIcon className='h-4 w-4 shrink-0 self-center text-green-500' />
+                    <ChevronUpIcon className='h-4 w-4 shrink-0 text-green-500' />
                     <span className='sr-only'>{t('dashboard.inc')}</span>
                   </>
                 ) : (
                   <>
-                    <ChevronDownIcon className='h-4 w-4 shrink-0 self-center text-red-500' />
+                    <ChevronDownIcon className='h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400' />
                     <span className='sr-only'>{t('dashboard.dec')}</span>
                   </>
                 )}

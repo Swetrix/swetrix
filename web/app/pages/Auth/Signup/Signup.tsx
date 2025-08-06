@@ -134,7 +134,7 @@ const Signup = () => {
       trackCustom('SIGNUP', {
         from: 'Signup page',
       })
-      navigate(routes.confirm_email)
+      navigate(routes.onboarding)
     } catch (reason) {
       toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
       setIsLoading(false)
@@ -186,7 +186,12 @@ const Signup = () => {
           setAccessToken(accessToken, false)
           setRefreshToken(refreshToken)
 
-          navigate(routes.dashboard)
+          // Redirect to onboarding if user hasn't completed it
+          if (!user.hasCompletedOnboarding) {
+            navigate(routes.onboarding)
+          } else {
+            navigate(routes.dashboard)
+          }
 
           return
         } catch {
@@ -369,7 +374,7 @@ const Signup = () => {
                   url: (
                     <Link
                       to={routes.signin}
-                      className='leading-6 font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                      className='leading-6 font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
                       aria-label={t('titles.signin')}
                     />
                   ),

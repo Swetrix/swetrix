@@ -197,6 +197,13 @@ export enum TimeFormat {
   '24-hour' = '24-hour',
 }
 
+export enum OnboardingStep {
+  CREATE_PROJECT = 'create_project',
+  SETUP_TRACKING = 'setup_tracking',
+  WAITING_FOR_EVENTS = 'waiting_for_events',
+  COMPLETED = 'completed',
+}
+
 export const MAX_EMAIL_REQUESTS = 4 // 1 confirmation email on sign up + 3 additional ones
 
 export const DEFAULT_TIMEZONE = 'Etc/GMT'
@@ -420,6 +427,16 @@ export class User {
     default: TimeFormat['12-hour'],
   })
   timeFormat: TimeFormat
+
+  @Column({
+    type: 'enum',
+    enum: OnboardingStep,
+    default: OnboardingStep.CREATE_PROJECT,
+  })
+  onboardingStep: OnboardingStep
+
+  @Column({ default: false })
+  hasCompletedOnboarding: boolean
 
   // Google SSO
   @Column({

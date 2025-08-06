@@ -17,12 +17,11 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import { SiYoutube } from '@icons-pack/react-simple-icons'
-import cx, { clsx } from 'clsx'
+import cx from 'clsx'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import utc from 'dayjs/plugin/utc'
 import { type t as i18nextT } from 'i18next'
-import { changeLanguage as changeLanguageI18n } from 'i18next'
 import _map from 'lodash/map'
 import _startsWith from 'lodash/startsWith'
 import { GaugeIcon, ChartPieIcon, BugIcon, PuzzleIcon, PhoneIcon } from 'lucide-react'
@@ -30,6 +29,7 @@ import { memo, Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { changeLanguage } from '~/i18n'
 import {
   whitelist,
   languages,
@@ -41,10 +41,8 @@ import {
 } from '~/lib/constants'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
-import { trackCustom } from '~/utils/analytics'
 import routes from '~/utils/routes'
 
 dayjs.extend(utc)
@@ -86,11 +84,6 @@ const getSolutions = (t: typeof i18nextT) => [
   },
 ]
 
-const changeLanguage = (language: string) => {
-  changeLanguageI18n(language)
-  trackCustom('CHANGE_LANGUAGE', { language })
-}
-
 const getCallsToAction = (t: typeof i18nextT) => [
   { name: t('header.watchDemo'), link: 'https://www.youtube.com/watch?v=XBp38fZREIE', icon: SiYoutube },
   { name: t('header.contactSales'), link: routes.contact, icon: PhoneIcon },
@@ -108,7 +101,7 @@ const SolutionsMenu = () => {
           <PopoverButton className='inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
             <span>{t('header.solutions.title')}</span>
             <ChevronDownIcon
-              className={clsx('h-3 w-3 stroke-2 transition-all', {
+              className={cx('h-3 w-3 stroke-2 transition-all', {
                 'rotate-180': open,
               })}
               aria-hidden='true'
@@ -206,70 +199,6 @@ const SolutionsMenu = () => {
   )
 }
 
-const ThemeMenu = ({ className }: { className?: string }) => {
-  const { theme, setTheme } = useTheme()
-  const { t } = useTranslation('common')
-
-  return (
-    <Menu as='div' className={cx('relative', className)}>
-      <div>
-        <MenuButton className='flex items-center justify-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
-          <span className='sr-only'>{t('header.switchTheme')}</span>
-          {theme === 'dark' ? (
-            <SunIcon className='h-6 w-6 cursor-pointer text-gray-200 hover:text-gray-300' aria-hidden='true' />
-          ) : (
-            <MoonIcon className='h-6 w-6 cursor-pointer text-slate-700 hover:text-slate-600' aria-hidden='true' />
-          )}
-        </MenuButton>
-      </div>
-      <Transition
-        as={Fragment}
-        enter='transition ease-out duration-100'
-        enterFrom='transform opacity-0 scale-95'
-        enterTo='transform opacity-100 scale-100'
-        leave='transition ease-in duration-75'
-        leaveFrom='transform opacity-100 scale-100'
-        leaveTo='transform opacity-0 scale-95'
-      >
-        <MenuItems className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
-          <MenuItem>
-            {({ active }) => (
-              <div
-                className={cx(
-                  'flex w-full cursor-pointer px-4 py-2 text-sm font-semibold text-indigo-600 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-800',
-                  {
-                    'bg-gray-100 dark:bg-slate-800': active,
-                  },
-                )}
-                onClick={() => setTheme('light')}
-              >
-                <SunIcon className='mr-2 h-5 w-5 text-indigo-600 dark:text-gray-200' aria-hidden='true' />
-                {t('header.light')}
-              </div>
-            )}
-          </MenuItem>
-          <MenuItem>
-            {({ active }) => (
-              <div
-                className={cx(
-                  'flex w-full cursor-pointer px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 dark:text-indigo-400 hover:dark:bg-slate-800',
-                  {
-                    'bg-gray-100 dark:bg-slate-800': active,
-                  },
-                )}
-                onClick={() => setTheme('dark')}
-              >
-                <MoonIcon className='mr-2 h-5 w-5 text-gray-200 dark:text-indigo-400' aria-hidden='true' />
-                {t('header.dark')}
-              </div>
-            )}
-          </MenuItem>
-        </MenuItems>
-      </Transition>
-    </Menu>
-  )
-}
-
 const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
   const { user } = useAuth()
   const {
@@ -301,167 +230,141 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             leaveFrom='transform opacity-100 scale-100'
             leaveTo='transform opacity-0 scale-95'
           >
-            <MenuItems className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
-              <div className='border-b-[1px] border-gray-200 dark:border-slate-700/50'>
-                <MenuItem>
-                  <p className='truncate px-4 py-2' role='none'>
-                    <span className='block text-xs text-gray-500 dark:text-gray-300' role='none'>
-                      {t('header.signedInAs')}
-                    </span>
-                    <span className='mt-0.5 text-sm font-semibold text-gray-700 dark:text-gray-50' role='none'>
-                      {user?.email}
-                    </span>
-                  </p>
-                </MenuItem>
-              </div>
+            <MenuItems className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
+              <p className='truncate p-2' role='none'>
+                <span className='block text-xs text-gray-500 dark:text-gray-300' role='none'>
+                  {t('header.signedInAs')}
+                </span>
+                <span className='mt-0.5 text-sm font-semibold text-gray-700 dark:text-gray-50' role='none'>
+                  {user?.email}
+                </span>
+              </p>
+              <div className='my-0.5 w-full border-b-[1px] border-gray-200 dark:border-slate-700/50' />
 
-              <div className='border-b-[1px] border-gray-200 dark:border-slate-700/50'>
-                {/* Language selector */}
-                <Disclosure>
-                  {({ open }) => (
-                    <>
-                      <DisclosureButton className='flex w-full justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-800'>
-                        <div className='flex'>
-                          <Flag
-                            className='mr-1.5 rounded-xs'
-                            country={languageFlag[language]}
-                            size={20}
-                            alt=''
-                            aria-hidden='true'
-                          />
-                          {languages[language]}
-                        </div>
-                        <ChevronDownIcon
-                          className={cx(
-                            open ? 'rotate-180' : '',
-                            '-mr-1 ml-2 h-5 w-5 transform-gpu stroke-2 transition-transform',
-                          )}
+              {/* Language selector */}
+              <Disclosure>
+                {({ open }) => (
+                  <>
+                    <DisclosureButton className='flex w-full justify-between rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'>
+                      <div className='flex'>
+                        <Flag
+                          className='mr-1.5 rounded-xs'
+                          country={languageFlag[language]}
+                          size={20}
+                          alt=''
                           aria-hidden='true'
                         />
-                      </DisclosureButton>
+                        {languages[language]}
+                      </div>
+                      <ChevronDownIcon
+                        className={cx(
+                          open ? 'rotate-180' : '',
+                          '-mr-1 ml-2 h-5 w-5 transform-gpu stroke-2 transition-transform',
+                        )}
+                        aria-hidden='true'
+                      />
+                    </DisclosureButton>
 
-                      <Transition
-                        show={open}
-                        as={Fragment}
-                        enter='transition ease-out duration-100'
-                        enterFrom='transform opacity-0 scale-95'
-                        enterTo='transform opacity-100 scale-100'
-                        leave='transition ease-in duration-75'
-                        leaveFrom='transform opacity-100 scale-100'
-                        leaveTo='transform opacity-0 scale-95'
+                    <Transition
+                      show={open}
+                      as={Fragment}
+                      enter='transition ease-out duration-100'
+                      enterFrom='transform opacity-0 scale-95'
+                      enterTo='transform opacity-100 scale-100'
+                      leave='transition ease-in duration-75'
+                      leaveFrom='transform opacity-100 scale-100'
+                      leaveTo='transform opacity-0 scale-95'
+                    >
+                      <DisclosurePanel
+                        className='absolute right-0 z-50 w-full min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
+                        static
                       >
-                        <DisclosurePanel
-                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
-                          static
-                        >
-                          {_map(whitelist, (lng) => (
-                            <DisclosureButton
-                              key={lng}
-                              as='span'
-                              className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
-                              onClick={() => changeLanguage(lng)}
-                            >
-                              <div className='flex'>
-                                <div className='pt-1'>
-                                  <Flag
-                                    className='mr-1.5 rounded-xs'
-                                    country={languageFlag[lng]}
-                                    size={20}
-                                    alt={languageFlag[lng]}
-                                  />
-                                </div>
-                                {languages[lng]}
+                        {_map(whitelist, (lng) => (
+                          <DisclosureButton
+                            key={lng}
+                            as='span'
+                            className='block cursor-pointer rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
+                            onClick={() => changeLanguage(lng)}
+                          >
+                            <div className='flex'>
+                              <div className='pt-1'>
+                                <Flag
+                                  className='mr-1.5 rounded-xs'
+                                  country={languageFlag[lng]}
+                                  size={20}
+                                  alt={languageFlag[lng]}
+                                />
                               </div>
-                            </DisclosureButton>
-                          ))}
-                        </DisclosurePanel>
-                      </Transition>
-                    </>
-                  )}
-                </Disclosure>
-
-                {isSelfhosted ? (
-                  <MenuItem>
-                    {({ active }) => (
-                      <a
-                        href={CONTACT_US_URL}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                          'bg-gray-100 dark:bg-slate-800': active,
-                        })}
-                      >
-                        {t('footer.support')}
-                      </a>
-                    )}
-                  </MenuItem>
-                ) : (
-                  <MenuItem>
-                    {({ active }) => (
-                      <Link
-                        to={routes.contact}
-                        className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                          'bg-gray-100 dark:bg-slate-800': active,
-                        })}
-                      >
-                        {t('footer.support')}
-                      </Link>
-                    )}
-                  </MenuItem>
+                              {languages[lng]}
+                            </div>
+                          </DisclosureButton>
+                        ))}
+                      </DisclosurePanel>
+                    </Transition>
+                  </>
                 )}
-                {!isSelfhosted ? (
-                  <MenuItem>
-                    {({ active }) => (
-                      <Link
-                        to={routes.billing}
-                        className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                          'bg-gray-100 dark:bg-slate-800': active,
-                        })}
-                      >
-                        {t('common.billing')}
-                      </Link>
-                    )}
-                  </MenuItem>
-                ) : null}
-              </div>
+              </Disclosure>
+
+              {isSelfhosted ? (
+                <MenuItem>
+                  <a
+                    href={CONTACT_US_URL}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  >
+                    {t('footer.support')}
+                  </a>
+                </MenuItem>
+              ) : (
+                <MenuItem>
+                  <Link
+                    to={routes.contact}
+                    className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  >
+                    {t('footer.support')}
+                  </Link>
+                </MenuItem>
+              )}
+              {!isSelfhosted ? (
+                <MenuItem>
+                  <Link
+                    to={routes.billing}
+                    className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  >
+                    {t('common.billing')}
+                  </Link>
+                </MenuItem>
+              ) : null}
+
+              <div className='my-0.5 w-full border-b-[1px] border-gray-200 dark:border-slate-700/50' />
 
               <MenuItem>
-                {({ active }) => (
-                  <Link
-                    to={routes.user_settings}
-                    className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                      'bg-gray-100 dark:bg-slate-800': active,
-                    })}
-                  >
-                    {t('common.accountSettings')}
-                  </Link>
-                )}
+                <Link
+                  to={routes.user_settings}
+                  className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                >
+                  {t('common.accountSettings')}
+                </Link>
               </MenuItem>
               {!isSelfhosted ? (
                 <MenuItem>
-                  {({ active }) => (
-                    <Link
-                      to={routes.organisations}
-                      className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                        'bg-gray-100 dark:bg-slate-800': active,
-                      })}
-                    >
-                      {t('organisations.organisations')}
-                    </Link>
-                  )}
+                  <Link
+                    to={routes.organisations}
+                    className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  >
+                    {t('organisations.organisations')}
+                  </Link>
                 </MenuItem>
               ) : null}
               <MenuItem>
-                {({ active }) => (
-                  <p
-                    className={cx('cursor-pointer px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                      'bg-gray-100 dark:bg-slate-800': active,
-                    })}
-                    onClick={logoutHandler}
-                  >
-                    {t('common.logout')}
-                  </p>
-                )}
+                <button
+                  type='button'
+                  className='w-full rounded-md p-2 text-left text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  onClick={logoutHandler}
+                >
+                  {t('common.logout')}
+                </button>
               </MenuItem>
             </MenuItems>
           </Transition>
@@ -491,7 +394,6 @@ const AuthedHeader = ({
   openMenu: () => void
 }) => {
   const { user } = useAuth()
-  const { theme, setTheme } = useTheme()
   const { t } = useTranslation('common')
 
   return (
@@ -569,26 +471,9 @@ const AuthedHeader = ({
             </div>
           </div>
           <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
-            <ThemeMenu className='ml-3' />
             <ProfileMenu logoutHandler={logoutHandler} />
           </div>
           <div className='flex items-center justify-center space-x-3 lg:hidden'>
-            {/* Theme switch */}
-            {theme === 'dark' ? (
-              <div className='rotate-180 transition-all duration-1000 ease-in-out'>
-                <SunIcon
-                  onClick={() => setTheme('light')}
-                  className='h-8 w-8 cursor-pointer text-gray-200 hover:text-gray-300'
-                />
-              </div>
-            ) : (
-              <div className='transition-all duration-1000 ease-in-out'>
-                <MoonIcon
-                  onClick={() => setTheme('dark')}
-                  className='h-8 w-8 cursor-pointer text-slate-700 hover:text-slate-600'
-                />
-              </div>
-            )}
             <button
               type='button'
               onClick={openMenu}
@@ -613,11 +498,7 @@ const NotAuthedHeader = ({
   refPage?: boolean
   openMenu: () => void
 }) => {
-  const { theme, setTheme } = useTheme()
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
 
   return (
     <header
@@ -679,37 +560,8 @@ const NotAuthedHeader = ({
             ) : null}
           </div>
           <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
-            {/* Language selector */}
-            <Dropdown
-              items={whitelist}
-              buttonClassName='!py-0 !px-2 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-semibold leading-6 !text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-              title={
-                <span className='inline-flex items-center'>
-                  <Flag
-                    className='mr-1.5 rounded-xs'
-                    country={languageFlag[language]}
-                    size={18}
-                    alt={languages[language]}
-                  />
-                </span>
-              }
-              labelExtractor={(lng: string) => (
-                <div className='flex'>
-                  <div className='pt-1'>
-                    <Flag className='mr-1.5 rounded-xs' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
-                  </div>
-                  {languages[lng]}
-                </div>
-              )}
-              onSelect={(lng: string) => {
-                changeLanguage(lng)
-              }}
-              headless
-            />
-            <ThemeMenu />
             {!refPage ? (
               <>
-                <Separator />
                 <Link
                   to={routes.signin}
                   className='flex items-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -728,22 +580,6 @@ const NotAuthedHeader = ({
             ) : null}
           </div>
           <div className='flex items-center justify-center space-x-3 lg:hidden'>
-            {/* Theme switch */}
-            {theme === 'dark' ? (
-              <div className='rotate-180 transition-all duration-1000 ease-in-out'>
-                <SunIcon
-                  onClick={() => setTheme('light')}
-                  className='h-8 w-8 cursor-pointer text-gray-200 hover:text-gray-300'
-                />
-              </div>
-            ) : (
-              <div className='transition-all duration-1000 ease-in-out'>
-                <MoonIcon
-                  onClick={() => setTheme('dark')}
-                  className='h-8 w-8 cursor-pointer text-slate-700 hover:text-slate-600'
-                />
-              </div>
-            )}
             <button
               type='button'
               onClick={openMenu}
@@ -765,10 +601,7 @@ interface HeaderProps {
 }
 
 const Header = ({ refPage, transparent }: HeaderProps) => {
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const { isAuthenticated, user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { theme, setTheme } = useTheme()
@@ -869,68 +702,6 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
           <div className='mt-6 flow-root'>
             <div className='-my-6 divide-y divide-gray-500/10'>
               <div className='space-y-2 py-6'>
-                {/* Language selector */}
-                <Menu as='div' className='-mx-3'>
-                  {({ open }) => (
-                    <>
-                      <MenuButton className='flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'>
-                        <div className='flex'>
-                          <Flag
-                            className='mr-1.5 rounded-xs'
-                            country={languageFlag[language]}
-                            size={20}
-                            alt=''
-                            aria-hidden='true'
-                          />
-                          {languages[language]}
-                        </div>
-                        <ChevronDownIcon
-                          className={cx(open ? 'rotate-180' : '', 'h-5 w-5 flex-none')}
-                          aria-hidden='true'
-                        />
-                      </MenuButton>
-
-                      <Transition
-                        show={open}
-                        as={Fragment}
-                        enter='transition ease-out duration-100'
-                        enterFrom='transform opacity-0 scale-95'
-                        enterTo='transform opacity-100 scale-100'
-                        leave='transition ease-in duration-75'
-                        leaveFrom='transform opacity-100 scale-100'
-                        leaveTo='transform opacity-0 scale-95'
-                      >
-                        <MenuItems
-                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
-                          static
-                        >
-                          {_map(whitelist, (lng) => (
-                            <MenuItem key={lng}>
-                              <span
-                                className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
-                                role='menuitem'
-                                tabIndex={0}
-                                onClick={() => changeLanguage(lng)}
-                              >
-                                <div className='flex'>
-                                  <div className='pt-1'>
-                                    <Flag
-                                      className='mr-1.5 rounded-xs'
-                                      country={languageFlag[lng]}
-                                      size={20}
-                                      alt={languageFlag[lng]}
-                                    />
-                                  </div>
-                                  {languages[lng]}
-                                </div>
-                              </span>
-                            </MenuItem>
-                          ))}
-                        </MenuItems>
-                      </Transition>
-                    </>
-                  )}
-                </Menu>
                 {!isSelfhosted ? (
                   <Disclosure as='div' className='-mx-3'>
                     {({ open }) => (

@@ -1,15 +1,14 @@
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
+import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
-import { pie } from 'billboard.js'
+import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
 import cx from 'clsx'
 import InnerHTML from 'dangerously-set-html-content'
 import _ceil from 'lodash/ceil'
 import _find from 'lodash/find'
 import _floor from 'lodash/floor'
 import _fromPairs from 'lodash/fromPairs'
-import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
-import _isString from 'lodash/isString'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _orderBy from 'lodash/orderBy'
@@ -21,306 +20,235 @@ import _slice from 'lodash/slice'
 import _sortBy from 'lodash/sortBy'
 import _sum from 'lodash/sum'
 import _toPairs from 'lodash/toPairs'
-import _values from 'lodash/values'
-import {
-  AlignJustifyIcon,
-  ChartPieIcon,
-  MapIcon,
-  MaximizeIcon,
-  WorkflowIcon,
-  FilterIcon,
-  PuzzleIcon,
-} from 'lucide-react'
-import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
+import { FilterIcon, ScanIcon } from 'lucide-react'
+import React, { memo, useState, useEffect, useMemo, Fragment, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps, useNavigate } from 'react-router'
 
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import Button from '~/ui/Button'
-import Chart from '~/ui/Chart'
+import Dropdown from '~/ui/Dropdown'
 import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
-import Progress from '~/ui/Progress'
+import { trackError } from '~/utils/analytics'
 import { nFormatter } from '~/utils/generic'
 
-import CustomEventsDropdown from './components/CustomEventsDropdown'
-import InteractiveMap from './components/InteractiveMap'
-import UserFlow from './components/UserFlow'
 import { Customs, Filter, Properties } from './interfaces/traffic'
 import { useViewProjectContext } from './ViewProject'
-import { iconClassName } from './ViewProject.helpers'
+import { typeNameMapping } from './ViewProject.helpers'
 
-const ENTRIES_PER_PANEL = 5
-const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
-
-const PANELS_WITH_BARS = ['cc', 'rg', 'ct', 'ce', 'os', 'br', 'dv', 'pg']
-
-// function that checks if there are custom tabs for a specific type
-const checkCustomTabs = (panelID: string, customTabs: CustomTab[]) => {
-  if (_isEmpty(customTabs)) return false
-
-  return Boolean(_find(customTabs, (el) => el.panelID === panelID))
-}
-
-const checkIfBarsNeeded = (panelID: string) => {
-  return _includes(PANELS_WITH_BARS, panelID)
-}
-
-const removeDuplicates = (arr: any[], keys: string[]) => {
-  const uniqueObjects: any[] = []
-
-  const isDuplicate = (obj: any) => {
-    for (const uniqueObj of uniqueObjects) {
-      let isMatch = true
-
-      for (const key of keys) {
-        if (uniqueObj[key] !== obj[key]) {
-          isMatch = false
-          break
-        }
-      }
-      if (isMatch) {
-        return true
-      }
-    }
-    return false
-  }
-
-  for (const obj of arr) {
-    if (!isDuplicate(obj)) {
-      uniqueObjects.push(obj)
-    }
-  }
-
-  return uniqueObjects
-}
+const ENTRIES_PER_PANEL = 8
+const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
 
 interface PanelContainerProps {
   name: React.ReactNode
   children?: React.ReactNode
-  noSwitch?: boolean
   icon?: React.ReactNode
   type: string
-  onExpandClick?: () => void
-  activeFragment?: number | string
-  setActiveFragment?: (arg: number) => void
-  customTabs?: CustomTab[]
-  activeTab?: string
-  isCustomContent?: boolean
+  tabs?: Array<
+    | {
+        id: string
+        label: string
+      }
+    | Array<{
+        id: string
+        label: string
+      }>
+  >
+  onTabChange?: (tab: string) => void
+  activeTabId?: string
+  onDetailsClick?: () => void
 }
 
-// noSwitch - 'previous' and 'next' buttons
+class ExtensionErrorBoundary extends React.Component<
+  { children: React.ReactNode; extensionID: string },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; extensionID: string }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    trackError({
+      name: `Extension Error: ${error.name}`,
+      message: error.message,
+      stackTrace: info.componentStack,
+      meta: {
+        extensionID: this.props?.extensionID || 'unknown',
+      },
+    })
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className='text-sm text-red-500'>
+          <p>Something went wrong. Please try again later.</p>
+          <br />
+          <p>
+            <span>Extension ID: </span>
+            <span>{this.props?.extensionID || 'unknown'}</span>
+          </p>
+          <p>If the problem persists, please contact support.</p>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 const PanelContainer = ({
   name,
   children,
-  noSwitch,
   icon,
   type,
-  activeFragment = 0,
-  setActiveFragment = () => {},
-  customTabs = [],
-  activeTab,
-  isCustomContent,
-  onExpandClick = () => {},
-}: PanelContainerProps) => (
-  <div
-    className={cx(
-      'relative max-h-96 min-h-[17rem] overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pt-5 sm:px-6 dark:border-slate-800/60 dark:bg-slate-800/25',
-      {
-        'pb-12': !noSwitch,
-        'pb-5': noSwitch,
-      },
-    )}
-  >
-    <div className='mb-2 flex items-center justify-between'>
-      <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
-        {icon ? <span className='mr-1'>{icon}</span> : null}
-        {name}
-      </h3>
-      <div className='flex'>
-        {checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs) ? (
-          <button
-            type='button'
-            onClick={() => setActiveFragment(0)}
-            aria-label='Switch to bar view'
-            className='rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-          >
-            <AlignJustifyIcon
-              className={cx(iconClassName, {
-                'text-slate-900 dark:text-gray-50': activeFragment === 0,
-                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 1,
-              })}
-              strokeWidth={1.5}
-            />
-          </button>
-        ) : null}
+  tabs,
+  onTabChange,
+  activeTabId,
+  onDetailsClick,
+}: PanelContainerProps) => {
+  const { customPanelTabs } = useViewProjectContext()
+  const { t } = useTranslation('common')
 
-        {/* if it is a Country tab  */}
-        {type === 'cc' || type === 'rg' || type === 'ct' ? (
-          <>
-            <button
-              type='button'
-              onClick={() => setActiveFragment(1)}
-              aria-label='Switch to map view'
-              className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-            >
-              <MapIcon
-                className={cx(iconClassName, {
-                  'text-slate-900 dark:text-gray-50': activeFragment === 1,
-                  'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
-                })}
-                strokeWidth={1.5}
-              />
-            </button>
-            <button
-              type='button'
-              onClick={onExpandClick}
-              aria-label='Expand view'
-              className={cx('ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700', {
-                hidden: activeFragment === 0,
-              })}
-            >
-              <MaximizeIcon className={cx(iconClassName, 'text-slate-400 dark:text-slate-500')} strokeWidth={1.5} />
-            </button>
-          </>
-        ) : null}
+  const panelExtensions = useMemo(() => {
+    return customPanelTabs.filter((tab) => tab.panelID === type)
+  }, [customPanelTabs, type])
 
-        {type === 'pg' && activeTab !== PROJECT_TABS.performance && activeTab !== PROJECT_TABS.errors ? (
-          <button
-            type='button'
-            onClick={onExpandClick}
-            aria-label='View user flow'
-            className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-          >
-            <WorkflowIcon
-              className={cx(iconClassName, {
-                'text-slate-900 dark:text-gray-50': activeFragment === 1,
-                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
-              })}
-              strokeWidth={1.5}
-            />
-          </button>
-        ) : null}
+  const panelTabs = useMemo(() => {
+    if (panelExtensions.length === 0) {
+      return tabs
+    }
 
-        {/* if this tab using Circle showing stats panel */}
-        {type === 'ce' || type === 'os' || type === 'br' || type === 'dv' ? (
-          <button
-            type='button'
-            onClick={() => setActiveFragment(1)}
-            aria-label='Switch to pie chart view'
-            className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-          >
-            <ChartPieIcon
-              className={cx(iconClassName, {
-                'text-slate-900 dark:text-gray-50': activeFragment === 1,
-                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
-              })}
-              strokeWidth={1.5}
-            />
-          </button>
-        ) : null}
+    const panelTabs = [...(tabs || [])]
 
-        {/* if it is a 'Custom events' tab  */}
-        {type === 'ce' || type === 'props' ? (
-          <>
-            <button
-              type='button'
-              onClick={onExpandClick}
-              aria-label='Expand view'
-              className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-            >
-              <MaximizeIcon className={cx(iconClassName, 'text-slate-400 dark:text-slate-500')} strokeWidth={1.5} />
-            </button>
-          </>
-        ) : null}
+    if (panelTabs.length === 0) {
+      panelTabs.push({
+        id: 'default',
+        label: 'Data',
+      })
+    }
 
-        {checkCustomTabs(type, customTabs) ? (
-          <>
-            {/* This is a temp fix to prevent multiple tabs of the same extensionID be displayed */}
-            {/* TODO: Investigate the issue and fix it */}
-            {_map(removeDuplicates(customTabs, ['extensionID', 'panelID']), ({ extensionID, panelID, onOpen }) => {
-              if (panelID !== type) return null
+    return [
+      ...panelTabs,
+      ...panelExtensions.map((tab) => ({
+        id: tab.extensionID,
+        label: 'Addon',
+      })),
+    ]
+  }, [panelExtensions, tabs])
 
-              const onClick = () => {
-                onOpen?.()
-                setActiveFragment(extensionID)
-              }
+  const contentRenderer = () => {
+    const { extensionID, tabContent } =
+      _find(panelExtensions, (tab) => tab.extensionID === activeTabId) || ({} as CustomTab)
 
-              return (
-                <button
-                  type='button'
-                  key={`${extensionID}-${panelID}`}
-                  onClick={onClick}
-                  aria-label='Switch to custom tab'
-                  className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-                >
-                  <PuzzleIcon
-                    className={cx(iconClassName, {
-                      'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
-                      'text-slate-400 dark:text-slate-500': activeFragment === 0,
-                    })}
-                    strokeWidth={1.5}
-                  />
-                </button>
-              )
-            })}
-          </>
-        ) : null}
-      </div>
-    </div>
-    {/* for other tabs */}
-    <div
-      className={cx('flex h-full flex-col overflow-x-auto', {
-        relative: isCustomContent,
-      })}
-    >
-      {children}
-    </div>
-  </div>
-)
+    if (extensionID) {
+      // Using this instead of dangerouslySetInnerHTML to support script tags
+      return (
+        <ExtensionErrorBoundary extensionID={extensionID}>
+          <InnerHTML className='absolute overflow-auto' html={tabContent || ''} />
+        </ExtensionErrorBoundary>
+      )
+    }
 
-// Options for circle chart showing the stats of data
-const getPieOptions = (customs: any, uniques: number, t: any) => {
-  const tQuantity = t('project.quantity')
-  const tConversion = t('project.conversion')
-  const tRatio = t('project.ratio')
-  const quantity = _values(customs)
-  const conversion = _map(quantity, (el) => _round((el / uniques) * 100, 2))
-
-  return {
-    tooltip: {
-      contents: {
-        text: {
-          QUANTITY: _values(customs),
-          CONVERSION: conversion,
-        },
-        template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-700 rounded-md shadow-md px-3 py-1'>
-            {{
-              <li class='flex'>
-                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                <span>{=NAME}</span>
-              </li>
-              <hr class='border-gray-200 dark:border-slate-600' />
-              <li class='flex justify-between'>
-                <span>${tQuantity}</span>
-                <span class='pl-4'>{=QUANTITY}</span>
-              </li>
-              <li class='flex justify-between'>
-                <span>${tConversion}</span>
-                <span class='pl-4'>{=CONVERSION}%</span>
-              </li>
-              <li class='flex justify-between'>
-                <span>${tRatio}</span>
-                <span class='pl-4'>{=VALUE}</span>
-              </li>
-            }}
-          </ul>`,
-      },
-    },
+    return children
   }
+
+  return (
+    <div
+      className={cx(
+        'overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pt-5 pb-3 dark:border-slate-800/60 dark:bg-slate-800/25',
+        {
+          'col-span-2': type === 'metadata',
+        },
+      )}
+    >
+      <div className='mb-2 flex items-center justify-between gap-4'>
+        <h3 className='flex items-center text-lg leading-6 font-semibold whitespace-nowrap text-gray-900 dark:text-gray-50'>
+          {icon ? <span className='mr-1'>{icon}</span> : null}
+          {name}
+        </h3>
+        <div className='scrollbar-thin flex items-center gap-2.5'>
+          {panelTabs && onTabChange ? (
+            <>
+              {panelTabs.map((tab, index) => {
+                if (Array.isArray(tab)) {
+                  const dropdownTabs = tab
+                  const activeDropdownTab = dropdownTabs.find((t) => t.id === activeTabId)
+                  const dropdownTitle = activeDropdownTab ? activeDropdownTab.label : t('project.campaigns')
+
+                  return (
+                    <Dropdown
+                      key={`dropdown-${index}`}
+                      title={dropdownTitle}
+                      items={dropdownTabs}
+                      labelExtractor={(item) => item.label}
+                      keyExtractor={(item) => item.id}
+                      onSelect={(item) => {
+                        onTabChange(item.id)
+                      }}
+                      buttonClassName={cx(
+                        'relative border-b-2 md:px-0 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                        {
+                          'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': dropdownTabs.some(
+                            (t) => t.id === activeTabId,
+                          ),
+                          'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                            !dropdownTabs.some((t) => t.id === activeTabId),
+                        },
+                      )}
+                      headless
+                      chevron='mini'
+                    />
+                  )
+                }
+
+                // Regular tab button
+                return (
+                  <button
+                    key={tab.id}
+                    type='button'
+                    onClick={() => {
+                      onTabChange(tab.id)
+                    }}
+                    className={cx(
+                      'relative border-b-2 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                      {
+                        'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': activeTabId === tab.id,
+                        'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                          activeTabId !== tab.id,
+                      },
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </>
+          ) : null}
+        </div>
+      </div>
+      <div className='relative flex h-[19.5rem] flex-col overflow-x-auto'>{contentRenderer()}</div>
+      {onDetailsClick ? (
+        <div className='mt-2 flex items-center justify-center'>
+          <Button
+            className='max-w-max border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+            type='button'
+            onClick={onDetailsClick}
+          >
+            <ScanIcon className='mr-1.5 size-4' />
+            <span>{t('common.details')}</span>
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  )
 }
 
 export type CustomTab = {
@@ -337,24 +265,9 @@ interface MetadataProps {
   filters: Filter[]
   getCustomEventMetadata: (event: string) => Promise<any>
   getPropertyMetadata: (property: string) => Promise<any>
-  customTabs: CustomTab[]
   getFilterLink: (column: string, value: string) => LinkProps['to']
-}
-
-interface CustomEventsProps extends MetadataProps {
-  setActiveTab: React.Dispatch<React.SetStateAction<'customEv' | 'properties'>>
-  dataKeys: {
-    properties: string[]
-    customEv: string[]
-  }
-}
-
-interface PagePropertiesProps extends MetadataProps {
-  setActiveTab: React.Dispatch<React.SetStateAction<'customEv' | 'properties'>>
-  dataKeys: {
-    properties: string[]
-    customEv: string[]
-  }
+  onTabChange: (tab: string) => void
+  activeTabId: string
 }
 
 interface SortRows {
@@ -475,19 +388,19 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
             }}
             className='group cursor-pointer py-3 text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
           >
-            <td className='flex items-center py-1 pl-2 text-left'>
+            <td className='flex w-2/5 items-center py-1 pl-2 text-left sm:w-4/6'>
               {event}
               <FilterIcon
-                className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
                 strokeWidth={1.5}
               />
               <div className='ml-2 h-4 w-4 group-hover:hidden' />
             </td>
-            <td className='py-1 text-right'>
+            <td className='w-[30%] py-1 text-right sm:w-1/6'>
               {quantity}
               &nbsp;&nbsp;
             </td>
-            <td className='py-1 pr-2 text-right'>{conversion}%</td>
+            <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>{conversion}%</td>
           </tr>
         ))}
       </tbody>
@@ -554,36 +467,29 @@ function sortDesc<T>(obj: T, sortByKeys?: boolean): T {
   ) as T
 }
 
-const CustomEvents = ({
+const Metadata = ({
   customs,
+  properties,
   chartData,
   filters,
-  customTabs = [],
   getCustomEventMetadata,
-  setActiveTab,
+  getPropertyMetadata,
   getFilterLink,
-  dataKeys,
-}: CustomEventsProps) => {
+  onTabChange,
+  activeTabId,
+}: MetadataProps) => {
   const { t } = useTranslation('common')
-  const [page, setPage] = useState(0)
   const [detailsOpened, setDetailsOpened] = useState(false)
   const [activeEvents, setActiveEvents] = useState<any>({})
   const [loadingEvents, setLoadingEvents] = useState<any>({})
   const [eventsMetadata, setEventsMetadata] = useState<any>({})
-  const [customsEventsData, setCustomsEventsData] = useState<any>(customs)
+  const [eventsData, setEventsData] = useState<any>(customs)
   const [triggerEventWhenFiltersChange, setTriggerEventWhenFiltersChange] = useState<string | null>(null)
-  const currentIndex = page * ENTRIES_PER_CUSTOM_EVENTS_PANEL
-  const keys = _keys(customsEventsData)
-  const keysToDisplay = useMemo(
-    () => _slice(keys, currentIndex, currentIndex + ENTRIES_PER_CUSTOM_EVENTS_PANEL),
-    [keys, currentIndex],
-  )
+
+  const keys = _keys(eventsData)
+  const keysToDisplay = useMemo(() => _slice(keys, 0, ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
+
   const uniques = _sum(chartData.uniques)
-  const [chartOptions, setChartOptions] = useState<any>({})
-  const [activeFragment, setActiveFragment] = useState(0)
-  const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
-  const canGoPrev = () => page > 0
-  const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
   const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
@@ -591,51 +497,43 @@ const CustomEvents = ({
   })
   const navigate = useNavigate()
 
-  useEffect(() => {
-    const sizeKeys = _size(keys)
+  const tabs = [
+    {
+      id: 'ce',
+      label: t('project.customEv'),
+    },
+    {
+      id: 'props',
+      label: t('project.properties'),
+    },
+  ]
 
-    if (currentIndex > sizeKeys) {
-      setPage(_floor(sizeKeys / ENTRIES_PER_CUSTOM_EVENTS_PANEL))
+  useEffect(() => {
+    if (activeTabId === 'ce') {
+      setEventsData(customs)
+    } else {
+      setEventsData(properties)
     }
-  }, [currentIndex, keys])
 
-  useEffect(() => {
-    setCustomsEventsData(customs)
     setSort({
       label: 'quantity',
       sortByAscend: false,
       sortByDescend: false,
     })
-  }, [customs])
-
-  useEffect(() => {
-    setPage(0)
-  }, [chartData])
+  }, [customs, properties, activeTabId])
 
   useEffect(() => {
     if (!triggerEventWhenFiltersChange) {
       return
     }
 
-    toggleEventMetadata(triggerEventWhenFiltersChange)()
+    toggleDetails(triggerEventWhenFiltersChange)()
     setTriggerEventWhenFiltersChange(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, triggerEventWhenFiltersChange])
 
-  const onPrevious = () => {
-    if (canGoPrev()) {
-      setPage(page - 1)
-    }
-  }
-
-  const onNext = () => {
-    if (canGoNext()) {
-      setPage(page + 1)
-    }
-  }
-
   // is "e" is not set, then details loading is forced and all checks are skipped
-  const toggleEventMetadata = (ev: string) => async (e?: React.MouseEvent<HTMLTableRowElement>) => {
+  const toggleDetails = (ev: string) => async (e?: React.MouseEvent<HTMLTableRowElement>) => {
     if (e) {
       e.stopPropagation()
 
@@ -652,13 +550,15 @@ const CustomEvents = ({
       }))
 
       try {
-        const { result } = await getCustomEventMetadata(ev)
+        const fn = activeTabId === 'ce' ? getCustomEventMetadata : getPropertyMetadata
+
+        const { result } = await fn(ev)
         setEventsMetadata((metadata: any) => ({
           ...metadata,
           [ev]: result,
         }))
       } catch (reason) {
-        console.error(`[ERROR](toggleEventMetadata) Failed to get metadata for event ${ev}`, reason)
+        console.error(`[ERROR](toggleDetails) Failed to get metadata for event ${ev}`, reason)
         setEventsMetadata((metadata: any) => ({
           ...metadata,
           [ev]: [],
@@ -686,7 +586,7 @@ const CustomEvents = ({
     const sortByKeys = label === 'event'
 
     if (sort.sortByAscend) {
-      setCustomsEventsData(sortDesc(customsEventsData, sortByKeys))
+      setEventsData(sortDesc(eventsData, sortByKeys))
       setSort({
         label,
         sortByAscend: false,
@@ -696,7 +596,7 @@ const CustomEvents = ({
     }
 
     if (sort.sortByDescend) {
-      setCustomsEventsData(customs)
+      setEventsData(eventsData)
       setSort({
         label,
         sortByAscend: false,
@@ -705,7 +605,7 @@ const CustomEvents = ({
       return
     }
 
-    setCustomsEventsData(sortAsc(customsEventsData, sortByKeys))
+    setEventsData(sortAsc(eventsData, sortByKeys))
     setSort({
       label,
       sortByAscend: true,
@@ -713,18 +613,12 @@ const CustomEvents = ({
     })
   }
 
-  useEffect(() => {
-    if (!_isEmpty(chartData)) {
-      const options = getPieOptions(customsEventsData, uniques, t)
-      setChartOptions({
-        data: {
-          columns: _map(keys, (ev) => [ev, customsEventsData[ev]]),
-          type: pie(),
-        },
-        ...options,
-      })
+  const _getFilterLink = (column: string | null, value: string) => {
+    if (activeTabId === 'ce') {
+      return getFilterLink('ev' + (column ? `:key:${column}` : ''), value)
     }
-  }, [chartData, customsEventsData, t]) // eslint-disable-line react-hooks/exhaustive-deps
+    return getFilterLink('tag:key' + (column ? `:${column}` : ''), value)
+  }
 
   const CustomEventsTable = () => (
     <div className='overflow-y-auto'>
@@ -772,7 +666,7 @@ const CustomEvents = ({
           </tr>
         </thead>
         <tbody>
-          {_map(keysToDisplay, (ev) => (
+          {_map(keys, (ev) => (
             <Fragment key={ev}>
               <tr
                 className={cx(
@@ -781,7 +675,7 @@ const CustomEvents = ({
                     'animate-pulse bg-gray-100 dark:bg-slate-700': loadingEvents[ev],
                   },
                 )}
-                onClick={toggleEventMetadata(ev)}
+                onClick={toggleDetails(ev)}
               >
                 <td className='flex items-center py-1 text-left'>
                   {loadingEvents[ev] ? (
@@ -793,12 +687,12 @@ const CustomEvents = ({
                   )}
                   {ev}
                 </td>
-                <td className='py-1 text-right'>
-                  {customsEventsData[ev]}
+                <td className='w-[30%] py-1 text-right sm:w-1/6'>
+                  {eventsData[ev]}
                   &nbsp;&nbsp;
                 </td>
-                <td className='py-1 pr-2 text-right'>
-                  {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}%
+                <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>
+                  {uniques === 0 ? 100 : _round((eventsData[ev] / uniques) * 100, 2)}%
                 </td>
               </tr>
               {activeEvents[ev] && !loadingEvents[ev] ? (
@@ -808,7 +702,7 @@ const CustomEvents = ({
                       data={eventsMetadata[ev]}
                       uniques={uniques}
                       onClick={async (key, value) => {
-                        const link = getFilterLink(`ev:key:${key}`, value)
+                        const link = _getFilterLink(key, value)
                         navigate(link)
                         setTriggerEventWhenFiltersChange(ev)
                       }}
@@ -824,37 +718,70 @@ const CustomEvents = ({
     </div>
   )
 
-  if (_isEmpty(customs)) {
-    return (
-      <PanelContainer
-        // @ts-expect-error - onSelect not typed
-        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} data={dataKeys} />}
-        type='ce'
-        setActiveFragment={setActiveFragment}
-        activeFragment={activeFragment}
-        onExpandClick={() => setDetailsOpened(true)}
-      >
-        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
-      </PanelContainer>
-    )
-  }
+  const renderTabContent = () => {
+    if (_isEmpty(eventsData)) {
+      return <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+    }
 
-  // for showing chart circle of stats a data
-  if (activeFragment === 1 && !_isEmpty(chartData)) {
     return (
-      <PanelContainer
-        // @ts-expect-error - onSelect not typed
-        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} data={dataKeys} />}
-        type='ce'
-        setActiveFragment={setActiveFragment}
-        activeFragment={activeFragment}
-        onExpandClick={() => setDetailsOpened(true)}
-      >
-        {_isEmpty(chartData) ? (
-          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
-        ) : (
-          <Chart options={chartOptions} current='panels-ce' />
-        )}
+      <>
+        <div className='mb-1 flex items-center justify-between px-1 py-1'>
+          <span className='w-4/6 text-sm font-medium text-gray-600 dark:text-gray-400'>{t('project.event')}</span>
+          <span className='w-1/6 text-right text-sm font-medium text-gray-600 dark:text-gray-400'>
+            {t('project.quantity')}
+          </span>
+          <span className='w-1/6 text-right text-sm font-medium text-gray-600 dark:text-gray-400'>
+            {t('project.conversion')}
+          </span>
+        </div>
+
+        <div className='space-y-0.5'>
+          {_map(
+            _orderBy(
+              keysToDisplay.map((ev) => ({ key: ev, value: eventsData[ev] })),
+              'value',
+              'desc',
+            ),
+            (item) => {
+              const ev = item.key
+              const perc = uniques === 0 ? 100 : _round((eventsData[ev] / uniques) * 100, 2)
+              const maxValue = Math.max(...(Object.values(eventsData) as number[]))
+              const link = _getFilterLink(null, ev)
+
+              return (
+                <div
+                  key={`${ev}-${item.value}`}
+                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800'
+                  onClick={() => {
+                    navigate(link)
+                  }}
+                >
+                  <div
+                    className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                    style={{
+                      width: `${(eventsData[ev] / maxValue) * 100}%`,
+                    }}
+                  />
+
+                  <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
+                    <span className='flex items-center truncate text-sm text-gray-900 dark:text-gray-100'>{ev}</span>
+                    <FilterIcon
+                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
+                      strokeWidth={1.5}
+                    />
+                    <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                  </div>
+                  <div className='relative z-10 w-1/6 text-right'>
+                    <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>{eventsData[ev]}</span>
+                  </div>
+                  <div className='relative z-10 w-1/6 text-right'>
+                    <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>{perc}%</span>
+                  </div>
+                </div>
+              )
+            },
+          )}
+        </div>
         <Modal
           onClose={onModalClose}
           isOpened={detailsOpened}
@@ -862,591 +789,22 @@ const CustomEvents = ({
           message={<CustomEventsTable />}
           size='large'
         />
-      </PanelContainer>
-    )
-  }
-
-  // Showing custom tabs (Extensions Marketplace)
-  // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
-  if (!_isEmpty(customTabs) && typeof activeFragment === 'string') {
-    const { tabContent } = _find(customTabs, (tab) => tab.extensionID === activeFragment) || ({} as CustomTab)
-
-    return (
-      <PanelContainer
-        // @ts-expect-error - onSelect not typed
-        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} data={dataKeys} />}
-        type='ce'
-        activeFragment={activeFragment}
-        setActiveFragment={setActiveFragment}
-        customTabs={customTabs}
-        onExpandClick={() => {}}
-        isCustomContent
-      >
-        {/* Using this instead of dangerouslySetInnerHTML to support script tags */}
-        {tabContent ? <InnerHTML className='absolute overflow-auto' html={tabContent} /> : null}
-      </PanelContainer>
+      </>
     )
   }
 
   return (
     <PanelContainer
-      customTabs={customTabs}
-      // @ts-expect-error - onSelect not typed
-      name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} data={dataKeys} />}
-      type='ce'
-      setActiveFragment={setActiveFragment}
-      activeFragment={activeFragment}
-      onExpandClick={() => setDetailsOpened(true)}
+      name={t('project.metadata')}
+      type='metadata'
+      tabs={tabs}
+      onTabChange={onTabChange}
+      activeTabId={activeTabId}
+      onDetailsClick={() => setDetailsOpened(true)}
     >
-      <table className='table-fixed'>
-        <thead>
-          <tr className='text-gray-900 dark:text-gray-50'>
-            <th
-              className='flex w-4/6 cursor-pointer items-center text-left hover:opacity-90'
-              onClick={() => onSortBy('event')}
-            >
-              {t('project.event')}
-              <Sort
-                className='ml-1'
-                sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
-                sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
-              />
-            </th>
-            <th className='w-1/6 text-right'>
-              <p className='flex cursor-pointer items-center hover:opacity-90' onClick={() => onSortBy('quantity')}>
-                {t('project.quantity')}
-                <Sort
-                  className='ml-1'
-                  sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
-                />
-                &nbsp;&nbsp;
-              </p>
-            </th>
-            <th className='w-1/6 text-right'>
-              <p className='flex cursor-pointer items-center hover:opacity-90' onClick={() => onSortBy('conversion')}>
-                {t('project.conversion')}
-                <Sort
-                  className='ml-1'
-                  sortByAscend={sort.label === 'conversion' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'conversion' ? sort.sortByDescend : null}
-                />
-              </p>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {_map(keysToDisplay, (ev) => (
-            <tr
-              key={ev}
-              className='group cursor-pointer text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
-              onClick={() => {
-                const link = getFilterLink('ev', ev)
-                navigate(link)
-              }}
-            >
-              <td className='flex items-center text-left'>
-                {ev}
-                <FilterIcon
-                  className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
-                  strokeWidth={1.5}
-                />
-                <div className='ml-2 h-4 w-4 group-hover:hidden' />
-              </td>
-              <td className='text-right'>
-                {customsEventsData[ev]}
-                &nbsp;&nbsp;
-              </td>
-              <td className='text-right'>
-                {/*
-                  Added a uniques === 0 check because uniques value may be zero and dividing by zero will cause an
-                  Infinity% value to be displayed.
-                */}
-                {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}%
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {/* for pagination in tabs */}
-      {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL ? (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
-          <div className='mb-2 flex justify-between select-none'>
-            <div>
-              <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
-                {_size(keys)} {t('project.results')}
-              </span>
-              <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
-                . {t('project.page')} {page + 1} / {totalPages}
-              </span>
-            </div>
-            <div className='flex w-[4.5rem] justify-between'>
-              <Button
-                className={cx(
-                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
-                  {
-                    'cursor-not-allowed opacity-50': !canGoPrev(),
-                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
-                  },
-                )}
-                type='button'
-                onClick={onPrevious}
-                disabled={!canGoPrev()}
-                focus={false}
-              >
-                <ArrowLongLeftIcon className='h-5 w-5' />
-              </Button>
-              <Button
-                className={cx(
-                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
-                  {
-                    'cursor-not-allowed opacity-50': !canGoNext(),
-                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
-                  },
-                )}
-                onClick={onNext}
-                disabled={!canGoNext()}
-                type='button'
-                focus={false}
-              >
-                <ArrowLongRightIcon className='h-5 w-5' />
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-      <Modal
-        onClose={onModalClose}
-        isOpened={detailsOpened}
-        title={t('project.customEv')}
-        message={<CustomEventsTable />}
-        size='large'
-      />
+      {renderTabContent()}
     </PanelContainer>
   )
-}
-
-const PageProperties = ({
-  properties,
-  chartData,
-  filters,
-  getPropertyMetadata,
-  setActiveTab,
-  getFilterLink,
-  dataKeys,
-}: PagePropertiesProps) => {
-  const { t } = useTranslation('common')
-  const [page, setPage] = useState(0)
-  const [detailsOpened, setDetailsOpened] = useState(false)
-  const [activeProperties, setActiveProperties] = useState<any>({})
-  const [loadingDetails, setLoadingDetails] = useState<any>({})
-  const [details, setDetails] = useState<any>({})
-  const [processedProperties, setProcessedProperties] = useState<Properties>(properties)
-  const currentIndex = page * ENTRIES_PER_CUSTOM_EVENTS_PANEL
-  const keys = _keys(processedProperties)
-  const keysToDisplay = useMemo(
-    () => _slice(keys, currentIndex, currentIndex + ENTRIES_PER_CUSTOM_EVENTS_PANEL),
-    [keys, currentIndex],
-  )
-  const uniques = _sum(chartData.uniques)
-  const [activeFragment, setActiveFragment] = useState(0)
-  const [triggerTagWhenFiltersChange, setTriggerTagWhenFiltersChange] = useState<string | null>(null)
-  const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
-  const canGoPrev = () => page > 0
-  const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
-  const [sort, setSort] = useState<SortRows>({
-    label: 'quantity',
-    sortByAscend: false,
-    sortByDescend: false,
-  })
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    const sizeKeys = _size(keys)
-
-    if (currentIndex > sizeKeys) {
-      setPage(_floor(sizeKeys / ENTRIES_PER_CUSTOM_EVENTS_PANEL))
-    }
-  }, [currentIndex, keys])
-
-  useEffect(() => {
-    setProcessedProperties(properties)
-    setSort({
-      label: 'quantity',
-      sortByAscend: false,
-      sortByDescend: false,
-    })
-  }, [properties])
-
-  useEffect(() => {
-    setPage(0)
-  }, [chartData])
-
-  const onPrevious = () => {
-    if (canGoPrev()) {
-      setPage(page - 1)
-    }
-  }
-
-  const onNext = () => {
-    if (canGoNext()) {
-      setPage(page + 1)
-    }
-  }
-
-  useEffect(() => {
-    if (!triggerTagWhenFiltersChange) {
-      return
-    }
-
-    togglePropertyDetails(triggerTagWhenFiltersChange)()
-    setTriggerTagWhenFiltersChange(null)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, triggerTagWhenFiltersChange])
-
-  // is "e" is not set, then details loading is forced and all checks are skipped
-  const togglePropertyDetails = (property: string) => async (e?: React.MouseEvent<HTMLTableRowElement>) => {
-    if (e) {
-      e.stopPropagation()
-
-      setActiveProperties((events: any) => ({
-        ...events,
-        [property]: !events[property],
-      }))
-    }
-
-    if (!e || !details[property]) {
-      setLoadingDetails((events: any) => ({
-        ...events,
-        [property]: true,
-      }))
-
-      try {
-        const { result } = await getPropertyMetadata(property)
-        setDetails((metadata: any) => ({
-          ...metadata,
-          [property]: result,
-        }))
-      } catch (reason) {
-        console.error(`[ERROR](togglePropertyDetails) Failed to get metadata for property ${property}`, reason)
-        setDetails((metadata: any) => ({
-          ...metadata,
-          [property]: [],
-        }))
-      }
-
-      setLoadingDetails((events: any) => ({
-        ...events,
-        [property]: false,
-      }))
-    }
-  }
-
-  const onModalClose = () => {
-    setDetailsOpened(false)
-
-    // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => {
-      setActiveProperties({})
-      setDetails({})
-    }, 300)
-  }
-
-  const onSortBy = (label: string) => {
-    const sortByKeys = label === 'event'
-
-    if (sort.sortByAscend) {
-      setProcessedProperties(sortDesc(processedProperties, sortByKeys))
-      setSort({
-        label,
-        sortByAscend: false,
-        sortByDescend: true,
-      })
-      return
-    }
-
-    if (sort.sortByDescend) {
-      setProcessedProperties(properties)
-      setSort({
-        label,
-        sortByAscend: false,
-        sortByDescend: false,
-      })
-      return
-    }
-
-    setProcessedProperties(sortAsc(processedProperties, sortByKeys))
-    setSort({
-      label,
-      sortByAscend: true,
-      sortByDescend: false,
-    })
-  }
-
-  const PropertiesTable = () => (
-    <div className='overflow-y-auto'>
-      <table className='w-full border-separate border-spacing-y-1'>
-        <thead>
-          <tr className='text-base text-gray-900 dark:text-gray-50'>
-            <th
-              className='flex w-2/5 cursor-pointer items-center pl-2 text-left hover:opacity-90 sm:w-4/6'
-              onClick={() => onSortBy('event')}
-            >
-              {t('project.property')}
-              <Sort
-                className='ml-1'
-                sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
-                sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
-              />
-            </th>
-            <th className='w-[30%] sm:w-1/6'>
-              <p
-                className='flex cursor-pointer items-center justify-end hover:opacity-90'
-                onClick={() => onSortBy('quantity')}
-              >
-                {t('project.quantity')}
-                <Sort
-                  className='ml-1'
-                  sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
-                />
-                &nbsp;&nbsp;
-              </p>
-            </th>
-            <th className='w-[30%] pr-2 sm:w-1/6'>
-              <p
-                className='flex cursor-pointer items-center justify-end hover:opacity-90'
-                onClick={() => onSortBy('conversion')}
-              >
-                {t('project.conversion')}
-                <Sort
-                  className='ml-1'
-                  sortByAscend={sort.label === 'conversion' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'conversion' ? sort.sortByDescend : null}
-                />
-              </p>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {_map(keysToDisplay, (tag) => (
-            <Fragment key={tag}>
-              <tr
-                className={cx(
-                  'group cursor-pointer text-base text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700',
-                  {
-                    'animate-pulse bg-gray-100 dark:bg-slate-700': loadingDetails[tag],
-                  },
-                )}
-                onClick={togglePropertyDetails(tag)}
-              >
-                <td className='flex items-center py-1 text-left'>
-                  {loadingDetails[tag] ? (
-                    <Spin className='mr-2 ml-1' />
-                  ) : activeProperties[tag] ? (
-                    <ChevronUpIcon className='h-5 w-auto pr-2 pl-1 text-gray-500 hover:opacity-80 dark:text-gray-300' />
-                  ) : (
-                    <ChevronDownIcon className='h-5 w-auto pr-2 pl-1 text-gray-500 hover:opacity-80 dark:text-gray-300' />
-                  )}
-                  {tag}
-                </td>
-                <td className='py-1 text-right'>
-                  {processedProperties[tag]}
-                  &nbsp;&nbsp;
-                </td>
-                <td className='py-1 pr-2 text-right'>
-                  {uniques === 0 ? 100 : _round((processedProperties[tag] / uniques) * 100, 2)}%
-                </td>
-              </tr>
-              {activeProperties[tag] && !loadingDetails[tag] ? (
-                <tr>
-                  <td className='pl-9' colSpan={3}>
-                    <KVTableContainer
-                      data={details[tag]}
-                      uniques={uniques}
-                      onClick={async (key, value) => {
-                        const link = getFilterLink(`tag:key:${key}`, value)
-                        navigate(link)
-                        setTriggerTagWhenFiltersChange(tag)
-                      }}
-                    />
-                  </td>
-                </tr>
-              ) : null}
-            </Fragment>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-
-  if (_isEmpty(properties)) {
-    return (
-      <PanelContainer
-        // @ts-expect-error - onSelect not typed
-        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.properties')} data={dataKeys} />}
-        type='props'
-        setActiveFragment={setActiveFragment}
-        activeFragment={activeFragment}
-        onExpandClick={() => setDetailsOpened(true)}
-      >
-        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
-      </PanelContainer>
-    )
-  }
-
-  return (
-    <PanelContainer
-      // @ts-expect-error - onSelect not typed
-      name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.properties')} data={dataKeys} />}
-      type='props'
-      setActiveFragment={setActiveFragment}
-      activeFragment={activeFragment}
-      onExpandClick={() => setDetailsOpened(true)}
-    >
-      <table className='table-fixed'>
-        <thead>
-          <tr className='text-gray-900 dark:text-gray-50'>
-            <th
-              className='flex w-4/6 cursor-pointer items-center text-left hover:opacity-90'
-              onClick={() => onSortBy('event')}
-            >
-              {t('project.property')}
-              <Sort
-                className='ml-1'
-                sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
-                sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
-              />
-            </th>
-            <th className='w-1/6 text-right'>
-              <p className='flex cursor-pointer items-center hover:opacity-90' onClick={() => onSortBy('quantity')}>
-                {t('project.quantity')}
-                <Sort
-                  className='ml-1'
-                  sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
-                />
-                &nbsp;&nbsp;
-              </p>
-            </th>
-            <th className='w-1/6 text-right'>
-              <p className='flex cursor-pointer items-center hover:opacity-90' onClick={() => onSortBy('conversion')}>
-                {t('project.conversion')}
-                <Sort
-                  className='ml-1'
-                  sortByAscend={sort.label === 'conversion' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'conversion' ? sort.sortByDescend : null}
-                />
-              </p>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {_map(keysToDisplay, (tag) => (
-            <tr
-              key={tag}
-              className='group cursor-pointer text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
-              onClick={() => {
-                const link = getFilterLink('tag:key', tag)
-                navigate(link)
-              }}
-            >
-              <td className='flex items-center text-left'>
-                {tag}
-                <FilterIcon
-                  className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
-                  strokeWidth={1.5}
-                />
-                <div className='ml-2 h-4 w-4 group-hover:hidden' />
-              </td>
-              <td className='text-right'>
-                {processedProperties[tag]}
-                &nbsp;&nbsp;
-              </td>
-              <td className='text-right'>
-                {/*
-                  Added a uniques === 0 check because uniques value may be zero and dividing by zero will cause an
-                  Infinity% value to be displayed.
-                */}
-                {uniques === 0 ? 100 : _round((processedProperties[tag] / uniques) * 100, 2)}%
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {/* for pagination in tabs */}
-      {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL ? (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
-          <div className='mb-2 flex justify-between select-none'>
-            <div>
-              <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
-                {_size(keys)} {t('project.results')}
-              </span>
-              <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
-                . {t('project.page')} {page + 1} / {totalPages}
-              </span>
-            </div>
-            <div className='flex w-[4.5rem] justify-between'>
-              <Button
-                className={cx(
-                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
-                  {
-                    'cursor-not-allowed opacity-50': !canGoPrev(),
-                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
-                  },
-                )}
-                type='button'
-                onClick={onPrevious}
-                disabled={!canGoPrev()}
-                focus={false}
-              >
-                <ArrowLongLeftIcon className='h-5 w-5' />
-              </Button>
-              <Button
-                className={cx(
-                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
-                  {
-                    'cursor-not-allowed opacity-50': !canGoNext(),
-                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
-                  },
-                )}
-                onClick={onNext}
-                disabled={!canGoNext()}
-                type='button'
-                focus={false}
-              >
-                <ArrowLongRightIcon className='h-5 w-5' />
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-      <Modal
-        onClose={onModalClose}
-        isOpened={detailsOpened}
-        title={t('project.properties')}
-        message={<PropertiesTable />}
-        size='large'
-      />
-    </PanelContainer>
-  )
-}
-
-const Metadata = (props: MetadataProps) => {
-  const [activeTab, setActiveTab] = useState<'customEv' | 'properties'>('customEv')
-
-  const dataKeys = useMemo(() => {
-    return {
-      properties: Object.keys(props.properties || {}),
-      customEv: Object.keys(props.customs || {}),
-    }
-  }, [props.properties, props.customs])
-
-  if (activeTab === 'customEv') {
-    return <CustomEvents {...props} dataKeys={dataKeys} setActiveTab={setActiveTab} />
-  }
-
-  return <PageProperties {...props} dataKeys={dataKeys} setActiveTab={setActiveTab} />
 }
 
 interface FilterWrapperProps {
@@ -1469,7 +827,7 @@ const FilterWrapper = ({ children, as, to, ...props }: FilterWrapperProps) => {
 }
 
 interface PanelProps {
-  name: React.ReactNode
+  name: string
   data: Entry[]
   rowMapper?: (row: any) => React.ReactNode
   valueMapper?: (value: number) => number
@@ -1478,339 +836,498 @@ interface PanelProps {
   icon: any
   id: string
   hideFilters?: boolean
-  customTabs?: CustomTab[]
-  onFragmentChange?: (arg: number) => void
   getFilterLink?: (column: string, value: string) => LinkProps['to']
+  tabs?: Array<
+    | {
+        id: string
+        label: string
+      }
+    | Array<{
+        id: string
+        label: string
+      }>
+  >
+  onTabChange?: (tab: string) => void
+  activeTabId?: string
+  customRenderer?: () => React.ReactNode
+  versionData?: { [key: string]: Entry[] }
+  getVersionFilterLink?: (parent: string, version: string) => LinkProps['to']
+  valuesHeaderName?: string
+  highlightColour?: 'blue' | 'red' | 'orange'
+}
+
+interface DetailsTableProps
+  extends Pick<
+    PanelProps,
+    | 'data'
+    | 'id'
+    | 'valuesHeaderName'
+    | 'activeTabId'
+    | 'capitalize'
+    | 'linkContent'
+    | 'rowMapper'
+    | 'valueMapper'
+    | 'getFilterLink'
+  > {
+  total: number
+  closeDetails: () => void
+}
+
+const DetailsTable = ({
+  data,
+  rowMapper = (row: Entry): React.ReactNode => row.name,
+  valueMapper = (value: number): number => value,
+  capitalize,
+  linkContent,
+  getFilterLink = () => '',
+  id,
+  total,
+  valuesHeaderName,
+  activeTabId,
+  closeDetails,
+}: DetailsTableProps) => {
+  const { t } = useTranslation('common')
+  const { activeTab } = useViewProjectContext()
+  const tnMapping = typeNameMapping(t)
+  const parentRef = useRef<HTMLDivElement>(null)
+  const [search, setSearch] = useState('')
+  const navigate = useNavigate()
+  const [sortedData, setSortedData] = useState(data)
+  const [sort, setSort] = useState<SortRows>({
+    label: 'quantity',
+    sortByAscend: false,
+    sortByDescend: false,
+  })
+  const filteredData = useMemo(() => {
+    if (!search) return sortedData
+    const searchLower = search.toLowerCase()
+    return sortedData.filter((entry) => {
+      const label = entry?.name?.toLowerCase() || ''
+      return label.includes(searchLower)
+    })
+  }, [search, sortedData])
+
+  const rowVirtualizer = useVirtualizer({
+    count: filteredData.length,
+    getScrollElement: () => parentRef.current,
+    overscan: 8,
+    estimateSize: () => 36,
+  })
+
+  const onSortBy = (label: string) => {
+    if (sort.sortByAscend) {
+      const newData = [...sortedData].sort((a, b) => {
+        if (label === 'quantity') return a.count - b.count
+        return b.name.localeCompare(a.name)
+      })
+      setSortedData(newData)
+      setSort({
+        label,
+        sortByAscend: false,
+        sortByDescend: true,
+      })
+      return
+    }
+
+    if (sort.sortByDescend) {
+      setSortedData([...data])
+      setSort({
+        label,
+        sortByAscend: false,
+        sortByDescend: false,
+      })
+      return
+    }
+
+    const newData = [...sortedData].sort((a, b) => {
+      if (label === 'quantity') return b.count - a.count
+      return a.name.localeCompare(b.name)
+    })
+    setSortedData(newData)
+    setSort({
+      label,
+      sortByAscend: true,
+      sortByDescend: false,
+    })
+  }
+
+  useEffect(() => {
+    setSortedData(data)
+    setSort({
+      label: 'quantity',
+      sortByAscend: false,
+      sortByDescend: false,
+    })
+  }, [data])
+
+  return (
+    <div>
+      <div className='mb-2'>
+        <input
+          type='text'
+          placeholder={t('project.search')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className='w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
+        />
+      </div>
+      <div ref={parentRef} className='max-h-[500px] overflow-y-auto'>
+        <table className='w-full border-separate border-spacing-y-1'>
+          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-900'>
+            <tr className='text-base text-gray-900 dark:text-gray-50'>
+              <th
+                className='flex w-2/5 cursor-pointer items-center pl-2 text-left hover:opacity-90 sm:w-4/6'
+                onClick={() => onSortBy('name')}
+              >
+                {tnMapping[activeTabId as keyof typeof tnMapping]}
+                <Sort
+                  className='ml-1'
+                  sortByAscend={sort.label === 'name' ? sort.sortByAscend : null}
+                  sortByDescend={sort.label === 'name' ? sort.sortByDescend : null}
+                />
+              </th>
+              <th className='w-[30%] sm:w-1/6'>
+                <p
+                  className='flex cursor-pointer items-center justify-end hover:opacity-90'
+                  onClick={() => onSortBy('quantity')}
+                >
+                  {valuesHeaderName || t('project.visitors')}
+                  <Sort
+                    className='ml-1'
+                    sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
+                    sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
+                  />
+                  &nbsp;&nbsp;
+                </p>
+              </th>
+              <th className='w-[30%] pr-2 sm:w-1/6'>
+                <p className='flex items-center justify-end'>{t('project.percentage')}</p>
+              </th>
+            </tr>
+          </thead>
+
+          <tbody style={{ position: 'relative', height: `${rowVirtualizer.getTotalSize()}px` }}>
+            {rowVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
+              const entry = filteredData[virtualRow.index]
+              if (!entry) return null
+
+              const { count, name: entryName, ...rest } = entry
+              const perc = _round((count / total) * 100, 2)
+              const rowData = rowMapper(entry)
+              const valueData = valueMapper(count)
+
+              return (
+                <tr
+                  key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    transform: `translateY(${virtualRow.start}px)`,
+                    width: '100%',
+                    display: 'flex',
+                  }}
+                  className='group cursor-pointer text-base text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+                  onClick={() => {
+                    const link = getFilterLink(id, entryName)
+                    if (link) {
+                      navigate(link)
+                      closeDetails()
+                    }
+                  }}
+                >
+                  <td className='flex w-2/5 items-center py-1 pl-2 text-left sm:w-4/6'>
+                    <span
+                      className={cx('flex items-center truncate', {
+                        capitalize,
+                      })}
+                    >
+                      {linkContent ? (
+                        <a
+                          className='text-blue-600 hover:underline dark:text-blue-500'
+                          href={rowData as string}
+                          target='_blank'
+                          rel='noopener noreferrer nofollow'
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {rowData}
+                        </a>
+                      ) : (
+                        rowData
+                      )}
+                    </span>
+                    <FilterIcon
+                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
+                      strokeWidth={1.5}
+                    />
+                    <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                  </td>
+                  <td className='w-[30%] py-1 text-right sm:w-1/6'>
+                    {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
+                    &nbsp;&nbsp;
+                  </td>
+                  <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>{perc}%</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
 }
 
 const Panel = ({
   name,
   data,
-  rowMapper = (row: Entry): string => row.name,
+  rowMapper = (row: Entry): React.ReactNode => row.name,
   valueMapper = (value: number): number => value,
   capitalize,
   linkContent,
   icon,
   id,
   hideFilters,
-  customTabs = [],
-  onFragmentChange = () => {},
   getFilterLink = () => '',
+  tabs,
+  onTabChange,
+  activeTabId,
+  customRenderer,
+  versionData,
+  getVersionFilterLink = () => '',
+  valuesHeaderName,
+  highlightColour = 'blue',
 }: PanelProps) => {
   const { dataLoading, activeTab } = useViewProjectContext()
   const { t } = useTranslation('common')
-  const [page, setPage] = useState(0)
-  const currentIndex = page * ENTRIES_PER_PANEL
   const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
-  const totalPages = _ceil(_size(data) / ENTRIES_PER_PANEL)
-  const entries = useMemo(() => _orderBy(data, 'count', 'desc'), [data])
-  const entriesToDisplay = _slice(entries, currentIndex, currentIndex + ENTRIES_PER_PANEL)
-  const [activeFragment, setActiveFragment] = useState(0)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isReversedUserFlow, setIsReversedUserFlow] = useState(false)
-  const canGoPrev = () => page > 0
-  const canGoNext = () => page < _floor((_size(entries) - 1) / ENTRIES_PER_PANEL)
-  const navigate = useNavigate()
+  const [detailsOpened, setDetailsOpened] = useState(false)
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
-    const sizeKeys = _size(entries)
+  const tnMapping = typeNameMapping(t)
 
-    if (currentIndex > sizeKeys) {
-      setPage(_floor(sizeKeys / ENTRIES_PER_PANEL))
-    }
-  }, [currentIndex, entries])
-
-  useEffect(() => {
-    setPage(0)
+  const entriesToDisplay = useMemo(() => {
+    const orderedData = _orderBy(data, 'count', 'desc')
+    return _slice(orderedData, 0, ENTRIES_PER_PANEL)
   }, [data])
 
-  const onPrevious = () => {
-    if (canGoPrev()) {
-      setPage(page - 1)
-    }
+  const toggleExpanded = (itemName: string) => {
+    setExpandedItems((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(itemName)) {
+        newSet.delete(itemName)
+      } else {
+        newSet.add(itemName)
+      }
+      return newSet
+    })
   }
 
-  const onNext = () => {
-    if (canGoNext()) {
-      setPage(page + 1)
-    }
-  }
-
-  const _setActiveFragment = (index: number) => {
-    setActiveFragment(index)
-
-    if (onFragmentChange) {
-      onFragmentChange(index)
-    }
-  }
-
-  // Showing map of stats a data
-  if ((id === 'cc' || id === 'rg' || id === 'ct') && activeFragment === 1 && !_isEmpty(data)) {
-    return (
-      <PanelContainer
-        name={name}
-        icon={icon}
-        type={id}
-        activeFragment={activeFragment}
-        setActiveFragment={_setActiveFragment}
-        onExpandClick={() => setIsModalOpen(true)}
-        customTabs={customTabs}
-      >
-        <InteractiveMap
-          data={data}
-          total={total}
-          onClickCountry={(key) => {
-            const link = getFilterLink(id, key)
-            navigate(link)
-          }}
-        />
-        <Modal
-          onClose={() => setIsModalOpen(false)}
-          closeText={t('common.close')}
-          isOpened={isModalOpen}
-          message={
-            <InteractiveMap
-              data={data}
-              total={total}
-              onClickCountry={(key) => {
-                const link = getFilterLink(id, key)
-                navigate(link)
-                setIsModalOpen(false)
-              }}
-            />
-          }
-          size='large'
-        />
-      </PanelContainer>
-    )
-  }
-
-  // Showing chart of stats a data
-  if ((id === 'os' || id === 'br' || id === 'dv') && activeFragment === 1 && !_isEmpty(data)) {
-    const tQuantity = t('project.quantity')
-    const tRatio = t('project.ratio')
-    const columns = _map(data, (el) => [el.name, el.count])
-    const values = _map(data, (el) => valueMapper(el.count))
-
-    const options = {
-      data: {
-        columns,
-        type: pie(),
-      },
-      tooltip: {
-        contents: {
-          text: {
-            QUANTITY: values,
-          },
-          template: `
-            <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-700 rounded-md shadow-md px-3 py-1'>
-              {{
-                <li class='flex'>
-                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                  <span>{=NAME}</span>
-                </li>
-                <hr class='border-gray-200 dark:border-slate-600' />
-                <li class='flex justify-between'>
-                  <span>${tQuantity}</span>
-                  <span class='pl-4'>{=QUANTITY}</span>
-                </li>
-                <li class='flex justify-between'>
-                  <span>${tRatio}</span>
-                  <span class='pl-4'>{=VALUE}</span>
-                </li>
-              }}
-            </ul>`,
-        },
-      },
-    }
-
-    return (
-      <PanelContainer
-        name={name}
-        icon={icon}
-        type={id}
-        setActiveFragment={_setActiveFragment}
-        activeFragment={activeFragment}
-        customTabs={customTabs}
-        activeTab={activeTab}
-      >
-        {_isEmpty(data) ? (
-          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
-        ) : (
-          <Chart options={options} current={`Panels-${id}`} />
-        )}
-      </PanelContainer>
-    )
-  }
-
-  // Showing custom tabs (Extensions Marketplace)
-  // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
-  if (!_isEmpty(customTabs) && typeof activeFragment === 'string' && !_isEmpty(data)) {
-    const { tabContent } = _find(customTabs, (tab) => tab.extensionID === activeFragment) || ({} as CustomTab)
-
-    return (
-      <PanelContainer
-        name={name}
-        icon={icon}
-        type={id}
-        activeFragment={activeFragment}
-        setActiveFragment={_setActiveFragment}
-        onExpandClick={() => setIsModalOpen(true)}
-        customTabs={customTabs}
-        activeTab={activeTab}
-        isCustomContent
-      >
-        {/* Using this instead of dangerouslySetInnerHTML to support script tags */}
-        {tabContent ? <InnerHTML className='absolute overflow-auto' html={tabContent} /> : null}
-      </PanelContainer>
-    )
+  const hasVersions = (itemName: string) => {
+    return versionData && versionData[itemName] && versionData[itemName].length > 0
   }
 
   return (
     <PanelContainer
+      onDetailsClick={_size(data) > ENTRIES_PER_PANEL ? () => setDetailsOpened(true) : undefined}
       name={name}
       icon={icon}
       type={id}
-      activeFragment={activeFragment}
-      setActiveFragment={_setActiveFragment}
-      onExpandClick={() => setIsModalOpen(true)}
-      customTabs={customTabs}
-      activeTab={activeTab}
+      tabs={tabs}
+      onTabChange={onTabChange}
+      activeTabId={activeTabId}
     >
-      {_isEmpty(data) ? (
+      {customRenderer ? (
+        customRenderer()
+      ) : _isEmpty(data) ? (
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       ) : (
-        _map(entriesToDisplay, (entry) => {
-          const { count, name: entryName, ...rest } = entry
-          const perc = _round((count / total) * 100, 2)
-          const rowData = rowMapper(entry)
-          const valueData = valueMapper(count)
-
-          const link = getFilterLink(id, entryName)
-
-          return (
-            <Fragment key={`${id}-${entryName}-${Object.values(rest).join('-')}`}>
-              <FilterWrapper
-                as={link ? 'Link' : 'div'}
-                to={link}
-                className={cx('mt-[0.32rem] flex justify-between rounded-sm first:mt-0 dark:text-gray-50', {
-                  'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters && !dataLoading,
-                  'cursor-wait': dataLoading,
-                })}
-              >
-                {linkContent ? (
-                  <a
-                    className={cx(
-                      'scrollbar-thin flex flex-1 items-center overflow-hidden text-clip whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
-                      {
-                        capitalize,
-                      },
-                    )}
-                    href={rowData as string}
-                    target='_blank'
-                    rel='noopener noreferrer nofollow'
-                    aria-label={`${rowData} (opens in a new tab)`}
-                  >
-                    <span className='flex items-center truncate'>{rowData}</span>
-                  </a>
-                ) : (
-                  <span
-                    className={cx(
-                      'scrollbar-thin flex flex-1 items-center overflow-hidden text-clip whitespace-nowrap',
-                      {
-                        capitalize,
-                      },
-                    )}
-                  >
-                    <span className='flex items-center truncate'>{rowData}</span>
-                  </span>
-                )}
-                <div className='flex min-w-fit items-center pl-2'>
-                  <span className='mr-1 hidden text-gray-500 group-hover:inline dark:text-gray-200'>
-                    ({_round((count / total) * 100, 2)}%)
-                  </span>
-                  <span className='dark:text-gray-50'>
-                    {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
-                  </span>
-                </div>
-              </FilterWrapper>
-              <Progress now={perc} />
-            </Fragment>
-          )
-        })
-      )}
-      {/* for pagination in tabs */}
-      {_size(entries) > ENTRIES_PER_PANEL ? (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
-          <div className='mb-2 flex justify-between select-none'>
-            <div>
-              <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
-                {_size(entries)} {t('project.results')}
-              </span>
-              <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
-                . {t('project.page')} {page + 1} / {totalPages}
-              </span>
-            </div>
-            <div className='flex w-[4.5rem] justify-between'>
-              <Button
-                className={cx(
-                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
-                  {
-                    'cursor-not-allowed opacity-50': !canGoPrev(),
-                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
-                  },
-                )}
-                type='button'
-                onClick={onPrevious}
-                disabled={!canGoPrev()}
-                focus={false}
-              >
-                <ArrowLongLeftIcon className='h-5 w-5' />
-              </Button>
-              <Button
-                className={cx(
-                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
-                  {
-                    'cursor-not-allowed opacity-50': !canGoNext(),
-                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
-                  },
-                )}
-                onClick={onNext}
-                disabled={!canGoNext()}
-                type='button'
-                focus={false}
-              >
-                <ArrowLongRightIcon className='h-5 w-5' />
-              </Button>
-            </div>
+        <>
+          <div className='mb-1 flex items-center justify-between px-1 py-1'>
+            <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>
+              {tnMapping[activeTabId as keyof typeof tnMapping]}
+            </span>
+            <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>
+              {valuesHeaderName || t('project.visitors')}
+            </span>
           </div>
-        </div>
-      ) : null}
 
-      {/* PAGE - User flow modal */}
-      {id === 'pg' ? (
-        <Modal
-          onClose={() => setIsModalOpen(false)}
-          closeText={t('common.close')}
-          isOpened={isModalOpen}
-          title={t('project.userFlow.title')}
-          customButtons={
-            <button
-              type='button'
-              onClick={() => setIsReversedUserFlow((prev) => !prev)}
-              className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
-            >
-              {t('project.reverse')}
-            </button>
-          }
-          message={
-            <div className='h-[500px] dark:text-gray-800'>
-              <UserFlow isReversed={isReversedUserFlow} setReversed={() => setIsReversedUserFlow((prev) => !prev)} />
-            </div>
-          }
-          size='large'
-        />
-      ) : null}
+          <div className='space-y-0.5'>
+            {_map(entriesToDisplay, (entry) => {
+              const { count, name: entryName, ...rest } = entry
+              const perc = _round((count / total) * 100, 2)
+              const rowData = rowMapper(entry)
+              const valueData = valueMapper(count)
+              const hasVersionsForItem = hasVersions(entryName)
+              const isExpanded = expandedItems.has(entryName)
+              const versions = versionData?.[entryName] || []
+
+              const link = getFilterLink(id, entryName)
+
+              return (
+                <div key={`${id}-${entryName}-${Object.values(rest).join('-')}`} className='space-y-0.5'>
+                  <div
+                    className={cx(
+                      'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
+                      {
+                        'group hover:bg-gray-50 hover:dark:bg-slate-800':
+                          !hideFilters && !dataLoading && (link || hasVersionsForItem),
+                        'cursor-wait': dataLoading,
+                      },
+                    )}
+                  >
+                    <div
+                      className={cx('absolute inset-0 rounded-sm', {
+                        'bg-blue-50 dark:bg-blue-900/20': highlightColour === 'blue',
+                        'bg-red-50 dark:bg-red-900/20': highlightColour === 'red',
+                        'bg-orange-50 dark:bg-orange-900/20': highlightColour === 'orange',
+                      })}
+                      style={{ width: `${perc}%` }}
+                    />
+
+                    <div className='relative z-10 flex min-w-0 flex-1 items-center'>
+                      {hasVersionsForItem ? (
+                        <button
+                          type='button'
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            toggleExpanded(entryName)
+                          }}
+                          className='mr-1 rounded p-0.5 hover:bg-gray-200 dark:hover:bg-slate-600'
+                          aria-label={isExpanded ? 'Collapse versions' : 'Expand versions'}
+                        >
+                          <ChevronRightIcon
+                            className={cx('h-4 w-4 text-gray-500 transition-transform dark:text-gray-400', {
+                              'rotate-90': isExpanded,
+                            })}
+                          />
+                        </button>
+                      ) : null}
+
+                      <FilterWrapper
+                        as={link ? 'Link' : 'div'}
+                        to={link}
+                        className={cx('flex min-w-0 flex-1 items-center', {
+                          'cursor-pointer': !hideFilters && !dataLoading && link,
+                          'cursor-wait': dataLoading,
+                        })}
+                      >
+                        {linkContent ? (
+                          <a
+                            className={cx(
+                              'flex items-center truncate text-sm text-blue-600 hover:underline dark:text-blue-500',
+                              {
+                                capitalize,
+                              },
+                            )}
+                            href={rowData as string}
+                            target='_blank'
+                            rel='noopener noreferrer nofollow'
+                            aria-label={`${rowData} (opens in a new tab)`}
+                          >
+                            {rowData}
+                          </a>
+                        ) : (
+                          <span
+                            className={cx('flex items-center truncate text-sm text-gray-900 dark:text-gray-100', {
+                              capitalize,
+                            })}
+                          >
+                            {rowData}
+                          </span>
+                        )}
+                      </FilterWrapper>
+                    </div>
+                    <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
+                      <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
+                        ({perc}%)
+                      </span>
+                      <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>
+                        {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
+                      </span>
+                    </div>
+                  </div>
+
+                  {hasVersionsForItem && isExpanded ? (
+                    <div className='ml-6 space-y-0.5'>
+                      {_map(versions, (versionEntry) => {
+                        const versionPerc = _round((versionEntry.count / total) * 100, 2)
+                        const versionValueData = valueMapper(versionEntry.count)
+                        const versionLink = getVersionFilterLink?.(entryName, versionEntry.name)
+
+                        return (
+                          <FilterWrapper
+                            key={`${id}-${entryName}-${versionEntry.name}`}
+                            as={versionLink ? 'Link' : 'div'}
+                            to={versionLink}
+                            className={cx(
+                              'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
+                              {
+                                'group cursor-pointer hover:bg-gray-50 hover:dark:bg-slate-800':
+                                  !hideFilters && !dataLoading && versionLink,
+                                'cursor-wait': dataLoading,
+                              },
+                            )}
+                          >
+                            <div
+                              className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                              style={{ width: `${versionPerc}%` }}
+                            />
+
+                            <div className='relative z-10 flex min-w-0 flex-1 items-center'>
+                              <span
+                                className={cx('flex items-center truncate text-sm text-gray-700 dark:text-gray-200', {
+                                  capitalize,
+                                })}
+                              >
+                                {rowMapper
+                                  ? rowMapper({ ...entry, name: entryName, version: versionEntry.name })
+                                  : `${entryName} ${versionEntry.name}`}
+                              </span>
+                            </div>
+                            <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
+                              <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
+                                ({versionPerc}%)
+                              </span>
+                              <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
+                                {activeTab === PROJECT_TABS.traffic
+                                  ? nFormatter(versionValueData, 1)
+                                  : versionValueData}
+                              </span>
+                            </div>
+                          </FilterWrapper>
+                        )
+                      })}
+                    </div>
+                  ) : null}
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      <Modal
+        onClose={() => setDetailsOpened(false)}
+        closeText={t('common.close')}
+        isOpened={detailsOpened}
+        title={name}
+        message={
+          <DetailsTable
+            id={id}
+            total={total}
+            valuesHeaderName={valuesHeaderName || ''}
+            activeTabId={activeTabId || ''}
+            closeDetails={() => setDetailsOpened(false)}
+            data={data}
+            rowMapper={rowMapper as (row: Entry) => string}
+            valueMapper={valueMapper}
+            capitalize={capitalize || false}
+            linkContent={linkContent || false}
+            getFilterLink={getFilterLink as (id: string, name: string) => string}
+          />
+        }
+        size='large'
+      />
     </PanelContainer>
   )
 }
@@ -1910,7 +1427,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
 
   return (
     <div className='col-span-full'>
-      <PanelContainer name={t('project.metadata')} type='metadata' noSwitch>
+      <PanelContainer name={t('project.metadata')} type='metadata'>
         <div className='overflow-y-auto'>
           <table className='w-full border-separate border-spacing-y-1'>
             <thead>
@@ -1962,11 +1479,11 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                   className='text-sm text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
                 >
                   <td className='py-1 pl-2 text-left'>{key}</td>
-                  <td className='py-1 text-right'>
+                  <td className='w-[30%] py-1 text-right sm:w-1/6'>
                     {value}
                     &nbsp;&nbsp;
                   </td>
-                  <td className='py-1 pr-2 text-right'>{count}</td>
+                  <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>{count}</td>
                 </tr>
               ))}
             </tbody>

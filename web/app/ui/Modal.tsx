@@ -16,7 +16,7 @@ import Spin from './icons/Spin'
 interface ModalProps {
   className?: string
   type?: 'error' | 'success' | 'info' | 'warning' | 'confirmed'
-  title?: string
+  title?: React.ReactNode
   message: React.ReactNode | string
   isOpened: boolean
   onClose: () => void

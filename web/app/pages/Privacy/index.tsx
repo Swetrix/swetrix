@@ -49,7 +49,7 @@ const serviceProviders: {
 const Features = () => {
   return (
     <div className='bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto w-11/12 px-4 pt-12 pb-16 sm:px-6 md:w-4/5 lg:px-8'>
+      <div className='mx-auto px-4 pt-12 pb-16 sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>Privacy Policy</h1>
         <p className='text-md mt-4 text-gray-900 dark:text-gray-50'>
           This Swetrix Privacy Policy (“Policy”, "Privacy Policy") outlines the personal information that we gather, how
@@ -138,7 +138,7 @@ const Features = () => {
           other information about the traffic on our Customers websites, devices, applications, and/or networks
           (collectively, “Log Data”). You can find more information on the data collected and how we process it{' '}
           <a
-            className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+            className='text-indigo-600 hover:underline dark:text-indigo-400'
             href={`${DOCS_URL}/swetrix-js-reference#trackviews`}
             target='_blank'
             rel='noreferrer noopener'
@@ -214,7 +214,7 @@ const Features = () => {
           use your personal information, please contact us at&nbsp;
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+            className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
           >
             {CONTACT_EMAIL}
           </a>
@@ -373,7 +373,7 @@ const Features = () => {
           please contact us via email at&nbsp;
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+            className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
           >
             {CONTACT_EMAIL}
           </a>
@@ -391,7 +391,7 @@ const Features = () => {
           account settings if you have a Swetrix account, or you may send a request to&nbsp;
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+            className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
           >
             {CONTACT_EMAIL}
           </a>
@@ -407,7 +407,7 @@ const Features = () => {
           you can contact us at&nbsp;
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+            className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
           >
             {SECURITY_EMAIL}
           </a>
@@ -434,7 +434,7 @@ const Features = () => {
           If you have any questions about this Privacy Policy, you can contact us by email at&nbsp;
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+            className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
           >
             {CONTACT_EMAIL}
           </a>

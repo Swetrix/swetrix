@@ -3,7 +3,7 @@ import { CONTACT_EMAIL } from '~/lib/constants'
 const Terms = () => {
   return (
     <div className='bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto w-11/12 px-4 pt-12 pb-16 sm:px-6 md:w-4/5 lg:px-8'>
+      <div className='mx-auto px-4 pt-12 pb-16 sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>Swetrix Terms and Conditions</h1>
         <p className='text-md mt-4 text-gray-900 dark:text-gray-50'>
           These Swetrix Terms and Conditions ("Terms", "Terms and Conditions") govern your relationship with swetrix.com
@@ -11,7 +11,7 @@ const Terms = () => {
           in Edinburgh, the United Kingdom, company number{' '}
           <a
             href='https://find-and-update.company-information.service.gov.uk/company/SC797389'
-            className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+            className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
             target='_blank'
             rel='noreferrer'
           >
@@ -274,7 +274,7 @@ const Terms = () => {
           If you have any questions you can contact us by sending us an email at&nbsp;
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+            className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
           >
             {CONTACT_EMAIL}
           </a>
