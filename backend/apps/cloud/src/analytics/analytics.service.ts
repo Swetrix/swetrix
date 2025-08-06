@@ -1511,9 +1511,11 @@ export class AnalyticsService {
         }
 
         const periodSubtracted = dayjs
-          .utc(groupToUTC)
+          .utc(groupFromUTC)
           .subtract(
-            dayjs.utc(groupFromUTC).diff(dayjs.utc(groupToUTC), 'minutes'),
+            Math.abs(
+              dayjs.utc(groupFromUTC).diff(dayjs.utc(groupToUTC), 'minutes'),
+            ),
             'minutes',
           )
           .format('YYYY-MM-DD HH:mm:ss')
