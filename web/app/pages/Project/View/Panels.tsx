@@ -165,7 +165,7 @@ const PanelContainer = ({
       className={cx(
         'overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pt-5 pb-3 dark:border-slate-800/60 dark:bg-slate-800/25',
         {
-          'col-span-2': type === 'metadata',
+          'col-span-full sm:col-span-2': type === 'metadata',
         },
       )}
     >
