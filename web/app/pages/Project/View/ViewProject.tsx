@@ -235,15 +235,29 @@ interface ViewProjectContextType {
   refCalendar: React.MutableRefObject<any>
 }
 
-export const ViewProjectContext = createContext<ViewProjectContextType | undefined>(undefined)
+const defaultViewProjectContext: ViewProjectContextType = {
+  timezone: DEFAULT_TIMEZONE,
+  dateRange: null,
+  isLoading: false,
+  timeBucket: '',
+  period: '7d',
+  activePeriod: undefined,
+  periodPairs: [],
+  timeFormat: TimeFormat['12-hour'],
+  size: { width: 0, height: 0 } as any,
+  dataLoading: false,
+  activeTab: PROJECT_TABS.traffic,
+  filters: [],
+  customPanelTabs: [],
+  updatePeriod: () => {},
+  updateTimebucket: (_newTimebucket) => {},
+  refCalendar: { current: null } as any,
+}
+
+export const ViewProjectContext = createContext<ViewProjectContextType>(defaultViewProjectContext)
 
 export const useViewProjectContext = () => {
   const context = useContext(ViewProjectContext)
-
-  if (context === undefined) {
-    throw new Error('useViewProjectContext must be used within a ViewProjectContextProvider')
-  }
-
   return context
 }
 
