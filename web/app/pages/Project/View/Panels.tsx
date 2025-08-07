@@ -1176,7 +1176,7 @@ const Panel = ({
                   >
                     <div
                       className={cx('absolute inset-0 rounded-sm', {
-                        'bg-blue-50 dark:bg-blue-900/20': highlightColour === 'blue',
+                        'bg-blue-50 dark:bg-blue-900/30': highlightColour === 'blue',
                         'bg-red-50 dark:bg-red-900/20': highlightColour === 'red',
                         'bg-orange-50 dark:bg-orange-900/20': highlightColour === 'orange',
                       })}
