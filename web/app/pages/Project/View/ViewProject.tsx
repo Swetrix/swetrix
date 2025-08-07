@@ -3645,7 +3645,7 @@ const ViewProject = () => {
                 {activeTab === PROJECT_TABS.traffic ? (
                   <div className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}>
                     <div className='relative overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
-                      <div className='absolute top-2 right-2 flex items-center gap-2'>
+                      <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
                         <Dropdown
                           header={t('project.metricVis')}
                           items={
@@ -4013,7 +4013,7 @@ const ViewProject = () => {
                 {activeTab === PROJECT_TABS.performance ? (
                   <div className={cx('pt-2', { hidden: isPanelsDataEmptyPerf || analyticsLoading })}>
                     <div className='relative overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
-                      <div className='absolute top-2 right-2 flex items-center gap-2'>
+                      <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
                         <Dropdown
                           items={chartMetricsPerf}
                           className='xs:min-w-0'
