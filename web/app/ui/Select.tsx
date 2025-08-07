@@ -81,7 +81,7 @@ function Select<T>({
             >
               <ListboxOptions
                 static
-                className='absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-gray-50 py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-800'
+                className='absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md bg-gray-50 py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-800'
               >
                 {_map(items, (item, index) => (
                   <ListboxOption
