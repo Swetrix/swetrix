@@ -3220,21 +3220,6 @@ const ViewProject = () => {
                           <ChevronLeftIcon className='mr-1 size-3' />
                           {t('project.backToFunnels')}
                         </Link>
-                        <button
-                          type='button'
-                          title={t('project.refreshStats')}
-                          onClick={refreshStats}
-                          className={cx(
-                            'flex items-center text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
-                            {
-                              'cursor-not-allowed': authLoading || dataLoading,
-                            },
-                          )}
-                          disabled={authLoading || dataLoading}
-                        >
-                          <RotateCw className='mr-1 size-4' />
-                          {t('project.refresh')}
-                        </button>
                       </div>
                     ) : null}
                   </>
@@ -3425,21 +3410,6 @@ const ViewProject = () => {
                         <ChevronLeftIcon className='mr-1 size-3' />
                         {t('project.backToErrors')}
                       </Link>
-                      <button
-                        type='button'
-                        title={t('project.refreshStats')}
-                        onClick={refreshStats}
-                        className={cx(
-                          'flex items-center text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
-                          {
-                            'cursor-not-allowed': authLoading || dataLoading || errorLoading,
-                          },
-                        )}
-                        disabled={authLoading || dataLoading || errorLoading}
-                      >
-                        <RotateCw className='mr-1 size-4' />
-                        {t('project.refresh')}
-                      </button>
                     </div>
                     {activeError?.details ? <ErrorDetails details={activeError.details} /> : null}
                     {activeError?.chart ? (
