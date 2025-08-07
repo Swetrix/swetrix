@@ -149,7 +149,6 @@ const LanguageSelector = () => {
         changeLanguage(lng)
       }}
       headless
-      menuItemsClassName='left-1/2 -translate-x-1/2 origin-bottom'
       className='w-full sm:w-auto'
     />
   )

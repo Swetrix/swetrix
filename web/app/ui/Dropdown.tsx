@@ -104,12 +104,12 @@ function Dropdown<T>({
           >
             <MenuItems
               static
+              anchor={{
+                to: position === 'down' ? 'bottom end' : 'top end',
+                offset: 8,
+              }}
               className={cn(
-                'absolute right-0 z-50 w-40 min-w-max rounded-md bg-gray-50 p-1 ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-800',
-                {
-                  'mt-2 origin-top-right': position === 'down',
-                  'bottom-full mb-2 origin-bottom-right': position === 'up',
-                },
+                'z-50 w-40 min-w-max rounded-md bg-gray-50 p-1 ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-800',
                 menuItemsClassName,
               )}
             >

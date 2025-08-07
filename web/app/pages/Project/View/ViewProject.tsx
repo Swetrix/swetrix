@@ -4286,7 +4286,6 @@ const ViewProject = () => {
                           changeLanguage(lng)
                         }}
                         headless
-                        menuItemsClassName='left-1/2 -translate-x-1/2 origin-bottom'
                       />
                       <div className='flex items-center gap-4'>
                         <button type='button'>
