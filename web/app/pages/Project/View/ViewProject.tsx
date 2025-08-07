@@ -3755,8 +3755,6 @@ const ViewProject = () => {
                               const rowMapper = (entry: CountryEntry) => {
                                 const { name: entryName, cc } = entry
 
-                                console.log('entry:', entry)
-
                                 if (panelsActiveTabs.location === 'lc') {
                                   if (entryName === null) {
                                     return <CCRow cc={null} language={language} />
