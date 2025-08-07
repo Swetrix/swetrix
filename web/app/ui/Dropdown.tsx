@@ -74,7 +74,7 @@ function Dropdown<T>({
             <span>{title}</span>
             {chevron === 'regular' ? (
               <ChevronDownIcon
-                className={cn('-mr-1 ml-2 h-5 w-5 transform-gpu transition-transform', {
+                className={cn('ml-2 h-5 w-5 transform-gpu transition-transform', {
                   'group-hover:text-slate-500 dark:group-hover:text-slate-400': headless,
                   'rotate-180': open,
                 })}
@@ -83,7 +83,7 @@ function Dropdown<T>({
             ) : null}
             {chevron === 'mini' ? (
               <ChevronDownIconMini
-                className={cn('-mr-1 ml-1 h-5 w-5 transform-gpu transition-transform', {
+                className={cn('ml-1 h-5 w-5 transform-gpu transition-transform', {
                   'group-hover:text-slate-500 dark:group-hover:text-slate-400': headless,
                   'rotate-180': open,
                 })}
@@ -103,7 +103,6 @@ function Dropdown<T>({
             leaveTo='transform opacity-0 scale-95'
           >
             <MenuItems
-              static
               anchor={{
                 to: position === 'down' ? 'bottom end' : 'top end',
                 offset: 8,
