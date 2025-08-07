@@ -675,6 +675,7 @@ export const getSession = (pid: string, psid: string, timezone = '', password: s
 export const getError = (
   pid: string,
   eid: string,
+  timeBucket = 'hour',
   period = '7d',
   filters: any[] = [],
   from = '',
@@ -684,7 +685,9 @@ export const getError = (
 ) =>
   api
     .get(
-      `log/get-error?pid=${pid}&eid=${eid}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      `log/get-error?pid=${pid}&eid=${eid}&timeBucket=${timeBucket}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&from=${from}&to=${to}&timezone=${timezone}`,
       {
         headers: {
           'x-password': password,

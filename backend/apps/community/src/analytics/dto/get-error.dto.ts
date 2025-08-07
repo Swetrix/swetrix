@@ -5,6 +5,7 @@ import { GetDataDto } from './getData.dto'
 export class GetErrorDto extends PickType(GetDataDto, [
   'pid',
   'period',
+  'timeBucket',
   'from',
   'to',
   'timezone',

@@ -1587,6 +1587,7 @@ export class AnalyticsController {
       period,
       from,
       to,
+      timeBucket,
       //
     } = data
 
@@ -1596,7 +1597,7 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    let timeBucket
+    let newTimeBucket = timeBucket
     let diff
 
     if (period === 'all') {
@@ -1605,17 +1606,15 @@ export class AnalyticsController {
         'errors',
       )
 
-      timeBucket = res.timeBucket[0]
+      newTimeBucket = res.timeBucket[0]
       diff = res.diff
-    } else {
-      timeBucket = getLowestPossibleTimeBucket(period, from, to)
     }
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
       from,
       to,
-      timeBucket,
+      newTimeBucket,
       period,
       safeTimezone,
       diff,
@@ -1627,7 +1626,7 @@ export class AnalyticsController {
       safeTimezone,
       groupFromUTC,
       groupToUTC,
-      timeBucket,
+      newTimeBucket,
     )
 
     return result

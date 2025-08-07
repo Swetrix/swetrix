@@ -1594,9 +1594,9 @@ const ViewProject = () => {
         }
 
         if (period === 'custom' && dateRange) {
-          error = await getError(id, eid, '', filters, from, to, timezone, projectPassword)
+          error = await getError(id, eid, timeBucket, '', filters, from, to, timezone, projectPassword)
         } else {
-          error = await getError(id, eid, period, filters, '', '', timezone, projectPassword)
+          error = await getError(id, eid, timeBucket, period, filters, '', '', timezone, projectPassword)
         }
 
         setActiveError(error)
@@ -1614,7 +1614,7 @@ const ViewProject = () => {
       }
       setErrorLoading(false)
     },
-    [dateRange, id, period, projectPassword, timezone, filters],
+    [dateRange, id, period, timeBucket, projectPassword, timezone, filters],
   )
 
   const loadSession = async (psid: string) => {
