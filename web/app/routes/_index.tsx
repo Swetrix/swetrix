@@ -232,20 +232,14 @@ const WeAreOpensource = () => {
 
   return (
     <section className='mx-auto flex w-full max-w-7xl flex-col-reverse items-center justify-between px-5 py-20 lg:flex-row lg:py-32'>
-      <picture>
-        <source
-          srcSet={theme === 'dark' ? '/assets/opensource_dark.webp' : '/assets/opensource_light.webp'}
-          type='image/webp'
-        />
-        <img
-          className='rounded-xl ring-1 ring-gray-900/10 dark:ring-white/10'
-          width='576'
-          height='406'
-          src={theme === 'dark' ? '/assets/opensource_dark.png' : '/assets/opensource_light.png'}
-          loading='lazy'
-          alt='Swetrix open source'
-        />
-      </picture>
+      <img
+        className='rounded-xl ring-1 ring-gray-900/10 dark:ring-white/10'
+        width='576'
+        height='406'
+        src={theme === 'dark' ? '/assets/opensource_dark.png' : '/assets/opensource_light.png'}
+        loading='lazy'
+        alt='Swetrix open source'
+      />
       <div className='w-full max-w-lg lg:ml-5'>
         <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>
           <Trans
@@ -384,20 +378,13 @@ const LiveDemo = () => {
   if (isMobile) {
     return (
       <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
-        <picture>
-          <source
-            srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'}
-            type='image/webp'
-          />
-
-          <img
-            src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-            className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
-            width='100%'
-            height='auto'
-            alt='Swetrix Analytics dashboard'
-          />
-        </picture>
+        <img
+          src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
+          className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
+          width='100%'
+          height='auto'
+          alt='Swetrix Analytics dashboard'
+        />
       </div>
     )
   }

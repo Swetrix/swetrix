@@ -9,20 +9,20 @@
     },
     {
       "src": "logo192.png",
-      "type": "image/webp",
+      "type": "image/png",
       "sizes": "192x192"
     },
     {
       "src": "logo512.png",
-      "type": "image/webp",
+      "type": "image/png",
       "sizes": "512x512"
     }
   ],
   "screenshots": [
     {
-      "src": "assets/screenshot_dark.webp",
+      "src": "assets/screenshot_dark.png",
       "sizes": "2212x1566",
-      "type": "image/webp"
+      "type": "image/png"
     }
   ],
   "start_url": ".",

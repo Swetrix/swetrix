@@ -208,37 +208,23 @@ const Performance = () => {
               </div>
               <div className='hidden max-w-md lg:block xl:max-w-lg'>
                 <Lines />
-                <picture>
-                  <source
-                    srcSet={
-                      theme === 'dark' ? '/assets/screenshot_perf_dark.webp' : '/assets/screenshot_perf_light.webp'
-                    }
-                    type='image/webp'
-                  />
-                  <img
-                    src={theme === 'dark' ? '/assets/screenshot_perf_dark.png' : '/assets/screenshot_perf_light.png'}
-                    className='relative h-full min-w-[880px] rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
-                    width='100%'
-                    height='auto'
-                    alt='Swetrix Analytics dashboard'
-                  />
-                </picture>
-              </div>
-            </div>
-            <div className='relative z-20 my-10 block px-4 md:px-0 lg:hidden'>
-              <picture>
-                <source
-                  srcSet={theme === 'dark' ? '/assets/screenshot_perf_dark.webp' : '/assets/screenshot_perf_light.webp'}
-                  type='image/webp'
-                />
                 <img
                   src={theme === 'dark' ? '/assets/screenshot_perf_dark.png' : '/assets/screenshot_perf_light.png'}
-                  className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
+                  className='relative h-full min-w-[880px] rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
                   width='100%'
                   height='auto'
                   alt='Swetrix Analytics dashboard'
                 />
-              </picture>
+              </div>
+            </div>
+            <div className='relative z-20 my-10 block px-4 md:px-0 lg:hidden'>
+              <img
+                src={theme === 'dark' ? '/assets/screenshot_perf_dark.png' : '/assets/screenshot_perf_light.png'}
+                className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
+                width='100%'
+                height='auto'
+                alt='Swetrix Analytics dashboard'
+              />
             </div>
           </div>
         </div>
