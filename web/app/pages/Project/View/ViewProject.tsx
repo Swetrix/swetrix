@@ -2441,7 +2441,20 @@ const ViewProject = () => {
     setSearchParams(newSearchParams)
   }
 
+  // Detect touch-capable devices (mobile/tablets) to avoid accidental zoom while scrolling
+  const isTouchDevice = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    const hasTouchEvent = 'ontouchstart' in window
+    const hasMaxTouchPoints = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0
+    const coarsePointer = window.matchMedia ? window.matchMedia('(pointer: coarse)').matches : false
+    return hasTouchEvent || hasMaxTouchPoints || coarsePointer
+  }, [])
+
   const shouldEnableZoom = useMemo(() => {
+    if (isTouchDevice) {
+      return false
+    }
+
     if (period !== 'custom' || !dateRange) {
       return true
     }
@@ -2449,7 +2462,7 @@ const ViewProject = () => {
     // Enable zoom only if the range is more than 1 day
     const daysDiff = Math.ceil((dateRange[1].getTime() - dateRange[0].getTime()) / (1000 * 3600 * 24))
     return daysDiff > 1
-  }, [period, dateRange])
+  }, [period, dateRange, isTouchDevice])
 
   const getFilterLink = (column: string, value: string): LinkProps['to'] => {
     const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0

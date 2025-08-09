@@ -50,7 +50,7 @@ const Modal = ({
   submitDisabled,
   overflowVisible,
 }: ModalProps) => (
-  <Dialog className={cx('relative z-10', className)} open={isOpened} onClose={onClose}>
+  <Dialog className={cx('relative z-40', className)} open={isOpened} onClose={onClose}>
     <DialogBackdrop
       transition
       className='fixed inset-0 bg-gray-500/75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in'
