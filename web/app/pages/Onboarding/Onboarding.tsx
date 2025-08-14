@@ -182,13 +182,13 @@ const Onboarding = () => {
     }
   }
 
-  const handleCompleteOnboarding = async () => {
+  const handleCompleteOnboarding = async (skipped = false) => {
     try {
       await completeOnboarding()
       await loadUser()
 
       trackCustom('ONBOARDING_COMPLETED', {
-        skipped: !hasEvents,
+        skipped,
       })
 
       navigate(routes.dashboard)
@@ -316,7 +316,7 @@ const Onboarding = () => {
             <div className='mt-8 border-t border-gray-200 pt-8 dark:border-slate-700'>
               <button
                 type='button'
-                onClick={handleCompleteOnboarding}
+                onClick={() => handleCompleteOnboarding(true)}
                 className='flex items-center text-sm text-gray-800 hover:underline dark:text-gray-200'
               >
                 {t('onboarding.skipOnboarding')}
