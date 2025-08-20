@@ -630,7 +630,7 @@ const getSettings = (
       },
     },
     transition: {
-      duration: 500,
+      duration: 200,
     },
     resize: {
       auto: true,
@@ -911,7 +911,7 @@ const getSettingsSession = (
       },
     },
     transition: {
-      duration: 500,
+      duration: 200,
     },
     resize: {
       auto: true,
@@ -1052,7 +1052,7 @@ const getSettingsError = (
       },
     },
     transition: {
-      duration: 500,
+      duration: 200,
     },
     resize: {
       auto: true,
@@ -1169,7 +1169,7 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
       },
     },
     transition: {
-      duration: 500,
+      duration: 200,
     },
     resize: {
       auto: true,
@@ -1414,7 +1414,7 @@ const getSettingsPerf = (
       },
     },
     transition: {
-      duration: 500,
+      duration: 200,
     },
     resize: {
       auto: true,
