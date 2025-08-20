@@ -352,7 +352,6 @@ export const DOCS_URL = 'https://docs.swetrix.com'
 export const INTEGRATIONS_URL = 'https://docs.swetrix.com/integrations'
 export const ERROR_TRACKING_DOCS_URL = 'https://docs.swetrix.com/error-tracking'
 export const CAPTCHA_URL = 'https://captcha.swetrix.com'
-export const DOCS_CAPTCHA_URL = `${DOCS_URL}/captcha/introduction`
 export const DOCS_REFERRAL_PROGRAM_URL = `${DOCS_URL}/affiliate/about`
 
 // Swetrix vs ...
