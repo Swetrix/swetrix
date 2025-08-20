@@ -51,7 +51,7 @@ export const Filter = ({
     displayFilter = countries.getName(filter, language) as string
   }
 
-  if (column === 'pg') {
+  if (column === 'pg' || column === 'entryPage' || column === 'exitPage') {
     displayFilter = filter || t('common.notSet')
   }
 

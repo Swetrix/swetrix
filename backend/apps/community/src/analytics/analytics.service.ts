@@ -877,6 +877,14 @@ export class AnalyticsService {
     let parsed = []
     let query = ''
     let customEVFilterApplied = false
+    // Collect special filters that require session-level derivations
+    const entryExitFilters: Record<
+      'entryPage' | 'exitPage',
+      Array<{ filter: string | null; isExclusive: boolean }>
+    > = {
+      entryPage: [],
+      exitPage: [],
+    }
 
     if (_isEmpty(filters)) {
       return [query, params, parsed, customEVFilterApplied]
@@ -910,6 +918,18 @@ export class AnalyticsService {
         const { column, filter, isExclusive = false } = curr
 
         if (column === 'ev' && ignoreEV) {
+          return prev
+        }
+
+        // Handle entry/exit page filters separately (session-level aggregation)
+        if (column === 'entryPage' || column === 'exitPage') {
+          if (_isArray(filter)) {
+            for (const f of filter) {
+              entryExitFilters[column].push({ filter: f, isExclusive })
+            }
+          } else {
+            entryExitFilters[column].push({ filter, isExclusive })
+          }
           return prev
         }
 
@@ -1024,6 +1044,66 @@ export class AnalyticsService {
           : `${isExclusive ? 'NOT ' : ''}${sqlColumn} = {${param}:String}`
       }
 
+      query += ')'
+    }
+
+    // Preserve current filters query before appending entry/exit page filters
+    const baseFiltersQuery = query
+
+    // Helper to build subquery condition for entry/exit page filters
+    const buildEntryExitCondition = (
+      kind: 'entryPage' | 'exitPage',
+      filterValue: string | null,
+      isExclusive: boolean,
+      idx: number,
+    ): string => {
+      const alias = kind === 'entryPage' ? 'entry_page' : 'exit_page'
+      let fn: string
+      if (kind === 'entryPage') {
+        fn = 'argMin(pg, created)'
+      } else {
+        fn = 'argMax(pg, created)'
+      }
+
+      if (filterValue === null) {
+        // Null handling
+        if (isExclusive) {
+          return `psid IN (SELECT psid FROM (SELECT psid, ${fn} AS ${alias} FROM analytics WHERE pid = {pid:FixedString(12)} ${baseFiltersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY psid) WHERE ${alias} IS NOT NULL)`
+        }
+
+        return `psid IN (SELECT psid FROM (SELECT psid, ${fn} AS ${alias} FROM analytics WHERE pid = {pid:FixedString(12)} ${baseFiltersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY psid) WHERE ${alias} IS NULL)`
+      }
+
+      const p = `qf_${kind}_${idx}`
+      ;(params as any)[p] = filterValue
+
+      const comparison = `${alias} = {${p}:String}`
+      if (isExclusive) {
+        return `psid NOT IN (SELECT psid FROM (SELECT psid, ${fn} AS ${alias} FROM analytics WHERE pid = {pid:FixedString(12)} ${baseFiltersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY psid) WHERE ${comparison})`
+      }
+
+      return `psid IN (SELECT psid FROM (SELECT psid, ${fn} AS ${alias} FROM analytics WHERE pid = {pid:FixedString(12)} ${baseFiltersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY psid) WHERE ${comparison})`
+    }
+
+    // Append entryPage filters if any
+    if (_size(entryExitFilters.entryPage)) {
+      query += ' AND ('
+      for (let i = 0; i < _size(entryExitFilters.entryPage); ++i) {
+        if (i > 0) query += ' OR '
+        const { filter, isExclusive } = entryExitFilters.entryPage[i]
+        query += buildEntryExitCondition('entryPage', filter, isExclusive, i)
+      }
+      query += ')'
+    }
+
+    // Append exitPage filters if any
+    if (_size(entryExitFilters.exitPage)) {
+      query += ' AND ('
+      for (let i = 0; i < _size(entryExitFilters.exitPage); ++i) {
+        if (i > 0) query += ' OR '
+        const { filter, isExclusive } = entryExitFilters.exitPage[i]
+        query += buildEntryExitCondition('exitPage', filter, isExclusive, i)
+      }
       query += ')'
     }
 
@@ -1703,6 +1783,38 @@ export class AnalyticsService {
     if (type === 'ev') {
       query =
         'SELECT ev FROM customEV WHERE pid={pid:FixedString(12)} AND ev IS NOT NULL GROUP BY ev'
+    } else if (type === 'entryPage') {
+      query = `
+        WITH session_first_pages AS (
+          SELECT 
+            psid,
+            argMin(pg, created) as entry_page
+          FROM analytics
+          WHERE pid = {pid:FixedString(12)}
+          GROUP BY psid
+        )
+        SELECT
+          entry_page as entryPage
+        FROM session_first_pages
+        WHERE entry_page IS NOT NULL
+        GROUP BY entry_page
+      `
+    } else if (type === 'exitPage') {
+      query = `
+        WITH session_last_pages AS (
+          SELECT 
+            psid,
+            argMax(pg, created) as exit_page
+          FROM analytics
+          WHERE pid = {pid:FixedString(12)}
+          GROUP BY psid
+        )
+        SELECT
+          exit_page as exitPage
+        FROM session_last_pages
+        WHERE exit_page IS NOT NULL
+        GROUP BY exit_page
+      `
     }
 
     const { data } = await clickhouse

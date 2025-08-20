@@ -21,6 +21,8 @@ const validFilters = [
   'rg',
   'ct',
   'pg',
+  'entryPage',
+  'exitPage',
   'lc',
   'ref',
   'dv',

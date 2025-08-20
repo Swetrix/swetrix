@@ -1533,6 +1533,8 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   rg: t('project.mapping.rg'),
   ct: t('project.mapping.ct'),
   pg: t('project.mapping.pg'),
+  entryPage: t('project.mapping.entryPage'),
+  exitPage: t('project.mapping.exitPage'),
   lc: t('project.mapping.lc'),
   ref: t('project.mapping.ref'),
   dv: t('project.mapping.dv'),
