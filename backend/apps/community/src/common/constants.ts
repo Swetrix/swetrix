@@ -104,7 +104,7 @@ const ERROR_COLUMNS = [
   'ct',
 ]
 
-const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
+const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev', 'entryPage', 'exitPage']
 
 const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'host', 'pg', 'dv', 'br', 'brv']
 
