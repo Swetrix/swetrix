@@ -175,12 +175,6 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
       }
       break
 
-    case routes.changelog:
-      result = {
-        title: t('titles.changelog'),
-      }
-      break
-
     case routes.about:
       result = {
         title: 'About us',

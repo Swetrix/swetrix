@@ -40,7 +40,6 @@ const ABOUT_US_URL = `https://swetrix.com${routesPath.about}`
 const navigation = {
   company: [
     { key: 'about', href: routesPath.about, internal: true },
-    { key: 'changelog', href: routesPath.changelog, internal: true },
     { key: 'open', href: routesPath.open, internal: true },
     { key: 'status', href: STATUSPAGE_URL },
     { key: 'blog', href: routesPath.blog, internal: true },
