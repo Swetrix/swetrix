@@ -357,6 +357,7 @@ const ViewProject = () => {
   // @ts-expect-error
   const [chartData, setChartData] = useState<TrafficLogResponse['chart'] & { [key: string]: number[] }>({})
   const [mainChart, setMainChart] = useState<Chart | null>(null)
+  const prevY2NeededRef = useRef<boolean>(false)
   const [dataLoading, setDataLoading] = useState(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
@@ -1264,6 +1265,18 @@ const ViewProject = () => {
         customEvents: events,
       })
 
+      // If no actual series selected (only trendlines without base series), skip rendering
+      const prospectiveColumns = getColumns(chartData as any, activeChartMetrics, dataChartCompare as any)
+      if (prospectiveColumns.length <= 1 && _isEmpty(customEventsChartData)) {
+        try {
+          mainChart?.destroy()
+        } catch {
+          /* ignore */
+        }
+        setMainChart(null)
+        return
+      }
+
       const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
       const bbSettings = getSettings(
         chartData,
@@ -1278,11 +1291,20 @@ const ViewProject = () => {
         onMainChartZoom,
         shouldEnableZoom,
       )
-      setMainChart(() => {
-        const generate = billboard.generate(bbSettings)
-        generate.data.names(dataNames)
-        return generate
-      })
+      if (checkIfAllMetricsAreDisabled) {
+        try {
+          mainChart?.destroy()
+        } catch {
+          /* ignore destroy errors */
+        }
+        setMainChart(null)
+      } else {
+        setMainChart(() => {
+          const generate = billboard.generate(bbSettings)
+          generate.data.names(dataNames)
+          return generate
+        })
+      }
     } catch (reason) {
       console.error('[ERROR] Failed to load custom events:', reason)
     } finally {
@@ -1523,11 +1545,20 @@ const ViewProject = () => {
         })
 
         if (activeTab === PROJECT_TABS.traffic) {
-          setMainChart(() => {
-            const generate = billboard.generate(bbSettings)
-            generate.data.names(dataNames)
-            return generate
-          })
+          if (checkIfAllMetricsAreDisabled) {
+            try {
+              mainChart?.destroy()
+            } catch {
+              /* ignore destroy errors */
+            }
+            setMainChart(null)
+          } else {
+            setMainChart(() => {
+              const generate = billboard.generate(bbSettings)
+              generate.data.names(dataNames)
+              return generate
+            })
+          }
         }
 
         setIsPanelsDataEmpty(false)
@@ -2124,7 +2155,7 @@ const ViewProject = () => {
   }, [activeTab, errorOptions, dateRange, filters, id, period, projectPassword, timezone, authLoading, project])
 
   useEffect(() => {
-    if (authLoading || !project || _isEmpty(mainChart)) {
+    if (authLoading || !project) {
       return
     }
 
@@ -2136,26 +2167,32 @@ const ViewProject = () => {
       if (isActiveCompare && _isEmpty(dataChartCompare)) {
         return
       }
-
-      if (
-        activeChartMetrics.views ||
-        activeChartMetrics.unique ||
-        activeChartMetrics.viewsPerUnique ||
-        activeChartMetrics.trendlines
-      ) {
-        mainChart.load({
-          columns: getColumns(chartData, activeChartMetrics),
-        })
+      if (checkIfAllMetricsAreDisabled) {
+        try {
+          mainChart?.destroy()
+        } catch {
+          /* ignore */
+        }
+        setMainChart(null)
+        return
       }
 
-      if (
-        activeChartMetrics.bounce ||
-        activeChartMetrics.sessionDuration ||
-        activeChartMetrics.views ||
-        activeChartMetrics.unique ||
-        !activeChartMetrics.bounce ||
-        !activeChartMetrics.sessionDuration
-      ) {
+      // If no actual series selected (only 'x' or only trendlines without base series), hide chart
+      const prospectiveColumns = getColumns(chartData as any, activeChartMetrics, dataChartCompare as any)
+      if (prospectiveColumns.length <= 1 && _isEmpty(customEventsChartData)) {
+        try {
+          mainChart?.destroy()
+        } catch {
+          /* ignore */
+        }
+        setMainChart(null)
+        return
+      }
+
+      const y2Needed = !!activeChartMetrics.bounce || !!activeChartMetrics.sessionDuration
+      const shouldRegen = !mainChart || prevY2NeededRef.current !== y2Needed
+
+      if (shouldRegen) {
         const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
         const bbSettings = getSettings(
           chartData,
@@ -2171,29 +2208,60 @@ const ViewProject = () => {
           shouldEnableZoom,
         )
 
+        try {
+          mainChart?.destroy()
+        } catch {
+          /* ignore */
+        }
         setMainChart(() => {
           const generate = billboard.generate(bbSettings)
           generate.data.names(dataNames)
           return generate
         })
+        prevY2NeededRef.current = y2Needed
+        return
       }
+
+      // Update existing chart with new/removed series for smooth animation
+      try {
+        mainChart?.load({
+          columns: getColumns(chartData as any, activeChartMetrics, dataChartCompare as any),
+        })
+      } catch {
+        /* ignore */
+      }
+
+      const unloadIds: string[] = []
+      const hasCompare = !_isEmpty(dataChartCompare)
 
       if (!activeChartMetrics.views) {
-        mainChart.unload({
-          ids: 'total',
-        })
+        unloadIds.push('total')
+        if (hasCompare) unloadIds.push('totalCompare')
       }
-
       if (!activeChartMetrics.unique) {
-        mainChart.unload({
-          ids: 'unique',
-        })
+        unloadIds.push('unique')
+        if (hasCompare) unloadIds.push('uniqueCompare')
+      }
+      if (!activeChartMetrics.viewsPerUnique) {
+        unloadIds.push('viewsPerUnique')
+      }
+      if (!activeChartMetrics.trendlines) {
+        unloadIds.push('trendlineUnique', 'trendlineTotal')
+      }
+      if (!activeChartMetrics.bounce) {
+        unloadIds.push('bounce')
+      }
+      if (!activeChartMetrics.sessionDuration) {
+        unloadIds.push('sessionDuration')
+        if (hasCompare) unloadIds.push('sessionDurationCompare')
       }
 
-      if (!activeChartMetrics.viewsPerUnique) {
-        mainChart.unload({
-          ids: 'viewsPerUnique',
-        })
+      if (unloadIds.length && mainChart) {
+        try {
+          mainChart.unload({ ids: unloadIds })
+        } catch {
+          /* ignore */
+        }
       }
     }
 
@@ -2225,7 +2293,16 @@ const ViewProject = () => {
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, project, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare])
+  }, [
+    authLoading,
+    project,
+    activeChartMetrics,
+    chartData,
+    chartDataPerf,
+    activeChartMetricsPerf,
+    dataChartCompare,
+    checkIfAllMetricsAreDisabled,
+  ])
 
   useEffect(() => {
     let sdk: SwetrixSDK | null = null
@@ -2500,6 +2577,15 @@ const ViewProject = () => {
     setChartType(type)
 
     if (activeTab === PROJECT_TABS.traffic) {
+      if (checkIfAllMetricsAreDisabled) {
+        try {
+          mainChart?.destroy()
+        } catch {
+          /* ignore */
+        }
+        setMainChart(null)
+        return
+      }
       const bbSettings = getSettings(
         chartData,
         timeBucket,
@@ -2514,6 +2600,11 @@ const ViewProject = () => {
         shouldEnableZoom,
       )
 
+      try {
+        mainChart?.destroy()
+      } catch {
+        /* ignore */
+      }
       setMainChart(() => {
         const generate = billboard.generate(bbSettings)
         generate.data.names(dataNames)
