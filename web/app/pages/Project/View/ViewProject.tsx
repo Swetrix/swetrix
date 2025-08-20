@@ -3330,6 +3330,7 @@ const ViewProject = () => {
                         to={{
                           search: pureSearchParams,
                         }}
+                        onClick={resetSessionChartZoom}
                         className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
                       >
                         <ChevronLeftIcon className='mr-1 size-3' />
@@ -3374,8 +3375,16 @@ const ViewProject = () => {
                         ) : null}
                       </div>
                     ) : null}
-                    <Pageflow pages={activeSession?.pages} timeFormat={timeFormat} zoomedTimeRange={zoomedTimeRange} />
-                    {_isEmpty(activeSession) && sessionLoading ? <Loader /> : null}
+
+                    {_isEmpty(activeSession) && sessionLoading ? (
+                      <Loader />
+                    ) : (
+                      <Pageflow
+                        pages={activeSession?.pages}
+                        timeFormat={timeFormat}
+                        zoomedTimeRange={zoomedTimeRange}
+                      />
+                    )}
                     {activeSession !== null &&
                     _isEmpty(activeSession?.chart) &&
                     _isEmpty(activeSession?.pages) &&
