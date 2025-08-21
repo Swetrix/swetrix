@@ -42,6 +42,9 @@ const routes = Object.freeze({
   organisation: '/organisations/:id',
   feature_flags: '/feature-flags',
   dataPolicy: '/data-policy',
+
+  // Free tools
+  utm_generator: '/utm-generator',
 })
 
 export default routes

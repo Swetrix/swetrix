@@ -342,7 +342,6 @@ export const DISCORD_URL = 'https://discord.gg/ZVK8Tw2E8j'
 export const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
 export const MAIN_URL = 'https://swetrix.com'
 export const REF_URL_PREFIX = `${MAIN_URL}/ref/`
-export const UTM_GENERATOR_URL = 'https://url.swetrix.com'
 export const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 export const BOOK_A_CALL_URL = 'https://cal.com/swetrix'
 export const PERFORMANCE_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=performance'

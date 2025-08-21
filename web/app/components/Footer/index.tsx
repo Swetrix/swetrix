@@ -14,7 +14,6 @@ import {
   LINKEDIN_URL,
   STATUSPAGE_URL,
   TWITTER_URL,
-  UTM_GENERATOR_URL,
   SWETRIX_VS_GOOGLE,
   SWETRIX_VS_CLOUDFLARE,
   DOCS_URL,
@@ -96,7 +95,7 @@ const navigation = {
     { value: 'vs Cloudflare Analytics', href: SWETRIX_VS_CLOUDFLARE },
     { value: 'vs Simple Analytics', href: SWETRIX_VS_SIMPLE_ANALYTICS },
     { key: 'captcha', href: CAPTCHA_URL, internal: false },
-    { key: 'utm', href: UTM_GENERATOR_URL, internal: false },
+    { key: 'utm', href: routesPath.utm_generator, internal: true },
   ],
   social: [
     {
@@ -219,7 +218,7 @@ const SelfHostedFooter = () => {
           </div>
           <div className='px-5 py-2'>
             <a
-              href={UTM_GENERATOR_URL}
+              href={`https://swetrix.com${routesPath.utm_generator}`}
               className='leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
               target='_blank'
               rel='noopener noreferrer'
