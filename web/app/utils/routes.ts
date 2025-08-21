@@ -44,6 +44,7 @@ const routes = Object.freeze({
   dataPolicy: '/data-policy',
 
   // Free tools
+  tools: '/tools',
   utm_generator: '/tools/utm-generator',
   roi_calculator: '/tools/roi-calculator',
   ctr_calculator: '/tools/ctr-calculator',
