@@ -119,14 +119,12 @@ export default function UTMGenerator() {
 
       const url = new URL(baseURL)
 
-      // Remove any existing UTM parameters first
       url.searchParams.delete('utm_source')
       url.searchParams.delete('utm_medium')
       url.searchParams.delete('utm_campaign')
       url.searchParams.delete('utm_content')
       url.searchParams.delete('utm_term')
 
-      // Add new UTM parameters from the form fields
       if (currentParams.utm_source) {
         url.searchParams.set('utm_source', currentParams.utm_source)
       }
