@@ -96,6 +96,8 @@ const navigation = {
     { value: 'vs Simple Analytics', href: SWETRIX_VS_SIMPLE_ANALYTICS },
     { key: 'captcha', href: CAPTCHA_URL, internal: false },
     { key: 'utm', href: routesPath.utm_generator, internal: true },
+    { key: 'ctr', href: routesPath.ctr_calculator, internal: true },
+    { key: 'roi', href: routesPath.roi_calculator, internal: true },
   ],
   social: [
     {
