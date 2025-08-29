@@ -1429,6 +1429,7 @@ export class ProjectService {
       await this.countVisitorsFromTo(pid, from, to),
       0,
     )
+
     const desc = `${formatted} visitors in the last month`
 
     const html = this.getOgHTML(name, desc)
@@ -1462,7 +1463,7 @@ export class ProjectService {
   ): Promise<number> {
     const query = `
       SELECT
-        count(DISTINCT psid)
+        count(DISTINCT psid) AS count
       FROM analytics
       WHERE
         pid = {pid:FixedString(12)}
@@ -1479,7 +1480,7 @@ export class ProjectService {
         })
         .then(resultSet => resultSet.json())
 
-      count = data[0]['count()']
+      count = data[0]['count']
     } catch (reason) {
       console.error(
         '[ERROR](project service -> countVisitorsFromTo) Error while counting visitors',
