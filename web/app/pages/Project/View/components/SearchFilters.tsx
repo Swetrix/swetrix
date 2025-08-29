@@ -158,7 +158,7 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
       onClose={closeModal}
       onSubmit={onSubmit}
       submitText={t('project.applyFilters')}
-      title={t('project.advancedFilters')}
+      title={t('project.filters')}
       message={
         <div className='min-h-[410px]'>
           <Select
