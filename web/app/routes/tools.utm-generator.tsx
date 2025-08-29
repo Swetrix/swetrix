@@ -79,7 +79,6 @@ export default function UTMGenerator() {
   })
   const [generatedURL, setGeneratedURL] = useState('')
   const [copied, setCopied] = useState(false)
-  const [openFAQs, setOpenFAQs] = useState<Set<number>>(new Set())
 
   const handleParamChange = (key: keyof UTMParams, value: string) => {
     const newParams = { ...params, [key]: value }
@@ -159,15 +158,7 @@ export default function UTMGenerator() {
     }
   }
 
-  const toggleFAQ = (index: number) => {
-    const newOpenFAQs = new Set(openFAQs)
-    if (newOpenFAQs.has(index)) {
-      newOpenFAQs.delete(index)
-    } else {
-      newOpenFAQs.add(index)
-    }
-    setOpenFAQs(newOpenFAQs)
-  }
+  // Using native <details>/<summary> for FAQ to ensure content is present in the DOM for SEO
 
   const sourceExamples = ['google', 'facebook', 'twitter', 'newsletter', 'linkedin']
   const mediumExamples = ['cpc', 'email', 'social', 'referral', 'banner']
@@ -338,30 +329,41 @@ export default function UTMGenerator() {
 
             <div className='space-y-4'>
               {FAQ_ITEMS.map((item, index) => (
-                <div
+                <details
                   key={index}
-                  className='rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
+                  className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
                 >
-                  <button
-                    className='flex w-full items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'
-                    onClick={() => toggleFAQ(index)}
-                  >
+                  <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
                     <h3 className='text-lg font-medium text-gray-900 dark:text-white'>{item.question}</h3>
-                    <ChevronDownIcon
-                      className={`h-5 w-5 text-gray-500 transition-transform ${
-                        openFAQs.has(index) ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-                  {openFAQs.has(index) ? (
-                    <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
-                      <p className='text-gray-600 dark:text-gray-400'>{item.answer}</p>
-                    </div>
-                  ) : null}
-                </div>
+                    <ChevronDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
+                  </summary>
+                  <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
+                    <p className='text-gray-600 dark:text-gray-400'>{item.answer}</p>
+                  </div>
+                </details>
               ))}
             </div>
           </div>
+
+          {/* FAQ Structured Data */}
+          <script type='application/ld+json'>
+            {JSON.stringify(
+              {
+                '@context': 'https://schema.org',
+                '@type': 'FAQPage',
+                mainEntity: FAQ_ITEMS.map((item) => ({
+                  '@type': 'Question',
+                  name: item.question,
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: item.answer,
+                  },
+                })),
+              },
+              null,
+              2,
+            )}
+          </script>
 
           <DitchGoogle />
         </div>
