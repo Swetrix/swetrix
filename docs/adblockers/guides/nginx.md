@@ -22,12 +22,15 @@ server {
   # Using the Cloudflare DNS resolver, you can remove this line if you already use a resolver in your config, or change it to a resolver of your choice.
   resolver 1.1.1.1;
 
-  set $swetrix_script_url  https://swetrix.org/swetrix.js;
-  set $swetrix_api_url https://api.swetrix.com;
+  set $swetrix_script_host swetrix.org;
+  set $swetrix_api_host api.swetrix.com;
+  set $swetrix_script_url https://$swetrix_script_host/swetrix.js;
+  set $swetrix_api_url https://$swetrix_api_host;
 
   location = /script.js {
     proxy_pass $swetrix_script_url;
-    proxy_set_header Host $host;
+    proxy_set_header Host $swetrix_script_host;
+    proxy_ssl_server_name on;
     proxy_buffering on;
 
     # Cache the script for 6 hours, as long as swetrix.org returns a valid response
@@ -37,7 +40,7 @@ server {
   }
 
   location /log {
-    proxy_set_header Host                $host;
+    proxy_set_header Host                $swetrix_api_host;
     proxy_set_header X-Client-IP-Address $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto   $scheme;
 
