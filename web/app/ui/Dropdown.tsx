@@ -107,6 +107,7 @@ function Dropdown<T>({
                 to: position === 'down' ? 'bottom end' : 'top end',
                 offset: 8,
               }}
+              modal={false}
               className={cn(
                 'z-50 w-40 min-w-max rounded-md bg-gray-50 p-1 ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-800',
                 menuItemsClassName,

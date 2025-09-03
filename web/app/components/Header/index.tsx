@@ -230,7 +230,10 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             leaveFrom='transform opacity-100 scale-100'
             leaveTo='transform opacity-0 scale-95'
           >
-            <MenuItems className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
+            <MenuItems
+              className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'
+              modal={false}
+            >
               <p className='truncate p-2' role='none'>
                 <span className='block text-xs text-gray-500 dark:text-gray-300' role='none'>
                   {t('header.signedInAs')}
