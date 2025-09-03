@@ -34,14 +34,14 @@ const NoPeople = () => {
   )
 }
 
-interface UsersListProps {
+interface TableUserRowProps {
   data: ShareOwnerProject
   onRemove: () => void
   language: string
   authedUserEmail: string | undefined
 }
 
-const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps) => {
+const TableUserRow = ({ data, onRemove, language, authedUserEmail }: TableUserRowProps) => {
   const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const openRef = useRef<HTMLUListElement>(null)
@@ -63,7 +63,7 @@ const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps
   return (
     <tr className='dark:bg-slate-800'>
       <td className='py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white'>
-        {user.email}
+        {user?.email || 'N/A'}
       </td>
       <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white'>
         {language === 'en'
@@ -76,7 +76,7 @@ const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps
             <button
               onClick={() => setOpen(!open)}
               type='button'
-              disabled={user.email === authedUserEmail}
+              disabled={user?.email === authedUserEmail}
               className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`project.settings.roles.${role}.name`)}
@@ -304,7 +304,7 @@ const People = ({ project }: PeopleProps) => {
                     </thead>
                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
                       {_map(share, (data) => (
-                        <UsersList
+                        <TableUserRow
                           data={data}
                           key={data.id}
                           onRemove={() => {
@@ -336,7 +336,7 @@ const People = ({ project }: PeopleProps) => {
         submitText={t('common.yes')}
         type='confirmed'
         closeText={t('common.no')}
-        title={t('project.settings.removeUser', { user: memberToRemove?.user.email })}
+        title={t('project.settings.removeUser', { user: memberToRemove?.user?.email })}
         message={t('project.settings.removeConfirm')}
         isOpened={showDeleteModal}
         isLoading={isDeleting}
