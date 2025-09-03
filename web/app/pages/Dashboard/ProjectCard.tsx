@@ -91,7 +91,7 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
   const { user, mergeUser } = useAuth()
 
   const shareId = useMemo(
-    () => _find(project.share, (item) => item.user.id === user?.id)?.id,
+    () => _find(project.share, (item) => item.user?.id === user?.id)?.id,
     [project.share, user?.id],
   )
 
