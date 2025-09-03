@@ -1560,15 +1560,15 @@ export class ProjectService {
     )
 
     paginated.results = _map(paginated.results, project => {
-      const userShare = project.share.find(share => share.user.id === userId)
-      const organisationMembership = project.organisation?.members.find(
-        member => member.user.id === userId,
+      const userShare = project.share?.find(share => share.user?.id === userId)
+      const organisationMembership = project.organisation?.members?.find(
+        member => member.user?.id === userId,
       )
 
       let role
       let isAccessConfirmed = true
 
-      if (project.admin.id === userId) {
+      if (project.admin?.id === userId) {
         role = 'owner'
       } else if (userShare) {
         role = userShare.role
