@@ -249,6 +249,7 @@ export class UserController {
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await checkRateLimit(ip, 'set-paypal-email', 10, 3600)
+    await checkRateLimit(userId, 'set-paypal-email', 10, 3600)
 
     const user = await this.userService.findOne({ where: { id: userId } })
 

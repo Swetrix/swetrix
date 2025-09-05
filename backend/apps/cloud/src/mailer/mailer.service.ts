@@ -29,11 +29,6 @@ const metaInfoJson = {
       en: () => 'A new e-mail-address has been saved',
     },
   },
-  [LetterTemplate.PasswordChangeRequest]: {
-    subject: {
-      en: () => 'Changing your password',
-    },
-  },
   [LetterTemplate.PasswordChanged]: {
     subject: {
       en: () => 'Your password was successfully changed',

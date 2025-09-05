@@ -63,7 +63,8 @@ export class TwoFactorAuthController {
     this.logger.log({ body }, 'POST /2fa/enable')
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
-    await checkRateLimit(ip, '2fa-enable', 10, 1800)
+    await checkRateLimit(ip, '2fa-enable', 5, 1800)
+    await checkRateLimit(id, '2fa-enable', 5, 1800)
 
     const user = await this.userService.findOne({ where: { id } })
     const { twoFactorAuthenticationCode } = body
@@ -111,7 +112,8 @@ export class TwoFactorAuthController {
     this.logger.log({ body }, 'POST /2fa/disable')
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
-    await checkRateLimit(ip, '2fa-disable', 10, 1800)
+    await checkRateLimit(ip, '2fa-disable', 5, 1800)
+    await checkRateLimit(id, '2fa-disable', 5, 1800)
 
     const user = await this.userService.findOne({ where: { id } })
     const { twoFactorAuthenticationCode } = body

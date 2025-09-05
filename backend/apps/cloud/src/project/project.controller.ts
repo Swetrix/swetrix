@@ -22,6 +22,7 @@ import {
   UnauthorizedException,
   UnprocessableEntityException,
   ParseIntPipe,
+  Ip,
 } from '@nestjs/common'
 import { Response } from 'express'
 import {
@@ -79,7 +80,12 @@ import {
   MAX_FUNNELS,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
-import { generateRandomId, generateRandomString } from '../common/utils'
+import {
+  checkRateLimit,
+  generateRandomId,
+  generateRandomString,
+  getIPFromHeaders,
+} from '../common/utils'
 import {
   AddSubscriberParamsDto,
   AddSubscriberBodyDto,
@@ -809,7 +815,7 @@ export class ProjectController {
       )
     }
 
-    await this.organisationService.validateManageAccess(organisation, uid)
+    this.organisationService.validateManageAccess(organisation, uid)
 
     return this.projectService.addProjectToOrganisation(
       organisation.id,
@@ -844,7 +850,7 @@ export class ProjectController {
       )
     }
 
-    await this.organisationService.validateManageAccess(organisation, uid)
+    this.organisationService.validateManageAccess(organisation, uid)
 
     await this.projectService.removeProjectFromOrganisation(
       organisation.id,
@@ -1042,10 +1048,16 @@ export class ProjectController {
   async share(
     @Param('pid') pid: string,
     @Body() shareDTO: ShareDTO,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() userId: string,
     @Headers() headers,
+    @Ip() requestIp: string,
   ): Promise<Project> {
-    this.logger.log({ uid, pid, shareDTO }, 'POST /project/:pid/share')
+    this.logger.log({ userId, pid, shareDTO }, 'POST /project/:pid/share')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
+    await checkRateLimit(ip, 'add-subscriber', 10)
+    await checkRateLimit(userId, 'add-subscriber', 10)
 
     if (!isValidPID(pid)) {
       throw new BadRequestException(
@@ -1057,14 +1069,20 @@ export class ProjectController {
       throw new BadRequestException('The provided ShareDTO is incorrect')
     }
 
-    const user = await this.userService.findOne({ where: { id: uid } })
+    const user = await this.userService.findOne({ where: { id: userId } })
     const project = await this.projectService.getFullProject(pid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${pid} does not exist`)
     }
 
-    this.projectService.allowedToManage(project, uid, user.roles)
+    if (this.userService.isPaidTier(user)) {
+      throw new BadRequestException(
+        'You must be a paid tier subscriber to use this feature.',
+      )
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
 
     const invitee = await this.userService.findOne({
       where: { email: shareDTO.email },
@@ -1135,11 +1153,11 @@ export class ProjectController {
 
       await deleteProjectRedis(pid)
       return processProjectUser(updatedProject)
-    } catch (e) {
+    } catch (reason) {
       console.error(
-        `[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${e}`,
+        `[ERROR] Could not share project (pid: ${project.id}, invitee ID: ${invitee.id}): ${reason}`,
       )
-      throw new BadRequestException(e)
+      throw new BadRequestException(reason)
     }
   }
 
@@ -1242,8 +1260,14 @@ export class ProjectController {
     @Body() body: TransferProjectBodyDto,
     @CurrentUserId() userId: string,
     @Headers() headers: { origin: string },
+    @Ip() requestIp: string,
   ) {
     this.logger.log({ body }, 'POST /project/transfer')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
+    await checkRateLimit(ip, 'transfer-project', 10)
+    await checkRateLimit(userId, 'transfer-project', 10)
 
     const project = await this.projectService.getOwnProject(
       body.projectId,
@@ -1384,8 +1408,14 @@ export class ProjectController {
     @Body() body: AddSubscriberBodyDto,
     @Headers() headers: { origin: string },
     @CurrentUserId() userId: string,
+    @Ip() requestIp: string,
   ) {
     this.logger.log({ params, body }, 'POST /project/:projectId/subscribers')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
+    await checkRateLimit(ip, 'add-subscriber', 10)
+    await checkRateLimit(userId, 'add-subscriber', 10)
 
     const project = await this.projectService.getFullProject(params.projectId)
 
@@ -1404,6 +1434,12 @@ export class ProjectController {
 
     if (user.email === body.email) {
       throw new BadRequestException('You cannot subscribe to your own project.')
+    }
+
+    if (this.userService.isPaidTier(user)) {
+      throw new BadRequestException(
+        'You must be a paid tier subscriber to use this feature.',
+      )
     }
 
     const subscriber = await this.projectService.getSubscriberByEmail(

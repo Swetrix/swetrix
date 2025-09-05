@@ -92,7 +92,7 @@ export const nFormatter = (num: any, digits = 1) => {
 
 // 'action' is used as a salt to differ rate limiting routes
 export const checkRateLimit = async (
-  ip: string,
+  key: string,
   action: string,
   reqAmount: number = RATE_LIMIT_REQUESTS_AMOUNT,
   reqTimeout: number = RATE_LIMIT_TIMEOUT,
@@ -101,7 +101,7 @@ export const checkRateLimit = async (
     return
   }
 
-  const rlHash = getRateLimitHash(ip, action)
+  const rlHash = getRateLimitHash(key, action)
   const rlCount = _toNumber(await redis.get(rlHash)) || 0
 
   if (rlCount >= reqAmount) {
