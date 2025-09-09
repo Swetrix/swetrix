@@ -391,7 +391,7 @@ export const isSelfhosted = Boolean(isBrowser ? window.REMIX_ENV?.SELFHOSTED : p
 export const isDisableMarketingPages =
   (isBrowser ? window.REMIX_ENV?.DISABLE_MARKETING_PAGES : process.env.DISABLE_MARKETING_PAGES) === 'true'
 
-const apiUrlUnprocessed = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
+export const apiUrlUnprocessed = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
 const cdnUrlUnprocessed = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_URL
 
 export const API_URL = _endsWith(apiUrlUnprocessed, '/') ? apiUrlUnprocessed : `${apiUrlUnprocessed}/`

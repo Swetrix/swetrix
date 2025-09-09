@@ -22,6 +22,7 @@ import { useChangeLanguage } from 'remix-i18next/react'
 import { ExternalScripts } from 'remix-utils/external-scripts'
 
 import { LocaleLinks } from '~/components/LocaleLinks'
+import SelfhostedApiUrlBanner from '~/components/SelfhostedApiUrlBanner'
 import { SEO } from '~/components/SEO'
 import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
 import FlatpickerCss from '~/styles/Flatpicker.css?url'
@@ -214,6 +215,7 @@ const Body = () => {
 
   return (
     <body className={cx(theme, { 'bg-gray-50': theme === 'light', 'bg-slate-900': theme === 'dark' })}>
+      <SelfhostedApiUrlBanner />
       <AuthProvider initialIsAuthenticated={isAuthed}>
         <AppWrapper />
       </AuthProvider>
