@@ -22,7 +22,7 @@ const SelfhostedApiUrlBanner = () => {
               <span className='flex rounded-lg bg-yellow-600 p-2'>
                 <ExclamationTriangleIcon className='h-6 w-6 text-white' aria-hidden='true' />
               </span>
-              <p className='ml-3 truncate font-medium text-black'>Can't reach backend — check API_URL configuration</p>
+              <p className='ml-3 truncate font-medium text-black'>{t('ce.noApiUrl.banner')}</p>
             </div>
             <div className='order-3 mt-2 w-full shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
               <span
@@ -39,29 +39,25 @@ const SelfhostedApiUrlBanner = () => {
         onClose={() => setShowMoreInfoModal(false)}
         onSubmit={() => setShowMoreInfoModal(false)}
         submitText={t('common.gotIt')}
-        title='API_URL is not configured'
+        title={t('ce.noApiUrl.title')}
         message={
           <div className='text-left'>
-            <p className='mb-3'>
-              You are running Swetrix Community Edition without API_URL set. The frontend cannot reach the API.
-            </p>
-            <p className='mb-3'>
-              Set the API_URL environment variable to your API instance URL. In self-hosting there are two containers:
-            </p>
+            <p className='mb-3'>{t('ce.noApiUrl.intro1')}</p>
+            <p className='mb-3'>{t('ce.noApiUrl.intro2')}</p>
             <ul className='mb-3 list-disc pl-6'>
-              <li>swetrix/swetrix-fe — the frontend UI</li>
-              <li>swetrix/swetrix-api — the API (auth, data ingest)</li>
+              <li>{t('ce.noApiUrl.listFe')}</li>
+              <li>{t('ce.noApiUrl.listApi')}</li>
             </ul>
-            <p className='mb-2 font-medium'>Examples</p>
+            <p className='mb-2 font-medium'>{t('ce.noApiUrl.examplesTitle')}</p>
             <ul className='mb-3 list-disc pl-6'>
               <li>
-                Local default: <code>API_URL=http://localhost:8080</code>
+                {t('ce.noApiUrl.exampleLocal.label')} <code>{t('ce.noApiUrl.exampleLocal.value')}</code>
               </li>
               <li>
-                With subdomains: <code>API_URL=https://swetrix-api.mydomain.com</code>
+                {t('ce.noApiUrl.exampleSubdomain.label')} <code>{t('ce.noApiUrl.exampleSubdomain.value')}</code>
               </li>
             </ul>
-            <p>Please configure it and restart the containers.</p>
+            <p>{t('ce.noApiUrl.finalNote')}</p>
           </div>
         }
         type='warning'
