@@ -25,7 +25,6 @@ import { RolesGuard } from '../auth/guards/roles.guard'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { AppLoggerService } from '../logger/logger.service'
 import { UserService } from './user.service'
-import { ClickhouseUser } from '../common/types'
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
 
 @ApiTags('User')
@@ -41,9 +40,7 @@ export class UserController {
   @Get('/me')
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async me(
-    @CurrentUserId() uid: string,
-  ): Promise<{ user: Partial<ClickhouseUser> }> {
+  async me(@CurrentUserId() uid: string) {
     this.logger.log({ uid }, 'GET /user/me')
 
     const user = await this.userService.findOne({ id: uid })

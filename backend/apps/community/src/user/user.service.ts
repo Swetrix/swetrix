@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { v4 as uuidv4 } from 'uuid'
 import _omit from 'lodash/omit'
 import { clickhouse } from '../common/integrations/clickhouse'
-import { type ClickhouseUser } from '../common/types'
+import { User, type ClickhouseInputUser } from '../common/types'
 import {
   DEFAULT_TIMEZONE,
   OnboardingStep,
@@ -11,10 +11,8 @@ import {
 
 @Injectable()
 export class UserService {
-  async findOne(
-    options: Partial<ClickhouseUser>,
-  ): Promise<ClickhouseUser | undefined> {
-    const paramTypes: Record<keyof ClickhouseUser, string> = {
+  async findOne(options: Partial<ClickhouseInputUser>) {
+    const paramTypes: Record<keyof ClickhouseInputUser, string> = {
       id: 'FixedString(36)',
       email: 'String',
       password: 'String',
@@ -28,7 +26,7 @@ export class UserService {
 
     const entries = Object.entries(options).filter(
       ([key, value]) => key in paramTypes && value !== undefined,
-    ) as [keyof ClickhouseUser, unknown][]
+    ) as [keyof ClickhouseInputUser, unknown][]
 
     const conditions: string[] = []
     const queryParams: Record<string, unknown> = {}
@@ -49,13 +47,13 @@ export class UserService {
         query: `SELECT * FROM user WHERE ${where}`,
         query_params: queryParams,
       })
-      .then(resultSet => resultSet.json<ClickhouseUser>())
+      .then(resultSet => resultSet.json<ClickhouseInputUser>())
 
-    return data[0]
+    return this.formatUser(data[0])
   }
 
-  async update(userId: string, update: Partial<ClickhouseUser>) {
-    const allowedKeys: Array<keyof ClickhouseUser> = [
+  async update(userId: string, update: Partial<ClickhouseInputUser>) {
+    const allowedKeys: Array<keyof ClickhouseInputUser> = [
       'email',
       'password',
       'timezone',
@@ -67,7 +65,7 @@ export class UserService {
     ]
 
     const rawEntries = Object.entries(update) as [
-      keyof ClickhouseUser,
+      keyof ClickhouseInputUser,
       unknown,
     ][]
     const entries = rawEntries.filter(
@@ -120,7 +118,7 @@ export class UserService {
     return this.findOne({ id: userId })
   }
 
-  async create(user: Pick<ClickhouseUser, 'email' | 'password'>) {
+  async create(user: Pick<ClickhouseInputUser, 'email' | 'password'>) {
     const id = uuidv4()
 
     await clickhouse.insert({
@@ -155,7 +153,19 @@ export class UserService {
     return Number(total) || 0
   }
 
-  omitSensitiveData(user: Partial<ClickhouseUser>): Partial<ClickhouseUser> {
+  omitSensitiveData(user: Partial<User>): Partial<User> {
     return _omit(user, ['password'])
+  }
+
+  formatUser(user?: ClickhouseInputUser): User {
+    if (!user) {
+      return undefined
+    }
+
+    return {
+      ...user,
+      showLiveVisitorsInTitle: Boolean(user.showLiveVisitorsInTitle),
+      hasCompletedOnboarding: Boolean(user.hasCompletedOnboarding),
+    }
   }
 }

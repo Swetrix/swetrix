@@ -29,7 +29,7 @@ import {
   IS_REGISTRATION_DISABLED,
 } from '../common/constants'
 import { UserService } from '../user/user.service'
-import { ClickhouseUser } from '../common/types'
+import { User } from '../common/types'
 
 const REDIS_OIDC_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getOIDCRedisKey = (uuid: string) => `${REDIS_OIDC_SESSION_KEY}:${uuid}`
@@ -111,7 +111,7 @@ export class AuthService {
     return randomBytes(64).toString('hex').slice(0, length)
   }
 
-  private async getOrCreateUserByEmail(email: string): Promise<ClickhouseUser> {
+  private async getOrCreateUserByEmail(email: string) {
     const existingUser = await this.userService.findOne({ email })
 
     if (existingUser && existingUser.id) {
@@ -157,10 +157,7 @@ export class AuthService {
     return assignUnassignedProjectsToUserClickhouse(userId)
   }
 
-  async getBasicUser(
-    email: string,
-    password: string,
-  ): Promise<ClickhouseUser | null> {
+  async getBasicUser(email: string, password: string): Promise<User | null> {
     const user = await this.userService.findOne({ email })
 
     if (user && (await this.comparePassword(password, user.password))) {
