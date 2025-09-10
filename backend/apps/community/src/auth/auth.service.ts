@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from 'crypto'
 import {
   BadRequestException,
   ConflictException,
@@ -6,7 +7,8 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
-import { genSalt, hash } from 'bcrypt'
+import { genSalt, hash, compare } from 'bcrypt'
+import axios from 'axios'
 import _isEmpty from 'lodash/isEmpty'
 import { v4 as uuidv4 } from 'uuid'
 import { decode, JwtPayload, verify } from 'jsonwebtoken'
@@ -16,19 +18,18 @@ import {
   saveRefreshTokenClickhouse,
   findRefreshTokenClickhouse,
   deleteRefreshTokenClickhouse,
+  assignUnassignedProjectsToUserClickhouse,
 } from '../common/utils'
 import {
-  SELFHOSTED_EMAIL,
-  SELFHOSTED_PASSWORD,
   JWT_ACCESS_TOKEN_SECRET,
   JWT_ACCESS_TOKEN_LIFETIME,
   JWT_REFRESH_TOKEN_LIFETIME,
-  SELFHOSTED_API_KEY,
-  SELFHOSTED_UUID,
   REDIS_OIDC_SESSION_KEY,
   redis,
+  IS_REGISTRATION_DISABLED,
 } from '../common/constants'
-import { getSelfhostedUser, SelfhostedUser } from '../user/entities/user.entity'
+import { UserService } from '../user/user.service'
+import { ClickhouseUser } from '../common/types'
 
 const REDIS_OIDC_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getOIDCRedisKey = (uuid: string) => `${REDIS_OIDC_SESSION_KEY}:${uuid}`
@@ -39,7 +40,41 @@ export class AuthService {
   constructor(
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly userService: UserService,
   ) {}
+
+  private async createSha1Hash(text: string): Promise<string> {
+    return new Promise(resolve => {
+      const sha1sum = createHash('sha1')
+        .update(text)
+        .digest('hex')
+        .toUpperCase()
+      resolve(sha1sum)
+    })
+  }
+
+  private getFirstFiveChars(passwordHash: string): string {
+    return passwordHash.slice(0, 5)
+  }
+
+  private async sendRequestToApi(passwordHash: string) {
+    const url = `https://api.pwnedpasswords.com/range/${passwordHash}`
+    const response = await axios.get(url)
+
+    if (response.status !== 200) {
+      throw new InternalServerErrorException()
+    }
+
+    return response.data
+  }
+
+  public async checkIfLeaked(password: string): Promise<boolean> {
+    const sha1Hash = await this.createSha1Hash(password)
+    const firstFiveChars = this.getFirstFiveChars(sha1Hash)
+    const response = await this.sendRequestToApi(firstFiveChars)
+
+    return response.includes(firstFiveChars)
+  }
 
   public async hashPassword(password: string): Promise<string> {
     const salt = await genSalt(10)
@@ -63,15 +98,83 @@ export class AuthService {
     )
   }
 
+  public async createUser(email: string, password: string) {
+    const hashedPassword = await this.hashPassword(password)
+
+    return this.userService.create({
+      email,
+      password: hashedPassword, // Using the password field is incorrect.
+    })
+  }
+
+  private generateRandomPassword(length = 48): string {
+    return randomBytes(64).toString('hex').slice(0, length)
+  }
+
+  private async getOrCreateUserByEmail(email: string): Promise<ClickhouseUser> {
+    const existingUser = await this.userService.findOne({ email })
+
+    if (existingUser && existingUser.id) {
+      return existingUser
+    }
+
+    // Treat as registration attempt; respect registration-disabled setting
+    const isRegistrationDisabled = await this.isRegistrationDisabled()
+
+    if (isRegistrationDisabled) {
+      throw new BadRequestException('Registration is disabled')
+    }
+
+    const randomPassword = this.generateRandomPassword(48)
+    const hashedPassword = await this.hashPassword(randomPassword)
+
+    const createdUser = await this.userService.create({
+      email,
+      password: hashedPassword,
+    })
+
+    // Assign any pre-v4 unassigned projects to the newly registered user
+    await this.assignUnassignedProjectsToUser(createdUser.id)
+
+    return createdUser
+  }
+
+  async isRegistrationDisabled() {
+    const usersCount = await this.userService.count()
+
+    if (usersCount === 0) {
+      return false
+    }
+
+    return IS_REGISTRATION_DISABLED
+  }
+
+  // Before Swetrix CE v4 there could only be a single user, with login / password set in .env file
+  // Because of that, projects were stored without an adminId as it was not needed
+  // Unassigned projects are only possible when migrating from Swetrix CE v3 to v4, so people who migrated are
+  // going to create an account anyway, so it's safe to assign them to the user
+  async assignUnassignedProjectsToUser(userId: string) {
+    return assignUnassignedProjectsToUserClickhouse(userId)
+  }
+
   async getBasicUser(
     email: string,
     password: string,
-  ): Promise<SelfhostedUser | null> {
-    if (email !== SELFHOSTED_EMAIL || password !== SELFHOSTED_PASSWORD) {
-      return null
+  ): Promise<ClickhouseUser | null> {
+    const user = await this.userService.findOne({ email })
+
+    if (user && (await this.comparePassword(password, user.password))) {
+      return user
     }
 
-    return getSelfhostedUser()
+    return null
+  }
+
+  private async comparePassword(
+    password: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    return compare(password, hashedPassword)
   }
 
   private async generateJwtRefreshToken(
@@ -126,10 +229,6 @@ export class AuthService {
 
   async logout(userId: string, refreshToken: string) {
     await deleteRefreshTokenClickhouse(userId, refreshToken)
-  }
-
-  isApiKeyValid(apiKey: string): boolean {
-    return apiKey === SELFHOSTED_API_KEY
   }
 
   getOidcConfig() {
@@ -263,6 +362,16 @@ export class AuthService {
 
     const discovery = await this.getOidcDiscovery()
 
+    // Ensure the state corresponds to an initiated session
+    const oidcRedisKey = getOIDCRedisKey(state)
+    const sessionExists = await redis.exists(oidcRedisKey)
+
+    if (!sessionExists) {
+      throw new BadRequestException(
+        'No authentication session opened for the provided state',
+      )
+    }
+
     const tokenResponse = await fetch(discovery.token_endpoint, {
       method: 'POST',
       headers: {
@@ -286,17 +395,24 @@ export class AuthService {
       )
     }
 
-    // Ideally we want to use id/email from this id token, but for now we only support one user in the system
-    await this.getIdToken(tokenData, discovery)
+    // Extract and validate ID token claims
+    const idToken = await this.getIdToken(tokenData, discovery)
 
-    const dataToStore = JSON.stringify({ id: SELFHOSTED_UUID })
+    const emailClaimRaw = (idToken as any).email
 
-    await redis.set(
-      getOIDCRedisKey(state),
-      dataToStore,
-      'EX',
-      REDIS_OIDC_SESSION_TIMEOUT,
-    )
+    if (!emailClaimRaw || typeof emailClaimRaw !== 'string') {
+      throw new BadRequestException('Email claim missing in ID token')
+    }
+
+    const email = emailClaimRaw.trim().toLowerCase()
+
+    // Find or create user by email
+    const user = await this.getOrCreateUserByEmail(email)
+
+    // Store resolved user id in the existing OIDC session
+    const dataToStore = JSON.stringify({ id: user.id })
+
+    await redis.set(oidcRedisKey, dataToStore, 'EX', REDIS_OIDC_SESSION_TIMEOUT)
   }
 
   async processHash(state: string) {
@@ -343,7 +459,9 @@ export class AuthService {
     const { id } = await this.processHash(state)
 
     try {
-      if (id !== SELFHOSTED_UUID) {
+      const user = await this.userService.findOne({ id })
+
+      if (!user) {
         throw new BadRequestException('Invalid user ID')
       }
 
@@ -351,7 +469,7 @@ export class AuthService {
 
       return {
         ...tokens,
-        user: getSelfhostedUser(),
+        user: this.userService.omitSensitiveData(user),
       }
     } catch (error) {
       console.error(`[ERROR][AuthService -> authenticateOidc]: ${error}`)

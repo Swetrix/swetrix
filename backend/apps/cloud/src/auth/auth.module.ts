@@ -15,7 +15,6 @@ import {
   JwtRefreshTokenStrategy,
 } from './strategies'
 import { Message } from '../integrations/telegram/entities/message.entity'
-import { OrganisationModule } from '../organisation/organisation.module'
 
 @Module({
   imports: [
@@ -27,7 +26,6 @@ import { OrganisationModule } from '../organisation/organisation.module'
     ActionTokensModule,
     ProjectModule,
     TypeOrmModule.forFeature([Message]),
-    OrganisationModule,
   ],
   controllers: [AuthController],
   providers: [

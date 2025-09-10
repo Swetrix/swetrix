@@ -15,12 +15,16 @@ import {
   Res,
   BadRequestException,
 } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger'
+import {
+  ApiTags,
+  ApiOperation,
+  ApiOkResponse,
+  ApiCreatedResponse,
+} from '@nestjs/swagger'
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import { Response } from 'express'
 
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
-import { generateSelfhostedUser } from '../user/entities/user.entity'
 import { AuthService } from './auth.service'
 import { Public, CurrentUserId, CurrentUser } from './decorators'
 import {
@@ -29,9 +33,12 @@ import {
   OIDCInitiateDto,
   OIDCProcessTokenDto,
   OIDCGetJWTByHashDto,
+  RegisterRequestDto,
+  RegisterResponseDto,
 } from './dtos'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard } from './guards'
 import { OIDC_ENABLED, OIDC_ONLY_AUTH } from '../common/constants'
+import { UserService } from '../user/user.service'
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -46,7 +53,64 @@ import { OIDC_ENABLED, OIDC_ONLY_AUTH } from '../common/constants'
   }),
 )
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
+
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiCreatedResponse({
+    description: 'User registered',
+    type: RegisterResponseDto,
+  })
+  @Public()
+  @Post('register')
+  public async register(
+    @Body() body: RegisterRequestDto,
+    @I18n() i18n: I18nContext,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ) {
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
+    await checkRateLimit(ip, 'register', 5)
+
+    const isRegistrationDisabled =
+      await this.authService.isRegistrationDisabled()
+
+    if (isRegistrationDisabled) {
+      throw new BadRequestException('Registration is disabled')
+    }
+
+    const user = await this.userService.findOne({ email: body.email })
+
+    if (user) {
+      throw new ConflictException(i18n.t('user.emailAlreadyUsed'))
+    }
+
+    if (body.checkIfLeaked) {
+      const isLeaked = await this.authService.checkIfLeaked(body.password)
+
+      if (isLeaked) {
+        throw new ConflictException(i18n.t('auth.leakedPassword'))
+      }
+    }
+
+    if (body.email === body.password) {
+      throw new ConflictException(i18n.t('auth.passwordSameAsEmail'))
+    }
+
+    const newUser = await this.authService.createUser(body.email, body.password)
+
+    const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)
+
+    await this.authService.assignUnassignedProjectsToUser(newUser.id)
+
+    return {
+      ...jwtTokens,
+      user: this.userService.omitSensitiveData(newUser),
+    }
+  }
 
   @ApiOperation({ summary: 'Login a user' })
   @ApiOkResponse({
@@ -77,14 +141,11 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.invalidCredentials'))
     }
 
-    const jwtTokens = await this.authService.generateJwtTokens(
-      user.id,
-      !user.isTwoFactorAuthenticationEnabled,
-    )
+    const jwtTokens = await this.authService.generateJwtTokens(user.id, true)
 
     return {
       ...jwtTokens,
-      user,
+      user: this.userService.omitSensitiveData(user),
     }
   }
 
@@ -101,7 +162,7 @@ export class AuthController {
     @CurrentUser('refreshToken') refreshToken: string,
     @I18n() i18n: I18nContext,
   ): Promise<{ accessToken: string }> {
-    const user = generateSelfhostedUser()
+    const user = await this.userService.findOne({ id: userId })
 
     if (!user) {
       throw new UnauthorizedException()
@@ -134,7 +195,7 @@ export class AuthController {
     @CurrentUser('refreshToken') refreshToken: string,
     @I18n() i18n: I18nContext,
   ): Promise<void> {
-    const user = generateSelfhostedUser()
+    const user = await this.userService.findOne({ id: userId })
 
     if (!user) {
       throw new UnauthorizedException()

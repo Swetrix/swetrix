@@ -3,6 +3,21 @@ const { queriesRunner, dbName } = require('./setup')
 const { initialiseDatabase } = require('./initialise_database')
 
 const CLICKHOUSE_INIT_QUERIES = [
+  `CREATE TABLE IF NOT EXISTS ${dbName}.user
+  (
+    id FixedString(36),
+    email String,
+    password String,
+    timezone String,
+    timeFormat String,
+    showLiveVisitorsInTitle Int8,
+    onboardingStep String,
+    hasCompletedOnboarding Int8,
+    apiKey Nullable(String)
+  )
+  ENGINE = MergeTree()
+  PRIMARY KEY id;`,
+
   `CREATE TABLE IF NOT EXISTS ${dbName}.project
   (
     id FixedString(12),
@@ -14,6 +29,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     isPasswordProtected Int8,
     botsProtectionLevel String DEFAULT 'basic',
     passwordHash Nullable(String),
+    adminId Nullable(String),
     created DateTime
   )
   ENGINE = MergeTree()
@@ -27,16 +43,6 @@ const CLICKHOUSE_INIT_QUERIES = [
   )
   ENGINE = MergeTree()
   ORDER BY userId;`,
-
-  `CREATE TABLE IF NOT EXISTS ${dbName}.sfuser
-  (
-    id String,
-    timezone Nullable(String),
-    timeFormat Nullable(String),
-    showLiveVisitorsInTitle Nullable(Int8)
-  )
-  ENGINE = MergeTree()
-  PRIMARY KEY id;`,
 
   `CREATE TABLE IF NOT EXISTS ${dbName}.funnel
   (

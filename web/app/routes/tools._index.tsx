@@ -1,12 +1,22 @@
 import { ArrowRightIcon, SparklesIcon, CheckIcon } from 'lucide-react'
-import { Link } from 'react-router'
+import { Link, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { isSelfhosted } from '~/lib/constants'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.9,
+  exclude: isSelfhosted,
 })
+
+export async function loader() {
+  if (isSelfhosted) {
+    return redirect('/login', 302)
+  }
+
+  return null
+}
 
 const TOOLS = [
   {

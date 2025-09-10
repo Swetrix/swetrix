@@ -1,10 +1,4 @@
 import _omit from 'lodash/omit'
-import {
-  SELFHOSTED_API_KEY,
-  SELFHOSTED_EMAIL,
-  SELFHOSTED_UUID,
-} from '../../common/constants'
-import { getUserClickhouse } from '../../common/utils'
 
 export enum UserType {
   CUSTOMER = 'customer',
@@ -18,44 +12,9 @@ export enum TimeFormat {
 
 export const DEFAULT_TIMEZONE = 'Etc/GMT'
 
-export interface SelfhostedUser {
-  id: string
-  email: string
-  isTwoFactorAuthenticationEnabled: boolean
-  planCode: 'enterprise'
-  roles: UserType[]
-  isActive: boolean
-  timezone: string
-  timeFormat: TimeFormat
-  showLiveVisitorsInTitle: boolean
-  apiKey?: string
-}
-
-export const generateSelfhostedUser = (): SelfhostedUser => ({
-  id: SELFHOSTED_UUID,
-  email: SELFHOSTED_EMAIL,
-  isTwoFactorAuthenticationEnabled: false,
-  planCode: 'enterprise',
-  roles: [UserType.ADMIN, UserType.CUSTOMER],
-  isActive: true,
-  timezone: DEFAULT_TIMEZONE,
-  timeFormat: TimeFormat['12-hour'],
-  showLiveVisitorsInTitle: false,
-  apiKey: SELFHOSTED_API_KEY,
-})
-
-export const getSelfhostedUser = async (): Promise<SelfhostedUser> => {
-  const user = generateSelfhostedUser()
-  let settings = {}
-
-  try {
-    settings = _omit(await getUserClickhouse(), ['id'])
-  } catch (reason) {
-    console.error('[ERROR] getSelfhostedUser: ', reason)
-  }
-
-  return {
-    ...user,
-    ...settings,
-  }
+export enum OnboardingStep {
+  CREATE_PROJECT = 'create_project',
+  SETUP_TRACKING = 'setup_tracking',
+  WAITING_FOR_EVENTS = 'waiting_for_events',
+  COMPLETED = 'completed',
 }

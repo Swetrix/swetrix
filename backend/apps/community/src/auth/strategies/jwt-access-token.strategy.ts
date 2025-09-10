@@ -3,19 +3,19 @@ import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { Strategy, ExtractJwt } from 'passport-jwt'
 
-import {
-  SELFHOSTED_UUID,
-  JWT_ACCESS_TOKEN_SECRET,
-} from '../../common/constants'
-import { getSelfhostedUser } from '../../user/entities/user.entity'
+import { JWT_ACCESS_TOKEN_SECRET } from '../../common/constants'
 import { IJwtPayload } from '../interfaces'
+import { UserService } from '../../user/user.service'
 
 @Injectable()
 export class JwtAccessTokenStrategy extends PassportStrategy(
   Strategy,
   'jwt-access-token',
 ) {
-  constructor(public readonly configService: ConfigService) {
+  constructor(
+    public readonly configService: ConfigService,
+    private readonly userService: UserService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -24,10 +24,12 @@ export class JwtAccessTokenStrategy extends PassportStrategy(
   }
 
   public async validate(payload: IJwtPayload) {
-    if (payload.sub !== SELFHOSTED_UUID) {
+    const user = await this.userService.findOne({ id: payload.sub })
+
+    if (!user) {
       throw new UnauthorizedException()
     }
 
-    return getSelfhostedUser()
+    return user
   }
 }

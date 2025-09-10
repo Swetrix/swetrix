@@ -9,7 +9,8 @@ import { toast } from 'sonner'
 import { generateSSOAuthURL, getJWTBySSOHash, signup } from '~/api'
 import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
-import { HAVE_I_BEEN_PWNED_URL, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
+import OIDCAuth from '~/components/OIDCAuth'
+import { HAVE_I_BEEN_PWNED_URL, isSelfhosted, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
 import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
@@ -19,7 +20,7 @@ import Tooltip from '~/ui/Tooltip'
 import { setAccessToken } from '~/utils/accessToken'
 import { trackCustom } from '~/utils/analytics'
 import { deleteCookie, getCookie } from '~/utils/cookie'
-import { delay, openBrowserWindow } from '~/utils/generic'
+import { cn, delay, openBrowserWindow } from '~/utils/generic'
 import { setRefreshToken } from '~/utils/refreshToken'
 import routes from '~/utils/routes'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from '~/utils/validator'
@@ -81,7 +82,7 @@ const Signup = () => {
       allErrors.password = t('auth.common.passwordTooLong', { amount: MAX_PASSWORD_CHARS })
     }
 
-    if (!form.tos) {
+    if (!form.tos && !isSelfhosted) {
       allErrors.tos = t('auth.common.tosError')
     }
 
@@ -136,7 +137,7 @@ const Signup = () => {
       })
       navigate(routes.onboarding)
     } catch (reason) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+      toast.error((reason as { message?: string })?.message || t('apiNotifications.somethingWentWrong'))
       setIsLoading(false)
     }
   }
@@ -204,7 +205,7 @@ const Signup = () => {
         }
       }
     } catch (reason) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.socialisationGenericError'))
+      toast.error((reason as { message?: string })?.message || t('apiNotifications.socialisationGenericError'))
       setIsLoading(false)
       return
     }
@@ -231,44 +232,48 @@ const Signup = () => {
 
   return (
     <div>
-      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
-        <div className='flex min-h-full flex-1 flex-col justify-center py-6 sm:px-6 lg:px-8'>
-          <div className='sm:mx-auto sm:w-full sm:max-w-md'>
-            <h2 className='text-center text-2xl leading-9 font-bold text-gray-900 dark:text-gray-50'>
-              {t('auth.signup.trial', {
-                amount: TRIAL_DAYS,
-              })}
-            </h2>
+      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-10 sm:px-6 lg:px-8 dark:bg-slate-900'>
+        <div className='sm:mx-auto sm:w-full sm:max-w-md'>
+          <h2 className='text-center text-2xl leading-9 font-bold text-gray-900 dark:text-gray-50'>
+            {isSelfhosted
+              ? t('auth.signup.createAnAccount')
+              : t('auth.signup.trial', {
+                  amount: TRIAL_DAYS,
+                })}
+          </h2>
+          {isSelfhosted ? null : (
             <p className='text-center text-base text-gray-900 dark:text-gray-50'>{t('auth.signup.noCC')}</p>
-          </div>
-          <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
-            <div className='bg-white px-6 py-12 shadow-xs ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-900 dark:ring-slate-800'>
-              <form className='space-y-6' onSubmit={handleSubmit}>
-                <Input
-                  name='email'
-                  type='email'
-                  label={t('auth.common.email')}
-                  value={form.email}
-                  onChange={handleInput}
-                  error={beenSubmitted ? errors.email : ''}
-                />
-                <Input
-                  name='password'
-                  type='password'
-                  label={t('auth.common.password')}
-                  hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-                  value={form.password}
-                  onChange={handleInput}
-                  error={beenSubmitted ? errors.password : ''}
-                />
-                <Input
-                  name='repeat'
-                  type='password'
-                  label={t('auth.common.repeat')}
-                  value={form.repeat}
-                  onChange={handleInput}
-                  error={beenSubmitted ? errors.repeat : ''}
-                />
+          )}
+        </div>
+        <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
+          <div className='bg-white px-6 py-12 shadow-xs ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-900 dark:ring-slate-800'>
+            <form className='space-y-6' onSubmit={handleSubmit}>
+              <Input
+                name='email'
+                type='email'
+                label={t('auth.common.email')}
+                value={form.email}
+                onChange={handleInput}
+                error={beenSubmitted ? errors.email : ''}
+              />
+              <Input
+                name='password'
+                type='password'
+                label={t('auth.common.password')}
+                hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+                value={form.password}
+                onChange={handleInput}
+                error={beenSubmitted ? errors.password : ''}
+              />
+              <Input
+                name='repeat'
+                type='password'
+                label={t('auth.common.repeat')}
+                value={form.repeat}
+                onChange={handleInput}
+                error={beenSubmitted ? errors.repeat : ''}
+              />
+              {isSelfhosted ? null : (
                 <Checkbox
                   checked={form.tos}
                   onChange={(checked) =>
@@ -308,80 +313,86 @@ const Signup = () => {
                   }}
                   hint={beenSubmitted ? errors.tos : ''}
                 />
-                <div className='flex'>
-                  <Checkbox
-                    checked={form.checkIfLeaked}
-                    onChange={(checked) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        checkIfLeaked: checked,
-                      }))
-                    }
-                    name='checkIfLeaked'
-                    label={t('auth.common.checkLeakedPassword')}
-                  />
-                  <Tooltip
-                    className='ml-2'
-                    text={
-                      <Trans
-                        t={t}
-                        i18nKey='auth.common.checkLeakedPasswordDesc'
-                        components={{
-                          db: (
-                            <a
-                              href={HAVE_I_BEEN_PWNED_URL}
-                              className='font-medium text-indigo-400 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-500'
-                              target='_blank'
-                              rel='noreferrer noopener'
-                            />
-                          ),
-                        }}
-                        values={{
-                          database: 'haveibeenpwned.com',
-                        }}
-                      />
-                    }
-                  />
-                </div>
-                <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
-                  {t('auth.signup.button')}
-                </Button>
-              </form>
+              )}
+              <div className='flex'>
+                <Checkbox
+                  checked={form.checkIfLeaked}
+                  onChange={(checked) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      checkIfLeaked: checked,
+                    }))
+                  }
+                  name='checkIfLeaked'
+                  label={t('auth.common.checkLeakedPassword')}
+                />
+                <Tooltip
+                  className='ml-2'
+                  text={
+                    <Trans
+                      t={t}
+                      i18nKey='auth.common.checkLeakedPasswordDesc'
+                      components={{
+                        db: (
+                          <a
+                            href={HAVE_I_BEEN_PWNED_URL}
+                            className='font-medium text-indigo-400 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-500'
+                            target='_blank'
+                            rel='noreferrer noopener'
+                          />
+                        ),
+                      }}
+                      values={{
+                        database: 'haveibeenpwned.com',
+                      }}
+                    />
+                  }
+                />
+              </div>
+              <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
+                {t('auth.signup.button')}
+              </Button>
+            </form>
 
-              <div>
-                <div className='relative mt-10'>
-                  <div className='absolute inset-0 flex items-center' aria-hidden='true'>
-                    <div className='w-full border-t border-gray-200 dark:border-gray-600' />
-                  </div>
-                  <div className='relative flex justify-center text-sm leading-6 font-medium'>
-                    <span className='bg-white px-6 text-gray-900 dark:bg-slate-900 dark:text-gray-50'>
-                      {t('auth.common.orContinueWith')}
-                    </span>
-                  </div>
+            <div>
+              <div className='relative mt-10'>
+                <div className='absolute inset-0 flex items-center' aria-hidden='true'>
+                  <div className='w-full border-t border-gray-200 dark:border-gray-600' />
                 </div>
-                <div className='mt-6 grid grid-cols-2 gap-4'>
-                  <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
-                  <GithubAuth onClick={() => onSsoLogin('github')} disabled={isLoading} />
+                <div className='relative flex justify-center text-sm leading-6 font-medium'>
+                  <span className='bg-white px-6 text-gray-900 dark:bg-slate-900 dark:text-gray-50'>
+                    {t('auth.common.orContinueWith')}
+                  </span>
                 </div>
               </div>
+              <div className={cn('mt-6 grid gap-4', isSelfhosted ? 'grid-cols-1' : 'grid-cols-2')}>
+                {isSelfhosted ? (
+                  <OIDCAuth onClick={() => onSsoLogin('openid-connect')} disabled={isLoading} className='w-full' />
+                ) : (
+                  <>
+                    <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
+                    <GithubAuth onClick={() => onSsoLogin('github')} disabled={isLoading} />
+                  </>
+                )}
+              </div>
             </div>
-
-            <p className='mt-10 text-center text-sm text-gray-500 dark:text-gray-200'>
-              <Trans
-                t={t}
-                i18nKey='auth.signup.alreadyAMember'
-                components={{
-                  url: (
-                    <Link
-                      to={routes.signin}
-                      className='leading-6 font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
-                      aria-label={t('titles.signin')}
-                    />
-                  ),
-                }}
-              />
-            </p>
           </div>
+
+          <p className='mt-10 text-center text-sm text-gray-500 dark:text-gray-200'>
+            <Trans
+              t={t}
+              i18nKey='auth.signup.alreadyAMember'
+              components={{
+                url: (
+                  <Link
+                    to={routes.signin}
+                    className='leading-6 font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
+                    aria-label={t('titles.signin')}
+                  />
+                ),
+              }}
+            />
+          </p>
         </div>
       </div>
     </div>

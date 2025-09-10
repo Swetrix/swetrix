@@ -1,14 +1,25 @@
 import { TrendingUpIcon, DollarSignIcon, ShoppingCartIcon, ChevronDownIcon } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { isSelfhosted } from '~/lib/constants'
 import Input from '~/ui/Input'
 import Tooltip from '~/ui/Tooltip'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.8,
+  exclude: isSelfhosted,
 })
+
+export async function loader() {
+  if (isSelfhosted) {
+    return redirect('/login', 302)
+  }
+
+  return null
+}
 
 interface CampaignMetrics {
   campaignName: string

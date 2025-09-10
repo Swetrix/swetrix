@@ -4,7 +4,6 @@ import fs from 'fs'
 import crypto from 'crypto'
 import { CityResponse, Reader } from 'maxmind'
 import timezones from 'countries-and-timezones'
-import { v5 as uuidv5 } from 'uuid'
 import _join from 'lodash/join'
 import _filter from 'lodash/filter'
 import _values from 'lodash/values'
@@ -23,19 +22,15 @@ import _map from 'lodash/map'
 
 import {
   redis,
-  DEFAULT_SELFHOSTED_UUID,
-  SELFHOSTED_EMAIL,
-  UUIDV5_NAMESPACE,
   isDevelopment,
   isProxiedByCloudflare,
   SELFHOSTED_GEOIP_DB_PATH,
 } from './constants'
 import { clickhouse } from './integrations/clickhouse'
-import { DEFAULT_TIMEZONE, TimeFormat } from '../user/entities/user.entity'
 import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { ProjectViewEntity } from '../project/entity/project-view.entity'
 
-import { ClickhouseFunnel, ClickhouseSFUser } from './types'
+import { ClickhouseFunnel } from './types'
 
 dayjs.extend(utc)
 
@@ -294,6 +289,17 @@ const updateProjectClickhouse = async (project: any) => {
   })
 }
 
+const assignUnassignedProjectsToUserClickhouse = async (userId: string) => {
+  const query = `ALTER TABLE project UPDATE adminId = {userId:FixedString(36)} WHERE adminId IS NULL`
+
+  await clickhouse.command({
+    query,
+    query_params: {
+      userId,
+    },
+  })
+}
+
 /**
  * Checking the % change in one number relative to the other
  * @param oldVal The initial value
@@ -397,107 +403,6 @@ const deleteRefreshTokenClickhouse = async (
     query_params: {
       userId,
       refreshToken,
-    },
-  })
-}
-
-interface IClickhouseUser {
-  timezone?: string
-  timeFormat?: string
-  showLiveVisitorsInTitle?: number
-}
-
-const CLICKHOUSE_SETTINGS_ID = 'sfuser'
-
-const createUserClickhouse = async (user: IClickhouseUser) => {
-  const { timezone, timeFormat, showLiveVisitorsInTitle } = user
-
-  await clickhouse.insert({
-    table: 'sfuser',
-    format: 'JSONEachRow',
-    values: [
-      {
-        id: CLICKHOUSE_SETTINGS_ID,
-        timezone,
-        timeFormat,
-        showLiveVisitorsInTitle,
-      },
-    ],
-  })
-}
-
-const getUserClickhouse = async () => {
-  const query = `SELECT * FROM sfuser WHERE id = {id:String}`
-
-  try {
-    const { data } = await clickhouse
-      .query({
-        query,
-        query_params: {
-          id: CLICKHOUSE_SETTINGS_ID,
-        },
-      })
-      .then(resultSet => resultSet.json<ClickhouseSFUser>())
-
-    return data[0] || ({} as ClickhouseSFUser)
-  } catch {
-    return {}
-  }
-}
-
-const userClickhouseExists = async () => {
-  const query = `SELECT * FROM sfuser WHERE id = '${CLICKHOUSE_SETTINGS_ID}'`
-
-  try {
-    const { data } = await clickhouse
-      .query({
-        query,
-      })
-      .then(resultSet => resultSet.json())
-
-    return !_isEmpty(data)
-  } catch {
-    return false
-  }
-}
-
-const updateUserClickhouse = async (user: IClickhouseUser) => {
-  const userExists = await userClickhouseExists()
-
-  if (!userExists) {
-    await createUserClickhouse({
-      timezone: DEFAULT_TIMEZONE,
-      timeFormat: TimeFormat['12-hour'],
-      showLiveVisitorsInTitle: 0,
-      ...user,
-    })
-  }
-
-  let query = 'ALTER table sfuser UPDATE '
-  let separator = ''
-
-  if (!_isNil(user.timezone)) {
-    query += `${separator}timezone={timezone:String}`
-    separator = ', '
-  }
-
-  if (!_isNil(user.timeFormat)) {
-    query += `${separator}timeFormat={timeFormat:String}`
-    separator = ', '
-  }
-
-  if (!_isNil(user.showLiveVisitorsInTitle)) {
-    query += `${separator}showLiveVisitorsInTitle={showLiveVisitorsInTitle:Int8}`
-    separator = ', '
-  }
-
-  query += ` WHERE id={id:String}`
-
-  await clickhouse.command({
-    query,
-    query_params: {
-      ...user,
-      id: CLICKHOUSE_SETTINGS_ID,
     },
   })
 }
@@ -719,14 +624,6 @@ export const isPrimaryNode = () => {
   return process.env.IS_PRIMARY_NODE === 'true'
 }
 
-const getSelfhostedUUID = (): string => {
-  try {
-    return uuidv5(SELFHOSTED_EMAIL, UUIDV5_NAMESPACE)
-  } catch {
-    return DEFAULT_SELFHOSTED_UUID
-  }
-}
-
 const dummyLookup = () => ({
   country: {
     names: {
@@ -848,16 +745,13 @@ export {
   deleteProjectClickhouse,
   calculateRelativePercentage,
   millisecondsToSeconds,
-  getSelfhostedUUID,
   saveRefreshTokenClickhouse,
   findRefreshTokenClickhouse,
   deleteRefreshTokenClickhouse,
-  updateUserClickhouse,
-  getUserClickhouse,
-  createUserClickhouse,
   getGeoDetails,
   getIPFromHeaders,
   sumArrays,
+  assignUnassignedProjectsToUserClickhouse,
   getFunnelClickhouse,
   getFunnelsClickhouse,
   updateFunnelClickhouse,

@@ -1,14 +1,25 @@
 import { TrendingUpIcon } from 'lucide-react'
 import { useState } from 'react'
+import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.8,
+  exclude: isSelfhosted,
 })
+
+export async function loader() {
+  if (isSelfhosted) {
+    return redirect('/login', 302)
+  }
+
+  return null
+}
 
 const FAQ_ITEMS = [
   {

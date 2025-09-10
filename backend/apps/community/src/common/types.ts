@@ -1,8 +1,15 @@
-export interface ClickhouseSFUser {
+import { OnboardingStep } from '../user/entities/user.entity'
+
+export interface ClickhouseUser {
   id: string
-  timezone: string | null
-  timeFormat: string | null
-  showLiveVisitorsInTitle: number | null
+  email: string
+  password: string
+  timezone: string
+  timeFormat: string
+  showLiveVisitorsInTitle: number
+  onboardingStep: OnboardingStep
+  hasCompletedOnboarding: number
+  apiKey: string | null
 }
 
 export interface ClickhouseProject {

@@ -6,6 +6,6 @@ export const sitemap: SitemapFunction = () => ({
   exclude: true,
 })
 
-export default function Index() {
+export default function UserSettingsPage() {
   return <UserSettings />
 }

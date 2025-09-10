@@ -1158,6 +1158,10 @@ export class UserController {
   ): Promise<void> {
     this.logger.log({ userId, step }, 'POST /user/onboarding/step')
 
+    if (!Object.values(OnboardingStep).includes(step)) {
+      throw new BadRequestException('Invalid onboarding step')
+    }
+
     await this.userService.update(userId, {
       onboardingStep: step,
     })

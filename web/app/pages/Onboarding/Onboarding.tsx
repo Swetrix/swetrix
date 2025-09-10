@@ -9,8 +9,9 @@ import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { updateOnboardingStep, completeOnboarding, createProject, authMe, getProjects } from '~/api'
+import { CONTACT_US_URL } from '~/components/Footer'
 import { withAuthentication, auth } from '~/hoc/protected'
-import { DOCS_URL, INTEGRATIONS_URL } from '~/lib/constants'
+import { DOCS_URL, INTEGRATIONS_URL, isSelfhosted } from '~/lib/constants'
 import { getSnippet } from '~/modals/TrackingSnippet'
 import { useAuth } from '~/providers/AuthProvider'
 import { Badge } from '~/ui/Badge'
@@ -31,6 +32,7 @@ const getOnboardingSteps = (t: TFunction) => [
     title: t('onboarding.confirm.navTitle'),
     description: t('onboarding.confirm.navDesc'),
     completed: false,
+    uiHidden: isSelfhosted,
   },
   {
     id: 'create_project',
@@ -80,7 +82,7 @@ const Onboarding = () => {
     }
 
     const determineCurrentStep = async () => {
-      if (!user?.isActive) {
+      if (!user?.isActive && !isSelfhosted) {
         setCurrentStep(0)
         return
       }
@@ -236,6 +238,8 @@ const Onboarding = () => {
           <nav aria-label='Progress'>
             <ol className='overflow-hidden'>
               {steps.map((step, stepIdx) => {
+                if (step.uiHidden) return null
+
                 const status = step.completed ? 'complete' : step.current ? 'current' : 'upcoming'
 
                 return (
@@ -570,7 +574,9 @@ const Onboarding = () => {
                           components={{
                             url: (
                               <Link
-                                to={routes.contact}
+                                to={isSelfhosted ? CONTACT_US_URL : routes.contact}
+                                target='_blank'
+                                rel='noopener noreferrer'
                                 className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                               />
                             ),
