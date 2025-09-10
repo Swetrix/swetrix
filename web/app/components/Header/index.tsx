@@ -576,7 +576,7 @@ const NotAuthedHeader = ({
                   to={routes.signup}
                   className='flex items-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                 >
-                  {t('header.startForFree')}
+                  {isSelfhosted ? t('header.signUp') : t('header.startForFree')}
                   <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-4 stroke-2' />
                 </Link>
               </>
@@ -885,7 +885,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                       className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                       aria-label={t('titles.signup')}
                     >
-                      {t('header.startForFree')}
+                      {isSelfhosted ? t('header.signUp') : t('header.startForFree')}
                     </Link>
                   </>
                 )}

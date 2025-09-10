@@ -324,8 +324,6 @@ export const GDPR_EXPORT_TIMEFRAME = 14 // days
 
 export const SHOW_BANNER_AT_PERC = 85 // show banner when 85% of events in tier are used
 
-export const TITLE_SUFFIX = '| Swetrix'
-
 export const LS_THEME_SETTING = 'colour-theme'
 export const LS_VIEW_PREFS_SETTING = 'proj-view-preferences'
 export const LS_CAPTCHA_VIEW_PREFS_SETTING = 'captcha-view-preferences'
@@ -393,6 +391,8 @@ export const isDisableMarketingPages =
 
 export const apiUrlUnprocessed = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
 const cdnUrlUnprocessed = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_URL
+
+export const TITLE_SUFFIX = isSelfhosted ? '| Swetrix Community Edition' : '| Swetrix'
 
 export const API_URL = _endsWith(apiUrlUnprocessed, '/') ? apiUrlUnprocessed : `${apiUrlUnprocessed}/`
 export const CDN_URL = _endsWith(cdnUrlUnprocessed, '/') ? cdnUrlUnprocessed : `${cdnUrlUnprocessed}/`

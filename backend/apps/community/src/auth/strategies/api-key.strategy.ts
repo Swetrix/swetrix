@@ -1,15 +1,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { HeaderAPIKeyStrategy } from 'passport-headerapikey'
-import { AuthService } from '../auth.service'
-import { getSelfhostedUser } from '../../user/entities/user.entity'
+import { UserService } from '../../user/user.service'
 
 @Injectable()
 export class ApiKeyStrategy extends PassportStrategy(
   HeaderAPIKeyStrategy,
   'api-key',
 ) {
-  constructor(private readonly authService: AuthService) {
+  constructor(private readonly userService: UserService) {
     super(
       { header: 'X-Api-Key', prefix: '' },
       true,
@@ -23,10 +22,9 @@ export class ApiKeyStrategy extends PassportStrategy(
   }
 
   async validate(apiKey: string, done: (err: any, user: any) => void) {
-    const isValid = this.authService.isApiKeyValid(apiKey)
-    if (!isValid) return done(new UnauthorizedException(), false)
+    const user = await this.userService.findOne({ apiKey })
+    if (!user) return done(new UnauthorizedException(), false)
 
-    const user = await getSelfhostedUser()
     return done(null, user)
   }
 }

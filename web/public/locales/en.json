@@ -486,7 +486,8 @@
       "create": "Create your account",
       "trial": "Start your free {{amount}} day trial",
       "noCC": "No credit card required.",
-      "alreadyAMember": "Already a member? <url>Sign in</url>"
+      "alreadyAMember": "Already a member? <url>Sign in</url>",
+      "createAnAccount": "Create an account"
     },
     "verification": {
       "success": "Your email has been successfully verified!",
@@ -1379,6 +1380,7 @@
   },
   "header": {
     "startForFree": "Start for free",
+    "signUp": "Sign up",
     "switchTheme": "Switch theme",
     "dark": "Dark",
     "light": "Light",

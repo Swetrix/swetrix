@@ -5,22 +5,14 @@ export enum BotsProtectionLevel {
 
 export class Project {
   id: string
-
   name: string
-
   origins: string[]
-
   ipBlacklist: string[]
-
   active: boolean
-
   public: boolean
-
   isPasswordProtected: boolean
-
   botsProtectionLevel: BotsProtectionLevel
-
   passwordHash?: string
-
   created: Date
+  adminId: string | null
 }

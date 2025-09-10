@@ -27,7 +27,7 @@ import { OrganisationModule } from '../organisation/organisation.module'
     ActionTokensModule,
     ProjectModule,
     TypeOrmModule.forFeature([Message]),
-    OrganisationModule,
+    OrganisationModule, // todo: remove - not used
   ],
   controllers: [AuthController],
   providers: [

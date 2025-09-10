@@ -47,7 +47,6 @@ import { TelegramService } from '../integrations/telegram/telegram.service'
 import { SSOProviders } from './dtos'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 import { UserGithubDTO } from '../user/dto/user-github.dto'
-import { OrganisationService } from '../organisation/organisation.service'
 
 const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`
@@ -78,7 +77,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly projectService: ProjectService,
     private readonly telegramService: TelegramService,
-    private readonly organisationService: OrganisationService,
   ) {
     this.oauth2Client = new Auth.OAuth2Client(
       this.configService.get('GOOGLE_OAUTH2_CLIENT_ID'),

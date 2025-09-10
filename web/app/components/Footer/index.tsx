@@ -32,7 +32,7 @@ import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 import { cn } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 
-const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
+export const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
 const ABOUT_US_URL = `https://swetrix.com${routesPath.about}`
 
 const navigation = {
