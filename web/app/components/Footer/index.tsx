@@ -33,13 +33,12 @@ import { cn } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 
 export const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
-const ABOUT_US_URL = `https://swetrix.com${routesPath.about}`
 
-const navigation = {
+const productionNavigation = {
   company: [
     { key: 'about', href: routesPath.about, internal: true },
     { key: 'open', href: routesPath.open, internal: true },
-    { key: 'status', href: STATUSPAGE_URL },
+    { key: 'status', href: STATUSPAGE_URL, internal: false },
     { key: 'blog', href: routesPath.blog, internal: true },
   ],
   legal: [
@@ -90,9 +89,9 @@ const navigation = {
     } => ({ key: 'imprint', href: routesPath.imprint, internal: true }),
   ],
   features: [
-    { value: 'vs Google Analytics', href: SWETRIX_VS_GOOGLE },
-    { value: 'vs Cloudflare Analytics', href: SWETRIX_VS_CLOUDFLARE },
-    { value: 'vs Simple Analytics', href: SWETRIX_VS_SIMPLE_ANALYTICS },
+    { value: 'vs Google Analytics', href: SWETRIX_VS_GOOGLE, internal: false },
+    { value: 'vs Cloudflare Analytics', href: SWETRIX_VS_CLOUDFLARE, internal: false },
+    { value: 'vs Simple Analytics', href: SWETRIX_VS_SIMPLE_ANALYTICS, internal: false },
     { key: 'tools', href: routesPath.tools, internal: true },
     { key: 'utm', href: routesPath.utm_generator, internal: true },
     { key: 'ctr', href: routesPath.ctr_calculator, internal: true },
@@ -121,6 +120,65 @@ const navigation = {
     },
   ],
 }
+
+const communityEditionNavigation = {
+  company: [
+    { key: 'cloudEdition', href: 'https://swetrix.com', internal: false },
+    { key: 'pricing', href: `https://swetrix.com/#pricing`, internal: false },
+    { key: 'blog', href: `https://swetrix.com${routesPath.blog}`, internal: false },
+    { key: 'supportUs', href: DONATE_URL, internal: false },
+  ],
+  legal: [
+    (): {
+      key: string
+      href: string
+      internal: boolean
+    } => ({ key: 'docs', href: DOCS_URL, internal: false }),
+    (): {
+      key: string
+      href: string
+      internal: boolean
+    } => ({ key: 'contact', href: `https://swetrix.com${routesPath.contact}`, internal: false }),
+    (): {
+      key: string
+      href: string
+      internal: boolean
+    } => ({ key: 'imprint', href: `https://swetrix.com${routesPath.imprint}`, internal: false }),
+  ],
+  features: [
+    { value: 'vs Google Analytics', href: SWETRIX_VS_GOOGLE, internal: false },
+    { value: 'vs Cloudflare Analytics', href: SWETRIX_VS_CLOUDFLARE, internal: false },
+    { value: 'vs Simple Analytics', href: SWETRIX_VS_SIMPLE_ANALYTICS, internal: false },
+    { key: 'tools', href: `https://swetrix.com${routesPath.tools}`, internal: false },
+    { key: 'utm', href: `https://swetrix.com${routesPath.utm_generator}`, internal: false },
+    { key: 'ctr', href: `https://swetrix.com${routesPath.ctr_calculator}`, internal: false },
+    { key: 'roi', href: `https://swetrix.com${routesPath.roi_calculator}`, internal: false },
+  ],
+  social: [
+    {
+      name: 'GitHub',
+      href: GITHUB_URL,
+      icon: (props: React.SVGProps<SVGSVGElement>) => <SiGithub {...props} />,
+    },
+    {
+      name: 'Twitter',
+      href: TWITTER_URL,
+      icon: (props: React.SVGProps<SVGSVGElement>) => <SiX {...props} />,
+    },
+    {
+      name: 'Discord',
+      href: DISCORD_URL,
+      icon: (props: React.SVGProps<SVGSVGElement>) => <SiDiscord {...props} />,
+    },
+    {
+      name: 'LinkedIn',
+      href: LINKEDIN_URL,
+      icon: (props: React.SVGProps<SVGSVGElement>) => <LinkedIn {...props} />,
+    },
+  ],
+}
+
+const navigation = isSelfhosted ? communityEditionNavigation : productionNavigation
 
 const LanguageSelector = () => {
   const {
@@ -200,67 +258,6 @@ const ThemeSelector = () => {
   )
 }
 
-const SelfHostedFooter = () => {
-  const { t } = useTranslation('common')
-
-  return (
-    <footer className='border-t border-gray-200 bg-gray-50 dark:border-slate-800/50 dark:bg-slate-900'>
-      <div className='mx-auto max-w-7xl overflow-hidden px-4 py-8 sm:px-6 lg:px-8'>
-        <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
-          <div className='px-5 py-2'>
-            <a
-              href={CONTACT_US_URL}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
-            >
-              {t('footer.contact')}
-            </a>
-          </div>
-          <div className='px-5 py-2'>
-            <a
-              href={`https://swetrix.com${routesPath.utm_generator}`}
-              className='leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label={`${t('footer.status')} (opens in a new tab)`}
-            >
-              {t('footer.utm')}
-            </a>
-          </div>
-          <div className='px-5 py-2'>
-            <a
-              href={DONATE_URL}
-              className='leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label={`${t('footer.status')} (opens in a new tab)`}
-            >
-              {t('footer.donate')}
-            </a>
-          </div>
-          <div className='px-5 py-2'>
-            <a
-              href={ABOUT_US_URL}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
-            >
-              {t('footer.about')}
-            </a>
-          </div>
-        </nav>
-        <div className='mt-8 border-t border-gray-200 pt-6 dark:border-slate-800/50'>
-          <div className='flex flex-col justify-center space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4'>
-            <LanguageSelector />
-            <ThemeSelector />
-          </div>
-        </div>
-      </div>
-    </footer>
-  )
-}
-
 interface FooterProps {
   showDBIPMessage?: boolean
 }
@@ -269,10 +266,6 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
   const { isAuthenticated } = useAuth()
   const { t } = useTranslation('common')
   const year = new Date().getFullYear()
-
-  if (isSelfhosted) {
-    return <SelfHostedFooter />
-  }
 
   return (
     <footer className='dark:bg-gray-750 bg-gray-800' aria-labelledby='footer-heading'>
@@ -283,7 +276,26 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
         <div className='xl:grid xl:grid-cols-2 xl:gap-8'>
           <div className='space-y-5 xl:col-span-1'>
             <SwetrixLogo theme='dark' lazy />
-            <p className='text-base text-gray-300'>{t('footer.description')}</p>
+            <p className='text-base text-gray-300'>
+              {isSelfhosted ? (
+                <Trans
+                  t={t}
+                  i18nKey='footer.ceDescription'
+                  components={{
+                    url: (
+                      <a
+                        href='https://swetrix.com'
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-indigo-400 hover:underline'
+                      />
+                    ),
+                  }}
+                />
+              ) : (
+                t('footer.description')
+              )}
+            </p>
             <div className='flex text-gray-300'>
               <Trans t={t} i18nKey='footer.madeInHostedIn'>
                 <Flag className='mx-[1ch]' country='GB' size={18} alt='GB' aria-hidden='true' />

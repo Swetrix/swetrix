@@ -1413,11 +1413,12 @@
   },
   "footer": {
     "description": "Swetrix is a powerful analytics platform that respects user privacy.",
+    "ceDescription": "This is a community edition of Swetrix, running on self-managed infrastructure. We cannot guarantee its performance or reliability. For official managed hosting, check out <url>swetrix.com</url>.",
     "madeInHostedIn": "Made in <0></0> / <1></1>, hosted in <2></2>",
     "support": "Support",
     "company": "Company",
     "legal": "Support & Legal",
-    "copy": "Swetrix Analytics. All rights reserved.",
+    "copy": "Swetrix Ltd. All rights reserved.",
     "contact": "Contact",
     "pp": "Privacy Policy",
     "tos": "Terms of Service",
@@ -1435,11 +1436,12 @@
     "cookie": "Cookie Policy",
     "terms": "Terms",
     "status": "Status",
-    "donate": "Donate",
+    "supportUs": "Support us",
     "captcha": "CAPTCHA",
     "open": "Open startup",
     "about": "About us",
     "features": "Features",
-    "imprint": "Legal notice"
+    "imprint": "Legal notice",
+    "cloudEdition": "Cloud edition"
   }
 }
