@@ -6,9 +6,15 @@ import {
   Body,
   BadRequestException,
   Post,
+  Headers,
+  Ip,
+  ConflictException,
+  Delete,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger'
 import _omit from 'lodash/omit'
+import _isNull from 'lodash/isNull'
+import { v4 as uuidv4 } from 'uuid'
 
 import { JwtAccessTokenGuard } from '../auth/guards'
 import { OnboardingStep, UserType } from './entities/user.entity'
@@ -20,6 +26,7 @@ import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { AppLoggerService } from '../logger/logger.service'
 import { UserService } from './user.service'
 import { ClickhouseUser } from '../common/types'
+import { checkRateLimit, getIPFromHeaders } from '../common/utils'
 
 @ApiTags('User')
 @Controller('user')
@@ -107,6 +114,58 @@ export class UserController {
       onboardingStep: OnboardingStep.COMPLETED,
       hasCompletedOnboarding: 1,
     })
+  }
+
+  @ApiBearerAuth()
+  @Post('api-key')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async generateApiKey(
+    @CurrentUserId() userId: string,
+    @Headers() headers,
+    @Ip() reqIP,
+  ) {
+    this.logger.log({ userId }, 'POST /user/api-key')
+
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'generate-api-key', 5, 3600)
+
+    const user = await this.userService.findOne({ id: userId })
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    if (!_isNull(user.apiKey)) {
+      throw new ConflictException('You already have an API key')
+    }
+
+    const apiKey: string = uuidv4()
+
+    await this.userService.update(userId, { apiKey })
+
+    return { apiKey }
+  }
+
+  @ApiBearerAuth()
+  @Delete('/api-key')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async deleteApiKey(@CurrentUserId() userId: string) {
+    this.logger.log({ userId }, 'DELETE /user/api-key')
+
+    const user = await this.userService.findOne({ id: userId })
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    if (_isNull(user.apiKey)) {
+      throw new ConflictException("You don't have an API key")
+    }
+
+    await this.userService.update(userId, { apiKey: null })
   }
 
   @ApiBearerAuth()

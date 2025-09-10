@@ -499,7 +499,6 @@ const UserSettings = () => {
                     <>
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
 
-                      {/* API access setup */}
                       <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                         {t('profileSettings.apiKey')}
                       </h3>
@@ -520,8 +519,17 @@ const UserSettings = () => {
                         </>
                       ) : (
                         <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                          {t('profileSettings.selfhostedNoApiKey')}
+                          {t('profileSettings.noApiKey')}
                         </p>
+                      )}
+                      {user?.apiKey ? (
+                        <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
+                          {t('profileSettings.deleteApiKeyBtn')}
+                        </Button>
+                      ) : (
+                        <Button className='mt-4' onClick={onApiKeyGenerate} primary large>
+                          {t('profileSettings.addApiKeyBtn')}
+                        </Button>
                       )}
                     </>
                   ) : (
