@@ -34,6 +34,8 @@ import _size from 'lodash/size'
 import _split from 'lodash/split'
 import _isBoolean from 'lodash/isBoolean'
 import _omit from 'lodash/omit'
+import _find from 'lodash/find'
+import _isNil from 'lodash/isNil'
 import _reduce from 'lodash/reduce'
 import _head from 'lodash/head'
 import _includes from 'lodash/includes'
@@ -81,6 +83,13 @@ import {
   getProjectClickhouse,
   getFunnelClickhouse,
   generateRandomId,
+  findProjectShareClickhouse,
+  findProjectSharesByProjectClickhouse,
+  findProjectSharesByUserClickhouse,
+  findProjectShareByUserAndProjectClickhouse,
+  createProjectShareClickhouse,
+  updateProjectShareClickhouse,
+  deleteProjectShareClickhouse,
 } from '../common/utils'
 import { Funnel } from './entity/funnel.entity'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -88,6 +97,9 @@ import { ProjectViewIdsDto } from './dto/project-view-ids.dto'
 import { ProjectIdDto } from './dto/project-id.dto'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
 import { UpdateProjectViewDto } from './dto/update-project-view.dto'
+import { UserService } from '../user/user.service'
+import { Roles } from '../auth/decorators/roles.decorator'
+import { UserType } from '../user/entities/user.entity'
 
 @ApiTags('Project')
 @Controller(['project', 'v1/project'])
@@ -95,6 +107,7 @@ export class ProjectController {
   constructor(
     private readonly projectService: ProjectService,
     private readonly logger: AppLoggerService,
+    private readonly userService: UserService,
   ) {}
 
   @Get('/')
@@ -120,6 +133,20 @@ export class ProjectController {
 
     const chResults = await getProjectsClickhouse(search, sort)
     const formatted = _map(chResults, this.projectService.formatFromClickhouse)
+
+    let sharesByProjectId: Record<string, any> = {}
+
+    if (userId) {
+      const rawShares = await findProjectSharesByUserClickhouse(userId)
+      sharesByProjectId = (rawShares || []).reduce((acc: any, row: any) => {
+        acc[row.projectId] = {
+          id: row.id,
+          role: row.role,
+          confirmed: Boolean(row.confirmed),
+        }
+        return acc
+      }, {})
+    }
 
     const pidsWithData =
       await this.projectService.getPIDsWhereAnalyticsDataExists(
@@ -158,18 +185,45 @@ export class ProjectController {
       {},
     )
 
-    const results = _map(formatted, project => ({
-      ..._omit(project, ['passwordHash']),
-      funnels: funnelsMap[project.id],
-      isDataExists: _includes(pidsWithData, project?.id),
-      isErrorDataExists: _includes(pidsWithErrorData, project?.id),
+    const results = _map(formatted, project => {
+      const userShare = sharesByProjectId[project.id]
+      const isOwner = userId && project.adminId === userId
+      const role = isOwner
+        ? 'owner'
+        : userShare
+          ? userShare.role
+          : userId
+            ? 'viewer'
+            : 'viewer'
+      const isAccessConfirmed = isOwner
+        ? true
+        : userShare
+          ? Boolean(userShare.confirmed)
+          : true
 
-      // these ones are not used, but we need to keep them for compatibility with the Cloud version
-      role: userId ? 'owner' : 'viewer',
-      isLocked: false,
-      isAccessConfirmed: true,
-      isAnalyticsProject: true,
-    }))
+      const projectShare = userShare
+        ? [
+            {
+              id: userShare.id,
+              role: userShare.role,
+              confirmed: Boolean(userShare.confirmed),
+              user: { id: userId },
+            },
+          ]
+        : undefined
+
+      return {
+        ..._omit(project, ['passwordHash']),
+        share: projectShare,
+        funnels: funnelsMap[project.id],
+        isDataExists: _includes(pidsWithData, project?.id),
+        isErrorDataExists: _includes(pidsWithErrorData, project?.id),
+        role,
+        isLocked: false,
+        isAccessConfirmed,
+        isAnalyticsProject: true,
+      }
+    })
 
     return {
       results,
@@ -187,6 +241,148 @@ export class ProjectController {
     const results = await getProjectsClickhouse()
     const formatted = _map(results, this.projectService.formatFromClickhouse)
     return formatted
+  }
+
+  @ApiBearerAuth()
+  @Post('/:pid/share')
+  @HttpCode(200)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async share(
+    @Param('pid') pid: string,
+    @Body() body: { email: string; role: 'admin' | 'viewer' },
+    @CurrentUserId() userId: string,
+  ) {
+    this.logger.log({ userId, pid, body }, 'POST /project/:pid/share')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    if (!body?.email || !['admin', 'viewer'].includes(body.role)) {
+      throw new BadRequestException('The provided ShareDTO is incorrect')
+    }
+
+    const inviter = await this.userService.findOne({ id: userId })
+    const project = await getProjectClickhouse(pid)
+
+    if (_isEmpty(project)) {
+      throw new BadRequestException(`Project with ID ${pid} does not exist`)
+    }
+
+    if (inviter.email === body.email) {
+      throw new BadRequestException('You cannot share with yourself')
+    }
+
+    const invitee = await this.userService.findOne({ email: body.email })
+
+    if (!invitee) {
+      throw new BadRequestException(
+        `User with email ${body.email} is not registered on Swetrix`,
+      )
+    }
+
+    const existing = await findProjectShareByUserAndProjectClickhouse(
+      invitee.id,
+      pid,
+    )
+
+    if (existing) {
+      throw new BadRequestException(
+        `You're already sharing the project with ${invitee.email}`,
+      )
+    }
+
+    if (project.adminId !== userId) {
+      throw new BadRequestException(
+        'You are not allowed to manage this project',
+      )
+    }
+
+    const id = uuidv4()
+
+    await createProjectShareClickhouse({
+      id,
+      userId: invitee.id,
+      projectId: pid,
+      role: body.role,
+      confirmed: 0,
+    })
+
+    return {
+      ...project,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Put('/share/:shareId')
+  @HttpCode(200)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async updateShare(
+    @Param('shareId') shareId: string,
+    @Body() body: { role: 'admin' | 'viewer' },
+    @CurrentUserId() userId: string,
+  ) {
+    this.logger.log({ userId, shareId, body }, 'PUT /project/share/:shareId')
+
+    if (!body?.role || !['admin', 'viewer'].includes(body.role)) {
+      throw new BadRequestException('The provided ShareUpdateDTO is incorrect')
+    }
+
+    const share = await findProjectShareClickhouse(shareId)
+
+    if (!share) {
+      throw new BadRequestException(`Share with ID ${shareId} does not exist`)
+    }
+
+    const project = await getProjectClickhouse(share.projectId)
+    if (!project || project.adminId !== userId) {
+      throw new BadRequestException(
+        'You are not allowed to manage this project',
+      )
+    }
+
+    await updateProjectShareClickhouse(shareId, { role: body.role })
+
+    return await findProjectShareClickhouse(shareId)
+  }
+
+  @ApiBearerAuth()
+  @Delete('/:pid/:shareId')
+  @HttpCode(204)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async deleteShare(
+    @Param('pid') pid: string,
+    @Param('shareId') shareId: string,
+    @CurrentUserId() userId: string,
+  ) {
+    this.logger.log({ userId, pid, shareId }, 'DELETE /project/:pid/:shareId')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const share = await findProjectShareClickhouse(shareId)
+
+    if (!share) {
+      return
+    }
+
+    const project = await getProjectClickhouse(share.projectId)
+
+    if (!project || project.adminId !== userId) {
+      throw new BadRequestException(
+        'You are not allowed to manage this project',
+      )
+    }
+
+    await deleteProjectShareClickhouse(shareId)
   }
 
   @ApiBearerAuth()
@@ -213,7 +409,7 @@ export class ProjectController {
     project.id = pid
     project.name = _trim(projectDTO.name)
 
-    await createProjectClickhouse(project)
+    await createProjectClickhouse({ ...project, adminId: userId })
 
     return project
   }
@@ -598,17 +794,46 @@ export class ProjectController {
     )
 
     const funnels = await getFunnelsClickhouse(id)
+    const rawShares = await findProjectSharesByProjectClickhouse(id)
+
+    const share = (rawShares || []).map((row: any) => ({
+      id: row.id,
+      role: row.role,
+      confirmed: Boolean(row.confirmed),
+      created: row.created,
+      updated: row.updated,
+      user: {
+        id: row.userId,
+        email: row.email,
+      },
+    }))
+
+    const isOwner = userId && project.adminId === userId
+    const userShare = (rawShares || []).find(
+      (row: any) => row.userId === userId,
+    )
+    const role = isOwner
+      ? 'owner'
+      : userShare
+        ? userShare.role
+        : userId
+          ? 'viewer'
+          : 'viewer'
+    const isAccessConfirmed = isOwner
+      ? true
+      : userShare
+        ? Boolean(userShare.confirmed)
+        : true
 
     return this.projectService.formatFromClickhouse({
       ..._omit(project, ['passwordHash']),
+      share,
       funnels: this.projectService.formatFunnelsFromClickhouse(funnels),
       isDataExists,
       isErrorDataExists,
-
-      // these ones are not used, but we need to keep them for compatibility with the Cloud version
-      role: userId ? 'owner' : 'viewer',
+      role,
       isLocked: false,
-      isAccessConfirmed: true,
+      isAccessConfirmed,
       isAnalyticsProject: true,
     })
   }

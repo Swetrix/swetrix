@@ -10,8 +10,10 @@ import {
   Ip,
   ConflictException,
   Delete,
+  Param,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger'
+import _isEmpty from 'lodash/isEmpty'
 import _omit from 'lodash/omit'
 import _isNull from 'lodash/isNull'
 import { v4 as uuidv4 } from 'uuid'
@@ -26,6 +28,12 @@ import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { AppLoggerService } from '../logger/logger.service'
 import { UserService } from './user.service'
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
+import {
+  findProjectShareClickhouse,
+  findProjectSharesByUserClickhouse,
+  updateProjectShareClickhouse,
+  deleteProjectShareClickhouse,
+} from '../common/utils'
 
 @ApiTags('User')
 @Controller('user')
@@ -43,10 +51,52 @@ export class UserController {
   async me(@CurrentUserId() uid: string) {
     this.logger.log({ uid }, 'GET /user/me')
 
-    const user = await this.userService.findOne({ id: uid })
+    const [user, rawShares] = await Promise.all([
+      this.userService.findOne({ id: uid }),
+      findProjectSharesByUserClickhouse(uid),
+    ])
+
+    const sharedProjects = (rawShares || []).map((row: any) => ({
+      id: row.id,
+      confirmed: Boolean(row.confirmed),
+      role: row.role,
+      created: row.created,
+      updated: row.updated,
+      project: this.formatProjectFromRow(row),
+      uiHidden: false,
+    }))
 
     return {
-      user: this.userService.omitSensitiveData(user),
+      user: {
+        ...this.userService.omitSensitiveData(user),
+        sharedProjects,
+        organisationMemberships: [],
+      },
+    }
+  }
+
+  private formatProjectFromRow(row: any) {
+    return {
+      id: row.projectId,
+      name: row.projectName,
+      origins: row.projectOrigins ? String(row.projectOrigins).split(',') : [],
+      ipBlacklist: row.projectIpBlacklist
+        ? String(row.projectIpBlacklist).split(',')
+        : [],
+      active: Boolean(row.projectActive),
+      public: Boolean(row.projectPublic),
+      isPasswordProtected: Boolean(row.projectIsPasswordProtected),
+      botsProtectionLevel: row.projectBotsProtectionLevel,
+      created: row.projectCreated,
+      isAnalyticsProject: true,
+      isCaptchaProject: false,
+      isCaptchaEnabled: false,
+      captchaSecretKey: null,
+      uiHidden: false,
+      funnels: [],
+      isLocked: false,
+      isDataExists: false,
+      isErrorDataExists: false,
     }
   }
 
@@ -77,6 +127,62 @@ export class UserController {
     return {
       showLiveVisitorsInTitle: show,
     }
+  }
+
+  @ApiBearerAuth()
+  @Delete('/share/:actionId')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async deleteShare(
+    @CurrentUserId() uid: string,
+    @Param('actionId') actionId: string,
+  ) {
+    this.logger.log({ uid, actionId }, 'DELETE /user/share/:actionId')
+
+    const share = await findProjectShareClickhouse(actionId)
+
+    if (_isEmpty(share)) {
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
+    }
+
+    if (share.userId !== uid) {
+      throw new BadRequestException(
+        'You are not allowed to reject this invitation',
+      )
+    }
+
+    await deleteProjectShareClickhouse(actionId)
+  }
+
+  @ApiBearerAuth()
+  @Get('/share/:actionId')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async acceptShare(
+    @CurrentUserId() uid: string,
+    @Param('actionId') actionId: string,
+  ) {
+    this.logger.log({ uid, actionId }, 'GET /user/share/:actionId')
+
+    const share = await findProjectShareClickhouse(actionId)
+
+    if (_isEmpty(share)) {
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
+    }
+
+    if (share.userId !== uid) {
+      throw new BadRequestException(
+        'You are not allowed to accept this invitation',
+      )
+    }
+
+    await updateProjectShareClickhouse(actionId, { confirmed: 1 })
   }
 
   @ApiBearerAuth()
