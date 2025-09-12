@@ -244,7 +244,7 @@ export default function App() {
         <meta charSet='utf-8' />
         <SEO />
         <meta name='google' content='notranslate' />
-        <link rel='icon' type='image/x-icon' href='/favicon.ico' />
+        <link rel='icon' type='image/x-icon' href={isSelfhosted ? '/favicon-ce.ico' : '/favicon.ico'} />
         <Meta />
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Links />
