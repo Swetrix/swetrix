@@ -352,8 +352,11 @@
     ]
   },
   "main": {
+    "faq": {
+      "title": "Frequently asked questions"
+    },
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
-    "slogan": "Understand <span>the story</span> behind your customer clicks and scrolls",
+    "slogan": "Turn traffic into insights",
     "description": "Get all the insights you need about your users and website visitors without the hassle of showing cookie banners. Experience intuitive, easy-to-use and GDPR-compliant web analytics without invading the privacy of your visitors.",
     "understandTheirUsers": "<0>{{amount}}</0> people understand their users",
     "perfect": "It's perfect for <0>marketers</0>, <1>start-ups</1>, <2>small businesses</2> and virtually any type of business!",
@@ -365,34 +368,48 @@
     "whyPeopleLoveSwetrix": "Swetrix is an ethical and powerful service. Hundreds of people have already made the switch from Google Analytics and other alternatives.",
     "weAreOpensource": "We are <url>open source</url>",
     "coreFeatures": "Only the features you need",
-    "problem": {
-      "title": "Do you struggle to make sense of your analytics data?",
-      "description": "Many web analytics solutions are either too complex and overwhelming, or too simple and don't provide enough insight. Business owners don't understand their customers and lose money.",
-      "step1": "Business owner collects web data",
-      "step2": "Overwhelmed by <u>complex dashboards</u> or limited by oversimplified metrics",
-      "step3": "Makes uninformed decisions, missing opportunities for growth"
+    "heroBenefits": {
+      "trial": "Free trial {{days}} days",
+      "cookieless": "Cookie-less tracking",
+      "gdpr": "GDPR compliant",
+      "dataOwnership": "100% data ownership",
+      "openSource": "Open-source",
+      "selfHostable": "Self-hostable",
+      "quickSetup": "Quick setup"
     },
-    "butThereIsASolution": "But there is a solution...",
-    "knowYourCustomers": "Know your customers and users",
-    "insights": {
-      "title": "Get traffic insights",
-      "description": "Swetrix helps you understand everything you need to know about your website traffic. Know how many people are online, what pages are most popular, where are your users from, and more."
+    "web": {
+      "title": "Web analytics",
+      "description": "Get all the insights you need about your users with a privacy-friendly and easy-to-use web analytics tool.",
+      "features": [
+        "Top pages",
+        "Geolocation",
+        "Traffic sources",
+        "UTM Campaigns",
+        "Custom events",
+        "Session analysis",
+        "Bounce rate",
+        "User flows"
+      ]
     },
-    "painPoints": {
-      "title": "Track website speed",
-      "description": "Nobody likes slow websites. Users are more likely to abandon your website if it takes too long to load, stay ahead of these problems and measure insights from real interactions."
+    "performance": {
+      "title": "Website speed and performance",
+      "description": "Monitor your website speed and performance metrics from real user interactions."
     },
-    "customisation": {
-      "title": "Complete customisation",
-      "description": "Missing a feature? We will build it :) You can also build your own features or install 3rd party add-ons from our Extensions Marketplace."
-    },
-    "integrations": {
-      "title": "Works with any platform",
-      "description": "With dozens of integrations, Swetrix makes it easy to connect your website and know your users, out of the box."
+    "errors": {
+      "title": "Error tracking",
+      "description": "Get detailed insights into what kind of errors are happening on your website. View error details and aggregated data by geolocation, browser, device type, page and other metrics."
     },
     "sessions": {
-      "title": "Session analysis",
-      "description": "Analyse the sessions of your website users and make data-driven decisions."
+      "title": "User sessions",
+      "description": "Get detailed insights about your users' journey through your website and see how they interact with it. Track how long they stayed on your website, what actions they took and what pages visited.",
+      "features": [
+        "Session duration",
+        "Geolocation",
+        "Session pageviews flow",
+        "Error tracking",
+        "Browser & OS info",
+        "Custom events"
+      ]
     },
     "cookies": {
       "title": "Forget about annoying cookie banners",
@@ -403,12 +420,16 @@
       "description": "Use UTMs to tag your ads, social media posts and email campaigns to see how much traffic they generate and how much revenue they bring in."
     },
     "funnels": {
-      "title": "User flows & marketing funnels",
-      "description": "Track how users get to your site and know where they go. Study behaviour, visualise and understand your user journey."
+      "title": "Funnels and user flows",
+      "description": "Track how users get to your site and where they go. Study behaviour, visualise and understand your user journey."
     },
-    "eCommerce": {
-      "title": "E-commerce & Custom events (really easy to setup)",
-      "description": "Send custom events with custom properties to track user activity or sales. Analyse this data with ease in our intuitive dashboard. Create reusable views to quickly see and spot trends in your sales."
+    "alerts": {
+      "title": "Customisable alerts",
+      "description": "Be the first to know when something happens on your website. Get notified via Telegram, Slack or Discord when specific events occur."
+    },
+    "events": {
+      "title": "Custom events",
+      "description": "Track user interactions like sales, signups or clicks in real time. Get detailed insights into how users use your website."
     },
     "opensource": [
       {
@@ -769,7 +790,7 @@
     "xCustomEvents": "{{x}} custom events",
     "xErrors": "{{x}} errors",
     "alerts": "Alerts",
-    "alertsDesc": "Automated alerts is a powerful tool that allows you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram, Slack or Discord.",
+    "alertsDesc": "Automated alerts is a powerful tool that notifies you when some events occur on your website.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram, Slack or Discord.",
     "funnelsDesc": "Funnels is a powerful tool that allows you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
     "frontend": "Frontend",
     "backend": "Backend",
@@ -1366,7 +1387,7 @@
     "docs": "Documentation",
     "billing": "Billing",
     "contact": "Have something to ask?",
-    "main": "Understand the story behind your customer clicks and scrolls",
+    "main": "Turn traffic into insights",
     "socialisation": "Socialisation",
     "open": "Open startup",
     "passwordProtected": "This project is password protected",

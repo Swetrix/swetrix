@@ -1,33 +1,39 @@
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { CheckIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import { StarIcon } from '@heroicons/react/24/solid'
+import { SiGithub } from '@icons-pack/react-simple-icons'
 import { UAParser } from '@ua-parser-js/pro-business'
 import { motion } from 'framer-motion'
 import _map from 'lodash/map'
-import { Cookie, FileTextIcon, MousePointerClickIcon } from 'lucide-react'
+import {
+  CheckIcon,
+  CookieIcon,
+  ServerIcon,
+  DatabaseIcon,
+  FileTextIcon,
+  MousePointerClickIcon,
+  GlobeIcon,
+  GaugeIcon,
+} from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs } from 'react-router'
-import { useLoaderData, Link, redirect } from 'react-router'
+import { Link, redirect, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { getGeneralStats, getPaymentMetainfo } from '~/api'
 import Header from '~/components/Header'
-import { ConveyorBelt } from '~/components/marketing/ConveyorBelt'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { LogoTimeline } from '~/components/marketing/LogoTimeline'
-import { MarketplaceCluster } from '~/components/marketing/MarketplaceCluster'
 import Pricing from '~/components/marketing/Pricing'
-import useBreakpoint from '~/hooks/useBreakpoint'
 import {
   GITHUB_URL,
   LIVE_DEMO_URL,
   isSelfhosted,
+  isDisableMarketingPages,
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
   BROWSER_LOGO_MAP,
-  isDisableMarketingPages,
 } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Stats } from '~/lib/models/Stats'
@@ -68,84 +74,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   return { deviceInfo }
-}
-
-const Problem = () => {
-  const { t } = useTranslation('common')
-
-  return (
-    <section className='bg-gray-100/80 dark:bg-slate-800/50'>
-      <div className='mx-auto max-w-7xl px-8 py-16 text-center md:py-32'>
-        <h2 className='mb-6 text-4xl font-extrabold text-slate-900 sm:text-5xl sm:leading-none md:mb-12 dark:text-white'>
-          {t('main.problem.title')}
-        </h2>
-        <p className='mx-auto mb-12 max-w-prose text-base leading-relaxed font-semibold text-slate-700 md:mb-20 md:text-lg dark:text-slate-300'>
-          {t('main.problem.description')}
-        </p>
-
-        <div className='flex flex-col items-center justify-center gap-6 text-slate-900 md:flex-row md:items-start dark:text-white'>
-          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-56'>
-            <span className='text-4xl'>🤔</span>
-            <p className='font-semibold'>{t('main.problem.step1')}</p>
-          </div>
-          <svg
-            className='w-12 shrink-0 fill-slate-400 opacity-70 max-md:-scale-x-100 md:-rotate-90 dark:fill-slate-500'
-            viewBox='0 0 138 138'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <g>
-              <path
-                fillRule='evenodd'
-                clipRule='evenodd'
-                d='M72.9644 5.31431C98.8774 43.8211 83.3812 88.048 54.9567 120.735C54.4696 121.298 54.5274 122.151 55.0896 122.639C55.6518 123.126 56.5051 123.068 56.9922 122.506C86.2147 88.9044 101.84 43.3918 75.2003 3.80657C74.7866 3.18904 73.9486 3.02602 73.3287 3.44222C72.7113 3.85613 72.5484 4.69426 72.9644 5.31431Z'
-              />
-              <path
-                fillRule='evenodd'
-                clipRule='evenodd'
-                d='M56.5084 121.007C56.9835 118.685 57.6119 115.777 57.6736 115.445C59.3456 106.446 59.5323 97.67 58.4433 88.5628C58.3558 87.8236 57.6824 87.2948 56.9433 87.3824C56.2042 87.4699 55.6756 88.1435 55.7631 88.8828C56.8219 97.7138 56.6432 106.225 55.0203 114.954C54.926 115.463 53.5093 121.999 53.3221 123.342C53.2427 123.893 53.3688 124.229 53.4061 124.305C53.5887 124.719 53.8782 124.911 54.1287 125.015C54.4123 125.13 54.9267 125.205 55.5376 124.926C56.1758 124.631 57.3434 123.699 57.6571 123.487C62.3995 120.309 67.4155 116.348 72.791 113.634C77.9171 111.045 83.3769 109.588 89.255 111.269C89.9704 111.475 90.7181 111.057 90.9235 110.342C91.1288 109.626 90.7117 108.878 89.9963 108.673C83.424 106.794 77.3049 108.33 71.5763 111.223C66.2328 113.922 61.2322 117.814 56.5084 121.007Z'
-              />
-            </g>
-          </svg>
-          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-56'>
-            <span className='text-4xl'>😕</span>
-            <p className='font-semibold'>
-              <Trans
-                t={t}
-                i18nKey='main.problem.step2'
-                components={{
-                  u: <u />,
-                }}
-              />
-            </p>
-          </div>
-          <svg
-            className='w-12 shrink-0 fill-gray-200 opacity-70 md:-scale-x-100 md:-rotate-90'
-            viewBox='0 0 138 138'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <g>
-              <path
-                fillRule='evenodd'
-                clipRule='evenodd'
-                d='M72.9644 5.31431C98.8774 43.8211 83.3812 88.048 54.9567 120.735C54.4696 121.298 54.5274 122.151 55.0896 122.639C55.6518 123.126 56.5051 123.068 56.9922 122.506C86.2147 88.9044 101.84 43.3918 75.2003 3.80657C74.7866 3.18904 73.9486 3.02602 73.3287 3.44222C72.7113 3.85613 72.5484 4.69426 72.9644 5.31431Z'
-              />
-              <path
-                fillRule='evenodd'
-                clipRule='evenodd'
-                d='M56.5084 121.007C56.9835 118.685 57.6119 115.777 57.6736 115.445C59.3456 106.446 59.5323 97.67 58.4433 88.5628C58.3558 87.8236 57.6824 87.2948 56.9433 87.3824C56.2042 87.4699 55.6756 88.1435 55.7631 88.8828C56.8219 97.7138 56.6432 106.225 55.0203 114.954C54.926 115.463 53.5093 121.999 53.3221 123.342C53.2427 123.893 53.3688 124.229 53.4061 124.305C53.5887 124.719 53.8782 124.911 54.1287 125.015C54.4123 125.13 54.9267 125.205 55.5376 124.926C56.1758 124.631 57.3434 123.699 57.6571 123.487C62.3995 120.309 67.4155 116.348 72.791 113.634C77.9171 111.045 83.3769 109.588 89.255 111.269C89.9704 111.475 90.7181 111.057 90.9235 110.342C91.1288 109.626 90.7117 108.878 89.9963 108.673C83.424 106.794 77.3049 108.33 71.5763 111.223C66.2328 113.922 61.2322 117.814 56.5084 121.007Z'
-              />
-            </g>
-          </svg>
-          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-56'>
-            <span className='text-4xl'>📉</span>
-            <p className='font-semibold'>{t('main.problem.step3')}</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
 }
 
 interface FeedbackHighlightProps {
@@ -308,7 +236,7 @@ const Testimonials = () => {
   }, [])
 
   return (
-    <div className='mt-8 flex flex-col items-center justify-center gap-3 md:flex-row'>
+    <div className='flex flex-col items-center justify-center gap-3 md:flex-row'>
       <div className='flex -space-x-5 overflow-hidden'>
         {_map(REVIEWERS, ({ name, image }) => (
           <div
@@ -344,7 +272,6 @@ const Testimonials = () => {
             {() => (
               <Trans
                 values={{
-                  // TODO: Move this stuff to loader so there won't be flickering
                   amount: stats.users || '> 1000',
                 }}
                 t={t}
@@ -360,74 +287,277 @@ const Testimonials = () => {
   )
 }
 
-const Highlighted = ({ children }: { children: React.ReactNode }) => (
-  <span className='relative whitespace-nowrap'>
-    <span className='absolute -top-1 -right-2 -bottom-1 -left-2 -rotate-1 bg-slate-900 md:-top-0 md:-right-3 md:-bottom-0 md:-left-3 dark:bg-gray-200' />
-    <span className='relative text-gray-50 dark:text-slate-900'>{children}</span>
-  </span>
-)
-
-const LiveDemo = () => {
+const LiveDemoPreview = () => {
   const { theme } = useTheme()
   const {
     i18n: { language },
   } = useTranslation('common')
 
-  const isMobile = !useBreakpoint('md')
-
-  if (isMobile) {
-    return (
-      <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
-        <img
-          src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-          className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
-          width='100%'
-          height='auto'
-          alt='Swetrix Analytics dashboard'
-        />
-      </div>
-    )
-  }
-
   return (
-    <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
-      <iframe
-        src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true&lng=${language}`}
-        width='100%'
-        height='700'
-        className='relative w-full rounded-xl ring-2 ring-gray-900/10 focus:outline-none dark:ring-white/10'
-        title='Swetrix Analytics Live Demo'
-      />
+    <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-800 dark:ring-white/10'>
+      <div className='pointer-events-none relative h-[420px] sm:h-[500px] md:h-[580px] lg:h-[640px] xl:h-[700px]'>
+        <iframe
+          src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true&lng=${language}`}
+          className='size-full'
+          title='Swetrix Analytics Live Demo'
+          style={{ pointerEvents: 'none' }}
+        />
+        <div className='absolute inset-0 hidden items-center justify-center bg-slate-900/40 backdrop-blur-[2px] transition-opacity duration-200 group-hover:flex'>
+          <a
+            href={LIVE_DEMO_URL}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 hover:bg-gray-50 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+            aria-label='Open live demo in a new tab'
+          >
+            <ArrowRightIcon className='mr-2 h-4 w-4' />
+            See the live demo
+          </a>
+        </div>
+      </div>
     </div>
   )
 }
 
-interface FeatureBlockProps {
-  heading: string
-  description: string
-  children: React.ReactNode
-  className?: string
-  dark?: boolean
+const Hero = () => {
+  const { t } = useTranslation('common')
+
+  return (
+    <div className='relative isolate pt-2'>
+      <div className='relative mx-2 overflow-hidden rounded-4xl'>
+        <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
+          <div className='absolute inset-0 rounded-4xl bg-linear-115 from-amber-100 from-28% via-purple-500 via-70% to-indigo-600 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:opacity-35 dark:ring-white/10' />
+          <div className='absolute top-28 -left-24 size-[28rem] rounded-full bg-[radial-gradient(closest-side,#6366f1,transparent)] opacity-25 blur-3xl dark:opacity-20' />
+          <div className='absolute -right-16 bottom-[-3rem] size-[26rem] rounded-full bg-[radial-gradient(closest-side,#eef2ff,transparent)] opacity-30 blur-3xl dark:opacity-20' />
+        </div>
+        <Header transparent />
+        <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-24 xl:px-8'>
+          <div className='z-20 col-span-6 flex flex-col items-start'>
+            <Testimonials />
+            <h1 className='mt-6 max-w-5xl text-left text-4xl font-semibold tracking-tight text-pretty text-slate-900 sm:text-5xl sm:leading-none lg:text-6xl xl:text-7xl dark:text-white'>
+              {t('main.slogan')}
+            </h1>
+            <p className='mt-4 max-w-2xl text-left text-base text-slate-900 sm:text-lg dark:text-slate-200'>
+              {t('main.description')}
+            </p>
+            <div className='mt-8 flex flex-col items-stretch sm:flex-row sm:items-center'>
+              <Link
+                to={routesPath.signup}
+                className='group flex h-12 items-center justify-center rounded-md bg-slate-900 px-4 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
+                aria-label={t('titles.signup')}
+              >
+                <span className='mr-1 text-center text-base font-semibold'>
+                  {t('main.startAXDayFreeTrial', { amount: 14 })}
+                </span>
+                <ArrowRightIcon className='mt-[1px] h-4 w-5 transition-transform group-hover:scale-[1.15]' />
+              </Link>
+            </div>
+
+            <div className='mt-8 grid w-full grid-cols-1 gap-3 sm:grid-cols-2'>
+              <div className='flex items-center gap-3 text-sm text-slate-900 dark:text-gray-200'>
+                <StarIcon className='size-5 text-slate-900 dark:text-gray-200' />
+                <span>{t('main.heroBenefits.trial', { days: 14 })}</span>
+              </div>
+              <div className='flex items-center gap-3 text-sm text-slate-900 dark:text-gray-200'>
+                <GaugeIcon className='size-5 text-slate-900 dark:text-gray-200' />
+                <span>{t('main.heroBenefits.quickSetup')}</span>
+              </div>
+              <div className='flex items-center gap-3 text-sm text-slate-900 dark:text-gray-200'>
+                <CookieIcon className='size-5 text-slate-900 dark:text-gray-200' />
+                <span>{t('main.heroBenefits.cookieless')}</span>
+              </div>
+              <div className='flex items-center gap-3 text-sm text-slate-900 dark:text-gray-200'>
+                <SiGithub className='size-5 text-slate-900 dark:text-gray-200' />
+                <span>{t('main.heroBenefits.openSource')}</span>
+              </div>
+              <div className='flex items-center gap-3 text-sm text-slate-900 dark:text-gray-200'>
+                <DatabaseIcon className='size-5 text-slate-900 dark:text-gray-200' />
+                <span>{t('main.heroBenefits.dataOwnership')}</span>
+              </div>
+              <div className='flex items-center gap-3 text-sm text-slate-900 dark:text-gray-200'>
+                <ServerIcon className='size-5 text-slate-900 dark:text-gray-200' />
+                <span>{t('main.heroBenefits.selfHostable')}</span>
+              </div>
+            </div>
+          </div>
+          <div className='col-span-6 mt-10 overflow-visible lg:mt-0 lg:mr-0 lg:ml-4'>
+            <ClientOnly
+              fallback={
+                <div className='h-[380px] w-full rounded-2xl bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
+              }
+            >
+              {() => <LiveDemoPreview />}
+            </ClientOnly>
+          </div>
+        </section>
+      </div>
+    </div>
+  )
 }
 
-const FeatureBlock = ({ heading, description, children, className, dark }: FeatureBlockProps) => (
-  <motion.div
-    initial='idle'
-    whileHover='active'
-    variants={{ idle: {}, active: {} }}
-    data-dark={dark ? 'true' : undefined}
-    className={cn(
-      'group relative flex flex-col overflow-hidden rounded-lg bg-white ring-1 ring-black/5 data-[dark]:bg-slate-800 data-[dark]:ring-white/15',
-      className,
-    )}
-  >
-    <div className='relative h-80 shrink-0'>{children}</div>
+const FAQ = () => {
+  const { t } = useTranslation('common')
 
-    <div className='relative p-10'>
-      <h3 className='mt-1 text-2xl/8 font-semibold text-gray-950 group-data-[dark]:text-white'>{heading}</h3>
-      <p className='mt-2 max-w-[800px] text-sm/6 text-gray-800 group-data-[dark]:text-gray-200'>{description}</p>
+  const faqs = [
+    { q: 'Is Swetrix cookie-less?', a: 'Yes. We do not use cookies and we are fully GDPR-compliant.' },
+    { q: 'Can I self-host?', a: 'Yes. Swetrix is open-source and provides a self-hostable edition.' },
+    {
+      q: 'Do you support e‑commerce events?',
+      a: 'Yes. You can send custom events and properties to track sales and funnels.',
+    },
+    { q: 'Is there a free trial?', a: 'Yes. You can try Swetrix free for 14 days, no credit card required.' },
+    { q: 'Can I export my data?', a: 'Yes. You own your data and can export it any time.' },
+  ]
+
+  const [open, setOpen] = useState<number | null>(0)
+
+  return (
+    <section className='relative mx-auto max-w-7xl px-6 py-14 lg:px-8'>
+      <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
+        <div className='absolute inset-2 bottom-0 rounded-4xl bg-linear-115 from-[#d6e7ff] via-transparent to-[#f9d2ff] opacity-40 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:opacity-25 dark:ring-white/10' />
+      </div>
+      <h2 className='text-center text-3xl font-extrabold text-slate-900 sm:text-4xl dark:text-white'>
+        {t('main.faq.title')}
+      </h2>
+      <div className='mt-8 divide-y rounded-xl bg-white ring-1 ring-black/5 dark:divide-white/10 dark:bg-slate-800 dark:ring-white/10'>
+        {faqs.map((item, idx) => {
+          const expanded = open === idx
+          return (
+            <button
+              key={item.q}
+              onClick={() => setOpen(expanded ? null : idx)}
+              className='w-full text-left'
+              aria-expanded={expanded}
+            >
+              <div className='flex items-center justify-between px-5 py-4'>
+                <span className='text-base font-medium text-slate-900 dark:text-gray-100'>{item.q}</span>
+                <ArrowRightIcon
+                  className={cn(
+                    'h-5 w-5 text-slate-600 transition-transform dark:text-gray-300',
+                    expanded && 'rotate-90',
+                  )}
+                />
+              </div>
+              <motion.div
+                initial={false}
+                animate={{ height: expanded ? 'auto' : 0, opacity: expanded ? 1 : 0 }}
+                transition={{ duration: 0.2 }}
+                className='overflow-hidden px-5'
+              >
+                <p className='pb-4 text-sm text-slate-700 dark:text-gray-300'>{item.a}</p>
+              </motion.div>
+            </button>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+export default function Index() {
+  const { isAuthenticated } = useAuth()
+
+  return (
+    <div className='overflow-hidden'>
+      <main className='bg-gray-50 dark:bg-slate-900'>
+        <Hero />
+
+        <FeedbackDual />
+
+        <FeaturesShowcase />
+
+        <FAQ />
+
+        {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
+        {!isAuthenticated ? <Pricing authenticated={false} /> : null}
+
+        <WeAreOpensource />
+
+        <DitchGoogle />
+      </main>
     </div>
-  </motion.div>
+  )
+}
+
+const FeatureCard = ({ title, description, media }: { title: string; description: string; media: React.ReactNode }) => (
+  <div className='flex h-full flex-col overflow-hidden rounded-xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+    <div className='relative h-60 overflow-hidden'>{media}</div>
+    <div className='p-6'>
+      <h3 className='text-lg font-semibold text-gray-950 dark:text-white'>{title}</h3>
+      <p className='mt-1 text-sm text-gray-700 dark:text-gray-300'>{description}</p>
+    </div>
+  </div>
+)
+
+const LargeFeatureCard = ({
+  title,
+  description,
+  media,
+}: {
+  title: string
+  description: React.ReactNode
+  media: React.ReactNode
+}) => (
+  <div className='flex h-full flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+    <div className='relative h-64 overflow-hidden sm:h-72 md:h-80'>{media}</div>
+    <div className='p-6'>
+      <h3 className='text-xl font-semibold text-gray-950 dark:text-white'>{title}</h3>
+      <p className='mt-1 text-sm text-gray-700 dark:text-gray-300'>{description}</p>
+    </div>
+  </div>
+)
+
+const TrafficInsightsPreview = () => (
+  <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 sm:p-6 dark:from-slate-800 dark:to-slate-900'>
+    <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+      <div className='space-y-4'>
+        <div className='rounded-lg bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+          <div className='text-xs text-slate-600 dark:text-gray-300'>Session duration</div>
+          <div className='mt-1 flex items-baseline gap-2'>
+            <div className='text-2xl font-bold text-slate-900 dark:text-white'>3m 23s</div>
+            <span className='rounded bg-emerald-500/10 px-1.5 py-0.5 text-xs font-medium text-emerald-600 ring-1 ring-emerald-500/20'>
+              +3%
+            </span>
+          </div>
+          <div className='mt-3 h-14 rounded-md bg-gradient-to-t from-emerald-200 via-emerald-100 to-emerald-50 dark:from-emerald-900/40 dark:via-emerald-800/30 dark:to-emerald-700/20' />
+        </div>
+
+        <div className='rounded-lg bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+          <div className='text-xs text-slate-600 dark:text-gray-300'>Bounce rate</div>
+          <div className='mt-1 flex items-baseline gap-2'>
+            <div className='text-2xl font-bold text-slate-900 dark:text-white'>46%</div>
+            <span className='rounded bg-rose-500/10 px-1.5 py-0.5 text-xs font-medium text-rose-600 ring-1 ring-rose-500/20'>
+              -2%
+            </span>
+          </div>
+          <div className='mt-3 h-14 rounded-md bg-gradient-to-t from-rose-200 via-rose-100 to-rose-50 dark:from-rose-900/40 dark:via-rose-800/30 dark:to-rose-700/20' />
+        </div>
+      </div>
+
+      <div className='rounded-lg bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+        <div className='mb-2 text-xs font-medium text-slate-600 dark:text-gray-300'>Top sources</div>
+        <div className='divide-y divide-slate-100 dark:divide-white/10'>
+          {[
+            { label: 'Twitter', pct: '10%', value: '412' },
+            { label: 'Google', pct: '49%', value: '2,039' },
+            { label: 'Japan', pct: '15%', value: '751' },
+            { label: 'United States', pct: '37%', value: '1,842' },
+          ].map((row) => (
+            <div key={row.label} className='flex items-center justify-between py-2.5'>
+              <div className='flex items-center gap-2'>
+                <span className='inline-block size-2.5 rounded-full bg-slate-400' />
+                <span className='text-sm text-slate-800 dark:text-gray-200'>{row.label}</span>
+              </div>
+              <div className='flex items-center gap-4'>
+                <span className='text-xs text-slate-600 dark:text-gray-400'>{row.pct}</span>
+                <span className='text-sm font-medium text-slate-900 dark:text-white'>{row.value}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
 )
 
 const SdurMetric = () => {
@@ -455,13 +585,14 @@ const SdurMetric = () => {
   )
 }
 
-const FeatureBlocks = () => {
+const FeaturesShowcase = () => {
   const { theme } = useTheme()
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
+  const { deviceInfo } = useLoaderData<typeof loader>()
 
   useEffect(() => {
     const abortController = new AbortController()
@@ -472,8 +603,6 @@ const FeatureBlocks = () => {
 
     return () => abortController.abort()
   }, [])
-
-  const { deviceInfo } = useLoaderData<typeof loader>()
 
   const geoOptions = [
     {
@@ -491,471 +620,250 @@ const FeatureBlocks = () => {
   ]
 
   return (
-    <section className='relative mx-auto max-w-7xl bg-gray-50 px-6 py-14 lg:px-8 dark:bg-slate-900'>
-      <div className='relative mx-auto w-fit'>
-        <div>
-          <p className='mb-4 text-sm font-medium text-slate-800 dark:text-gray-200'>{t('main.butThereIsASolution')}</p>
-          <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 sm:text-5xl dark:text-white'>
-            {t('main.knowYourCustomers')}
-          </h2>
-        </div>
+    <section className='relative mx-auto max-w-7xl px-6 py-14 lg:px-8'>
+      <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
+        <div className='absolute inset-x-0 -top-10 h-40 bg-gradient-to-b from-indigo-200/50 to-transparent blur-2xl dark:from-indigo-500/20' />
+        <div className='absolute top-1/4 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,#ee87cb,transparent_70%)] opacity-30 blur-3xl dark:opacity-20' />
       </div>
-      <div className='mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2'>
-        <FeatureBlock
-          heading={t('main.insights.title')}
-          description={t('main.insights.description')}
-          className='max-lg:rounded-t-4xl lg:col-span-3 lg:rounded-tl-4xl'
-          dark={theme === 'dark'}
-        >
-          <div
-            className='absolute -top-40 right-0 left-60 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
-            aria-hidden='true'
-          >
-            <div
-              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-amber-400 to-purple-600 opacity-20'
-              style={{
-                clipPath:
-                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-              }}
-            />
-          </div>
-          <div className='h-80 overflow-hidden'>
-            <img
-              className='object-cover object-left opacity-60 transition-transform group-hover:scale-105 max-md:h-full'
-              src={theme === 'dark' ? '/assets/traffic_part_dark.png' : '/assets/traffic_part_light.png'}
-              alt='Swetrix Traffic Dashboard'
-            />
-          </div>
-          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-slate-800' />
-        </FeatureBlock>
-        <FeatureBlock
-          heading={t('main.painPoints.title')}
-          description={t('main.painPoints.description')}
-          className='lg:col-span-3 lg:rounded-tr-4xl'
-          dark={theme === 'dark'}
-        >
-          <div
-            className='absolute -top-40 right-0 left-60 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
-            aria-hidden='true'
-          >
-            <div
-              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-red-400 to-red-800 opacity-15'
-              style={{
-                clipPath:
-                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-              }}
-            />
-          </div>
-          <div className='h-80 overflow-hidden'>
-            <img
-              className='object-cover object-left opacity-60 transition-transform group-hover:scale-105 max-md:h-full'
-              src={theme === 'dark' ? '/assets/performance_part_dark.png' : '/assets/performance_part_light.png'}
-              alt='Website speed and performance monitoring'
-            />
-          </div>
-          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
-        </FeatureBlock>
-        <FeatureBlock
-          heading={t('main.customisation.title')}
-          description={t('main.customisation.description')}
-          className='lg:col-span-2 lg:rounded-bl-4xl'
-          dark={theme === 'dark'}
-        >
-          <MarketplaceCluster />
-        </FeatureBlock>
-        <FeatureBlock
-          heading={t('main.integrations.title')}
-          description={t('main.integrations.description')}
-          className='!overflow-visible lg:col-span-2'
-          dark={theme === 'dark'}
-        >
-          <LogoTimeline />
-        </FeatureBlock>
-        <FeatureBlock
-          heading={t('main.sessions.title')}
-          description={t('main.sessions.description')}
-          className='max-lg:rounded-b-4xl lg:col-span-2 lg:rounded-br-4xl'
-          dark={theme === 'dark'}
-        >
-          <div className='relative space-y-2 overflow-hidden px-10 pt-5'>
-            <ClientOnly>
-              {() => (
-                <MetricCardSelect
-                  classes={{
-                    value: 'max-md:text-xl md:text-2xl',
-                    container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
-                  }}
-                  values={geoOptions}
-                  selectLabel={t('project.geo')}
-                  valueMapper={({ value }, index) => {
-                    if (index !== 0) {
-                      return value || 'N/A'
-                    }
-
-                    if (!value) {
-                      return t('project.unknownCountry')
-                    }
-
-                    return (
-                      <div className='flex items-center'>
-                        <CCRow size={26} cc={value} language={language} />
-                      </div>
-                    )
-                  }}
-                />
-              )}
-            </ClientOnly>
-
-            <MetricCard
-              classes={{
-                value: 'max-md:text-xl md:text-3xl',
-                container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
-              }}
-              label={t('project.mapping.os')}
-              value={deviceInfo.os}
-              valueMapper={(value: keyof typeof OS_LOGO_MAP) => {
-                const logoPathLight = OS_LOGO_MAP[value]
-                const logoPathDark = OS_LOGO_MAP_DARK[value as keyof typeof OS_LOGO_MAP_DARK]
-
-                let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
-                logoPath ||= logoPathLight
-
-                if (!logoPath) {
-                  return (
-                    <>
-                      <GlobeAltIcon className='size-6' />
-                      &nbsp;
-                      {value}
-                    </>
-                  )
-                }
-                const logoUrl = `/${logoPath}`
-
-                return (
-                  <div className='flex items-center'>
-                    <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
-                    &nbsp;
-                    {value}
-                  </div>
-                )
-              }}
-            />
-
-            <MetricCard
-              classes={{
-                value: 'max-md:text-xl md:text-3xl',
-                container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
-              }}
-              label={t('project.mapping.br')}
-              value={deviceInfo.browser}
-              valueMapper={(value: keyof typeof BROWSER_LOGO_MAP) => {
-                const logoUrl = BROWSER_LOGO_MAP[value]
-
-                if (!logoUrl) {
-                  return (
-                    <>
-                      <GlobeAltIcon className='size-6' />
-                      &nbsp;
-                      {value}
-                    </>
-                  )
-                }
-
-                return (
-                  <div className='flex items-center'>
-                    <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
-                    &nbsp;
-                    {value}
-                  </div>
-                )
-              }}
-            />
-
-            <SdurMetric />
-
-            <div className='absolute right-0 bottom-0 rotate-12 rounded-md bg-gray-50 px-2 py-1 opacity-20 transition-all group-hover:scale-110 group-hover:rotate-6 group-hover:opacity-50 dark:bg-slate-700/60'>
-              {['/home', '/product', 'SALE'].map((path, index) => (
-                <div key={path} className='relative pb-8'>
-                  {index !== 2 ? (
-                    <span
-                      className='absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
-                      aria-hidden='true'
-                    />
-                  ) : null}
-                  <div className='relative flex space-x-3'>
-                    <div>
-                      <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
-                        {path.startsWith('/') ? (
-                          <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
-                        ) : (
-                          <MousePointerClickIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
-                        )}
-                      </span>
-                    </div>
-                    <p className='pt-1.5 text-sm text-gray-700 dark:text-gray-300'>
-                      <Trans
-                        t={t}
-                        i18nKey={path.startsWith('/') ? 'project.pageviewX' : 'project.eventX'}
-                        components={{
-                          value: <span className='font-medium text-gray-900 dark:text-gray-50' />,
-                          span: <span />,
-                        }}
-                        values={{
-                          x: path,
-                        }}
-                      />
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </FeatureBlock>
-      </div>
-    </section>
-  )
-}
-
-const CoreFeatures = () => {
-  const { theme } = useTheme()
-  const { t } = useTranslation('common')
-
-  return (
-    <section className='relative mx-auto max-w-7xl bg-gray-50 px-6 py-14 lg:px-8 dark:bg-slate-900'>
-      <div className='relative mx-auto w-fit'>
-        <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 sm:text-5xl dark:text-white'>
+      <div className='mx-auto w-fit'>
+        <h2 className='text-center text-4xl font-extrabold text-slate-900 sm:text-5xl dark:text-white'>
           {t('main.coreFeatures')}
         </h2>
       </div>
-      <div className='mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2'>
-        <FeatureBlock
-          heading={t('main.cookies.title')}
-          description={t('main.cookies.description')}
-          className='max-lg:rounded-t-4xl lg:col-span-4 lg:rounded-tl-4xl'
-          dark={theme === 'dark'}
-        >
-          <div className='relative h-80 overflow-hidden px-10 pt-5'>
-            <div className='absolute top-2 rotate-2 rounded-xs bg-slate-200 p-4 text-slate-900 opacity-70 transition-opacity group-hover:opacity-90 dark:bg-slate-700 dark:text-gray-50'>
-              <p className='mb-4 text-sm'>
-                We use cookies to enhance your experience. By continuing to visit this site you agree to our use of
-                cookies.
-              </p>
-              <div className='max-w-max rounded-md bg-slate-800 p-2 text-gray-50'>Accept</div>
-            </div>
-
-            <div className='absolute bottom-0 left-0 mb-4 flex max-w-max -rotate-12 gap-2 rounded-xs bg-slate-100 p-4 text-slate-900 transition-transform group-hover:-rotate-6 dark:bg-gray-900 dark:text-gray-50'>
-              <p className='text-md flex'>
-                <Cookie className='mr-2 text-slate-700' size={24} />
-                Hello there, We use cookies!
-              </p>
-              <div className='max-w-max rounded-md bg-slate-800 px-1 text-gray-50'>Okay</div>
-            </div>
-
-            <div className='absolute bottom-20 left-12 mb-4 flex max-w-max -rotate-6 rounded-xs bg-slate-100 p-4 text-slate-900 transition-transform group-hover:scale-95 dark:bg-gray-800 dark:text-gray-50'>
-              <p className='text-md flex max-w-[40ch]'>
-                This website uses cookies to ensure you get the best experience on our website
-              </p>
-            </div>
-
-            <div className='absolute right-0 bottom-10 rotate-12 rounded-md bg-gray-100 p-2 text-slate-900 opacity-90 transition-transform group-hover:scale-110 group-hover:rotate-3 dark:bg-gray-900'>
-              <p className='text-md flex'>
-                <Cookie className='mr-2 text-slate-700 dark:text-gray-100' size={24} />
-                <span className='max-w-[35ch] dark:text-gray-50'>
-                  Please accept our cookies to continue using our website.
-                </span>
-              </p>
-              <div className='mt-2 flex gap-2'>
-                <div className='max-w-max rounded-md bg-green-700/80 px-1 text-gray-50'>Okay</div>
-                <div className='max-w-max rounded-md bg-red-700/80 px-1 text-gray-50'>No</div>
-              </div>
-            </div>
-
-            <div className='absolute inset-0 bg-[linear-gradient(to_bottom_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity duration-500 group-hover:opacity-70 group-hover:delay-300' />
-            <div className='absolute inset-0 bg-[linear-gradient(to_top_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity duration-500 group-hover:opacity-70 group-hover:delay-300' />
-          </div>
-          <div className='absolute inset-0 bg-gradient-to-t from-white to-25% group-data-[dark]:from-slate-800' />
-        </FeatureBlock>
-        <FeatureBlock
-          heading={t('main.utms.title')}
-          description={t('main.utms.description')}
-          className='lg:col-span-2 lg:rounded-bl-4xl'
-          dark={theme === 'dark'}
-        >
-          <ConveyorBelt />
-        </FeatureBlock>
-        <FeatureBlock
-          heading={t('main.funnels.title')}
-          description={t('main.funnels.description')}
-          className='!overflow-visible lg:col-span-2'
-          dark={theme === 'dark'}
-        >
-          <div
-            className='absolute -top-40 right-0 left-60 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
-            aria-hidden='true'
-          >
-            <div
-              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-yellow-400/60 to-yellow-800/60 opacity-15 dark:from-yellow-400 dark:to-yellow-800'
-              style={{
-                clipPath:
-                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-              }}
-            />
-          </div>
-          <div className='h-80 overflow-hidden'>
-            <img
-              className='object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
-              src={theme === 'dark' ? '/assets/funnel_dark.png' : '/assets/funnel_light.png'}
-              alt='Website speed and performance monitoring'
-            />
-          </div>
-          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
-        </FeatureBlock>
-
-        <FeatureBlock
-          heading={t('main.eCommerce.title')}
-          description={t('main.eCommerce.description')}
-          className='lg:col-span-4 lg:rounded-tr-4xl'
-          dark={theme === 'dark'}
-        >
-          <div
-            className='absolute -top-40 right-0 left-60 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
-            aria-hidden='true'
-          >
-            <div
-              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-green-400/60 to-green-800/60 opacity-15 dark:from-green-400 dark:to-green-800'
-              style={{
-                clipPath:
-                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-              }}
-            />
-          </div>
-          <div className='h-80 overflow-hidden'>
-            <img
-              className='object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
-              src={theme === 'dark' ? '/assets/custom_events_dark.png' : '/assets/custom_events_light.png'}
-              alt='Website speed and performance monitoring'
-            />
-          </div>
-          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
-        </FeatureBlock>
-      </div>
-    </section>
-  )
-}
-
-const Hero = () => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='relative isolate overflow-x-clip'>
-      <svg
-        className='absolute inset-0 -z-10 h-full w-full [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)] stroke-gray-200 dark:stroke-white/10'
-        aria-hidden='true'
-      >
-        <defs>
-          <pattern id='rect-pattern' width={200} height={200} x='50%' y={-1} patternUnits='userSpaceOnUse'>
-            <path d='M.5 200V.5H200' fill='none' />
-          </pattern>
-        </defs>
-        <svg x='50%' y={-1} className='overflow-visible fill-white dark:fill-gray-800/20'>
-          <path
-            d='M-200 0h201v201h-201Z M600 0h201v201h-201Z M-400 600h201v201h-201Z M200 800h201v201h-201Z'
-            strokeWidth={0}
-          />
-        </svg>
-        <rect width='100%' height='100%' strokeWidth={0} fill='url(#rect-pattern)' />
-      </svg>
-      <div
-        className='absolute top-10 left-[calc(50%-4rem)] -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)] lg:top-[calc(50%-30rem)] lg:left-48 xl:left-[calc(50%-24rem)]'
-        aria-hidden='true'
-      >
-        <div
-          className='aspect-[1108/632] w-[69.25rem] bg-gradient-to-r from-[#80caff] to-[#4f46e5] opacity-20'
-          style={{
-            clipPath:
-              'polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)',
-          }}
+      <div className='mt-8 grid grid-cols-2 gap-4 sm:mt-12'>
+        <LargeFeatureCard
+          title={t('main.web.title')}
+          description={
+            <>
+              {t('main.web.description')}
+              <ul className='mt-2 grid grid-cols-1 gap-2 text-gray-900 sm:grid-cols-2 dark:text-gray-50'>
+                {_map(t('main.web.features', { returnObjects: true }), (feature: string) => (
+                  <li className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50' key={feature}>
+                    <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          }
+          media={<TrafficInsightsPreview />}
         />
-      </div>
-      <Header transparent />
-      <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
-        <div className='relative z-20 flex flex-col content-between justify-center'>
-          <div className='relative mx-auto flex flex-col px-4 text-left'>
-            <h1 className='mx-auto max-w-5xl text-center text-4xl font-extrabold tracking-[-0.4px] text-slate-900 sm:text-5xl sm:leading-none lg:text-6xl xl:text-7xl dark:text-white'>
-              <Trans
-                t={t}
-                i18nKey='main.slogan'
-                components={{
-                  // @ts-expect-error
-                  span: <Highlighted />,
+        <LargeFeatureCard
+          title={t('main.sessions.title')}
+          description={
+            <>
+              {t('main.sessions.description')}
+              <ul className='mt-2 grid grid-cols-1 gap-2 text-gray-900 sm:grid-cols-2 dark:text-gray-50'>
+                {_map(t('main.sessions.features', { returnObjects: true }), (feature: string) => (
+                  <li className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50' key={feature}>
+                    <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          }
+          media={
+            <div className='relative space-y-2 overflow-hidden px-10 pt-5'>
+              <ClientOnly>
+                {() => (
+                  <MetricCardSelect
+                    classes={{
+                      value: 'max-md:text-xl md:text-2xl',
+                      container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+                    }}
+                    values={geoOptions}
+                    selectLabel={t('project.geo')}
+                    valueMapper={({ value }, index) => {
+                      if (index !== 0) {
+                        return value || 'N/A'
+                      }
+
+                      if (!value) {
+                        return t('project.unknownCountry')
+                      }
+
+                      return (
+                        <div className='flex items-center'>
+                          <CCRow size={26} cc={value} language={language} />
+                        </div>
+                      )
+                    }}
+                  />
+                )}
+              </ClientOnly>
+
+              <MetricCard
+                classes={{
+                  value: 'max-md:text-xl md:text-3xl',
+                  container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+                }}
+                label={t('project.mapping.os')}
+                value={deviceInfo.os}
+                valueMapper={(value: keyof typeof OS_LOGO_MAP) => {
+                  const logoPathLight = OS_LOGO_MAP[value]
+                  const logoPathDark = OS_LOGO_MAP_DARK[value as keyof typeof OS_LOGO_MAP_DARK]
+
+                  let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
+                  logoPath ||= logoPathLight
+
+                  if (!logoPath) {
+                    return (
+                      <>
+                        <GlobeIcon className='size-6' />
+                        &nbsp;
+                        {value}
+                      </>
+                    )
+                  }
+                  const logoUrl = `/${logoPath}`
+
+                  return (
+                    <div className='flex items-center'>
+                      <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
+                      &nbsp;
+                      {value}
+                    </div>
+                  )
                 }}
               />
-            </h1>
-            <p className='mx-auto mt-4 max-w-4xl text-center text-base text-slate-900 sm:text-lg dark:text-slate-200'>
-              {t('main.description')}
-            </p>
-            <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
-              <Link
-                to={routesPath.signup}
-                className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 px-2 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[230px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
-                aria-label={t('titles.signup')}
-              >
-                <span className='mr-1 text-center text-base font-semibold'>
-                  {t('main.startAXDayFreeTrial', { amount: 14 })}
-                </span>
-                <ArrowRightIcon className='mt-[1px] h-4 w-5 transition-transform group-hover:scale-[1.15]' />
-              </Link>
-              <a
-                href={LIVE_DEMO_URL}
-                className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-xs ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200/60 sm:mt-0 sm:max-w-[230px] dark:text-white dark:ring-white/20 dark:hover:bg-slate-800/60'
-                target='_blank'
-                rel='noopener noreferrer'
-                aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
-              >
-                <span className='text-base font-semibold'>{t('common.liveDemo')}</span>
-              </a>
-            </div>
-            <Testimonials />
-          </div>
-        </div>
 
-        <ClientOnly
-          fallback={
-            <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
-              <div className='relative h-[320px] w-full rounded-xl bg-slate-800/20 ring-2 ring-gray-900/10 md:h-[700px] dark:ring-white/10' />
+              <MetricCard
+                classes={{
+                  value: 'max-md:text-xl md:text-3xl',
+                  container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+                }}
+                label={t('project.mapping.br')}
+                value={deviceInfo.browser}
+                valueMapper={(value: keyof typeof BROWSER_LOGO_MAP) => {
+                  const logoUrl = BROWSER_LOGO_MAP[value]
+
+                  if (!logoUrl) {
+                    return (
+                      <>
+                        <GlobeIcon className='size-6' />
+                        &nbsp;
+                        {value}
+                      </>
+                    )
+                  }
+
+                  return (
+                    <div className='flex items-center'>
+                      <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
+                      &nbsp;
+                      {value}
+                    </div>
+                  )
+                }}
+              />
+
+              <SdurMetric />
+
+              <div className='absolute right-0 bottom-0 rotate-12 rounded-md bg-gray-50 px-2 py-1 opacity-20 transition-all group-hover:scale-110 group-hover:rotate-6 group-hover:opacity-50 dark:bg-slate-700/60'>
+                {['/home', '/product', 'SALE'].map((path, index) => (
+                  <div key={path} className='relative pb-8'>
+                    {index !== 2 ? (
+                      <span
+                        className='absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
+                        aria-hidden='true'
+                      />
+                    ) : null}
+                    <div className='relative flex space-x-3'>
+                      <div>
+                        <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
+                          {path.startsWith('/') ? (
+                            <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+                          ) : (
+                            <MousePointerClickIcon
+                              className='h-5 w-5 text-white'
+                              aria-hidden='true'
+                              strokeWidth={1.5}
+                            />
+                          )}
+                        </span>
+                      </div>
+                      <p className='pt-1.5 text-sm text-gray-700 dark:text-gray-300'>
+                        <Trans
+                          t={t}
+                          i18nKey={path.startsWith('/') ? 'project.pageviewX' : 'project.eventX'}
+                          components={{
+                            value: <span className='font-medium text-gray-900 dark:text-gray-50' />,
+                            span: <span />,
+                          }}
+                          values={{
+                            x: path,
+                          }}
+                        />
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           }
-        >
-          {() => <LiveDemo />}
-        </ClientOnly>
+        />
       </div>
-    </div>
-  )
-}
-
-export default function Index() {
-  const { isAuthenticated } = useAuth()
-
-  return (
-    <div className='overflow-hidden'>
-      <main className='bg-gray-50 dark:bg-slate-900'>
-        <Hero />
-
-        <Problem />
-
-        <FeatureBlocks />
-
-        <FeedbackDual />
-
-        <CoreFeatures />
-
-        {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!isAuthenticated ? <Pricing authenticated={false} /> : null}
-
-        <WeAreOpensource />
-
-        <DitchGoogle />
-      </main>
-    </div>
+      <div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
+        <FeatureCard
+          title={t('main.performance.title')}
+          description={t('main.performance.description')}
+          media={
+            <img
+              className='h-full w-full object-cover object-left'
+              src={theme === 'dark' ? '/assets/performance_part_dark.png' : '/assets/performance_part_light.png'}
+              alt='Web Vitals and performance metrics'
+            />
+          }
+        />
+        <FeatureCard
+          title={t('main.errors.title')}
+          description={t('main.errors.description')}
+          media={
+            <img
+              className='h-full w-full object-cover object-left'
+              src={theme === 'dark' ? '/assets/performance_part_dark.png' : '/assets/performance_part_light.png'}
+              alt=''
+            />
+          }
+        />
+        <FeatureCard
+          title={t('main.events.title')}
+          description={t('main.events.description')}
+          media={
+            <img
+              className='h-full w-full object-cover object-left'
+              src={theme === 'dark' ? '/assets/custom_events_dark.png' : '/assets/custom_events_light.png'}
+              alt='Custom events'
+            />
+          }
+        />
+        <FeatureCard
+          title={t('main.funnels.title')}
+          description={t('main.funnels.description')}
+          media={
+            <img
+              className='h-full w-full object-cover object-left'
+              src={theme === 'dark' ? '/assets/funnel_dark.png' : '/assets/funnel_light.png'}
+              alt='Funnels and user flows'
+            />
+          }
+        />
+        <FeatureCard
+          title={t('main.alerts.title')}
+          description={t('main.alerts.description')}
+          media={<LogoTimeline />}
+        />
+        <FeatureCard
+          title={t('main.cookies.title')}
+          description={t('main.cookies.description')}
+          media={
+            <div className='flex h-full items-center justify-center bg-gradient-to-br from-amber-100 to-pink-100/40 dark:from-slate-700 dark:to-slate-900'>
+              <CookieIcon className='size-10 text-amber-700 dark:text-amber-400' />
+            </div>
+          }
+        />
+      </div>
+    </section>
   )
 }
