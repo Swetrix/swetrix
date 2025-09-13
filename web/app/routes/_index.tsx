@@ -83,7 +83,7 @@ interface FeedbackHighlightProps {
 }
 
 const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
-  <span className='bg-yellow-100/80 dark:bg-yellow-400/40'>{children}</span>
+  <span className='bg-yellow-100/80 font-medium dark:bg-yellow-400/40'>&nbsp;{children}&nbsp;</span>
 )
 
 const FeedbackDual = () => {
@@ -102,7 +102,7 @@ const FeedbackDual = () => {
             <figure className='mt-10 flex flex-auto flex-col justify-between'>
               <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
                 <p>
-                  "Swetrix has been a <FeedbackHighlight>game changer for our analytics</FeedbackHighlight>. They've
+                  "Swetrix has been a<FeedbackHighlight>game changer for our analytics.</FeedbackHighlight> They've
                   always been on top of feature requests and bug reports and have been friendly every step of the way. I
                   can't recommend them enough."
                 </p>
@@ -130,11 +130,11 @@ const FeedbackDual = () => {
               <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
                 <p>
                   "I was confused by Google Analytics so much that I was getting zero actionable insights. Swetrix
-                  changed everything -{' '}
+                  changed everything -
                   <FeedbackHighlight>
-                    clean dashboard, instant understanding of user behavior, and features that actually matter
+                    clean dashboard, instant understanding of user behavior, and features that actually matter.
                   </FeedbackHighlight>
-                  . Finally, analytics that help me make better decisions instead of irritating me."
+                  Finally, analytics that help me make better decisions instead of irritating me."
                 </p>
               </blockquote>
               <figcaption className='mt-10 flex items-center gap-x-6'>
