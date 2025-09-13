@@ -2,7 +2,7 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { StarIcon } from '@heroicons/react/24/solid'
 import { SiGithub } from '@icons-pack/react-simple-icons'
 import { UAParser } from '@ua-parser-js/pro-business'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import _map from 'lodash/map'
 import {
   CheckIcon,
@@ -13,6 +13,8 @@ import {
   MousePointerClickIcon,
   GlobeIcon,
   GaugeIcon,
+  BellRingIcon,
+  BugIcon,
 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -24,7 +26,6 @@ import { ClientOnly } from 'remix-utils/client-only'
 import { getGeneralStats, getPaymentMetainfo } from '~/api'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import { LogoTimeline } from '~/components/marketing/LogoTimeline'
 import Pricing from '~/components/marketing/Pricing'
 import {
   GITHUB_URL,
@@ -41,6 +42,7 @@ import CCRow from '~/pages/Project/View/components/CCRow'
 import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import Flag from '~/ui/Flag'
 import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 
@@ -204,8 +206,8 @@ const WeAreOpensource = () => {
 
 const REVIEWERS = [
   {
-    name: 'Tomasz',
-    image: '/assets/small-testimonials/tomasz.png',
+    name: 'Luke',
+    image: '/assets/small-testimonials/luke.jpg',
   },
   {
     name: 'Alex',
@@ -507,59 +509,6 @@ const LargeFeatureCard = ({
   </div>
 )
 
-const TrafficInsightsPreview = () => (
-  <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 sm:p-6 dark:from-slate-800 dark:to-slate-900'>
-    <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-      <div className='space-y-4'>
-        <div className='rounded-lg bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
-          <div className='text-xs text-slate-600 dark:text-gray-300'>Session duration</div>
-          <div className='mt-1 flex items-baseline gap-2'>
-            <div className='text-2xl font-bold text-slate-900 dark:text-white'>3m 23s</div>
-            <span className='rounded bg-emerald-500/10 px-1.5 py-0.5 text-xs font-medium text-emerald-600 ring-1 ring-emerald-500/20'>
-              +3%
-            </span>
-          </div>
-          <div className='mt-3 h-14 rounded-md bg-gradient-to-t from-emerald-200 via-emerald-100 to-emerald-50 dark:from-emerald-900/40 dark:via-emerald-800/30 dark:to-emerald-700/20' />
-        </div>
-
-        <div className='rounded-lg bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
-          <div className='text-xs text-slate-600 dark:text-gray-300'>Bounce rate</div>
-          <div className='mt-1 flex items-baseline gap-2'>
-            <div className='text-2xl font-bold text-slate-900 dark:text-white'>46%</div>
-            <span className='rounded bg-rose-500/10 px-1.5 py-0.5 text-xs font-medium text-rose-600 ring-1 ring-rose-500/20'>
-              -2%
-            </span>
-          </div>
-          <div className='mt-3 h-14 rounded-md bg-gradient-to-t from-rose-200 via-rose-100 to-rose-50 dark:from-rose-900/40 dark:via-rose-800/30 dark:to-rose-700/20' />
-        </div>
-      </div>
-
-      <div className='rounded-lg bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
-        <div className='mb-2 text-xs font-medium text-slate-600 dark:text-gray-300'>Top sources</div>
-        <div className='divide-y divide-slate-100 dark:divide-white/10'>
-          {[
-            { label: 'Twitter', pct: '10%', value: '412' },
-            { label: 'Google', pct: '49%', value: '2,039' },
-            { label: 'Japan', pct: '15%', value: '751' },
-            { label: 'United States', pct: '37%', value: '1,842' },
-          ].map((row) => (
-            <div key={row.label} className='flex items-center justify-between py-2.5'>
-              <div className='flex items-center gap-2'>
-                <span className='inline-block size-2.5 rounded-full bg-slate-400' />
-                <span className='text-sm text-slate-800 dark:text-gray-200'>{row.label}</span>
-              </div>
-              <div className='flex items-center gap-4'>
-                <span className='text-xs text-slate-600 dark:text-gray-400'>{row.pct}</span>
-                <span className='text-sm font-medium text-slate-900 dark:text-white'>{row.value}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </div>
-)
-
 const SdurMetric = () => {
   const { t } = useTranslation('common')
   const [duration, setDuration] = useState(0)
@@ -582,6 +531,486 @@ const SdurMetric = () => {
       value={duration}
       valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value))}
     />
+  )
+}
+
+const AnalyticsLivePreview = () => {
+  const { t } = useTranslation('common')
+  const [points, setPoints] = useState<number[]>(() => Array.from({ length: 32 }, () => 2 + Math.random() * 10))
+  const [live, setLive] = useState(18)
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setPoints((prev) => {
+        const next = prev.slice(1)
+        next.push(Math.max(1, Math.min(14, prev[prev.length - 1] + (Math.random() - 0.5) * 3)))
+        return next
+      })
+      setLive((v) => {
+        const n = v + (Math.random() > 0.5 ? 1 : -1) * (Math.random() > 0.6 ? 2 : 1)
+        return Math.max(8, Math.min(28, n))
+      })
+    }, 2000)
+    return () => clearInterval(intervalId)
+  }, [])
+
+  const width = 600
+  const height = 140
+  const maxV = 16
+  const step = width / (points.length - 1)
+  const toPath = () => {
+    let d = `M 0 ${height - (points[0] / maxV) * height}`
+    points.forEach((v, i) => {
+      const x = i * step
+      const y = height - (v / maxV) * height
+      d += ` L ${x} ${y}`
+    })
+    return d
+  }
+
+  const lastY = height - (points[points.length - 1] / maxV) * height
+  const lastX = (points.length - 1) * step
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 sm:p-6 dark:from-slate-800 dark:to-slate-900'>
+      <div className='mb-3 flex items-center justify-between'>
+        <div className='flex gap-3'>
+          {[
+            { l: t('dashboard.unique'), v: 471 },
+            { l: t('dashboard.pageviews'), v: 994 },
+            { l: t('dashboard.bounceRate'), v: '28.5%' },
+          ].map((k) => (
+            <div
+              key={k.l}
+              className='rounded-md bg-white px-3 py-2 text-xs text-slate-900 ring-1 ring-black/5 dark:bg-slate-900 dark:text-gray-50 dark:ring-white/10'
+            >
+              <div className='text-xl font-bold'>{k.v}</div>
+              <div>{k.l}</div>
+            </div>
+          ))}
+        </div>
+        <div className='inline-flex items-center gap-2 px-1 text-sm font-medium text-slate-900 dark:text-gray-50'>
+          <span className='relative inline-flex'>
+            <span className='absolute inline-flex size-3 animate-ping rounded-full bg-emerald-400 opacity-75 duration-1000' />
+            <span className='relative inline-flex size-3 rounded-full bg-emerald-500' />
+          </span>
+          {live} online
+        </div>
+      </div>
+
+      <div className='rounded-lg bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+        <svg viewBox={`0 0 ${width} ${height}`} className='h-40 w-full'>
+          <defs>
+            <linearGradient id='grad' x1='0' x2='0' y1='0' y2='1'>
+              <stop offset='0%' stopColor='#2563eb' stopOpacity='0.5' />
+              <stop offset='100%' stopColor='#2563eb' stopOpacity='0' />
+            </linearGradient>
+          </defs>
+          <motion.path
+            d={toPath()}
+            fill='none'
+            stroke='#2563eb'
+            strokeWidth='3'
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 1.2, ease: 'easeOut' }}
+          />
+          <motion.circle
+            cx={lastX}
+            cy={lastY}
+            r='5'
+            fill='#2563eb'
+            animate={{ r: [4, 6, 4] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          />
+          <motion.path
+            d={`${toPath()} L ${width} ${height} L 0 ${height} Z`}
+            fill='url(#grad)'
+            initial={{ opacity: 0.3 }}
+            animate={{ opacity: 0.45 }}
+            transition={{ duration: 1.2 }}
+          />
+        </svg>
+      </div>
+
+      <div className='mt-3 grid grid-cols-2 gap-3 md:grid-cols-4'>
+        {[
+          {
+            l: t('dashboard.bounceRate'),
+            v: '47.4%',
+            trend: '-3.6%',
+          },
+          {
+            l: t('dashboard.sessionDuration'),
+            v: '16m 41s',
+            trend: '-11m 58s',
+          },
+          {
+            l: t('project.entryPages'),
+            v: '401',
+            trend: '+12',
+          },
+          {
+            l: t('project.devices'),
+            v: '94',
+            trend: '+5',
+          },
+        ].map((k) => (
+          <div
+            key={k.l}
+            className='rounded-md bg-white p-3 text-xs ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'
+          >
+            <div className='text-slate-600 dark:text-gray-300'>{k.l}</div>
+            <div className='mt-1 flex items-baseline justify-between text-slate-900 dark:text-white'>
+              <div className='text-lg font-semibold'>{k.v}</div>
+              <span className='rounded px-1.5 py-0.5 ring-1'>{k.trend}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+type EventItem = { id: string; name: string; meta: React.ReactNode }
+
+const randomEvent = (): EventItem => {
+  const names = ['signup', 'purchase', 'button_click', 'pageview', 'add_to_cart', 'checkout_start', 'newsletter_join']
+  const metas = [
+    {
+      text: 'US • Chrome • iOS',
+      flag: <Flag className='rounded-xs' country='US' size={16} alt='' aria-hidden='true' />,
+    },
+    {
+      text: 'France • Edge • Windows',
+      flag: <Flag className='rounded-xs' country='FR' size={16} alt='' aria-hidden='true' />,
+    },
+    {
+      text: 'United Kingdom • Safari • macOS',
+      flag: <Flag className='rounded-xs' country='GB' size={16} alt='' aria-hidden='true' />,
+    },
+    {
+      text: 'Germany • Firefox • Linux',
+      flag: <Flag className='rounded-xs' country='DE' size={16} alt='' aria-hidden='true' />,
+    },
+    {
+      text: 'Ukraine • Chrome • macOS',
+      flag: <Flag className='rounded-xs' country='DE' size={16} alt='' aria-hidden='true' />,
+    },
+  ]
+  const pick = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)]
+
+  const meta = pick(metas)
+  return {
+    id: Math.random().toString(36).slice(2),
+    name: pick(names),
+    meta: (
+      <div className='flex items-center gap-1'>
+        {meta.flag}
+        {meta.text}
+      </div>
+    ),
+  }
+}
+
+const CustomEventsPreview = () => {
+  const [items, setItems] = useState<EventItem[]>(() => Array.from({ length: 5 }, randomEvent))
+  const agos = ['just now', '5 sec ago', '12 sec ago', '18 sec ago', '25 sec ago', '32 sec ago']
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setItems((prev) => [randomEvent(), ...prev].slice(0, 6))
+    }, 3500)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 dark:from-slate-800 dark:to-slate-900'>
+      <ul className='space-y-2'>
+        <AnimatePresence initial={false}>
+          {items.map((ev, index) => (
+            <motion.li
+              key={ev.id}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.25 }}
+              className='flex items-center justify-between rounded-md bg-slate-50 p-2 text-sm ring-1 ring-black/5 dark:bg-slate-800/60 dark:text-gray-200 dark:ring-white/10'
+            >
+              <div className='flex items-center gap-2'>
+                <span className='flex size-6 items-center justify-center rounded-md bg-indigo-500/10 ring-1 ring-indigo-500/30'>
+                  <MousePointerClickIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
+                </span>
+                <div>
+                  <div className='font-medium text-slate-900 dark:text-gray-50'>{ev.name}</div>
+                  <div className='text-xs text-slate-600 dark:text-gray-400'>{ev.meta}</div>
+                </div>
+              </div>
+              <div className='text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
+            </motion.li>
+          ))}
+        </AnimatePresence>
+      </ul>
+    </div>
+  )
+}
+
+// Animated performance metrics (Web Vitals style)
+const PerformancePreview = () => {
+  const [score, setScore] = useState(82)
+  const [lcp, setLcp] = useState(2.4)
+  const [fid, setFid] = useState(95)
+  const [cls, setCls] = useState(0.08)
+  const [fcp, setFcp] = useState(1.8)
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setScore((s) => Math.max(68, Math.min(96, Math.round(s + (Math.random() - 0.5) * 4))))
+      setLcp((v) => Math.max(1.6, Math.min(3.2, +(v + (Math.random() - 0.5) * 0.2).toFixed(1))))
+      setFid((v) => Math.max(40, Math.min(140, Math.round(v + (Math.random() - 0.5) * 8))))
+      setCls((v) => Math.max(0.01, Math.min(0.15, +(v + (Math.random() - 0.5) * 0.01).toFixed(2))))
+      setFcp((v) => Math.max(0.9, Math.min(2.8, +(v + (Math.random() - 0.5) * 0.15).toFixed(1))))
+    }, 1200)
+    return () => clearInterval(id)
+  }, [])
+
+  const circumference = 2 * Math.PI * 26
+  const ratio = score / 100
+  const dash = circumference * ratio
+
+  const metric = (label: string, value: string, color: string) => (
+    <div className='rounded-lg bg-white p-3 shadow-sm ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+      <div className='text-xs text-slate-600 dark:text-gray-300'>{label}</div>
+      <div className='mt-1 text-lg font-semibold text-slate-900 dark:text-white'>{value}</div>
+      <div className={`mt-2 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700`}>
+        <motion.div
+          className={`h-1.5 rounded-full ${color}`}
+          initial={{ width: '45%' }}
+          animate={{ width: `${40 + Math.round(Math.random() * 40)}%` }}
+          transition={{ duration: 1.2 }}
+        />
+      </div>
+    </div>
+  )
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 sm:p-6 dark:from-slate-800 dark:to-slate-900'>
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
+        <div className='flex items-center justify-center rounded-lg bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+          <svg viewBox='0 0 64 64' className='mr-3 h-16 w-16 -rotate-90'>
+            <circle cx='32' cy='32' r='26' stroke='#e5e7eb' strokeWidth='7' fill='none' />
+            <motion.circle
+              cx='32'
+              cy='32'
+              r='26'
+              stroke='#10b981'
+              strokeWidth='7'
+              strokeLinecap='round'
+              fill='none'
+              strokeDasharray={`${dash} ${circumference}`}
+              animate={{ strokeDasharray: [`0 ${circumference}`, `${dash} ${circumference}`] }}
+              transition={{ duration: 1.2 }}
+            />
+          </svg>
+          <div>
+            <div className='text-xs text-slate-600 dark:text-gray-300'>Performance score</div>
+            <div className='text-2xl font-bold text-slate-900 dark:text-white'>{score}</div>
+            <div className='text-xs text-emerald-600 dark:text-emerald-400'>Good</div>
+          </div>
+        </div>
+        {metric('LCP', `${lcp}s`, 'bg-emerald-500')}
+        {metric('FID', `${fid}ms`, 'bg-indigo-500')}
+        {metric('CLS', `${cls}`, 'bg-amber-500')}
+        {metric('FCP', `${fcp}s`, 'bg-rose-500')}
+      </div>
+    </div>
+  )
+}
+
+type LogItem = { id: string; message: string }
+const randomLog = (): LogItem => {
+  const messages = [
+    'TypeError: Cannot read properties of undefined',
+    'NetworkError: Failed to fetch /api/data',
+    'UnhandledRejection: Timeout while loading script',
+    'ReferenceError: gtag is not defined',
+  ]
+  const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
+  return { id: Math.random().toString(36).slice(2), message: pick(messages) }
+}
+
+const ErrorsPreview = () => {
+  const [logs, setLogs] = useState<LogItem[]>(() => Array.from({ length: 5 }, () => randomLog()))
+  const agos = ['just now', '5 sec ago', '12 sec ago', '18 sec ago', '25 sec ago', '32 sec ago']
+
+  useEffect(() => {
+    const id = setInterval(() => setLogs((prev) => [randomLog(), ...prev].slice(0, 6)), 4800)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 dark:from-slate-800 dark:to-slate-900'>
+      <ul className='space-y-2'>
+        <AnimatePresence initial={false}>
+          {logs.map((log, index) => (
+            <motion.li
+              key={log.id}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.25 }}
+              className='flex items-start justify-between rounded-md bg-rose-50 p-2 text-sm ring-1 ring-rose-200 dark:bg-rose-950/40 dark:text-rose-100 dark:ring-rose-900/50'
+            >
+              <div className='flex items-start gap-2'>
+                <span className='mt-0.5 inline-block size-2.5 flex-shrink-0 rounded-full bg-rose-500' />
+                <div className='text-rose-700 dark:text-rose-200'>{log.message}</div>
+              </div>
+              <div className='text-xs whitespace-nowrap text-rose-600 dark:text-rose-300'>{agos[index]}</div>
+            </motion.li>
+          ))}
+        </AnimatePresence>
+      </ul>
+    </div>
+  )
+}
+
+// Animated funnels preview
+const FunnelsPreview = () => {
+  const steps = [
+    { label: 'Visited', base: 100 },
+    { label: 'Signed up', base: 65 },
+    { label: 'Activated', base: 42 },
+    { label: 'Purchased', base: 18 },
+  ]
+  const [seed, setSeed] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setSeed((s) => s + 1), 1400)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 sm:p-6 dark:from-slate-800 dark:to-slate-900'>
+      <div className='rounded-lg bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+        <div className='mb-2 text-xs font-medium text-slate-600 dark:text-gray-300'>Sample funnel</div>
+        <div className='space-y-3'>
+          {steps.map((s, idx) => {
+            const fluctuation = ((seed + idx) % 5) - 2
+            const val = Math.max(5, Math.min(100, s.base + fluctuation))
+            return (
+              <div key={s.label}>
+                <div className='mb-1 flex items-center justify-between text-xs text-slate-600 dark:text-gray-300'>
+                  <span>{s.label}</span>
+                  <span>{val}%</span>
+                </div>
+                <div className='h-2 rounded-full bg-slate-200 dark:bg-slate-700'>
+                  <motion.div
+                    className='h-2 rounded-full bg-indigo-500'
+                    initial={{ width: '0%' }}
+                    animate={{ width: `${val}%` }}
+                    transition={{ duration: 0.8 }}
+                  />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Animated alerts preview: telegram-like message feed
+type ChatItem = { id: string; kind: 'error' | 'online' | 'no-traffic' }
+const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
+const randomChatItem = (): ChatItem => {
+  const kinds: ChatItem['kind'][] = ['error', 'online']
+  return { id: Math.random().toString(36).slice(2), kind: pick(kinds) }
+}
+
+const AlertsPreview = () => {
+  const [items, setItems] = useState<ChatItem[]>(() => Array.from({ length: 3 }, () => randomChatItem()))
+
+  const agos = ['just now', '7 sec ago', '52 sec ago', '2 min ago', '6 min ago']
+
+  useEffect(() => {
+    const id = setInterval(() => setItems((prev) => [randomChatItem(), ...prev].slice(0, 5)), 5140)
+    return () => clearInterval(id)
+  }, [])
+
+  const renderMessage = (it: ChatItem, index: number) => {
+    if (it.kind === 'error') {
+      return (
+        <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+          <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
+            <BugIcon className='size-4 text-rose-600 dark:text-rose-400' />
+            <span className='text-sm'>
+              Error alert <span className='font-semibold'>Unique error</span> triggered!
+            </span>
+          </div>
+          <div className='font-mono text-[13px] leading-5 break-words whitespace-pre-wrap text-slate-800 dark:text-gray-200'>
+            Project: Demo
+            <br />
+            Error: NetworkError: Failed to fetch /api/data
+          </div>
+          <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
+        </div>
+      )
+    }
+
+    if (it.kind === 'online') {
+      const online = 10 + Math.floor(Math.random() * 10)
+
+      return (
+        <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+          <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
+            <BellRingIcon className='size-4 text-amber-600 dark:text-amber-400' />
+            <span className='text-sm'>
+              Alert <span className='font-semibold'>Online &gt;= 10</span> got triggered!
+            </span>
+          </div>
+          <div className='text-[13px] leading-5 text-slate-800 dark:text-gray-200'>
+            Your project <span className='font-semibold'>Example</span> has {online} online users right now!
+          </div>
+          <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
+        </div>
+      )
+    }
+
+    return (
+      <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+        <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
+          <BellRingIcon className='size-4 text-amber-600 dark:text-amber-400' />
+          <span className='text-sm'>
+            Alert <span className='font-semibold'>No traffic</span> got triggered!
+          </span>
+        </div>
+        <div className='text-[13px] leading-5 text-slate-800 dark:text-gray-200'>
+          Your project <span className='font-semibold'>Demo</span> has had no traffic for the last 24 hours!
+        </div>
+        <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className='h-full w-full rounded-lg bg-sky-100/60 p-2 ring-1 ring-black/5 dark:bg-slate-800/40 dark:ring-white/10'>
+      <div className='relative h-56 overflow-hidden'>
+        <ul className='absolute inset-0 space-y-3'>
+          <AnimatePresence initial={false}>
+            {items.map((it, index) => (
+              <motion.li
+                key={it.id}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.25 }}
+              >
+                {renderMessage(it, index)}
+              </motion.li>
+            ))}
+          </AnimatePresence>
+        </ul>
+      </div>
+    </div>
   )
 }
 
@@ -646,7 +1075,7 @@ const FeaturesShowcase = () => {
               </ul>
             </>
           }
-          media={<TrafficInsightsPreview />}
+          media={<AnalyticsLivePreview />}
         />
         <LargeFeatureCard
           title={t('main.sessions.title')}
@@ -808,60 +1237,32 @@ const FeaturesShowcase = () => {
         <FeatureCard
           title={t('main.performance.title')}
           description={t('main.performance.description')}
-          media={
-            <img
-              className='h-full w-full object-cover object-left'
-              src={theme === 'dark' ? '/assets/performance_part_dark.png' : '/assets/performance_part_light.png'}
-              alt='Web Vitals and performance metrics'
-            />
-          }
+          media={<PerformancePreview />}
         />
         <FeatureCard
           title={t('main.errors.title')}
           description={t('main.errors.description')}
-          media={
-            <img
-              className='h-full w-full object-cover object-left'
-              src={theme === 'dark' ? '/assets/performance_part_dark.png' : '/assets/performance_part_light.png'}
-              alt=''
-            />
-          }
+          media={<ErrorsPreview />}
         />
         <FeatureCard
           title={t('main.events.title')}
           description={t('main.events.description')}
-          media={
-            <img
-              className='h-full w-full object-cover object-left'
-              src={theme === 'dark' ? '/assets/custom_events_dark.png' : '/assets/custom_events_light.png'}
-              alt='Custom events'
-            />
-          }
+          media={<CustomEventsPreview />}
         />
         <FeatureCard
           title={t('main.funnels.title')}
           description={t('main.funnels.description')}
-          media={
-            <img
-              className='h-full w-full object-cover object-left'
-              src={theme === 'dark' ? '/assets/funnel_dark.png' : '/assets/funnel_light.png'}
-              alt='Funnels and user flows'
-            />
-          }
+          media={<FunnelsPreview />}
         />
         <FeatureCard
           title={t('main.alerts.title')}
           description={t('main.alerts.description')}
-          media={<LogoTimeline />}
+          media={<AlertsPreview />}
         />
         <FeatureCard
           title={t('main.cookies.title')}
           description={t('main.cookies.description')}
-          media={
-            <div className='flex h-full items-center justify-center bg-gradient-to-br from-amber-100 to-pink-100/40 dark:from-slate-700 dark:to-slate-900'>
-              <CookieIcon className='size-10 text-amber-700 dark:text-amber-400' />
-            </div>
-          }
+          media={<img src='/assets/say-no-to-cookies.png' alt='' className='h-full w-full object-cover' />}
         />
       </div>
     </section>
