@@ -352,6 +352,7 @@
     ]
   },
   "main": {
+    "seeLiveDemo": "See the live demo",
     "faq": {
       "title": "Frequently asked questions"
     },

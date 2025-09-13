@@ -290,13 +290,14 @@ const Testimonials = () => {
 }
 
 const LiveDemoPreview = () => {
+  const { t } = useTranslation('common')
   const { theme } = useTheme()
   const {
     i18n: { language },
   } = useTranslation('common')
 
   return (
-    <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-800 dark:ring-white/10'>
+    <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 transition-shadow duration-300 ease-out hover:ring-indigo-300/50 sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-800 dark:ring-white/10 dark:hover:ring-indigo-400/40'>
       <div className='pointer-events-none relative h-[420px] sm:h-[500px] md:h-[580px] lg:h-[640px] xl:h-[700px]'>
         <iframe
           src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true&lng=${language}`}
@@ -304,16 +305,16 @@ const LiveDemoPreview = () => {
           title='Swetrix Analytics Live Demo'
           style={{ pointerEvents: 'none' }}
         />
-        <div className='absolute inset-0 hidden items-center justify-center bg-slate-900/40 backdrop-blur-[2px] transition-opacity duration-200 group-hover:flex'>
+        <div className='pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-900/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100'>
           <a
             href={LIVE_DEMO_URL}
             target='_blank'
             rel='noopener noreferrer'
             className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 hover:bg-gray-50 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
-            aria-label='Open live demo in a new tab'
+            aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
           >
             <ArrowRightIcon className='mr-2 h-4 w-4' />
-            See the live demo
+            {t('main.seeLiveDemo')}
           </a>
         </div>
       </div>
