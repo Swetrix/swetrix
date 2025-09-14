@@ -374,6 +374,10 @@
           "a": "Yep, you can try Swetrix for free for {{freeTrialDays}} days, no credit card required!"
         },
         {
+          "q": "What is counted as events?",
+          "a": "An event is a pageview, a custom event or an error event that the tracking script sends to Swetrix. Pageviews and error events are tracked automatically based on your tracking script set up, and custom events are sent manually based on the user actions and your configuration."
+        },
+        {
           "q": "Is Swetrix GDPR-compliant?",
           "a": "Swetrix is a privacy-focused web analytics tool. We do not use cookies for tracking, and all the data is collected anonymously. We don't use persistent, cross-device tracking, and don't use your data for any other purposes. You can read more about it in our <dataPolicyUrl>data policy</dataPolicyUrl>."
         },
@@ -388,6 +392,10 @@
         {
           "q": "What support do you provide?",
           "a": "We provide email support and you can <contactUsUrl>contact us</contactUsUrl> at any time. We also offer a community support on our <discordUrl>Discord server</discordUrl>."
+        },
+        {
+          "q": "I want to ask something else...",
+          "a": "Sure, feel free to <contactUsUrl>contact us</contactUsUrl> at any time."
         }
       ]
     },
