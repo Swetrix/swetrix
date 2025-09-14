@@ -53,13 +53,13 @@ const FAQ = () => {
               className={cn('group w-full text-left', showTopBorder && 'border-t border-gray-200 dark:border-white/10')}
             >
               <summary className='flex w-full cursor-pointer items-center justify-between px-5 py-4'>
-                <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-gray-100'>
+                <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-white'>
                   <Trans t={t} i18nKey={`main.faq.items.${idx}.q`} />
                 </span>
-                <ChevronDownIcon className='size-4 text-slate-900 transition-transform group-open:rotate-180 dark:text-gray-300' />
+                <ChevronDownIcon className='size-4 text-slate-900 transition-transform group-open:rotate-180 dark:text-gray-200' />
               </summary>
               <div className='px-5'>
-                <p className='pb-4 text-sm whitespace-pre-line text-slate-700 dark:text-gray-300'>
+                <p className='pb-4 text-sm whitespace-pre-line text-slate-900 dark:text-gray-100'>
                   <Trans
                     t={t}
                     i18nKey={`main.faq.items.${idx}.a`}
