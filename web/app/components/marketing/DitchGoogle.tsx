@@ -9,7 +9,7 @@ export const DitchGoogle = () => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='relative mx-auto max-w-7xl px-6 py-20 lg:px-8'>
+    <div className='relative mx-auto max-w-7xl px-2 py-20 lg:px-8'>
       <div className='relative mx-auto max-w-7xl overflow-hidden rounded-4xl p-1 text-center sm:p-2 lg:p-3'>
         <div aria-hidden className='pointer-events-none absolute inset-0'>
           <div className='absolute inset-0 rounded-4xl bg-linear-115 from-red-500/50 to-orange-300/30 sm:bg-linear-145 dark:from-red-500/40 dark:to-orange-300/20' />

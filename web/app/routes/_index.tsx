@@ -93,7 +93,7 @@ const FeedbackDual = () => {
 
   return (
     <section className='rounded-b-4xl bg-gray-100/80 py-24 sm:py-32 dark:bg-slate-800/50'>
-      <div className='mx-auto max-w-7xl px-6 lg:px-8'>
+      <div className='mx-auto max-w-7xl px-4 lg:px-8'>
         <div className='mx-auto grid max-w-2xl grid-cols-1 lg:mx-0 lg:max-w-none lg:grid-cols-2'>
           <div className='flex flex-col pb-10 sm:pb-16 lg:pr-8 lg:pb-0 xl:pr-20'>
             <img
@@ -1110,7 +1110,7 @@ const FeaturesShowcase = () => {
   ]
 
   return (
-    <section className='relative mx-auto max-w-7xl px-6 py-14 lg:px-8'>
+    <section className='relative mx-auto max-w-7xl px-2 py-14 lg:px-8'>
       <div className='mx-auto w-fit'>
         <h2 className='text-center text-4xl font-bold text-slate-900 sm:text-5xl dark:text-white'>
           {t('main.coreFeatures')}

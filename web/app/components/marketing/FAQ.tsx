@@ -44,7 +44,7 @@ const FAQ = () => {
   }
 
   return (
-    <section className='relative mx-auto max-w-5xl px-6 py-14 lg:px-8'>
+    <section className='relative mx-auto max-w-5xl px-2 py-14 lg:px-8'>
       <h2 className='text-center text-3xl font-extrabold text-slate-900 sm:text-4xl dark:text-white'>
         {t('main.faq.title')}
       </h2>
@@ -57,13 +57,13 @@ const FAQ = () => {
               key={item.q}
               className={cn('group w-full text-left', showTopBorder && 'border-t border-gray-200 dark:border-white/10')}
             >
-              <summary className='flex w-full cursor-pointer items-center justify-between px-5 py-4'>
+              <summary className='flex w-full cursor-pointer items-center justify-between px-4 py-4'>
                 <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-white'>
                   <Trans t={t} i18nKey={`main.faq.items.${idx}.q`} />
                 </span>
                 <ChevronDownIcon className='size-4 text-slate-900 transition-transform group-open:rotate-180 dark:text-gray-200' />
               </summary>
-              <div className='px-5'>
+              <div className='px-4'>
                 <p className='pb-4 text-sm whitespace-pre-line text-slate-900 dark:text-gray-100'>
                   <Trans
                     t={t}
