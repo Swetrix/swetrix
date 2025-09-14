@@ -27,7 +27,7 @@ export const SEO = () => {
         <>
           <title>{title}</title>
           <meta property='og:title' content='Swetrix' />
-          <meta name='twitter:title' content='Swetrix | Understand the story behind your customer clicks and scrolls' />
+          <meta name='twitter:title' content='Swetrix | Turn traffic into insights' />
           <meta
             name='description'
             content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative'
