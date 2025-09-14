@@ -31,7 +31,6 @@ import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import FAQ from '~/components/marketing/FAQ'
 import MarketingPricing from '~/components/pricing/MarketingPricing'
 import {
-  GITHUB_URL,
   LIVE_DEMO_URL,
   isSelfhosted,
   isDisableMarketingPages,
@@ -152,54 +151,6 @@ const FeedbackDual = () => {
               </figcaption>
             </figure>
           </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-const WeAreOpensource = () => {
-  const { theme } = useTheme()
-  const { t } = useTranslation('common')
-
-  return (
-    <section className='mx-auto flex w-full max-w-7xl flex-col-reverse items-center justify-between px-5 py-20 lg:flex-row lg:py-32'>
-      <img
-        className='rounded-xl ring-1 ring-gray-900/10 dark:ring-white/10'
-        width='576'
-        height='406'
-        src={theme === 'dark' ? '/assets/opensource_dark.png' : '/assets/opensource_light.png'}
-        loading='lazy'
-        alt='Swetrix open source'
-      />
-      <div className='w-full max-w-lg lg:ml-5'>
-        <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>
-          <Trans
-            t={t}
-            i18nKey='main.weAreOpensource'
-            components={{
-              url: (
-                <a
-                  href={GITHUB_URL}
-                  className='underline decoration-dashed hover:decoration-solid'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  aria-label='Source code (opens in a new tab)'
-                />
-              ),
-            }}
-          />
-        </h2>
-        <hr className='my-6 max-w-[346px] border-1 border-slate-300 dark:border-slate-700' />
-        <div className='mb-9 w-full max-w-md lg:mb-0'>
-          {_map(t('main.opensource', { returnObjects: true }), (item: { desc: string }) => (
-            <p key={item.desc} className='mb-3 flex items-center text-sm leading-6 text-slate-700 dark:text-gray-300'>
-              <span>
-                <CheckIcon className='mr-4 h-6 w-6 text-green-500' />
-              </span>
-              {item.desc}
-            </p>
-          ))}
         </div>
       </div>
     </section>
@@ -1360,8 +1311,6 @@ export default function Index() {
         <MarketingPricing />
 
         <FAQ />
-
-        <WeAreOpensource />
 
         <DitchGoogle />
       </main>

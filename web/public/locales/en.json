@@ -410,7 +410,6 @@
     "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
     "peopleLoveSwetrix": "People 🥰 Swetrix",
     "whyPeopleLoveSwetrix": "Swetrix is an ethical and powerful service. Hundreds of people have already made the switch from Google Analytics and other alternatives.",
-    "weAreOpensource": "We are <url>open source</url>",
     "coreFeatures": "Only the features you need",
     "heroBenefits": {
       "trial": "Free trial {{days}} days",
@@ -475,17 +474,6 @@
       "title": "Custom events",
       "description": "Track user interactions like sales, signups or clicks in real time. Get detailed insights into how users use your website."
     },
-    "opensource": [
-      {
-        "desc": "Install Swetrix on your own servers - the source code is available to everyone."
-      },
-      {
-        "desc": "Take part in the development of Swetrix - contribute by suggesting improvements, reporting bugs or developing new features."
-      },
-      {
-        "desc": "We are a customer-first company, and transparency is our top priority."
-      }
-    ],
     "timeToDitchGoogleAnalytics": "It's time <colour>to ditch</colour> Google Analytics.",
     "whyDitch": "Tired of the frustration, complexity and privacy issues of Google Analytics? We were too. That's why we built Swetrix - the ethical, open source and fully cookieless alternative.",
     "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
