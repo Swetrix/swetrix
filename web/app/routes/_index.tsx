@@ -15,6 +15,8 @@ import {
   GaugeIcon,
   BellRingIcon,
   BugIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -679,7 +681,7 @@ const randomEvent = (): EventItem => {
   const names = ['signup', 'purchase', 'button_click', 'pageview', 'add_to_cart', 'checkout_start', 'newsletter_join']
   const metas = [
     {
-      text: 'US • Chrome • iOS',
+      text: 'United States • Chrome • iOS',
       flag: <Flag className='rounded-xs' country='US' size={16} alt='' aria-hidden='true' />,
     },
     {
@@ -696,7 +698,7 @@ const randomEvent = (): EventItem => {
     },
     {
       text: 'Ukraine • Chrome • macOS',
-      flag: <Flag className='rounded-xs' country='DE' size={16} alt='' aria-hidden='true' />,
+      flag: <Flag className='rounded-xs' country='UA' size={16} alt='' aria-hidden='true' />,
     },
   ]
   const pick = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)]
@@ -756,74 +758,150 @@ const CustomEventsPreview = () => {
   )
 }
 
-// Animated performance metrics (Web Vitals style)
 const PerformancePreview = () => {
-  const [score, setScore] = useState(82)
-  const [lcp, setLcp] = useState(2.4)
-  const [fid, setFid] = useState(95)
-  const [cls, setCls] = useState(0.08)
-  const [fcp, setFcp] = useState(1.8)
+  const { t } = useTranslation('common')
+
+  type Series = {
+    key: string
+    color: string
+    values: number[]
+    base: number
+    amp: number
+  }
+
+  const POINTS = 40
+  const width = 560
+  const height = 120
+
+  const init = (base: number, amp: number) =>
+    Array.from({ length: POINTS }, (_, i) => Math.max(0, base + (Math.sin(i / 3) + (Math.random() - 0.5)) * amp))
+
+  const [series, setSeries] = useState<Series[]>([
+    { key: t('dashboard.frontend'), color: '#709775', base: 0.5, amp: 0.15, values: init(0.5, 0.15) },
+    { key: t('dashboard.backend'), color: '#00A8E8', base: 0.14, amp: 0.06, values: init(0.14, 0.06) },
+    { key: t('dashboard.network'), color: '#F7A265', base: 0.06, amp: 0.03, values: init(0.06, 0.03) },
+  ])
 
   useEffect(() => {
     const id = setInterval(() => {
-      setScore((s) => Math.max(68, Math.min(96, Math.round(s + (Math.random() - 0.5) * 4))))
-      setLcp((v) => Math.max(1.6, Math.min(3.2, +(v + (Math.random() - 0.5) * 0.2).toFixed(1))))
-      setFid((v) => Math.max(40, Math.min(140, Math.round(v + (Math.random() - 0.5) * 8))))
-      setCls((v) => Math.max(0.01, Math.min(0.15, +(v + (Math.random() - 0.5) * 0.01).toFixed(2))))
-      setFcp((v) => Math.max(0.9, Math.min(2.8, +(v + (Math.random() - 0.5) * 0.15).toFixed(1))))
-    }, 1200)
+      setSeries((prev) =>
+        prev.map((s) => {
+          const next = s.values.slice(1)
+          const last = next[next.length - 1] ?? s.values[s.values.length - 1]
+          const nv = Math.max(0, last + (Math.random() - 0.5) * s.amp)
+          next.push(nv)
+          return { ...s, values: next }
+        }),
+      )
+    }, 2800)
     return () => clearInterval(id)
   }, [])
 
-  const circumference = 2 * Math.PI * 26
-  const ratio = score / 100
-  const dash = circumference * ratio
+  const maxY = Math.max(0.8, ...series.flatMap((s) => s.values))
+  const step = width / (POINTS - 1)
+  const yScale = (v: number) => height - (v / (maxY * 1.15)) * height
 
-  const metric = (label: string, value: string, color: string) => (
-    <div className='rounded-lg bg-white p-3 shadow-sm ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
-      <div className='text-xs text-slate-600 dark:text-gray-300'>{label}</div>
-      <div className='mt-1 text-lg font-semibold text-slate-900 dark:text-white'>{value}</div>
-      <div className={`mt-2 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700`}>
-        <motion.div
-          className={`h-1.5 rounded-full ${color}`}
-          initial={{ width: '45%' }}
-          animate={{ width: `${40 + Math.round(Math.random() * 40)}%` }}
-          transition={{ duration: 1.2 }}
-        />
-      </div>
-    </div>
+  const toPath = (values: number[]) => {
+    let d = `M 0 ${yScale(values[0])}`
+    for (let i = 1; i < values.length; i++) {
+      const x = i * step
+      const y = yScale(values[i])
+      d += ` L ${x} ${y}`
+    }
+    return d
+  }
+
+  const last = (key: string) => series.find((s) => s.key === key)!.values[POINTS - 1]
+  const prev = (key: string) => series.find((s) => s.key === key)!.values[POINTS - 2]
+
+  const fmt = (v: number) => `${v.toFixed(2)}s`
+
+  const frontend = last(t('dashboard.frontend'))
+  const frontendPrev = prev(t('dashboard.frontend'))
+  const backend = last(t('dashboard.backend'))
+  const backendPrev = prev(t('dashboard.backend'))
+  const network = last(t('dashboard.network'))
+  const networkPrev = prev(t('dashboard.network'))
+
+  const legend = (
+    <ul className='flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-slate-600 dark:text-gray-300'>
+      {series.map((s) => (
+        <li key={s.key} className='inline-flex items-center gap-1'>
+          <span className='inline-block size-2 rounded-[2px]' style={{ backgroundColor: s.color }} />
+          {s.key}
+        </li>
+      ))}
+    </ul>
   )
 
-  return (
-    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 sm:p-6 dark:from-slate-800 dark:to-slate-900'>
-      <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
-        <div className='flex items-center justify-center rounded-lg bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
-          <svg viewBox='0 0 64 64' className='mr-3 h-16 w-16 -rotate-90'>
-            <circle cx='32' cy='32' r='26' stroke='#e5e7eb' strokeWidth='7' fill='none' />
-            <motion.circle
-              cx='32'
-              cy='32'
-              r='26'
-              stroke='#10b981'
-              strokeWidth='7'
-              strokeLinecap='round'
-              fill='none'
-              strokeDasharray={`${dash} ${circumference}`}
-              animate={{ strokeDasharray: [`0 ${circumference}`, `${dash} ${circumference}`] }}
-              transition={{ duration: 1.2 }}
-            />
-          </svg>
-          <div>
-            <div className='text-xs text-slate-600 dark:text-gray-300'>Performance score</div>
-            <div className='text-2xl font-bold text-slate-900 dark:text-white'>{score}</div>
-            <div className='text-xs text-emerald-600 dark:text-emerald-400'>Good</div>
+  const metric = (label: string, value: number, _change: number) => {
+    const isUp = Math.random() > 0.5
+    const pct = Math.floor(Math.random() * 20) + 1 // 1-20%
+    return (
+      <div className='min-w-0 flex-1 rounded-md bg-white px-2.5 py-1.5 text-[11px] text-slate-900 ring-1 ring-black/5 dark:bg-slate-900 dark:text-gray-50 dark:ring-white/10'>
+        <div className='text-lg font-bold'>{fmt(value)}</div>
+        <div className='mt-0.5 flex items-center justify-between'>
+          <div className='text-[10px] text-slate-600 dark:text-gray-300'>{label}</div>
+          <div
+            className={cn('flex items-center gap-1 text-[10px]', {
+              'text-emerald-600 dark:text-emerald-400': isUp,
+              'text-rose-600 dark:text-rose-400': !isUp,
+            })}
+          >
+            {isUp ? (
+              <>
+                <ChevronUpIcon className='h-4 w-4 shrink-0' />
+                {`${pct}%`}
+              </>
+            ) : (
+              <>
+                <ChevronDownIcon className='h-4 w-4 shrink-0' />
+                {`${pct}%`}
+              </>
+            )}
           </div>
         </div>
-        {metric('LCP', `${lcp}s`, 'bg-emerald-500')}
-        {metric('FID', `${fid}ms`, 'bg-indigo-500')}
-        {metric('CLS', `${cls}`, 'bg-amber-500')}
-        {metric('FCP', `${fcp}s`, 'bg-rose-500')}
       </div>
+    )
+  }
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-3 sm:p-4 dark:from-slate-800 dark:to-slate-900'>
+      <div className='mb-2 flex flex-wrap items-center justify-between gap-2'>
+        <div className='flex min-w-0 flex-1 gap-2'>
+          {metric(t('dashboard.frontend'), frontend, frontendPrev)}
+          {metric(t('dashboard.backend'), backend, backendPrev)}
+          {metric(t('dashboard.network'), network, networkPrev)}
+        </div>
+      </div>
+
+      <div className='relative rounded-lg bg-white p-2.5 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+        <svg viewBox={`0 0 ${width} ${height}`} className='h-28 w-full'>
+          <defs>
+            <linearGradient id='gridfade' x1='0' x2='0' y1='0' y2='1'>
+              <stop offset='0%' stopColor='#64748b' stopOpacity='0.06' />
+              <stop offset='100%' stopColor='#64748b' stopOpacity='0' />
+            </linearGradient>
+          </defs>
+          {[0.5].map((r) => (
+            <line key={r} x1={0} x2={width} y1={height * r} y2={height * r} stroke='url(#gridfade)' strokeWidth={1} />
+          ))}
+          {series.map((s) => (
+            <g key={s.key}>
+              <motion.path
+                d={toPath(s.values)}
+                fill='none'
+                stroke={s.color}
+                strokeWidth={1.5}
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 1.1 }}
+              />
+            </g>
+          ))}
+        </svg>
+      </div>
+      <div className='mt-2'>{legend}</div>
     </div>
   )
 }
@@ -875,51 +953,134 @@ const ErrorsPreview = () => {
   )
 }
 
-// Animated funnels preview
 const FunnelsPreview = () => {
   const steps = [
-    { label: 'Visited', base: 100 },
-    { label: 'Signed up', base: 65 },
-    { label: 'Activated', base: 42 },
-    { label: 'Purchased', base: 18 },
+    { label: '/', base: 100 },
+    { label: '/signup', base: 86 },
+    { label: '/billing', base: 62 },
+    { label: 'SALE', base: 29 },
   ]
-  const [seed, setSeed] = useState(0)
+
+  const [tick, setTick] = useState(0)
   useEffect(() => {
-    const id = setInterval(() => setSeed((s) => s + 1), 1400)
+    const id = setInterval(() => setTick((s) => s + 1), 1300)
     return () => clearInterval(id)
   }, [])
+
+  const width = 620
+  const height = 140
+  const centerY = height / 2
+  const segW = width / (steps.length - 1)
+  const topY = (h: number) => centerY - h
+  const botY = (h: number) => centerY + h
+  const maxHalf = 42
+
+  const vals = steps.map((s, i) => {
+    const fluctuation = ((tick + i) % 5) - 2
+    const v = Math.max(6, Math.min(100, s.base + fluctuation))
+    return v
+  })
+  const halves = vals.map((v) => (v / 100) * maxHalf)
+
+  const toPath = () => {
+    let d = `M 0 ${topY(halves[0])}`
+    for (let i = 1; i < halves.length; i++) {
+      const x = i * segW
+      const y = topY(halves[i])
+      const cx1 = (i - 0.5) * segW
+      const cy1 = topY(halves[i - 1])
+      const cx2 = (i - 0.5) * segW
+      const cy2 = y
+      d += ` C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x} ${y}`
+    }
+    // bottom side (right to left)
+    for (let i = halves.length - 1; i >= 0; i--) {
+      const x = i * segW
+      const y = botY(halves[i])
+      if (i === halves.length - 1) {
+        d += ` L ${x} ${y}`
+      } else {
+        const cx1 = (i + 0.5) * segW
+        const cy1 = botY(halves[i + 1])
+        const cx2 = (i + 0.5) * segW
+        const cy2 = y
+        d += ` C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x} ${y}`
+      }
+    }
+    d += ' Z'
+    return d
+  }
+
+  const midLabels = steps.map((s, i) => ({
+    x: i * segW + (i < steps.length - 1 ? segW / 2 : 0),
+    v: vals[i],
+  }))
+
   return (
-    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 sm:p-6 dark:from-slate-800 dark:to-slate-900'>
-      <div className='rounded-lg bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
-        <div className='mb-2 text-xs font-medium text-slate-600 dark:text-gray-300'>Sample funnel</div>
-        <div className='space-y-3'>
-          {steps.map((s, idx) => {
-            const fluctuation = ((seed + idx) % 5) - 2
-            const val = Math.max(5, Math.min(100, s.base + fluctuation))
-            return (
-              <div key={s.label}>
-                <div className='mb-1 flex items-center justify-between text-xs text-slate-600 dark:text-gray-300'>
-                  <span>{s.label}</span>
-                  <span>{val}%</span>
-                </div>
-                <div className='h-2 rounded-full bg-slate-200 dark:bg-slate-700'>
-                  <motion.div
-                    className='h-2 rounded-full bg-indigo-500'
-                    initial={{ width: '0%' }}
-                    animate={{ width: `${val}%` }}
-                    transition={{ duration: 0.8 }}
-                  />
-                </div>
-              </div>
-            )
-          })}
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 dark:from-slate-800 dark:to-slate-900'>
+      <div className='mb-2 flex items-center justify-between'>
+        <div className='text-xs font-medium text-slate-700 dark:text-gray-300'>Sample funnel</div>
+        <div className='text-[11px] text-slate-700 dark:text-gray-300'>% of previous step</div>
+      </div>
+      <div className='relative'>
+        <svg viewBox={`0 0 ${width} ${height}`} className='h-36 w-full'>
+          <defs>
+            <linearGradient id='fgrad' x1='0' y1='0' x2='1' y2='0'>
+              <stop offset='0%' stopColor='#3730a3' />
+              <stop offset='35%' stopColor='#4f46e5' />
+              <stop offset='70%' stopColor='#3b82f6' />
+              <stop offset='100%' stopColor='#93c5fd' />
+            </linearGradient>
+            <linearGradient id='fstroke' x1='0' y1='0' x2='1' y2='0'>
+              <stop offset='0%' stopColor='rgba(0,0,0,0.08)' />
+              <stop offset='100%' stopColor='rgba(0,0,0,0.04)' />
+            </linearGradient>
+          </defs>
+
+          <motion.path
+            d={toPath()}
+            fill='url(#fgrad)'
+            stroke='url(#fstroke)'
+            strokeWidth='1'
+            animate={{ opacity: 1 }}
+          />
+
+          {steps.map((_, i) => (
+            <line
+              key={i}
+              x1={i * segW}
+              x2={i * segW}
+              y1={topY(maxHalf + 6)}
+              y2={botY(maxHalf + 6)}
+              stroke='rgba(100,116,139,0.15)'
+            />
+          ))}
+        </svg>
+
+        <div className='pointer-events-none absolute inset-0 flex items-center justify-between px-3'>
+          {midLabels.slice(0, -1).map((p, idx) => (
+            <div key={idx} className='rounded-md bg-gray-200 p-1 text-xs font-semibold text-slate-900'>
+              {p.v.toFixed(0)}%
+            </div>
+          ))}
+          <div className='rounded-md bg-gray-200 p-1 text-xs font-semibold text-slate-900'>
+            {midLabels[midLabels.length - 1].v.toFixed(0)}%
+          </div>
+        </div>
+
+        <div className='mt-2 grid grid-cols-4 gap-2 text-[11px] text-slate-900 dark:text-gray-200'>
+          {steps.map((s, i) => (
+            <div key={s.label} className='text-center'>
+              <div className='font-medium'>{s.label}</div>
+              <div className='tabular-nums'>{vals[i].toFixed(0)}%</div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   )
 }
 
-// Animated alerts preview: telegram-like message feed
 type ChatItem = { id: string; kind: 'error' | 'online' | 'no-traffic' }
 const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
 const randomChatItem = (): ChatItem => {
@@ -947,10 +1108,10 @@ const AlertsPreview = () => {
               Error alert <span className='font-semibold'>Unique error</span> triggered!
             </span>
           </div>
-          <div className='font-mono text-[13px] leading-5 break-words whitespace-pre-wrap text-slate-800 dark:text-gray-200'>
-            Project: Demo
+          <div className='text-sm leading-5 break-words whitespace-pre-wrap text-slate-800 dark:text-gray-200'>
+            Project: <span className='font-mono'>Demo</span>
             <br />
-            Error: NetworkError: Failed to fetch /api/data
+            Error: <span className='font-mono'>NetworkError: Failed to fetch /api/data</span>
           </div>
           <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
         </div>
@@ -968,7 +1129,7 @@ const AlertsPreview = () => {
               Alert <span className='font-semibold'>Online &gt;= 10</span> got triggered!
             </span>
           </div>
-          <div className='text-[13px] leading-5 text-slate-800 dark:text-gray-200'>
+          <div className='text-sm leading-5 text-slate-800 dark:text-gray-200'>
             Your project <span className='font-semibold'>Example</span> has {online} online users right now!
           </div>
           <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
@@ -984,7 +1145,7 @@ const AlertsPreview = () => {
             Alert <span className='font-semibold'>No traffic</span> got triggered!
           </span>
         </div>
-        <div className='text-[13px] leading-5 text-slate-800 dark:text-gray-200'>
+        <div className='text-sm leading-5 text-slate-800 dark:text-gray-200'>
           Your project <span className='font-semibold'>Demo</span> has had no traffic for the last 24 hours!
         </div>
         <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
