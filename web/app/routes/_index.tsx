@@ -340,7 +340,7 @@ const Hero = () => {
           <div className='absolute -right-16 bottom-[-3rem] size-[26rem] rounded-full bg-[radial-gradient(closest-side,#eef2ff,transparent)] opacity-30 blur-3xl dark:opacity-20' />
         </div>
         <Header transparent />
-        <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-24 xl:px-8'>
+        <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>
           <div className='z-20 col-span-6 flex flex-col items-start'>
             <Testimonials />
             <h1 className='mt-6 max-w-5xl text-left text-4xl font-semibold tracking-tight text-pretty text-slate-900 sm:text-5xl sm:leading-none lg:text-6xl xl:text-7xl dark:text-white'>
