@@ -354,7 +354,41 @@
   "main": {
     "seeLiveDemo": "See the live demo",
     "faq": {
-      "title": "Frequently asked questions"
+      "title": "Frequently asked questions",
+      "items": [
+        {
+          "q": "What plan should I choose?",
+          "a": "You can start with the {{lowestPlanEventsAmount}} events per month plan. If you already have some traffic, you can start with the {{moderatePlanEventsAmount}} events per month plan.\n\n In any case, you can upgrade or downgrade your plan anytime, and we will pro-rate your subscription if you change your plan so it would be fair for you."
+        },
+        {
+          "q": "What happens if I exceed my plan's limit?",
+          "a": "We won't stop counting your data if you exceed your plan's limit. However, you will need to upgrade to a higher plan to keep access to your stats.\n\nWe will send you an email notification if you exceed or come close to your plan's limit. We also won't restrict your dashboard if you get an occasional traffic spike or go over your limit slightly."
+        },
+        {
+          "q": "Does Swetrix offer a free plan?",
+          "a": "For our cloud version, we don't offer a free plan at this moment. We're an independent startup funded solely by our subscribers. We don't monetise or sell your data, so subscription fee is needed to cover our costs and keep the service running.\n\nAt the same time, Swetrix is open-source and we provide a Community Edition that you can self-host on your own infrastructure for free."
+        },
+        {
+          "q": "Is there a free trial?",
+          "a": "Yep, you can try Swetrix for free for {{freeTrialDays}} days, no credit card required!"
+        },
+        {
+          "q": "Is Swetrix GDPR-compliant?",
+          "a": "Swetrix is a privacy-focused web analytics tool. We do not use cookies for tracking, and all the data is collected anonymously. We don't use persistent, cross-device tracking, and don't use your data for any other purposes. You can read more about it in our <dataPolicyUrl>data policy</dataPolicyUrl>."
+        },
+        {
+          "q": "Does Swetrix have an API?",
+          "a": "Yes, you can access access your statistics or website data using our API. And you can also send pageviews or events for your websites using our API. Learn more about it in our <apiDocumentationUrl>API documentation</apiDocumentationUrl>."
+        },
+        {
+          "q": "Can I invite my team members to Swetrix?",
+          "a": "Yes! You can create an organisation and invite your team members to it, assign them roles and easily manage their access to the organisation and its projects.\n\nYou can invite people directly to your projects, create password-protected access links or make your projects public and accessible to everyone."
+        },
+        {
+          "q": "What support do you provide?",
+          "a": "We provide email support and you can <contactUsUrl>contact us</contactUsUrl> at any time. We also offer a community support on our <discordUrl>Discord server</discordUrl>."
+        }
+      ]
     },
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
     "slogan": "Turn traffic into insights",

@@ -37,6 +37,10 @@ import {
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
   BROWSER_LOGO_MAP,
+  DOCS_URL,
+  DISCORD_URL,
+  PLAN_LIMITS,
+  TRIAL_DAYS,
 } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Stats } from '~/lib/models/Stats'
@@ -403,43 +407,38 @@ const Hero = () => {
 const FAQ = () => {
   const { t } = useTranslation('common')
 
-  const faqs = [
-    { q: 'Is Swetrix cookie-less?', a: 'Yes. We do not use cookies and we are fully GDPR-compliant.' },
-    { q: 'Can I self-host?', a: 'Yes. Swetrix is open-source and provides a self-hostable edition.' },
-    {
-      q: 'Do you support e‑commerce events?',
-      a: 'Yes. You can send custom events and properties to track sales and funnels.',
-    },
-    { q: 'Is there a free trial?', a: 'Yes. You can try Swetrix free for 14 days, no credit card required.' },
-    { q: 'Can I export my data?', a: 'Yes. You own your data and can export it any time.' },
-  ]
-
   const [open, setOpen] = useState<number | null>(0)
 
+  const onLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.stopPropagation()
+  }
+
   return (
-    <section className='relative mx-auto max-w-7xl px-6 py-14 lg:px-8'>
-      <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
-        <div className='absolute inset-2 bottom-0 rounded-4xl bg-linear-115 from-[#d6e7ff] via-transparent to-[#f9d2ff] opacity-40 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:opacity-25 dark:ring-white/10' />
-      </div>
+    <section className='relative mx-auto max-w-5xl px-6 py-14 lg:px-8'>
       <h2 className='text-center text-3xl font-extrabold text-slate-900 sm:text-4xl dark:text-white'>
         {t('main.faq.title')}
       </h2>
-      <div className='mt-8 divide-y rounded-xl bg-white ring-1 ring-black/5 dark:divide-white/10 dark:bg-slate-800 dark:ring-white/10'>
-        {faqs.map((item, idx) => {
+      <div className='mt-8 flex flex-col'>
+        {/* @ts-expect-error I'm not even sure why there is an error here */}
+        {_map(t('main.faq.items', { returnObjects: true }), (item: { q: string; a: string }, idx: number) => {
           const expanded = open === idx
+          const showTopBorder = idx !== 0
+
           return (
             <button
               key={item.q}
               onClick={() => setOpen(expanded ? null : idx)}
-              className='w-full text-left'
+              className={cn('group w-full text-left', showTopBorder && 'border-t border-gray-200 dark:border-white/10')}
               aria-expanded={expanded}
             >
               <div className='flex items-center justify-between px-5 py-4'>
-                <span className='text-base font-medium text-slate-900 dark:text-gray-100'>{item.q}</span>
-                <ArrowRightIcon
+                <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-gray-100'>
+                  <Trans t={t} i18nKey={`main.faq.items.${idx}.q`} />
+                </span>
+                <ChevronDownIcon
                   className={cn(
-                    'h-5 w-5 text-slate-600 transition-transform dark:text-gray-300',
-                    expanded && 'rotate-90',
+                    'size-4 text-slate-900 transition-transform dark:text-gray-300',
+                    expanded && 'rotate-180',
                   )}
                 />
               </div>
@@ -449,7 +448,55 @@ const FAQ = () => {
                 transition={{ duration: 0.2 }}
                 className='overflow-hidden px-5'
               >
-                <p className='pb-4 text-sm text-slate-700 dark:text-gray-300'>{item.a}</p>
+                <p className='pb-4 text-sm whitespace-pre-line text-slate-700 dark:text-gray-300'>
+                  <Trans
+                    t={t}
+                    i18nKey={`main.faq.items.${idx}.a`}
+                    values={{
+                      lowestPlanEventsAmount: PLAN_LIMITS.hobby.monthlyUsageLimit.toLocaleString('en-US'),
+                      moderatePlanEventsAmount: PLAN_LIMITS.freelancer.monthlyUsageLimit.toLocaleString('en-US'),
+                      freeTrialDays: TRIAL_DAYS,
+                    }}
+                    components={{
+                      dataPolicyUrl: (
+                        <Link
+                          to={routesPath.dataPolicy}
+                          className='underline decoration-dashed hover:decoration-solid'
+                          aria-label='Data policy'
+                          onClick={onLinkClick}
+                        />
+                      ),
+                      apiDocumentationUrl: (
+                        <a
+                          href={DOCS_URL}
+                          className='underline decoration-dashed hover:decoration-solid'
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          aria-label='API documentation (opens in a new tab)'
+                          onClick={onLinkClick}
+                        />
+                      ),
+                      contactUsUrl: (
+                        <Link
+                          to={routesPath.contact}
+                          className='underline decoration-dashed hover:decoration-solid'
+                          aria-label='Contact us'
+                          onClick={onLinkClick}
+                        />
+                      ),
+                      discordUrl: (
+                        <a
+                          href={DISCORD_URL}
+                          className='underline decoration-dashed hover:decoration-solid'
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          aria-label='Discord (opens in a new tab)'
+                          onClick={onLinkClick}
+                        />
+                      ),
+                    }}
+                  />
+                </p>
               </motion.div>
             </button>
           )
@@ -471,10 +518,10 @@ export default function Index() {
 
         <FeaturesShowcase />
 
-        <FAQ />
-
         {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
         {!isAuthenticated ? <Pricing authenticated={false} /> : null}
+
+        <FAQ />
 
         <WeAreOpensource />
 
