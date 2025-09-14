@@ -98,7 +98,7 @@ const SolutionsMenu = () => {
     <Popover>
       {({ open }) => (
         <>
-          <PopoverButton className='inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
+          <PopoverButton className='inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'>
             <span>{t('header.solutions.title')}</span>
             <ChevronDownIcon
               className={cx('h-3 w-3 stroke-2 transition-all', {
@@ -211,7 +211,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
       {({ open }) => (
         <>
           <div>
-            <MenuButton className='flex items-center justify-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
+            <MenuButton className='flex items-center justify-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'>
               <span>{t('common.account')}</span>
               <ChevronDownIcon
                 className={cx('ml-1 h-4 w-4 transform-gpu stroke-2 transition-transform', {
@@ -444,7 +444,7 @@ const AuthedHeader = ({
                   href={`https://swetrix.com${routes.blog}`}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
                 >
                   {t('footer.blog')}
                 </a>
@@ -452,14 +452,14 @@ const AuthedHeader = ({
               {!isSelfhosted && !isDisableMarketingPages ? (
                 <Link
                   to={routes.blog}
-                  className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
                 >
                   {t('footer.blog')}
                 </Link>
               ) : null}
               <a
                 href={DOCS_URL}
-                className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
                 target='_blank'
                 rel='noreferrer noopener'
               >
@@ -467,7 +467,7 @@ const AuthedHeader = ({
               </a>
               <Link
                 to={routes.dashboard}
-                className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
               >
                 {t('common.dashboard')}
               </Link>
@@ -529,7 +529,7 @@ const NotAuthedHeader = ({
                     href={`https://swetrix.com${routes.blog}`}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                    className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
                   >
                     {t('footer.blog')}
                   </a>
@@ -537,7 +537,7 @@ const NotAuthedHeader = ({
                 {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
                     to={routes.blog}
-                    className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                    className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
                   >
                     {t('footer.blog')}
                   </Link>
@@ -545,7 +545,7 @@ const NotAuthedHeader = ({
                 {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
                     to={`${routes.main}#pricing`}
-                    className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                    className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
                     key='Pricing'
                   >
                     {t('common.pricing')}
@@ -553,7 +553,7 @@ const NotAuthedHeader = ({
                 ) : null}
                 <a
                   href={DOCS_URL}
-                  className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
                   target='_blank'
                   rel='noreferrer noopener'
                 >
@@ -567,14 +567,14 @@ const NotAuthedHeader = ({
               <>
                 <Link
                   to={routes.signin}
-                  className='flex items-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='flex items-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
                 >
                   {t('auth.common.signin')}
                 </Link>
                 <Separator />
                 <Link
                   to={routes.signup}
-                  className='flex items-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='flex items-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
                 >
                   {isSelfhosted ? t('header.signUp') : t('header.startForFree')}
                   <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-4 stroke-2' />
