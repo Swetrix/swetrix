@@ -328,7 +328,7 @@ const Hero = () => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='relative isolate pt-2'>
+    <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-800/50'>
       <div className='relative mx-2 overflow-hidden rounded-4xl'>
         <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
           <div className='absolute inset-0 rounded-4xl bg-linear-115 from-amber-100 from-28% via-purple-500 via-70% to-indigo-600 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:opacity-35 dark:ring-white/10' />
