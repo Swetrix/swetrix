@@ -6,10 +6,10 @@ import _map from 'lodash/map'
 import _round from 'lodash/round'
 import React, { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import OutsideClickHandler from 'react-outside-click-handler'
 
 import { OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
 import { Badge } from '~/ui/Badge'
+import OutsideClickHandler from '~/ui/OutsideClickHandler'
 import { nFormatter, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 
 interface MetricCardProps {
