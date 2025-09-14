@@ -1112,7 +1112,7 @@ const FeaturesShowcase = () => {
   return (
     <section className='relative mx-auto max-w-7xl px-6 py-14 lg:px-8'>
       <div className='mx-auto w-fit'>
-        <h2 className='text-center text-4xl font-extrabold text-slate-900 sm:text-5xl dark:text-white'>
+        <h2 className='text-center text-4xl font-bold text-slate-900 sm:text-5xl dark:text-white'>
           {t('main.coreFeatures')}
         </h2>
       </div>
