@@ -411,7 +411,6 @@ const FAQ = () => {
     e.stopPropagation()
   }
 
-  // Prepare FAQ structured data
   const values = {
     lowestPlanEventsAmount: PLAN_LIMITS.hobby.monthlyUsageLimit.toLocaleString('en-US'),
     moderatePlanEventsAmount: PLAN_LIMITS.freelancer.monthlyUsageLimit.toLocaleString('en-US'),
@@ -449,7 +448,6 @@ const FAQ = () => {
             <details
               key={item.q}
               className={cn('group w-full text-left', showTopBorder && 'border-t border-gray-200 dark:border-white/10')}
-              open={idx === 0}
             >
               <summary className='flex w-full cursor-pointer items-center justify-between px-5 py-4'>
                 <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-gray-100'>
