@@ -42,14 +42,14 @@ export const SEO = () => {
           />
           {isMainPage ? (
             <>
-              <meta name='twitter:image' content='https://swetrix.com/assets/og_image.png' />
-              <meta property='og:image' content='https://swetrix.com/assets/og_image.png' />
+              <meta name='twitter:image' content='https://swetrix.com/assets/og_image.png?v=1' />
+              <meta property='og:image' content='https://swetrix.com/assets/og_image.png?v=1' />
             </>
           ) : null}
           {isErrorsPage ? (
             <>
-              <meta name='twitter:image' content='https://swetrix.com/assets/og_image_errors.png' />
-              <meta property='og:image' content='https://swetrix.com/assets/og_image_errors.png' />
+              <meta name='twitter:image' content='https://swetrix.com/assets/og_image_errors.png?v=1' />
+              <meta property='og:image' content='https://swetrix.com/assets/og_image_errors.png?v=1' />
             </>
           ) : null}
           {!isProjectViewPage && !isMainPage && !isErrorsPage ? (
