@@ -352,13 +352,13 @@ const Hero = () => {
             <div className='mt-8 flex flex-col items-stretch sm:flex-row sm:items-center'>
               <Link
                 to={routesPath.signup}
-                className='group flex h-12 items-center justify-center rounded-md bg-slate-900 px-4 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
+                className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all duration-300 hover:bg-transparent hover:text-slate-900 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
                 aria-label={t('titles.signup')}
               >
                 <span className='mr-1 text-center text-base font-semibold'>
                   {t('main.startAXDayFreeTrial', { amount: 14 })}
                 </span>
-                <ArrowRightIcon className='mt-[1px] h-4 w-5 transition-transform group-hover:scale-[1.15]' />
+                <ArrowRightIcon className='mt-[1px] h-4 w-5' />
               </Link>
             </div>
 
@@ -510,31 +510,6 @@ const FAQ = () => {
       </div>
       <script type='application/ld+json'>{JSON.stringify(structuredData, null, 2)}</script>
     </section>
-  )
-}
-
-export default function Index() {
-  const { isAuthenticated } = useAuth()
-
-  return (
-    <div className='overflow-hidden'>
-      <main className='bg-gray-50 dark:bg-slate-900'>
-        <Hero />
-
-        <FeedbackDual />
-
-        <FeaturesShowcase />
-
-        {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!isAuthenticated ? <Pricing authenticated={false} /> : null}
-
-        <FAQ />
-
-        <WeAreOpensource />
-
-        <DitchGoogle />
-      </main>
-    </div>
   )
 }
 
@@ -1482,5 +1457,30 @@ const FeaturesShowcase = () => {
         />
       </div>
     </section>
+  )
+}
+
+export default function Index() {
+  const { isAuthenticated } = useAuth()
+
+  return (
+    <div className='overflow-hidden'>
+      <main className='bg-gray-50 dark:bg-slate-900'>
+        <Hero />
+
+        <FeedbackDual />
+
+        <FeaturesShowcase />
+
+        {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
+        {!isAuthenticated ? <Pricing authenticated={false} /> : null}
+
+        <FAQ />
+
+        <WeAreOpensource />
+
+        <DitchGoogle />
+      </main>
+    </div>
   )
 }
