@@ -405,7 +405,7 @@ const AuthedHeader = ({
         'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
       })}
     >
-      <nav className='mx-auto px-4 sm:px-6 lg:px-8' aria-label='Top'>
+      <nav className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8' aria-label='Top'>
         <div className='flex w-full items-center justify-between py-4'>
           <div className='flex items-center'>
             {/* Logo */}
@@ -509,7 +509,7 @@ const NotAuthedHeader = ({
         'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
       })}
     >
-      <nav className='mx-auto px-4 sm:px-6 lg:px-8' aria-label='Top'>
+      <nav className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8' aria-label='Top'>
         <div className='flex w-full items-center justify-between py-4'>
           <div className='flex items-center'>
             {/* Logo */}
