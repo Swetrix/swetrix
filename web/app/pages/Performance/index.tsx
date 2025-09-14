@@ -10,15 +10,13 @@ import { ClientOnly } from 'remix-utils/client-only'
 import { getGeneralStats, getLastPost } from '~/api'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import MarketingPricing from '~/components/pricing/MarketingPricing'
 import { PERFORMANCE_LIVE_DEMO_URL } from '~/lib/constants'
 import { Stats } from '~/lib/models/Stats'
-import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import BackgroundSvg from '~/ui/icons/BackgroundSvg'
 import { nFormatterSeparated } from '~/utils/generic'
 import routesPath from '~/utils/routes'
-
-import MarketingPricing from '~/components/pricing/MarketingPricing'
 
 const Lines = () => (
   <div className='pointer-events-none relative'>
@@ -96,7 +94,6 @@ const Performance = () => {
   const { t } = useTranslation('common')
   const { theme } = useTheme()
   const [lastBlogPost, setLastBlogPost] = useState<Awaited<ReturnType<typeof getLastPost>> | null>(null)
-  const { isAuthenticated } = useAuth()
 
   useEffect(() => {
     const abortController = new AbortController()
@@ -274,8 +271,7 @@ const Performance = () => {
           <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>{t('performance.privacy.desc')}</p>
         </div>
 
-        {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {isAuthenticated ? null : <MarketingPricing authenticated={false} />}
+        <MarketingPricing />
 
         <DitchGoogle />
 
