@@ -407,10 +407,33 @@ const Hero = () => {
 const FAQ = () => {
   const { t } = useTranslation('common')
 
-  const [open, setOpen] = useState<number | null>(0)
-
   const onLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.stopPropagation()
+  }
+
+  // Prepare FAQ structured data
+  const values = {
+    lowestPlanEventsAmount: PLAN_LIMITS.hobby.monthlyUsageLimit.toLocaleString('en-US'),
+    moderatePlanEventsAmount: PLAN_LIMITS.freelancer.monthlyUsageLimit.toLocaleString('en-US'),
+    freeTrialDays: TRIAL_DAYS,
+  }
+  const stripTags = (html: string) => html.replace(/<[^>]+>/g, '')
+  const items = t('main.faq.items', { returnObjects: true }) as { q: string; a: string }[]
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((_, idx) => ({
+      '@type': 'Question',
+      name: t(`main.faq.items.${idx}.q`),
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: stripTags(
+          t(`main.faq.items.${idx}.a`, {
+            ...values,
+          }),
+        ),
+      },
+    })),
   }
 
   return (
@@ -419,44 +442,27 @@ const FAQ = () => {
         {t('main.faq.title')}
       </h2>
       <div className='mt-8 flex flex-col'>
-        {/* @ts-expect-error I'm not even sure why there is an error here */}
-        {_map(t('main.faq.items', { returnObjects: true }), (item: { q: string; a: string }, idx: number) => {
-          const expanded = open === idx
+        {_map(items, (item: { q: string; a: string }, idx: number) => {
           const showTopBorder = idx !== 0
 
           return (
-            <button
+            <details
               key={item.q}
-              onClick={() => setOpen(expanded ? null : idx)}
               className={cn('group w-full text-left', showTopBorder && 'border-t border-gray-200 dark:border-white/10')}
-              aria-expanded={expanded}
+              open={idx === 0}
             >
-              <div className='flex items-center justify-between px-5 py-4'>
+              <summary className='flex w-full cursor-pointer items-center justify-between px-5 py-4'>
                 <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-gray-100'>
                   <Trans t={t} i18nKey={`main.faq.items.${idx}.q`} />
                 </span>
-                <ChevronDownIcon
-                  className={cn(
-                    'size-4 text-slate-900 transition-transform dark:text-gray-300',
-                    expanded && 'rotate-180',
-                  )}
-                />
-              </div>
-              <motion.div
-                initial={false}
-                animate={{ height: expanded ? 'auto' : 0, opacity: expanded ? 1 : 0 }}
-                transition={{ duration: 0.2 }}
-                className='overflow-hidden px-5'
-              >
+                <ChevronDownIcon className='size-4 text-slate-900 transition-transform group-open:rotate-180 dark:text-gray-300' />
+              </summary>
+              <div className='px-5'>
                 <p className='pb-4 text-sm whitespace-pre-line text-slate-700 dark:text-gray-300'>
                   <Trans
                     t={t}
                     i18nKey={`main.faq.items.${idx}.a`}
-                    values={{
-                      lowestPlanEventsAmount: PLAN_LIMITS.hobby.monthlyUsageLimit.toLocaleString('en-US'),
-                      moderatePlanEventsAmount: PLAN_LIMITS.freelancer.monthlyUsageLimit.toLocaleString('en-US'),
-                      freeTrialDays: TRIAL_DAYS,
-                    }}
+                    values={values}
                     components={{
                       dataPolicyUrl: (
                         <Link
@@ -497,11 +503,12 @@ const FAQ = () => {
                     }}
                   />
                 </p>
-              </motion.div>
-            </button>
+              </div>
+            </details>
           )
         })}
       </div>
+      <script type='application/ld+json'>{JSON.stringify(structuredData, null, 2)}</script>
     </section>
   )
 }
