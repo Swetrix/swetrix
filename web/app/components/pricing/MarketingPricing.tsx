@@ -35,7 +35,7 @@ const MarketingPricing = () => {
   const plans = STANDARD_PLANS.map((code) => PLAN_LIMITS[code as keyof typeof PLAN_LIMITS])
 
   return (
-    <section className='relative p-2'>
+    <section id='pricing' className='relative p-2'>
       <div className='rounded-xl bg-slate-900 py-16 sm:py-20'>
         <div className='mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 sm:px-6 lg:grid-cols-12 lg:gap-10 lg:px-8'>
           <div className='col-span-12 lg:col-span-5'>
