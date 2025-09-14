@@ -30,6 +30,7 @@ import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import FAQ from '~/components/marketing/FAQ'
 import MarketingPricing from '~/components/pricing/MarketingPricing'
+import useBreakpoint from '~/hooks/useBreakpoint'
 import {
   LIVE_DEMO_URL,
   isSelfhosted,
@@ -180,7 +181,7 @@ const REVIEWERS = [
   },
 ]
 
-const Testimonials = () => {
+const Testimonials = ({ className }: { className?: string }) => {
   const { t } = useTranslation('common')
   const [stats, setStats] = useState<Stats>({} as Stats)
 
@@ -191,7 +192,7 @@ const Testimonials = () => {
   }, [])
 
   return (
-    <div className='flex flex-col items-center justify-center gap-3 md:flex-row'>
+    <div className={cn('flex flex-col items-center justify-center gap-3 md:flex-row', className)}>
       <div className='flex -space-x-5 overflow-hidden'>
         {_map(REVIEWERS, ({ name, image }) => (
           <div
@@ -249,9 +250,25 @@ const LiveDemoPreview = () => {
     i18n: { language },
   } = useTranslation('common')
 
+  const isUpToLg = !useBreakpoint('lg')
+
+  if (isUpToLg) {
+    return (
+      <div className='relative z-20 mx-auto mt-10'>
+        <img
+          src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
+          className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
+          width='100%'
+          height='auto'
+          alt='Swetrix Analytics dashboard'
+        />
+      </div>
+    )
+  }
+
   return (
     <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 transition-shadow duration-300 ease-out hover:ring-indigo-300/50 sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-800 dark:ring-white/10 dark:hover:ring-indigo-400/40'>
-      <div className='pointer-events-none relative h-[420px] sm:h-[500px] md:h-[580px] lg:h-[640px] xl:h-[700px]'>
+      <div className='pointer-events-none relative h-[580px] lg:h-[640px] xl:h-[700px]'>
         <iframe
           src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true&lng=${language}`}
           className='size-full'
@@ -289,11 +306,11 @@ const Hero = () => {
         <Header transparent />
         <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>
           <div className='z-20 col-span-6 flex flex-col items-start'>
-            <Testimonials />
-            <h1 className='mt-6 max-w-5xl text-left text-4xl font-semibold tracking-tight text-pretty text-slate-900 sm:text-5xl sm:leading-none lg:text-6xl xl:text-7xl dark:text-white'>
+            <Testimonials className='hidden lg:block' />
+            <h1 className='max-w-5xl text-left text-5xl font-semibold tracking-tight text-pretty text-slate-900 sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl dark:text-white'>
               {t('main.slogan')}
             </h1>
-            <p className='mt-4 max-w-2xl text-left text-base text-slate-900 sm:text-lg dark:text-slate-200'>
+            <p className='mt-4 max-w-2xl text-left text-lg text-slate-900 dark:text-slate-200'>
               {t('main.description')}
             </p>
             <div className='mt-8 flex flex-col items-stretch sm:flex-row sm:items-center'>
@@ -309,7 +326,7 @@ const Hero = () => {
               </Link>
             </div>
 
-            <div className='mt-8 grid w-full grid-cols-1 gap-3 sm:grid-cols-2'>
+            <div className='mt-8 grid w-full grid-cols-2 gap-3'>
               <div className='flex items-center gap-3 text-sm text-slate-900 dark:text-gray-200'>
                 <StarIcon className='size-5 text-slate-900 dark:text-gray-200' />
                 <span>{t('main.heroBenefits.trial', { days: 14 })}</span>
@@ -339,12 +356,13 @@ const Hero = () => {
           <div className='col-span-6 mt-10 overflow-visible lg:mt-0 lg:mr-0 lg:ml-4'>
             <ClientOnly
               fallback={
-                <div className='h-[380px] w-full rounded-2xl bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
+                <div className='h-[240px] w-full rounded-2xl bg-slate-800/10 ring-1 ring-black/5 sm:h-[320px] md:h-[580px] lg:h-[640px] xl:h-[700px] dark:bg-slate-800/20 dark:ring-white/10' />
               }
             >
               {() => <LiveDemoPreview />}
             </ClientOnly>
           </div>
+          <Testimonials className='mt-8 lg:hidden' />
         </section>
       </div>
     </div>
@@ -1088,7 +1106,7 @@ const FeaturesShowcase = () => {
           {t('main.coreFeatures')}
         </h2>
       </div>
-      <div className='mt-8 grid grid-cols-2 gap-4 sm:mt-12'>
+      <div className='mt-8 grid grid-cols-1 gap-4 sm:mt-12 lg:grid-cols-2'>
         <LargeFeatureCard
           title={t('main.web.title')}
           description={
