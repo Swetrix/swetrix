@@ -10,15 +10,13 @@ import { ClientOnly } from 'remix-utils/client-only'
 import { getGeneralStats, getLastPost } from '~/api'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import MarketingPricing from '~/components/pricing/MarketingPricing'
 import { PERFORMANCE_LIVE_DEMO_URL } from '~/lib/constants'
 import { Stats } from '~/lib/models/Stats'
-import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import BackgroundSvg from '~/ui/icons/BackgroundSvg'
 import { nFormatterSeparated } from '~/utils/generic'
 import routesPath from '~/utils/routes'
-
-import Pricing from '../../components/marketing/Pricing'
 
 const Lines = () => (
   <div className='pointer-events-none relative'>
@@ -96,7 +94,6 @@ const Performance = () => {
   const { t } = useTranslation('common')
   const { theme } = useTheme()
   const [lastBlogPost, setLastBlogPost] = useState<Awaited<ReturnType<typeof getLastPost>> | null>(null)
-  const { isAuthenticated } = useAuth()
 
   useEffect(() => {
     const abortController = new AbortController()
@@ -187,10 +184,10 @@ const Performance = () => {
                 <div className='mt-10 flex flex-col items-center sm:flex-row'>
                   <Link
                     to={routesPath.signup}
-                    className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
+                    className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all duration-300 hover:bg-transparent hover:text-slate-900 sm:mr-6 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='mr-1 text-center text-base font-semibold transition-transform group-hover:scale-[1.15]'>
+                    <span className='mr-1 text-center text-base font-semibold'>
                       {t('main.startAXDayFreeTrial', { amount: 14 })}
                     </span>
                     <ArrowRightIcon className='mt-[1px] h-4 w-5' />
@@ -274,8 +271,7 @@ const Performance = () => {
           <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>{t('performance.privacy.desc')}</p>
         </div>
 
-        {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {isAuthenticated ? null : <Pricing authenticated={false} />}
+        <MarketingPricing />
 
         <DitchGoogle />
 

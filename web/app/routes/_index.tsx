@@ -1,40 +1,50 @@
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { CheckIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import { StarIcon } from '@heroicons/react/24/solid'
+import { SiGithub } from '@icons-pack/react-simple-icons'
 import { UAParser } from '@ua-parser-js/pro-business'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import _map from 'lodash/map'
-import { Cookie, FileTextIcon, MousePointerClickIcon } from 'lucide-react'
+import {
+  CheckIcon,
+  CookieIcon,
+  ServerIcon,
+  DatabaseIcon,
+  FileTextIcon,
+  MousePointerClickIcon,
+  GlobeIcon,
+  GaugeIcon,
+  BellRingIcon,
+  BugIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+} from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs } from 'react-router'
-import { useLoaderData, Link, redirect } from 'react-router'
+import { Link, redirect, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { getGeneralStats, getPaymentMetainfo } from '~/api'
 import Header from '~/components/Header'
-import { ConveyorBelt } from '~/components/marketing/ConveyorBelt'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import { LogoTimeline } from '~/components/marketing/LogoTimeline'
-import { MarketplaceCluster } from '~/components/marketing/MarketplaceCluster'
-import Pricing from '~/components/marketing/Pricing'
+import FAQ from '~/components/marketing/FAQ'
+import MarketingPricing from '~/components/pricing/MarketingPricing'
 import useBreakpoint from '~/hooks/useBreakpoint'
 import {
-  GITHUB_URL,
   LIVE_DEMO_URL,
   isSelfhosted,
+  isDisableMarketingPages,
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
   BROWSER_LOGO_MAP,
-  isDisableMarketingPages,
 } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Stats } from '~/lib/models/Stats'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
-import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import Flag from '~/ui/Flag'
 import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 
@@ -70,97 +80,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return { deviceInfo }
 }
 
-const Problem = () => {
-  const { t } = useTranslation('common')
-
-  return (
-    <section className='bg-gray-100/80 dark:bg-slate-800/50'>
-      <div className='mx-auto max-w-7xl px-8 py-16 text-center md:py-32'>
-        <h2 className='mb-6 text-4xl font-extrabold text-slate-900 sm:text-5xl sm:leading-none md:mb-12 dark:text-white'>
-          {t('main.problem.title')}
-        </h2>
-        <p className='mx-auto mb-12 max-w-prose text-base leading-relaxed font-semibold text-slate-700 md:mb-20 md:text-lg dark:text-slate-300'>
-          {t('main.problem.description')}
-        </p>
-
-        <div className='flex flex-col items-center justify-center gap-6 text-slate-900 md:flex-row md:items-start dark:text-white'>
-          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-56'>
-            <span className='text-4xl'>🤔</span>
-            <p className='font-semibold'>{t('main.problem.step1')}</p>
-          </div>
-          <svg
-            className='w-12 shrink-0 fill-slate-400 opacity-70 max-md:-scale-x-100 md:-rotate-90 dark:fill-slate-500'
-            viewBox='0 0 138 138'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <g>
-              <path
-                fillRule='evenodd'
-                clipRule='evenodd'
-                d='M72.9644 5.31431C98.8774 43.8211 83.3812 88.048 54.9567 120.735C54.4696 121.298 54.5274 122.151 55.0896 122.639C55.6518 123.126 56.5051 123.068 56.9922 122.506C86.2147 88.9044 101.84 43.3918 75.2003 3.80657C74.7866 3.18904 73.9486 3.02602 73.3287 3.44222C72.7113 3.85613 72.5484 4.69426 72.9644 5.31431Z'
-              />
-              <path
-                fillRule='evenodd'
-                clipRule='evenodd'
-                d='M56.5084 121.007C56.9835 118.685 57.6119 115.777 57.6736 115.445C59.3456 106.446 59.5323 97.67 58.4433 88.5628C58.3558 87.8236 57.6824 87.2948 56.9433 87.3824C56.2042 87.4699 55.6756 88.1435 55.7631 88.8828C56.8219 97.7138 56.6432 106.225 55.0203 114.954C54.926 115.463 53.5093 121.999 53.3221 123.342C53.2427 123.893 53.3688 124.229 53.4061 124.305C53.5887 124.719 53.8782 124.911 54.1287 125.015C54.4123 125.13 54.9267 125.205 55.5376 124.926C56.1758 124.631 57.3434 123.699 57.6571 123.487C62.3995 120.309 67.4155 116.348 72.791 113.634C77.9171 111.045 83.3769 109.588 89.255 111.269C89.9704 111.475 90.7181 111.057 90.9235 110.342C91.1288 109.626 90.7117 108.878 89.9963 108.673C83.424 106.794 77.3049 108.33 71.5763 111.223C66.2328 113.922 61.2322 117.814 56.5084 121.007Z'
-              />
-            </g>
-          </svg>
-          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-56'>
-            <span className='text-4xl'>😕</span>
-            <p className='font-semibold'>
-              <Trans
-                t={t}
-                i18nKey='main.problem.step2'
-                components={{
-                  u: <u />,
-                }}
-              />
-            </p>
-          </div>
-          <svg
-            className='w-12 shrink-0 fill-gray-200 opacity-70 md:-scale-x-100 md:-rotate-90'
-            viewBox='0 0 138 138'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-          >
-            <g>
-              <path
-                fillRule='evenodd'
-                clipRule='evenodd'
-                d='M72.9644 5.31431C98.8774 43.8211 83.3812 88.048 54.9567 120.735C54.4696 121.298 54.5274 122.151 55.0896 122.639C55.6518 123.126 56.5051 123.068 56.9922 122.506C86.2147 88.9044 101.84 43.3918 75.2003 3.80657C74.7866 3.18904 73.9486 3.02602 73.3287 3.44222C72.7113 3.85613 72.5484 4.69426 72.9644 5.31431Z'
-              />
-              <path
-                fillRule='evenodd'
-                clipRule='evenodd'
-                d='M56.5084 121.007C56.9835 118.685 57.6119 115.777 57.6736 115.445C59.3456 106.446 59.5323 97.67 58.4433 88.5628C58.3558 87.8236 57.6824 87.2948 56.9433 87.3824C56.2042 87.4699 55.6756 88.1435 55.7631 88.8828C56.8219 97.7138 56.6432 106.225 55.0203 114.954C54.926 115.463 53.5093 121.999 53.3221 123.342C53.2427 123.893 53.3688 124.229 53.4061 124.305C53.5887 124.719 53.8782 124.911 54.1287 125.015C54.4123 125.13 54.9267 125.205 55.5376 124.926C56.1758 124.631 57.3434 123.699 57.6571 123.487C62.3995 120.309 67.4155 116.348 72.791 113.634C77.9171 111.045 83.3769 109.588 89.255 111.269C89.9704 111.475 90.7181 111.057 90.9235 110.342C91.1288 109.626 90.7117 108.878 89.9963 108.673C83.424 106.794 77.3049 108.33 71.5763 111.223C66.2328 113.922 61.2322 117.814 56.5084 121.007Z'
-              />
-            </g>
-          </svg>
-          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-56'>
-            <span className='text-4xl'>📉</span>
-            <p className='font-semibold'>{t('main.problem.step3')}</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
 interface FeedbackHighlightProps {
   children: React.ReactNode
 }
 
 const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
-  <span className='bg-yellow-100/80 dark:bg-yellow-400/40'>{children}</span>
+  <span className='bg-yellow-100/80 font-medium dark:bg-yellow-400/40'>&nbsp;{children}&nbsp;</span>
 )
 
 const FeedbackDual = () => {
   const { theme } = useTheme()
 
   return (
-    <section className='bg-gray-100/80 py-24 sm:py-32 dark:bg-slate-800/50'>
+    <section className='rounded-b-4xl bg-gray-100/80 py-24 sm:py-32 dark:bg-slate-800/50'>
       <div className='mx-auto max-w-7xl px-6 lg:px-8'>
         <div className='mx-auto grid max-w-2xl grid-cols-1 lg:mx-0 lg:max-w-none lg:grid-cols-2'>
           <div className='flex flex-col pb-10 sm:pb-16 lg:pr-8 lg:pb-0 xl:pr-20'>
@@ -172,7 +104,7 @@ const FeedbackDual = () => {
             <figure className='mt-10 flex flex-auto flex-col justify-between'>
               <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
                 <p>
-                  "Swetrix has been a <FeedbackHighlight>game changer for our analytics</FeedbackHighlight>. They've
+                  "Swetrix has been a<FeedbackHighlight>game changer for our analytics.</FeedbackHighlight> They've
                   always been on top of feature requests and bug reports and have been friendly every step of the way. I
                   can't recommend them enough."
                 </p>
@@ -200,11 +132,11 @@ const FeedbackDual = () => {
               <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
                 <p>
                   "I was confused by Google Analytics so much that I was getting zero actionable insights. Swetrix
-                  changed everything -{' '}
+                  changed everything -
                   <FeedbackHighlight>
-                    clean dashboard, instant understanding of user behavior, and features that actually matter
+                    clean dashboard, instant understanding of user behavior, and features that actually matter.
                   </FeedbackHighlight>
-                  . Finally, analytics that help me make better decisions instead of irritating me."
+                  Finally, analytics that help me make better decisions instead of irritating me."
                 </p>
               </blockquote>
               <figcaption className='mt-10 flex items-center gap-x-6'>
@@ -226,58 +158,10 @@ const FeedbackDual = () => {
   )
 }
 
-const WeAreOpensource = () => {
-  const { theme } = useTheme()
-  const { t } = useTranslation('common')
-
-  return (
-    <section className='mx-auto flex w-full max-w-7xl flex-col-reverse items-center justify-between px-5 py-20 lg:flex-row lg:py-32'>
-      <img
-        className='rounded-xl ring-1 ring-gray-900/10 dark:ring-white/10'
-        width='576'
-        height='406'
-        src={theme === 'dark' ? '/assets/opensource_dark.png' : '/assets/opensource_light.png'}
-        loading='lazy'
-        alt='Swetrix open source'
-      />
-      <div className='w-full max-w-lg lg:ml-5'>
-        <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>
-          <Trans
-            t={t}
-            i18nKey='main.weAreOpensource'
-            components={{
-              url: (
-                <a
-                  href={GITHUB_URL}
-                  className='underline decoration-dashed hover:decoration-solid'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  aria-label='Source code (opens in a new tab)'
-                />
-              ),
-            }}
-          />
-        </h2>
-        <hr className='my-6 max-w-[346px] border-1 border-slate-300 dark:border-slate-700' />
-        <div className='mb-9 w-full max-w-md lg:mb-0'>
-          {_map(t('main.opensource', { returnObjects: true }), (item: { desc: string }) => (
-            <p key={item.desc} className='mb-3 flex items-center text-sm leading-6 text-slate-700 dark:text-gray-300'>
-              <span>
-                <CheckIcon className='mr-4 h-6 w-6 text-green-500' />
-              </span>
-              {item.desc}
-            </p>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
 const REVIEWERS = [
   {
-    name: 'Tomasz',
-    image: '/assets/small-testimonials/tomasz.png',
+    name: 'Luke',
+    image: '/assets/small-testimonials/luke.jpg',
   },
   {
     name: 'Alex',
@@ -297,7 +181,7 @@ const REVIEWERS = [
   },
 ]
 
-const Testimonials = () => {
+const Testimonials = ({ className }: { className?: string }) => {
   const { t } = useTranslation('common')
   const [stats, setStats] = useState<Stats>({} as Stats)
 
@@ -308,18 +192,18 @@ const Testimonials = () => {
   }, [])
 
   return (
-    <div className='mt-8 flex flex-col items-center justify-center gap-3 md:flex-row'>
+    <div className={cn('flex flex-col items-center justify-center gap-3 md:flex-row', className)}>
       <div className='flex -space-x-5 overflow-hidden'>
         {_map(REVIEWERS, ({ name, image }) => (
           <div
             key={`${name}${image}`}
-            className='relative inline-flex size-12 overflow-hidden rounded-full border-4 border-gray-50 dark:border-slate-900/90'
+            className='relative inline-flex size-12 overflow-hidden rounded-full border-4 border-gray-50 dark:border-slate-800/90'
           >
             <img alt={name} width='400' height='400' style={{ color: 'transparent' }} src={image} />
           </div>
         ))}
       </div>
-      <div className='flex flex-col items-center justify-center gap-1 md:items-start'>
+      <div className='mt-1 flex flex-col items-center justify-center gap-1 md:items-start'>
         <div className='relative inline-flex'>
           <StarIcon className='size-5 text-yellow-500' />
           <StarIcon className='size-5 text-yellow-500' />
@@ -344,7 +228,6 @@ const Testimonials = () => {
             {() => (
               <Trans
                 values={{
-                  // TODO: Move this stuff to loader so there won't be flickering
                   amount: stats.users || '> 1000',
                 }}
                 t={t}
@@ -360,74 +243,168 @@ const Testimonials = () => {
   )
 }
 
-const Highlighted = ({ children }: { children: React.ReactNode }) => (
-  <span className='relative whitespace-nowrap'>
-    <span className='absolute -top-1 -right-2 -bottom-1 -left-2 -rotate-1 bg-slate-900 md:-top-0 md:-right-3 md:-bottom-0 md:-left-3 dark:bg-gray-200' />
-    <span className='relative text-gray-50 dark:text-slate-900'>{children}</span>
-  </span>
-)
-
-const LiveDemo = () => {
+const LiveDemoPreview = () => {
+  const { t } = useTranslation('common')
   const { theme } = useTheme()
   const {
     i18n: { language },
   } = useTranslation('common')
 
-  const isMobile = !useBreakpoint('md')
+  const isUpToLg = !useBreakpoint('lg')
 
-  if (isMobile) {
+  if (isUpToLg) {
     return (
-      <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
+      <div className='relative z-20 mx-auto mt-10 overflow-hidden rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'>
         <img
           src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-          className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
+          className='relative w-full'
           width='100%'
           height='auto'
           alt='Swetrix Analytics dashboard'
         />
+        <div className='absolute inset-0 flex items-center justify-center bg-slate-900/20 opacity-100 backdrop-blur-[1px] transition-opacity duration-200'>
+          <a
+            href={LIVE_DEMO_URL}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all duration-300 hover:bg-gray-50 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+            aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
+          >
+            <ArrowRightIcon className='mr-2 h-4 w-4' />
+            {t('common.liveDemo')}
+          </a>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
-      <iframe
-        src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true&lng=${language}`}
-        width='100%'
-        height='700'
-        className='relative w-full rounded-xl ring-2 ring-gray-900/10 focus:outline-none dark:ring-white/10'
-        title='Swetrix Analytics Live Demo'
-      />
+    <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 transition-shadow duration-300 ease-out hover:ring-indigo-300/50 sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-800 dark:ring-white/10 dark:hover:ring-indigo-400/40'>
+      <div className='pointer-events-none relative h-[580px] lg:h-[640px] xl:h-[700px]'>
+        <iframe
+          src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true&lng=${language}`}
+          className='size-full'
+          title='Swetrix Analytics Live Demo'
+          style={{ pointerEvents: 'none' }}
+        />
+        <div className='pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-900/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100'>
+          <a
+            href={LIVE_DEMO_URL}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all duration-300 hover:bg-gray-50 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+            aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
+          >
+            <ArrowRightIcon className='mr-2 h-4 w-4' />
+            {t('main.seeLiveDemo')}
+          </a>
+        </div>
+      </div>
     </div>
   )
 }
 
-interface FeatureBlockProps {
-  heading: string
-  description: string
-  children: React.ReactNode
-  className?: string
-  dark?: boolean
+const Hero = () => {
+  const { t } = useTranslation('common')
+
+  return (
+    <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-800/50'>
+      <div className='relative mx-2 overflow-hidden rounded-4xl'>
+        <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
+          <div className='absolute inset-0 rounded-4xl bg-linear-115 from-amber-100 from-28% via-purple-500 via-70% to-indigo-600 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-600 dark:opacity-60 dark:ring-white/10' />
+          <div className='absolute top-28 -left-24 size-[28rem] rounded-full bg-[radial-gradient(closest-side,#6366f1,transparent)] opacity-25 blur-3xl dark:opacity-20' />
+          <div className='absolute -right-16 bottom-[-3rem] size-[26rem] rounded-full bg-[radial-gradient(closest-side,#eef2ff,transparent)] opacity-30 blur-3xl dark:opacity-20' />
+        </div>
+        <Header transparent />
+        <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>
+          <div className='z-20 col-span-6 flex flex-col items-start'>
+            <Testimonials className='hidden lg:block' />
+            <h1 className='max-w-5xl text-left text-5xl font-semibold tracking-tight text-pretty text-slate-900 sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl dark:text-white'>
+              {t('main.slogan')}
+            </h1>
+            <p className='mt-4 max-w-2xl text-left text-lg text-slate-900 dark:text-gray-50'>{t('main.description')}</p>
+            <div className='mt-8 flex flex-col items-stretch sm:flex-row sm:items-center'>
+              <Link
+                to={routesPath.signup}
+                className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all duration-300 hover:bg-transparent hover:text-slate-900 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
+                aria-label={t('titles.signup')}
+              >
+                <span className='mr-1 text-center text-base font-semibold'>
+                  {t('main.startAXDayFreeTrial', { amount: 14 })}
+                </span>
+                <ArrowRightIcon className='mt-[1px] h-4 w-5' />
+              </Link>
+            </div>
+
+            <div className='mt-8 grid w-full grid-cols-2 gap-3 text-slate-900 dark:text-gray-50'>
+              <div className='flex items-center gap-3 text-sm'>
+                <StarIcon className='size-5' />
+                <span>{t('main.heroBenefits.trial', { days: 14 })}</span>
+              </div>
+              <div className='flex items-center gap-3 text-sm'>
+                <GaugeIcon className='size-5' />
+                <span>{t('main.heroBenefits.quickSetup')}</span>
+              </div>
+              <div className='flex items-center gap-3 text-sm'>
+                <CookieIcon className='size-5' />
+                <span>{t('main.heroBenefits.cookieless')}</span>
+              </div>
+              <div className='flex items-center gap-3 text-sm'>
+                <SiGithub className='size-5' />
+                <span>{t('main.heroBenefits.openSource')}</span>
+              </div>
+              <div className='flex items-center gap-3 text-sm'>
+                <DatabaseIcon className='size-5' />
+                <span>{t('main.heroBenefits.dataOwnership')}</span>
+              </div>
+              <div className='flex items-center gap-3 text-sm'>
+                <ServerIcon className='size-5' />
+                <span>{t('main.heroBenefits.selfHostable')}</span>
+              </div>
+            </div>
+          </div>
+          <div className='col-span-6 mt-10 overflow-visible lg:mt-0 lg:mr-0 lg:ml-4'>
+            <ClientOnly
+              fallback={
+                <div className='h-[240px] w-full rounded-2xl bg-slate-800/10 ring-1 ring-black/5 sm:h-[320px] md:h-[580px] lg:h-[640px] xl:h-[700px] dark:bg-slate-800/20 dark:ring-white/10' />
+              }
+            >
+              {() => <LiveDemoPreview />}
+            </ClientOnly>
+          </div>
+          <Testimonials className='mt-8 lg:hidden' />
+        </section>
+      </div>
+    </div>
+  )
 }
 
-const FeatureBlock = ({ heading, description, children, className, dark }: FeatureBlockProps) => (
-  <motion.div
-    initial='idle'
-    whileHover='active'
-    variants={{ idle: {}, active: {} }}
-    data-dark={dark ? 'true' : undefined}
-    className={cn(
-      'group relative flex flex-col overflow-hidden rounded-lg bg-white ring-1 ring-black/5 data-[dark]:bg-slate-800 data-[dark]:ring-white/15',
-      className,
-    )}
-  >
-    <div className='relative h-80 shrink-0'>{children}</div>
-
-    <div className='relative p-10'>
-      <h3 className='mt-1 text-2xl/8 font-semibold text-gray-950 group-data-[dark]:text-white'>{heading}</h3>
-      <p className='mt-2 max-w-[800px] text-sm/6 text-gray-800 group-data-[dark]:text-gray-200'>{description}</p>
+const FeatureCard = ({ title, description, media }: { title: string; description: string; media: React.ReactNode }) => (
+  <div className='flex h-full flex-col overflow-hidden rounded-xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+    <div className='relative h-60 overflow-hidden'>{media}</div>
+    <div className='p-6'>
+      <h3 className='text-lg font-semibold text-gray-950 dark:text-white'>{title}</h3>
+      <p className='mt-1 text-sm text-gray-700 dark:text-gray-300'>{description}</p>
     </div>
-  </motion.div>
+  </div>
+)
+
+const LargeFeatureCard = ({
+  title,
+  description,
+  media,
+}: {
+  title: string
+  description: React.ReactNode
+  media: React.ReactNode
+}) => (
+  <div className='flex h-full flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+    <div className='relative h-64 overflow-hidden sm:h-72 md:h-80'>{media}</div>
+    <div className='p-6'>
+      <h3 className='text-xl font-semibold text-gray-950 dark:text-white'>{title}</h3>
+      <p className='mt-1 text-sm text-gray-700 dark:text-gray-300'>{description}</p>
+    </div>
+  </div>
 )
 
 const SdurMetric = () => {
@@ -455,13 +432,657 @@ const SdurMetric = () => {
   )
 }
 
-const FeatureBlocks = () => {
+const AnalyticsLivePreview = () => {
+  const { t } = useTranslation('common')
+  const [points, setPoints] = useState<number[]>(() => Array.from({ length: 32 }, () => 2 + Math.random() * 10))
+  const [live, setLive] = useState(18)
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setPoints((prev) => {
+        const next = prev.slice(1)
+        next.push(Math.max(1, Math.min(14, prev[prev.length - 1] + (Math.random() - 0.5) * 3)))
+        return next
+      })
+      setLive((v) => {
+        const n = v + (Math.random() > 0.5 ? 1 : -1) * (Math.random() > 0.6 ? 2 : 1)
+        return Math.max(8, Math.min(28, n))
+      })
+    }, 2000)
+    return () => clearInterval(intervalId)
+  }, [])
+
+  const width = 600
+  const height = 140
+  const maxV = 16
+  const step = width / (points.length - 1)
+  const toPath = () => {
+    let d = `M 0 ${height - (points[0] / maxV) * height}`
+    points.forEach((v, i) => {
+      const x = i * step
+      const y = height - (v / maxV) * height
+      d += ` L ${x} ${y}`
+    })
+    return d
+  }
+
+  const lastY = height - (points[points.length - 1] / maxV) * height
+  const lastX = (points.length - 1) * step
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 sm:p-6 dark:from-slate-800 dark:to-slate-900'>
+      <div className='mb-3 flex items-center justify-between'>
+        <div className='flex gap-3'>
+          {[
+            { l: t('dashboard.unique'), v: 471 },
+            { l: t('dashboard.pageviews'), v: 994 },
+            { l: t('dashboard.bounceRate'), v: '28.5%' },
+          ].map((k) => (
+            <div
+              key={k.l}
+              className='rounded-md bg-white px-3 py-2 text-xs text-slate-900 ring-1 ring-black/5 dark:bg-slate-900 dark:text-gray-50 dark:ring-white/10'
+            >
+              <div className='text-xl font-bold'>{k.v}</div>
+              <div>{k.l}</div>
+            </div>
+          ))}
+        </div>
+        <div className='inline-flex items-center gap-2 px-1 text-sm font-medium text-slate-900 dark:text-gray-50'>
+          <span className='relative inline-flex'>
+            <span className='absolute inline-flex size-3 animate-ping rounded-full bg-emerald-400 opacity-75 duration-1000' />
+            <span className='relative inline-flex size-3 rounded-full bg-emerald-500' />
+          </span>
+          {live} online
+        </div>
+      </div>
+
+      <div className='rounded-lg bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+        <svg viewBox={`0 0 ${width} ${height}`} className='h-40 w-full'>
+          <defs>
+            <linearGradient id='grad' x1='0' x2='0' y1='0' y2='1'>
+              <stop offset='0%' stopColor='#2563eb' stopOpacity='0.5' />
+              <stop offset='100%' stopColor='#2563eb' stopOpacity='0' />
+            </linearGradient>
+          </defs>
+          <motion.path
+            d={toPath()}
+            fill='none'
+            stroke='#2563eb'
+            strokeWidth='3'
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 1.2, ease: 'easeOut' }}
+          />
+          <motion.circle
+            cx={lastX}
+            cy={lastY}
+            r='5'
+            fill='#2563eb'
+            animate={{ r: [4, 6, 4] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          />
+          <motion.path
+            d={`${toPath()} L ${width} ${height} L 0 ${height} Z`}
+            fill='url(#grad)'
+            initial={{ opacity: 0.3 }}
+            animate={{ opacity: 0.45 }}
+            transition={{ duration: 1.2 }}
+          />
+        </svg>
+      </div>
+
+      <div className='mt-3 grid grid-cols-2 gap-3 md:grid-cols-4'>
+        {[
+          {
+            l: t('dashboard.bounceRate'),
+            v: '47.4%',
+            trend: '-3.6%',
+          },
+          {
+            l: t('dashboard.sessionDuration'),
+            v: '16m 41s',
+            trend: '-11m 58s',
+          },
+          {
+            l: t('project.entryPages'),
+            v: '401',
+            trend: '+12',
+          },
+          {
+            l: t('project.devices'),
+            v: '94',
+            trend: '+5',
+          },
+        ].map((k) => (
+          <div
+            key={k.l}
+            className='rounded-md bg-white p-3 text-xs ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'
+          >
+            <div className='text-slate-600 dark:text-gray-300'>{k.l}</div>
+            <div className='mt-1 flex items-baseline justify-between text-slate-900 dark:text-white'>
+              <div className='text-lg font-semibold'>{k.v}</div>
+              <span className='rounded px-1.5 py-0.5 ring-1'>{k.trend}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+type EventItem = { id: string; name: string; meta: React.ReactNode }
+
+const randomEvent = (): EventItem => {
+  const names = ['signup', 'purchase', 'button_click', 'pageview', 'add_to_cart', 'checkout_start', 'newsletter_join']
+  const metas = [
+    {
+      text: 'United States • Chrome • iOS',
+      flag: <Flag className='rounded-xs' country='US' size={16} alt='' aria-hidden='true' />,
+    },
+    {
+      text: 'France • Edge • Windows',
+      flag: <Flag className='rounded-xs' country='FR' size={16} alt='' aria-hidden='true' />,
+    },
+    {
+      text: 'United Kingdom • Safari • macOS',
+      flag: <Flag className='rounded-xs' country='GB' size={16} alt='' aria-hidden='true' />,
+    },
+    {
+      text: 'Germany • Firefox • Linux',
+      flag: <Flag className='rounded-xs' country='DE' size={16} alt='' aria-hidden='true' />,
+    },
+    {
+      text: 'Ukraine • Chrome • macOS',
+      flag: <Flag className='rounded-xs' country='UA' size={16} alt='' aria-hidden='true' />,
+    },
+  ]
+  const pick = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)]
+
+  const meta = pick(metas)
+  return {
+    id: Math.random().toString(36).slice(2),
+    name: pick(names),
+    meta: (
+      <div className='flex items-center gap-1'>
+        {meta.flag}
+        {meta.text}
+      </div>
+    ),
+  }
+}
+
+const CustomEventsPreview = () => {
+  const [items, setItems] = useState<EventItem[]>(() => Array.from({ length: 5 }, randomEvent))
+  const agos = ['just now', '5 sec ago', '12 sec ago', '18 sec ago', '25 sec ago', '32 sec ago']
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setItems((prev) => [randomEvent(), ...prev].slice(0, 6))
+    }, 3500)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 dark:from-slate-800 dark:to-slate-900'>
+      <ul className='space-y-2'>
+        <AnimatePresence initial={false}>
+          {items.map((ev, index) => (
+            <motion.li
+              key={ev.id}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.25 }}
+              className='flex items-center justify-between rounded-md bg-slate-50 p-2 text-sm ring-1 ring-black/5 dark:bg-slate-800/60 dark:text-gray-200 dark:ring-white/10'
+            >
+              <div className='flex items-center gap-2'>
+                <span className='flex size-6 items-center justify-center rounded-md bg-indigo-500/10 ring-1 ring-indigo-500/30'>
+                  {ev.name === 'pageview' ? (
+                    <FileTextIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
+                  ) : (
+                    <MousePointerClickIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
+                  )}
+                </span>
+                <div>
+                  <div className='font-medium text-slate-900 dark:text-gray-50'>{ev.name}</div>
+                  <div className='text-xs text-slate-600 dark:text-gray-400'>{ev.meta}</div>
+                </div>
+              </div>
+              <div className='text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
+            </motion.li>
+          ))}
+        </AnimatePresence>
+      </ul>
+    </div>
+  )
+}
+
+const PerformancePreview = () => {
+  const { t } = useTranslation('common')
+
+  type Series = {
+    key: string
+    color: string
+    values: number[]
+    base: number
+    amp: number
+  }
+
+  const POINTS = 40
+  const width = 560
+  const height = 120
+
+  const init = (base: number, amp: number) =>
+    Array.from({ length: POINTS }, (_, i) => Math.max(0, base + (Math.sin(i / 3) + (Math.random() - 0.5)) * amp))
+
+  const [series, setSeries] = useState<Series[]>([
+    { key: t('dashboard.frontend'), color: '#709775', base: 0.5, amp: 0.15, values: init(0.5, 0.15) },
+    { key: t('dashboard.backend'), color: '#00A8E8', base: 0.14, amp: 0.06, values: init(0.14, 0.06) },
+    { key: t('dashboard.network'), color: '#F7A265', base: 0.06, amp: 0.03, values: init(0.06, 0.03) },
+  ])
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSeries((prev) =>
+        prev.map((s) => {
+          const next = s.values.slice(1)
+          const last = next[next.length - 1] ?? s.values[s.values.length - 1]
+          const nv = Math.max(0, last + (Math.random() - 0.5) * s.amp)
+          next.push(nv)
+          return { ...s, values: next }
+        }),
+      )
+    }, 2800)
+    return () => clearInterval(id)
+  }, [])
+
+  const maxY = Math.max(0.8, ...series.flatMap((s) => s.values))
+  const step = width / (POINTS - 1)
+  const yScale = (v: number) => height - (v / (maxY * 1.15)) * height
+
+  const toPath = (values: number[]) => {
+    let d = `M 0 ${yScale(values[0])}`
+    for (let i = 1; i < values.length; i++) {
+      const x = i * step
+      const y = yScale(values[i])
+      d += ` L ${x} ${y}`
+    }
+    return d
+  }
+
+  const last = (key: string) => series.find((s) => s.key === key)!.values[POINTS - 1]
+  const prev = (key: string) => series.find((s) => s.key === key)!.values[POINTS - 2]
+
+  const fmt = (v: number) => `${v.toFixed(2)}s`
+
+  const frontend = last(t('dashboard.frontend'))
+  const frontendPrev = prev(t('dashboard.frontend'))
+  const backend = last(t('dashboard.backend'))
+  const backendPrev = prev(t('dashboard.backend'))
+  const network = last(t('dashboard.network'))
+  const networkPrev = prev(t('dashboard.network'))
+
+  const legend = (
+    <ul className='flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-slate-600 dark:text-gray-300'>
+      {series.map((s) => (
+        <li key={s.key} className='inline-flex items-center gap-1'>
+          <span className='inline-block size-2 rounded-[2px]' style={{ backgroundColor: s.color }} />
+          {s.key}
+        </li>
+      ))}
+    </ul>
+  )
+
+  const metric = (label: string, value: number, _change: number) => {
+    const isUp = Math.random() > 0.5
+    const pct = Math.floor(Math.random() * 20) + 1 // 1-20%
+    return (
+      <div className='min-w-0 flex-1 rounded-md bg-white px-2.5 py-1.5 text-[11px] text-slate-900 ring-1 ring-black/5 dark:bg-slate-900 dark:text-gray-50 dark:ring-white/10'>
+        <div className='text-lg font-bold'>{fmt(value)}</div>
+        <div className='mt-0.5 flex items-center justify-between'>
+          <div className='text-[10px] text-slate-600 dark:text-gray-300'>{label}</div>
+          <div
+            className={cn('flex items-center gap-1 text-[10px]', {
+              'text-emerald-600 dark:text-emerald-400': isUp,
+              'text-rose-600 dark:text-rose-400': !isUp,
+            })}
+          >
+            {isUp ? (
+              <>
+                <ChevronUpIcon className='h-4 w-4 shrink-0' />
+                {`${pct}%`}
+              </>
+            ) : (
+              <>
+                <ChevronDownIcon className='h-4 w-4 shrink-0' />
+                {`${pct}%`}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-3 sm:p-4 dark:from-slate-800 dark:to-slate-900'>
+      <div className='mb-2 flex flex-wrap items-center justify-between gap-2'>
+        <div className='flex min-w-0 flex-1 gap-2'>
+          {metric(t('dashboard.frontend'), frontend, frontendPrev)}
+          {metric(t('dashboard.backend'), backend, backendPrev)}
+          {metric(t('dashboard.network'), network, networkPrev)}
+        </div>
+      </div>
+
+      <div className='relative rounded-lg bg-white p-2.5 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+        <svg viewBox={`0 0 ${width} ${height}`} className='h-28 w-full'>
+          <defs>
+            <linearGradient id='gridfade' x1='0' x2='0' y1='0' y2='1'>
+              <stop offset='0%' stopColor='#64748b' stopOpacity='0.06' />
+              <stop offset='100%' stopColor='#64748b' stopOpacity='0' />
+            </linearGradient>
+          </defs>
+          {[0.5].map((r) => (
+            <line key={r} x1={0} x2={width} y1={height * r} y2={height * r} stroke='url(#gridfade)' strokeWidth={1} />
+          ))}
+          {series.map((s) => (
+            <g key={s.key}>
+              <motion.path
+                d={toPath(s.values)}
+                fill='none'
+                stroke={s.color}
+                strokeWidth={1.5}
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 1.1 }}
+              />
+            </g>
+          ))}
+        </svg>
+      </div>
+      <div className='mt-2'>{legend}</div>
+    </div>
+  )
+}
+
+type LogItem = { id: string; message: string }
+const randomLog = (): LogItem => {
+  const messages = [
+    'TypeError: Cannot read properties of undefined',
+    'NetworkError: Failed to fetch /api/data',
+    'UnhandledRejection: Timeout while loading script',
+    'ReferenceError: gtag is not defined',
+  ]
+  const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)]
+  return { id: Math.random().toString(36).slice(2), message: pick(messages) }
+}
+
+const ErrorsPreview = () => {
+  const [logs, setLogs] = useState<LogItem[]>(() => Array.from({ length: 5 }, () => randomLog()))
+  const agos = ['just now', '5 sec ago', '12 sec ago', '18 sec ago', '25 sec ago', '32 sec ago']
+
+  useEffect(() => {
+    const id = setInterval(() => setLogs((prev) => [randomLog(), ...prev].slice(0, 6)), 4800)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 dark:from-slate-800 dark:to-slate-900'>
+      <ul className='space-y-2'>
+        <AnimatePresence initial={false}>
+          {logs.map((log, index) => (
+            <motion.li
+              key={log.id}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.25 }}
+              className='flex items-start justify-between rounded-md bg-rose-50 p-2 text-sm ring-1 ring-rose-200 dark:bg-rose-950/40 dark:text-rose-100 dark:ring-rose-900/50'
+            >
+              <div className='flex items-start gap-2'>
+                <span className='mt-0.5 inline-block size-2.5 flex-shrink-0 rounded-full bg-rose-500' />
+                <div className='text-rose-700 dark:text-rose-200'>{log.message}</div>
+              </div>
+              <div className='text-xs whitespace-nowrap text-rose-600 dark:text-rose-300'>{agos[index]}</div>
+            </motion.li>
+          ))}
+        </AnimatePresence>
+      </ul>
+    </div>
+  )
+}
+
+const FunnelsPreview = () => {
+  const steps = [
+    { label: '/', base: 100 },
+    { label: '/signup', base: 86 },
+    { label: '/billing', base: 62 },
+    { label: 'SALE', base: 29 },
+  ]
+
+  const [tick, setTick] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setTick((s) => s + 1), 1300)
+    return () => clearInterval(id)
+  }, [])
+
+  const width = 620
+  const height = 140
+  const centerY = height / 2
+  const segW = width / (steps.length - 1)
+  const topY = (h: number) => centerY - h
+  const botY = (h: number) => centerY + h
+  const maxHalf = 42
+
+  const vals = steps.map((s, i) => {
+    const fluctuation = ((tick + i) % 5) - 2
+    const v = Math.max(6, Math.min(100, s.base + fluctuation))
+    return v
+  })
+  const halves = vals.map((v) => (v / 100) * maxHalf)
+
+  const toPath = () => {
+    let d = `M 0 ${topY(halves[0])}`
+    for (let i = 1; i < halves.length; i++) {
+      const x = i * segW
+      const y = topY(halves[i])
+      const cx1 = (i - 0.5) * segW
+      const cy1 = topY(halves[i - 1])
+      const cx2 = (i - 0.5) * segW
+      const cy2 = y
+      d += ` C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x} ${y}`
+    }
+    // bottom side (right to left)
+    for (let i = halves.length - 1; i >= 0; i--) {
+      const x = i * segW
+      const y = botY(halves[i])
+      if (i === halves.length - 1) {
+        d += ` L ${x} ${y}`
+      } else {
+        const cx1 = (i + 0.5) * segW
+        const cy1 = botY(halves[i + 1])
+        const cx2 = (i + 0.5) * segW
+        const cy2 = y
+        d += ` C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x} ${y}`
+      }
+    }
+    d += ' Z'
+    return d
+  }
+
+  const midLabels = steps.map((s, i) => ({
+    x: i * segW + (i < steps.length - 1 ? segW / 2 : 0),
+    v: vals[i],
+  }))
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 dark:from-slate-800 dark:to-slate-900'>
+      <div className='mb-2 flex items-center justify-between'>
+        <div className='text-xs font-medium text-slate-700 dark:text-gray-300'>Sample funnel</div>
+        <div className='text-[11px] text-slate-700 dark:text-gray-300'>% of previous step</div>
+      </div>
+      <div className='relative'>
+        <svg viewBox={`0 0 ${width} ${height}`} className='h-36 w-full'>
+          <defs>
+            <linearGradient id='fgrad' x1='0' y1='0' x2='1' y2='0'>
+              <stop offset='0%' stopColor='#3730a3' />
+              <stop offset='35%' stopColor='#4f46e5' />
+              <stop offset='70%' stopColor='#3b82f6' />
+              <stop offset='100%' stopColor='#93c5fd' />
+            </linearGradient>
+            <linearGradient id='fstroke' x1='0' y1='0' x2='1' y2='0'>
+              <stop offset='0%' stopColor='rgba(0,0,0,0.08)' />
+              <stop offset='100%' stopColor='rgba(0,0,0,0.04)' />
+            </linearGradient>
+          </defs>
+
+          <motion.path
+            d={toPath()}
+            fill='url(#fgrad)'
+            stroke='url(#fstroke)'
+            strokeWidth='1'
+            animate={{ opacity: 1 }}
+          />
+
+          {steps.map((_, i) => (
+            <line
+              key={i}
+              x1={i * segW}
+              x2={i * segW}
+              y1={topY(maxHalf + 6)}
+              y2={botY(maxHalf + 6)}
+              stroke='rgba(100,116,139,0.15)'
+            />
+          ))}
+        </svg>
+
+        <div className='pointer-events-none absolute inset-0 flex items-center justify-between px-3'>
+          {midLabels.slice(0, -1).map((p, idx) => (
+            <div key={idx} className='rounded-md bg-gray-200 p-1 text-xs font-semibold text-slate-900'>
+              {p.v.toFixed(0)}%
+            </div>
+          ))}
+          <div className='rounded-md bg-gray-200 p-1 text-xs font-semibold text-slate-900'>
+            {midLabels[midLabels.length - 1].v.toFixed(0)}%
+          </div>
+        </div>
+
+        <div className='mt-2 grid grid-cols-4 gap-2 text-[11px] text-slate-900 dark:text-gray-200'>
+          {steps.map((s, i) => (
+            <div key={s.label} className='text-center'>
+              <div className='font-medium'>{s.label}</div>
+              <div className='tabular-nums'>{vals[i].toFixed(0)}%</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+type ChatItem = { id: string; kind: 'error' | 'online' | 'no-traffic' }
+const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]
+const randomChatItem = (): ChatItem => {
+  const kinds: ChatItem['kind'][] = ['error', 'online']
+  return { id: Math.random().toString(36).slice(2), kind: pick(kinds) }
+}
+
+const AlertsPreview = () => {
+  const [items, setItems] = useState<ChatItem[]>(() => Array.from({ length: 3 }, () => randomChatItem()))
+
+  const agos = ['just now', '7 sec ago', '52 sec ago', '2 min ago', '6 min ago']
+
+  useEffect(() => {
+    const id = setInterval(() => setItems((prev) => [randomChatItem(), ...prev].slice(0, 5)), 5140)
+    return () => clearInterval(id)
+  }, [])
+
+  const renderMessage = (it: ChatItem, index: number) => {
+    if (it.kind === 'error') {
+      return (
+        <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+          <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
+            <BugIcon className='size-4 text-rose-600 dark:text-rose-400' />
+            <span className='text-sm'>
+              Error alert <span className='font-semibold'>Unique error</span> triggered!
+            </span>
+          </div>
+          <div className='text-sm leading-5 break-words whitespace-pre-wrap text-slate-800 dark:text-gray-200'>
+            Project: <span className='font-mono'>Demo</span>
+            <br />
+            Error: <span className='font-mono'>NetworkError: Failed to fetch /api/data</span>
+          </div>
+          <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
+        </div>
+      )
+    }
+
+    if (it.kind === 'online') {
+      const online = 10 + Math.floor(Math.random() * 10)
+
+      return (
+        <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+          <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
+            <BellRingIcon className='size-4 text-amber-600 dark:text-amber-400' />
+            <span className='text-sm'>
+              Alert <span className='font-semibold'>Online &gt;= 10</span> got triggered!
+            </span>
+          </div>
+          <div className='text-sm leading-5 text-slate-800 dark:text-gray-200'>
+            Your project <span className='font-semibold'>Example</span> has {online} online users right now!
+          </div>
+          <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
+        </div>
+      )
+    }
+
+    return (
+      <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+        <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
+          <BellRingIcon className='size-4 text-amber-600 dark:text-amber-400' />
+          <span className='text-sm'>
+            Alert <span className='font-semibold'>No traffic</span> got triggered!
+          </span>
+        </div>
+        <div className='text-sm leading-5 text-slate-800 dark:text-gray-200'>
+          Your project <span className='font-semibold'>Demo</span> has had no traffic for the last 24 hours!
+        </div>
+        <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className='h-full w-full rounded-lg bg-sky-100/60 p-2 ring-1 ring-black/5 dark:bg-slate-800/40 dark:ring-white/10'>
+      <div className='relative h-56 overflow-hidden'>
+        <ul className='absolute inset-0 space-y-3'>
+          <AnimatePresence initial={false}>
+            {items.map((it, index) => (
+              <motion.li
+                key={it.id}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.25 }}
+              >
+                {renderMessage(it, index)}
+              </motion.li>
+            ))}
+          </AnimatePresence>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+const FeaturesShowcase = () => {
   const { theme } = useTheme()
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
+  const { deviceInfo } = useLoaderData<typeof loader>()
 
   useEffect(() => {
     const abortController = new AbortController()
@@ -472,8 +1093,6 @@ const FeatureBlocks = () => {
 
     return () => abortController.abort()
   }, [])
-
-  const { deviceInfo } = useLoaderData<typeof loader>()
 
   const geoOptions = [
     {
@@ -491,468 +1110,235 @@ const FeatureBlocks = () => {
   ]
 
   return (
-    <section className='relative mx-auto max-w-7xl bg-gray-50 px-6 py-14 lg:px-8 dark:bg-slate-900'>
-      <div className='relative mx-auto w-fit'>
-        <div>
-          <p className='mb-4 text-sm font-medium text-slate-800 dark:text-gray-200'>{t('main.butThereIsASolution')}</p>
-          <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 sm:text-5xl dark:text-white'>
-            {t('main.knowYourCustomers')}
-          </h2>
-        </div>
-      </div>
-      <div className='mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2'>
-        <FeatureBlock
-          heading={t('main.insights.title')}
-          description={t('main.insights.description')}
-          className='max-lg:rounded-t-4xl lg:col-span-3 lg:rounded-tl-4xl'
-          dark={theme === 'dark'}
-        >
-          <div
-            className='absolute -top-40 right-0 left-60 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
-            aria-hidden='true'
-          >
-            <div
-              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-amber-400 to-purple-600 opacity-20'
-              style={{
-                clipPath:
-                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-              }}
-            />
-          </div>
-          <div className='h-80 overflow-hidden'>
-            <img
-              className='object-cover object-left opacity-60 transition-transform group-hover:scale-105 max-md:h-full'
-              src={theme === 'dark' ? '/assets/traffic_part_dark.png' : '/assets/traffic_part_light.png'}
-              alt='Swetrix Traffic Dashboard'
-            />
-          </div>
-          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-slate-800' />
-        </FeatureBlock>
-        <FeatureBlock
-          heading={t('main.painPoints.title')}
-          description={t('main.painPoints.description')}
-          className='lg:col-span-3 lg:rounded-tr-4xl'
-          dark={theme === 'dark'}
-        >
-          <div
-            className='absolute -top-40 right-0 left-60 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
-            aria-hidden='true'
-          >
-            <div
-              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-red-400 to-red-800 opacity-15'
-              style={{
-                clipPath:
-                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-              }}
-            />
-          </div>
-          <div className='h-80 overflow-hidden'>
-            <img
-              className='object-cover object-left opacity-60 transition-transform group-hover:scale-105 max-md:h-full'
-              src={theme === 'dark' ? '/assets/performance_part_dark.png' : '/assets/performance_part_light.png'}
-              alt='Website speed and performance monitoring'
-            />
-          </div>
-          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
-        </FeatureBlock>
-        <FeatureBlock
-          heading={t('main.customisation.title')}
-          description={t('main.customisation.description')}
-          className='lg:col-span-2 lg:rounded-bl-4xl'
-          dark={theme === 'dark'}
-        >
-          <MarketplaceCluster />
-        </FeatureBlock>
-        <FeatureBlock
-          heading={t('main.integrations.title')}
-          description={t('main.integrations.description')}
-          className='!overflow-visible lg:col-span-2'
-          dark={theme === 'dark'}
-        >
-          <LogoTimeline />
-        </FeatureBlock>
-        <FeatureBlock
-          heading={t('main.sessions.title')}
-          description={t('main.sessions.description')}
-          className='max-lg:rounded-b-4xl lg:col-span-2 lg:rounded-br-4xl'
-          dark={theme === 'dark'}
-        >
-          <div className='relative space-y-2 overflow-hidden px-10 pt-5'>
-            <ClientOnly>
-              {() => (
-                <MetricCardSelect
-                  classes={{
-                    value: 'max-md:text-xl md:text-2xl',
-                    container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
-                  }}
-                  values={geoOptions}
-                  selectLabel={t('project.geo')}
-                  valueMapper={({ value }, index) => {
-                    if (index !== 0) {
-                      return value || 'N/A'
-                    }
-
-                    if (!value) {
-                      return t('project.unknownCountry')
-                    }
-
-                    return (
-                      <div className='flex items-center'>
-                        <CCRow size={26} cc={value} language={language} />
-                      </div>
-                    )
-                  }}
-                />
-              )}
-            </ClientOnly>
-
-            <MetricCard
-              classes={{
-                value: 'max-md:text-xl md:text-3xl',
-                container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
-              }}
-              label={t('project.mapping.os')}
-              value={deviceInfo.os}
-              valueMapper={(value: keyof typeof OS_LOGO_MAP) => {
-                const logoPathLight = OS_LOGO_MAP[value]
-                const logoPathDark = OS_LOGO_MAP_DARK[value as keyof typeof OS_LOGO_MAP_DARK]
-
-                let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
-                logoPath ||= logoPathLight
-
-                if (!logoPath) {
-                  return (
-                    <>
-                      <GlobeAltIcon className='size-6' />
-                      &nbsp;
-                      {value}
-                    </>
-                  )
-                }
-                const logoUrl = `/${logoPath}`
-
-                return (
-                  <div className='flex items-center'>
-                    <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
-                    &nbsp;
-                    {value}
-                  </div>
-                )
-              }}
-            />
-
-            <MetricCard
-              classes={{
-                value: 'max-md:text-xl md:text-3xl',
-                container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
-              }}
-              label={t('project.mapping.br')}
-              value={deviceInfo.browser}
-              valueMapper={(value: keyof typeof BROWSER_LOGO_MAP) => {
-                const logoUrl = BROWSER_LOGO_MAP[value]
-
-                if (!logoUrl) {
-                  return (
-                    <>
-                      <GlobeAltIcon className='size-6' />
-                      &nbsp;
-                      {value}
-                    </>
-                  )
-                }
-
-                return (
-                  <div className='flex items-center'>
-                    <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
-                    &nbsp;
-                    {value}
-                  </div>
-                )
-              }}
-            />
-
-            <SdurMetric />
-
-            <div className='absolute right-0 bottom-0 rotate-12 rounded-md bg-gray-50 px-2 py-1 opacity-20 transition-all group-hover:scale-110 group-hover:rotate-6 group-hover:opacity-50 dark:bg-slate-700/60'>
-              {['/home', '/product', 'SALE'].map((path, index) => (
-                <div key={path} className='relative pb-8'>
-                  {index !== 2 ? (
-                    <span
-                      className='absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
-                      aria-hidden='true'
-                    />
-                  ) : null}
-                  <div className='relative flex space-x-3'>
-                    <div>
-                      <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
-                        {path.startsWith('/') ? (
-                          <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
-                        ) : (
-                          <MousePointerClickIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
-                        )}
-                      </span>
-                    </div>
-                    <p className='pt-1.5 text-sm text-gray-700 dark:text-gray-300'>
-                      <Trans
-                        t={t}
-                        i18nKey={path.startsWith('/') ? 'project.pageviewX' : 'project.eventX'}
-                        components={{
-                          value: <span className='font-medium text-gray-900 dark:text-gray-50' />,
-                          span: <span />,
-                        }}
-                        values={{
-                          x: path,
-                        }}
-                      />
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </FeatureBlock>
-      </div>
-    </section>
-  )
-}
-
-const CoreFeatures = () => {
-  const { theme } = useTheme()
-  const { t } = useTranslation('common')
-
-  return (
-    <section className='relative mx-auto max-w-7xl bg-gray-50 px-6 py-14 lg:px-8 dark:bg-slate-900'>
-      <div className='relative mx-auto w-fit'>
-        <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 sm:text-5xl dark:text-white'>
+    <section className='relative mx-auto max-w-7xl px-6 py-14 lg:px-8'>
+      <div className='mx-auto w-fit'>
+        <h2 className='text-center text-4xl font-bold text-slate-900 sm:text-5xl dark:text-white'>
           {t('main.coreFeatures')}
         </h2>
       </div>
-      <div className='mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2'>
-        <FeatureBlock
-          heading={t('main.cookies.title')}
-          description={t('main.cookies.description')}
-          className='max-lg:rounded-t-4xl lg:col-span-4 lg:rounded-tl-4xl'
-          dark={theme === 'dark'}
-        >
-          <div className='relative h-80 overflow-hidden px-10 pt-5'>
-            <div className='absolute top-2 rotate-2 rounded-xs bg-slate-200 p-4 text-slate-900 opacity-70 transition-opacity group-hover:opacity-90 dark:bg-slate-700 dark:text-gray-50'>
-              <p className='mb-4 text-sm'>
-                We use cookies to enhance your experience. By continuing to visit this site you agree to our use of
-                cookies.
-              </p>
-              <div className='max-w-max rounded-md bg-slate-800 p-2 text-gray-50'>Accept</div>
-            </div>
-
-            <div className='absolute bottom-0 left-0 mb-4 flex max-w-max -rotate-12 gap-2 rounded-xs bg-slate-100 p-4 text-slate-900 transition-transform group-hover:-rotate-6 dark:bg-gray-900 dark:text-gray-50'>
-              <p className='text-md flex'>
-                <Cookie className='mr-2 text-slate-700' size={24} />
-                Hello there, We use cookies!
-              </p>
-              <div className='max-w-max rounded-md bg-slate-800 px-1 text-gray-50'>Okay</div>
-            </div>
-
-            <div className='absolute bottom-20 left-12 mb-4 flex max-w-max -rotate-6 rounded-xs bg-slate-100 p-4 text-slate-900 transition-transform group-hover:scale-95 dark:bg-gray-800 dark:text-gray-50'>
-              <p className='text-md flex max-w-[40ch]'>
-                This website uses cookies to ensure you get the best experience on our website
-              </p>
-            </div>
-
-            <div className='absolute right-0 bottom-10 rotate-12 rounded-md bg-gray-100 p-2 text-slate-900 opacity-90 transition-transform group-hover:scale-110 group-hover:rotate-3 dark:bg-gray-900'>
-              <p className='text-md flex'>
-                <Cookie className='mr-2 text-slate-700 dark:text-gray-100' size={24} />
-                <span className='max-w-[35ch] dark:text-gray-50'>
-                  Please accept our cookies to continue using our website.
-                </span>
-              </p>
-              <div className='mt-2 flex gap-2'>
-                <div className='max-w-max rounded-md bg-green-700/80 px-1 text-gray-50'>Okay</div>
-                <div className='max-w-max rounded-md bg-red-700/80 px-1 text-gray-50'>No</div>
-              </div>
-            </div>
-
-            <div className='absolute inset-0 bg-[linear-gradient(to_bottom_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity duration-500 group-hover:opacity-70 group-hover:delay-300' />
-            <div className='absolute inset-0 bg-[linear-gradient(to_top_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity duration-500 group-hover:opacity-70 group-hover:delay-300' />
-          </div>
-          <div className='absolute inset-0 bg-gradient-to-t from-white to-25% group-data-[dark]:from-slate-800' />
-        </FeatureBlock>
-        <FeatureBlock
-          heading={t('main.utms.title')}
-          description={t('main.utms.description')}
-          className='lg:col-span-2 lg:rounded-bl-4xl'
-          dark={theme === 'dark'}
-        >
-          <ConveyorBelt />
-        </FeatureBlock>
-        <FeatureBlock
-          heading={t('main.funnels.title')}
-          description={t('main.funnels.description')}
-          className='!overflow-visible lg:col-span-2'
-          dark={theme === 'dark'}
-        >
-          <div
-            className='absolute -top-40 right-0 left-60 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
-            aria-hidden='true'
-          >
-            <div
-              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-yellow-400/60 to-yellow-800/60 opacity-15 dark:from-yellow-400 dark:to-yellow-800'
-              style={{
-                clipPath:
-                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-              }}
-            />
-          </div>
-          <div className='h-80 overflow-hidden'>
-            <img
-              className='object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
-              src={theme === 'dark' ? '/assets/funnel_dark.png' : '/assets/funnel_light.png'}
-              alt='Website speed and performance monitoring'
-            />
-          </div>
-          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
-        </FeatureBlock>
-
-        <FeatureBlock
-          heading={t('main.eCommerce.title')}
-          description={t('main.eCommerce.description')}
-          className='lg:col-span-4 lg:rounded-tr-4xl'
-          dark={theme === 'dark'}
-        >
-          <div
-            className='absolute -top-40 right-0 left-60 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
-            aria-hidden='true'
-          >
-            <div
-              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-green-400/60 to-green-800/60 opacity-15 dark:from-green-400 dark:to-green-800'
-              style={{
-                clipPath:
-                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-              }}
-            />
-          </div>
-          <div className='h-80 overflow-hidden'>
-            <img
-              className='object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
-              src={theme === 'dark' ? '/assets/custom_events_dark.png' : '/assets/custom_events_light.png'}
-              alt='Website speed and performance monitoring'
-            />
-          </div>
-          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
-        </FeatureBlock>
-      </div>
-    </section>
-  )
-}
-
-const Hero = () => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='relative isolate overflow-x-clip'>
-      <svg
-        className='absolute inset-0 -z-10 h-full w-full [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)] stroke-gray-200 dark:stroke-white/10'
-        aria-hidden='true'
-      >
-        <defs>
-          <pattern id='rect-pattern' width={200} height={200} x='50%' y={-1} patternUnits='userSpaceOnUse'>
-            <path d='M.5 200V.5H200' fill='none' />
-          </pattern>
-        </defs>
-        <svg x='50%' y={-1} className='overflow-visible fill-white dark:fill-gray-800/20'>
-          <path
-            d='M-200 0h201v201h-201Z M600 0h201v201h-201Z M-400 600h201v201h-201Z M200 800h201v201h-201Z'
-            strokeWidth={0}
-          />
-        </svg>
-        <rect width='100%' height='100%' strokeWidth={0} fill='url(#rect-pattern)' />
-      </svg>
-      <div
-        className='absolute top-10 left-[calc(50%-4rem)] -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)] lg:top-[calc(50%-30rem)] lg:left-48 xl:left-[calc(50%-24rem)]'
-        aria-hidden='true'
-      >
-        <div
-          className='aspect-[1108/632] w-[69.25rem] bg-gradient-to-r from-[#80caff] to-[#4f46e5] opacity-20'
-          style={{
-            clipPath:
-              'polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)',
-          }}
+      <div className='mt-8 grid grid-cols-1 gap-4 sm:mt-12 lg:grid-cols-2'>
+        <LargeFeatureCard
+          title={t('main.web.title')}
+          description={
+            <>
+              {t('main.web.description')}
+              <ul className='mt-2 grid grid-cols-1 gap-2 text-gray-900 sm:grid-cols-2 dark:text-gray-50'>
+                {_map(t('main.web.features', { returnObjects: true }), (feature: string) => (
+                  <li className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50' key={feature}>
+                    <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          }
+          media={<AnalyticsLivePreview />}
         />
-      </div>
-      <Header transparent />
-      <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
-        <div className='relative z-20 flex flex-col content-between justify-center'>
-          <div className='relative mx-auto flex flex-col px-4 text-left'>
-            <h1 className='mx-auto max-w-5xl text-center text-4xl font-extrabold tracking-[-0.4px] text-slate-900 sm:text-5xl sm:leading-none lg:text-6xl xl:text-7xl dark:text-white'>
-              <Trans
-                t={t}
-                i18nKey='main.slogan'
-                components={{
-                  // @ts-expect-error
-                  span: <Highlighted />,
+        <LargeFeatureCard
+          title={t('main.sessions.title')}
+          description={
+            <>
+              {t('main.sessions.description')}
+              <ul className='mt-2 grid grid-cols-1 gap-2 text-gray-900 sm:grid-cols-2 dark:text-gray-50'>
+                {_map(t('main.sessions.features', { returnObjects: true }), (feature: string) => (
+                  <li className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50' key={feature}>
+                    <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          }
+          media={
+            <div className='relative space-y-2 overflow-hidden px-10 pt-5'>
+              <ClientOnly>
+                {() => (
+                  <MetricCardSelect
+                    classes={{
+                      value: 'max-md:text-xl md:text-2xl',
+                      container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+                    }}
+                    values={geoOptions}
+                    selectLabel={t('project.geo')}
+                    valueMapper={({ value }, index) => {
+                      if (index !== 0) {
+                        return value || 'N/A'
+                      }
+
+                      if (!value) {
+                        return t('project.unknownCountry')
+                      }
+
+                      return (
+                        <div className='flex items-center'>
+                          <CCRow size={26} cc={value} language={language} />
+                        </div>
+                      )
+                    }}
+                  />
+                )}
+              </ClientOnly>
+
+              <MetricCard
+                classes={{
+                  value: 'max-md:text-xl md:text-3xl',
+                  container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+                }}
+                label={t('project.mapping.os')}
+                value={deviceInfo.os}
+                valueMapper={(value: keyof typeof OS_LOGO_MAP) => {
+                  const logoPathLight = OS_LOGO_MAP[value]
+                  const logoPathDark = OS_LOGO_MAP_DARK[value as keyof typeof OS_LOGO_MAP_DARK]
+
+                  let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
+                  logoPath ||= logoPathLight
+
+                  if (!logoPath) {
+                    return (
+                      <>
+                        <GlobeIcon className='size-6' />
+                        &nbsp;
+                        {value}
+                      </>
+                    )
+                  }
+                  const logoUrl = `/${logoPath}`
+
+                  return (
+                    <div className='flex items-center'>
+                      <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
+                      &nbsp;
+                      {value}
+                    </div>
+                  )
                 }}
               />
-            </h1>
-            <p className='mx-auto mt-4 max-w-4xl text-center text-base text-slate-900 sm:text-lg dark:text-slate-200'>
-              {t('main.description')}
-            </p>
-            <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
-              <Link
-                to={routesPath.signup}
-                className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 px-2 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[230px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
-                aria-label={t('titles.signup')}
-              >
-                <span className='mr-1 text-center text-base font-semibold'>
-                  {t('main.startAXDayFreeTrial', { amount: 14 })}
-                </span>
-                <ArrowRightIcon className='mt-[1px] h-4 w-5 transition-transform group-hover:scale-[1.15]' />
-              </Link>
-              <a
-                href={LIVE_DEMO_URL}
-                className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-xs ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200/60 sm:mt-0 sm:max-w-[230px] dark:text-white dark:ring-white/20 dark:hover:bg-slate-800/60'
-                target='_blank'
-                rel='noopener noreferrer'
-                aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
-              >
-                <span className='text-base font-semibold'>{t('common.liveDemo')}</span>
-              </a>
-            </div>
-            <Testimonials />
-          </div>
-        </div>
 
-        <ClientOnly
-          fallback={
-            <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
-              <div className='relative h-[320px] w-full rounded-xl bg-slate-800/20 ring-2 ring-gray-900/10 md:h-[700px] dark:ring-white/10' />
+              <MetricCard
+                classes={{
+                  value: 'max-md:text-xl md:text-3xl',
+                  container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+                }}
+                label={t('project.mapping.br')}
+                value={deviceInfo.browser}
+                valueMapper={(value: keyof typeof BROWSER_LOGO_MAP) => {
+                  const logoUrl = BROWSER_LOGO_MAP[value]
+
+                  if (!logoUrl) {
+                    return (
+                      <>
+                        <GlobeIcon className='size-6' />
+                        &nbsp;
+                        {value}
+                      </>
+                    )
+                  }
+
+                  return (
+                    <div className='flex items-center'>
+                      <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
+                      &nbsp;
+                      {value}
+                    </div>
+                  )
+                }}
+              />
+
+              <SdurMetric />
+
+              <div className='absolute right-0 bottom-0 rotate-12 px-2 py-1 opacity-40'>
+                {['/home', '/product', 'SALE'].map((path, index) => (
+                  <div key={path} className='relative pb-8'>
+                    {index !== 2 ? (
+                      <span
+                        className='absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
+                        aria-hidden='true'
+                      />
+                    ) : null}
+                    <div className='relative flex space-x-3'>
+                      <div>
+                        <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
+                          {path.startsWith('/') ? (
+                            <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+                          ) : (
+                            <MousePointerClickIcon
+                              className='h-5 w-5 text-white'
+                              aria-hidden='true'
+                              strokeWidth={1.5}
+                            />
+                          )}
+                        </span>
+                      </div>
+                      <p className='pt-1.5 text-sm text-gray-700 dark:text-gray-300'>
+                        <Trans
+                          t={t}
+                          i18nKey={path.startsWith('/') ? 'project.pageviewX' : 'project.eventX'}
+                          components={{
+                            value: <span className='font-medium text-gray-900 dark:text-gray-50' />,
+                            span: <span />,
+                          }}
+                          values={{
+                            x: path,
+                          }}
+                        />
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           }
-        >
-          {() => <LiveDemo />}
-        </ClientOnly>
+        />
       </div>
-    </div>
+      <div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
+        <FeatureCard
+          title={t('main.performance.title')}
+          description={t('main.performance.description')}
+          media={<PerformancePreview />}
+        />
+        <FeatureCard
+          title={t('main.errors.title')}
+          description={t('main.errors.description')}
+          media={<ErrorsPreview />}
+        />
+        <FeatureCard
+          title={t('main.events.title')}
+          description={t('main.events.description')}
+          media={<CustomEventsPreview />}
+        />
+        <FeatureCard
+          title={t('main.funnels.title')}
+          description={t('main.funnels.description')}
+          media={<FunnelsPreview />}
+        />
+        <FeatureCard
+          title={t('main.alerts.title')}
+          description={t('main.alerts.description')}
+          media={<AlertsPreview />}
+        />
+        <FeatureCard
+          title={t('main.cookies.title')}
+          description={t('main.cookies.description')}
+          media={<img src='/assets/say-no-to-cookies.png' alt='' className='h-full w-full object-cover' />}
+        />
+      </div>
+    </section>
   )
 }
 
 export default function Index() {
-  const { isAuthenticated } = useAuth()
-
   return (
     <div className='overflow-hidden'>
       <main className='bg-gray-50 dark:bg-slate-900'>
         <Hero />
 
-        <Problem />
-
-        <FeatureBlocks />
-
         <FeedbackDual />
 
-        <CoreFeatures />
+        <FeaturesShowcase />
 
-        {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!isAuthenticated ? <Pricing authenticated={false} /> : null}
+        <MarketingPricing />
 
-        <WeAreOpensource />
+        <FAQ />
 
         <DitchGoogle />
       </main>
