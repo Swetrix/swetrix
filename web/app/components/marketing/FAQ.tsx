@@ -2,6 +2,7 @@ import _map from 'lodash/map'
 import { ChevronDownIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import sanitizeHtml from 'sanitize-html'
 
 import { DOCS_URL, PLAN_LIMITS, TRIAL_DAYS, DISCORD_URL } from '~/lib/constants'
 import { cn } from '~/utils/generic'
@@ -19,7 +20,11 @@ const FAQ = () => {
     moderatePlanEventsAmount: PLAN_LIMITS.freelancer.monthlyUsageLimit.toLocaleString('en-US'),
     freeTrialDays: TRIAL_DAYS,
   }
-  const stripTags = (html: string) => html.replace(/<[^>]+>/g, '')
+  const stripTags = (html: string) =>
+    sanitizeHtml(html, {
+      allowedTags: [],
+      allowedAttributes: {},
+    })
   const items = t('main.faq.items', { returnObjects: true }) as { q: string; a: string }[]
   const structuredData = {
     '@context': 'https://schema.org',
