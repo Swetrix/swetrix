@@ -18,7 +18,7 @@ import BackgroundSvg from '~/ui/icons/BackgroundSvg'
 import { nFormatterSeparated } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 
-import Pricing from '../../components/marketing/Pricing'
+import MarketingPricing from '~/components/pricing/MarketingPricing'
 
 const Lines = () => (
   <div className='pointer-events-none relative'>
@@ -275,7 +275,7 @@ const Performance = () => {
         </div>
 
         {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {isAuthenticated ? null : <Pricing authenticated={false} />}
+        {isAuthenticated ? null : <MarketingPricing authenticated={false} />}
 
         <DitchGoogle />
 

@@ -16,7 +16,7 @@ import { useTheme } from '~/providers/ThemeProvider'
 import BackgroundSvg from '~/ui/icons/BackgroundSvg'
 import routesPath from '~/utils/routes'
 
-import Pricing from '../../components/marketing/Pricing'
+import MarketingPricing from '~/components/pricing/MarketingPricing'
 import { PeopleLoveSwetrix } from '../Performance'
 
 const Lines = () => (
@@ -210,7 +210,7 @@ const ErrorTracking = () => {
         </div>
 
         {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!isAuthenticated ? <Pricing authenticated={false} /> : null}
+        {!isAuthenticated ? <MarketingPricing authenticated={false} /> : null}
 
         <DitchGoogle />
 

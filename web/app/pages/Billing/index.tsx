@@ -9,6 +9,8 @@ import { toast } from 'sonner'
 
 import { getPaymentMetainfo, getUsageInfo } from '~/api'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
+import FAQ from '~/components/marketing/FAQ'
+import BillingPricing from '~/components/pricing/BillingPricing'
 import { withAuthentication, auth } from '~/hoc/protected'
 import { isSelfhosted, PADDLE_JS_URL, PADDLE_VENDOR_ID, CONTACT_EMAIL, paddleLanguageMapping } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
@@ -20,8 +22,6 @@ import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import MultiProgress from '~/ui/MultiProgress'
 import { loadScript } from '~/utils/generic'
-
-import Pricing from '../../components/marketing/Pricing'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
@@ -36,7 +36,6 @@ const Billing = () => {
 
   const { user, isLoading: authLoading } = useAuth()
   const { theme } = useTheme()
-  const { isAuthenticated } = useAuth()
   const [usageInfo, setUsageInfo] = useState<UsageInfo>({
     total: 0,
     traffic: 0,
@@ -214,12 +213,12 @@ const Billing = () => {
     <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
       <DashboardLockedBanner />
 
-      <div className='mx-auto px-4 pt-12 whitespace-pre-line sm:px-6 md:w-5/6'>
+      <div className='mx-auto px-4 pt-12 whitespace-pre-line sm:px-6 md:w-11/12'>
         <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>{t('billing.title')}</h1>
       </div>
 
-      <div className='mx-auto mt-5 grid gap-x-10 gap-y-8 px-4 pb-16 whitespace-pre-line sm:px-6 md:w-5/6 lg:grid-cols-2'>
-        <div>
+      <div className='mx-auto mt-5 grid gap-x-10 gap-y-8 px-4 pb-4 whitespace-pre-line sm:px-6 md:w-11/12 lg:grid-cols-3'>
+        <div className='lg:col-span-2'>
           <h2 id='billing' className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'>
             {t('billing.subscription')}
           </h2>
@@ -301,7 +300,7 @@ const Billing = () => {
             <Loader />
           ) : (
             <div className='mt-8 flex flex-col'>
-              <Pricing authenticated={isAuthenticated} isBillingPage lastEvent={lastEvent} />
+              <BillingPricing lastEvent={lastEvent} />
               <div className='mt-2 space-y-2'>
                 {subUpdateURL && !cancellationEffectiveDate ? (
                   <Button className='mr-2' onClick={onUpdatePaymentDetails} type='button' primary large>
@@ -318,7 +317,7 @@ const Billing = () => {
           )}
         </div>
 
-        <div>
+        <div className='lg:col-span-1'>
           <h2 id='usage' className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'>
             {t('billing.planUsage')}
           </h2>
@@ -448,22 +447,22 @@ const Billing = () => {
                 </p>
               </div>
 
-              <div className='mt-4 flex items-center justify-between'>
-                <p className='text-sm text-gray-600 dark:text-gray-400'>{t('billing.resetDate')}</p>
-                <p className='text-sm text-gray-600 dark:text-gray-400'>
-                  {t('billing.daysUntilReset', {
-                    days: Math.ceil(
-                      (new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).getTime() -
-                        new Date().getTime()) /
-                        (1000 * 60 * 60 * 24),
-                    ),
-                  })}
-                </p>
-              </div>
+              <p className='mt-4 text-sm text-gray-600 dark:text-gray-400'>
+                {t('billing.resetDate', {
+                  days: Math.ceil(
+                    (new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).getTime() -
+                      new Date().getTime()) /
+                      (1000 * 60 * 60 * 24),
+                  ),
+                })}
+              </p>
             </div>
           )}
         </div>
       </div>
+
+      <FAQ />
+
       <Modal
         onClose={() => {
           setIsCancelSubModalOpened(false)

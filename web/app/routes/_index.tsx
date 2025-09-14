@@ -28,7 +28,8 @@ import { ClientOnly } from 'remix-utils/client-only'
 import { getGeneralStats, getPaymentMetainfo } from '~/api'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import Pricing from '~/components/marketing/Pricing'
+import FAQ from '~/components/marketing/FAQ'
+import MarketingPricing from '~/components/pricing/MarketingPricing'
 import {
   GITHUB_URL,
   LIVE_DEMO_URL,
@@ -37,16 +38,11 @@ import {
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
   BROWSER_LOGO_MAP,
-  DOCS_URL,
-  DISCORD_URL,
-  PLAN_LIMITS,
-  TRIAL_DAYS,
 } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Stats } from '~/lib/models/Stats'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
-import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
 import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
@@ -401,113 +397,6 @@ const Hero = () => {
         </section>
       </div>
     </div>
-  )
-}
-
-const FAQ = () => {
-  const { t } = useTranslation('common')
-
-  const onLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.stopPropagation()
-  }
-
-  const values = {
-    lowestPlanEventsAmount: PLAN_LIMITS.hobby.monthlyUsageLimit.toLocaleString('en-US'),
-    moderatePlanEventsAmount: PLAN_LIMITS.freelancer.monthlyUsageLimit.toLocaleString('en-US'),
-    freeTrialDays: TRIAL_DAYS,
-  }
-  const stripTags = (html: string) => html.replace(/<[^>]+>/g, '')
-  const items = t('main.faq.items', { returnObjects: true }) as { q: string; a: string }[]
-  const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: items.map((_, idx) => ({
-      '@type': 'Question',
-      name: t(`main.faq.items.${idx}.q`),
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: stripTags(
-          t(`main.faq.items.${idx}.a`, {
-            ...values,
-          }),
-        ),
-      },
-    })),
-  }
-
-  return (
-    <section className='relative mx-auto max-w-5xl px-6 py-14 lg:px-8'>
-      <h2 className='text-center text-3xl font-extrabold text-slate-900 sm:text-4xl dark:text-white'>
-        {t('main.faq.title')}
-      </h2>
-      <div className='mt-8 flex flex-col'>
-        {_map(items, (item: { q: string; a: string }, idx: number) => {
-          const showTopBorder = idx !== 0
-
-          return (
-            <details
-              key={item.q}
-              className={cn('group w-full text-left', showTopBorder && 'border-t border-gray-200 dark:border-white/10')}
-            >
-              <summary className='flex w-full cursor-pointer items-center justify-between px-5 py-4'>
-                <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-gray-100'>
-                  <Trans t={t} i18nKey={`main.faq.items.${idx}.q`} />
-                </span>
-                <ChevronDownIcon className='size-4 text-slate-900 transition-transform group-open:rotate-180 dark:text-gray-300' />
-              </summary>
-              <div className='px-5'>
-                <p className='pb-4 text-sm whitespace-pre-line text-slate-700 dark:text-gray-300'>
-                  <Trans
-                    t={t}
-                    i18nKey={`main.faq.items.${idx}.a`}
-                    values={values}
-                    components={{
-                      dataPolicyUrl: (
-                        <Link
-                          to={routesPath.dataPolicy}
-                          className='underline decoration-dashed hover:decoration-solid'
-                          aria-label='Data policy'
-                          onClick={onLinkClick}
-                        />
-                      ),
-                      apiDocumentationUrl: (
-                        <a
-                          href={DOCS_URL}
-                          className='underline decoration-dashed hover:decoration-solid'
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          aria-label='API documentation (opens in a new tab)'
-                          onClick={onLinkClick}
-                        />
-                      ),
-                      contactUsUrl: (
-                        <Link
-                          to={routesPath.contact}
-                          className='underline decoration-dashed hover:decoration-solid'
-                          aria-label='Contact us'
-                          onClick={onLinkClick}
-                        />
-                      ),
-                      discordUrl: (
-                        <a
-                          href={DISCORD_URL}
-                          className='underline decoration-dashed hover:decoration-solid'
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          aria-label='Discord (opens in a new tab)'
-                          onClick={onLinkClick}
-                        />
-                      ),
-                    }}
-                  />
-                </p>
-              </div>
-            </details>
-          )
-        })}
-      </div>
-      <script type='application/ld+json'>{JSON.stringify(structuredData, null, 2)}</script>
-    </section>
   )
 }
 
@@ -1459,8 +1348,6 @@ const FeaturesShowcase = () => {
 }
 
 export default function Index() {
-  const { isAuthenticated } = useAuth()
-
   return (
     <div className='overflow-hidden'>
       <main className='bg-gray-50 dark:bg-slate-900'>
@@ -1470,8 +1357,7 @@ export default function Index() {
 
         <FeaturesShowcase />
 
-        {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!isAuthenticated ? <Pricing authenticated={false} /> : null}
+        <MarketingPricing />
 
         <FAQ />
 
