@@ -257,6 +257,7 @@ const getProjectClickhouse = async (id: string): Promise<Project> => {
 }
 
 const getProjectsClickhouse = async (
+  adminId: string,
   search: string = null,
   sort: 'alpha_asc' | 'alpha_desc' | 'date_asc' | 'date_desc' = 'alpha_asc',
 ): Promise<Project[]> => {
@@ -278,8 +279,8 @@ const getProjectsClickhouse = async (
           *
         FROM project
         WHERE
-          name ILIKE {search:String} OR
-          id ILIKE {search:String}
+          adminId = {adminId:FixedString(36)}
+          AND (name ILIKE {search:String} OR id ILIKE {search:String})
         ${orderBy}
       `
 
@@ -288,6 +289,7 @@ const getProjectsClickhouse = async (
         query,
         query_params: {
           search: `%${search}%`,
+          adminId,
         },
       })
       .then(resultSet => resultSet.json<Project>())
@@ -295,11 +297,14 @@ const getProjectsClickhouse = async (
     return data
   }
 
-  const query = `SELECT * FROM project ${orderBy};`
+  const query = `SELECT * FROM project WHERE adminId = {adminId:FixedString(36)} ${orderBy};`
 
   const { data } = await clickhouse
     .query({
       query,
+      query_params: {
+        adminId,
+      },
     })
     .then(resultSet => resultSet.json<Project>())
 

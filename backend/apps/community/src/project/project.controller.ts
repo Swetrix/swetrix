@@ -131,7 +131,7 @@ export class ProjectController {
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip, sort }, 'GET /project')
 
-    const chResults = await getProjectsClickhouse(search, sort)
+    const chResults = await getProjectsClickhouse(userId, search, sort)
     const formatted = _map(chResults, this.projectService.formatFromClickhouse)
 
     let sharesByProjectId: Record<string, any> = {}
@@ -238,7 +238,7 @@ export class ProjectController {
   async getNames(@CurrentUserId() userId: string): Promise<Project[]> {
     this.logger.log({ userId }, 'GET /project/names')
 
-    const results = await getProjectsClickhouse()
+    const results = await getProjectsClickhouse(userId)
     const formatted = _map(results, this.projectService.formatFromClickhouse)
     return formatted
   }
@@ -395,7 +395,7 @@ export class ProjectController {
   ): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
 
-    const projects = await getProjectsClickhouse()
+    const projects = await getProjectsClickhouse(userId)
 
     this.projectService.validateProject(projectDTO as ProjectDTO, true)
 
