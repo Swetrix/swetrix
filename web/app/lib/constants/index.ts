@@ -453,7 +453,7 @@ export const paddleLanguageMapping = {
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
-export const I18N_CACHE_BREAKER = 19
+export const I18N_CACHE_BREAKER = 20
 
 export const roles: Role[] = ['admin', 'viewer']
 

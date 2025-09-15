@@ -50,7 +50,7 @@ const Button = ({
     disabled={disabled || loading}
     type={type}
     className={cn(
-      'relative inline-flex items-center rounded-md border leading-4 font-medium select-none',
+      'relative inline-flex items-center rounded-md border leading-4 font-medium transition-all select-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
       {
         'border-transparent bg-slate-900 text-gray-50 shadow-xs hover:bg-slate-700 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700':
           primary,
@@ -65,7 +65,6 @@ const Button = ({
         'px-4 py-2 text-sm': large,
         'px-6 py-3 text-base': giant,
         'px-3 py-2 text-sm': regular,
-        'cursor-not-allowed': loading,
         'focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden': focus,
       },
       className,

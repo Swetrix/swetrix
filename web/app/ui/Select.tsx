@@ -45,7 +45,7 @@ function Select<T>({
 }: SelectProps<T>) {
   return (
     // @ts-expect-error
-    <Listbox id={id || ''} value={title} onChange={onSelect}>
+    <Listbox as='div' id={id || ''} value={title} onChange={onSelect}>
       {({ open }) => (
         <>
           {label ? (

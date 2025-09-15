@@ -2,13 +2,13 @@ import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/o
 import _map from 'lodash/map'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import OutsideClickHandler from 'react-outside-click-handler'
 import { Link } from 'react-router'
 
 import { getLiveVisitorsInfo, GetLiveVisitorsInfo } from '~/api'
 import { PROJECT_TABS } from '~/lib/constants'
 import Flag from '~/ui/Flag'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
+import OutsideClickHandler from '~/ui/OutsideClickHandler'
 
 import { useCurrentProject, useProjectPassword } from '../../../../providers/CurrentProjectProvider'
 
