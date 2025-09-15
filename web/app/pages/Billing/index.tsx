@@ -279,7 +279,7 @@ const Billing = () => {
             </div>
           ) : null}
           {isNoSub ? (
-            <div className='mt-5 max-w-prose rounded-md bg-red-50 p-4 dark:bg-red-600/30'>
+            <div className='mt-5 max-w-prose rounded-md bg-red-50 p-4 dark:bg-red-600/20'>
               <div className='flex'>
                 <div className='shrink-0'>
                   <ExclamationTriangleIcon aria-hidden='true' className='h-5 w-5 text-red-400 dark:text-red-100' />
@@ -288,7 +288,7 @@ const Billing = () => {
                   <h3 className='text-sm font-medium text-red-800 dark:text-red-100'>
                     {t('billing.noActiveSubscription')}
                   </h3>
-                  <p className='mt-2 text-sm text-red-700 dark:text-red-200'>
+                  <p className='mt-2 text-sm text-red-700 dark:text-red-100'>
                     {t('billing.noActiveSubscriptionDescription')}
                   </p>
                 </div>
