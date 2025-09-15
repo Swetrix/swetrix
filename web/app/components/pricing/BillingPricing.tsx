@@ -57,15 +57,18 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
   const [showDowngradeModal, setShowDowngradeModal] = useState(false)
   const [billingFrequency, setBillingFrequency] = useState(user?.billingFrequency || BillingFrequency.monthly)
 
-  const PLAN_CODES_ARRAY = useMemo(
-    () =>
-      isAuthenticated
-        ? _includes(STANDARD_PLANS, user?.planCode)
-          ? STANDARD_PLANS
-          : [user?.planCode, ...STANDARD_PLANS]
-        : STANDARD_PLANS,
-    [isAuthenticated, user?.planCode],
-  )
+  const PLAN_CODES_ARRAY = useMemo(() => {
+    if (!isAuthenticated) return STANDARD_PLANS
+
+    const userPlan = user?.planCode
+
+    // Hide non-purchasable pseudo-plans from the list
+    if (userPlan === 'trial' || userPlan === 'none') {
+      return STANDARD_PLANS
+    }
+
+    return _includes(STANDARD_PLANS, userPlan) ? STANDARD_PLANS : [userPlan, ...STANDARD_PLANS]
+  }, [isAuthenticated, user?.planCode])
 
   const currencyCode = user?.tierCurrency || metainfo.code
   const currency = CURRENCIES[currencyCode]
