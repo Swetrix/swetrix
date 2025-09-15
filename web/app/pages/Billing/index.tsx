@@ -266,14 +266,14 @@ const Billing = () => {
             </div>
           ) : null}
           {isTrial && trialEndsOnMessage ? (
-            <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
+            <div className='mt-5 max-w-prose rounded-md bg-amber-400/10 p-4 dark:bg-amber-600/20'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
+                  <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-amber-400 dark:text-amber-50' />
                 </div>
                 <div className='ml-3'>
-                  <h3 className='text-sm font-medium text-blue-700 dark:text-blue-100'>{trialEndsOnMessage}</h3>
-                  <p className='mt-1 text-sm text-blue-700 dark:text-blue-100'>{t('billing.trialDescription')}</p>
+                  <h3 className='text-sm font-medium text-amber-700 dark:text-amber-50'>{trialEndsOnMessage}</h3>
+                  <p className='mt-1 text-sm text-amber-700 dark:text-amber-50'>{t('billing.trialDescription')}</p>
                 </div>
               </div>
             </div>
