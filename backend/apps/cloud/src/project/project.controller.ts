@@ -922,7 +922,8 @@ export class ProjectController {
           results.push({
             email: invitationObject.email,
             success: false,
-            error: 'User with this email is not registered on Swetrix',
+            error:
+              'User with this email is not registered on Swetrix Community Edition',
             failedProjectIds: [],
           })
 
