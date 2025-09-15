@@ -262,7 +262,7 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
           </RadioGroup>
         </div>
 
-        <div className='space-y-3'>
+        <div className='space-y-2'>
           {_map(tiers, (tier) => (
             <div
               key={tier.planCode}
