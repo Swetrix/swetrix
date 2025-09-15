@@ -762,14 +762,12 @@ const ProjectSettings = () => {
           </div>
           {project.role === 'owner' ? (
             <div className='flex flex-wrap justify-center gap-2'>
-              {!isSelfhosted ? (
-                <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
-                  <>
-                    <ArrowLeftRight className='mr-1 h-5 w-5' />
-                    {t('project.settings.transfer')}
-                  </>
-                </Button>
-              ) : null}
+              <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
+                <>
+                  <ArrowLeftRight className='mr-1 h-5 w-5' />
+                  {t('project.settings.transfer')}
+                </>
+              </Button>
               <Button onClick={() => !setResetting && setShowReset(true)} loading={isDeleting} semiDanger semiSmall>
                 <>
                   <RotateCcw className='mr-1 h-5 w-5' />
@@ -791,12 +789,8 @@ const ProjectSettings = () => {
             <Emails projectId={id} />
           </>
         ) : null}
-        {!isSelfhosted ? (
-          <>
-            <hr className='mt-2 border-gray-200 sm:mt-5 dark:border-gray-600' />
-            <People project={project} />
-          </>
-        ) : null}
+        <hr className='mt-2 border-gray-200 sm:mt-5 dark:border-gray-600' />
+        <People project={project} />
       </form>
       <Modal
         onClose={() => setShowDelete(false)}
