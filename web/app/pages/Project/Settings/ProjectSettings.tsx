@@ -13,7 +13,7 @@ import _size from 'lodash/size'
 import _split from 'lodash/split'
 import _toUpper from 'lodash/toUpper'
 import { ArrowLeftRight, RotateCcw, Trash2Icon } from 'lucide-react'
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLoaderData, useNavigate, Link } from 'react-router'
 import { toast } from 'sonner'
@@ -543,6 +543,15 @@ const ProjectSettings = () => {
     }
   }
 
+  const reloadProject = useCallback(async () => {
+    try {
+      const result = await getProject(id)
+      setProject(result)
+    } catch (reason: any) {
+      console.error(`[ERROR] Error while reloading project: ${reason}`)
+    }
+  }, [id])
+
   const title = `${t('project.settings.settings')} ${form.name}`
 
   useEffect(() => {
@@ -790,7 +799,7 @@ const ProjectSettings = () => {
           </>
         ) : null}
         <hr className='mt-2 border-gray-200 sm:mt-5 dark:border-gray-600' />
-        <People project={project} />
+        <People project={project} reloadProject={reloadProject} />
       </form>
       <Modal
         onClose={() => setShowDelete(false)}

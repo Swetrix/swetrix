@@ -140,9 +140,10 @@ const TableUserRow = ({ data, onRemove, language, authedUserEmail }: TableUserRo
 
 interface PeopleProps {
   project: Project
+  reloadProject: () => Promise<void>
 }
 
-const People = ({ project }: PeopleProps) => {
+const People = ({ project, reloadProject }: PeopleProps) => {
   const { user: currentUser } = useAuth()
 
   const [showModal, setShowModal] = useState(false)
@@ -213,6 +214,7 @@ const People = ({ project }: PeopleProps) => {
 
     try {
       await shareProject(id, { email: form.email, role: form.role })
+      await reloadProject()
       toast.success(t('apiNotifications.userInvited'))
     } catch (reason) {
       console.error(`[ERROR] Error while inviting a user: ${reason}`)
@@ -251,6 +253,7 @@ const People = ({ project }: PeopleProps) => {
 
     try {
       await deleteShareProjectUsers(id, member.id)
+      await reloadProject()
       toast.success(t('apiNotifications.userRemoved'))
     } catch (reason) {
       console.error(`[ERROR] Error while deleting a user: ${reason}`)
