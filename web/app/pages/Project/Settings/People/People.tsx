@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 
 import { deleteShareProjectUsers, shareProject, changeShareRole } from '~/api'
 import useOnClickOutside from '~/hooks/useOnClickOutside'
-import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
+import { roles, INVITATION_EXPIRES_IN, isSelfhosted } from '~/lib/constants'
 import { Role } from '~/lib/models/Organisation'
 import { Project, ShareOwnerProject } from '~/lib/models/Project'
 import PaidFeature from '~/modals/PaidFeature'
@@ -358,7 +358,9 @@ const People = ({ project }: PeopleProps) => {
             <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
               {t('project.settings.inviteTo', { project: name })}
             </h2>
-            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>{t('project.settings.inviteDesc')}</p>
+            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+              {t(isSelfhosted ? 'project.settings.inviteDescSelfhosted' : 'project.settings.inviteDesc')}
+            </p>
             <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
               {t('project.settings.inviteExpity', { amount: INVITATION_EXPIRES_IN })}
             </p>
