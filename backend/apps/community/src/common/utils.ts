@@ -34,6 +34,43 @@ import { ClickhouseFunnel } from './types'
 
 dayjs.extend(utc)
 
+export interface ClickhouseProjectShare {
+  id: string
+  userId: string
+  projectId: string
+  role: string
+  confirmed: number
+  created: string
+  updated: string
+}
+
+export interface ClickhouseProjectShareWithUser {
+  id: string
+  role: string
+  confirmed: number
+  created: string
+  updated: string
+  userId: string
+  email: string
+}
+
+export interface ClickhouseProjectShareWithProject {
+  id: string
+  role: string
+  confirmed: number
+  created: string
+  updated: string
+  projectId: string
+  projectName: string
+  projectOrigins: string
+  projectIpBlacklist: string
+  projectActive: number
+  projectPublic: number
+  projectIsPasswordProtected: number
+  projectBotsProtectionLevel: number
+  projectCreated: string
+}
+
 /*
   Returns a 32-character hash of the provided string using Node.js crypto module.
   (SHA-256 truncated to 32 chars)
@@ -358,14 +395,16 @@ const createProjectClickhouse = async (project: Partial<Project>) => {
   })
 }
 
-const findProjectShareClickhouse = async (id: string) => {
+const findProjectShareClickhouse = async (
+  id: string,
+): Promise<ClickhouseProjectShare | null> => {
   try {
     const { data } = await clickhouse
       .query({
         query: `SELECT * FROM project_share WHERE id = {id:FixedString(36)}`,
         query_params: { id },
       })
-      .then(resultSet => resultSet.json())
+      .then(resultSet => resultSet.json<ClickhouseProjectShare>())
 
     if (_isEmpty(data)) {
       return null
@@ -377,7 +416,9 @@ const findProjectShareClickhouse = async (id: string) => {
   }
 }
 
-const findProjectSharesByProjectClickhouse = async (projectId: string) => {
+const findProjectSharesByProjectClickhouse = async (
+  projectId: string,
+): Promise<ClickhouseProjectShareWithUser[]> => {
   try {
     const { data } = await clickhouse
       .query({
@@ -396,7 +437,7 @@ const findProjectSharesByProjectClickhouse = async (projectId: string) => {
         `,
         query_params: { projectId },
       })
-      .then(resultSet => resultSet.json())
+      .then(resultSet => resultSet.json<ClickhouseProjectShareWithUser>())
 
     return data
   } catch {
@@ -404,7 +445,9 @@ const findProjectSharesByProjectClickhouse = async (projectId: string) => {
   }
 }
 
-const findProjectSharesByUserClickhouse = async (userId: string) => {
+const findProjectSharesByUserClickhouse = async (
+  userId: string,
+): Promise<ClickhouseProjectShareWithProject[]> => {
   try {
     const { data } = await clickhouse
       .query({
@@ -430,7 +473,7 @@ const findProjectSharesByUserClickhouse = async (userId: string) => {
         `,
         query_params: { userId },
       })
-      .then(resultSet => resultSet.json())
+      .then(resultSet => resultSet.json<ClickhouseProjectShareWithProject>())
 
     return data
   } catch {
@@ -441,7 +484,7 @@ const findProjectSharesByUserClickhouse = async (userId: string) => {
 const findProjectShareByUserAndProjectClickhouse = async (
   userId: string,
   projectId: string,
-) => {
+): Promise<ClickhouseProjectShare | null> => {
   try {
     const { data } = await clickhouse
       .query({
@@ -452,7 +495,7 @@ const findProjectShareByUserAndProjectClickhouse = async (
         `,
         query_params: { userId, projectId },
       })
-      .then(resultSet => resultSet.json())
+      .then(resultSet => resultSet.json<ClickhouseProjectShare>())
 
     if (_isEmpty(data)) {
       return null
@@ -499,7 +542,6 @@ const updateProjectShareClickhouse = async (
   const filtered = _reduce(
     _filter(_keys(update), key => ALLOWED_SHARE_KEYS.includes(key)),
     (obj, key) => {
-      // @ts-expect-error dynamic index
       obj[key] = update[key]
       return obj
     },
@@ -514,7 +556,7 @@ const updateProjectShareClickhouse = async (
   }
 
   const assignments = _map(columns, (col, idx) => {
-    const val = values[idx]
+    const _val = values[idx]
     const type = col === 'confirmed' ? 'Int8' : 'String'
     return `${col}={v_${idx}:${type}}`
   }).join(', ')
