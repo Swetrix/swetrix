@@ -20,7 +20,6 @@ const previewHTML = `
   <body id='body'>
     <main>
       <div class='gradient'>
-        <div class='gradient__inner'></div>
       </div>
       <div>
         <div class='title'>{{title}}</div>
@@ -47,13 +46,15 @@ const previewStyles = `
 }
 :root {
   font-size: 16px;
-  font-family: Inter, Ubuntu, sans-serif;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', ui-sans-serif, sans-serif,
+    ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
 body {
-  padding: 2.5rem;
-  background: linear-gradient(to right, #0f172a, #1c2649);
-  height: 90vh;
-  color: white;
+  padding: 2rem 2.5rem;
+  height: 100vh;
+  position: relative;
+  margin: 0;
+  background: linear-gradient(145deg in oklab, oklch(0.446 0.043 257.281) 28%, oklch(0.627 0.265 303.9) 70%, oklch(0.511 0.262 276.966) 100%);
 }
 main {
   height: 100%;
@@ -66,23 +67,10 @@ main {
 }
 .gradient {
   position: absolute;
-  filter: blur(64px);
-  padding-left: 9rem;
-  padding-right: 9rem;
+  inset: 0;
   overflow: hidden;
-  z-index: -10;
-  left: 0;
-  right: 0;
-  top: -20px;
-}
-.gradient__inner {
-  margin-left: auto;
-  margin-right: auto;
-  aspect-ratio: 1155/678;
-  width: 72.1875rem;
-  background-image: linear-gradient(to top right, #ff80b5, #9089fc);
-  opacity: .3;
-  clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%);
+  z-index: -1;
+  filter: blur(56px);
 }
 .footer {
   position: relative;
@@ -90,8 +78,10 @@ main {
   align-items: center;
   gap: 1rem;
   font-size: 2rem;
-  font-weight: 200;
+  font-weight: 300;
+  color: white;
 }
+.separator { opacity: .75; }
 .swetrix_desc {
   position: absolute;
   top: 7px;
@@ -108,8 +98,12 @@ main {
 .title {
   font-size: {{fontSize}};
   text-transform: capitalize;
+  line-height: 1.05;
   margin: 0.25rem 0;
-  font-weight: bold;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  color: #ffffff;
 }
 `
 
@@ -117,10 +111,11 @@ main {
 function getFontSize(title: string) {
   if (!title) return ''
   const titleLength = title.length
-  if (titleLength > 55) return '2.75rem'
-  if (titleLength > 35) return '3.25rem'
-  if (titleLength > 25) return '4.25rem'
-  return '4.75rem'
+  if (titleLength > 70) return '3.5rem'
+  if (titleLength > 50) return '4.25rem'
+  if (titleLength > 35) return '5rem'
+  if (titleLength > 25) return '5.75rem'
+  return '6.25rem'
 }
 
 const getCompiledStyles = (name: string): string => {
@@ -135,6 +130,9 @@ const getCompiledHTML = (title: string, styles: string) => {
     styles,
   })
 }
+
+const WIDTH = 1200
+const HEIGHT = 630
 
 export const browserArgs = [
   '--autoplay-policy=user-gesture-required',
@@ -173,14 +171,14 @@ export const browserArgs = [
   '--password-store=basic',
   '--use-gl=swiftshader',
   '--use-mock-keychain',
-  '--window-size=1200,630',
+  `--window-size=${WIDTH},${HEIGHT}`,
 ]
 
 const PUPPETEER_PROTOCOL_TIMEOUT = Number(
-  process.env.PUPPETEER_PROTOCOL_TIMEOUT ?? 60000,
+  process.env.PUPPETEER_PROTOCOL_TIMEOUT ?? 20000,
 )
 const PUPPETEER_LAUNCH_TIMEOUT = Number(
-  process.env.PUPPETEER_LAUNCH_TIMEOUT ?? 60000,
+  process.env.PUPPETEER_LAUNCH_TIMEOUT ?? 20000,
 )
 const PUPPETEER_EXECUTABLE_PATH =
   process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_BIN
@@ -197,8 +195,8 @@ export class OgImageService implements OnModuleDestroy {
       protocolTimeout: PUPPETEER_PROTOCOL_TIMEOUT,
       timeout: PUPPETEER_LAUNCH_TIMEOUT,
       defaultViewport: {
-        width: 1200,
-        height: 630,
+        width: WIDTH,
+        height: HEIGHT,
         deviceScaleFactor: 1,
       },
       executablePath: PUPPETEER_EXECUTABLE_PATH,
