@@ -89,6 +89,7 @@ import {
   createProjectShareClickhouse,
   updateProjectShareClickhouse,
   deleteProjectShareClickhouse,
+  deleteProjectSharesByProjectClickhouse,
 } from '../common/utils'
 import { Funnel } from './entity/funnel.entity'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -743,6 +744,7 @@ export class ProjectController {
     await deleteProjectClickhouse(id)
 
     try {
+      await deleteProjectSharesByProjectClickhouse(id)
       await clickhouse.command({
         query: `ALTER TABLE analytics DELETE WHERE pid='${id}'`,
       })

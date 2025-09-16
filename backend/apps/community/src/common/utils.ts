@@ -376,6 +376,14 @@ const deleteProjectClickhouse = async (id: string) => {
   })
 }
 
+const deleteProjectSharesByProjectClickhouse = async (projectId: string) => {
+  await clickhouse.command({
+    query:
+      'ALTER TABLE project_share DELETE WHERE projectId = {projectId:FixedString(12)}',
+    query_params: { projectId },
+  })
+}
+
 const createProjectClickhouse = async (project: Partial<Project>) => {
   const { id, name, adminId } = project
 
@@ -1011,4 +1019,5 @@ export {
   createProjectShareClickhouse,
   updateProjectShareClickhouse,
   deleteProjectShareClickhouse,
+  deleteProjectSharesByProjectClickhouse,
 }
