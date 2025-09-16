@@ -558,14 +558,6 @@ const ProjectSettings = () => {
     document.title = `${t('project.settings.settings')} ${form.name} ${TITLE_SUFFIX}`
   }, [form, t])
 
-  if (isLoading || isLoading === null || !project) {
-    return (
-      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
-        <Loader />
-      </div>
-    )
-  }
-
   if (error && !isLoading) {
     return (
       <div className='min-h-page bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
@@ -599,6 +591,14 @@ const ProjectSettings = () => {
             </div>
           </main>
         </div>
+      </div>
+    )
+  }
+
+  if (isLoading || isLoading === null || !project) {
+    return (
+      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
+        <Loader />
       </div>
     )
   }
