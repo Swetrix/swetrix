@@ -28,12 +28,8 @@ const previewHTML = `
         <div class='logo'>
           <img src='${WHITE_LOGO_BASE64}' alt='' />
         </div>
-        <span class='separator'>
-          |
-        </span>
-        <span class='swetrix_desc'>
-          Privacy friendly web analytics
-        </span>
+        <span class='separator'>•</span>
+        <span class='swetrix_desc'>Privacy-friendly web analytics</span>
       </div>
     </main>
   </body>
@@ -46,11 +42,10 @@ const previewStyles = `
 }
 :root {
   font-size: 16px;
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', ui-sans-serif, sans-serif,
-    ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  font-family: Inter, Ubuntu, sans-serif;
 }
 body {
-  padding: 2rem 2.5rem;
+  padding: 3.5rem 4rem;
   height: 100vh;
   position: relative;
   margin: 0;
@@ -71,25 +66,26 @@ main {
   overflow: hidden;
   z-index: -1;
   filter: blur(56px);
+  background: radial-gradient(900px 600px at 20% 25%, rgba(0, 0, 0, .28), transparent 60%);
 }
 .footer {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  font-size: 2rem;
-  font-weight: 300;
+  gap: .75rem;
+  font-size: 1.85rem;
+  font-weight: 400;
   color: white;
 }
-.separator { opacity: .75; }
+.separator { opacity: .4; }
 .swetrix_desc {
-  position: absolute;
-  top: 7px;
-  left: calc(205px + 2rem);
+  position: static;
+  font-weight: 400;
 }
 .logo {
   width: 200px;
   height: 44px;
+  margin-top: -0.5rem;
 }
 .logo img {
   width: 100%;
@@ -97,12 +93,17 @@ main {
 }
 .title {
   font-size: {{fontSize}};
-  text-transform: capitalize;
+  text-transform: none;
   line-height: 1.05;
   margin: 0.25rem 0;
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   text-wrap: balance;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  max-width: 1000px;
+  text-shadow: 0 8px 24px rgba(0,0,0,.35);
   color: #ffffff;
 }
 `
@@ -111,11 +112,20 @@ main {
 function getFontSize(title: string) {
   if (!title) return ''
   const titleLength = title.length
-  if (titleLength > 70) return '3.5rem'
-  if (titleLength > 50) return '4.25rem'
-  if (titleLength > 35) return '5rem'
-  if (titleLength > 25) return '5.75rem'
-  return '6.25rem'
+  const words = title.trim().split(/\s+/).filter(Boolean)
+  const wordCount = words.length
+  const longestWord = words.reduce((max, w) => Math.max(max, w.length), 0)
+
+  let sizeRem: number
+  if (wordCount >= 14 || titleLength > 70) sizeRem = 3.5
+  else if (wordCount >= 10 || titleLength > 50) sizeRem = 4.25
+  else if (wordCount >= 7 || titleLength > 35) sizeRem = 5
+  else if (wordCount >= 5 || titleLength > 25) sizeRem = 5.75
+  else sizeRem = 6.25
+
+  if (longestWord > 20 && sizeRem > 4) sizeRem -= 0.5
+
+  return `${sizeRem}rem`
 }
 
 const getCompiledStyles = (name: string): string => {
@@ -261,6 +271,7 @@ export class OgImageService implements OnModuleDestroy {
         await page.setContent(html, { waitUntil: 'domcontentloaded' })
         const image = await page.screenshot({
           type: 'jpeg',
+          quality: 92,
         })
         return image
       } catch (error) {
