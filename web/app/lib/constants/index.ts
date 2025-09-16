@@ -403,7 +403,7 @@ export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
 export const getOgImageUrl = (title: string) => {
   const apiUrl = API_URL.slice(0, -1)
 
-  return `${apiUrl}/v1/og-image?title=${title}`
+  return `${apiUrl}/v1/og-image?title=${encodeURIComponent(title)}`
 }
 
 // Cookies
