@@ -452,8 +452,11 @@ const findProjectSharesByProjectClickhouse = async (
 
 const findProjectSharesByUserClickhouse = async (
   userId: string,
+  search: string = null,
 ): Promise<ClickhouseProjectShareWithProject[]> => {
   try {
+    const whereSearch = search ? 'AND p.name ILIKE {search:String}' : ''
+
     const { data } = await clickhouse
       .query({
         query: `
@@ -475,8 +478,9 @@ const findProjectSharesByUserClickhouse = async (
           FROM project_share ps
           LEFT JOIN project p ON ps.projectId = p.id
           WHERE ps.userId = {userId:FixedString(36)}
+          ${whereSearch}
         `,
-        query_params: { userId },
+        query_params: { userId, search: `%${search}%` },
       })
       .then(resultSet => resultSet.json<ClickhouseProjectShareWithProject>())
 

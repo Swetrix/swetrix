@@ -19,9 +19,10 @@ import _isNull from 'lodash/isNull'
 import _split from 'lodash/split'
 import _trim from 'lodash/trim'
 import _reduce from 'lodash/reduce'
+import _findIndex from 'lodash/findIndex'
 import { compareSync } from 'bcrypt'
 
-import { Project } from './entity/project.entity'
+import { Project, ProjectWithShare, Role } from './entity/project.entity'
 import { ProjectDTO } from './dto/project.dto'
 import {
   isValidPID,
@@ -34,7 +35,10 @@ import {
   TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
-import { getProjectClickhouse } from '../common/utils'
+import {
+  findProjectSharesByProjectClickhouse,
+  getProjectClickhouse,
+} from '../common/utils'
 import { MAX_PROJECT_PASSWORD_LENGTH, UpdateProjectDto } from './dto'
 import { Funnel } from './entity/funnel.entity'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -89,14 +93,22 @@ export class ProjectService {
       }
     }
 
-    return project as Project | null
+    return project as ProjectWithShare | null
   }
 
   allowedToView(
-    project: Project,
+    project: ProjectWithShare,
     uid: string | null,
     password?: string | null,
   ): void {
+    if (
+      project.public ||
+      uid === project.adminId ||
+      _findIndex(project.share, ({ user }) => user?.id === uid) !== -1
+    ) {
+      return null
+    }
+
     if (project.isPasswordProtected && password) {
       if (
         _size(password) <= MAX_PROJECT_PASSWORD_LENGTH &&
@@ -108,11 +120,55 @@ export class ProjectService {
       throw new ConflictException('Incorrect password')
     }
 
-    if (project.public || uid) {
-      return null
+    if (project.isPasswordProtected) {
+      throw new ForbiddenException('This project is password protected')
     }
 
     throw new ForbiddenException('You are not allowed to view this project')
+  }
+
+  // Instead of passing relations to the findOne method every time, this method returns a project
+  // with necessary relations needed for the allowedToView and allowedToManage methods
+  async getFullProject(pid: string): Promise<ProjectWithShare | null> {
+    const project = await getProjectClickhouse(pid)
+
+    if (_isEmpty(project)) {
+      return null
+    }
+
+    const shares = await findProjectSharesByProjectClickhouse(pid)
+    const share = (shares || []).map((row: any) => ({
+      id: row.id,
+      role: row.role,
+      confirmed: Boolean(row.confirmed),
+      user: {
+        id: row.userId,
+        email: row.email,
+      },
+    }))
+
+    return {
+      ...project,
+      share,
+    }
+  }
+
+  allowedToManage(
+    project: ProjectWithShare,
+    uid: string,
+    message = 'You are not allowed to manage this project',
+  ): void {
+    if (
+      uid === project.adminId ||
+      _findIndex(
+        project.share,
+        share => share.user?.id === uid && share.role === Role.admin,
+      ) !== -1
+    ) {
+      return null
+    }
+
+    throw new ForbiddenException(message)
   }
 
   isPIDUnique(projects: Project[], pid: string): boolean {

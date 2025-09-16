@@ -644,7 +644,7 @@ export class ProjectService {
       throw new ConflictException('Incorrect password')
     }
 
-    if (project.isPasswordProtected && uid !== project.admin?.id) {
+    if (project.isPasswordProtected) {
       throw new ForbiddenException('This project is password protected')
     }
 

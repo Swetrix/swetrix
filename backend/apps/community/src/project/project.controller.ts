@@ -80,7 +80,6 @@ import {
   findProjectViewsClickhouse,
   doesProjectViewExistClickhouse,
   updateProjectViewClickhouse,
-  getProjectClickhouse,
   getFunnelClickhouse,
   generateRandomId,
   findProjectShareClickhouse,
@@ -131,13 +130,18 @@ export class ProjectController {
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip, sort }, 'GET /project')
 
+    // 1) Load projects owned by the user
     const chResults = await getProjectsClickhouse(userId, search, sort)
-    const formatted = _map(chResults, this.projectService.formatFromClickhouse)
+    const ownedProjects = _map(
+      chResults,
+      this.projectService.formatFromClickhouse,
+    )
 
     let sharesByProjectId: Record<string, any> = {}
+    let sharedProjects: Project[] = []
 
     if (userId) {
-      const rawShares = await findProjectSharesByUserClickhouse(userId)
+      const rawShares = await findProjectSharesByUserClickhouse(userId, search)
       sharesByProjectId = (rawShares || []).reduce((acc: any, row: any) => {
         acc[row.projectId] = {
           id: row.id,
@@ -146,16 +150,67 @@ export class ProjectController {
         }
         return acc
       }, {})
+
+      // 2) Build formatted "shared" projects (including unaccepted ones)
+      sharedProjects = _map(rawShares, (row: any) =>
+        this.projectService.formatFromClickhouse({
+          id: row.projectId,
+          name: row.projectName,
+          origins: row.projectOrigins,
+          ipBlacklist: row.projectIpBlacklist,
+          active: row.projectActive,
+          public: row.projectPublic,
+          isPasswordProtected: row.projectIsPasswordProtected,
+          botsProtectionLevel: row.projectBotsProtectionLevel,
+          created: row.projectCreated,
+          // These fields are not needed for the dashboard list, set to null
+          adminId: null,
+          passwordHash: null,
+        }),
+      )
+    }
+
+    // 3) Combine owned and shared projects, remove duplicates (prefer owned)
+    const combinedProjectsMap: Record<string, Project> = {}
+
+    _map(ownedProjects, p => {
+      combinedProjectsMap[p.id] = p
+    })
+
+    _map(sharedProjects, p => {
+      if (!combinedProjectsMap[p.id]) {
+        combinedProjectsMap[p.id] = p
+      }
+    })
+
+    let combinedProjects = _map(combinedProjectsMap, p => p)
+
+    if (sort) {
+      combinedProjects = [...combinedProjects].sort((a: any, b: any) => {
+        if (sort === 'alpha_asc') {
+          return (a.name || '').localeCompare(b.name || '')
+        }
+        if (sort === 'alpha_desc') {
+          return (b.name || '').localeCompare(a.name || '')
+        }
+        if (sort === 'date_asc') {
+          return (a.created || '').localeCompare(b.created || '')
+        }
+        if (sort === 'date_desc') {
+          return (b.created || '').localeCompare(a.created || '')
+        }
+        return 0
+      })
     }
 
     const pidsWithData =
       await this.projectService.getPIDsWhereAnalyticsDataExists(
-        _map(formatted, ({ id }) => id),
+        _map(combinedProjects, ({ id }) => id),
       )
 
     const pidsWithErrorData =
       await this.projectService.getPIDsWhereErrorsDataExists(
-        _map(formatted, ({ id }) => id),
+        _map(combinedProjects, ({ id }) => id),
       )
 
     const funnelsData = await Promise.allSettled(
@@ -185,7 +240,7 @@ export class ProjectController {
       {},
     )
 
-    const results = _map(formatted, project => {
+    const results = _map(combinedProjects, project => {
       const userShare = sharesByProjectId[project.id]
       const isOwner = userId && project.adminId === userId
       const role = isOwner
@@ -227,20 +282,9 @@ export class ProjectController {
 
     return {
       results,
-      page_total: _size(formatted),
-      total: _size(formatted),
+      page_total: _size(combinedProjects),
+      total: _size(combinedProjects),
     }
-  }
-
-  @Get('/names')
-  @ApiResponse({ status: 200, type: [Project] })
-  @Auth([], true)
-  async getNames(@CurrentUserId() userId: string): Promise<Project[]> {
-    this.logger.log({ userId }, 'GET /project/names')
-
-    const results = await getProjectsClickhouse(userId)
-    const formatted = _map(results, this.projectService.formatFromClickhouse)
-    return formatted
   }
 
   @ApiBearerAuth()
@@ -262,15 +306,17 @@ export class ProjectController {
     }
 
     if (!body?.email || !['admin', 'viewer'].includes(body.role)) {
-      throw new BadRequestException('The provided ShareDTO is incorrect')
+      throw new BadRequestException('The provided share is incorrect')
     }
 
     const inviter = await this.userService.findOne({ id: userId })
-    const project = await getProjectClickhouse(pid)
+    const project = await this.projectService.getFullProject(pid)
 
     if (_isEmpty(project)) {
-      throw new BadRequestException(`Project with ID ${pid} does not exist`)
+      throw new NotFoundException('Project was not found in the database')
     }
+
+    this.projectService.allowedToManage(project, userId)
 
     if (inviter.email === body.email) {
       throw new BadRequestException('You cannot share with yourself')
@@ -338,12 +384,13 @@ export class ProjectController {
       throw new BadRequestException(`Share with ID ${shareId} does not exist`)
     }
 
-    const project = await getProjectClickhouse(share.projectId)
-    if (!project || project.adminId !== userId) {
-      throw new BadRequestException(
-        'You are not allowed to manage this project',
-      )
+    const project = await this.projectService.getFullProject(share.projectId)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
     }
+
+    this.projectService.allowedToManage(project, userId)
 
     await updateProjectShareClickhouse(shareId, { role: body.role })
 
@@ -374,13 +421,13 @@ export class ProjectController {
       return
     }
 
-    const project = await getProjectClickhouse(share.projectId)
+    const project = await this.projectService.getFullProject(pid)
 
-    if (!project || project.adminId !== userId) {
-      throw new BadRequestException(
-        'You are not allowed to manage this project',
-      )
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
     }
+
+    this.projectService.allowedToManage(project, userId)
 
     await deleteProjectShareClickhouse(shareId)
   }
@@ -421,14 +468,22 @@ export class ProjectController {
   @ApiResponse({ status: 204, description: 'Empty body' })
   async reset(
     @Param('id') id: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() userId: string,
   ): Promise<any> {
-    this.logger.log({ uid, id }, 'DELETE /project/reset/:id')
+    this.logger.log({ userId, id }, 'DELETE /project/reset/:id')
     if (!isValidPID(id)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
       )
     }
+
+    const project = await this.projectService.getFullProject(id)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, userId)
 
     try {
       await clickhouse.command({
@@ -457,11 +512,13 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = getProjectClickhouse(funnelDTO.pid)
+    const project = await this.projectService.getFullProject(funnelDTO.pid)
 
-    if (!project) {
-      throw new NotFoundException('Project not found.')
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
     }
+
+    this.projectService.allowedToManage(project, userId)
 
     const funnel = new Funnel()
     funnel.id = uuidv4()
@@ -495,11 +552,13 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = getProjectClickhouse(funnelDTO.pid)
+    const project = await this.projectService.getFullProject(funnelDTO.pid)
 
-    if (!project) {
-      throw new NotFoundException('Project not found.')
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
     }
+
+    this.projectService.allowedToManage(project, userId)
 
     const oldFunnel = this.projectService.formatFunnelFromClickhouse(
       await getFunnelClickhouse(funnelDTO.pid, funnelDTO.id),
@@ -525,14 +584,22 @@ export class ProjectController {
     @Param('id') id: string,
     @Param('pid') pid: string,
     @CurrentUserId() userId: string,
-  ): Promise<void> {
+  ) {
     this.logger.log({ id, userId }, 'PATCH /project/funnel')
 
     if (!userId) {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const oldFunnel = getFunnelClickhouse(pid, id)
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, userId)
+
+    const oldFunnel = await getFunnelClickhouse(pid, id)
 
     if (!oldFunnel) {
       throw new NotFoundException('Funnel not found.')
@@ -555,10 +622,10 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = await getProjectClickhouse(pid)
+    const project = await this.projectService.getFullProject(pid)
 
-    if (!project) {
-      throw new NotFoundException('Project not found.')
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
     }
 
     this.projectService.allowedToView(project, userId, headers['x-password'])
@@ -578,10 +645,10 @@ export class ProjectController {
   ): Promise<boolean> {
     this.logger.log({ projectId }, 'GET /project/password/:projectId')
 
-    const project = await getProjectClickhouse(projectId)
+    const project = await this.projectService.getFullProject(projectId)
 
-    if (!project) {
-      throw new NotFoundException('Project not found.')
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
     }
 
     try {
@@ -615,14 +682,23 @@ export class ProjectController {
     @Param('pid') pid: string,
     @Query('from') from: string,
     @Query('to') to: string,
-  ): Promise<void> {
-    this.logger.log({ from, to, pid }, 'DELETE /partially/:id')
+    @CurrentUserId() userId: string,
+  ) {
+    this.logger.log({ from, to, pid, userId }, 'DELETE /partially/:id')
 
     if (!isValidPID(pid)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
       )
     }
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, userId)
 
     from = _head(_split(from, 'T'))
     to = _head(_split(to, 'T'))
@@ -634,9 +710,6 @@ export class ProjectController {
     if (!isValidDate(to)) {
       throw new BadRequestException("The provided 'to' date is incorrect")
     }
-
-    // Checking if project exists
-    getProjectClickhouse(pid)
 
     from = dayjs(from).format('YYYY-MM-DD')
     to = dayjs(to).format('YYYY-MM-DD 23:59:59')
@@ -658,6 +731,14 @@ export class ProjectController {
         'The provided Project ID (pid) is incorrect',
       )
     }
+
+    const project = await this.projectService.getFullProject(id)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, uid)
 
     await deleteProjectClickhouse(id)
 
@@ -682,15 +763,18 @@ export class ProjectController {
   async update(
     @Param('id') id: string,
     @Body() projectDTO: UpdateProjectDto,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() userId: string,
   ): Promise<any> {
-    this.logger.log({ projectDTO, uid, id }, 'PUT /project/:id')
+    this.logger.log({ projectDTO, userId, id }, 'PUT /project/:id')
     this.projectService.validateProject(projectDTO)
-    const project = await getProjectClickhouse(id)
+
+    const project = await this.projectService.getFullProject(id)
 
     if (_isEmpty(project)) {
-      throw new NotFoundException()
+      throw new NotFoundException('Project was not found in the database')
     }
+
+    this.projectService.allowedToManage(project, userId)
 
     if (_isBoolean(projectDTO.public)) {
       project.public = projectDTO.public
@@ -736,7 +820,6 @@ export class ProjectController {
       this.projectService.formatToClickhouse(project),
     )
 
-    // await updateProjectRedis(id, project)
     await deleteProjectRedis(id)
 
     return _omit(project, ['passwordHash'])
@@ -757,7 +840,7 @@ export class ProjectController {
       )
     }
 
-    const project = await getProjectClickhouse(id)
+    const project = await this.projectService.getFullProject(id)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
@@ -848,7 +931,7 @@ export class ProjectController {
     @CurrentUserId() userId: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const project = await getProjectClickhouse(params.projectId)
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
@@ -873,11 +956,13 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = await getProjectClickhouse(params.projectId)
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
     }
+
+    this.projectService.allowedToManage(project, userId)
 
     const viewId = uuidv4()
 
@@ -920,7 +1005,7 @@ export class ProjectController {
     @CurrentUserId() userId: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const project = await getProjectClickhouse(params.projectId)
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
@@ -946,6 +1031,14 @@ export class ProjectController {
     if (!userId) {
       throw new UnauthorizedException('Please auth first')
     }
+
+    const project = await this.projectService.getFullProject(params.projectId)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, userId)
 
     const viewExists = await doesProjectViewExistClickhouse(
       params.projectId,
@@ -987,6 +1080,14 @@ export class ProjectController {
     if (!userId) {
       throw new UnauthorizedException('Please auth first')
     }
+
+    const project = await this.projectService.getFullProject(params.projectId)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, userId)
 
     const viewExists = await doesProjectViewExistClickhouse(
       params.projectId,
