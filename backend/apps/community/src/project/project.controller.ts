@@ -357,6 +357,7 @@ export class ProjectController {
       role: body.role,
       confirmed: 0,
     })
+    await deleteProjectRedis(pid)
 
     return {
       ...project,
@@ -394,6 +395,7 @@ export class ProjectController {
     this.projectService.allowedToManage(project, userId)
 
     await updateProjectShareClickhouse(shareId, { role: body.role })
+    await deleteProjectRedis(share.projectId)
 
     return await findProjectShareClickhouse(shareId)
   }
@@ -431,6 +433,7 @@ export class ProjectController {
     this.projectService.allowedToManage(project, userId)
 
     await deleteProjectShareClickhouse(shareId)
+    await deleteProjectRedis(pid)
   }
 
   @ApiBearerAuth()
@@ -751,6 +754,7 @@ export class ProjectController {
       await clickhouse.command({
         query: `ALTER TABLE customEV DELETE WHERE pid='${id}'`,
       })
+      await deleteProjectRedis(id)
       return 'Project deleted successfully'
     } catch (e) {
       this.logger.error(e)

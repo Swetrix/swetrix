@@ -60,8 +60,8 @@ export const deleteProjectRedis = async (id: string) => {
 
   try {
     await redis.del(key)
-  } catch (e) {
-    console.error(`Error deleting project ${id} from redis: ${e}`)
+  } catch (reason) {
+    console.error(`Error deleting project ${id} from redis: ${reason}`)
   }
 }
 
@@ -72,7 +72,7 @@ export class ProjectService {
     let project: string | Project = await redis.get(pidKey)
 
     if (_isEmpty(project)) {
-      project = this.formatFromClickhouse(await getProjectClickhouse(pid))
+      project = this.formatFromClickhouse(await this.getFullProject(pid))
 
       if (_isEmpty(project))
         throw new BadRequestException(
