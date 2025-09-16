@@ -240,7 +240,8 @@ export class OgImageService implements OnModuleDestroy {
   }
 
   async getOgImage(title: string) {
-    const html = this.getOgHTML(title)
+    const decodedTitle = decodeURIComponent(title)
+    const html = this.getOgHTML(decodedTitle)
 
     const browser = await this.getBrowser()
 
