@@ -1,4 +1,8 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  OnModuleDestroy,
+} from '@nestjs/common'
 import handlebars from 'handlebars'
 import puppeteer, { type Browser } from 'puppeteer'
 
@@ -241,6 +245,11 @@ export class OgImageService implements OnModuleDestroy {
 
   async getOgImage(title: string) {
     const decodedTitle = decodeURIComponent(title)
+
+    if (decodedTitle.length > 255) {
+      throw new BadRequestException('Title is too long')
+    }
+
     const html = this.getOgHTML(decodedTitle)
 
     const browser = await this.getBrowser()
