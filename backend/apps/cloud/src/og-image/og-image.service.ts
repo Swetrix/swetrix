@@ -103,7 +103,6 @@ main {
   overflow-wrap: anywhere;
   hyphens: auto;
   max-width: 1000px;
-  text-shadow: 0 8px 24px rgba(0,0,0,.35);
   color: #ffffff;
 }
 `
