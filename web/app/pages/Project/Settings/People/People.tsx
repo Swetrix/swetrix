@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 
 import { deleteShareProjectUsers, shareProject, changeShareRole } from '~/api'
 import useOnClickOutside from '~/hooks/useOnClickOutside'
-import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
+import { roles, INVITATION_EXPIRES_IN, isSelfhosted } from '~/lib/constants'
 import { Role } from '~/lib/models/Organisation'
 import { Project, ShareOwnerProject } from '~/lib/models/Project'
 import PaidFeature from '~/modals/PaidFeature'
@@ -39,9 +39,10 @@ interface TableUserRowProps {
   onRemove: () => void
   language: string
   authedUserEmail: string | undefined
+  reloadProject: () => Promise<void>
 }
 
-const TableUserRow = ({ data, onRemove, language, authedUserEmail }: TableUserRowProps) => {
+const TableUserRow = ({ data, onRemove, language, authedUserEmail, reloadProject }: TableUserRowProps) => {
   const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const openRef = useRef<HTMLUListElement>(null)
@@ -51,6 +52,7 @@ const TableUserRow = ({ data, onRemove, language, authedUserEmail }: TableUserRo
   const changeRole = async (newRole: string) => {
     try {
       await changeShareRole(id, { role: newRole })
+      await reloadProject()
       toast.success(t('apiNotifications.roleUpdated'))
     } catch (reason) {
       console.error(`[ERROR] Error while updating user's role: ${reason}`)
@@ -140,9 +142,10 @@ const TableUserRow = ({ data, onRemove, language, authedUserEmail }: TableUserRo
 
 interface PeopleProps {
   project: Project
+  reloadProject: () => Promise<void>
 }
 
-const People = ({ project }: PeopleProps) => {
+const People = ({ project, reloadProject }: PeopleProps) => {
   const { user: currentUser } = useAuth()
 
   const [showModal, setShowModal] = useState(false)
@@ -213,6 +216,7 @@ const People = ({ project }: PeopleProps) => {
 
     try {
       await shareProject(id, { email: form.email, role: form.role })
+      await reloadProject()
       toast.success(t('apiNotifications.userInvited'))
     } catch (reason) {
       console.error(`[ERROR] Error while inviting a user: ${reason}`)
@@ -251,6 +255,7 @@ const People = ({ project }: PeopleProps) => {
 
     try {
       await deleteShareProjectUsers(id, member.id)
+      await reloadProject()
       toast.success(t('apiNotifications.userRemoved'))
     } catch (reason) {
       console.error(`[ERROR] Error while deleting a user: ${reason}`)
@@ -313,6 +318,7 @@ const People = ({ project }: PeopleProps) => {
                           }}
                           language={language}
                           authedUserEmail={currentUser?.email}
+                          reloadProject={reloadProject}
                         />
                       ))}
                     </tbody>
@@ -358,7 +364,9 @@ const People = ({ project }: PeopleProps) => {
             <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
               {t('project.settings.inviteTo', { project: name })}
             </h2>
-            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>{t('project.settings.inviteDesc')}</p>
+            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+              {t(isSelfhosted ? 'project.settings.inviteDescSelfhosted' : 'project.settings.inviteDesc')}
+            </p>
             <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
               {t('project.settings.inviteExpity', { amount: INVITATION_EXPIRES_IN })}
             </p>

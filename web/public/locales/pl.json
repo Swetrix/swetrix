@@ -1152,7 +1152,8 @@
       "addARecipientDesc": "Wprowadź adres e-mail osoby, do której chcesz wysyłać raporty. Nie musi ona mieć konta na Swetrix.\nBędziemy wysyłać jej regularnie raporty dotyczące Twojej witryny.",
       "invite": "Zaproś użytkownika",
       "inviteTo": "Zaproś użytkownika do {{project}}",
-      "inviteDesc": "Wpisz adres e-mail i rolę osoby, której chcesz udostępnić swój projekt.\nSkontaktujemy się z nią za pośrednictwem poczty elektronicznej, aby zaoferować dostęp do projektu.",
+      "inviteDesc": "Wpisz adres e‑mail oraz rolę osoby, z którą chcesz udostępnić swój projekt. Skontaktujemy się z tą osobą e‑mailem, aby zaproponować dostęp do projektu, a zaproszenie będzie również widoczne w panelu tej osoby.",
+      "inviteDescSelfhosted": "Wpisz adres e‑mail oraz rolę osoby, z którą chcesz udostępnić swój projekt. Zaproszenie będzie widoczne w panelu tej osoby.",
       "inviteExpity": "Zaproszenie wygaśnie w ciągu {{amount}} godzin.",
       "role": "Rola",
       "roles": {

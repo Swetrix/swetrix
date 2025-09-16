@@ -203,7 +203,7 @@ export class OrganisationController {
       throw new BadRequestException('You cannot invite yourself')
     }
 
-    // if (this.userService.isPaidTier(invitee)) {
+    // if (!this.userService.isPaidTier(invitee)) {
     //   throw new BadRequestException(
     //     'You must be a paid tier subscriber to use this feature.',
     //   )

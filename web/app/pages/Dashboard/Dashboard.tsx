@@ -167,6 +167,18 @@ const Dashboard = () => {
     setShowActivateEmailModal(true)
   }
 
+  const refetchProjects = async () => {
+    await loadProjects(
+      pageSize,
+      (page - 1) * pageSize,
+      debouncedSearch,
+      activeTab,
+      activePeriod,
+      isHostnameNavigationEnabled,
+      sortBy,
+    )
+  }
+
   const loadProjects = async (
     take: number,
     skip: number,
@@ -490,6 +502,7 @@ const Dashboard = () => {
                             activePeriod={activePeriod}
                             activeTab={activeTab}
                             viewMode={_viewMode}
+                            refetchProjects={refetchProjects}
                           />
                         ))}
                         {_size(projects) % 12 !== 0 && activeTab === 'default' ? (

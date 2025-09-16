@@ -1152,7 +1152,8 @@
       "addARecipientDesc": "Enter an email address of the person you want to send reports to. They don't necessarily need to have an account on Swetrix.\nWe will send them your site's reports on a regular basis.",
       "invite": "Invite a user",
       "inviteTo": "Invite a user to {{project}}",
-      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
+      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project, and they will see the invitation in their dashboard as well.",
+      "inviteDescSelfhosted": "Enter an email address and a role of the person you want to share your project with.\nThey will see the invitation in their dashboard.",
       "inviteExpity": "The invitation will expire in {{amount}} hours.",
       "role": "Role",
       "roles": {

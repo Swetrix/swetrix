@@ -201,9 +201,7 @@ export class ProjectExtraService {
           qb.where('admin.id = :userId', { userId })
             .orWhere(
               new Brackets(qb2 => {
-                qb2
-                  .where('share.user.id = :userId')
-                  .andWhere('share.confirmed = true')
+                qb2.where('share.user.id = :userId')
               }),
             )
             .orWhere(

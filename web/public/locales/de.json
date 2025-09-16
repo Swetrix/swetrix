@@ -1152,7 +1152,8 @@
       "addARecipientDesc": "Geben Sie die E-Mail-Adresse der Person ein, an die Sie Berichte senden möchten. Diese Person muss nicht unbedingt ein Konto bei Swetrix haben.\nWir senden ihnen die Berichte über Ihre Website regelmäßig zu.",
       "invite": "Benutzer einladen",
       "inviteTo": "Einen Benutzer zu {{project}} einladen",
-      "inviteDesc": "Geben Sie die E-Mail-Adresse und Rolle der Person ein, für die Sie Ihr Projekt freigeben möchten.\nWir werden uns per E-Mail mit dieser Person in Verbindung setzen, um ihr den Zugriff auf das Projekt zu ermöglichen.",
+      "inviteDesc": "Geben Sie die E‑Mail‑Adresse und die Rolle der Person ein, mit der Sie Ihr Projekt teilen möchten. Wir kontaktieren diese Person per E‑Mail, um den Zugriff auf das Projekt anzubieten, und die Einladung wird außerdem im Dashboard dieser Person angezeigt.",
+      "inviteDescSelfhosted": "Geben Sie die E‑Mail‑Adresse und die Rolle der Person ein, mit der Sie Ihr Projekt teilen möchten. Die Einladung wird im Dashboard dieser Person angezeigt.",
       "inviteExpity": "Die Einladung wird in {{amount}} Stunden ablaufen.",
       "role": "Rolle",
       "roles": {

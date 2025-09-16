@@ -1076,7 +1076,7 @@ export class ProjectController {
       throw new NotFoundException(`Project with ID ${pid} does not exist`)
     }
 
-    if (this.userService.isPaidTier(user)) {
+    if (!this.userService.isPaidTier(user)) {
       throw new BadRequestException(
         'You must be a paid tier subscriber to use this feature.',
       )
@@ -1436,7 +1436,7 @@ export class ProjectController {
       throw new BadRequestException('You cannot subscribe to your own project.')
     }
 
-    if (this.userService.isPaidTier(user)) {
+    if (!this.userService.isPaidTier(user)) {
       throw new BadRequestException(
         'You must be a paid tier subscriber to use this feature.',
       )

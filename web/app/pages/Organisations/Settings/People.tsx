@@ -35,9 +35,10 @@ const NoPeople = () => {
 interface UsersListProps {
   members: DetailedOrganisation['members']
   onRemove: (member: DetailedOrganisation['members'][number]) => void
+  reloadOrganisation: () => Promise<void>
 }
 
-const UsersList = ({ members, onRemove }: UsersListProps) => {
+const UsersList = ({ members, onRemove, reloadOrganisation }: UsersListProps) => {
   const {
     t,
     i18n: { language },
@@ -51,6 +52,7 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
   const changeRole = async (memberId: string, newRole: Role) => {
     try {
       await changeOrganisationRole(memberId, newRole)
+      await reloadOrganisation()
       toast.success(t('apiNotifications.roleUpdated'))
     } catch (reason) {
       console.error(`[ERROR] Error while updating user's role: ${reason}`)
@@ -318,6 +320,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
                           setMemberToRemove(member)
                           setShowDeleteModal(true)
                         }}
+                        reloadOrganisation={reloadOrganisation}
                       />
                     </tbody>
                   </table>

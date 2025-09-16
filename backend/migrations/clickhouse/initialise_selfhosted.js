@@ -80,6 +80,19 @@ const CLICKHOUSE_INIT_QUERIES = [
   )
   ENGINE = MergeTree()
   PRIMARY KEY id;`,
+
+  `CREATE TABLE IF NOT EXISTS ${dbName}.project_share
+  (
+    id FixedString(36),
+    userId FixedString(36),
+    projectId FixedString(12),
+    role String,
+    confirmed Int8,
+    created DateTime,
+    updated DateTime
+  )
+  ENGINE = MergeTree()
+  PRIMARY KEY id;`,
 ]
 
 const initialiseSelfhosted = async () => {
