@@ -459,7 +459,7 @@ export class ProjectService {
         new Brackets(qb => {
           qb.where('project.adminId = :userId')
             .orWhere(
-              'EXISTS (SELECT 1 FROM project_share ps WHERE ps.projectId = project.id AND ps.userId = :userId AND ps.confirmed = true)',
+              'EXISTS (SELECT 1 FROM project_share ps WHERE ps.projectId = project.id AND ps.userId = :userId)',
             )
             .orWhere(
               'EXISTS (SELECT 1 FROM organisation_member om WHERE om.organisationId = project.organisationId AND om.userId = :userId AND om.confirmed = true)',
