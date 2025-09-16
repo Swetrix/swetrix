@@ -684,6 +684,7 @@ export class AuthService {
       redirect_uri: OAUTH_REDIRECT_URL,
       scope: 'email',
       response_type: 'token',
+      prompt: 'select_account',
     })
 
     // Storing the session identifier in redis
@@ -819,7 +820,7 @@ export class AuthService {
   async generateGithubURL() {
     // Generating SSO session identifier and authorisation URL
     const uuid = generateSSOState(SSOProviders.GITHUB)
-    const authUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_OAUTH2_CLIENT_ID}&state=${uuid}&redirect_uri=${OAUTH_REDIRECT_URL}&scope=user:email`
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_OAUTH2_CLIENT_ID}&state=${uuid}&redirect_uri=${OAUTH_REDIRECT_URL}&scope=user:email&prompt=select_account`
 
     // Storing the session identifier in redis
     await redis.set(getSSORedisKey(uuid), '', 'EX', REDIS_SSO_SESSION_TIMEOUT)
