@@ -21,6 +21,7 @@ import _trim from 'lodash/trim'
 import _reduce from 'lodash/reduce'
 import _findIndex from 'lodash/findIndex'
 import { compareSync } from 'bcrypt'
+import { v4 as uuidv4 } from 'uuid'
 
 import { Project, ProjectWithShare, Role } from './entity/project.entity'
 import { ProjectDTO } from './dto/project.dto'
@@ -36,8 +37,10 @@ import {
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
+  createProjectShareClickhouse,
   findProjectSharesByProjectClickhouse,
   getProjectClickhouse,
+  updateProjectClickhouse,
 } from '../common/utils'
 import { MAX_PROJECT_PASSWORD_LENGTH, UpdateProjectDto } from './dto'
 import { Funnel } from './entity/funnel.entity'
@@ -151,6 +154,40 @@ export class ProjectService {
       ...project,
       share,
     }
+  }
+
+  async getOwnProject(projectId: string, userId: string) {
+    const project = await this.getFullProject(projectId)
+
+    if (project?.adminId !== userId) {
+      throw new ForbiddenException('You are not allowed to manage this project')
+    }
+
+    return project
+  }
+
+  async confirmTransferProject(
+    projectId: string,
+    userId: string,
+    oldAdminId: string,
+  ) {
+    await updateProjectClickhouse(
+      {
+        id: projectId,
+        adminId: userId,
+      },
+      { ignoreAllowedKeys: true },
+    )
+
+    await createProjectShareClickhouse({
+      id: uuidv4(),
+      userId: oldAdminId,
+      projectId: projectId,
+      confirmed: 1,
+      role: Role.admin,
+    })
+
+    await deleteProjectRedis(projectId)
   }
 
   allowedToManage(

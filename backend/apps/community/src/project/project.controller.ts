@@ -16,6 +16,7 @@ import {
   Patch,
   HttpStatus,
   ParseIntPipe,
+  ConflictException,
 } from '@nestjs/common'
 import { v4 as uuidv4 } from 'uuid'
 import {
@@ -61,6 +62,7 @@ import {
   UpdateProjectDto,
   FunnelCreateDTO,
   FunnelUpdateDTO,
+  TransferProjectBodyDto,
 } from './dto'
 import { AppLoggerService } from '../logger/logger.service'
 import { isValidPID } from '../common/constants'
@@ -288,6 +290,40 @@ export class ProjectController {
     }
   }
 
+  @Post('transfer')
+  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  async transferProject(
+    @Body() body: TransferProjectBodyDto,
+    @CurrentUserId() userId: string,
+  ) {
+    // On Swetrix Cloud we send an email to verify transfer, and then transfer when user clicks on the email link
+    // Here we'll just transfer the project for now
+    this.logger.log({ body }, 'POST /project/transfer')
+
+    const project = await this.projectService.getOwnProject(
+      body.projectId,
+      userId,
+    )
+
+    const newAdmin = await this.userService.findOne({
+      email: body.email,
+    })
+
+    if (_isEmpty(newAdmin)) {
+      throw new NotFoundException('User not found.')
+    }
+
+    if (project.adminId === newAdmin.id) {
+      throw new ConflictException('You cannot transfer project to yourself.')
+    }
+
+    await this.projectService.confirmTransferProject(
+      body.projectId,
+      newAdmin.id,
+      project.adminId,
+    )
+  }
+
   @ApiBearerAuth()
   @Post('/:pid/share')
   @HttpCode(200)
@@ -401,42 +437,6 @@ export class ProjectController {
   }
 
   @ApiBearerAuth()
-  @Delete('/:pid/:shareId')
-  @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async deleteShare(
-    @Param('pid') pid: string,
-    @Param('shareId') shareId: string,
-    @CurrentUserId() userId: string,
-  ) {
-    this.logger.log({ userId, pid, shareId }, 'DELETE /project/:pid/:shareId')
-
-    if (!isValidPID(pid)) {
-      throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
-      )
-    }
-
-    const share = await findProjectShareClickhouse(shareId)
-
-    if (!share) {
-      return
-    }
-
-    const project = await this.projectService.getFullProject(pid)
-
-    if (_isEmpty(project)) {
-      throw new NotFoundException('Project was not found in the database')
-    }
-
-    this.projectService.allowedToManage(project, userId)
-
-    await deleteProjectShareClickhouse(shareId)
-    await deleteProjectRedis(pid)
-  }
-
-  @ApiBearerAuth()
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
   @Auth([], true)
@@ -481,7 +481,7 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.getFullProject(id)
+    const project = await this.projectService.getOwnProject(id, userId)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
@@ -727,22 +727,22 @@ export class ProjectController {
   @ApiResponse({ status: 204, description: 'Empty body' })
   async delete(
     @Param('id') id: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() userId: string,
   ): Promise<any> {
-    this.logger.log({ uid, id }, 'DELETE /project/:id')
+    this.logger.log({ userId, id }, 'DELETE /project/:id')
     if (!isValidPID(id)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
       )
     }
 
-    const project = await this.projectService.getFullProject(id)
+    const project = await this.projectService.getOwnProject(id, userId)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
     }
 
-    this.projectService.allowedToManage(project, uid)
+    this.projectService.allowedToManage(project, userId)
 
     await deleteProjectClickhouse(id)
 
@@ -1071,6 +1071,42 @@ export class ProjectController {
     )
 
     return this.projectService.formatViewFromClickhouse(view)
+  }
+
+  @ApiBearerAuth()
+  @Delete('/:pid/:shareId')
+  @HttpCode(204)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async deleteShare(
+    @Param('pid') pid: string,
+    @Param('shareId') shareId: string,
+    @CurrentUserId() userId: string,
+  ) {
+    this.logger.log({ userId, pid, shareId }, 'DELETE /project/:pid/:shareId')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const share = await findProjectShareClickhouse(shareId)
+
+    if (!share) {
+      return
+    }
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, userId)
+
+    await deleteProjectShareClickhouse(shareId)
+    await deleteProjectRedis(pid)
   }
 
   @ApiOperation({ summary: 'Delete project view' })

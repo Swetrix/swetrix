@@ -108,6 +108,8 @@ const ALLOWED_KEYS = [
   'botsProtectionLevel',
 ]
 
+const CLICKHOUSE_PROJECT_UPDATABLE_KEYS = [...ALLOWED_KEYS, 'adminId']
+
 const ALLOWED_FUNNEL_KEYS = ['name', 'steps']
 const ALLOWED_SHARE_KEYS = ['role', 'confirmed']
 
@@ -311,16 +313,28 @@ const getProjectsClickhouse = async (
   return data
 }
 
-const updateProjectClickhouse = async (project: any) => {
+const updateProjectClickhouse = async (
+  project: any,
+  options: { ignoreAllowedKeys?: boolean } = {},
+) => {
+  const updatableKeys = options.ignoreAllowedKeys
+    ? CLICKHOUSE_PROJECT_UPDATABLE_KEYS
+    : ALLOWED_KEYS
+
   const filtered = _reduce(
-    _filter(_keys(project), key => ALLOWED_KEYS.includes(key)),
+    _filter(_keys(project), key => updatableKeys.includes(key)),
     (obj, key) => {
       obj[key] = project[key]
       return obj
     },
     {},
   )
+
   const columns = _keys(filtered)
+  if (_isEmpty(columns)) {
+    return
+  }
+
   const values = _values(filtered)
   const query = `ALTER table project UPDATE ${_join(
     _map(columns, (col, id) => `${col}='${values[id]}'`),
