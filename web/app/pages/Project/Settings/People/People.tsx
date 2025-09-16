@@ -39,9 +39,10 @@ interface TableUserRowProps {
   onRemove: () => void
   language: string
   authedUserEmail: string | undefined
+  reloadProject: () => Promise<void>
 }
 
-const TableUserRow = ({ data, onRemove, language, authedUserEmail }: TableUserRowProps) => {
+const TableUserRow = ({ data, onRemove, language, authedUserEmail, reloadProject }: TableUserRowProps) => {
   const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const openRef = useRef<HTMLUListElement>(null)
@@ -51,6 +52,7 @@ const TableUserRow = ({ data, onRemove, language, authedUserEmail }: TableUserRo
   const changeRole = async (newRole: string) => {
     try {
       await changeShareRole(id, { role: newRole })
+      await reloadProject()
       toast.success(t('apiNotifications.roleUpdated'))
     } catch (reason) {
       console.error(`[ERROR] Error while updating user's role: ${reason}`)
@@ -316,6 +318,7 @@ const People = ({ project, reloadProject }: PeopleProps) => {
                           }}
                           language={language}
                           authedUserEmail={currentUser?.email}
+                          reloadProject={reloadProject}
                         />
                       ))}
                     </tbody>
