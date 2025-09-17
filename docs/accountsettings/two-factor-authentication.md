@@ -8,7 +8,8 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 Two-factor authentication (2FA) adds a second layer of defense to your ­­account, so even if someone gets hold of your password they still can’t sign in.
 
 Once 2FA is enabled, when you try to log into your account you’ll need:
-1. Your account password, and 
+
+1. Your account password, and
 2. A one-time verification code generated on a trusted device.
 
 To enable 2FA, you'll need to scan our 2FA QR code with your authenticator app and enter the generated code to Swetrix account settings. Any TOTP generator app works, but we recommend Ente Auth (Android, iOS, Web), Aegis Authenticator (Android) or Bitwarden.

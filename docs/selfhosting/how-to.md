@@ -10,7 +10,9 @@ The easiest way to get started with Swetrix is by [using our cloud service](http
 :::
 
 ## Prerequisites
+
 To self-host Swetrix you need to have the following:
+
 - A server with Docker installed
 - Support for the x86_64 or arm64 CPU architecture on your server
 - At least 2GB of RAM is recommended for the best performance
@@ -23,6 +25,7 @@ We've tested self-hosting Swetrix using [Hetzner Cloud](https://hetzner.cloud), 
 ### 1. Install the self-hosting repository
 
 To self-host Swetrix, download the [self-hosting repository](https://github.com/swetrix/selfhosting) from GitHub.
+
 ```bash
 git clone https://github.com/swetrix/selfhosting
 cd selfhosting
@@ -53,6 +56,7 @@ docker compose up -d
 ```
 
 After you run this command, the following containers will be started:
+
 - `swetrix-api` - the main API server running on port `8080` by default
 - `swetrix-fe` - the frontend server running on port `80` by default
 - Redis server for caching

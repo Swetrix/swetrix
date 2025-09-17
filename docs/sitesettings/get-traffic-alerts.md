@@ -30,11 +30,12 @@ To set up an alert,
 <img alt="Alerts screen" src={useBaseUrl('img/sitesettings/set_up_alert.png')} />
 
 When you click on the "Add alert" button, you will see a screen where you can create a new alert. You can set it up to trigger for different metrics, for example:
- - when the number of pageviews exceeds a certain threshold (traffic spikes)
- - when the number of online users is less than 10
- - on every custom event (like a sale, or a signup)
- - on every new error on your website
- - when the number of users on your website is less than 5 during the last 24 hours
- - ... and more
+
+- when the number of pageviews exceeds a certain threshold (traffic spikes)
+- when the number of online users is less than 10
+- on every custom event (like a sale, or a signup)
+- on every new error on your website
+- when the number of users on your website is less than 5 during the last 24 hours
+- ... and more
 
 From the same "Alerts" tab you can also see the list of all the alerts you have set up and the last time they triggered. You can edit or delete them by clicking on the "Edit" or "Delete" buttons.

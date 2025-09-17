@@ -10,6 +10,7 @@ You can use the CAPTCHA widget on any page of your website by using our CAPTCHA 
 ## Installation
 
 ### Using CDN
+
 The easiest way to add the CAPTCHA script to your website is to edit the HTML code of your website. To do this, paste the following code snippet into the header section (`<head>` tag) of your website:
 
 ```html
@@ -17,9 +18,11 @@ The easiest way to add the CAPTCHA script to your website is to edit the HTML co
 ```
 
 ### Using NPM
-__Not yet supported__
+
+**Not yet supported**
 
 ## Usage
+
 Once the CAPTCHA script is installed (or embedded) on your website, you can use the CAPTCHA widget by adding the following HTML code to your page:
 
 ```html
@@ -31,20 +34,22 @@ Inside the `.swecaptcha` element, the widget will automatically render a frame w
 After the CAPTCHA loader script is loaded, it will add a `window.swetrixCaptchaForceLoad` function to the global scope. You can use this function to forcefully reload the CAPTCHA widget. This function can be useful if you changed the CAPTCHA configuration and want to reload the widget without reloading the page.
 
 ### Customisation
+
 You can customise the appearance of the CAPTCHA widget by adding the following attributes to the `.swecaptcha` element:
 
-| Attribute | Type | Description |
-| --- | --- | --- |
-| `data-project-id` | string | The ID of your CAPTCHA project (REQUIRED). |
-| `data-theme` | string | The theme of the CAPTCHA widget. Possible values: `light` (default), `dark`. |
-| `data-response-input-name` | string | Name of the token input element. Default: `swetrix-captcha-response`. |
+| Attribute                  | Type   | Description                                                                  |
+| -------------------------- | ------ | ---------------------------------------------------------------------------- |
+| `data-project-id`          | string | The ID of your CAPTCHA project (REQUIRED).                                   |
+| `data-theme`               | string | The theme of the CAPTCHA widget. Possible values: `light` (default), `dark`. |
+| `data-response-input-name` | string | Name of the token input element. Default: `swetrix-captcha-response`.        |
 
 ### Widget sizes
+
 The CAPTCHA widget has several sizes based on the state of the CAPTCHA challenge and the widget will automatically adjust its size.
 
 Here's a table with the possible sizes of the widget that can help you when designing your website:
 
-| State | Width | Height |
-| --- | --- | --- |
-| Default | 300px | 66px |
-| Manual challenge | 300px | 200px |
+| State            | Width | Height |
+| ---------------- | ----- | ------ |
+| Default          | 300px | 66px   |
+| Manual challenge | 300px | 200px  |

@@ -8,6 +8,7 @@ Sometimes it might be easier to install Swetrix without editing the HTML code of
 We support a variety of different integrations you can use.
 
 ## Official integrations
+
 1. [NPM package for JavaScript](/install-script#install-swetrix-via-npm)
 2. [WordPress](/wordpress-integration)
 3. [Wix](/wix-integration)
@@ -21,6 +22,7 @@ We support a variety of different integrations you can use.
 11. [HTML script integration](/install-script#edit-the-websites-html-code)
 
 ## Unofficial integrations
+
 1. [Java SDK](https://github.com/Casterlabs/swetrix-java)
 2. [Vue](https://github.com/ansidev/swetrix-vue)
 

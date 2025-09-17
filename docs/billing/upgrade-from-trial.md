@@ -9,7 +9,6 @@ At any time during your trial, or once it's over, you can upgrade to a paid subs
 
 We do not stop collection or reset your collected data. The analytics data is preserved when you update from a trial to a paid plan, or change your paid subscription to another plan.
 
-
 ## Updating to a paid subscription
 
 To update to a paid plan, you need to log in to your account and go to the [billing page](https://swetrix.com/billing).
@@ -42,7 +41,7 @@ You can add your company details and VAT ID when subscribing to one of our plans
 
 <img alt="Add VAT on existing invoice" src={useBaseUrl('img/billing/invoice_add_vat.png')} />
 
-You can also add your VAT number after you created a subscription, to do that open the invoice Paddle sent you to your email address, and click on the "Add address & VAT Number" button. 
+You can also add your VAT number after you created a subscription, to do that open the invoice Paddle sent you to your email address, and click on the "Add address & VAT Number" button.
 
 <img alt="Add VAT on existing invoice" src={useBaseUrl('img/billing/invoice_add_vat.png')} />
 

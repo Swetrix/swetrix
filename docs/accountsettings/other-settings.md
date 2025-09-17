@@ -16,7 +16,7 @@ A popup window will be opened prompting you to log into the account you want to 
 After you connect it, you will be able to login to Swetrix using this account. You can also unlink it at any time.
 
 :::note
-Please note that if you used Google or Github SSO feature to create an account, you will not be able to unlink it. 
+Please note that if you used Google or Github SSO feature to create an account, you will not be able to unlink it.
 :::
 
 ## How to change reporting timezone

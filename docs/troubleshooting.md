@@ -23,14 +23,16 @@ You should also check the "Network" tab to see if the script is loaded correctly
 <img alt="Browser Network tab" src={useBaseUrl('img/swetrix-network-tab.png')} />
 
 ## Visits are not appearing in the Dashboard
+
 Don't worry if you don't see any visits in the dashboard right away. There may be a small delay (up to 10 seconds) before they appear. That's because we cache the data for a short period of time to reduce the load on our servers, instead of sending it to the database right away.
 
 In case you don't see any visits even after a delay, make sure you don't have an ad-blocker or a similar extension active, as it may interfere with the script. Try visiting your website in a different browser or device to see if the issue persists.
 
 ## Common issues and how to fix them
- - **Make sure that you entered a correct Project ID in the script configuration**. Sometimes mistype their Project IDs in the integration or use the wrong ID (for example, an API key). You can find your Project ID on the Project Settings page in dashboard.
- - **Did you set up Content Security Policy (CSP) on your site?**. If you did, make sure to add Swetrix to the list of allowed domains. The simplest way to do this is `Content-Security-Policy: default-src 'self' *.swetrix.com *.swetrix.org`, but we recommend you to read more about CSP and set it up properly.
- - **Are you testing your integration on localhost?**. By default, Swetrix doesn't track any events on localhost to prevent developers from polluting their data with test events. If you want to test your integration on localhost, you can enable the `devMode` option in the [script configuration](/swetrix-js-reference#init).
- - **Do you use caching on your site?**. Make sure to purge the cache after you install Swetrix script, to ensure you're loading the latest version of your site.
- - **Did you set up allowed domains in the Project settings?**. If you did, you might have misspelled your domain name or added a `www.` prefix to it while your site does not use it (or vice versa).
- - **You might be using an SPA or a similar framework**. You might have set up the script inproperly. Generally, we recommend using [Swetrix via NPM](/install-script#install-swetrix-via-npm) for such application.
+
+- **Make sure that you entered a correct Project ID in the script configuration**. Sometimes mistype their Project IDs in the integration or use the wrong ID (for example, an API key). You can find your Project ID on the Project Settings page in dashboard.
+- **Did you set up Content Security Policy (CSP) on your site?**. If you did, make sure to add Swetrix to the list of allowed domains. The simplest way to do this is `Content-Security-Policy: default-src 'self' *.swetrix.com *.swetrix.org`, but we recommend you to read more about CSP and set it up properly.
+- **Are you testing your integration on localhost?**. By default, Swetrix doesn't track any events on localhost to prevent developers from polluting their data with test events. If you want to test your integration on localhost, you can enable the `devMode` option in the [script configuration](/swetrix-js-reference#init).
+- **Do you use caching on your site?**. Make sure to purge the cache after you install Swetrix script, to ensure you're loading the latest version of your site.
+- **Did you set up allowed domains in the Project settings?**. If you did, you might have misspelled your domain name or added a `www.` prefix to it while your site does not use it (or vice versa).
+- **You might be using an SPA or a similar framework**. You might have set up the script inproperly. Generally, we recommend using [Swetrix via NPM](/install-script#install-swetrix-via-npm) for such application.

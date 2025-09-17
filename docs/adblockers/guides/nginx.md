@@ -6,6 +6,7 @@ slug: /adblockers/guides/nginx
 If you are already using Nginx on your website, you can add Swetrix to your configuration to proxy it.
 
 ## Update your Nginx configuration
+
 ```
 # The `proxy_cache` part is only needed if you cache swetrix.js script.
 # If you use Swetrix from NPM, there's no need to proxy it.
@@ -54,6 +55,7 @@ server {
 ```
 
 ## Update Swetrix tracking script configuration
+
 After you updated your Nginx configuration, you need to update swetrix.js tracking script to send analytics data through your server. You can do it by setting the `apiURL` property inside the [init() function](/swetrix-js-reference#init).
 
 ```javascript

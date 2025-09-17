@@ -11,13 +11,16 @@ Each request must be authenticated with an API key using `X-Api-Key` HTTP header
 
 Rate limit for the API depends on your plan, you can find more information on the billing (or the main) page.
 As of 9 February 2023, the rate limits are as follows:
+
 - **Free plan**: 600 requests per hour;
 - **Any paid plan**: 600 requests per hour.
 
 If you have special needs for more requests, please contact us to request more capacity.
 
 ## Concepts
+
 ### Time buckets
+
 - **minute** - 1 minute;
 - **hour** - 1 hour;
 - **day** - 1 day;
@@ -26,6 +29,7 @@ If you have special needs for more requests, please contact us to request more c
 - **year** - 1 year.
 
 ### Periods
+
 - **today** - today (i.e. the time starting from 12:00 AM of the current day);
 - **yesterday** - yesterday (i.e. the time starting from 12:00 AM of the previous day);
 - **1d** - last 24 hours;
@@ -41,17 +45,21 @@ If you have special needs for more requests, please contact us to request more c
 :::
 
 ### Measures
+
 Measures are an aggregate functions that are used for performance-related endpoints. They allow you to select a function that will be used for aggregation of your metrics.
 It supports the following values:
+
 1. `median` (default) - the middle value of a set of numbers (i.e. 50th percentile).
 2. `average` - the arithmetic mean value.
 3. `p95` - the 95th quantile.
 4. `quantiles` - it's a special measure, because instead of the regular metrics (e.g. `dns`, `tls`, etc.) it will return load time (the sum on all metrics) across 3 qunatiles: `p50`, `p75` and `p95`.
 
 ### Filters
+
 Filters are used to aggregate data by specific parameters. For example, you can filter the data by country, browser, operating system, etc.
 
 'Filter' is an object with the following structure:
+
 ```json
 {
   "column": "cc",
@@ -65,15 +73,19 @@ Filters are used to aggregate data by specific parameters. For example, you can 
 - **isExclusive** - whether to include or exclude the specified value. If `isExclusive` is `true`, the data will be filtered by the specified value. If `isExclusive` is `false`, the data will be filtered by all values except the specified one.
 
 ### Mode
+
 The mode parameter specifies how the data is aggregated. Possible values are:
+
 - **periodic** - data is aggregated by the specified time bucket (e.g. by day, week, etc.);
 - **cumulative** - data is aggregated cumulatively (e.g. the number of visits for the current day is the sum of the number of visits for all previous days and the current day).
 
 ### Metrics
+
 Metrics are a set of rules that allow you to aggregate your custom events as decimals or integers. They're extremely useful for e-commerce platforms, allowing you to calculate your sales, for example.
 This parameter is only supported for [traffic analytics](#get-v1log) endpoint.
 
 'Metric' is an object with the following structure:
+
 ```json
 {
   "customEventName": "sale",
@@ -85,6 +97,7 @@ This parameter is only supported for [traffic analytics](#get-v1log) endpoint.
 ```
 
 Where:
+
 1. `customEventName` (required): is the name of the custom event you want to apply your metric to.
 2. `metaKey` (optional): Custom event metadata key to filter (for example, "currency").
 3. `metaValue` (optional): Custom event metadata value to filter (for example, "GBP").
@@ -92,7 +105,9 @@ Where:
 5. `metaValueType` (required): Specifies how to interpret the custom metric value. For example, `float` will convert "15.99" to 15.99, while `integer` will interpret it as 15. (supported values are: `integer`, `float`. If set to `string`, the whole metric will be ignored.)
 
 ## Endpoints
+
 ### GET /v1/log
+
 This endpoint returns the aggregated traffic data for your project. This is the exact same data you see in the Traffic tab of your Dashboard, but represented as a JSON entity.
 
 ```bash
@@ -200,17 +215,18 @@ curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7
   },
   "chart": {
     "x": [
-      "2023-02-02 00:00:00", "2023-02-03 00:00:00", "2023-02-04 00:00:00", "2023-02-05 00:00:00", "2023-02-06 00:00:00", "2023-02-07 00:00:00", "2023-02-08 00:00:00", "2023-02-09 00:00:00"
+      "2023-02-02 00:00:00",
+      "2023-02-03 00:00:00",
+      "2023-02-04 00:00:00",
+      "2023-02-05 00:00:00",
+      "2023-02-06 00:00:00",
+      "2023-02-07 00:00:00",
+      "2023-02-08 00:00:00",
+      "2023-02-09 00:00:00"
     ],
-    "visits": [
-      0, 2, 9, 12, 4, 7, 4, 0
-    ],
-    "uniques": [
-      0, 2, 9, 10, 4, 7, 4, 0
-    ],
-    "sdur": [
-      0, 54, 2, 126, 8, 8, 2
-    ]
+    "visits": [0, 2, 9, 12, 4, 7, 4, 0],
+    "uniques": [0, 2, 9, 10, 4, 7, 4, 0],
+    "sdur": [0, 54, 2, 126, 8, 8, 2]
   },
   "customs": {
     "sale": 16,
@@ -224,50 +240,59 @@ curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7
 ```
 
 #### Parameters
+
 <hr />
 
 **pid** (required)
 
 The project ID.
+
 <hr />
 
 **timeBucket** (required)
 
 See [time buckets](#time-buckets).
+
 <hr />
 
 **period** (required)
 
 See [periods](#periods).
+
 <hr />
 
 **from** / **to**
 
 Instead of specifying a fixed period, you can specify a custom time range using `from` and `to` parameters. Both parameters are optional, but if you specify `from`, you must also specify `to`. The format is `YYYY-MM-DD`.
+
 <hr />
 
 **timezone**
 
 The timezone to use for the time range. The default is `Etc/GMT`. You can use any timezone supported by [day.js](https://day.js.org/docs/en/timezone/timezone/) library.
+
 <hr />
 
 **filters**
 
 An array of [filter objects](#filters).
+
 <hr />
 
 **mode**
 
 [Mode](#mode) used to aggregate the data. The default is `periodic`.
+
 <hr />
 
 **metrics**
 
 An optional array of [metric objects](#metrics), with up to 3 metrics allowed. If the `metrics` array is provided and it's valid, it will be calculated on the backend and an additional field called `meta` will be returned in the response.
 
-The `filters` and `timezone` parameters provided within the same request are also used when calculating custom metrics. 
+The `filters` and `timezone` parameters provided within the same request are also used when calculating custom metrics.
 
 The `meta` is an array of objects like:
+
 ```javascript
 {
   "key": "amount", // equals to "metricKey" provided
@@ -281,6 +306,7 @@ The `meta` is an array of objects like:
   },
 }
 ```
+
 <hr />
 
 ### GET /v1/log/performance
@@ -293,6 +319,7 @@ The `chart` object contains performance metrics represented as an array of value
 The metric values are in seconds.
 
 The metrics are:
+
 - `dns` - DNS Resolution time;
 - `tls` - TLS Setup time;
 - `conn` - Connection time;
@@ -366,36 +393,31 @@ curl 'https://api.swetrix.com/v1/log/performance?pid=YOUR_PROJECT_ID&timeBucket=
   },
   "chart": {
     "x": [
-      "2023-02-02 00:00:00", "2023-02-03 00:00:00", "2023-02-04 00:00:00", "2023-02-05 00:00:00", "2023-02-06 00:00:00", "2023-02-07 00:00:00", "2023-02-08 00:00:00", "2023-02-09 00:00:00"
+      "2023-02-02 00:00:00",
+      "2023-02-03 00:00:00",
+      "2023-02-04 00:00:00",
+      "2023-02-05 00:00:00",
+      "2023-02-06 00:00:00",
+      "2023-02-07 00:00:00",
+      "2023-02-08 00:00:00",
+      "2023-02-09 00:00:00"
     ],
-    "dns": [
-      0, 0, 0.09, 0.05, 0.02, 0.05, 0.06, 0
-    ],
-    "tls": [
-      0, 0.13, 0.06, 0.06, 0.07, 0.33, 0.34, 0
-    ],
-    "conn": [
-      0, 0, 0.04, 0.03, 0.01, 0.02, 0.02, 0
-    ],
-    "response": [
-      0, 0.01, 0, 0, 0, 0.37, 0, 0
-    ],
-    "render": [
-      0, 0.01, 0.38, 0.17, 0.63, 0.07, 0.07, 0
-    ],
-    "domLoad": [
-      0, 0.91, 0.48, 0.54, 0.69, 0.94, 1.22, 0
-    ],
-    "ttfb": [
-      0, 0.06, 0.07, 0.07, 0.05, 0.1, 1.11, 0
-    ]
+    "dns": [0, 0, 0.09, 0.05, 0.02, 0.05, 0.06, 0],
+    "tls": [0, 0.13, 0.06, 0.06, 0.07, 0.33, 0.34, 0],
+    "conn": [0, 0, 0.04, 0.03, 0.01, 0.02, 0.02, 0],
+    "response": [0, 0.01, 0, 0, 0, 0.37, 0, 0],
+    "render": [0, 0.01, 0.38, 0.17, 0.63, 0.07, 0.07, 0],
+    "domLoad": [0, 0.91, 0.48, 0.54, 0.69, 0.94, 1.22, 0],
+    "ttfb": [0, 0.06, 0.07, 0.07, 0.05, 0.1, 1.11, 0]
   },
   "appliedFilters": []
 }
 ```
 
 ### GET /v1/log/birdseye
+
 This endpoint returns a summary of the log data for the specified projects. The response is an object with project IDs as keys and objects with the following properties as values:
+
 ```typescript
 {
   current: { // data for the selected period
@@ -446,11 +468,13 @@ curl 'https://api.swetrix.com/v1/log/birdseye?pids=["YOUR_PROJECT_ID"]&period=7d
 ```
 
 #### Parameters
+
 <hr />
 
 **pids** (required)
 
 An array of project IDs to return summary data for.
+
 <hr />
 
 **pid**
@@ -462,26 +486,32 @@ A single project ID to return summary data for. You can use either `pids` or `pi
 **period** (required)
 
 See [periods](#periods).
+
 <hr />
 
 **from** / **to**
 
 Instead of specifying a fixed period, you can specify a custom time range using `from` and `to` parameters. Both parameters are optional, but if you specify `from`, you must also specify `to`. The format is `YYYY-MM-DD`.
+
 <hr />
 
 **timezone**
 
 The timezone to use for the time range. The default is `Etc/GMT`. You can use any timezone supported by [day.js](https://day.js.org/docs/en/timezone/timezone/) library.
+
 <hr />
 
 **filters**
 
 An array of [filter objects](#filters).
+
 <hr />
 
 ### GET /v1/log/performance/birdseye
+
 This endpoint returns a summary of the performance data for the specified projects. This endpoint also accepts [measures](#measures) parameter.
 The response is an object with project IDs as keys and objects with the following properties as values:
+
 ```typescript
 {
   current: { // data for the selected period
@@ -526,10 +556,13 @@ curl 'https://api.swetrix.com/v1/log/performance/birdseye?pids=["YOUR_PROJECT_ID
 ```
 
 #### Parameters
+
 Accepts the same parameters as the [`/log/birdseye` endpoint](#get-v1logbirdseye).
 
 ### GET /v1/log/captcha/birdseye
+
 This endpoint returns a summary of the CAPTCHA data for the specified projects. The response is an object with project IDs as keys and objects with the following properties as values:
+
 ```typescript
 {
   current: { // data for the selected period
@@ -562,6 +595,7 @@ curl 'https://api.swetrix.com/v1/log/captcha/birdseye?pids=["YOUR_PROJECT_ID"]&p
 ```
 
 #### Parameters
+
 Accepts the same parameters as the [`/log/birdseye` endpoint](#get-v1logbirdseye).
 
 ### GET /v1/log/live-visitors
@@ -593,11 +627,13 @@ curl 'https://api.swetrix.com/v1/log/live-visitors?pid=YOUR_PROJECT_ID'\
 ```
 
 #### Parameters
+
 <hr />
 
 **pid** (required)
 
 The project ID to return live visitors for.
+
 <hr />
 
 ### GET /v1/log/hb
@@ -616,19 +652,23 @@ curl 'https://api.swetrix.com/log/hb?pids=["YOUR_PROJECT_ID"]'\
 ```
 
 #### Parameters
+
 <hr />
 
 **pids** (required)
 
 An array of project IDs to return heartbeat events for.
+
 <hr />
 
 **pid**
 
 A single project ID to return heartbeat events for. You can use either `pids` or `pid` parameter, but not both.
+
 <hr />
 
 ### GET /v1/log/meta
+
 This endpoint returns an array of custom event metadata.
 
 ```bash
@@ -660,14 +700,15 @@ curl 'https://api.swetrix.com/v1/log/meta?pid=YOUR_PROJECT_ID&timeBucket=day&per
 ```
 
 #### Parameters
+
 The parameters are the same as for the [`/log` endpoint](#get-v1log), except additionally you must pass the following:
 
 **event**
 
 The name of the custom event to return metadata for.
 
-
 ### GET /v1/log/property
+
 This endpoint returns an array of page tags for a particular custom property. For example, if you have a blog, you may want to pass some properties, such as "author", to our API along with your pageviews. The 'author' property can have multiple values, such as 'John', 'Tom' or 'Andrew'. You can then aggregate on these properties.
 
 ```bash
@@ -699,6 +740,7 @@ curl 'https://api.swetrix.com/v1/log/property?pid=YOUR_PROJECT_ID&timeBucket=day
 ```
 
 #### Parameters
+
 The parameters are the same as for the [`/log` endpoint](#get-v1log), except additionally you must pass the following:
 
 **property**
@@ -706,6 +748,7 @@ The parameters are the same as for the [`/log` endpoint](#get-v1log), except add
 The name of the property (tag) to return details for.
 
 ### GET /v1/log/sessions
+
 This endpoint returns an array of individual sessions.
 
 ```bash
@@ -763,26 +806,31 @@ curl 'https://api.swetrix.com/v1/log/sessions?pid=YOUR_PROJECT_ID&period=7d&take
 **pid** (required)
 
 The project ID.
+
 <hr />
 
 **period** (required)
 
 See [periods](#periods).
+
 <hr />
 
 **from** / **to**
 
 Instead of specifying a fixed period, you can specify a custom time range using `from` and `to` parameters. Both parameters are optional, but if you specify `from`, you must also specify `to`. The format is `YYYY-MM-DD`.
+
 <hr />
 
 **timezone**
 
 The timezone to use for the time range. The default is `Etc/GMT`. You can use any timezone supported by [day.js](https://day.js.org/docs/en/timezone/timezone/) library.
+
 <hr />
 
 **filters**
 
 An array of [filter objects](#filters).
+
 <hr />
 
 **take**
@@ -797,8 +845,8 @@ The number of sessions to skip. The default is `0`.
 
 <hr />
 
-
 ### GET /v1/log/session
+
 This endpoint returns information about a single session.
 
 ```bash
@@ -881,14 +929,7 @@ curl 'https://api.swetrix.com/v1/log/session?pid=YOUR_PROJECT_ID&psid=SESSION_ID
       "2023-12-20 16:57:00",
       "2023-12-20 16:58:00"
     ],
-    "visits": [
-      1,
-      0,
-      1,
-      1,
-      1,
-      0
-    ]
+    "visits": [1, 0, 1, 1, 1, 0]
   },
   "timeBucket": "minute"
 }
@@ -901,6 +942,7 @@ curl 'https://api.swetrix.com/v1/log/session?pid=YOUR_PROJECT_ID&psid=SESSION_ID
 **pid** (required)
 
 The project ID.
+
 <hr />
 
 **psid** (required)
@@ -912,8 +954,8 @@ The session identifier.
 **timezone**
 
 The timezone to use for the time range. The default is `Etc/GMT`. You can use any timezone supported by [day.js](https://day.js.org/docs/en/timezone/timezone/) library.
-<hr />
 
+<hr />
 
 ## Common request examples
 
@@ -1010,21 +1052,24 @@ curl 'https://api.swetrix.com/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d&f
   },
   "chart": {
     "x": [
-      "2023-02-02 00:00:00", "2023-02-03 00:00:00", "2023-02-04 00:00:00", "2023-02-05 00:00:00", "2023-02-06 00:00:00", "2023-02-07 00:00:00", "2023-02-08 00:00:00", "2023-02-09 00:00:00"
+      "2023-02-02 00:00:00",
+      "2023-02-03 00:00:00",
+      "2023-02-04 00:00:00",
+      "2023-02-05 00:00:00",
+      "2023-02-06 00:00:00",
+      "2023-02-07 00:00:00",
+      "2023-02-08 00:00:00",
+      "2023-02-09 00:00:00"
     ],
-    "visits": [
-      73, 55, 21, 13, 21, 11, 98, 1
-    ],
-    "uniques": [
-      73, 55, 21, 13, 21, 11, 98, 1
-    ],
-    "sdur": [
-      43, 28, 29, 36, 50, 51, 52, 2
-    ]
+    "visits": [73, 55, 21, 13, 21, 11, 98, 1],
+    "uniques": [73, 55, 21, 13, 21, 11, 98, 1],
+    "sdur": [43, 28, 29, 36, 50, 51, 52, 2]
   },
   "avgSdur": 43,
   "customs": {
-    "SIGNUP": 7, "PROJECT_CREATED": 14, "ACCOUNT_DELETED": 2
+    "SIGNUP": 7,
+    "PROJECT_CREATED": 14,
+    "ACCOUNT_DELETED": 2
   },
   "appliedFilters": [
     { "column": "cc", "filter": "GB", "isExclusive": false },
@@ -1032,4 +1077,3 @@ curl 'https://api.swetrix.com/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d&f
   ]
 }
 ```
-

@@ -5,7 +5,7 @@ slug: /how-to-transfer-ownership-of-your-website
 
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
-Swetrix lets you hand over control of a website (project) to another account. 
+Swetrix lets you hand over control of a website (project) to another account.
 
 This is useful for freelancers, consultants, and agencies: you can set everything up - tracking code, custom events, spike alerts, etc. and then transfer project to the client.
 

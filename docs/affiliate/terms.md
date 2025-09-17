@@ -18,6 +18,7 @@ By signing up for the Swetrix ("Affiliate program") you are agreeing to be bound
 - Do not include our affiliate links or program on discount websites, coupon websites, or deal websites
 
 ## If you intend to promote our affiliate program on your website or link to our website
+
 - Your website cannot in any way copy or resemble the look and feel of our website. You may not create or design your website or any other website that you operate, explicitly or implied in a manner which resembles our website nor design your website in a manner which leads customers to believe you are Swetrix or any other affiliated business
 - You may not engage in cookie stuffing or include pop-ups, false or misleading links on your website. In addition, wherever possible, you will not attempt to mask the referring URL information (i.e. the page from where the click is originating)
 - You may not use redirects to bounce a click off of a domain from which the click did not originate in order to give the appearance that it came from that domain
@@ -26,6 +27,7 @@ By signing up for the Swetrix ("Affiliate program") you are agreeing to be bound
 - You may not purchase ads to promote our affiliate program or your affiliate link
 
 ## If you intend to promote our affiliate program via email you must adhere to the following
+
 - You must comply with the CAN-SPAM Act of 2003 (Public Law No. 108-187) and all other applicable laws and regulations with respect to our affiliate program
 - You must not use unsolicited email, SMS or other messages that violate any law or regulation
 - Emails or other communications must be sent on your behalf and must not imply that the communication is being sent on behalf of Swetrix

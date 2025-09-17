@@ -17,20 +17,20 @@ Token validation can only be performed once, if you try to validate the same tok
 
 To validate the token, you have to send a POST request to the `https://api.swetrix.com/v1/captcha/validate` URL, with the following parameters:
 
-| Parameter | Type | Description |
-| --- | --- | --- |
-| token | string | The token returned by the CAPTCHA widget. |
-| secret | string | Your CAPTCHA project secret key. |
+| Parameter | Type   | Description                               |
+| --------- | ------ | ----------------------------------------- |
+| token     | string | The token returned by the CAPTCHA widget. |
+| secret    | string | Your CAPTCHA project secret key.          |
 
 <br />
 
 The successful response will have the `success` field set to `true` and the `data` field will contain the following fields:
 
-| Field | Type | Description |
-| --- | --- | --- |
-| hash | string | The hash of CAPTCHA user passed. |
+| Field     | Type   | Description                           |
+| --------- | ------ | ------------------------------------- |
+| hash      | string | The hash of CAPTCHA user passed.      |
 | timestamp | number | The timestamp of CAPTCHA user passed. |
-| pid | string | The ID of the CAPTCHA project. |
+| pid       | string | The ID of the CAPTCHA project.        |
 
 ```json
 {
@@ -46,6 +46,7 @@ The successful response will have the `success` field set to `true` and the `dat
 <br />
 
 The failed response will throw an error that will look like the following example. The HTTP status code will correspond to the `statusCode` in JSON.
+
 ```json
 {
   "statusCode": 400,
@@ -72,25 +73,23 @@ You can use the [@swetrix/captcha-validator](https://www.npmjs.com/package/@swet
 You can use this package in your Node.js (or NestJS, ExpressJS, etc.) project to validate the user's response to the CAPTCHA.
 The package exports a single function `validateToken` which takes arguments listed below and returns a Promise.
 
-| Argument | Type | Description | Required |
-| --- | --- | --- | --- |
-| token | string | The token returned by the CAPTCHA widget. | YES |
-| secretKey | string | Your CAPTCHA project secret key. | YES |
-| apiURL | string | The API URL to use (default: https://api.swetrix.com/captcha), this one may be used in case you're selfhosting the API. | NO |
+| Argument  | Type   | Description                                                                                                             | Required |
+| --------- | ------ | ----------------------------------------------------------------------------------------------------------------------- | -------- |
+| token     | string | The token returned by the CAPTCHA widget.                                                                               | YES      |
+| secretKey | string | Your CAPTCHA project secret key.                                                                                        | YES      |
+| apiURL    | string | The API URL to use (default: https://api.swetrix.com/captcha), this one may be used in case you're selfhosting the API. | NO       |
 
 <br />
 
 Here's an example of how to use the package in your project:
+
 ```js
 const { validateToken } = require('@swetrix/captcha-validator')
 // or
 import { validateToken } from '@swetrix/captcha-validator'
 
 // somewhere inside the controller of your form where the CAPTCHA is used
-validateToken(
-  'CAPTCHA_TOKEN',
-  'YOUR_SECRET_KEY',
-).then((result) => {
+validateToken('CAPTCHA_TOKEN', 'YOUR_SECRET_KEY').then((result) => {
   const [status, data] = result
   // status is a boolean, true if the token is valid, false otherwise
   // data is an error message if status is false

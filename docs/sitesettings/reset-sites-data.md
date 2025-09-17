@@ -16,6 +16,7 @@ To reset your site's data, click on the "Reset project" button:
 <img alt="Invite user" src={useBaseUrl('img/sitesettings/reset_settings.png')} />
 
 In the confirmation dialog, you will find 3 options:
+
 1. **Reset all**: This will permanently delete all analytics data for all time, but the site ID and it's settings will remain intact.
 2. **Reset partially**: Partial reset allows you to delete data for a specific time range.
 3. **Reset via filters**: This allows you to delete data based on specific filters (e.g. delete all data for a specific referrer, country, etc.).

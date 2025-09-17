@@ -8,8 +8,9 @@ First of all, we don't stop collecting traffic or charge extra if you have an oc
 If you exceed your subscription plan, we won't automatically upgrade you to the next one because it's unethical.
 
 We may block your dashboard if:
- - You exceed your subscription plan for two consecutive months, or
- - You exceed your event quota by more than 30%.
+
+- You exceed your subscription plan for two consecutive months, or
+- You exceed your event quota by more than 30%.
 
 If this happens, we will not lock your dashboard immediately. Instead, we will give you 7 days notice that your traffic has exceeded your subscription tier and provide you with information on how to resolve the issue.
 

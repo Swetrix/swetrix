@@ -8,7 +8,9 @@ With Swetrix you can programmatically record page views or custom events manuall
 We already provide several [integrations](/integrations) and a [script](/swetrix-js-reference) for this, but if for some reason none of these options work for you, you can use the Events API instead.
 
 ## Concepts
+
 ### Unique visitors tracking
+
 :::caution
 For the unique (and live) visitor functionality to work properly, each request must have the `User-Agent` and `X-Client-IP-Address` HTTP headers set. If you don't set these headers, the API will still work, but the unique visitor count will be incorrect.
 :::
@@ -16,83 +18,95 @@ For the unique (and live) visitor functionality to work properly, each request m
 The API relies on the client's IP address and user agent to create a temporary session (a salted hash that is permanently removed from our database 30 minutes after the last interaction or at 12:00 AM UTC, whichever comes first). We **never** store any visitor identifiable information in our database.
 
 ### Request headers
+
 #### User-Agent
+
 This header is used to determine the visitor's browser, operating system and device type. It's also used to determine whether or not the visitor is a bot.
 We also use this header to create a temporary session for the visitor.
 
 #### X-Client-IP-Address
+
 This header is used to determine the visitor's IP address. You must pass the visitor's IP address using this header, otherwise the API will use the IP address of the server making the request (i.e. your server's IP address), resulting in incorrect unique and live visitor data.
 
 #### Content-Type
+
 Must be set to `application/json` for all requests.
 
 ### Pageview event structure
+
 #### Pageview payload
-| Name | Type | Required | Description |
-| --- | --- | --- | --- |
-| `pid` | `string` | `true` | A project ID to record the pageview event for |
-| `tz` | `string` | `false` | Visitor's timezone (used as a backup in case IP geolocation fails). I.e. if it's set to `Europe/Kiev` and IP geolocation fails, we will set the country of this entry to `Ukraine`) |
-| `pg` | `string` | `false` | A page to record the pageview event for (e.g. `/home`). All our scripts send the `pg` string with a slash (`/`) at the beginning, it's not a requirement but it's best to do the same so the data would be consistent when used together with our official scripts |
-| `lc` | `string` | `false` | A locale of the user (e.g. `en-US` or `uk-UA`) |
-| `ref` | `string` | `false` | A referrer URL (e.g. `https://example.com/`) |
-| `so` | `string` | `false` | A source of the pageview (e.g. `ref`, `source` or `utm_source` GET parameter) |
-| `me` | `string` | `false` | A medium of the pageview (e.g. `utm_medium` GET parameter) |
-| `ca` | `string` | `false` | A campaign of the pageview (e.g. `utm_campaign` GET parameter) |
-| `unique` | `boolean` | `false` | If set to true, only unique visits will be saved |
-| `perf` | `object` | `false` | An object with performance metrics related to the page load. See [Performance metrics](#performance-metrics-payload) for more details |
+
+| Name     | Type      | Required | Description                                                                                                                                                                                                                                                        |
+| -------- | --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pid`    | `string`  | `true`   | A project ID to record the pageview event for                                                                                                                                                                                                                      |
+| `tz`     | `string`  | `false`  | Visitor's timezone (used as a backup in case IP geolocation fails). I.e. if it's set to `Europe/Kiev` and IP geolocation fails, we will set the country of this entry to `Ukraine`)                                                                                |
+| `pg`     | `string`  | `false`  | A page to record the pageview event for (e.g. `/home`). All our scripts send the `pg` string with a slash (`/`) at the beginning, it's not a requirement but it's best to do the same so the data would be consistent when used together with our official scripts |
+| `lc`     | `string`  | `false`  | A locale of the user (e.g. `en-US` or `uk-UA`)                                                                                                                                                                                                                     |
+| `ref`    | `string`  | `false`  | A referrer URL (e.g. `https://example.com/`)                                                                                                                                                                                                                       |
+| `so`     | `string`  | `false`  | A source of the pageview (e.g. `ref`, `source` or `utm_source` GET parameter)                                                                                                                                                                                      |
+| `me`     | `string`  | `false`  | A medium of the pageview (e.g. `utm_medium` GET parameter)                                                                                                                                                                                                         |
+| `ca`     | `string`  | `false`  | A campaign of the pageview (e.g. `utm_campaign` GET parameter)                                                                                                                                                                                                     |
+| `unique` | `boolean` | `false`  | If set to true, only unique visits will be saved                                                                                                                                                                                                                   |
+| `perf`   | `object`  | `false`  | An object with performance metrics related to the page load. See [Performance metrics](#performance-metrics-payload) for more details                                                                                                                              |
 
 #### Performance metrics payload
+
 This section describes the structure of the `perf` object which is used to record performance metrics related to the page loading.
 
 All of the values are numbers in milliseconds.
 
-| Name | Type | Required | Description |
-| --- | --- | --- | --- |
-| `dns` | `number` | `false` | DNS Resolution time |
-| `tls` | `number` | `false` | TLS handshake time |
-| `conn` | `number` | `false` | Connection time |
-| `response` | `number` | `false` | Response Time (Download) |
-| `render` | `number` | `false` | Browser rendering the HTML page time |
-| `dom_load` | `number` | `false` | DOM loading timing |
-| `page_load` | `number` | `false` | Page load timing |
-| `ttfb` | `number` | `false` | Time to first byte |
+| Name        | Type     | Required | Description                          |
+| ----------- | -------- | -------- | ------------------------------------ |
+| `dns`       | `number` | `false`  | DNS Resolution time                  |
+| `tls`       | `number` | `false`  | TLS handshake time                   |
+| `conn`      | `number` | `false`  | Connection time                      |
+| `response`  | `number` | `false`  | Response Time (Download)             |
+| `render`    | `number` | `false`  | Browser rendering the HTML page time |
+| `dom_load`  | `number` | `false`  | DOM loading timing                   |
+| `page_load` | `number` | `false`  | Page load timing                     |
+| `ttfb`      | `number` | `false`  | Time to first byte                   |
 
 ### Custom event structure
-| Name | Type | Required | Description |
-| --- | --- | --- | --- |
-| `pid` | `string` | `true` | A project ID to record the pageview event for |
-| `ev` | `string` | `true` | An event identifier you want to track. This has to be a string, which:<br />1. Contains only English letters (a-Z A-Z), numbers (0-9), underscores (_) and dots (.).<br />2. Is fewer than 64 characters.<br />3. Starts with an English letter. |
-| `unique` | `boolean` | `false` | If set to true, only 1 custom event will be saved per session |
-| `pg` | `string` | `false` | A page that user sent data from (e.g. `/home`) |
-| `lc` | `string` | `false` | A locale of the user (e.g. `en-US` or `uk-UA`) |
-| `ref` | `string` | `false` | A referrer URL (e.g. `https://example.com/`) |
-| `so` | `string` | `false` | A source of the pageview (e.g. `ref`, `source` or `utm_source` GET parameter) |
-| `me` | `string` | `false` | A medium of the pageview (e.g. `utm_medium` GET parameter) |
-| `ca` | `string` | `false` | A campaign of the pageview (e.g. `utm_campaign` GET parameter) |
-| `meta` | `object` | `false` | A `key` / `value` pair of custom properties for your event (e.g. if your event is `signup`, you can include `meta` like `{ affiliate: 'Yes', currency: 'GBP' }`). The values of the object must be a primitive type (string, number, boolean, null) which will be converted to a string, the maximum number of keys allowed is 100 and the total length of the keys and values combined must be less than 2000 characters. |
+
+| Name     | Type      | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                |
+| -------- | --------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pid`    | `string`  | `true`   | A project ID to record the pageview event for                                                                                                                                                                                                                                                                                                                                                                              |
+| `ev`     | `string`  | `true`   | An event identifier you want to track. This has to be a string, which:<br />1. Contains only English letters (a-Z A-Z), numbers (0-9), underscores (\_) and dots (.).<br />2. Is fewer than 64 characters.<br />3. Starts with an English letter.                                                                                                                                                                          |
+| `unique` | `boolean` | `false`  | If set to true, only 1 custom event will be saved per session                                                                                                                                                                                                                                                                                                                                                              |
+| `pg`     | `string`  | `false`  | A page that user sent data from (e.g. `/home`)                                                                                                                                                                                                                                                                                                                                                                             |
+| `lc`     | `string`  | `false`  | A locale of the user (e.g. `en-US` or `uk-UA`)                                                                                                                                                                                                                                                                                                                                                                             |
+| `ref`    | `string`  | `false`  | A referrer URL (e.g. `https://example.com/`)                                                                                                                                                                                                                                                                                                                                                                               |
+| `so`     | `string`  | `false`  | A source of the pageview (e.g. `ref`, `source` or `utm_source` GET parameter)                                                                                                                                                                                                                                                                                                                                              |
+| `me`     | `string`  | `false`  | A medium of the pageview (e.g. `utm_medium` GET parameter)                                                                                                                                                                                                                                                                                                                                                                 |
+| `ca`     | `string`  | `false`  | A campaign of the pageview (e.g. `utm_campaign` GET parameter)                                                                                                                                                                                                                                                                                                                                                             |
+| `meta`   | `object`  | `false`  | A `key` / `value` pair of custom properties for your event (e.g. if your event is `signup`, you can include `meta` like `{ affiliate: 'Yes', currency: 'GBP' }`). The values of the object must be a primitive type (string, number, boolean, null) which will be converted to a string, the maximum number of keys allowed is 100 and the total length of the keys and values combined must be less than 2000 characters. |
 
 ### Error event structure
-| Name | Type | Required | Description |
-| --- | --- | --- | --- |
-| `pid` | `string` | `true` | A project ID to record the pageview event for |
-| `name` | `string` | `true` | Error name (e.g. `ParseError`); Max length is 200 |
-| `message` | `string` | `false` | Error message (e.g. `Malformed input`); Max length is 2000 |
-| `lineno` | `number` | `false` | Line number |
-| `colno` | `number` | `false` | Column number |
-| `stackTrace` | `string` | `false` | Stack trace; Max length is 7500 |
-| `filename` | `number` | `false` | Error message (e.g. `https://example.com/assets/convert.js`); Max length is 1000 |
-| `tz` | `string` | `false` | Visitor's timezone (used as a backup in case IP geolocation fails). I.e. if it's set to `Europe/Kiev` and IP geolocation fails, we will set the country of this entry to `Ukraine`) |
-| `pg` | `string` | `false` | A page that user sent data from (e.g. `/home`) |
-| `lc` | `string` | `false` | A locale of the user (e.g. `en-US` or `uk-UA`) |
-| `meta` | `object` | `false` | A `key` / `value` pair of custom properties for your event, for example `{ level: 'Critical' }`. The values of the object must be a primitive type (string, number, boolean, null) which will be converted to a string, the maximum number of keys allowed is 100 and the total length of the keys and values combined must be less than 2000 characters. |
+
+| Name         | Type     | Required | Description                                                                                                                                                                                                                                                                                                                                               |
+| ------------ | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pid`        | `string` | `true`   | A project ID to record the pageview event for                                                                                                                                                                                                                                                                                                             |
+| `name`       | `string` | `true`   | Error name (e.g. `ParseError`); Max length is 200                                                                                                                                                                                                                                                                                                         |
+| `message`    | `string` | `false`  | Error message (e.g. `Malformed input`); Max length is 2000                                                                                                                                                                                                                                                                                                |
+| `lineno`     | `number` | `false`  | Line number                                                                                                                                                                                                                                                                                                                                               |
+| `colno`      | `number` | `false`  | Column number                                                                                                                                                                                                                                                                                                                                             |
+| `stackTrace` | `string` | `false`  | Stack trace; Max length is 7500                                                                                                                                                                                                                                                                                                                           |
+| `filename`   | `number` | `false`  | Error message (e.g. `https://example.com/assets/convert.js`); Max length is 1000                                                                                                                                                                                                                                                                          |
+| `tz`         | `string` | `false`  | Visitor's timezone (used as a backup in case IP geolocation fails). I.e. if it's set to `Europe/Kiev` and IP geolocation fails, we will set the country of this entry to `Ukraine`)                                                                                                                                                                       |
+| `pg`         | `string` | `false`  | A page that user sent data from (e.g. `/home`)                                                                                                                                                                                                                                                                                                            |
+| `lc`         | `string` | `false`  | A locale of the user (e.g. `en-US` or `uk-UA`)                                                                                                                                                                                                                                                                                                            |
+| `meta`       | `object` | `false`  | A `key` / `value` pair of custom properties for your event, for example `{ level: 'Critical' }`. The values of the object must be a primitive type (string, number, boolean, null) which will be converted to a string, the maximum number of keys allowed is 100 and the total length of the keys and values combined must be less than 2000 characters. |
 
 ### Heartbeat event structure
-| Name | Type | Required | Description |
-| --- | --- | --- | --- |
-| `pid` | `string` | `true` | A project ID to record the heartbeat event for |
+
+| Name  | Type     | Required | Description                                    |
+| ----- | -------- | -------- | ---------------------------------------------- |
+| `pid` | `string` | `true`   | A project ID to record the heartbeat event for |
 
 ## Endpoints
+
 ### POST /log
+
 This endpoint records pageview events.
 
 ```bash title="Request"
@@ -108,6 +122,7 @@ curl -i -X POST https://api.swetrix.com/log \
 ```
 
 ### POST /log/custom
+
 This endpoint records custom events.
 
 ```bash title="Request"
@@ -123,6 +138,7 @@ curl -i -X POST https://api.swetrix.com/log/custom \
 ```
 
 ### POST /log/hb
+
 This endpoint is used for heartbeat events. Heartbeat events are used to determine if the user session is still active. This allows you to see the 'Live Visitors' counter in the Dashboard panel.
 It's recommended to send heartbeat events every 30 seconds. We also extend the session lifetime after receiving a pageview or custom event.
 
@@ -139,6 +155,7 @@ curl -i -X POST https://api.swetrix.com/log/hb \
 ```
 
 ### POST /log/error
+
 This endpoint records error events. These error events are later aggregated in the dashboard under the Errors tab.
 
 ```bash title="Request"
@@ -154,28 +171,37 @@ curl -i -X POST https://api.swetrix.com/log/error \
 ```
 
 ## Status and error codes
+
 ### 201 Created
+
 The request was successful and the event was recorded.
 
 ### 400 Bad Request
+
 This error is usually returned when the request body is malformed (for example, the `pid` parameter is missing) or the project is disabled.
 
 ### 402 Payment Required
+
 This error is usually returned when the project is not active (i.e. the subscription has expired or the quota has been exceeded). Please go to the [Billing](https://swetrix.com/billing) page to check the current status and usage of your subscription.
 
 ### 403 Forbidden
+
 This error is usually returned when the `unique` parameter is set to `true` and the event is not unique, i.e. the pageview event has already been recorded for this session.
 
 ### 500 Internal Server Error
+
 This error is usually returned when the server is unable to process the request due to a temporary problem (for example, the database is unavailable).
 If you receive this error, please try again later. If the problem persists, please [contact us](https://swetrix.com/contact).
 
 ## API wrappers
+
 ### NodeJS
+
 Currently we provide an official NodeJS API wrapper for the events API.
 You can find how to install and use it by opening its [npm package page](https://www.npmjs.com/package/@swetrix/node).
 
 ### Contributing
+
 We welcome any countributions to Swetrix. If you want to create your own API wrapper, feel free to do so. Please [contact us](https://swetrix.com/contact) and we will list your library here.
 
 Also as an example, feel free to check out the [source code](https://github.com/swetrix/swetrix-node) of our NodeJS API wrapper.
@@ -183,6 +209,7 @@ Also as an example, feel free to check out the [source code](https://github.com/
 ## Common request examples
 
 ### Recording a pageview event using JavaScript fetch API
+
 ```javascript
 fetch('https://api.swetrix.com/log', {
   method: 'POST',
@@ -202,6 +229,7 @@ fetch('https://api.swetrix.com/log', {
 ```
 
 ### Recording a custom event using Go net/http
+
 ```go
 package main
 
@@ -240,6 +268,7 @@ func main() {
 ```
 
 ### Recording a heartbeat event using PHP cURL
+
 ```php
 $ch = curl_init();
 

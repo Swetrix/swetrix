@@ -6,16 +6,18 @@ slug: /adblockers/guides/nextjs
 You can use [Next.js](https://nextjs.org/) to proxy Swetrix analytics traffic via your domain.
 
 ## Setup Next.js rewrites rules
+
 First, you need to add the following rules to the `next.config.js` file. If you don't already have it, you will need to [create it](https://nextjs.org/docs/pages/api-reference/next-config-js/rewrites) in your project's root directory first.
+
 ```javascript
 module.exports = {
   async rewrites() {
     return [
       {
-        source: "/sproxy/:path*",
-        destination: "https://api.swetrix.com/log/:path*",
+        source: '/sproxy/:path*',
+        destination: 'https://api.swetrix.com/log/:path*',
       },
-    ];
+    ]
   },
 }
 ```
@@ -29,6 +31,7 @@ If you are not using the [Swetrix NPM package](/install-script#install-swetrix-v
 :::
 
 ## Update Swetrix tracking script configuration
+
 After you set up Next.js redirect rules, you need to update swetrix.js tracking script to send analytics data through it. You can do it by setting the `apiURL` property inside the [init() function](/swetrix-js-reference#init).
 
 ```javascript

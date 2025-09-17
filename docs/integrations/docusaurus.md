@@ -6,6 +6,7 @@ slug: /docusaurus-integration
 After you sign up on Swetrix and create a new project, the only thing left is to add it to your website.
 
 ## Installation
+
 1. Open your Docusaurus project.
 2. Edit the `docusaurus.config.js` file and add the following inside `module.exports`:
 
@@ -34,6 +35,7 @@ It's very important not to forget to replace `YOUR_PROJECT_ID` with your actual 
 :::
 
 ## Check your installation
+
 After installing Swetrix tracking script, go to your website and visit some pages.
 
 Within a minute you should be able to see new pageviews being added to your project's dahsboard.
