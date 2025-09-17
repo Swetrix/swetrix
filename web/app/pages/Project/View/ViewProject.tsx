@@ -2828,7 +2828,7 @@ const ViewProject = () => {
         {!isEmbedded ? <Header /> : null}
         <div
           className={cx(
-            'mx-auto flex w-full max-w-[1584px] flex-col bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900',
+            'mx-auto flex w-full max-w-7xl flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900',
             {
               'min-h-min-footer': !isEmbedded,
               'min-h-[100vh]': isEmbedded,
@@ -2852,7 +2852,7 @@ const ViewProject = () => {
         {!isEmbedded ? <Header /> : null}
         <div
           className={cx(
-            'mx-auto flex w-full max-w-[1584px] flex-col bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900',
+            'mx-auto flex w-full max-w-7xl flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900',
             {
               'min-h-min-footer': !isEmbedded,
               'min-h-[100vh]': isEmbedded,
@@ -2880,7 +2880,7 @@ const ViewProject = () => {
         {!isEmbedded ? <Header /> : null}
         <div
           className={cx(
-            'mx-auto flex w-full max-w-[1584px] flex-col bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900',
+            'mx-auto flex w-full max-w-7xl flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900',
             {
               'min-h-min-footer': !isEmbedded,
               'min-h-[100vh]': isEmbedded,
@@ -2937,7 +2937,7 @@ const ViewProject = () => {
               })}
             >
               <div
-                className={cx('mx-auto flex w-full max-w-[1584px] flex-col px-2 py-6 sm:px-4 lg:px-8', {
+                className={cx('mx-auto flex w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8', {
                   'min-h-min-footer': !isEmbedded,
                   'min-h-[100vh]': isEmbedded,
                 })}
