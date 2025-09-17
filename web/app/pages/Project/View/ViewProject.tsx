@@ -714,8 +714,12 @@ const ViewProject = () => {
     const filterParams = new URLSearchParams(searchParams.toString())
 
     if (panelType === 'br') {
+      // Apply both browser and browser version filters together
+      filterParams.set('br', parent)
       filterParams.set('brv', version)
     } else if (panelType === 'os') {
+      // Apply both OS and OS version filters together
+      filterParams.set('os', parent)
       filterParams.set('osv', version)
     }
 
