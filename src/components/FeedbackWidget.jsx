@@ -55,7 +55,7 @@ const trackFeedback = async (answer, pathname, reason) => {
   try {
     await window?.swetrix?.track({
       ev: 'DOCS_FEEDBACK',
-      props: {
+      meta: {
         answer,
         path: pathname,
         ...(reason ? { reason } : {}),
