@@ -1475,21 +1475,6 @@ export const getBlogPostWithCategory = (category: string, slug: string) =>
       throw error
     })
 
-export const getLastPost = (config?: AxiosRequestConfig) =>
-  api
-    .get('v1/blog/last-post', config)
-    .then(
-      (
-        response,
-      ): {
-        title: string
-        handle: string
-      } => response.data,
-    )
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const unsubscribeFromEmailReports = (token: string) =>
   api
     .get(`user/unsubscribe/${token}`)

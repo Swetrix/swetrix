@@ -64,8 +64,8 @@ const Modal = ({
             'inline-block transform rounded-lg bg-white px-4 pt-5 pb-4 text-left align-bottom transition-all sm:my-8 sm:px-5 sm:py-4 sm:align-middle dark:bg-slate-900',
             'transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in',
             {
-              'sm:w-full sm:max-w-lg': size === 'regular',
-              'w-full max-w-5xl': size === 'large',
+              'w-[90vw] md:w-full md:max-w-lg': size === 'regular',
+              'w-[90vw] max-w-5xl md:w-full': size === 'large',
               'overflow-visible': overflowVisible,
               'overflow-hidden': !overflowVisible,
             },
@@ -97,7 +97,7 @@ const Modal = ({
                 <UserGroupIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
               </div>
             ) : null}
-            <div className='mt-3 w-full text-center sm:mt-0 sm:text-left'>
+            <div className='w-full text-center sm:text-left'>
               {title ? (
                 <DialogTitle
                   as='h3'

@@ -324,8 +324,6 @@ export const GDPR_EXPORT_TIMEFRAME = 14 // days
 
 export const SHOW_BANNER_AT_PERC = 85 // show banner when 85% of events in tier are used
 
-export const TITLE_SUFFIX = '| Swetrix'
-
 export const LS_THEME_SETTING = 'colour-theme'
 export const LS_VIEW_PREFS_SETTING = 'proj-view-preferences'
 export const LS_CAPTCHA_VIEW_PREFS_SETTING = 'captcha-view-preferences'
@@ -342,7 +340,6 @@ export const DISCORD_URL = 'https://discord.gg/ZVK8Tw2E8j'
 export const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
 export const MAIN_URL = 'https://swetrix.com'
 export const REF_URL_PREFIX = `${MAIN_URL}/ref/`
-export const UTM_GENERATOR_URL = 'https://url.swetrix.com'
 export const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 export const BOOK_A_CALL_URL = 'https://cal.com/swetrix'
 export const PERFORMANCE_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=performance'
@@ -352,7 +349,6 @@ export const DOCS_URL = 'https://docs.swetrix.com'
 export const INTEGRATIONS_URL = 'https://docs.swetrix.com/integrations'
 export const ERROR_TRACKING_DOCS_URL = 'https://docs.swetrix.com/error-tracking'
 export const CAPTCHA_URL = 'https://captcha.swetrix.com'
-export const DOCS_CAPTCHA_URL = `${DOCS_URL}/captcha/introduction`
 export const DOCS_REFERRAL_PROGRAM_URL = `${DOCS_URL}/affiliate/about`
 
 // Swetrix vs ...
@@ -393,8 +389,10 @@ export const isSelfhosted = Boolean(isBrowser ? window.REMIX_ENV?.SELFHOSTED : p
 export const isDisableMarketingPages =
   (isBrowser ? window.REMIX_ENV?.DISABLE_MARKETING_PAGES : process.env.DISABLE_MARKETING_PAGES) === 'true'
 
-const apiUrlUnprocessed = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
+export const apiUrlUnprocessed = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
 const cdnUrlUnprocessed = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_URL
+
+export const TITLE_SUFFIX = isSelfhosted ? '| Swetrix Community Edition' : '| Swetrix'
 
 export const API_URL = _endsWith(apiUrlUnprocessed, '/') ? apiUrlUnprocessed : `${apiUrlUnprocessed}/`
 export const CDN_URL = _endsWith(cdnUrlUnprocessed, '/') ? cdnUrlUnprocessed : `${cdnUrlUnprocessed}/`
@@ -405,7 +403,7 @@ export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
 export const getOgImageUrl = (title: string) => {
   const apiUrl = API_URL.slice(0, -1)
 
-  return `${apiUrl}/v1/og-image?title=${title}`
+  return `${apiUrl}/v1/og-image?title=${encodeURIComponent(title)}`
 }
 
 // Cookies
@@ -455,7 +453,7 @@ export const paddleLanguageMapping = {
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
-export const I18N_CACHE_BREAKER = 19
+export const I18N_CACHE_BREAKER = 20
 
 export const roles: Role[] = ['admin', 'viewer']
 

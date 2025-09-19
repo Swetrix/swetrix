@@ -1,10 +1,12 @@
 import { createReadStream } from 'fs'
 import { unlink, writeFile } from 'fs/promises'
 import { tmpdir } from 'os'
+import { extname } from 'path'
 import { ConfigService } from '@nestjs/config'
 import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import FormData from 'form-data'
 import { HttpService } from '@nestjs/axios'
+import { v4 as uuidv4 } from 'uuid'
 
 @Injectable()
 export class CdnService {
@@ -20,7 +22,10 @@ export class CdnService {
    */
   async uploadFile(file: any): Promise<{ filename: string }> {
     try {
-      const filePath = `${tmpdir()}/${file.originalName}`
+      // Generate a safe filename using UUID to prevent path traversal attacks
+      const fileExtension = extname(file.originalName || '')
+      const safeFilename = `${uuidv4()}${fileExtension}`
+      const filePath = `${tmpdir()}/${safeFilename}`
       await writeFile(filePath, file.buffer)
 
       const form = new FormData()

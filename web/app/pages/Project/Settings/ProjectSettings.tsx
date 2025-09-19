@@ -13,7 +13,7 @@ import _size from 'lodash/size'
 import _split from 'lodash/split'
 import _toUpper from 'lodash/toUpper'
 import { ArrowLeftRight, RotateCcw, Trash2Icon } from 'lucide-react'
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLoaderData, useNavigate, Link } from 'react-router'
 import { toast } from 'sonner'
@@ -543,19 +543,20 @@ const ProjectSettings = () => {
     }
   }
 
+  const reloadProject = useCallback(async () => {
+    try {
+      const result = await getProject(id)
+      setProject(result)
+    } catch (reason: any) {
+      console.error(`[ERROR] Error while reloading project: ${reason}`)
+    }
+  }, [id])
+
   const title = `${t('project.settings.settings')} ${form.name}`
 
   useEffect(() => {
     document.title = `${t('project.settings.settings')} ${form.name} ${TITLE_SUFFIX}`
   }, [form, t])
-
-  if (isLoading || isLoading === null || !project) {
-    return (
-      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
-        <Loader />
-      </div>
-    )
-  }
 
   if (error && !isLoading) {
     return (
@@ -594,9 +595,17 @@ const ProjectSettings = () => {
     )
   }
 
+  if (isLoading || isLoading === null || !project) {
+    return (
+      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
+        <Loader />
+      </div>
+    )
+  }
+
   return (
-    <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 pb-40 sm:px-6 lg:px-8 dark:bg-slate-900'>
-      <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
+    <div className='min-h-min-footer flex flex-col bg-gray-50 pb-40 dark:bg-slate-900'>
+      <form className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
         <h3 className='mt-4 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
         <Input
@@ -762,14 +771,12 @@ const ProjectSettings = () => {
           </div>
           {project.role === 'owner' ? (
             <div className='flex flex-wrap justify-center gap-2'>
-              {!isSelfhosted ? (
-                <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
-                  <>
-                    <ArrowLeftRight className='mr-1 h-5 w-5' />
-                    {t('project.settings.transfer')}
-                  </>
-                </Button>
-              ) : null}
+              <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
+                <>
+                  <ArrowLeftRight className='mr-1 h-5 w-5' />
+                  {t('project.settings.transfer')}
+                </>
+              </Button>
               <Button onClick={() => !setResetting && setShowReset(true)} loading={isDeleting} semiDanger semiSmall>
                 <>
                   <RotateCcw className='mr-1 h-5 w-5' />
@@ -791,12 +798,8 @@ const ProjectSettings = () => {
             <Emails projectId={id} />
           </>
         ) : null}
-        {!isSelfhosted ? (
-          <>
-            <hr className='mt-2 border-gray-200 sm:mt-5 dark:border-gray-600' />
-            <People project={project} />
-          </>
-        ) : null}
+        <hr className='mt-2 border-gray-200 sm:mt-5 dark:border-gray-600' />
+        <People project={project} reloadProject={reloadProject} />
       </form>
       <Modal
         onClose={() => setShowDelete(false)}

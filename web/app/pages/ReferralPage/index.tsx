@@ -74,10 +74,10 @@ const ReferralPage = () => {
                 <div className='mt-4 flex flex-col items-center sm:flex-row'>
                   <Link
                     to={`/ref/${id}${routes.signup}`}
-                    className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
+                    className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all duration-300 hover:bg-transparent hover:text-slate-900 sm:mr-6 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='mr-1 text-center text-base font-semibold transition-transform group-hover:scale-[1.15]'>
+                    <span className='mr-1 text-center text-base font-semibold'>
                       {t('main.startAXDayFreeTrial', { amount: 14 })}
                     </span>
                     <ArrowRightIcon className='mt-[1px] h-4 w-5' />

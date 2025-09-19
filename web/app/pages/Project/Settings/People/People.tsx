@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 
 import { deleteShareProjectUsers, shareProject, changeShareRole } from '~/api'
 import useOnClickOutside from '~/hooks/useOnClickOutside'
-import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
+import { roles, INVITATION_EXPIRES_IN, isSelfhosted } from '~/lib/constants'
 import { Role } from '~/lib/models/Organisation'
 import { Project, ShareOwnerProject } from '~/lib/models/Project'
 import PaidFeature from '~/modals/PaidFeature'
@@ -34,14 +34,15 @@ const NoPeople = () => {
   )
 }
 
-interface UsersListProps {
+interface TableUserRowProps {
   data: ShareOwnerProject
   onRemove: () => void
   language: string
   authedUserEmail: string | undefined
+  reloadProject: () => Promise<void>
 }
 
-const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps) => {
+const TableUserRow = ({ data, onRemove, language, authedUserEmail, reloadProject }: TableUserRowProps) => {
   const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const openRef = useRef<HTMLUListElement>(null)
@@ -51,6 +52,7 @@ const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps
   const changeRole = async (newRole: string) => {
     try {
       await changeShareRole(id, { role: newRole })
+      await reloadProject()
       toast.success(t('apiNotifications.roleUpdated'))
     } catch (reason) {
       console.error(`[ERROR] Error while updating user's role: ${reason}`)
@@ -63,7 +65,7 @@ const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps
   return (
     <tr className='dark:bg-slate-800'>
       <td className='py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white'>
-        {user.email}
+        {user?.email || 'N/A'}
       </td>
       <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white'>
         {language === 'en'
@@ -76,7 +78,7 @@ const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps
             <button
               onClick={() => setOpen(!open)}
               type='button'
-              disabled={user.email === authedUserEmail}
+              disabled={user?.email === authedUserEmail}
               className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`project.settings.roles.${role}.name`)}
@@ -140,9 +142,10 @@ const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps
 
 interface PeopleProps {
   project: Project
+  reloadProject: () => Promise<void>
 }
 
-const People = ({ project }: PeopleProps) => {
+const People = ({ project, reloadProject }: PeopleProps) => {
   const { user: currentUser } = useAuth()
 
   const [showModal, setShowModal] = useState(false)
@@ -213,6 +216,7 @@ const People = ({ project }: PeopleProps) => {
 
     try {
       await shareProject(id, { email: form.email, role: form.role })
+      await reloadProject()
       toast.success(t('apiNotifications.userInvited'))
     } catch (reason) {
       console.error(`[ERROR] Error while inviting a user: ${reason}`)
@@ -251,6 +255,7 @@ const People = ({ project }: PeopleProps) => {
 
     try {
       await deleteShareProjectUsers(id, member.id)
+      await reloadProject()
       toast.success(t('apiNotifications.userRemoved'))
     } catch (reason) {
       console.error(`[ERROR] Error while deleting a user: ${reason}`)
@@ -304,7 +309,7 @@ const People = ({ project }: PeopleProps) => {
                     </thead>
                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
                       {_map(share, (data) => (
-                        <UsersList
+                        <TableUserRow
                           data={data}
                           key={data.id}
                           onRemove={() => {
@@ -313,6 +318,7 @@ const People = ({ project }: PeopleProps) => {
                           }}
                           language={language}
                           authedUserEmail={currentUser?.email}
+                          reloadProject={reloadProject}
                         />
                       ))}
                     </tbody>
@@ -336,7 +342,7 @@ const People = ({ project }: PeopleProps) => {
         submitText={t('common.yes')}
         type='confirmed'
         closeText={t('common.no')}
-        title={t('project.settings.removeUser', { user: memberToRemove?.user.email })}
+        title={t('project.settings.removeUser', { user: memberToRemove?.user?.email })}
         message={t('project.settings.removeConfirm')}
         isOpened={showDeleteModal}
         isLoading={isDeleting}
@@ -358,7 +364,9 @@ const People = ({ project }: PeopleProps) => {
             <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
               {t('project.settings.inviteTo', { project: name })}
             </h2>
-            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>{t('project.settings.inviteDesc')}</p>
+            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+              {t(isSelfhosted ? 'project.settings.inviteDescSelfhosted' : 'project.settings.inviteDesc')}
+            </p>
             <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
               {t('project.settings.inviteExpity', { amount: INVITATION_EXPIRES_IN })}
             </p>

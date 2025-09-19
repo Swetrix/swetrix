@@ -1037,13 +1037,13 @@ const DetailsTable = ({
                 >
                   <td className='flex w-2/5 items-center py-1 pl-2 text-left sm:w-4/6'>
                     <span
-                      className={cx('flex items-center truncate', {
+                      className={cx('scrollbar-thin hover-always-overflow flex items-center whitespace-nowrap', {
                         capitalize,
                       })}
                     >
                       {linkContent ? (
                         <a
-                          className='text-blue-600 hover:underline dark:text-blue-500'
+                          className='scrollbar-thin hover-always-overflow whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500'
                           href={rowData as string}
                           target='_blank'
                           rel='noopener noreferrer nofollow'
@@ -1214,7 +1214,7 @@ const Panel = ({
                         {linkContent ? (
                           <a
                             className={cx(
-                              'flex items-center truncate text-sm text-blue-600 hover:underline dark:text-blue-500',
+                              'scrollbar-thin hover-always-overflow flex items-center text-sm whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
                               {
                                 capitalize,
                               },
@@ -1228,9 +1228,12 @@ const Panel = ({
                           </a>
                         ) : (
                           <span
-                            className={cx('flex items-center truncate text-sm text-gray-900 dark:text-gray-100', {
-                              capitalize,
-                            })}
+                            className={cx(
+                              'scrollbar-thin hover-always-overflow flex items-center text-sm whitespace-nowrap text-gray-900 dark:text-gray-100',
+                              {
+                                capitalize,
+                              },
+                            )}
                           >
                             {rowData}
                           </span>

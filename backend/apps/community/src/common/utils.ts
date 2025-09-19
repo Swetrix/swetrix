@@ -4,7 +4,6 @@ import fs from 'fs'
 import crypto from 'crypto'
 import { CityResponse, Reader } from 'maxmind'
 import timezones from 'countries-and-timezones'
-import { v5 as uuidv5 } from 'uuid'
 import _join from 'lodash/join'
 import _filter from 'lodash/filter'
 import _values from 'lodash/values'
@@ -23,21 +22,54 @@ import _map from 'lodash/map'
 
 import {
   redis,
-  DEFAULT_SELFHOSTED_UUID,
-  SELFHOSTED_EMAIL,
-  UUIDV5_NAMESPACE,
   isDevelopment,
   isProxiedByCloudflare,
   SELFHOSTED_GEOIP_DB_PATH,
 } from './constants'
 import { clickhouse } from './integrations/clickhouse'
-import { DEFAULT_TIMEZONE, TimeFormat } from '../user/entities/user.entity'
 import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { ProjectViewEntity } from '../project/entity/project-view.entity'
 
-import { ClickhouseFunnel, ClickhouseSFUser } from './types'
+import { ClickhouseFunnel } from './types'
 
 dayjs.extend(utc)
+
+export interface ClickhouseProjectShare {
+  id: string
+  userId: string
+  projectId: string
+  role: string
+  confirmed: number
+  created: string
+  updated: string
+}
+
+export interface ClickhouseProjectShareWithUser {
+  id: string
+  role: string
+  confirmed: number
+  created: string
+  updated: string
+  userId: string
+  email: string
+}
+
+export interface ClickhouseProjectShareWithProject {
+  id: string
+  role: string
+  confirmed: number
+  created: string
+  updated: string
+  projectId: string
+  projectName: string
+  projectOrigins: string
+  projectIpBlacklist: string
+  projectActive: number
+  projectPublic: number
+  projectIsPasswordProtected: number
+  projectBotsProtectionLevel: number
+  projectCreated: string
+}
 
 /*
   Returns a 32-character hash of the provided string using Node.js crypto module.
@@ -76,7 +108,10 @@ const ALLOWED_KEYS = [
   'botsProtectionLevel',
 ]
 
+const CLICKHOUSE_PROJECT_UPDATABLE_KEYS = [...ALLOWED_KEYS, 'adminId']
+
 const ALLOWED_FUNNEL_KEYS = ['name', 'steps']
+const ALLOWED_SHARE_KEYS = ['role', 'confirmed']
 
 const getRateLimitHash = (ipOrApiKey: string, salt = '') =>
   `rl:${hash(`${ipOrApiKey}${salt}`)}`
@@ -224,6 +259,7 @@ const getProjectClickhouse = async (id: string): Promise<Project> => {
 }
 
 const getProjectsClickhouse = async (
+  adminId: string,
   search: string = null,
   sort: 'alpha_asc' | 'alpha_desc' | 'date_asc' | 'date_desc' = 'alpha_asc',
 ): Promise<Project[]> => {
@@ -245,8 +281,8 @@ const getProjectsClickhouse = async (
           *
         FROM project
         WHERE
-          name ILIKE {search:String} OR
-          id ILIKE {search:String}
+          adminId = {adminId:FixedString(36)}
+          AND (name ILIKE {search:String} OR id ILIKE {search:String})
         ${orderBy}
       `
 
@@ -255,6 +291,7 @@ const getProjectsClickhouse = async (
         query,
         query_params: {
           search: `%${search}%`,
+          adminId,
         },
       })
       .then(resultSet => resultSet.json<Project>())
@@ -262,27 +299,42 @@ const getProjectsClickhouse = async (
     return data
   }
 
-  const query = `SELECT * FROM project ${orderBy};`
+  const query = `SELECT * FROM project WHERE adminId = {adminId:FixedString(36)} ${orderBy};`
 
   const { data } = await clickhouse
     .query({
       query,
+      query_params: {
+        adminId,
+      },
     })
     .then(resultSet => resultSet.json<Project>())
 
   return data
 }
 
-const updateProjectClickhouse = async (project: any) => {
+const updateProjectClickhouse = async (
+  project: any,
+  options: { ignoreAllowedKeys?: boolean } = {},
+) => {
+  const updatableKeys = options.ignoreAllowedKeys
+    ? CLICKHOUSE_PROJECT_UPDATABLE_KEYS
+    : ALLOWED_KEYS
+
   const filtered = _reduce(
-    _filter(_keys(project), key => ALLOWED_KEYS.includes(key)),
+    _filter(_keys(project), key => updatableKeys.includes(key)),
     (obj, key) => {
       obj[key] = project[key]
       return obj
     },
     {},
   )
+
   const columns = _keys(filtered)
+  if (_isEmpty(columns)) {
+    return
+  }
+
   const values = _values(filtered)
   const query = `ALTER table project UPDATE ${_join(
     _map(columns, (col, id) => `${col}='${values[id]}'`),
@@ -291,6 +343,17 @@ const updateProjectClickhouse = async (project: any) => {
 
   await clickhouse.command({
     query,
+  })
+}
+
+const assignUnassignedProjectsToUserClickhouse = async (userId: string) => {
+  const query = `ALTER TABLE project UPDATE adminId = {userId:FixedString(36)} WHERE adminId IS NULL`
+
+  await clickhouse.command({
+    query,
+    query_params: {
+      userId,
+    },
   })
 }
 
@@ -327,8 +390,16 @@ const deleteProjectClickhouse = async (id: string) => {
   })
 }
 
+const deleteProjectSharesByProjectClickhouse = async (projectId: string) => {
+  await clickhouse.command({
+    query:
+      'ALTER TABLE project_share DELETE WHERE projectId = {projectId:FixedString(12)}',
+    query_params: { projectId },
+  })
+}
+
 const createProjectClickhouse = async (project: Partial<Project>) => {
-  const { id, name } = project
+  const { id, name, adminId } = project
 
   await clickhouse.insert({
     table: 'project',
@@ -344,9 +415,206 @@ const createProjectClickhouse = async (project: Partial<Project>) => {
         isPasswordProtected: 0,
         passwordHash: null,
         botsProtectionLevel: BotsProtectionLevel.BASIC,
+        adminId: adminId || null,
         created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
       },
     ],
+  })
+}
+
+const findProjectShareClickhouse = async (
+  id: string,
+): Promise<ClickhouseProjectShare | null> => {
+  try {
+    const { data } = await clickhouse
+      .query({
+        query: `SELECT * FROM project_share WHERE id = {id:FixedString(36)}`,
+        query_params: { id },
+      })
+      .then(resultSet => resultSet.json<ClickhouseProjectShare>())
+
+    if (_isEmpty(data)) {
+      return null
+    }
+
+    return data[0]
+  } catch {
+    return null
+  }
+}
+
+const findProjectSharesByProjectClickhouse = async (
+  projectId: string,
+): Promise<ClickhouseProjectShareWithUser[]> => {
+  try {
+    const { data } = await clickhouse
+      .query({
+        query: `
+          SELECT
+            ps.id as id,
+            ps.role as role,
+            ps.confirmed as confirmed,
+            ps.created as created,
+            ps.updated as updated,
+            u.id as userId,
+            u.email as email
+          FROM project_share ps
+          LEFT JOIN user u ON ps.userId = u.id
+          WHERE ps.projectId = {projectId:FixedString(12)}
+        `,
+        query_params: { projectId },
+      })
+      .then(resultSet => resultSet.json<ClickhouseProjectShareWithUser>())
+
+    return data
+  } catch {
+    return []
+  }
+}
+
+const findProjectSharesByUserClickhouse = async (
+  userId: string,
+  search: string = null,
+): Promise<ClickhouseProjectShareWithProject[]> => {
+  try {
+    const whereSearch = search ? 'AND p.name ILIKE {search:String}' : ''
+
+    const { data } = await clickhouse
+      .query({
+        query: `
+          SELECT
+            ps.id AS id,
+            ps.role AS role,
+            ps.confirmed AS confirmed,
+            ps.created AS created,
+            ps.updated AS updated,
+            p.id AS projectId,
+            p.name AS projectName,
+            p.origins AS projectOrigins,
+            p.ipBlacklist AS projectIpBlacklist,
+            p.active AS projectActive,
+            p.public AS projectPublic,
+            p.isPasswordProtected AS projectIsPasswordProtected,
+            p.botsProtectionLevel AS projectBotsProtectionLevel,
+            p.created AS projectCreated
+          FROM project_share ps
+          LEFT JOIN project p ON ps.projectId = p.id
+          WHERE ps.userId = {userId:FixedString(36)}
+          ${whereSearch}
+        `,
+        query_params: { userId, search: `%${search}%` },
+      })
+      .then(resultSet => resultSet.json<ClickhouseProjectShareWithProject>())
+
+    return data
+  } catch {
+    return []
+  }
+}
+
+const findProjectShareByUserAndProjectClickhouse = async (
+  userId: string,
+  projectId: string,
+): Promise<ClickhouseProjectShare | null> => {
+  try {
+    const { data } = await clickhouse
+      .query({
+        query: `
+          SELECT * FROM project_share
+          WHERE userId = {userId:FixedString(36)}
+          AND projectId = {projectId:FixedString(12)}
+        `,
+        query_params: { userId, projectId },
+      })
+      .then(resultSet => resultSet.json<ClickhouseProjectShare>())
+
+    if (_isEmpty(data)) {
+      return null
+    }
+
+    return data[0]
+  } catch {
+    return null
+  }
+}
+
+const createProjectShareClickhouse = async (share: {
+  id: string
+  userId: string
+  projectId: string
+  role: string
+  confirmed?: number
+}) => {
+  const { id, userId, projectId, role } = share
+  const confirmed = share.confirmed ?? 0
+  const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+  await clickhouse.insert({
+    table: 'project_share',
+    format: 'JSONEachRow',
+    values: [
+      {
+        id,
+        userId,
+        projectId,
+        role,
+        confirmed,
+        created: now,
+        updated: now,
+      },
+    ],
+  })
+}
+
+const updateProjectShareClickhouse = async (
+  id: string,
+  update: Partial<{ role: string; confirmed: number }>,
+) => {
+  const filtered = _reduce(
+    _filter(_keys(update), key => ALLOWED_SHARE_KEYS.includes(key)),
+    (obj, key) => {
+      obj[key] = update[key]
+      return obj
+    },
+    {},
+  )
+
+  const columns = _keys(filtered)
+  const values = _values(filtered)
+
+  if (_isEmpty(columns)) {
+    return
+  }
+
+  const assignments = _map(columns, (col, idx) => {
+    const _val = values[idx]
+    const type = col === 'confirmed' ? 'Int8' : 'String'
+    return `${col}={v_${idx}:${type}}`
+  }).join(', ')
+
+  const params = _reduce(
+    values,
+    (acc, cur, idx) => ({
+      ...acc,
+      [`v_${idx}`]: cur,
+    }),
+    {},
+  )
+
+  await clickhouse.command({
+    query: `ALTER TABLE project_share UPDATE ${assignments}, updated={updated:String} WHERE id={id:FixedString(36)}`,
+    query_params: {
+      ...params,
+      id,
+      updated: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+    },
+  })
+}
+
+const deleteProjectShareClickhouse = async (id: string) => {
+  await clickhouse.command({
+    query: `ALTER TABLE project_share DELETE WHERE id={id:FixedString(36)}`,
+    query_params: { id },
   })
 }
 
@@ -397,107 +665,6 @@ const deleteRefreshTokenClickhouse = async (
     query_params: {
       userId,
       refreshToken,
-    },
-  })
-}
-
-interface IClickhouseUser {
-  timezone?: string
-  timeFormat?: string
-  showLiveVisitorsInTitle?: number
-}
-
-const CLICKHOUSE_SETTINGS_ID = 'sfuser'
-
-const createUserClickhouse = async (user: IClickhouseUser) => {
-  const { timezone, timeFormat, showLiveVisitorsInTitle } = user
-
-  await clickhouse.insert({
-    table: 'sfuser',
-    format: 'JSONEachRow',
-    values: [
-      {
-        id: CLICKHOUSE_SETTINGS_ID,
-        timezone,
-        timeFormat,
-        showLiveVisitorsInTitle,
-      },
-    ],
-  })
-}
-
-const getUserClickhouse = async () => {
-  const query = `SELECT * FROM sfuser WHERE id = {id:String}`
-
-  try {
-    const { data } = await clickhouse
-      .query({
-        query,
-        query_params: {
-          id: CLICKHOUSE_SETTINGS_ID,
-        },
-      })
-      .then(resultSet => resultSet.json<ClickhouseSFUser>())
-
-    return data[0] || ({} as ClickhouseSFUser)
-  } catch {
-    return {}
-  }
-}
-
-const userClickhouseExists = async () => {
-  const query = `SELECT * FROM sfuser WHERE id = '${CLICKHOUSE_SETTINGS_ID}'`
-
-  try {
-    const { data } = await clickhouse
-      .query({
-        query,
-      })
-      .then(resultSet => resultSet.json())
-
-    return !_isEmpty(data)
-  } catch {
-    return false
-  }
-}
-
-const updateUserClickhouse = async (user: IClickhouseUser) => {
-  const userExists = await userClickhouseExists()
-
-  if (!userExists) {
-    await createUserClickhouse({
-      timezone: DEFAULT_TIMEZONE,
-      timeFormat: TimeFormat['12-hour'],
-      showLiveVisitorsInTitle: 0,
-      ...user,
-    })
-  }
-
-  let query = 'ALTER table sfuser UPDATE '
-  let separator = ''
-
-  if (!_isNil(user.timezone)) {
-    query += `${separator}timezone={timezone:String}`
-    separator = ', '
-  }
-
-  if (!_isNil(user.timeFormat)) {
-    query += `${separator}timeFormat={timeFormat:String}`
-    separator = ', '
-  }
-
-  if (!_isNil(user.showLiveVisitorsInTitle)) {
-    query += `${separator}showLiveVisitorsInTitle={showLiveVisitorsInTitle:Int8}`
-    separator = ', '
-  }
-
-  query += ` WHERE id={id:String}`
-
-  await clickhouse.command({
-    query,
-    query_params: {
-      ...user,
-      id: CLICKHOUSE_SETTINGS_ID,
     },
   })
 }
@@ -719,14 +886,6 @@ export const isPrimaryNode = () => {
   return process.env.IS_PRIMARY_NODE === 'true'
 }
 
-const getSelfhostedUUID = (): string => {
-  try {
-    return uuidv5(SELFHOSTED_EMAIL, UUIDV5_NAMESPACE)
-  } catch {
-    return DEFAULT_SELFHOSTED_UUID
-  }
-}
-
 const dummyLookup = () => ({
   country: {
     names: {
@@ -848,16 +1007,13 @@ export {
   deleteProjectClickhouse,
   calculateRelativePercentage,
   millisecondsToSeconds,
-  getSelfhostedUUID,
   saveRefreshTokenClickhouse,
   findRefreshTokenClickhouse,
   deleteRefreshTokenClickhouse,
-  updateUserClickhouse,
-  getUserClickhouse,
-  createUserClickhouse,
   getGeoDetails,
   getIPFromHeaders,
   sumArrays,
+  assignUnassignedProjectsToUserClickhouse,
   getFunnelClickhouse,
   getFunnelsClickhouse,
   updateFunnelClickhouse,
@@ -869,4 +1025,13 @@ export {
   createProjectViewClickhouse,
   doesProjectViewExistClickhouse,
   updateProjectViewClickhouse,
+  // shares
+  findProjectShareClickhouse,
+  findProjectSharesByProjectClickhouse,
+  findProjectSharesByUserClickhouse,
+  findProjectShareByUserAndProjectClickhouse,
+  createProjectShareClickhouse,
+  updateProjectShareClickhouse,
+  deleteProjectShareClickhouse,
+  deleteProjectSharesByProjectClickhouse,
 }

@@ -1,7 +1,6 @@
 import Redis from 'ioredis'
 import _toNumber from 'lodash/toNumber'
 
-import { getSelfhostedUUID } from './utils'
 import 'dotenv/config'
 
 const redis = new Redis(
@@ -29,19 +28,15 @@ const {
 const isProxiedByCloudflare = process.env.CLOUDFLARE_PROXY_ENABLED === 'true'
 const isDevelopment = process.env.NODE_ENV === 'development'
 
-const SELFHOSTED_EMAIL = process.env.EMAIL
-const SELFHOSTED_PASSWORD = process.env.PASSWORD
-const SELFHOSTED_API_KEY = process.env.API_KEY
-const SELFHOSTED_API_AUTH_ENABLED = !!SELFHOSTED_API_KEY
+export const IS_REGISTRATION_DISABLED =
+  process.env.DISABLE_REGISTRATION === 'true' ||
+  !process.env.DISABLE_REGISTRATION
+
 const SELFHOSTED_GEOIP_DB_PATH = process.env.IP_GEOLOCATION_DB_PATH
-const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68'
-const DEFAULT_SELFHOSTED_UUID = 'deadbeef-dead-beef-dead-beefdeadbeef'
 
 // OIDC configuration
 const OIDC_ENABLED = process.env.OIDC_ENABLED === 'true'
 const OIDC_ONLY_AUTH = process.env.OIDC_ONLY_AUTH === 'true'
-
-const SELFHOSTED_UUID = getSelfhostedUUID()
 
 const ORIGINS_REGEX =
   /^(?=.{1,255}$)([0-9A-Za-z*:](?:(?:[0-9A-Za-z*:]|-){0,61}[0-9A-Za-z*:])?(?:\.[0-9A-Za-z*:](?:(?:[0-9A-Za-z*-]|-){0,61}[0-9A-Za-z*:])?)*)?$/
@@ -119,18 +114,11 @@ export {
   UNIQUE_SESSION_LIFE_TIME,
   TRAFFIC_METAKEY_COLUMNS,
   REDIS_SESSION_SALT_KEY,
-  UUIDV5_NAMESPACE,
-  SELFHOSTED_EMAIL,
-  SELFHOSTED_PASSWORD,
-  SELFHOSTED_API_KEY,
-  SELFHOSTED_API_AUTH_ENABLED,
-  SELFHOSTED_UUID,
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   IP_REGEX,
   ORIGINS_REGEX,
   isDevelopment,
-  DEFAULT_SELFHOSTED_UUID,
   JWT_ACCESS_TOKEN_SECRET,
   NUMBER_JWT_REFRESH_TOKEN_LIFETIME as JWT_REFRESH_TOKEN_LIFETIME,
   NUMBER_JWT_ACCESS_TOKEN_LIFETIME as JWT_ACCESS_TOKEN_LIFETIME,

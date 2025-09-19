@@ -249,6 +249,7 @@ export class UserController {
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await checkRateLimit(ip, 'set-paypal-email', 10, 3600)
+    await checkRateLimit(userId, 'set-paypal-email', 10, 3600)
 
     const user = await this.userService.findOne({ where: { id: userId } })
 
@@ -1156,6 +1157,10 @@ export class UserController {
     @Body('step') step: OnboardingStep,
   ): Promise<void> {
     this.logger.log({ userId, step }, 'POST /user/onboarding/step')
+
+    if (!Object.values(OnboardingStep).includes(step)) {
+      throw new BadRequestException('Invalid onboarding step')
+    }
 
     await this.userService.update(userId, {
       onboardingStep: step,

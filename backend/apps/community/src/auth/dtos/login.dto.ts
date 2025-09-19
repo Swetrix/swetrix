@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsEmail, MinLength } from 'class-validator'
+import { User } from '../../common/types'
 
 export class LoginRequestDto {
   @ApiProperty({
@@ -34,5 +35,5 @@ export class LoginResponseDto {
   @ApiProperty({
     description: 'User entity',
   })
-  user: object
+  user: Partial<User>
 }

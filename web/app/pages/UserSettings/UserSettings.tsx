@@ -412,9 +412,62 @@ const UserSettings = () => {
     setShowPasswordFields((prev) => !prev)
   }
 
+  const SharedProjects = () => (
+    <>
+      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+        {t('profileSettings.shared')}
+      </h3>
+      <div>
+        {!_isEmpty(user?.sharedProjects) ? (
+          <div className='mt-3 flex flex-col'>
+            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+              <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
+                <div className='overflow-hidden ring-1 ring-black/10 md:rounded-lg'>
+                  <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
+                    <thead>
+                      <tr className='dark:bg-slate-800'>
+                        <th
+                          scope='col'
+                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
+                        >
+                          {t('profileSettings.sharedTable.project')}
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
+                        >
+                          {t('profileSettings.sharedTable.role')}
+                        </th>
+                        <th
+                          scope='col'
+                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
+                        >
+                          {t('profileSettings.sharedTable.joinedOn')}
+                        </th>
+                        <th scope='col' className='relative py-3.5 pr-4 pl-3 sm:pr-6' />
+                      </tr>
+                    </thead>
+                    <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
+                      {_map(user?.sharedProjects, (item) => (
+                        <ProjectList key={item.id} item={item} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <NoSharedProjects />
+        )}
+      </div>
+    </>
+  )
+
   return (
-    <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
-      <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
+    <div className='min-h-min-footer flex flex-col bg-gray-50 dark:bg-slate-900'>
+      <form className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.profileSettings')}</h2>
         {/* Tabs selector */}
         <div className='mt-2'>
@@ -499,7 +552,6 @@ const UserSettings = () => {
                     <>
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
 
-                      {/* API access setup */}
                       <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                         {t('profileSettings.apiKey')}
                       </h3>
@@ -520,9 +572,21 @@ const UserSettings = () => {
                         </>
                       ) : (
                         <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                          {t('profileSettings.selfhostedNoApiKey')}
+                          {t('profileSettings.noApiKey')}
                         </p>
                       )}
+                      {user?.apiKey ? (
+                        <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
+                          {t('profileSettings.deleteApiKeyBtn')}
+                        </Button>
+                      ) : (
+                        <Button className='mt-4' onClick={onApiKeyGenerate} primary large>
+                          {t('profileSettings.addApiKeyBtn')}
+                        </Button>
+                      )}
+
+                      {/* Shared projects setting */}
+                      <SharedProjects />
                     </>
                   ) : (
                     <>
@@ -620,54 +684,7 @@ const UserSettings = () => {
                       <Socialisations />
 
                       {/* Shared projects setting */}
-                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-                        {t('profileSettings.shared')}
-                      </h3>
-                      <div>
-                        {!_isEmpty(user?.sharedProjects) ? (
-                          <div className='mt-3 flex flex-col'>
-                            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
-                              <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                                <div className='overflow-hidden ring-1 ring-black/10 md:rounded-lg'>
-                                  <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
-                                    <thead>
-                                      <tr className='dark:bg-slate-800'>
-                                        <th
-                                          scope='col'
-                                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
-                                        >
-                                          {t('profileSettings.sharedTable.project')}
-                                        </th>
-                                        <th
-                                          scope='col'
-                                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
-                                        >
-                                          {t('profileSettings.sharedTable.role')}
-                                        </th>
-                                        <th
-                                          scope='col'
-                                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
-                                        >
-                                          {t('profileSettings.sharedTable.joinedOn')}
-                                        </th>
-                                        <th scope='col' className='relative py-3.5 pr-4 pl-3 sm:pr-6' />
-                                      </tr>
-                                    </thead>
-                                    <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                                      {_map(user?.sharedProjects, (item) => (
-                                        <ProjectList key={item.id} item={item} />
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <NoSharedProjects />
-                        )}
-                      </div>
+                      <SharedProjects />
 
                       {/* Organisations setting */}
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />

@@ -64,6 +64,26 @@
     "projectAssignError": "Failed to assign the project to the organisation",
     "failedToLoadUsageInfo": "Failed to load usage info"
   },
+  "ce": {
+    "noApiUrl": {
+      "banner": "Can't reach backend — check API_URL configuration",
+      "title": "API_URL is not configured",
+      "intro1": "You are running Swetrix Community Edition without API_URL set. The frontend cannot reach the API.",
+      "intro2": "Set the API_URL environment variable to your API instance URL. In self-hosting there are two containers:",
+      "listFe": "swetrix/swetrix-fe — the frontend UI",
+      "listApi": "swetrix/swetrix-api — the API (auth, data ingest)",
+      "examplesTitle": "Examples",
+      "exampleLocal": {
+        "label": "Local default:",
+        "value": "API_URL=http://localhost:8080"
+      },
+      "exampleSubdomain": {
+        "label": "With subdomains:",
+        "value": "API_URL=https://swetrix-api.mydomain.com"
+      },
+      "finalNote": "Please configure it and restart the containers."
+    }
+  },
   "common": {
     "features": "Features",
     "docs": "Docs",
@@ -332,8 +352,55 @@
     ]
   },
   "main": {
+    "seeLiveDemo": "See the live demo",
+    "goToBilling": "Go to billing",
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": [
+        {
+          "q": "What plan should I choose?",
+          "a": "You can start with the {{lowestPlanEventsAmount}} events per month plan. If you already have some traffic, you can start with the {{moderatePlanEventsAmount}} events per month plan.\n\n In any case, you can upgrade or downgrade your plan anytime, and we will pro-rate your subscription if you change your plan so it would be fair for you."
+        },
+        {
+          "q": "What happens if I exceed my plan's limit?",
+          "a": "We won't stop counting your data if you exceed your plan's limit. However, you will need to upgrade to a higher plan to keep access to your stats.\n\nWe will send you an email notification if you exceed or come close to your plan's limit. We also won't restrict your dashboard if you get an occasional traffic spike or go over your limit slightly."
+        },
+        {
+          "q": "Does Swetrix offer a free plan?",
+          "a": "For our cloud version, we don't offer a free plan at this moment. We're an independent startup funded solely by our subscribers. We don't monetise or sell your data, so subscription fee is needed to cover our costs and keep the service running.\n\nAt the same time, Swetrix is open-source and we provide a Community Edition that you can self-host on your own infrastructure for free."
+        },
+        {
+          "q": "Is there a free trial?",
+          "a": "Yep, you can try Swetrix for free for {{freeTrialDays}} days, no credit card required!"
+        },
+        {
+          "q": "What is counted as events?",
+          "a": "An event is a pageview, a custom event or an error event that the tracking script sends to Swetrix. Pageviews and error events are tracked automatically based on your tracking script set up, and custom events are sent manually based on the user actions and your configuration."
+        },
+        {
+          "q": "Is Swetrix GDPR-compliant?",
+          "a": "Swetrix is a privacy-focused web analytics tool. We do not use cookies for tracking, and all the data is collected anonymously. We don't use persistent, cross-device tracking, and don't use your data for any other purposes. You can read more about it in our <dataPolicyUrl>data policy</dataPolicyUrl>."
+        },
+        {
+          "q": "Does Swetrix have an API?",
+          "a": "Yes, you can access access your statistics or website data using our API. And you can also send pageviews or events for your websites using our API. Learn more about it in our <apiDocumentationUrl>API documentation</apiDocumentationUrl>."
+        },
+        {
+          "q": "Can I invite my team members to Swetrix?",
+          "a": "Yes! You can create an organisation and invite your team members to it, assign them roles and easily manage their access to the organisation and its projects.\n\nYou can invite people directly to your projects, create password-protected access links or make your projects public and accessible to everyone."
+        },
+        {
+          "q": "What support do you provide?",
+          "a": "We provide email support and you can <contactUsUrl>contact us</contactUsUrl> at any time. We also offer a community support on our <discordUrl>Discord server</discordUrl>."
+        },
+        {
+          "q": "I want to ask something else...",
+          "a": "Sure, feel free to <contactUsUrl>contact us</contactUsUrl> at any time."
+        }
+      ]
+    },
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
-    "slogan": "Understand <span>the story</span> behind your customer clicks and scrolls",
+    "slogan": "Turn traffic into insights",
     "description": "Get all the insights you need about your users and website visitors without the hassle of showing cookie banners. Experience intuitive, easy-to-use and GDPR-compliant web analytics without invading the privacy of your visitors.",
     "understandTheirUsers": "<0>{{amount}}</0> people understand their users",
     "perfect": "It's perfect for <0>marketers</0>, <1>start-ups</1>, <2>small businesses</2> and virtually any type of business!",
@@ -343,36 +410,49 @@
     "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
     "peopleLoveSwetrix": "People 🥰 Swetrix",
     "whyPeopleLoveSwetrix": "Swetrix is an ethical and powerful service. Hundreds of people have already made the switch from Google Analytics and other alternatives.",
-    "weAreOpensource": "We are <url>open source</url>",
     "coreFeatures": "Only the features you need",
-    "problem": {
-      "title": "Do you struggle to make sense of your analytics data?",
-      "description": "Many web analytics solutions are either too complex and overwhelming, or too simple and don't provide enough insight. Business owners don't understand their customers and lose money.",
-      "step1": "Business owner collects web data",
-      "step2": "Overwhelmed by <u>complex dashboards</u> or limited by oversimplified metrics",
-      "step3": "Makes uninformed decisions, missing opportunities for growth"
+    "heroBenefits": {
+      "trial": "Free trial {{days}} days",
+      "cookieless": "Cookie-less tracking",
+      "gdpr": "GDPR compliant",
+      "dataOwnership": "100% data ownership",
+      "openSource": "Open-source",
+      "selfHostable": "Self-hostable",
+      "quickSetup": "Quick setup"
     },
-    "butThereIsASolution": "But there is a solution...",
-    "knowYourCustomers": "Know your customers and users",
-    "insights": {
-      "title": "Get traffic insights",
-      "description": "Swetrix helps you understand everything you need to know about your website traffic. Know how many people are online, what pages are most popular, where are your users from, and more."
+    "web": {
+      "title": "Web analytics",
+      "description": "Get all the insights you need about your users with a privacy-friendly and easy-to-use web analytics tool.",
+      "features": [
+        "Top pages",
+        "Geolocation",
+        "Traffic sources",
+        "UTM Campaigns",
+        "Custom events",
+        "Session analysis",
+        "Bounce rate",
+        "User flows"
+      ]
     },
-    "painPoints": {
-      "title": "Track website speed",
-      "description": "Nobody likes slow websites. Users are more likely to abandon your website if it takes too long to load, stay ahead of these problems and measure insights from real interactions."
+    "performance": {
+      "title": "Website speed and performance",
+      "description": "Monitor your website speed and performance metrics from real user interactions."
     },
-    "customisation": {
-      "title": "Complete customisation",
-      "description": "Missing a feature? We will build it :) You can also build your own features or install 3rd party add-ons from our Extensions Marketplace."
-    },
-    "integrations": {
-      "title": "Works with any platform",
-      "description": "With dozens of integrations, Swetrix makes it easy to connect your website and know your users, out of the box."
+    "errors": {
+      "title": "Error tracking",
+      "description": "Get detailed insights into what kind of errors are happening on your website. View error details and aggregated data by geolocation, browser, device type, page and other metrics."
     },
     "sessions": {
-      "title": "Session analysis",
-      "description": "Analyse the sessions of your website users and make data-driven decisions."
+      "title": "User sessions",
+      "description": "Get detailed insights about your users' journey through your website and see how they interact with it. Track how long they stayed on your website, what actions they took and what pages visited.",
+      "features": [
+        "Session duration",
+        "Geolocation",
+        "Session pageviews flow",
+        "Error tracking",
+        "Browser & OS info",
+        "Custom events"
+      ]
     },
     "cookies": {
       "title": "Forget about annoying cookie banners",
@@ -383,24 +463,17 @@
       "description": "Use UTMs to tag your ads, social media posts and email campaigns to see how much traffic they generate and how much revenue they bring in."
     },
     "funnels": {
-      "title": "User flows & marketing funnels",
-      "description": "Track how users get to your site and know where they go. Study behaviour, visualise and understand your user journey."
+      "title": "Funnels and user flows",
+      "description": "Track how users get to your site and where they go. Study behaviour, visualise and understand your user journey."
     },
-    "eCommerce": {
-      "title": "E-commerce & Custom events (really easy to setup)",
-      "description": "Send custom events with custom properties to track user activity or sales. Analyse this data with ease in our intuitive dashboard. Create reusable views to quickly see and spot trends in your sales."
+    "alerts": {
+      "title": "Customisable alerts",
+      "description": "Be the first to know when something happens on your website. Get notified via Telegram, Slack or Discord when specific events occur."
     },
-    "opensource": [
-      {
-        "desc": "Install Swetrix on your own servers - the source code is available to everyone."
-      },
-      {
-        "desc": "Take part in the development of Swetrix - contribute by suggesting improvements, reporting bugs or developing new features."
-      },
-      {
-        "desc": "We are a customer-first company, and transparency is our top priority."
-      }
-    ],
+    "events": {
+      "title": "Custom events",
+      "description": "Track user interactions like sales, signups or clicks in real time. Get detailed insights into how users use your website."
+    },
     "timeToDitchGoogleAnalytics": "It's time <colour>to ditch</colour> Google Analytics.",
     "whyDitch": "Tired of the frustration, complexity and privacy issues of Google Analytics? We were too. That's why we built Swetrix - the ethical, open source and fully cookieless alternative.",
     "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
@@ -466,7 +539,8 @@
       "create": "Create your account",
       "trial": "Start your free {{amount}} day trial",
       "noCC": "No credit card required.",
-      "alreadyAMember": "Already a member? <url>Sign in</url>"
+      "alreadyAMember": "Already a member? <url>Sign in</url>",
+      "createAnAccount": "Create an account"
     },
     "verification": {
       "success": "Your email has been successfully verified!",
@@ -570,7 +644,6 @@
     "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below.",
     "apiKey": "API Key",
     "noApiKey": "You haven't created any API keys yet.",
-    "selfhostedNoApiKey": "You haven't created any API keys yet. You can do this in your docker compose file by modifying the API_KEY environment variable.",
     "apiKeyWarning": "Treat your API Key like a password and keep it secret. Never hardcode it into your programs, or share it with anyone.",
     "addApiKeyBtn": "Generate API Key",
     "deleteApiKeyBtn": "Delete API Key",
@@ -749,7 +822,7 @@
     "xCustomEvents": "{{x}} custom events",
     "xErrors": "{{x}} errors",
     "alerts": "Alerts",
-    "alertsDesc": "Automated alerts is a powerful tool that allows you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram, Slack or Discord.",
+    "alertsDesc": "Automated alerts is a powerful tool that notifies you when some events occur on your website.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram, Slack or Discord.",
     "funnelsDesc": "Funnels is a powerful tool that allows you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
     "frontend": "Frontend",
     "backend": "Backend",
@@ -884,7 +957,6 @@
       "text": "Text"
     },
     "currentFilters": "Currently applied filters",
-    "advancedFilters": "Advanced filters",
     "applyFilters": "Apply filters",
     "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Override currently applied filters",
@@ -1082,7 +1154,8 @@
       "addARecipientDesc": "Enter an email address of the person you want to send reports to. They don't necessarily need to have an account on Swetrix.\nWe will send them your site's reports on a regular basis.",
       "invite": "Invite a user",
       "inviteTo": "Invite a user to {{project}}",
-      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
+      "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project, and they will see the invitation in their dashboard as well.",
+      "inviteDescSelfhosted": "Enter an email address and a role of the person you want to share your project with.\nThey will see the invitation in their dashboard.",
       "inviteExpity": "The invitation will expire in {{amount}} hours.",
       "role": "Role",
       "roles": {
@@ -1177,17 +1250,16 @@
     "negativePayment": "Negative 'Amount' means that you will have a credit balance of {{currency}}{{dueNowAmount}}. You will be billed {{currency}}0.00 on {{dueNowDate}}. Once the credit balance is used up, your recurring billing amount will be {{currency}}{{nextPaymentAmount}} every billing cycle of your subscription plan.",
     "nextPayment": "Next payment",
     "subscription": "Subscription",
-    "planUsageDesc": "The plan usage shows the number of events (page views, custom events, CAPTCHA completions) that you have used for the current month.",
+    "planUsageDesc": "The plan usage shows the number of events (page views, custom events, error events) that you have used for the current month.",
     "xofy": "{{x}} of {{y}}",
-    "resetDate": "The plan usage resets on the first day of each month.",
+    "resetDate": "The plan usage resets on the first day of each month ({{days}} days until reset)",
     "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
     "changePlan": "You can change or cancel your subscription plan at any time here.",
-    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
+    "membersNotification": "Pageviews, custom events and error events are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
     "xMonthsFree": "{{amount}} months free",
     "trialDescription": "Your free trial includes access to all features and unlimited data collection limits. When your trial ends, you'll need to select a paid plan that matches your usage to continue using Swetrix.",
     "usageWarningHigh": "You've used {{percentage}}% of your monthly event limit. Consider upgrading your plan to avoid service interruption.",
     "usageWarningCritical": "Warning: You've used {{percentage}}% of your monthly event limit! Upgrade now to ensure uninterrupted service.",
-    "daysUntilReset": "{{days}} days until reset",
     "xPercentUsed": "{{percentage}}% used",
     "xPercentRemaining": "{{percentage}}% remaining"
   },
@@ -1232,34 +1304,25 @@
     "yearlyBilling": "Yearly",
     "switchToMonthly": "Switch to monthly billing",
     "frequency": "Payment frequency",
-    "eventPerMonth": "Events per month",
+    "eventsPerMonth": "events / month",
     "switchToYearly": "Switch to yearly billing",
     "xTrialDaysLeft": "{{amount}} trial days left",
     "trialEnded": "Trial ended",
     "trialEndsToday": "Trial ends today",
     "trialEndsTomorrow": "Trial ends tomorrow",
     "tiers": {
-      "hobby": "Hobby",
-      "freelancer": "Freelancer",
-      "startup": "Startup",
-      "enterprise": "Enterprise",
       "trial": "Free trial",
       "upToXEVMo": "Up to {{amount}} events per month",
-      "xEvMo": "{{amount}} events per month",
       "upToXVMo": "Up to {{amount}} visits per month",
-      "xVMo": "{{amount}} visits per month",
-      "xAlertsSingular": "{{amount}} alerting rule",
-      "xAlertsPlural": "{{amount}} alerting rules",
-      "upToXProjects": "Create up to {{amount}} projects",
       "upToXWebsites": "Add up to {{amount}} websites",
-      "xMoDataRetention": "{{amount}} months of data retention",
       "evXPlanIncl": "Everything {{plan}} plan includes",
-      "smallBusiSupport": "By buying this you are supporting a small business",
       "dataExports": "Unlimited data exports",
       "dataOwnership": "100% data ownership",
-      "dashboards": "Shared & Public Dashboards",
+      "apiAccess": "API access",
       "reports": "Email reports",
-      "userFlowAnalysis": "User flow analysis"
+      "userFlowAnalysis": "User flow analysis",
+      "sessionAnalysis": "Session analysis",
+      "errorTracking": "Error tracking"
     },
     "downgradeTitle": "Are you sure you want to downgrade?",
     "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}.",
@@ -1349,8 +1412,7 @@
     "docs": "Documentation",
     "billing": "Billing",
     "contact": "Have something to ask?",
-    "changelog": "Changelog",
-    "main": "Understand the story behind your customer clicks and scrolls",
+    "main": "Turn traffic into insights",
     "socialisation": "Socialisation",
     "open": "Open startup",
     "passwordProtected": "This project is password protected",
@@ -1363,6 +1425,7 @@
   },
   "header": {
     "startForFree": "Start for free",
+    "signUp": "Sign up",
     "switchTheme": "Switch theme",
     "dark": "Dark",
     "light": "Light",
@@ -1396,16 +1459,20 @@
   },
   "footer": {
     "description": "Swetrix is a powerful analytics platform that respects user privacy.",
+    "ceDescription": "This is a community edition of Swetrix, running on self-managed infrastructure. We cannot guarantee its performance or reliability. For official managed hosting, check out <url>swetrix.com</url>.",
     "madeInHostedIn": "Made in <0></0> / <1></1>, hosted in <2></2>",
     "support": "Support",
     "company": "Company",
     "legal": "Support & Legal",
-    "copy": "Swetrix Analytics. All rights reserved.",
+    "copy": "Swetrix Ltd. All rights reserved.",
     "contact": "Contact",
     "pp": "Privacy Policy",
     "tos": "Terms of Service",
     "blog": "Blog",
+    "tools": "Free tools",
     "utm": "UTM Generator",
+    "ctr": "CTR Calculator",
+    "roi": "ROI Calculator",
     "billing": "Billing",
     "pricing": "Pricing",
     "docs": "Documentation",
@@ -1415,12 +1482,12 @@
     "cookie": "Cookie Policy",
     "terms": "Terms",
     "status": "Status",
-    "donate": "Donate",
-    "changelog": "Changelog",
+    "supportUs": "Support us",
     "captcha": "CAPTCHA",
     "open": "Open startup",
     "about": "About us",
     "features": "Features",
-    "imprint": "Legal notice"
+    "imprint": "Legal notice",
+    "cloudEdition": "Cloud edition"
   }
 }

@@ -2,7 +2,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _toUpper from 'lodash/toUpper'
 import { BugIcon, FileTextIcon, MousePointerClickIcon } from 'lucide-react'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
 import { cn } from '~/utils/generic'
@@ -48,12 +48,20 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange }: PageflowProps) 
     i18n: { language },
   } = useTranslation('common')
 
-  const filteredPages = zoomedTimeRange
-    ? pages.filter((page) => {
-        const pageTime = new Date(page.created).getTime()
-        return pageTime >= zoomedTimeRange[0].getTime() && pageTime <= zoomedTimeRange[1].getTime()
-      })
-    : pages
+  const filteredPages = useMemo(() => {
+    if (!pages) {
+      return []
+    }
+
+    if (!zoomedTimeRange) {
+      return pages
+    }
+
+    return pages.filter((page) => {
+      const pageTime = new Date(page.created).getTime()
+      return pageTime >= zoomedTimeRange[0].getTime() && pageTime <= zoomedTimeRange[1].getTime()
+    })
+  }, [pages, zoomedTimeRange])
 
   if (zoomedTimeRange && _isEmpty(filteredPages)) {
     return (

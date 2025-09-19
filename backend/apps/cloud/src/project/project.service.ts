@@ -159,7 +159,6 @@ const previewHTML = `
   <body id='body'>
     <main>
       <div class='gradient'>
-        <div class='gradient__inner'></div>
       </div>
       <div>
         <div class='title'>{{title}}</div>
@@ -169,12 +168,8 @@ const previewHTML = `
         <div class='logo'>
           <img src='${WHITE_LOGO_BASE64}' alt='' />
         </div>
-        <span class='separator'>
-          |
-        </span>
-        <span class='swetrix_desc'>
-          Privacy friendly web analytics
-        </span>
+        <span class='separator'>•</span>
+        <span class='swetrix_desc'>Privacy-friendly web analytics</span>
       </div>
     </main>
   </body>
@@ -190,10 +185,11 @@ const previewStyles = `
   font-family: Inter, Ubuntu, sans-serif;
 }
 body {
-  padding: 2.5rem;
-  background: linear-gradient(to right, #0f172a, #1c2649);
-  height: 90vh;
-  color: white;
+  padding: 3.5rem 4rem;
+  height: 100vh;
+  position: relative;
+  margin: 0;
+  background: linear-gradient(145deg in oklab, oklch(0.446 0.043 257.281) 28%, oklch(0.627 0.265 303.9) 70%, oklch(0.511 0.262 276.966) 100%);
 }
 main {
   height: 100%;
@@ -206,40 +202,30 @@ main {
 }
 .gradient {
   position: absolute;
-  filter: blur(64px);
-  padding-left: 9rem;
-  padding-right: 9rem;
+  inset: 0;
   overflow: hidden;
-  z-index: -10;
-  left: 0;
-  right: 0;
-  top: -20px;
-}
-.gradient__inner {
-  margin-left: auto;
-  margin-right: auto;
-  aspect-ratio: 1155/678;
-  width: 72.1875rem;
-  background-image: linear-gradient(to top right, #ff80b5, #9089fc);
-  opacity: .3;
-  clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%);
+  z-index: -1;
+  filter: blur(56px);
+  background: radial-gradient(900px 600px at 20% 25%, rgba(0, 0, 0, .28), transparent 60%);
 }
 .footer {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  font-size: 2rem;
-  font-weight: 200;
+  gap: .75rem;
+  font-size: 1.85rem;
+  font-weight: 400;
+  color: white;
 }
+.separator { opacity: .4; }
 .swetrix_desc {
-  position: absolute;
-  top: 7px;
-  left: calc(205px + 2rem);
+  position: static;
+  font-weight: 400;
 }
 .logo {
   width: 200px;
   height: 44px;
+  margin-top: -0.5rem;
 }
 .logo img {
   width: 100%;
@@ -247,14 +233,24 @@ main {
 }
 .title {
   font-size: {{fontSize}};
-  text-transform: capitalize;
+  text-transform: none;
+  line-height: 1.05;
   margin: 0.25rem 0;
-  font-weight: bold;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  max-width: 1000px;
+  color: #ffffff;
 }
 .description {
   margin-top: 3rem;
-  font-size: 2.5rem;
+  font-size: 2.7rem;
   letter-spacing: 0.05em;
+  font-weight: 500;
+  color: #ffffff;
 }
 `
 
@@ -459,7 +455,7 @@ export class ProjectService {
         new Brackets(qb => {
           qb.where('project.adminId = :userId')
             .orWhere(
-              'EXISTS (SELECT 1 FROM project_share ps WHERE ps.projectId = project.id AND ps.userId = :userId AND ps.confirmed = true)',
+              'EXISTS (SELECT 1 FROM project_share ps WHERE ps.projectId = project.id AND ps.userId = :userId)',
             )
             .orWhere(
               'EXISTS (SELECT 1 FROM organisation_member om WHERE om.organisationId = project.organisationId AND om.userId = :userId AND om.confirmed = true)',
@@ -644,7 +640,7 @@ export class ProjectService {
       throw new ConflictException('Incorrect password')
     }
 
-    if (project.isPasswordProtected && uid !== project.admin?.id) {
+    if (project.isPasswordProtected) {
       throw new ForbiddenException('This project is password protected')
     }
 
@@ -1429,6 +1425,7 @@ export class ProjectService {
       await this.countVisitorsFromTo(pid, from, to),
       0,
     )
+
     const desc = `${formatted} visitors in the last month`
 
     const html = this.getOgHTML(name, desc)
@@ -1462,7 +1459,7 @@ export class ProjectService {
   ): Promise<number> {
     const query = `
       SELECT
-        count(DISTINCT psid)
+        count(DISTINCT psid) AS count
       FROM analytics
       WHERE
         pid = {pid:FixedString(12)}
@@ -1479,7 +1476,7 @@ export class ProjectService {
         })
         .then(resultSet => resultSet.json())
 
-      count = data[0]['count()']
+      count = data[0]['count']
     } catch (reason) {
       console.error(
         '[ERROR](project service -> countVisitorsFromTo) Error while counting visitors',
@@ -1559,15 +1556,15 @@ export class ProjectService {
     )
 
     paginated.results = _map(paginated.results, project => {
-      const userShare = project.share.find(share => share.user.id === userId)
-      const organisationMembership = project.organisation?.members.find(
-        member => member.user.id === userId,
+      const userShare = project.share?.find(share => share.user?.id === userId)
+      const organisationMembership = project.organisation?.members?.find(
+        member => member.user?.id === userId,
       )
 
       let role
       let isAccessConfirmed = true
 
-      if (project.admin.id === userId) {
+      if (project.admin?.id === userId) {
         role = 'owner'
       } else if (userShare) {
         role = userShare.role

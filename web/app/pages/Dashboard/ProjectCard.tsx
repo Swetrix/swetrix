@@ -32,6 +32,7 @@ interface ProjectCardProps {
   activePeriod: string
   activeTab: (typeof DASHBOARD_TABS)[number]['id']
   viewMode: 'grid' | 'list'
+  refetchProjects: () => Promise<void>
 }
 
 interface MiniCardProps {
@@ -82,7 +83,15 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
   )
 }
 
-export const ProjectCard = ({ live, project, overallStats, activePeriod, activeTab, viewMode }: ProjectCardProps) => {
+export const ProjectCard = ({
+  live,
+  project,
+  overallStats,
+  activePeriod,
+  activeTab,
+  viewMode,
+  refetchProjects,
+}: ProjectCardProps) => {
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
   const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
@@ -91,7 +100,7 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
   const { user, mergeUser } = useAuth()
 
   const shareId = useMemo(
-    () => _find(project.share, (item) => item.user.id === user?.id)?.id,
+    () => _find(project.share, (item) => item.user?.id === user?.id)?.id,
     [project.share, user?.id],
   )
 
@@ -166,6 +175,8 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
         }),
       })
 
+      await refetchProjects()
+
       toast.success(t('apiNotifications.acceptInvitation'))
     } catch (reason: any) {
       console.error(`[ERROR] Error while accepting project invitation: ${reason}`)
@@ -212,7 +223,7 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
         <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
           <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
-          {role !== 'viewer' ? (
+          {project.isAccessConfirmed && role !== 'viewer' ? (
             <Link
               className='rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               onClick={(e) => e.stopPropagation()}

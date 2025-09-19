@@ -64,6 +64,26 @@
     "projectAssignError": "Fehler bei der Zuordnung des Projekts zur Organisation",
     "failedToLoadUsageInfo": "Fehler beim Laden der Nutzungsinformationen"
   },
+  "ce": {
+    "noApiUrl": {
+      "banner": "Kann das Backend nicht erreichen — API_URL-Konfiguration prüfen",
+      "title": "API_URL ist nicht konfiguriert",
+      "intro1": "Sie verwenden die Swetrix Community Edition ohne gesetzte API_URL. Das Frontend kann die API nicht erreichen.",
+      "intro2": "Setzen Sie die Umgebungsvariable API_URL auf die URL Ihrer API-Instanz. Beim Self-Hosting gibt es zwei Container:",
+      "listFe": "swetrix/swetrix-fe — die Frontend-UI",
+      "listApi": "swetrix/swetrix-api — die API (Auth, Datenerfassung)",
+      "examplesTitle": "Beispiele",
+      "exampleLocal": {
+        "label": "Lokaler Standard:",
+        "value": "API_URL=http://localhost:8080"
+      },
+      "exampleSubdomain": {
+        "label": "Mit Subdomains:",
+        "value": "API_URL=https://swetrix-api.mydomain.com"
+      },
+      "finalNote": "Bitte konfigurieren Sie dies und starten Sie die Container neu."
+    }
+  },
   "common": {
     "features": "Funktionen",
     "docs": "Dokumentation",
@@ -127,7 +147,9 @@
     "pagination": "Zeige <0>{{start}}</0> bis <0>{{end}}</0> von <0>{{total}}</0> Ergebnissen",
     "resultsPerPage": "Ergebnisse pro Seite",
     "communityEdition": "Community Edition",
-    "allPosts": "Alle Beiträge"
+    "allPosts": "Alle Beiträge",
+    "details": "Details",
+    "unknown": "Unbekannt"
   },
   "featureFlags": {
     "title": "Feature Flags",
@@ -330,8 +352,55 @@
     ]
   },
   "main": {
+    "seeLiveDemo": "Live-Demo ansehen",
+    "goToBilling": "Zur Abrechnung",
+    "faq": {
+      "title": "Häufig gestellte Fragen",
+      "items": [
+        {
+          "q": "Welchen Tarif sollte ich wählen?",
+          "a": "Sie können mit dem Tarif mit {{lowestPlanEventsAmount}} Ereignissen pro Monat beginnen. Wenn Sie bereits etwas Traffic haben, können Sie mit dem Tarif mit {{moderatePlanEventsAmount}} Ereignissen pro Monat beginnen.\n\nIn jedem Fall können Sie Ihren Tarif jederzeit hoch- oder herunterstufen, und wir rechnen Ihr Abonnement anteilig ab, wenn Sie den Tarif ändern, damit es für Sie fair ist."
+        },
+        {
+          "q": "Was passiert, wenn ich das Limit meines Tarifs überschreite?",
+          "a": "Wir hören nicht auf, Ihre Daten zu zählen, wenn Sie das Limit Ihres Tarifs überschreiten. Allerdings müssen Sie auf einen höheren Tarif upgraden, um weiterhin Zugriff auf Ihre Statistiken zu behalten.\n\nWir senden Ihnen eine E-Mail-Benachrichtigung, wenn Sie das Limit Ihres Tarifs überschreiten oder sich ihm nähern. Außerdem werden wir Ihr Dashboard nicht einschränken, wenn es gelegentlich zu Verkehrsspitzen kommt oder Sie Ihr Limit leicht überschreiten."
+        },
+        {
+          "q": "Bietet Swetrix einen kostenlosen Tarif an?",
+          "a": "Für unsere Cloud-Version bieten wir derzeit keinen kostenlosen Tarif an. Wir sind ein unabhängiges Startup, das ausschließlich durch unsere Abonnenten finanziert wird. Wir monetarisieren oder verkaufen Ihre Daten nicht, daher ist eine Abonnementgebühr erforderlich, um unsere Kosten zu decken und den Dienst am Laufen zu halten.\n\nGleichzeitig ist Swetrix Open-Source und wir bieten eine Community Edition an, die Sie kostenlos auf Ihrer eigenen Infrastruktur selbst hosten können."
+        },
+        {
+          "q": "Gibt es eine kostenlose Testphase?",
+          "a": "Ja, Sie können Swetrix {{freeTrialDays}} Tage lang kostenlos testen, keine Kreditkarte erforderlich!"
+        },
+        {
+          "q": "Was wird als Ereignis gezählt?",
+          "a": "Ein Ereignis ist ein Seitenaufruf, ein benutzerdefiniertes Ereignis oder ein Fehlerereignis, das das Tracking-Skript an Swetrix sendet. Seitenaufrufe und Fehlerereignisse werden je nach Einrichtung Ihres Tracking-Skripts automatisch erfasst, und benutzerdefinierte Ereignisse werden manuell auf Basis der Benutzeraktionen und Ihrer Konfiguration gesendet."
+        },
+        {
+          "q": "Ist Swetrix DSGVO-konform?",
+          "a": "Swetrix ist ein datenschutzorientiertes Webanalyse-Tool. Wir verwenden keine Cookies zum Tracking und alle Daten werden anonym erhoben. Wir verwenden kein persistentes, geräteübergreifendes Tracking und nutzen Ihre Daten nicht für andere Zwecke. Mehr dazu finden Sie in unserer <dataPolicyUrl>Datenschutzrichtlinie</dataPolicyUrl>."
+        },
+        {
+          "q": "Hat Swetrix eine API?",
+          "a": "Ja, Sie können über unsere API auf Ihre Statistiken oder Website-Daten zugreifen. Außerdem können Sie über unsere API Seitenaufrufe oder Ereignisse für Ihre Websites senden. Mehr dazu erfahren Sie in unserer <apiDocumentationUrl>API-Dokumentation</apiDocumentationUrl>."
+        },
+        {
+          "q": "Kann ich meine Teammitglieder zu Swetrix einladen?",
+          "a": "Ja! Sie können eine Organisation erstellen und Ihre Teammitglieder einladen, ihnen Rollen zuweisen und ihren Zugriff auf die Organisation und ihre Projekte einfach verwalten.\n\nSie können Personen direkt zu Ihren Projekten einladen, passwortgeschützte Zugriffslinks erstellen oder Ihre Projekte öffentlich und für alle zugänglich machen."
+        },
+        {
+          "q": "Welchen Support bietet ihr?",
+          "a": "Wir bieten E-Mail-Support und Sie können uns jederzeit <contactUsUrl>kontaktieren</contactUsUrl>. Außerdem bieten wir Community-Support auf unserem <discordUrl>Discord-Server</discordUrl>."
+        },
+        {
+          "q": "Ich möchte noch etwas anderes fragen...",
+          "a": "Klar, <contactUsUrl>kontaktieren Sie uns</contactUsUrl> jederzeit gern."
+        }
+      ]
+    },
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
-    "slogan": "Verstehen Sie <span>die Geschichte</span>, die hinter den Klicks und Scrolls Ihrer Kunden steckt",
+    "slogan": "Verwandeln Sie Traffic in Erkenntnisse",
     "description": "Erhalten Sie alle erforderlichen Einblicke in Ihre Benutzer und Website-Besucher, ohne lästige Cookie-Banner anzeigen zu müssen. Erleben Sie intuitive, benutzerfreundliche und DSGVO-konforme Webanalysen, ohne die Privatsphäre Ihrer Besucher zu verletzen.",
     "understandTheirUsers": "<0>{{amount}}</0> Leute verstehen ihre Benutzer",
     "perfect": "Es ist perfekt für <0>Marketingfachleute</0>, <1>Start-ups</1>, <2>kleine Unternehmen</2> und praktisch jede Art von Unternehmen!",
@@ -341,36 +410,49 @@
     "demoGeoReports": "Ja, es ist ein Standard. Aber wir verfolgen genau, wo Ihre Benutzer sind.",
     "peopleLoveSwetrix": "Leute 🥰 Swetrix",
     "whyPeopleLoveSwetrix": "Swetrix ist ein ethischer und leistungsstarker Dienst. Hunderte von Menschen haben bereits den Wechsel von Google Analytics und anderen Alternativen gemacht.",
-    "weAreOpensource": "Wir sind <url>Open-Source</url>",
     "coreFeatures": "Nur die Funktionen die Sie benötigen",
-    "problem": {
-      "title": "Fällt es dir schwer, deine Analysedaten zu verstehen?",
-      "description": "Viele Webanalyse-Lösungen sind entweder zu komplex und überwältigend oder zu einfach und bieten nicht genügend Einblicke. Geschäftsinhaber verstehen ihre Kunden nicht und verlieren Geld.",
-      "step1": "Geschäftsinhaber sammelt Webdaten",
-      "step2": "Überwältigt von <u>komplexen Dashboards</u> oder beschränkt durch übervereinfachte Metriken",
-      "step3": "Macht uninformierte Entscheidungen und verpasst Wachstumschancen"
+    "heroBenefits": {
+      "trial": "Kostenlose Testversion für {{days}} Tage",
+      "cookieless": "Tracking ohne Cookies",
+      "gdpr": "DSGVO-konform",
+      "dataOwnership": "100 % Datenhoheit",
+      "openSource": "Open-Source",
+      "selfHostable": "Selbst hostbar",
+      "quickSetup": "Schnelle Einrichtung"
     },
-    "butThereIsASolution": "Aber es gibt eine Lösung...",
-    "knowYourCustomers": "Kennen Sie Ihre Kunden und Nutzer",
-    "insights": {
-      "title": "Erhalte Traffic-Einblicke",
-      "description": "Swetrix hilft Ihnen, alles zu verstehen, was Sie über den Traffic auf Ihrer Website wissen müssen. Sie erfahren, wie viele Personen online sind, welche Seiten am beliebtesten sind, woher Ihre Benutzer kommen und vieles mehr."
+    "web": {
+      "title": "Webanalyse",
+      "description": "Erhalten Sie alle Erkenntnisse, die Sie über Ihre Nutzer benötigen, mit einem datenschutzfreundlichen und einfach zu bedienenden Webanalyse-Tool.",
+      "features": [
+        "Top-Seiten",
+        "Geolokalisierung",
+        "Traffic-Quellen",
+        "UTM-Kampagnen",
+        "Benutzerdefinierte Ereignisse",
+        "Sitzungsanalyse",
+        "Absprungrate",
+        "Nutzerflüsse"
+      ]
     },
-    "painPoints": {
-      "title": "Überwache die Website-Geschwindigkeit",
-      "description": "Niemand mag langsame Websites. Benutzer verlassen Ihre Website eher, wenn sie zu lange zum Laden braucht. Seien Sie diesen Problemen einen Schritt voraus und messen Sie Erkenntnisse aus echten Interaktionen."
+    "performance": {
+      "title": "Website-Geschwindigkeit und -Performance",
+      "description": "Überwachen Sie die Geschwindigkeit und Performance Ihrer Website anhand realer Nutzerinteraktionen."
     },
-    "customisation": {
-      "title": "Vollständige Individualisierbarkeit",
-      "description": "Fehlt eine Funktion? Wir werden sie implementieren :). Sie können auch Ihre eigenen Funktionen erstellen oder Add-ons von Drittanbietern aus unserem Erweiterungsmarkt installieren."
-    },
-    "integrations": {
-      "title": "Funktioniert mit jeder beliebigen Plattform",
-      "description": "Mit Dutzenden von Integrationen macht es Swetrix einfach, Ihre Website zu verbinden und Ihre Benutzer zu kennen, und das ohne zusätzliche Konfiguration."
+    "errors": {
+      "title": "Fehlerverfolgung",
+      "description": "Erhalten Sie detaillierte Einblicke, welche Arten von Fehlern auf Ihrer Website auftreten. Sehen Sie Fehlerdetails und aggregierte Daten nach Geolokalisierung, Browser, Gerätetyp, Seite und weiteren Metriken."
     },
     "sessions": {
-      "title": "Sitzungsanalyse",
-      "description": "Analysieren Sie die Sitzungen Ihrer Website-Benutzer und treffen Sie datengestützte Entscheidungen."
+      "title": "Nutzersitzungen",
+      "description": "Erhalten Sie detaillierte Einblicke in die Reise Ihrer Nutzer durch Ihre Website und sehen Sie, wie sie damit interagieren. Verfolgen Sie, wie lange sie auf Ihrer Website geblieben sind, welche Aktionen sie durchgeführt haben und welche Seiten sie besucht haben.",
+      "features": [
+        "Sitzungsdauer",
+        "Geolokalisierung",
+        "Seitenaufruf-Fluss der Sitzung",
+        "Fehlerverfolgung",
+        "Informationen zu Browser und Betriebssystem",
+        "Benutzerdefinierte Ereignisse"
+      ]
     },
     "cookies": {
       "title": "Vergessen Sie lästige Cookie-Banner",
@@ -381,24 +463,17 @@
       "description": "Verwenden Sie UTMs, um Ihre Anzeigen, Social-Media-Beiträge und E-Mail-Kampagnen zu kennzeichnen und zu sehen, wie viel Traffic sie generieren und wie viel Umsatz sie einbringen."
     },
     "funnels": {
-      "title": "Nutzerströme und Marketing-Funnels",
-      "description": "Verfolgen Sie, wie Benutzer auf Ihre Website gelangen, und erfahren Sie, wohin sie gehen. Untersuchen Sie das Verhalten, visualisieren und verstehen Sie die Nutzererfahrung."
+      "title": "Trichter und Nutzerflüsse",
+      "description": "Verfolgen Sie, wie Nutzer auf Ihre Website gelangen und wohin sie weitergehen. Analysieren, visualisieren und verstehen Sie das Nutzerverhalten und die Nutzerreise."
     },
-    "eCommerce": {
-      "title": "E-Commerce & eigene Ereignisse (sehr einfach einzurichten)",
-      "description": "Senden Sie benutzerdefinierte Ereignisse mit benutzerdefinierten Eigenschaften, um Benutzeraktivitäten oder Verkäufe zu verfolgen. Analysieren Sie diese Daten mühelos in unserem intuitiven Dashboard. Erstellen Sie wiederverwendbare Ansichten, um schnell Trends in Ihren Verkäufen zu erkennen."
+    "alerts": {
+      "title": "Ansprechbare Benachrichtigungen",
+      "description": "Werden Sie sofort informiert, wenn auf Ihrer Website etwas passiert. Lassen Sie sich über Telegram, Slack oder Discord benachrichtigen, wenn bestimmte Ereignisse eintreten."
     },
-    "opensource": [
-      {
-        "desc": "Installieren Sie Swetrix auf Ihren eigenen Servern - der Quellcode ist für alle verfügbar."
-      },
-      {
-        "desc": "Beteiligen Sie sich an der Entwicklung von Swetrix - tragen Sie dazu bei, indem Sie Verbesserungen vorschlagen, Fehler melden oder neue Funktionen entwickeln."
-      },
-      {
-        "desc": "Wir sind ein kundenorientiertes Unternehmen, und Transparenz hat für uns oberste Priorität."
-      }
-    ],
+    "events": {
+      "title": "Benutzerdefinierte Ereignisse",
+      "description": "Verfolgen Sie Nutzerinteraktionen wie Verkäufe, Registrierungen oder Klicks in Echtzeit. Erhalten Sie detaillierte Einblicke darin, wie Nutzer Ihre Website verwenden."
+    },
     "timeToDitchGoogleAnalytics": "Es ist Zeit Google Analytics <colour>aufzugeben</colour>.",
     "whyDitch": "Wir waren von der Frustration, der Komplexität und dem Datenschutz von Google Analytics müde und waren auch dabei. Deshalb haben wir Swetrix gebaut - die ethische, quelloffene und voll Cookieless Alternative.",
     "custSupport": "Ist ihre Frage hier nicht aufgelistet? Wenden Sie sich gerne an unseren <mail>Kundendienst</mail>.",
@@ -464,16 +539,12 @@
       "create": "Erstellen Sie ihr Konto",
       "trial": "Starten Sie Ihre kostenlose {{amount}}-Tage Testversion",
       "noCC": "Keine Kreditkarte erforderlich.",
-      "alreadyAMember": "Bereits Mitglied? <url>Anmelden</url>"
-    },
-    "confirm": {
-      "title": "Sehen Sie in ihren Posteingang",
-      "linkSent": "Wir haben einen Bestätigungslink an {{email}} gesendet. Bitte klicken Sie auf den Link, um Ihre E-Mail-Adresse zu bestätigen.",
-      "spam": "Kann die E-Mail nicht sehen? Bitte überprüfen Sie Ihren Spam-Ordner.",
-      "wrongEmail": "Falsche E-Mail? <url>Erstelle ein neues Konto.</url>"
+      "alreadyAMember": "Bereits Mitglied? <url>Anmelden</url>",
+      "createAnAccount": "Konto erstellen"
     },
     "verification": {
-      "success": "Deine E-Mail wurde erfolgreich verifiziert!"
+      "success": "Deine E-Mail wurde erfolgreich verifiziert!",
+      "continueToOnboarding": "Weiter zum Onboarding"
     },
     "socialisation": {
       "authSuccess": "Authentifizierung erfolgreich",
@@ -573,7 +644,6 @@
     "2faDisableHint": "Um die Zwei-Faktor-Authentifizierung zu deaktivieren, geben Sie bitte Ihren 6-stelligen Code oder einen Ihrer Wiederherstellungscodes unten ein.",
     "apiKey": "API-Schlüssel",
     "noApiKey": "Sie haben noch keine API-Schlüssel erstellt.",
-    "selfhostedNoApiKey": "Sie haben noch keine API-Schlüssel erstellt. Dies können Sie in Ihrer Docker-Compose-Datei tun, indem Sie die Umgebungsvariable API_KEY ändern.",
     "apiKeyWarning": "Behandeln Sie Ihren API-Schlüssel wie ein Passwort und bewahren Sie ihn geheim auf. Hardcodieren Sie ihn niemals in Ihre Programme und teilen Sie ihn mit niemandem.",
     "addApiKeyBtn": "API-Schlüssel generieren",
     "deleteApiKeyBtn": "API-Schlüssel löschen",
@@ -752,7 +822,7 @@
     "xCustomEvents": "{{x}} benutzerdefinierte Ereignisse",
     "xErrors": "{{x}} Fehler",
     "alerts": "Alarme",
-    "alertsDesc": "Automatisierte Warnungen sind ein leistungsstarkes Werkzeug, mit dem du automatisierte Aufgaben ausführen kannst, wenn bestimmte Ereignisse eintreten. Wir können dein Projekt automatisch auf Traffic-Spitzen überwachen und dich über Telegram, Slack oder Discord benachrichtigen.",
+    "alertsDesc": "Automatisierte Benachrichtigungen sind ein leistungsstarkes Tool, das Sie benachrichtigt, wenn auf Ihrer Website bestimmte Ereignisse auftreten. Wir können Ihr Projekt automatisch auf Verkehrsspitzen überwachen und Sie via Telegram, Slack oder Discord benachrichtigen.",
     "funnelsDesc": "Trichter ist ein leistungsfähiges Tool, mit dem Sie die Konversionsrate Ihrer Benutzer durch eine Reihe von Schritten verfolgen können.\nDie Analyse des Marketing-Trichters gibt Ihnen die Möglichkeit, potenzielle Probleme zu entdecken, Ihre Website zu verbessern und Ihre Konversionsrate zu erhöhen.",
     "frontend": "Frontend",
     "backend": "Backend",
@@ -830,8 +900,11 @@
     "support": "Support kontaktieren"
   },
   "project": {
+    "directNone": "Direkt / Keine",
+    "loadingMapData": "Kartendaten werden geladen...",
     "copy": "Kopieren",
     "copied": "Kopiert!",
+    "percentage": "Prozentsatz",
     "stackTraceXFrames": "Aufrufliste ({{x}} Frames)",
     "metadata": "Metadaten",
     "aiDetailsDesc": "Mit den Schaltflächen oben können Sie eine Schätzung des Verkehrsaufkommens anzeigen, das Sie in den nächsten X Stunden innerhalb einer Stunde erwarten können.",
@@ -849,6 +922,10 @@
     "removeFilter": "Filter entfernen",
     "toggleFilterToIs": "Filter ändern von '{{column}} ist nicht \"{{filter}}\"' zu '{{column}} ist \"{{filter}}\"'",
     "toggleFilterToIsNot": "Filter ändern von '{{column}} ist \"{{filter}}\"' zu '{{column}} ist nicht \"{{filter}}\"'",
+    "location": "Standort",
+    "pages": "Seiten",
+    "devices": "Geräte",
+    "trafficSources": "Traffic-Quellen",
     "metrics": {
       "xAvg": "\"{{x}}\" Durchschnitt",
       "xTotal": "\"{{x}}\" Gesamt",
@@ -880,7 +957,6 @@
       "text": "Text"
     },
     "currentFilters": "Aktuell angewendete Filter",
-    "advancedFilters": "Erweiterte Filter",
     "applyFilters": "Filter anwenden",
     "lookingForMore": "Suchen Sie nach mehr?",
     "overrideCurrentlyFilters": "Aktuell angewendete Filter überschreiben",
@@ -908,9 +984,15 @@
     "occurrences": "Vorkommen",
     "visitPage": "{{page}} Besuchen",
     "visitors": "Besucher",
+    "loadTime": "Ladezeit",
+    "currentTimeX": "Aktuelle Uhrzeit: <url>{{time}}</url>",
+    "timezoneX": "Zeitzone: {{timezone}}",
+    "signInToChange": "Melden Sie sich an, um es zu ändern",
+    "changeInSettings": "Ändern Sie dies in Ihren Kontoeinstellungen",
     "events": "Ereignisse",
     "dropoff": "Dropoff",
     "neverEnteredTheFunnel": "Nie den Trichter betreten",
+    "aggregation": "Aggregation",
     "locked": {
       "title": "Dashboard gesperrt",
       "descExceedingTier": "Dieses Dashboard ist gesperrt, da Ihr Traffic Ihr Abonnement überschritten hat.\nUm Swetrix weiter zu nutzen und Zugriff auf deine Statistiken zu haben, musst du dein Abonnement aktualisieren, um deine Nutzung zu berücksichtigen.",
@@ -951,8 +1033,11 @@
       "me": "UTM Medium",
       "ca": "UTM Campaign",
       "te": "UTM-Begriff",
-      "co": "UTM-Inhalt"
+      "co": "UTM-Inhalt",
+      "userFlow": "Nutzerfluss"
     },
+    "entryPages": "Einstiegsseiten",
+    "exitPages": "Ausstiegsseiten",
     "metamapping": {
       "ev": {
         "key": "Event-Schlüssel",
@@ -965,7 +1050,6 @@
         "dynamicKey": "Eigenschaft \"{{key}}\""
       }
     },
-    "redactedPage": "Gespeicherte Seite",
     "unknownHost": "Unbekannter Host",
     "noData": "Keine Daten vorhanden",
     "overview": "Übersicht",
@@ -1068,7 +1152,8 @@
       "addARecipientDesc": "Geben Sie die E-Mail-Adresse der Person ein, an die Sie Berichte senden möchten. Diese Person muss nicht unbedingt ein Konto bei Swetrix haben.\nWir senden ihnen die Berichte über Ihre Website regelmäßig zu.",
       "invite": "Benutzer einladen",
       "inviteTo": "Einen Benutzer zu {{project}} einladen",
-      "inviteDesc": "Geben Sie die E-Mail-Adresse und Rolle der Person ein, für die Sie Ihr Projekt freigeben möchten.\nWir werden uns per E-Mail mit dieser Person in Verbindung setzen, um ihr den Zugriff auf das Projekt zu ermöglichen.",
+      "inviteDesc": "Geben Sie die E‑Mail‑Adresse und die Rolle der Person ein, mit der Sie Ihr Projekt teilen möchten. Wir kontaktieren diese Person per E‑Mail, um den Zugriff auf das Projekt anzubieten, und die Einladung wird außerdem im Dashboard dieser Person angezeigt.",
+      "inviteDescSelfhosted": "Geben Sie die E‑Mail‑Adresse und die Rolle der Person ein, mit der Sie Ihr Projekt teilen möchten. Die Einladung wird im Dashboard dieser Person angezeigt.",
       "inviteExpity": "Die Einladung wird in {{amount}} Stunden ablaufen.",
       "role": "Rolle",
       "roles": {
@@ -1163,13 +1248,18 @@
     "negativePayment": "Negativer 'Betrag' bedeutet, dass Sie ein Guthaben von {{currency}}{{dueNowAmount}} haben werden. Am {{dueNowDate}} werden Ihnen {{currency}}0,00 in Rechnung gestellt. Sobald das Guthaben aufgebraucht ist, beträgt Ihr wiederkehrender Rechnungsbetrag {{currency}}{{nextPaymentAmount}} in jedem Abrechnungszyklus Ihres Abonnementplans.",
     "nextPayment": "Nächste Zahlung",
     "subscription": "Abonnement",
-    "planUsageDesc": "Die Nutzung des Plans zeigt die Anzahl der Ereignisse (Seitenansichten, benutzerdefinierte Ereignisse, CAPTCHA Fertigstellungen), die Sie für den aktuellen Monat verwendet haben.",
+    "planUsageDesc": "Die Tarifnutzung zeigt die Anzahl der Ereignisse (Seitenaufrufe, benutzerdefinierte Ereignisse, Fehlerereignisse), die im laufenden Monat angefallen sind.",
     "xofy": "{{x}} von {{y}}",
-    "resetDate": "Die Nutzung des Plans wird am ersten Tag jedes Monats zurückgesetzt.",
+    "resetDate": "Die Tarifnutzung wird am ersten Tag jedes Monats zurückgesetzt ({{days}} Tage bis zur Zurücksetzung)",
     "selectPlan": "Wählen Sie einen Abonnementplan aus, um das volle Swetrix Potenzial zu enthüllen.",
     "changePlan": "Sie können Ihr Abonnement hier jederzeit ändern oder kündigen.",
-    "membersNotification": "Seitenansichten, benutzerdefinierte Ereignisse und CAPTCHA-Vervollständigung werden gegen die Grenze des Abonnements des Kontoinhabers gezählt. Personen, die Sie in Ihre Projekte einladen benötigen kein Abonnement.",
-    "xMonthsFree": "{{amount}} Monate kostenlos"
+    "membersNotification": "Seitenaufrufe, benutzerdefinierte Ereignisse und Fehlerereignisse werden auf das Abonnementlimit des Kontoinhabers angerechnet. Personen, die Sie in Ihre Projekte einladen, benötigen kein Abonnement.",
+    "xMonthsFree": "{{amount}} Monate kostenlos",
+    "trialDescription": "Ihre kostenlose Testversion umfasst den Zugriff auf alle Funktionen und keine Limits bei der Datenerfassung. Wenn Ihre Testphase endet, müssen Sie einen kostenpflichtigen Tarif wählen, der Ihrer Nutzung entspricht, um Swetrix weiter verwenden zu können.",
+    "usageWarningHigh": "Sie haben {{percentage}} % Ihres monatlichen Ereignislimits verbraucht. Erwägen Sie ein Upgrade Ihres Tarifs, um Unterbrechungen des Dienstes zu vermeiden.",
+    "usageWarningCritical": "Warnung: Sie haben {{percentage}} % Ihres monatlichen Ereignislimits verbraucht! Führen Sie jetzt ein Upgrade durch, um einen unterbrechungsfreien Service sicherzustellen.",
+    "xPercentUsed": "{{percentage}} % verwendet",
+    "xPercentRemaining": "{{percentage}} % verbleibend"
   },
   "modals": {
     "paidFeature": {
@@ -1212,34 +1302,25 @@
     "yearlyBilling": "Jährlich",
     "switchToMonthly": "Zu monatlicher Abrechnung wechseln",
     "frequency": "Zahlungsfrequenz",
-    "eventPerMonth": "Ereignisse pro Monat",
+    "eventsPerMonth": "Ereignisse / Monat",
     "switchToYearly": "Zu jährlicher Abrechnung wechseln",
     "xTrialDaysLeft": "{{amount}} Testtage verbleibend",
     "trialEnded": "Testversion abgelaufen",
     "trialEndsToday": "Die Testversion endet heute",
     "trialEndsTomorrow": "Testversion endet morgen",
     "tiers": {
-      "hobby": "Hobby",
-      "freelancer": "Freelancer",
-      "startup": "Startup",
-      "enterprise": "Enterprise",
       "trial": "Kostenlose Testversion",
       "upToXEVMo": "Bis zu {{amount}} Tracking-Events pro Monat",
-      "xEvMo": "{{amount}} Tracking-Events pro Monat",
       "upToXVMo": "Bis zu {{amount}} Besuche pro Monat",
-      "xVMo": "{{amount}} Besuche pro Monat",
-      "xAlertsSingular": "{{amount}} Warnregel",
-      "xAlertsPlural": "{{amount}} Warnregeln",
-      "upToXProjects": "Erstellen Sie bis zu {{amount}} Projekte",
       "upToXWebsites": "Bis zu {{amount}} Webseiten hinzufügen",
-      "xMoDataRetention": "{{amount}} Monate Datenspeicherung",
       "evXPlanIncl": "Alles was das {{plan}} Abo enthält",
-      "smallBusiSupport": "Mit dem Kauf unterstützen Sie ein kleines Unternehmen",
       "dataExports": "Unbegrenzte Datenexporte",
       "dataOwnership": "100 % iges Dateneigentum",
-      "dashboards": "Freigegebene und öffentliche Dashboards",
+      "apiAccess": "API-Zugriff",
       "reports": "E-Mail Berichte",
-      "userFlowAnalysis": "Benutzerfluss-Analyse"
+      "userFlowAnalysis": "Benutzerfluss-Analyse",
+      "sessionAnalysis": "Sitzungsanalyse",
+      "errorTracking": "Fehlerverfolgung"
     },
     "downgradeTitle": "Sind Sie sicher, dass Sie ein Downgrade durchführen möchten?",
     "downgradeDesc": "Nach dem Downgrade wird Ihr Abonnement weniger Projekte und verfügbare Ereignisse pro Monat enthalten. Falls Ihre Website mehr Traffic aufweist, als der Plan, auf den Sie downgraden möchten, umfasst, werden nicht alle Ereignisse in unserer Datenbank gespeichert.\nSie können jederzeit zu Ihrem aktuellen Abonnement zurückkehren.\nWenn Sie Fragen haben, können Sie uns jederzeit eine E-Mail an {{email}} schicken.",
@@ -1274,6 +1355,49 @@
       "live": "Sie können unsere Live-Metriken auf unserem <livedemo>öffentlichen Dashboard</livedemo>sehen. Sie können auch Ihre eigenen Swetrix Dashboards öffentlich machen und sie an Ihre Bedürfnisse anpassen."
     }
   },
+  "onboarding": {
+    "welcome": "Willkommen bei Swetrix",
+    "title": "Loslegen",
+    "skipOnboarding": "Onboarding überspringen",
+    "finishOnboarding": "Onboarding abschließen",
+    "confirm": {
+      "navTitle": "Bestätigen Sie Ihre E‑Mail-Adresse",
+      "navDesc": "Prüfen Sie Ihren Posteingang und klicken Sie auf den Bestätigungslink.",
+      "title": "Posteingang prüfen",
+      "linkSent": "Wir haben einen Link zur Kontobestätigung an {{email}} gesendet. Bitte klicken Sie auf den Link, um Ihre E‑Mail-Adresse zu bestätigen.",
+      "spam": "Sie sehen die E‑Mail nicht? Bitte prüfen Sie Ihren Spamordner.",
+      "wrongEmail": "Falsche E‑Mail? <url>Erstellen Sie ein neues Konto.</url>"
+    },
+    "createProject": {
+      "navTitle": "Projekt erstellen",
+      "navDesc": "Fügen Sie eine Website hinzu, um mit der Datenerfassung zu beginnen.",
+      "title": "Lassen Sie uns Ihr erstes Projekt einrichten",
+      "desc": "Wir helfen Ihnen beim Einstieg in Swetrix, indem wir Ihr erstes Projekt erstellen. Sie können Ihr Projekt nach der Erstellung ausführlicher einrichten."
+    },
+    "installTracking": {
+      "navTitle": "Tracking-Skript installieren",
+      "navDesc": "Fügen Sie das Swetrix‑Skript zu Ihrer Website hinzu.",
+      "title": "Richten Sie Swetrix auf Ihrer Website ein",
+      "desc": "Fügen Sie das Swetrix‑Skript zu Ihrer Website hinzu. Sie können Swetrix auch zur Erfassung von Ereignissen in Ihren mobilen oder Desktop‑Apps verwenden und Ereignisse direkt an unsere API senden. Erfahren Sie mehr über erweiterte Integrationen in unserer <url>Dokumentation</url>.",
+      "websiteInstallation": "Website‑Installation",
+      "pasteScript": "Fügen Sie das Skript auf Ihrer Website ein",
+      "weAlsoSupport": "Wir unterstützen auch die Installation von Swetrix über NPM (für React, Vue usw.), stellen eine Events‑API bereit, um Ereignisse direkt an unsere API zu senden, sowie viele Integrationen mit anderen Diensten wie WordPress oder dem Google Tag Manager. <url>Mehr erfahren</url>."
+    },
+    "verifyInstallation": {
+      "navTitle": "Installation überprüfen",
+      "navDesc": "Wir warten auf Ihr erstes Ereignis.",
+      "desc": "Veröffentlichen Sie Ihre Änderungen und besuchen Sie Ihre Website, um das erste Ereignis zu senden.",
+      "needInstructionsAgain": "Möchten Sie die Anweisungen noch einmal sehen? <btn>Hier klicken</btn>",
+      "orContactUs": "Oder <url>kontaktieren Sie uns</url> für weitere Hilfe bei Ihrer Einrichtung.",
+      "waitingForEvents": "Warten auf Ereignisse",
+      "onTheXProject": "Im Projekt {{project}}",
+      "onYourProject": "In Ihrem Projekt",
+      "perfect": "Perfekt!",
+      "perfectDesc": "Wir erhalten Daten 🎉",
+      "waitingForAnEvent": "Wir warten auf Ihr erstes Event! Wenn Ihre Integration korrekt eingerichtet ist, sollten Sie es innerhalb von 1 Minute sehen.",
+      "eventReceived": "Wir haben Ihr erstes Event erhalten! Ihre Integration funktioniert korrekt. Willkommen bei Swetrix :)"
+    }
+  },
   "titles": {
     "recovery": "Kontenwiederherstellung",
     "signin": "Anmelden",
@@ -1286,12 +1410,10 @@
     "docs": "Dokumentation",
     "billing": "Rechnung",
     "contact": "Haben Sie etwas zu fragen?",
-    "changelog": "Neuerungen",
-    "main": "Verstehen Sie die Geschichte hinter Ihren Kundenklicks und -scrolls",
+    "main": "Verwandeln Sie Traffic in Erkenntnisse",
     "socialisation": "Social-Login",
     "open": "Open startup",
     "passwordProtected": "Dieses Projekt ist passwortgeschützt",
-    "confirm": "Sehen Sie in ihren Posteingang",
     "performance": "Endbenutzer Leistungsüberwachung um schnelle Webseiten zu liefern",
     "errors": "Endbenutzer Fehler bei der Verfolgung von Werkzeug, um fehlerfreie Erfahrungen zu liefern",
     "forMarketers": "Für Vermarkter",
@@ -1301,6 +1423,7 @@
   },
   "header": {
     "startForFree": "Kostenlos starten",
+    "signUp": "Registrieren",
     "switchTheme": "Design wechseln",
     "dark": "Dunkel",
     "light": "Hell",
@@ -1334,16 +1457,20 @@
   },
   "footer": {
     "description": "Swetrix ist eine leistungsstarke Analyseplattform, welche die Privatsphäre der Nutzer respektiert.",
+    "ceDescription": "Dies ist die Community Edition von Swetrix, die auf selbst verwalteter Infrastruktur läuft. Wir können ihre Leistung oder Zuverlässigkeit nicht garantieren. Für offizielles Managed Hosting besuchen Sie <url>swetrix.com</url>.",
     "madeInHostedIn": "Hergestellt in <0></0> / <1></1>, gehostet in <2></2>",
     "support": "Kundendienst",
     "company": "Unternehmen",
     "legal": "Support & Juristische",
-    "copy": "Swetrix Analytics. Alle Rechte vorbehalten.",
+    "copy": "Swetrix Ltd. Alle Rechte vorbehalten.",
     "contact": "Kontakt",
     "pp": "Datenschutzerklärung",
     "tos": "Allgemeine Geschäftsbedingungen",
     "blog": "Blog",
+    "tools": "Kostenlose Tools",
     "utm": "UTM-Generator",
+    "ctr": "CTR-Rechner",
+    "roi": "ROI-Rechner",
     "billing": "Rechnung",
     "pricing": "Preisangaben",
     "docs": "Dokumentation",
@@ -1353,12 +1480,12 @@
     "cookie": "Cookie-Richtlinien",
     "terms": "AGB",
     "status": "Status",
-    "donate": "Unterstützen",
-    "changelog": "Neuerungen",
+    "supportUs": "Unterstützen Sie uns",
     "captcha": "CAPTCHA",
     "open": "Open startup",
     "about": "Über uns",
     "features": "Funktionen",
-    "imprint": "Impressum"
+    "imprint": "Impressum",
+    "cloudEdition": "Cloud-Edition"
   }
 }

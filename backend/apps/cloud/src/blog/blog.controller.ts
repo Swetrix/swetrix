@@ -19,12 +19,6 @@ export class BlogController {
     return this.blogService.getSitemapFileNames(undefined, true)
   }
 
-  @Get('/last-post')
-  @ApiResponse({ status: 200 })
-  async getLastPost(): Promise<any> {
-    return this.blogService.getLastPost()
-  }
-
   @Get('/:slug')
   @ApiResponse({ status: 200 })
   async getSlug(@Param('slug') slug: string): Promise<any> {

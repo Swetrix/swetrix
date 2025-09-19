@@ -14,6 +14,7 @@ import {
   ForbiddenException,
   Patch,
   ParseIntPipe,
+  Ip,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { isEmpty as _isEmpty, find as _find, trim as _trim } from 'lodash'
@@ -43,6 +44,7 @@ import { Pagination } from '../common/pagination'
 import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity'
 import { isDevelopment, PRODUCTION_ORIGIN } from '../common/constants'
+import { checkRateLimit, getIPFromHeaders } from '../common/utils'
 
 const ORGANISATION_INVITE_EXPIRE = 7 * 24 // 7 days in hours
 
@@ -159,15 +161,20 @@ export class OrganisationController {
   async inviteMember(
     @Param('orgId') orgId: string,
     @Body() inviteDTO: InviteMemberDTO,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() userId: string,
     @Headers() headers,
+    @Ip() reqIP,
   ): Promise<Organisation> {
     this.logger.log(
-      { uid, orgId, inviteDTO },
+      { userId, orgId, inviteDTO },
       'POST /organisation/:orgId/invite',
     )
 
-    const user = await this.userService.findOne({ where: { id: uid } })
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+    await checkRateLimit(ip, 'org-invite', 5, 1800)
+    await checkRateLimit(userId, 'org-invite', 5, 1800)
+
+    const user = await this.userService.findOne({ where: { id: userId } })
     const organisation = await this.organisationService.findOne({
       where: { id: orgId },
       relations: ['members', 'members.user'],
@@ -179,7 +186,7 @@ export class OrganisationController {
       )
     }
 
-    await this.organisationService.validateManageAccess(organisation, uid)
+    this.organisationService.validateManageAccess(organisation, userId)
 
     const invitee = await this.userService.findOne({
       where: { email: inviteDTO.email },
@@ -195,6 +202,12 @@ export class OrganisationController {
     if (invitee.id === user.id) {
       throw new BadRequestException('You cannot invite yourself')
     }
+
+    // if (!this.userService.isPaidTier(invitee)) {
+    //   throw new BadRequestException(
+    //     'You must be a paid tier subscriber to use this feature.',
+    //   )
+    // }
 
     const isAlreadyMember = !_isEmpty(
       _find(organisation.members, member => member.user?.id === invitee.id),
@@ -279,10 +292,7 @@ export class OrganisationController {
       )
     }
 
-    await this.organisationService.validateManageAccess(
-      membership.organisation,
-      uid,
-    )
+    this.organisationService.validateManageAccess(membership.organisation, uid)
 
     if (membership.user.id === uid) {
       throw new BadRequestException('You cannot modify your own role')
@@ -328,10 +338,7 @@ export class OrganisationController {
       )
     }
 
-    await this.organisationService.validateManageAccess(
-      membership.organisation,
-      uid,
-    )
+    this.organisationService.validateManageAccess(membership.organisation, uid)
 
     if (membership.role === OrganisationRole.owner) {
       throw new BadRequestException('Cannot remove organisation owner')

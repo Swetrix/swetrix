@@ -24,7 +24,6 @@ const routes = Object.freeze({
   cookiePolicy: '/cookie-policy',
   terms: '/terms',
   contact: '/contact',
-  changelog: '/changelog',
   about: '/about',
   create_alert: '/projects/:pid/alerts/create',
   alert_settings: '/projects/:pid/alerts/settings/:id',
@@ -43,6 +42,12 @@ const routes = Object.freeze({
   organisation: '/organisations/:id',
   feature_flags: '/feature-flags',
   dataPolicy: '/data-policy',
+
+  // Free tools
+  tools: '/tools',
+  utm_generator: '/tools/utm-generator',
+  roi_calculator: '/tools/roi-calculator',
+  ctr_calculator: '/tools/ctr-calculator',
 })
 
 export default routes

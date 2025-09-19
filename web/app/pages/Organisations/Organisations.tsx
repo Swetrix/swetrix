@@ -174,8 +174,8 @@ const Organisations = () => {
     <>
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
         <EventsRunningOutBanner />
-        <div className='flex flex-col px-4 py-6 sm:px-6 lg:px-8'>
-          <div className='mx-auto w-full max-w-7xl'>
+        <div className='flex flex-col'>
+          <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
             <div className='mb-6 flex flex-wrap justify-between gap-2'>
               <div className='flex items-end justify-between'>
                 <h2 className='mt-2 flex items-baseline text-3xl font-bold text-gray-900 dark:text-gray-50'>

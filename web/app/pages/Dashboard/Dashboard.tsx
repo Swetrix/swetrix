@@ -167,6 +167,18 @@ const Dashboard = () => {
     setShowActivateEmailModal(true)
   }
 
+  const refetchProjects = async () => {
+    await loadProjects(
+      pageSize,
+      (page - 1) * pageSize,
+      debouncedSearch,
+      activeTab,
+      activePeriod,
+      isHostnameNavigationEnabled,
+      sortBy,
+    )
+  }
+
   const loadProjects = async (
     take: number,
     skip: number,
@@ -316,8 +328,8 @@ const Dashboard = () => {
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
         <EventsRunningOutBanner />
         <DashboardLockedBanner />
-        <div className='flex flex-col px-4 py-6 sm:px-6 lg:px-8'>
-          <div className='mx-auto w-full max-w-7xl'>
+        <div className='flex flex-col'>
+          <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
             <div className={cx('flex flex-wrap justify-between gap-2', showTabs ? 'mb-2' : 'mb-4')}>
               <div className='flex items-end justify-between'>
                 <h2 className='mt-2 flex items-baseline text-3xl font-bold text-gray-900 dark:text-gray-50'>
@@ -490,6 +502,7 @@ const Dashboard = () => {
                             activePeriod={activePeriod}
                             activeTab={activeTab}
                             viewMode={_viewMode}
+                            refetchProjects={refetchProjects}
                           />
                         ))}
                         {_size(projects) % 12 !== 0 && activeTab === 'default' ? (

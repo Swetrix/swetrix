@@ -432,6 +432,16 @@ export class UserService {
     }
   }
 
+  isPaidTier(user: User) {
+    if (!user) {
+      return false
+    }
+
+    return ![(PlanCode.none, PlanCode.free, PlanCode.trial)].includes(
+      user.planCode,
+    )
+  }
+
   async updateSubscription(id: string, planID: number) {
     const user = await this.findOne({ where: { id } })
     const plan = this.getPlanById(planID)

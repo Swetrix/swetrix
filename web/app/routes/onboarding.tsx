@@ -1,6 +1,11 @@
 import type { MetaFunction } from 'react-router'
+import { SitemapFunction } from 'remix-sitemap'
 
 import Onboarding from '~/pages/Onboarding'
+
+export const sitemap: SitemapFunction = () => ({
+  exclude: true,
+})
 
 export const meta: MetaFunction = () => {
   return [
