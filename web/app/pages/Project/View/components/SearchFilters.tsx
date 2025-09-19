@@ -164,10 +164,12 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
           <Select
             label={t('project.selectCategory')}
             items={type === 'traffic' ? FILTERS_PANELS_ORDER : ERRORS_FILTERS_PANELS_ORDER}
-            labelExtractor={(item) => t(`project.mapping.${item}`)}
+            labelExtractor={(item) => tnMapping[item] || t(`project.mapping.${item}`)}
             onSelect={(item) => setFilterType(item)}
             title={
-              _isEmpty(filterType) ? t('project.settings.reseted.selectFilters') : t(`project.mapping.${filterType}`)
+              _isEmpty(filterType)
+                ? t('project.settings.reseted.selectFilters')
+                : tnMapping[filterType] || t(`project.mapping.${filterType}`)
             }
           />
           {!_isEmpty(filters) ? (

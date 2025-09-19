@@ -924,7 +924,9 @@ export class AnalyticsService {
         } else if (
           !_includes(SUPPORTED_COLUMNS, column) &&
           !_includes(TRAFFIC_METAKEY_COLUMNS, column) &&
-          !_startsWith(column, 'tag:key:')
+          !_startsWith(column, 'tag:key:') &&
+          column !== 'entryPage' &&
+          column !== 'exitPage'
         ) {
           return prev
         }
@@ -983,6 +985,17 @@ export class AnalyticsService {
 
         const param = `qf_${col}_${f}`
         params[param] = filter
+
+        // Entry/Exit page virtual filters
+        if (column === 'entryPage' || column === 'exitPage') {
+          const pageSelector =
+            column === 'entryPage'
+              ? 'argMin(pg, created)'
+              : 'argMax(pg, created)'
+          const subQueryForPages = `SELECT psid FROM (SELECT psid, ${pageSelector} as page FROM analytics WHERE pid = {pid:FixedString(12)} GROUP BY psid) WHERE page = {${param}:String}`
+          query += `psid ${isExclusive ? 'NOT IN' : 'IN'} (${subQueryForPages})`
+          continue
+        }
 
         // when we want to filter meta.value for a specific meta.key
         if (_startsWith(column, 'ev:key:') || _startsWith(column, 'tag:key:')) {
@@ -1696,6 +1709,30 @@ export class AnalyticsService {
       throw new UnprocessableEntityException(
         `The provided type (${type}) is incorrect`,
       )
+    }
+
+    // Handle virtual columns
+    if (type === 'entryPage' || type === 'exitPage') {
+      const selector =
+        type === 'entryPage' ? 'argMin(pg, created)' : 'argMax(pg, created)'
+      const query = `
+        WITH session_pages AS (
+          SELECT psid, ${selector} as page
+          FROM analytics
+          WHERE pid = {pid:FixedString(12)}
+          GROUP BY psid
+        )
+        SELECT page FROM session_pages WHERE page IS NOT NULL GROUP BY page
+      `
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { pid },
+        })
+        .then(resultSet => resultSet.json<any>())
+
+      return _map(data, 'page')
     }
 
     let query = `SELECT ${type} FROM analytics WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
