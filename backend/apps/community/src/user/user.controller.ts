@@ -34,6 +34,13 @@ import {
   updateProjectShareClickhouse,
   deleteProjectShareClickhouse,
 } from '../common/utils'
+import { MailerService } from '../mailer/mailer.service'
+import { AuthService } from '../auth/auth.service'
+import { LetterTemplate } from '../mailer/letter'
+//
+import { Request } from 'express'
+import { Req } from '@nestjs/common'
+import { redis } from '../common/constants'
 
 @ApiTags('User')
 @Controller('user')
@@ -42,6 +49,8 @@ export class UserController {
   constructor(
     private readonly logger: AppLoggerService,
     private readonly userService: UserService,
+    private readonly mailerService: MailerService,
+    private readonly authService: AuthService,
   ) {}
 
   @ApiBearerAuth()
@@ -278,6 +287,7 @@ export class UserController {
   async updateCurrentUser(
     @Body() userDTO: UpdateUserProfileDTO,
     @CurrentUserId() id: string,
+    @Req() request: Request,
   ) {
     this.logger.log({ userDTO, id }, 'PUT /user')
 
@@ -288,13 +298,53 @@ export class UserController {
     }
 
     try {
-      const user = await this.userService.update(id, {
+      if (userDTO.password && typeof userDTO.password === 'string') {
+        this.userService.validatePassword(userDTO.password)
+
+        const hashed = await this.authService.hashPassword(userDTO.password)
+        await this.userService.update(id, { password: hashed })
+
+        await this.mailerService.sendEmail(
+          originalUser.email,
+          LetterTemplate.PasswordChanged,
+        )
+        await this.authService.logoutAll(id)
+      }
+
+      if (userDTO.email && userDTO.email !== originalUser.email) {
+        const userWithByEmail = await this.userService.findOne({
+          email: userDTO.email,
+        })
+
+        if (userWithByEmail) {
+          throw new BadRequestException('User with this email already exists')
+        }
+
+        await checkRateLimit(id, 'change-email', 5, 3600)
+
+        // TODO: Change this if we introduce CLIENT_URL in CE as .env variable
+        const urlBase = request.headers.origin || ''
+
+        const token = uuidv4()
+        const url = `${urlBase}/change-email/${token}`
+
+        await this.mailerService.sendEmail(
+          originalUser.email,
+          LetterTemplate.MailAddressChangeConfirmation,
+          { url },
+        )
+
+        await redis.set(`email_change:${token}`, userDTO.email, 'EX', 60 * 60)
+      }
+
+      await this.userService.update(id, {
         timeFormat: userDTO.timeFormat,
         timezone: userDTO.timezone,
       })
 
+      const updated = await this.userService.findOne({ id })
       return {
-        ...this.userService.omitSensitiveData(user),
+        ...this.userService.omitSensitiveData(updated),
       }
     } catch (reason) {
       console.error(

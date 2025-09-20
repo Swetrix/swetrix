@@ -1,3 +1,5 @@
 export * from './login.dto'
 export * from './oidc-auth.dto'
 export * from './register.dto'
+export * from './request-change-email.dto'
+export * from './confirm-change-email.dto'

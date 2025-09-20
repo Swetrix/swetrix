@@ -14,19 +14,22 @@ import {
   Headers,
   Res,
   BadRequestException,
+  Get,
+  Param,
 } from '@nestjs/common'
 import {
   ApiTags,
   ApiOperation,
   ApiOkResponse,
   ApiCreatedResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger'
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import { Response } from 'express'
 
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
 import { AuthService } from './auth.service'
-import { Public, CurrentUserId, CurrentUser } from './decorators'
+import { Public, CurrentUserId, CurrentUser, Roles } from './decorators'
 import {
   LoginResponseDto,
   LoginRequestDto,
@@ -35,8 +38,15 @@ import {
   OIDCGetJWTByHashDto,
   RegisterRequestDto,
   RegisterResponseDto,
+  RequestChangeEmailDto,
+  ConfirmChangeEmailDto,
 } from './dtos'
-import { JwtAccessTokenGuard, JwtRefreshTokenGuard } from './guards'
+import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
+import { UserType } from '../user/entities/user.entity'
+import { LetterTemplate } from '../mailer/letter'
+import { MailerService } from '../mailer/mailer.service'
+import { redis } from '../common/constants'
+import { v4 as uuidv4 } from 'uuid'
 import { OIDC_ENABLED, OIDC_ONLY_AUTH } from '../common/constants'
 import { UserService } from '../user/user.service'
 
@@ -56,6 +66,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
+    private readonly mailerService: MailerService,
   ) {}
 
   @ApiOperation({ summary: 'Register a new user' })
@@ -147,6 +158,89 @@ export class AuthController {
       ...jwtTokens,
       user: this.userService.omitSensitiveData(user),
     }
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Request a change of email (CE)' })
+  @ApiOkResponse({
+    description: 'Change email requested',
+  })
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Post('change-email')
+  public async requestChangeEmail(
+    @Body() body: RequestChangeEmailDto,
+    @CurrentUserId() userId: string,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const user = await this.userService.findOne({ id: userId })
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    const isPasswordValid = await this.authService.getBasicUser(
+      user.email,
+      body.password,
+    )
+
+    if (!isPasswordValid) {
+      throw new ConflictException(i18n.t('auth.invalidPassword'))
+    }
+
+    const userWithByEmail = await this.userService.findOne({
+      email: body.newEmail,
+    })
+
+    if (userWithByEmail) {
+      throw new ConflictException(i18n.t('user.emailAlreadyUsed'))
+    }
+
+    const token = uuidv4()
+    await redis.set(
+      `email_change:${token}`,
+      JSON.stringify({ id: user.id, newEmail: body.newEmail }),
+      'EX',
+      3600,
+    )
+
+    const url = `${process.env.CLIENT_URL || ''}/change-email/${token}`
+    await this.mailerService.sendEmail(
+      user.email,
+      LetterTemplate.MailAddressChangeConfirmation,
+      { url },
+    )
+  }
+
+  @ApiOperation({ summary: 'Confirm a user email change (CE)' })
+  @ApiOkResponse({
+    description: 'User email confirmed',
+  })
+  @Public()
+  @Get('change-email/confirm/:token')
+  public async confirmChangeEmail(
+    @Param() params: ConfirmChangeEmailDto,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const data = await redis.get(`email_change:${params.token}`)
+
+    if (!data) {
+      throw new ConflictException(i18n.t('auth.invalidChangeEmailToken'))
+    }
+
+    let payload: { id: string; newEmail: string }
+    try {
+      payload = JSON.parse(data)
+    } catch {
+      throw new ConflictException(i18n.t('auth.invalidChangeEmailToken'))
+    }
+
+    await this.userService.update(payload.id, { email: payload.newEmail })
+    await redis.del(`email_change:${params.token}`)
+    await this.mailerService.sendEmail(
+      payload.newEmail,
+      LetterTemplate.MailAddressHadChanged,
+    )
   }
 
   @ApiOperation({ summary: 'Refresh a token' })

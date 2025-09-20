@@ -298,13 +298,15 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                 t('footer.description')
               )}
             </p>
-            <div className='flex text-white'>
-              <Trans t={t} i18nKey='footer.madeInHostedIn'>
-                <Flag className='mx-[1ch]' country='GB' size={18} alt='GB' aria-hidden='true' />
-                <Flag className='mx-[1ch]' country='UA' size={18} alt='UA' aria-hidden='true' />
-                <Flag className='mx-[1ch]' country='EU' size={18} alt='EU' aria-hidden='true' />
-              </Trans>
-            </div>
+            {isSelfhosted ? null : (
+              <div className='flex text-white'>
+                <Trans t={t} i18nKey='footer.madeInHostedIn'>
+                  <Flag className='mx-[1ch]' country='GB' size={18} alt='GB' aria-hidden='true' />
+                  <Flag className='mx-[1ch]' country='UA' size={18} alt='UA' aria-hidden='true' />
+                  <Flag className='mx-[1ch]' country='EU' size={18} alt='EU' aria-hidden='true' />
+                </Trans>
+              </div>
+            )}
             <div className='flex space-x-4'>
               {_map(navigation.social, (item) => (
                 <a
@@ -354,13 +356,13 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                     return (
                       <li key={displayValue}>
                         {internal ? (
-                          <Link to={href} className='text-base text-white hover:text-gray-200'>
+                          <Link to={href} className='text-base text-white hover:underline'>
                             {displayValue}
                           </Link>
                         ) : (
                           <a
                             href={href}
-                            className='text-base text-white hover:text-gray-200'
+                            className='text-base text-white hover:underline'
                             target='_blank'
                             rel='noopener noreferrer'
                             aria-label={`${displayValue} (opens in a new tab)`}
@@ -379,13 +381,13 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                   {_map(navigation.company, ({ key, href, internal }) => (
                     <li key={key}>
                       {internal ? (
-                        <Link to={href} className='text-base text-white hover:text-gray-200'>
+                        <Link to={href} className='text-base text-white hover:underline'>
                           {t(`footer.${key}`)}
                         </Link>
                       ) : (
                         <a
                           href={href}
-                          className='text-base text-white hover:text-gray-200'
+                          className='text-base text-white hover:underline'
                           target='_blank'
                           rel='noopener noreferrer'
                           aria-label={`${t(`footer.${key}`)} (opens in a new tab)`}
@@ -406,13 +408,13 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                     return (
                       <li key={key}>
                         {internal ? (
-                          <Link to={href} className='text-base text-white hover:text-gray-200'>
+                          <Link to={href} className='text-base text-white hover:underline'>
                             {t(`footer.${key}`)}
                           </Link>
                         ) : (
                           <a
                             href={href}
-                            className='text-base text-white hover:text-gray-200'
+                            className='text-base text-white hover:underline'
                             target='_blank'
                             rel='noopener noreferrer'
                             aria-label={`${t(`footer.${key}`)} (opens in a new tab)`}
@@ -427,7 +429,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                   {showDBIPMessage ? (
                     <li>
                       <a
-                        className='text-base text-white hover:text-gray-200'
+                        className='text-base text-white hover:underline'
                         target='_blank'
                         rel='noopener noreferrer'
                         href='https://db-ip.com'

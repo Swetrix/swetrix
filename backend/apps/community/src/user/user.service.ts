@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { v4 as uuidv4 } from 'uuid'
 import _omit from 'lodash/omit'
+import _isEmpty from 'lodash/isEmpty'
+import _size from 'lodash/size'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { User, type ClickhouseInputUser } from '../common/types'
 import {
@@ -155,6 +157,25 @@ export class UserService {
 
   omitSensitiveData(user: Partial<User>): Partial<User> {
     return _omit(user, ['password'])
+  }
+
+  validatePassword(pass: string): void {
+    const err = []
+    if (_isEmpty(pass)) {
+      err.push('Password cannot be empty')
+    }
+
+    if (_size(pass) > 50) {
+      err.push('Maximum password length is 50 letters')
+    }
+
+    if (_size(pass) < 8) {
+      err.push('at least 8 characters')
+    }
+
+    if (!_isEmpty(err)) {
+      throw new BadRequestException(err)
+    }
   }
 
   formatUser(user?: ClickhouseInputUser): User {

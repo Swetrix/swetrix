@@ -19,6 +19,7 @@ import {
   findRefreshTokenClickhouse,
   deleteRefreshTokenClickhouse,
   assignUnassignedProjectsToUserClickhouse,
+  deleteAllRefreshTokensClickhouse,
 } from '../common/utils'
 import {
   JWT_ACCESS_TOKEN_SECRET,
@@ -226,6 +227,10 @@ export class AuthService {
 
   async logout(userId: string, refreshToken: string) {
     await deleteRefreshTokenClickhouse(userId, refreshToken)
+  }
+
+  async logoutAll(userId: string) {
+    await deleteAllRefreshTokensClickhouse(userId)
   }
 
   getOidcConfig() {
