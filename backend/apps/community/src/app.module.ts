@@ -23,20 +23,41 @@ const modules = [
     expandVariables: true,
     isGlobal: true,
   }),
-  NodeMailerModule.forRoot({
-    transport: {
-      sendingRate: 14,
-      // pool: true, // if true - set up pooled connections against a SMTP server
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: true, // if false - upgrade later with STARTTLS
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    },
-    defaults: {
-      from: `"Swetrix Community Edition" <${process.env.FROM_EMAIL || 'noreply@ce.swetrix.org'}>`, // outgoing email ID
+  NodeMailerModule.forRootAsync({
+    useFactory: () => {
+      const hasSmtpConfig =
+        !!process.env.SMTP_HOST &&
+        !!process.env.SMTP_PORT &&
+        !!process.env.SMTP_USER &&
+        !!process.env.SMTP_PASSWORD
+
+      const defaults = {
+        from: `"Swetrix Community Edition" <${process.env.FROM_EMAIL || 'noreply@ce.swetrix.org'}>`,
+      }
+
+      if (hasSmtpConfig) {
+        return {
+          transport: {
+            secure: true,
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT),
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASSWORD,
+            },
+          },
+          defaults,
+        }
+      }
+
+      // Fallback transport so the module initializes without SMTP; actual sending
+      // will be handled directly in the MailerService via MX lookups
+      return {
+        transport: {
+          streamTransport: true,
+        },
+        defaults,
+      }
     },
   }),
   I18nModule.forRootAsync(getI18nConfig()),

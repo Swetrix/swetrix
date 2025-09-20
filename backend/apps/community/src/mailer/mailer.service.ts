@@ -3,6 +3,8 @@ import path from 'path'
 import { MailerService as NodeMailerService } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
 import handlebars from 'handlebars'
+import nodemailer from 'nodemailer'
+import dns from 'dns/promises'
 import { LetterTemplate } from './letter'
 import { AppLoggerService } from '../logger/logger.service'
 
@@ -64,6 +66,90 @@ export class MailerService {
     private readonly nodeMailerService: NodeMailerService,
   ) {}
 
+  private hasSmtpConfig(): boolean {
+    return (
+      !!process.env.SMTP_HOST &&
+      !!process.env.SMTP_PORT &&
+      !!process.env.SMTP_USER &&
+      !!process.env.SMTP_PASSWORD
+    )
+  }
+
+  private async sendDirect(message: {
+    from: string
+    to: string
+    subject: string
+    html: string
+  }): Promise<boolean> {
+    try {
+      const to = message.to
+      const domain = (to.split('@')[1] || '').trim().toLowerCase()
+      if (!domain) {
+        this.logger.error(
+          'Invalid recipient e-mail address',
+          'sendDirect',
+          true,
+        )
+        return false
+      }
+
+      let mxRecords: Array<{ exchange: string; priority: number }> = []
+      try {
+        mxRecords = await dns.resolveMx(domain)
+      } catch (err) {
+        this.logger.error(err, 'resolveMx', true)
+      }
+
+      // Sort by priority ascending
+      mxRecords.sort((a, b) => a.priority - b.priority)
+
+      const targets = mxRecords.length
+        ? mxRecords.map(mx => mx.exchange)
+        : [domain]
+
+      for (const host of targets) {
+        try {
+          const transporter = nodemailer.createTransport({
+            host,
+            port: 25,
+            secure: false,
+            name: process.env.SMTP_HELO_NAME || 'swetrix-ce',
+            connectionTimeout: 10_000,
+            greetingTimeout: 10_000,
+            socketTimeout: 15_000,
+            tls: {
+              rejectUnauthorized: false,
+            },
+          })
+
+          await transporter.sendMail({
+            ...message,
+            envelope: {
+              from: message.from,
+              to: [to],
+            },
+            disableFileAccess: true,
+            disableUrlAccess: true,
+          })
+
+          return true
+        } catch (reason) {
+          this.logger.error(
+            { host, err: (reason as Error)?.message || reason },
+            'sendDirectAttempt',
+            true,
+          )
+          continue
+        }
+      }
+
+      return false
+    } catch (reason) {
+      this.logger.error(reason, 'sendDirect', true)
+      return false
+    }
+  }
+
   async sendEmail(
     email: string,
     templateName: LetterTemplate,
@@ -92,8 +178,13 @@ export class MailerService {
           'sendEmail',
           true,
         )
-      } else {
+      } else if (this.hasSmtpConfig()) {
         await this.nodeMailerService.sendMail(message)
+      } else {
+        const ok = await this.sendDirect(message)
+        if (!ok) {
+          throw new Error('All direct delivery attempts failed')
+        }
       }
     } catch (reason) {
       this.logger.error(reason, 'sendEmail', true)
