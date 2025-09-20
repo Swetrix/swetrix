@@ -72,7 +72,7 @@ export class MailerService {
     try {
       const templatePath = `${TEMPLATES_PATH}/en/${templateName}.html`
       const letter = fs.readFileSync(templatePath, { encoding: 'utf-8' })
-      const subject = metaInfoJson[templateName].subject.en(params)
+      const subject = metaInfoJson[templateName].subject.en()
       const template = handlebars.compile(letter)
       const html = template(params)
 
