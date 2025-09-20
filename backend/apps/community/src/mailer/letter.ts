@@ -4,5 +4,4 @@ export enum LetterTemplate {
   MailAddressChangeConfirmation = 'mailaddress-change_confirmation',
   MailAddressHadChanged = 'mailaddress-change_information',
   ProjectInvitation = 'customer_project-invitation',
-  ProjectTransfer = 'project-transfer',
 }
