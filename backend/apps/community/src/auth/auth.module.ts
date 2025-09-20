@@ -9,9 +9,10 @@ import {
   JwtAccessTokenStrategy,
   JwtRefreshTokenStrategy,
 } from './strategies'
+import { MailerModule } from '../mailer/mailer.module'
 
 @Module({
-  imports: [JwtModule.register({}), PassportModule, UserModule],
+  imports: [JwtModule.register({}), PassportModule, UserModule, MailerModule],
   controllers: [AuthController],
   providers: [
     AuthService,

@@ -40,6 +40,9 @@ import {
   RegisterResponseDto,
   RequestChangeEmailDto,
   ConfirmChangeEmailDto,
+  RequestResetPasswordDto,
+  ConfirmResetPasswordDto,
+  ResetPasswordDto,
 } from './dtos'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
 import { UserType } from '../user/entities/user.entity'
@@ -210,6 +213,53 @@ export class AuthController {
       LetterTemplate.MailAddressChangeConfirmation,
       { url },
     )
+  }
+  @ApiOperation({ summary: 'Request a password reset' })
+  @ApiOkResponse({
+    description: 'Password reset requested',
+  })
+  @Public()
+  @Post('reset-password')
+  public async requestResetPassword(
+    @Body() body: RequestResetPasswordDto,
+    @I18n() i18n: I18nContext,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ): Promise<void> {
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
+    await checkRateLimit(ip, 'reset-password')
+    await checkRateLimit(body.email, 'reset-password')
+
+    const user = await this.userService.findOne({ email: body.email })
+
+    if (!user) {
+      throw new ConflictException(i18n.t('auth.accountNotExists'))
+    }
+
+    await this.authService.sendResetPasswordEmail(user.id, user.email, headers)
+  }
+
+  @ApiOperation({ summary: 'Reset a password' })
+  @ApiOkResponse({
+    description: 'Password reset',
+  })
+  @Public()
+  @Post('reset-password/confirm/:token')
+  @HttpCode(200)
+  public async resetPassword(
+    @Param() params: ConfirmResetPasswordDto,
+    @Body() body: ResetPasswordDto,
+    @I18n() i18n: I18nContext,
+  ): Promise<void> {
+    const userId = await redis.get(`password_reset:${params.token}`)
+
+    if (!userId) {
+      throw new ConflictException(i18n.t('auth.invalidResetPasswordToken'))
+    }
+
+    await redis.del(`password_reset:${params.token}`)
+    await this.authService.resetPassword(userId, body.newPassword)
   }
 
   @ApiOperation({ summary: 'Confirm a user email change (CE)' })

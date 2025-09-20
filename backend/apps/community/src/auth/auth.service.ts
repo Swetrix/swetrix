@@ -31,6 +31,8 @@ import {
 } from '../common/constants'
 import { UserService } from '../user/user.service'
 import { User } from '../common/types'
+import { MailerService } from '../mailer/mailer.service'
+import { LetterTemplate } from '../mailer/letter'
 
 const REDIS_OIDC_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getOIDCRedisKey = (uuid: string) => `${REDIS_OIDC_SESSION_KEY}:${uuid}`
@@ -42,6 +44,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly mailerService: MailerService,
   ) {}
 
   private async createSha1Hash(text: string): Promise<string> {
@@ -156,6 +159,37 @@ export class AuthService {
   // going to create an account anyway, so it's safe to assign them to the user
   async assignUnassignedProjectsToUser(userId: string) {
     return assignUnassignedProjectsToUserClickhouse(userId)
+  }
+
+  public async sendResetPasswordEmail(
+    userId: string,
+    email: string,
+    headers: Record<string, string>,
+  ) {
+    const urlBase = headers.origin || ''
+
+    const token = uuidv4()
+    const url = `${urlBase}/password-reset/${token}`
+
+    await redis.set(`password_reset:${token}`, userId, 'EX', 60 * 60 * 12)
+
+    await this.mailerService.sendEmail(
+      email,
+      LetterTemplate.ConfirmPasswordChange,
+      {
+        url,
+      },
+    )
+  }
+
+  public async resetPassword(userId: string, password: string): Promise<void> {
+    const hashedPassword = await this.hashPassword(password)
+
+    await this.userService.update(userId, {
+      password: hashedPassword,
+    })
+
+    await this.logoutAll(userId)
   }
 
   async getBasicUser(email: string, password: string): Promise<User | null> {
