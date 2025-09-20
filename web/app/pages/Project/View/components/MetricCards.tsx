@@ -129,22 +129,28 @@ export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: 
           </span>
           {show ? (
             <div className='absolute top-4 z-10 mt-2 max-h-[200px] min-w-[250px] overflow-auto rounded-md border border-black/10 bg-white text-gray-900 dark:border-slate-700/50 dark:bg-slate-900'>
-              <div className='flex w-full flex-col p-2'>
-                <p className='px-1 text-sm font-semibold text-gray-900 dark:text-gray-50'>{selectLabel}</p>
+              <div className='flex w-full flex-col p-1'>
+                <div className='flex items-center justify-between px-2 py-1'>
+                  <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>{selectLabel}</p>
+                  <button
+                    className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-700'
+                    type='button'
+                    onClick={() => setShow(!show)}
+                  >
+                    <XMarkIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
+                  </button>
+                </div>
                 {_map(values, ({ label }, index) => (
-                  <div
+                  <button
+                    type='button'
                     key={label}
                     onClick={() => _onSelect(index)}
-                    className='flex w-full cursor-pointer flex-row items-center justify-between px-1 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800'
+                    className='rounded-md p-2 text-left text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
                   >
-                    <p>{label}</p>
-                  </div>
+                    {label}
+                  </button>
                 ))}
               </div>
-              <XMarkIcon
-                className='absolute top-2 right-2 h-5 w-5 cursor-pointer text-gray-900 dark:text-gray-50'
-                onClick={() => setShow(!show)}
-              />
             </div>
           ) : null}
         </OutsideClickHandler>

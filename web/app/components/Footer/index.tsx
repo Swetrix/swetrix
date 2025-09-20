@@ -146,9 +146,6 @@ const communityEditionNavigation = {
     } => ({ key: 'imprint', href: `https://swetrix.com${routesPath.imprint}`, internal: false }),
   ],
   features: [
-    { value: 'vs Google Analytics', href: SWETRIX_VS_GOOGLE, internal: false },
-    { value: 'vs Cloudflare Analytics', href: SWETRIX_VS_CLOUDFLARE, internal: false },
-    { value: 'vs Simple Analytics', href: SWETRIX_VS_SIMPLE_ANALYTICS, internal: false },
     { key: 'tools', href: `https://swetrix.com${routesPath.tools}`, internal: false },
     { key: 'utm', href: `https://swetrix.com${routesPath.utm_generator}`, internal: false },
     { key: 'ctr', href: `https://swetrix.com${routesPath.ctr_calculator}`, internal: false },
@@ -349,6 +346,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                 <h3 className='text-sm font-bold tracking-wider text-white uppercase'>{t('footer.features')}</h3>
                 <ul className='mt-4 space-y-4'>
                   {_map(navigation.features, (data) => {
+                    // @ts-expect-error wrong type
                     const { value, key, href, internal } = data
 
                     const displayValue = value || t(`footer.${key}`)
