@@ -114,7 +114,14 @@ const FAQ = () => {
           )
         })}
       </div>
-      <script type='application/ld+json'>{JSON.stringify(structuredData, null, 2)}</script>
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData)
+            .replace(/</g, '\\u003c')
+            .replace(/\u2028|\u2029/g, ''),
+        }}
+      />
     </section>
   )
 }

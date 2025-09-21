@@ -469,9 +469,10 @@ export default function ROICalculator() {
           </div>
 
           {/* FAQ Structured Data */}
-          <script type='application/ld+json'>
-            {JSON.stringify(
-              {
+          <script
+            type='application/ld+json'
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
                 '@context': 'https://schema.org',
                 '@type': 'FAQPage',
                 mainEntity: FAQ_ITEMS.map((item) => ({
@@ -482,11 +483,11 @@ export default function ROICalculator() {
                     text: item.answer,
                   },
                 })),
-              },
-              null,
-              2,
-            )}
-          </script>
+              })
+                .replace(/</g, '\\u003c')
+                .replace(/\u2028|\u2029/g, ''),
+            }}
+          />
 
           <DitchGoogle />
         </div>
