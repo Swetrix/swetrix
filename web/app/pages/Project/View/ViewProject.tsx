@@ -546,6 +546,17 @@ const ViewProject = () => {
   const [projectViewDeleting, setProjectViewDeleting] = useState(false)
   const [projectViewToUpdate, setProjectViewToUpdate] = useState<ProjectView | undefined>()
 
+  // Reset sessions and errors when filters change so lists reload with correct pagination
+  useEffect(() => {
+    setSessionsSkip(0)
+    setSessions([])
+    setSessionsLoading(null)
+
+    setErrorsSkip(0)
+    setErrors([])
+    setErrorsLoading(null)
+  }, [filters])
+
   const mode = activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode] ? 'cumulative' : 'periodical'
 
   const loadProjectViews = async (forced?: boolean) => {
