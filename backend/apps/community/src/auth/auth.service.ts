@@ -451,6 +451,24 @@ export class AuthService {
     await redis.set(oidcRedisKey, dataToStore, 'EX', REDIS_OIDC_SESSION_TIMEOUT)
   }
 
+  /**
+   * Checks whether the OIDC session identified by the provided state already contains
+   * resolved user data. This is used to gracefully handle duplicate callback deliveries
+   * or double-invocation scenarios in the client where the same code might be posted twice.
+   */
+  async isOidcSessionReady(state: string): Promise<boolean> {
+    const oidcRedisKey = getOIDCRedisKey(state)
+    const data = await redis.get(oidcRedisKey)
+
+    return Boolean(data && data.length > 0)
+  }
+
+  async doesOidcSessionExist(state: string): Promise<boolean> {
+    const oidcRedisKey = getOIDCRedisKey(state)
+    const exists = await redis.exists(oidcRedisKey)
+    return Boolean(exists)
+  }
+
   async processHash(state: string) {
     if (!state) {
       throw new BadRequestException('Missing state parameter')

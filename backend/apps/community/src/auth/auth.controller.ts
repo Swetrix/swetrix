@@ -410,7 +410,18 @@ export class AuthController {
 
     try {
       await this.authService.processOidcToken(code, hash, redirectUrl)
+      return res.status(HttpStatus.CREATED).end()
     } catch (reason) {
+      // If the session already contains user data (duplicate callback), treat as success
+      try {
+        const isReady = await this.authService.isOidcSessionReady(hash)
+        if (isReady) {
+          return res.status(HttpStatus.CREATED).end()
+        }
+      } catch {
+        // ignore readiness check errors
+      }
+
       console.error('[ERROR] OIDC Callback Error:', reason)
       return res
         .status(HttpStatus.BAD_REQUEST)

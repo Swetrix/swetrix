@@ -25,6 +25,13 @@ const Socialised = () => {
     const code = searchParams.get('code')
     const provider = _split(state, ':')[0]
 
+    // Prevent duplicate callback processing in React 18 StrictMode (dev) or other double-invocation scenarios
+    const processedKey = state ? `oidc_processed:${state}` : null
+    if (processedKey && sessionStorage.getItem(processedKey) === '1') {
+      setLoading(false)
+      return
+    }
+
     const processCode = async () => {
       if (!state || !provider) {
         setIsError(true)
@@ -63,6 +70,9 @@ const Socialised = () => {
       }
 
       try {
+        if (processedKey) {
+          sessionStorage.setItem(processedKey, '1')
+        }
         await processSSOTokenCommunityEdition(code, state, `${window.location.origin}${routes.socialised}`)
       } catch (reason) {
         setIsError(true)
