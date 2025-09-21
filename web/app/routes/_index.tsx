@@ -402,7 +402,7 @@ const LargeFeatureCard = ({
     <div className='relative h-64 overflow-hidden sm:h-72 md:h-80'>{media}</div>
     <div className='p-6'>
       <h3 className='text-xl font-semibold text-gray-950 dark:text-white'>{title}</h3>
-      <p className='mt-1 text-sm text-gray-700 dark:text-gray-300'>{description}</p>
+      <div className='mt-1 text-sm text-gray-700 dark:text-gray-300'>{description}</div>
     </div>
   </div>
 )
