@@ -304,7 +304,7 @@ export class AuthService {
       const config = this.getOidcConfig()
 
       return {
-        auth_url: `${discovery.authorization_endpoint}?client_id=${config.clientID}&response_type=code&scope=${encodeURIComponent(config.scope)}&redirect_uri=${encodeURIComponent(redirectUrl)}&state=${uuid}`,
+        auth_url: `${discovery.authorization_endpoint}?client_id=${config.clientID}&response_type=code&scope=${encodeURIComponent(config.scope)}&redirect_uri=${encodeURIComponent(redirectUrl)}&state=${uuid}&prompt=select_account`,
         uuid,
         expires_in: REDIS_OIDC_SESSION_TIMEOUT * 1000, // milliseconds
       }
