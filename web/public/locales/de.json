@@ -1193,7 +1193,6 @@
     },
     "captcha": {
       "settings": {
-        "general": "Allgemeine Einstellungen",
         "inheritance": "Vererbung",
         "name": "CAPTCHA Projektname",
         "pid": "CAPTCHA Projekt-ID",

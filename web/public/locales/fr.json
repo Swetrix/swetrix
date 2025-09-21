@@ -1193,7 +1193,6 @@
     },
     "captcha": {
       "settings": {
-        "general": "Paramètres généraux",
         "inheritance": "Héritage",
         "name": "Nom du projet CAPTCHA",
         "pid": "ID du projet CAPTCHA",
