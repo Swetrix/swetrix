@@ -3404,7 +3404,7 @@ const ViewProject = () => {
                 ) : null}
                 {activeTab === PROJECT_TABS.sessions && !activePSID ? (
                   <>
-                    <Filters tnMapping={tnMapping} />
+                    {!_isEmpty(sessions) ? <Filters tnMapping={tnMapping} /> : null}
                     {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) ? <Loader /> : null}
                     {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) ? (
                       <NoEvents filters={filters} />
@@ -3501,7 +3501,7 @@ const ViewProject = () => {
                 ) : null}
                 {activeTab === PROJECT_TABS.errors && !activeEID ? (
                   <>
-                    <Filters tnMapping={tnMapping} />
+                    {!_isEmpty(errors) ? <Filters tnMapping={tnMapping} /> : null}
                     {(errorsLoading === null || errorsLoading) && _isEmpty(errors) ? <Loader /> : null}
                     {typeof errorsLoading === 'boolean' && !errorsLoading && _isEmpty(errors) ? (
                       <NoEvents filters={filters} />
@@ -3862,7 +3862,7 @@ const ViewProject = () => {
                         id='dataChart'
                       />
                     </div>
-                    <Filters tnMapping={tnMapping} />
+                    {!isPanelsDataEmpty ? <Filters tnMapping={tnMapping} /> : null}
                     <CustomMetrics
                       metrics={customMetrics}
                       onRemoveMetric={(id) => onRemoveCustomMetric(id)}
@@ -4176,7 +4176,7 @@ const ViewProject = () => {
                         id='dataChart'
                       />
                     </div>
-                    <Filters tnMapping={tnMapping} />
+                    {!isPanelsDataEmptyPerf ? <Filters tnMapping={tnMapping} /> : null}
                     <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
                       {!_isEmpty(panelsDataPerf.types)
                         ? _map(PERFORMANCE_PANELS_ORDER, (type: keyof typeof tnMapping) => {
