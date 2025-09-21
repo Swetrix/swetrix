@@ -1,7 +1,6 @@
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { StarIcon } from '@heroicons/react/24/solid'
 import { SiGithub } from '@icons-pack/react-simple-icons'
-import { UAParser } from '@ua-parser-js/pro-business'
 import { motion, AnimatePresence } from 'framer-motion'
 import _map from 'lodash/map'
 import {
@@ -69,6 +68,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   if (userAgent) {
+    const { UAParser } = await import('@ua-parser-js/pro-business')
     const parser = new UAParser(userAgent)
 
     deviceInfo = {
@@ -1132,7 +1132,15 @@ const FeaturesShowcase = () => {
               </ul>
             </>
           }
-          media={<AnalyticsLivePreview />}
+          media={
+            <ClientOnly
+              fallback={
+                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
+              }
+            >
+              {() => <AnalyticsLivePreview />}
+            </ClientOnly>
+          }
         />
         <LargeFeatureCard
           title={t('main.sessions.title')}
@@ -1294,27 +1302,67 @@ const FeaturesShowcase = () => {
         <FeatureCard
           title={t('main.performance.title')}
           description={t('main.performance.description')}
-          media={<PerformancePreview />}
+          media={
+            <ClientOnly
+              fallback={
+                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
+              }
+            >
+              {() => <PerformancePreview />}
+            </ClientOnly>
+          }
         />
         <FeatureCard
           title={t('main.errors.title')}
           description={t('main.errors.description')}
-          media={<ErrorsPreview />}
+          media={
+            <ClientOnly
+              fallback={
+                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
+              }
+            >
+              {() => <ErrorsPreview />}
+            </ClientOnly>
+          }
         />
         <FeatureCard
           title={t('main.events.title')}
           description={t('main.events.description')}
-          media={<CustomEventsPreview />}
+          media={
+            <ClientOnly
+              fallback={
+                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
+              }
+            >
+              {() => <CustomEventsPreview />}
+            </ClientOnly>
+          }
         />
         <FeatureCard
           title={t('main.funnels.title')}
           description={t('main.funnels.description')}
-          media={<FunnelsPreview />}
+          media={
+            <ClientOnly
+              fallback={
+                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
+              }
+            >
+              {() => <FunnelsPreview />}
+            </ClientOnly>
+          }
         />
         <FeatureCard
           title={t('main.alerts.title')}
           description={t('main.alerts.description')}
-          media={<AlertsPreview />}
+          media={
+            <ClientOnly
+              fallback={
+                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
+              }
+            >
+              {() => <AlertsPreview />}
+            </ClientOnly>
+          }
         />
         <FeatureCard
           title={t('main.cookies.title')}
