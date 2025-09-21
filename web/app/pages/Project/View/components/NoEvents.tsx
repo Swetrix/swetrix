@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Filter } from '../interfaces/traffic'
 import { typeNameMapping } from '../ViewProject.helpers'
+
 import Filters from './Filters'
 
 interface NoEventsProps {
