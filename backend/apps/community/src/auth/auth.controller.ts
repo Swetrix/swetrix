@@ -85,6 +85,11 @@ export class AuthController {
     @Headers() headers: Record<string, string>,
     @Ip() requestIp: string,
   ) {
+    // If OIDC-only mode is enabled, disable traditional login
+    if (OIDC_ONLY_AUTH) {
+      throw new ConflictException(i18n.t('auth.oidcOnlyMode'))
+    }
+
     const ip = getIPFromHeaders(headers) || requestIp || ''
 
     await checkRateLimit(ip, 'register', 5)
