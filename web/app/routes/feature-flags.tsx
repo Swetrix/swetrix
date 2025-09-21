@@ -2,13 +2,28 @@ import { Switch } from '@headlessui/react'
 import cx from 'clsx'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { redirect } from 'react-router'
+import { SitemapFunction } from 'remix-sitemap'
 import { toast } from 'sonner'
 
 import { setFeatureFlags } from '~/api'
 import { withAuthentication, auth } from '~/hoc/protected'
+import { isSelfhosted } from '~/lib/constants'
 import { FeatureFlag } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
 import Loader from '~/ui/Loader'
+
+export const sitemap: SitemapFunction = () => ({
+  exclude: true,
+})
+
+export async function loader() {
+  if (isSelfhosted) {
+    return redirect('/login', 302)
+  }
+
+  return null
+}
 
 const FeatureFlagsPage = () => {
   const { t } = useTranslation('common')
