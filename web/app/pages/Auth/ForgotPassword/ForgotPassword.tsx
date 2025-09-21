@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 
 import { forgotPassword } from '~/api'
 import { withAuthentication, auth } from '~/hoc/protected'
-import { TRIAL_DAYS } from '~/lib/constants'
+import { isSelfhosted, TRIAL_DAYS } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import routes from '~/utils/routes'
@@ -107,24 +107,26 @@ const ForgotPassword = () => {
               </Button>
             </form>
           </div>
-          <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
-            <Trans
-              t={t}
-              i18nKey='auth.signin.notAMember'
-              components={{
-                url: (
-                  <Link
-                    to={routes.signup}
-                    className='leading-6 font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
-                    aria-label={t('footer.tos')}
-                  />
-                ),
-              }}
-              values={{
-                amount: TRIAL_DAYS,
-              }}
-            />
-          </p>
+          {isSelfhosted ? null : (
+            <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
+              <Trans
+                t={t}
+                i18nKey='auth.signin.notAMember'
+                components={{
+                  url: (
+                    <Link
+                      to={routes.signup}
+                      className='leading-6 font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
+                      aria-label={t('footer.tos')}
+                    />
+                  ),
+                }}
+                values={{
+                  amount: TRIAL_DAYS,
+                }}
+              />
+            </p>
+          )}
         </div>
       </div>
     </div>

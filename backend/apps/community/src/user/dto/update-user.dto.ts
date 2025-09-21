@@ -7,4 +7,10 @@ export class UpdateUserProfileDTO {
 
   @ApiProperty({ example: '24-hour', enum: TimeFormat })
   timeFormat: string
+
+  @ApiProperty({ example: 'user@example.com', required: false })
+  email?: string
+
+  @ApiProperty({ example: 'newStrongPassword123', required: false })
+  password?: string
 }

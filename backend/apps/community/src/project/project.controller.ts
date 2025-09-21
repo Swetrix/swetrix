@@ -102,6 +102,8 @@ import { UpdateProjectViewDto } from './dto/update-project-view.dto'
 import { UserService } from '../user/user.service'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { UserType } from '../user/entities/user.entity'
+import { MailerService } from '../mailer/mailer.service'
+import { LetterTemplate } from '../mailer/letter'
 
 @ApiTags('Project')
 @Controller(['project', 'v1/project'])
@@ -110,6 +112,7 @@ export class ProjectController {
     private readonly projectService: ProjectService,
     private readonly logger: AppLoggerService,
     private readonly userService: UserService,
+    private readonly mailerService: MailerService,
   ) {}
 
   @Get('/')
@@ -385,6 +388,16 @@ export class ProjectController {
     }
 
     const id = uuidv4()
+
+    await this.mailerService.sendEmail(
+      invitee.email,
+      LetterTemplate.ProjectInvitation,
+      {
+        email: inviter.email,
+        name: project.name,
+        role: body.role,
+      },
+    )
 
     await createProjectShareClickhouse({
       id,

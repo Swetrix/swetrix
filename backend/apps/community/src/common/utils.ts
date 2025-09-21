@@ -189,6 +189,17 @@ const getFunnelsClickhouse = async (
   return data
 }
 
+const deleteAllRefreshTokensClickhouse = async (userId: string) => {
+  const query = `ALTER TABLE refresh_token DELETE WHERE userId = {userId:String}`
+
+  await clickhouse.command({
+    query,
+    query_params: {
+      userId,
+    },
+  })
+}
+
 const updateFunnelClickhouse = async (funnel: any) => {
   const filtered = _reduce(
     _filter(_keys(funnel), key => ALLOWED_FUNNEL_KEYS.includes(key)),
@@ -1010,6 +1021,7 @@ export {
   saveRefreshTokenClickhouse,
   findRefreshTokenClickhouse,
   deleteRefreshTokenClickhouse,
+  deleteAllRefreshTokensClickhouse,
   getGeoDetails,
   getIPFromHeaders,
   sumArrays,

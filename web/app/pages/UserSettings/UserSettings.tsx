@@ -534,9 +534,6 @@ const UserSettings = () => {
             if (activeTab === TAB_MAPPING.ACCOUNT) {
               return (
                 <>
-                  <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                    {t('profileSettings.general')}
-                  </h3>
                   <Input
                     name='email'
                     type='email'
@@ -546,126 +543,89 @@ const UserSettings = () => {
                     className='mt-4'
                     onChange={handleInput}
                     error={beenSubmitted ? errors.email : null}
-                    disabled={isSelfhosted}
                   />
+                  <span
+                    onClick={toggleShowPasswordFields}
+                    className='mt-2 flex max-w-max cursor-pointer items-center text-sm text-gray-900 hover:underline dark:text-gray-50'
+                  >
+                    {t('auth.common.changePassword')}
+                    <ChevronDownIcon
+                      className={cx('ml-2 size-3', {
+                        'rotate-180': showPasswordFields,
+                      })}
+                    />
+                  </span>
+                  {showPasswordFields ? (
+                    <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6'>
+                      <Input
+                        name='password'
+                        type='password'
+                        label={t('auth.common.password')}
+                        hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+                        value={form.password}
+                        placeholder={t('auth.common.password')}
+                        className='sm:col-span-3'
+                        onChange={handleInput}
+                        error={beenSubmitted ? errors.password : null}
+                      />
+                      <Input
+                        name='repeat'
+                        type='password'
+                        label={t('auth.common.repeat')}
+                        value={form.repeat}
+                        placeholder={t('auth.common.repeat')}
+                        className='sm:col-span-3'
+                        onChange={handleInput}
+                        error={beenSubmitted ? errors.repeat : null}
+                      />
+                    </div>
+                  ) : null}
+                  <Button className='mt-4' type='submit' primary large>
+                    {t('profileSettings.update')}
+                  </Button>
+
+                  <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+
+                  <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+                    {t('profileSettings.apiKey')}
+                  </h3>
+                  {user?.apiKey ? (
+                    <>
+                      <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                        {t('profileSettings.apiKeyWarning')}
+                      </p>
+                      <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
+                        <Input
+                          label={t('profileSettings.apiKey')}
+                          name='apiKey'
+                          className='mt-4'
+                          value={user.apiKey}
+                          disabled
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                      {t('profileSettings.noApiKey')}
+                    </p>
+                  )}
+                  {user?.apiKey ? (
+                    <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
+                      {t('profileSettings.deleteApiKeyBtn')}
+                    </Button>
+                  ) : (
+                    <Button className='mt-4' onClick={onApiKeyGenerate} primary large>
+                      {t('profileSettings.addApiKeyBtn')}
+                    </Button>
+                  )}
+
                   {isSelfhosted ? (
                     <>
-                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-
-                      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-                        {t('profileSettings.apiKey')}
-                      </h3>
-                      {user?.apiKey ? (
-                        <>
-                          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                            {t('profileSettings.apiKeyWarning')}
-                          </p>
-                          <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-                            <Input
-                              label={t('profileSettings.apiKey')}
-                              name='apiKey'
-                              className='mt-4'
-                              value={user.apiKey}
-                              disabled
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                          {t('profileSettings.noApiKey')}
-                        </p>
-                      )}
-                      {user?.apiKey ? (
-                        <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
-                          {t('profileSettings.deleteApiKeyBtn')}
-                        </Button>
-                      ) : (
-                        <Button className='mt-4' onClick={onApiKeyGenerate} primary large>
-                          {t('profileSettings.addApiKeyBtn')}
-                        </Button>
-                      )}
-
                       {/* Shared projects setting */}
                       <SharedProjects />
                     </>
                   ) : (
                     <>
-                      <span
-                        onClick={toggleShowPasswordFields}
-                        className='mt-2 flex max-w-max cursor-pointer items-center text-sm text-gray-900 hover:underline dark:text-gray-50'
-                      >
-                        {t('auth.common.changePassword')}
-                        <ChevronDownIcon
-                          className={cx('ml-2 size-3', {
-                            'rotate-180': showPasswordFields,
-                          })}
-                        />
-                      </span>
-                      {showPasswordFields ? (
-                        <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6'>
-                          <Input
-                            name='password'
-                            type='password'
-                            label={t('auth.common.password')}
-                            hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-                            value={form.password}
-                            placeholder={t('auth.common.password')}
-                            className='sm:col-span-3'
-                            onChange={handleInput}
-                            error={beenSubmitted ? errors.password : null}
-                          />
-                          <Input
-                            name='repeat'
-                            type='password'
-                            label={t('auth.common.repeat')}
-                            value={form.repeat}
-                            placeholder={t('auth.common.repeat')}
-                            className='sm:col-span-3'
-                            onChange={handleInput}
-                            error={beenSubmitted ? errors.repeat : null}
-                          />
-                        </div>
-                      ) : null}
-                      <Button className='mt-4' type='submit' primary large>
-                        {t('profileSettings.update')}
-                      </Button>
-
-                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-
-                      {/* API access setup */}
-                      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-                        {t('profileSettings.apiKey')}
-                      </h3>
-                      {user?.apiKey ? (
-                        <>
-                          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                            {t('profileSettings.apiKeyWarning')}
-                          </p>
-                          <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-                            <Input
-                              label={t('profileSettings.apiKey')}
-                              name='apiKey'
-                              className='mt-4'
-                              value={user.apiKey}
-                              disabled
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                          {t('profileSettings.noApiKey')}
-                        </p>
-                      )}
-                      {user?.apiKey ? (
-                        <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
-                          {t('profileSettings.deleteApiKeyBtn')}
-                        </Button>
-                      ) : (
-                        <Button className='mt-4' onClick={onApiKeyGenerate} primary large>
-                          {t('profileSettings.addApiKeyBtn')}
-                        </Button>
-                      )}
-
                       {/* 2FA setting */}
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
                       <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>

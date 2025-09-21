@@ -196,13 +196,6 @@ export class UserService {
       err.push('at least 8 characters')
     }
 
-    // if(!/[a-z]/.test(pass))
-    //   err.push('should contain at least one lower case')
-    // if(!/[A-Z]/.test(pass))
-    //   err.push('should contain at least one upper case')
-    // if(!(/[!@#$%^&*(),.?":{}|<>]/g.test(pass)))
-    //   err.push('should contain at least one symbol')
-
     if (!_isEmpty(err)) {
       throw new BadRequestException(err)
     }

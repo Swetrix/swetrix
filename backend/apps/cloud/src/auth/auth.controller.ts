@@ -41,7 +41,6 @@ import {
   RequestResetPasswordDto,
   ConfirmResetPasswordDto,
   ResetPasswordDto,
-  ChangePasswordDto,
   ConfirmChangeEmailDto,
   RequestChangeEmailDto,
   SSOGetJWTByHashDto,
@@ -251,37 +250,6 @@ export class AuthController {
     }
 
     await this.authService.resetPassword(actionToken, body.newPassword)
-  }
-
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Change a password' })
-  @ApiOkResponse({
-    description: 'Password changed',
-  })
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @Post('change-password')
-  public async changePassword(
-    @Body() body: ChangePasswordDto,
-    @CurrentUserId() userId: string,
-    @I18n() i18n: I18nContext,
-  ): Promise<void> {
-    const user = await this.userService.findUserById(userId)
-
-    if (!user) {
-      throw new UnauthorizedException()
-    }
-
-    const isPasswordValid = await this.authService.getBasicUser(
-      user.email,
-      body.oldPassword,
-    )
-
-    if (!isPasswordValid) {
-      throw new ConflictException(i18n.t('auth.invalidPassword'))
-    }
-
-    await this.authService.changePassword(user.id, body.newPassword)
   }
 
   @ApiBearerAuth()

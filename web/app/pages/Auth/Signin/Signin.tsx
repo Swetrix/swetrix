@@ -328,16 +328,14 @@ const Signin = () => {
                 name='dontRemember'
                 label={t('auth.common.noRemember')}
               />
-              {!isSelfhosted ? (
-                <div className='text-sm leading-6'>
-                  <Link
-                    to={routes.reset_password}
-                    className='font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
-                  >
-                    {t('auth.signin.forgot')}
-                  </Link>
-                </div>
-              ) : null}
+              <div className='text-sm leading-6'>
+                <Link
+                  to={routes.reset_password}
+                  className='font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
+                >
+                  {t('auth.signin.forgot')}
+                </Link>
+              </div>
             </div>
 
             <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
