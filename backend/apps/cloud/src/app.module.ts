@@ -40,7 +40,6 @@ const modules = [
   }),
   NodeMailerModule.forRoot({
     transport: {
-      sendingRate: 14,
       // pool: true, // if true - set up pooled connections against a SMTP server
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
