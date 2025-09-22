@@ -3301,7 +3301,7 @@ const ViewProject = () => {
                           </>
                         ) : null}
                         <FlatPicker
-                          className='!mx-0'
+                          className='!mx-0 w-0'
                           ref={refCalendar}
                           onChange={([from, to]) => {
                             const newSearchParams = new URLSearchParams(searchParams.toString())
@@ -3315,7 +3315,7 @@ const ViewProject = () => {
                           maxRange={0}
                         />
                         <FlatPicker
-                          className='!mx-0'
+                          className='!mx-0 w-0'
                           ref={refCalendarCompare}
                           onChange={(date) => {
                             setDateRangeCompare(date)
