@@ -63,7 +63,7 @@
     "react-flatpickr": "^3.10.13",
     "react-hotkeys-hook": "^4.6.1",
     "react-i18next": "^15.7.3",
-    "react-leaflet": "^4.2.1",
+    "react-leaflet": "^5.0.0",
     "react-qr-code": "^2.0.18",
     "react-router": "^7.9.1",
     "remix-i18next": "^7.4.0",
