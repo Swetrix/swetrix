@@ -25,11 +25,7 @@ const modules = [
   }),
   NodeMailerModule.forRootAsync({
     useFactory: () => {
-      const hasSmtpConfig =
-        !!process.env.SMTP_HOST &&
-        !!process.env.SMTP_PORT &&
-        !!process.env.SMTP_USER &&
-        !!process.env.SMTP_PASSWORD
+      const hasSmtpConfig = !!process.env.SMTP_HOST && !!process.env.SMTP_PORT
 
       const defaults = {
         from: `"Swetrix Community Edition" <${process.env.FROM_EMAIL || 'noreply@ce.swetrix.org'}>`,

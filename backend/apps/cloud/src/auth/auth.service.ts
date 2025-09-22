@@ -41,6 +41,7 @@ import {
   JWT_ACCESS_TOKEN_SECRET,
   JWT_ACCESS_TOKEN_LIFETIME,
   JWT_REFRESH_TOKEN_LIFETIME,
+  JWT_REFRESH_TOKEN_SECRET,
 } from '../common/constants'
 import { getGeoDetails } from '../common/utils'
 import { TelegramService } from '../integrations/telegram/telegram.service'
@@ -425,7 +426,7 @@ export class AuthService {
       {
         algorithm: 'HS256',
         expiresIn: JWT_REFRESH_TOKEN_LIFETIME,
-        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+        secret: JWT_REFRESH_TOKEN_SECRET,
       },
     )
 

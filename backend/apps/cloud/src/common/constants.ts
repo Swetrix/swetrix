@@ -2,7 +2,7 @@ import Redis from 'ioredis'
 import path from 'path'
 import _toNumber from 'lodash/toNumber'
 import 'dotenv/config'
-import { hash } from './utils'
+import { deriveKey, hash } from './utils'
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, EMAIL_ACTION_ENCRYPTION_KEY } =
   process.env
@@ -22,8 +22,10 @@ redis.defineCommand('countKeysByPattern', {
   lua: "return #redis.call('keys', ARGV[1])",
 })
 
+export const JWT_ACCESS_TOKEN_SECRET = deriveKey('access-token')
+export const JWT_REFRESH_TOKEN_SECRET = deriveKey('refresh-token')
+
 const {
-  JWT_ACCESS_TOKEN_SECRET,
   // 30 days
   JWT_REFRESH_TOKEN_LIFETIME = 60 * 60 * 24 * 30,
   // 30 minutes
@@ -198,7 +200,6 @@ export {
   CAPTCHA_SECRET_KEY_LENGTH,
   PRODUCTION_ORIGIN,
   REDIS_SSO_UUID,
-  JWT_ACCESS_TOKEN_SECRET,
   NUMBER_JWT_REFRESH_TOKEN_LIFETIME as JWT_REFRESH_TOKEN_LIFETIME,
   NUMBER_JWT_ACCESS_TOKEN_LIFETIME as JWT_ACCESS_TOKEN_LIFETIME,
   getRedisUserUsageInfoKey,

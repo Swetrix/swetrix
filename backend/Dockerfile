@@ -14,8 +14,7 @@ LABEL maintainer="swetrix.com <contact@swetrix.com>"
 # System and security configs
 ENV TZ=UTC \
     NODE_ENV=production \
-    JWT_ACCESS_TOKEN_SECRET=jwt-access-token-secret \
-    JWT_REFRESH_TOKEN_SECRET=jwt-refresh-token-secret
+    SECRET_KEY_BASE=secret-key-base-tokens
 
 # Service connections
 ENV REDIS_HOST=localhost \

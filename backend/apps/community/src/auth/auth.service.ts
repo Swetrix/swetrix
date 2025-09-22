@@ -28,6 +28,7 @@ import {
   REDIS_OIDC_SESSION_KEY,
   redis,
   IS_REGISTRATION_DISABLED,
+  JWT_REFRESH_TOKEN_SECRET,
 } from '../common/constants'
 import { UserService } from '../user/user.service'
 import { User } from '../common/types'
@@ -221,7 +222,7 @@ export class AuthService {
       {
         algorithm: 'HS256',
         expiresIn: JWT_REFRESH_TOKEN_LIFETIME,
-        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+        secret: JWT_REFRESH_TOKEN_SECRET,
       },
     )
 

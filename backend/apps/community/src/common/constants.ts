@@ -2,6 +2,7 @@ import Redis from 'ioredis'
 import _toNumber from 'lodash/toNumber'
 
 import 'dotenv/config'
+import { deriveKey } from './utils'
 
 const redis = new Redis(
   _toNumber(process.env.REDIS_PORT),
@@ -18,8 +19,10 @@ redis.defineCommand('countKeysByPattern', {
   lua: "return #redis.call('keys', ARGV[1])",
 })
 
+export const JWT_ACCESS_TOKEN_SECRET = deriveKey('access-token')
+export const JWT_REFRESH_TOKEN_SECRET = deriveKey('refresh-token')
+
 const {
-  JWT_ACCESS_TOKEN_SECRET,
   // 30 days
   JWT_REFRESH_TOKEN_LIFETIME = 60 * 60 * 24 * 30,
   // 30 minutes
@@ -119,7 +122,6 @@ export {
   IP_REGEX,
   ORIGINS_REGEX,
   isDevelopment,
-  JWT_ACCESS_TOKEN_SECRET,
   NUMBER_JWT_REFRESH_TOKEN_LIFETIME as JWT_REFRESH_TOKEN_LIFETIME,
   NUMBER_JWT_ACCESS_TOKEN_LIFETIME as JWT_ACCESS_TOKEN_LIFETIME,
   TRAFFIC_COLUMNS,

@@ -83,6 +83,20 @@ export const hash = (content: string): string => {
     .substring(0, 32)
 }
 
+/**
+ * Derives a key from the SECRET_KEY_BASE environment variable using the HKDF algorithm.
+ */
+export const deriveKey = (
+  purpose: 'refresh-token' | 'access-token',
+  length = 32,
+) => {
+  const base = Buffer.from(process.env.SECRET_KEY_BASE || '', 'utf8')
+  const info = Buffer.from(purpose, 'utf8')
+  return Buffer.from(
+    crypto.hkdfSync('sha256', base, '', info, length),
+  ).toString('hex')
+}
+
 export const generateRandomId = (alphabet: string, size: number) => {
   const bytes = crypto.randomBytes(size)
   let id = ''
