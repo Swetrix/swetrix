@@ -3,7 +3,6 @@ import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
 import cx from 'clsx'
-import InnerHTML from 'dangerously-set-html-content'
 import _ceil from 'lodash/ceil'
 import _find from 'lodash/find'
 import _floor from 'lodash/floor'
@@ -25,6 +24,7 @@ import React, { memo, useState, useEffect, useMemo, Fragment, useRef } from 'rea
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps, useNavigate } from 'react-router'
 
+import { DangerouslySetHtmlContent } from '~/components/DangerouslySetInnerHTML'
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import Button from '~/ui/Button'
@@ -152,7 +152,7 @@ const PanelContainer = ({
       // Using this instead of dangerouslySetInnerHTML to support script tags
       return (
         <ExtensionErrorBoundary extensionID={extensionID}>
-          <InnerHTML className='absolute overflow-auto' html={tabContent || ''} />
+          <DangerouslySetHtmlContent className='absolute overflow-auto' html={tabContent || ''} />
         </ExtensionErrorBoundary>
       )
     }
