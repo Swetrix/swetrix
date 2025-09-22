@@ -44,8 +44,8 @@ import { deviceIconMapping, onCSVExportClick } from '~/pages/Project/View/ViewPr
 import { useAuth } from '~/providers/AuthProvider'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import DatePicker from '~/ui/Datepicker'
 import Dropdown from '~/ui/Dropdown'
-import FlatPicker from '~/ui/Flatpicker'
 import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
 
@@ -470,7 +470,7 @@ const ViewCaptcha = () => {
                         </>
                       </Link>
                     ) : null}
-                    <FlatPicker
+                    <DatePicker
                       className='!mx-0 w-0'
                       ref={refCalendar}
                       onChange={([from, to]) => {

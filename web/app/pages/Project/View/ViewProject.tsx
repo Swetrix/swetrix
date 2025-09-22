@@ -129,9 +129,9 @@ import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Checkbox from '~/ui/Checkbox'
+import DatePicker from '~/ui/Datepicker'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
-import FlatPicker from '~/ui/Flatpicker'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import Select from '~/ui/Select'
@@ -2458,7 +2458,7 @@ const ViewProject = () => {
     setSessionsLoading(null)
   }
 
-  // We can assume period provided is never custom, as it's handled separately in the Flatpickr callback function
+  // We can assume period provided is never custom, as it's handled separately in the Datepicker callback function
   const updatePeriod = ({ period: newPeriod }: { period: Period }) => {
     if (period === newPeriod) {
       return
@@ -3300,7 +3300,7 @@ const ViewProject = () => {
                             />
                           </>
                         ) : null}
-                        <FlatPicker
+                        <DatePicker
                           className='!mx-0 w-0'
                           ref={refCalendar}
                           onChange={([from, to]) => {
@@ -3314,7 +3314,7 @@ const ViewProject = () => {
                           maxDateMonths={MAX_MONTHS_IN_PAST}
                           maxRange={0}
                         />
-                        <FlatPicker
+                        <DatePicker
                           className='!mx-0 w-0'
                           ref={refCalendarCompare}
                           onChange={(date) => {

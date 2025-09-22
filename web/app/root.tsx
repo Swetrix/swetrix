@@ -1,8 +1,6 @@
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import BillboardCss from 'billboard.js/dist/billboard.min.css?url'
 import cx from 'clsx'
-import FlatpickrDarkCss from 'flatpickr/dist/themes/dark.css?url'
-import FlatpickrLightCss from 'flatpickr/dist/themes/light.css?url'
 import _replace from 'lodash/replace'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -25,7 +23,6 @@ import { LocaleLinks } from '~/components/LocaleLinks'
 import SelfhostedApiUrlBanner from '~/components/SelfhostedApiUrlBanner'
 import { SEO } from '~/components/SEO'
 import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
-import FlatpickerCss from '~/styles/Flatpicker.css?url'
 import mainCss from '~/styles/index.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
 import { trackViews, trackErrors, trackError } from '~/utils/analytics'
@@ -54,7 +51,6 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },
   { rel: 'stylesheet', href: mainCss },
   { rel: 'stylesheet', href: BillboardCss },
-  { rel: 'stylesheet', href: FlatpickerCss },
 ]
 
 export const headers: HeadersFunction = () => ({
@@ -248,9 +244,6 @@ export default function App() {
         <Meta />
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Links />
-        {/* TODO: We should not load Flatpicker styles globally; load them within the FlatPicker component */}
-        {theme === 'dark' ? <link rel='stylesheet' href={FlatpickrDarkCss} /> : null}
-        {theme === 'light' ? <link rel='stylesheet' href={FlatpickrLightCss} /> : null}
         <LocaleLinks />
         <link
           rel='preload'

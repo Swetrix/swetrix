@@ -36,8 +36,8 @@ import { Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
+import DatePicker from '~/ui/Datepicker'
 import Dropdown from '~/ui/Dropdown'
-import FlatPicker from '~/ui/Flatpicker'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -150,7 +150,7 @@ const ModalMessage = ({
             type='text'
             className='m-0 h-0 w-0 border-0 p-0 focus:border-transparent focus:text-transparent focus:shadow-none focus:ring-transparent'
           />
-          <FlatPicker
+          <DatePicker
             className='!mx-0 w-0'
             onChange={(date) => setDateRange(date)}
             options={{
