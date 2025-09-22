@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'crypto'
+import { createHash, randomBytes, randomUUID } from 'crypto'
 import {
   BadRequestException,
   ConflictException,
@@ -10,7 +10,6 @@ import { JwtService } from '@nestjs/jwt'
 import { genSalt, hash, compare } from 'bcrypt'
 import axios from 'axios'
 import _isEmpty from 'lodash/isEmpty'
-import { v4 as uuidv4 } from 'uuid'
 import { decode, JwtPayload, verify } from 'jsonwebtoken'
 import jwksClient from 'jwks-rsa'
 
@@ -37,7 +36,7 @@ import { LetterTemplate } from '../mailer/letter'
 
 const REDIS_OIDC_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getOIDCRedisKey = (uuid: string) => `${REDIS_OIDC_SESSION_KEY}:${uuid}`
-const generateOIDCState = () => `openid-connect:${uuidv4()}`
+const generateOIDCState = () => `openid-connect:${randomUUID()}`
 
 @Injectable()
 export class AuthService {
@@ -169,7 +168,7 @@ export class AuthService {
   ) {
     const urlBase = headers.origin || ''
 
-    const token = uuidv4()
+    const token = randomUUID()
     const url = `${urlBase}/password-reset/${token}`
 
     await redis.set(`password_reset:${token}`, userId, 'EX', 60 * 60 * 12)

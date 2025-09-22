@@ -7,6 +7,7 @@ import {
   InternalServerErrorException,
   ConflictException,
 } from '@nestjs/common'
+import { randomUUID } from 'crypto'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 import _size from 'lodash/size'
@@ -21,7 +22,6 @@ import _trim from 'lodash/trim'
 import _reduce from 'lodash/reduce'
 import _findIndex from 'lodash/findIndex'
 import { compareSync } from 'bcrypt'
-import { v4 as uuidv4 } from 'uuid'
 
 import { Project, ProjectWithShare, Role } from './entity/project.entity'
 import { ProjectDTO } from './dto/project.dto'
@@ -180,7 +180,7 @@ export class ProjectService {
     )
 
     await createProjectShareClickhouse({
-      id: uuidv4(),
+      id: randomUUID(),
       userId: oldAdminId,
       projectId: projectId,
       confirmed: 1,

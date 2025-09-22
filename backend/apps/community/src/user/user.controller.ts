@@ -16,7 +16,7 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger'
 import _isEmpty from 'lodash/isEmpty'
 import _omit from 'lodash/omit'
 import _isNull from 'lodash/isNull'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 
 import { JwtAccessTokenGuard } from '../auth/guards'
 import { OnboardingStep, UserType } from './entities/user.entity'
@@ -253,7 +253,7 @@ export class UserController {
       throw new ConflictException('You already have an API key')
     }
 
-    const apiKey: string = uuidv4()
+    const apiKey: string = randomUUID()
 
     await this.userService.update(userId, { apiKey })
 
@@ -325,7 +325,7 @@ export class UserController {
         // TODO: Change this if we introduce CLIENT_URL in CE as .env variable
         const urlBase = request.headers.origin || ''
 
-        const token = uuidv4()
+        const token = randomUUID()
         const url = `${urlBase}/change-email/${token}`
 
         await this.mailerService.sendEmail(

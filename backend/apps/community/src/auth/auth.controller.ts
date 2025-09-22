@@ -25,6 +25,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger'
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
+import { randomUUID } from 'crypto'
 import { Response } from 'express'
 
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
@@ -49,7 +50,6 @@ import { UserType } from '../user/entities/user.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { MailerService } from '../mailer/mailer.service'
 import { redis } from '../common/constants'
-import { v4 as uuidv4 } from 'uuid'
 import { OIDC_ENABLED, OIDC_ONLY_AUTH } from '../common/constants'
 import { UserService } from '../user/user.service'
 
@@ -204,7 +204,7 @@ export class AuthController {
       throw new ConflictException(i18n.t('user.emailAlreadyUsed'))
     }
 
-    const token = uuidv4()
+    const token = randomUUID()
     await redis.set(
       `email_change:${token}`,
       JSON.stringify({ id: user.id, newEmail: body.newEmail }),

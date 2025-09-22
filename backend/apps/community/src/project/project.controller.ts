@@ -18,7 +18,7 @@ import {
   ParseIntPipe,
   ConflictException,
 } from '@nestjs/common'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import {
   ApiTags,
   ApiQuery,
@@ -387,7 +387,7 @@ export class ProjectController {
       )
     }
 
-    const id = uuidv4()
+    const id = randomUUID()
 
     await this.mailerService.sendEmail(
       invitee.email,
@@ -538,7 +538,7 @@ export class ProjectController {
     this.projectService.allowedToManage(project, userId)
 
     const funnel = new Funnel()
-    funnel.id = uuidv4()
+    funnel.id = randomUUID()
     funnel.name = funnelDTO.name
     funnel.steps = _map(funnelDTO.steps, _trim) as string[]
     funnel.projectId = funnelDTO.pid
@@ -983,7 +983,7 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, userId)
 
-    const viewId = uuidv4()
+    const viewId = randomUUID()
 
     const { customEvents } = body
 
@@ -994,7 +994,7 @@ export class ProjectController {
         customEvents[i] = {
           ...customEvent,
           // @ts-expect-error
-          id: uuidv4(),
+          id: randomUUID(),
         }
       }
     }

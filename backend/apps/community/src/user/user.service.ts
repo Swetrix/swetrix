@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import _omit from 'lodash/omit'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
@@ -121,7 +121,7 @@ export class UserService {
   }
 
   async create(user: Pick<ClickhouseInputUser, 'email' | 'password'>) {
-    const id = uuidv4()
+    const id = randomUUID()
 
     await clickhouse.insert({
       table: 'user',

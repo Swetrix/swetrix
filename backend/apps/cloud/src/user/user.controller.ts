@@ -31,7 +31,7 @@ import _includes from 'lodash/includes'
 import _isString from 'lodash/isString'
 import _pick from 'lodash/pick'
 import _round from 'lodash/round'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import { HttpService } from '@nestjs/axios'
 import { catchError, firstValueFrom, map, of } from 'rxjs'
 
@@ -290,7 +290,7 @@ export class UserController {
       throw new ConflictException('You already have an API key')
     }
 
-    const apiKey: string = uuidv4()
+    const apiKey: string = randomUUID()
 
     await this.userService.update(userId, { apiKey })
 

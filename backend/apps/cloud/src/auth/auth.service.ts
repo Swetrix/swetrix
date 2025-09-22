@@ -1,4 +1,4 @@
-import { createHash } from 'crypto'
+import { createHash, randomUUID } from 'crypto'
 import {
   Injectable,
   InternalServerErrorException,
@@ -17,7 +17,6 @@ import _pick from 'lodash/pick'
 import _split from 'lodash/split'
 import _isEmpty from 'lodash/isEmpty'
 import _find from 'lodash/find'
-import { v4 as uuidv4 } from 'uuid'
 
 import {
   ActionToken,
@@ -51,7 +50,8 @@ import { UserGithubDTO } from '../user/dto/user-github.dto'
 
 const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`
-const generateSSOState = (provider: SSOProviders) => `${provider}:${uuidv4()}`
+const generateSSOState = (provider: SSOProviders) =>
+  `${provider}:${randomUUID()}`
 const getSSOSessionProvider = (state: string): SSOProviders =>
   _split(state, ':')[0] as SSOProviders
 
