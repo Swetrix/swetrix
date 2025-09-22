@@ -100,7 +100,7 @@
     "@types/express": "^5.0.3",
     "@types/ioredis": "^4.28.10",
     "@types/lodash": "^4.17.20",
-    "@types/multer": "^1.4.12",
+    "@types/multer": "^2.0.0",
     "@types/node": "^24.5.2",
     "@types/nodemailer": "^7.0.1",
     "@types/passport-jwt": "^4.0.1",
