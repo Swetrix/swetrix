@@ -332,30 +332,36 @@ const Dashboard = () => {
           <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
             <div className={cx('flex flex-wrap justify-between gap-2', showTabs ? 'mb-2' : 'mb-4')}>
               <div className='flex items-end justify-between'>
-                <h2 className='mt-2 flex items-baseline text-3xl font-bold text-gray-900 dark:text-gray-50'>
-                  {t('titles.dashboard')}
+                <h2 className='mt-2 flex items-baseline gap-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+                  <span>{t('titles.dashboard')}</span>
                   {isSearchActive ? (
-                    <XMarkIcon
-                      className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
+                    <button
+                      className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      type='button'
                       onClick={() => {
                         setSearch('')
                         setIsSearchActive(false)
                       }}
-                    />
+                    >
+                      <XMarkIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
+                    </button>
                   ) : (
-                    <MagnifyingGlassIcon
-                      className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
+                    <button
+                      className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      type='button'
                       onClick={() => {
                         setIsSearchActive(true)
                         setTimeout(() => {
                           searchInputRef.current?.focus()
                         }, 100)
                       }}
-                    />
+                    >
+                      <MagnifyingGlassIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
+                    </button>
                   )}
                 </h2>
                 {isSearchActive ? (
-                  <div className='hidden w-full max-w-md items-center px-2 pb-1 sm:ml-5 sm:flex'>
+                  <div className='hidden w-full max-w-md items-center px-2 pb-1 sm:ml-2 sm:flex'>
                     <label htmlFor='simple-search' className='sr-only'>
                       Search
                     </label>
