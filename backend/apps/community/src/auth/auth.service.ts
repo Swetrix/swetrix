@@ -153,12 +153,46 @@ export class AuthService {
     return IS_REGISTRATION_DISABLED
   }
 
+  private async deleteAllProjectCacheKeys() {
+    const matchPattern = 'pid_*'
+    const scanCount = 1000
+
+    try {
+      let cursor = '0'
+
+      do {
+        const [nextCursor, keys] = await redis.scan(
+          cursor,
+          'MATCH',
+          matchPattern,
+          'COUNT',
+          scanCount,
+        )
+
+        if (keys && keys.length > 0) {
+          const pipeline = redis.pipeline()
+          for (const key of keys) {
+            pipeline.del(key)
+          }
+          await pipeline.exec()
+        }
+
+        cursor = nextCursor
+      } while (cursor !== '0')
+    } catch (reason) {
+      console.error(
+        `[ERROR][AuthService -> deleteAllProjectCacheKeys]: ${reason}`,
+      )
+    }
+  }
+
   // Before Swetrix CE v4 there could only be a single user, with login / password set in .env file
   // Because of that, projects were stored without an adminId as it was not needed
   // Unassigned projects are only possible when migrating from Swetrix CE v3 to v4, so people who migrated are
   // going to create an account anyway, so it's safe to assign them to the user
   async assignUnassignedProjectsToUser(userId: string) {
-    return assignUnassignedProjectsToUserClickhouse(userId)
+    await this.deleteAllProjectCacheKeys()
+    await assignUnassignedProjectsToUserClickhouse(userId)
   }
 
   public async sendResetPasswordEmail(
