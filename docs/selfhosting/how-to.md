@@ -13,7 +13,7 @@ The easiest way to get started with Swetrix is by [using our cloud service](http
 
 To self-host Swetrix you need to have the following:
 
-- A server with Docker installed
+- A server with Docker and Docker Compose installed
 - Support for the x86_64 or arm64 CPU architecture on your server
 - At least 2GB of RAM is recommended for the best performance
 
@@ -37,7 +37,9 @@ The repository also contains various configuration files to ease the setup proce
 
 ### 2. Configure the environment variables
 
-That repository contains a `configure.sh` script that will help you set up the environment variables. It will ask you to enter variables like email and password, and autogenerate some other necessary variables as well.
+That repository contains a `configure.sh` script that will help you set up the environment variables. It will help you configure and autogenerate some necessary variables.
+
+This script will also check if you have Docker and Docker Compose installed, and if you don't, it will try to install them for you.
 
 The script will save the environment variables to a `.env` file in the repository directory. You can later change them manually if needed.
 
