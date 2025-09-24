@@ -191,8 +191,8 @@ export class AuthService {
   // Unassigned projects are only possible when migrating from Swetrix CE v3 to v4, so people who migrated are
   // going to create an account anyway, so it's safe to assign them to the user
   async assignUnassignedProjectsToUser(userId: string) {
-    await this.deleteAllProjectCacheKeys()
     await assignUnassignedProjectsToUserClickhouse(userId)
+    await this.deleteAllProjectCacheKeys()
   }
 
   public async sendResetPasswordEmail(
