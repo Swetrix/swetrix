@@ -1,4 +1,4 @@
-import cx from 'clsx'
+import { cn } from '~/utils/generic'
 
 interface SpinProps {
   className?: string
@@ -7,7 +7,7 @@ interface SpinProps {
 
 const Spin = ({ className, alwaysLight }: SpinProps) => (
   <svg
-    className={cx(
+    className={cn(
       'mr-2 -ml-1 h-4 w-4 animate-spin text-slate-900 dark:text-white',
       {
         'text-slate-900 dark:text-white': !alwaysLight,

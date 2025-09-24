@@ -8,6 +8,7 @@ import { getLiveVisitorsInfo, GetLiveVisitorsInfo } from '~/api'
 import { PROJECT_TABS } from '~/lib/constants'
 import Flag from '~/ui/Flag'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
+import Spin from '~/ui/icons/Spin'
 import OutsideClickHandler from '~/ui/OutsideClickHandler'
 
 import { useCurrentProject, useProjectPassword } from '../../../../providers/CurrentProjectProvider'
@@ -70,7 +71,13 @@ const LiveVisitorsDropdown = () => {
             <div className='flex w-full flex-col p-2'>
               <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>{t('dashboard.liveVisitors')}</p>
               {isLoading ? (
-                <p className='text-sm text-gray-900 dark:text-gray-50'>{t('common.loading')}</p>
+                <p className='mt-2 flex items-center text-sm text-gray-900 dark:text-gray-50'>
+                  <Spin className='ml-0' />
+
+                  {t('common.loading')}
+                </p>
+              ) : liveInfo.length === 0 ? (
+                <p className='mt-2 text-sm text-gray-900 dark:text-gray-50'>{t('project.noData')}</p>
               ) : (
                 <div className='table w-full border-separate border-spacing-y-2'>
                   <div className='table-row-group'>
