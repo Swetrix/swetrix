@@ -69,7 +69,17 @@ const LiveVisitorsDropdown = () => {
             }`}
           >
             <div className='flex w-full flex-col p-2'>
-              <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>{t('dashboard.liveVisitors')}</p>
+              <div className='flex items-center justify-between'>
+                <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>{t('dashboard.liveVisitors')}</p>
+
+                <button
+                  className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-700'
+                  type='button'
+                  onClick={() => setIsDropdownVisible(false)}
+                >
+                  <XMarkIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
+                </button>
+              </div>
               {isLoading ? (
                 <p className='mt-2 flex items-center text-sm text-gray-900 dark:text-gray-50'>
                   <Spin className='ml-0' />
@@ -112,10 +122,6 @@ const LiveVisitorsDropdown = () => {
                 </div>
               )}
             </div>
-            <XMarkIcon
-              className='absolute top-2 right-2 h-5 w-5 cursor-pointer text-gray-900 dark:text-gray-50'
-              onClick={() => setIsDropdownVisible(false)}
-            />
           </div>
         ) : null}
       </div>
