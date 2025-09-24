@@ -232,7 +232,7 @@ interface ViewProjectContextType {
   updateTimebucket: (newTimebucket: TimeBucket) => void
 
   // Refs
-  refCalendar: React.MutableRefObject<any>
+  refCalendar: React.RefObject<any>
 }
 
 const defaultViewProjectContext: ViewProjectContextType = {
