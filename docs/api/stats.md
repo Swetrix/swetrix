@@ -30,6 +30,7 @@ If you have special needs for more requests, please contact us to request more c
 
 ### Periods
 
+- **1h** - last 1 hour;
 - **today** - today (i.e. the time starting from 12:00 AM of the current day);
 - **yesterday** - yesterday (i.e. the time starting from 12:00 AM of the previous day);
 - **1d** - last 24 hours;
