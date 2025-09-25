@@ -1,5 +1,7 @@
 const { createClient } = require('@clickhouse/client')
-require('dotenv').config()
+require('dotenv').config({
+  quiet: true,
+})
 
 const chalk = {
   green: text => `\x1b[32m${text}\x1b[0m`,
