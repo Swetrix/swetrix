@@ -1221,7 +1221,6 @@
   "billing": {
     "title": "Billing & Plans",
     "desc": "It is free to get started and use our services.\nIf you need to handle more traffic, you probably need to upgrade your plan.\nBelow is a list of available plans. No hidden fees or other BS, everything is clear and transparent!",
-    "contact": "Do you have more than {{amount}} million events per month? <url>Get in touch</url> to discuss your needs!",
     "update": "Update payment details",
     "nextBillDate": "Next bill date:",
     "nextBillDateIs": "Your next bill date is {{date}}",
@@ -1308,6 +1307,8 @@
     "trialEnded": "Trial ended",
     "trialEndsToday": "Trial ends today",
     "trialEndsTomorrow": "Trial ends tomorrow",
+    "overXEvents": "Over {{amount}} events",
+    "contactUs": "Contact us",
     "tiers": {
       "trial": "Free trial",
       "upToXEVMo": "Up to {{amount}} events per month",

@@ -7,7 +7,6 @@ import _map from 'lodash/map'
 import { CircleHelpIcon } from 'lucide-react'
 import React, { memo, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 import { toast } from 'sonner'
 
 import { changeSubscriptionPlan, getPaymentMetainfo, previewSubscriptionUpdate } from '~/api'
@@ -342,22 +341,17 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
             </div>
           ))}
 
-          <p className='mt-6 text-slate-800 dark:text-slate-200'>
-            <Trans
-              t={t}
-              i18nKey='billing.contact'
-              values={{ amount: 10 }}
-              components={{
-                url: (
-                  <Link
-                    to={routes.contact}
-                    className='underline decoration-dashed hover:decoration-solid'
-                    aria-label={t('footer.tos')}
-                  />
-                ),
-              }}
-            />
-          </p>
+          <a
+            href={routes.contact}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='group flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-black backdrop-blur-sm dark:border-white/10 dark:bg-white/2 dark:text-white'
+          >
+            <span className='text-base font-medium'>
+              {t('pricing.overXEvents', { amount: formatEventsLong(10000000) })}
+            </span>
+            <p className='text-sm group-hover:underline'>{t('pricing.contactUs')}</p>
+          </a>
         </div>
       </div>
 

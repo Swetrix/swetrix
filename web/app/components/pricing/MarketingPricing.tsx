@@ -4,7 +4,7 @@ import cx from 'clsx'
 import _map from 'lodash/map'
 import { ArrowRightIcon, CircleHelpIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { getPaymentMetainfo } from '~/api'
@@ -176,24 +176,18 @@ const MarketingPricing = () => {
                 </div>
               ))}
 
-              <p className='mt-6 text-slate-200'>
-                <Trans
-                  t={t}
-                  i18nKey='billing.contact'
-                  values={{ amount: 10 }}
-                  components={{
-                    url: (
-                      <a
-                        href={routes.contact}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='underline decoration-dashed hover:decoration-solid'
-                        aria-label={`${t('footer.contact')} (opens in a new tab)`}
-                      />
-                    ),
-                  }}
-                />
-              </p>
+              <a
+                href={routes.contact}
+                target='_blank'
+                rel='noopener noreferrer'
+                aria-label={`${t('footer.contact')} (opens in a new tab)`}
+                className='group flex items-center justify-between rounded-xl border border-white/10 bg-white/2 px-4 py-3 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10'
+              >
+                <span className='text-base font-medium'>
+                  {t('pricing.overXEvents', { amount: formatEventsLong(10000000) })}
+                </span>
+                <p className='text-sm group-hover:underline'>{t('pricing.contactUs')}</p>
+              </a>
             </div>
           </div>
         </div>
