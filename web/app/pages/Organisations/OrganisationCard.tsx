@@ -139,7 +139,7 @@ export const OrganisationCard = ({ organisation, reloadOrganisations }: Organisa
         </div>
         <div className='mt-1 flex shrink-0 flex-wrap gap-2'>
           {badges.map((badge) => (
-            <Badge key={badge.label} {...badge} />
+            <Badge key={badge.label as string} {...badge} />
           ))}
         </div>
       </div>
