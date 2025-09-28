@@ -624,7 +624,7 @@ export const PLAN_LIMITS = {
     index: 1, // 'downgrade' or 'upgrade' logic depends on this
     planCode: 'hobby',
     monthlyUsageLimit: 10000,
-    legacy: false,
+    legacy: true,
     price: {
       USD: {
         monthly: 5,
@@ -806,7 +806,7 @@ export const PLAN_LIMITS = {
   },
 }
 
-export const STANDARD_PLANS = ['hobby', 'freelancer', '200k', '500k', 'startup', '2m', 'enterprise', '10m']
+export const STANDARD_PLANS = ['freelancer', '200k', '500k', 'startup', '2m', 'enterprise', '10m']
 
 export const TRIAL_DAYS = 14
 
