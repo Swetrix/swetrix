@@ -1221,7 +1221,6 @@
   "billing": {
     "title": "Rechnung & Abonnement",
     "desc": "Der Einstieg und die Nutzung unserer Dienste ist gratis.\nWenn Sie mehr Datenverkehr bewältigen müssen, empfiehlt sich wahrscheinlich ein Upgrade Ihres Abonnements.\nNachstehend finden Sie eine Liste der verfügbaren Abomodelle. Keine versteckten Gebühren oder sonstiger Blödsinn, alles ist klar und transparent!",
-    "contact": "Haben Sie mehr als {{amount}} Millionen Events pro Monat? <url>Kontaktieren Sie</url> um Ihre Bedürfnisse zu besprechen!",
     "update": "Zahlungsmethode aktualisieren",
     "nextBillDate": "Nächstes Abrechnungsdatum:",
     "nextBillDateIs": "Ihr nächstes Rechnungsdatum ist {{date}}",
@@ -1290,6 +1289,7 @@
     "subscribe": "Abonnieren",
     "free": "Gratis",
     "legacy": "Legacy",
+    "legacyDescription": "Dieser Tarif bzw. dieses Preismodell ist für neue Nutzer nicht mehr verfügbar. Für bestehende Nutzer ist es weiterhin verfügbar.",
     "perMonth": "mo",
     "perYear": "Jahr",
     "yourPlan": "Ihr Abonnement",
@@ -1307,6 +1307,8 @@
     "trialEnded": "Testversion abgelaufen",
     "trialEndsToday": "Die Testversion endet heute",
     "trialEndsTomorrow": "Testversion endet morgen",
+    "overXEvents": "Über {{amount}} Ereignisse",
+    "contactUs": "Kontaktieren Sie uns",
     "tiers": {
       "trial": "Kostenlose Testversion",
       "upToXEVMo": "Bis zu {{amount}} Tracking-Events pro Monat",
@@ -1315,11 +1317,14 @@
       "evXPlanIncl": "Alles was das {{plan}} Abo enthält",
       "dataExports": "Unbegrenzte Datenexporte",
       "dataOwnership": "100 % iges Dateneigentum",
+      "teamMembers": "Teammitglieder",
       "apiAccess": "API-Zugriff",
       "reports": "E-Mail Berichte",
-      "userFlowAnalysis": "Benutzerfluss-Analyse",
+      "funnels": "Trichter",
+      "websiteSpeedAnalytics": "Analyse der Website-Geschwindigkeit",
       "sessionAnalysis": "Sitzungsanalyse",
-      "errorTracking": "Fehlerverfolgung"
+      "errorTracking": "Fehlerverfolgung",
+      "moreWebsitesForFee": "Swetrix setzt keine feste Obergrenze für die Anzahl der Websites, die Sie hinzufügen können. {{amount}} Websites sind das Standardlimit in allen Tarifen. Sie können weitere Websites gegen Aufpreis hinzubuchen."
     },
     "downgradeTitle": "Sind Sie sicher, dass Sie ein Downgrade durchführen möchten?",
     "downgradeDesc": "Nach dem Downgrade wird Ihr Abonnement weniger Projekte und verfügbare Ereignisse pro Monat enthalten. Falls Ihre Website mehr Traffic aufweist, als der Plan, auf den Sie downgraden möchten, umfasst, werden nicht alle Ereignisse in unserer Datenbank gespeichert.\nSie können jederzeit zu Ihrem aktuellen Abonnement zurückkehren.\nWenn Sie Fragen haben, können Sie uns jederzeit eine E-Mail an {{email}} schicken.",
