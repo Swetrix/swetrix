@@ -184,7 +184,7 @@ const MarketingPricing = () => {
                 className='group flex items-center justify-between rounded-xl border border-white/10 bg-white/2 px-4 py-3 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10'
               >
                 <span className='text-base font-medium'>
-                  {t('pricing.overXEvents', { amount: formatEventsLong(10000000) })}
+                  {t('pricing.overXEvents', { amount: formatEventsLong(20000000) })}
                 </span>
                 <p className='text-sm group-hover:underline'>{t('pricing.contactUs')}</p>
               </a>

@@ -348,7 +348,7 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
             className='group flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-black backdrop-blur-sm dark:border-white/10 dark:bg-white/2 dark:text-white'
           >
             <span className='text-base font-medium'>
-              {t('pricing.overXEvents', { amount: formatEventsLong(10000000) })}
+              {t('pricing.overXEvents', { amount: formatEventsLong(20000000) })}
             </span>
             <p className='text-sm group-hover:underline'>{t('pricing.contactUs')}</p>
           </a>
