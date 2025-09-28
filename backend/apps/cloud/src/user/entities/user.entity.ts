@@ -24,12 +24,15 @@ export enum PlanCode {
   trial = 'trial',
   hobby = 'hobby',
   freelancer = 'freelancer',
+  '100k' = '100k',
   '200k' = '200k',
   '500k' = '500k',
   startup = 'startup',
   '2m' = '2m',
   enterprise = 'enterprise',
   '10m' = '10m',
+  '15m' = '15m',
+  '20m' = '20m',
 }
 
 export enum DashboardBlockReason {
@@ -53,7 +56,6 @@ export const ACCOUNT_PLANS = {
     id: PlanCode.none,
     monthlyUsageLimit: 0,
     maxAlerts: 0,
-    legacy: false,
     pid: null,
     ypid: null,
   },
@@ -61,7 +63,6 @@ export const ACCOUNT_PLANS = {
     id: PlanCode.free,
     monthlyUsageLimit: 5000,
     maxAlerts: 1,
-    legacy: true,
     pid: null,
     ypid: null,
   },
@@ -69,7 +70,6 @@ export const ACCOUNT_PLANS = {
     id: PlanCode.trial,
     monthlyUsageLimit: 10000000,
     maxAlerts: 50,
-    legacy: false,
     pid: null,
     ypid: null,
   },
@@ -79,7 +79,6 @@ export const ACCOUNT_PLANS = {
     pid: '813694', // Plan ID
     ypid: '813695', // Plan ID - Yearly billing
     maxAlerts: 50,
-    legacy: false,
   },
   [PlanCode.freelancer]: {
     id: PlanCode.freelancer,
@@ -87,7 +86,13 @@ export const ACCOUNT_PLANS = {
     pid: '752316', // Plan ID
     ypid: '776469', // Plan ID - Yearly billing
     maxAlerts: 50,
-    legacy: false,
+  },
+  [PlanCode['100k']]: {
+    id: PlanCode['100k'],
+    monthlyUsageLimit: 100000,
+    pid: '916455', // Plan ID
+    ypid: '916456', // Plan ID - Yearly billing
+    maxAlerts: 50,
   },
   [PlanCode['200k']]: {
     id: PlanCode['200k'],
@@ -95,7 +100,6 @@ export const ACCOUNT_PLANS = {
     pid: '854654', // Plan ID
     ypid: '854655', // Plan ID - Yearly billing
     maxAlerts: 50,
-    legacy: false,
   },
   [PlanCode['500k']]: {
     id: PlanCode['500k'],
@@ -103,7 +107,6 @@ export const ACCOUNT_PLANS = {
     pid: '854656', // Plan ID
     ypid: '854657', // Plan ID - Yearly billing
     maxAlerts: 50,
-    legacy: false,
   },
   [PlanCode.startup]: {
     id: PlanCode.startup,
@@ -111,7 +114,6 @@ export const ACCOUNT_PLANS = {
     pid: '752317',
     ypid: '776470',
     maxAlerts: 50,
-    legacy: false,
   },
   [PlanCode['2m']]: {
     id: PlanCode['2m'],
@@ -119,7 +121,6 @@ export const ACCOUNT_PLANS = {
     pid: '854663', // Plan ID
     ypid: '854664', // Plan ID - Yearly billing
     maxAlerts: 50,
-    legacy: false,
   },
   [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
@@ -127,7 +128,6 @@ export const ACCOUNT_PLANS = {
     pid: '752318',
     ypid: '776471',
     maxAlerts: 50,
-    legacy: false,
   },
   [PlanCode['10m']]: {
     id: PlanCode['10m'],
@@ -135,7 +135,20 @@ export const ACCOUNT_PLANS = {
     pid: '854665', // Plan ID
     ypid: '854666', // Plan ID - Yearly billing
     maxAlerts: 50,
-    legacy: false,
+  },
+  [PlanCode['15m']]: {
+    id: PlanCode['15m'],
+    monthlyUsageLimit: 15000000,
+    pid: '916451', // Plan ID
+    ypid: '916452', // Plan ID - Yearly billing
+    maxAlerts: 50,
+  },
+  [PlanCode['20m']]: {
+    id: PlanCode['20m'],
+    monthlyUsageLimit: 20000000,
+    pid: '916453', // Plan ID
+    ypid: '916454', // Plan ID - Yearly billing
+    maxAlerts: 50,
   },
 }
 

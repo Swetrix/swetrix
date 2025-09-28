@@ -624,7 +624,7 @@ export const PLAN_LIMITS = {
     index: 1, // 'downgrade' or 'upgrade' logic depends on this
     planCode: 'hobby',
     monthlyUsageLimit: 10000,
-    legacy: false,
+    legacy: true,
     price: {
       USD: {
         monthly: 5,
@@ -647,7 +647,7 @@ export const PLAN_LIMITS = {
     index: 2, // 'downgrade' or 'upgrade' logic depends on this
     planCode: 'freelancer',
     monthlyUsageLimit: 100000,
-    legacy: false,
+    legacy: true,
     price: {
       USD: {
         monthly: 15,
@@ -666,6 +666,29 @@ export const PLAN_LIMITS = {
     ypid: 776469, // Plan ID - Yearly billing
     maxAlerts: 50,
   },
+  '100k': {
+    index: 2.5, // 'downgrade' or 'upgrade' logic depends on this
+    planCode: '100k',
+    monthlyUsageLimit: 100000,
+    legacy: false,
+    price: {
+      USD: {
+        monthly: 19,
+        yearly: 190,
+      },
+      EUR: {
+        monthly: 17,
+        yearly: 170,
+      },
+      GBP: {
+        monthly: 15,
+        yearly: 150,
+      },
+    },
+    pid: 916455, // Plan ID
+    ypid: 916456, // Plan ID - Yearly billing
+    maxAlerts: 50,
+  },
   '200k': {
     index: 3, // 'downgrade' or 'upgrade' logic depends on this
     planCode: '200k',
@@ -673,8 +696,8 @@ export const PLAN_LIMITS = {
     legacy: false,
     price: {
       USD: {
-        monthly: 25,
-        yearly: 250,
+        monthly: 29,
+        yearly: 290,
       },
       EUR: {
         monthly: 25,
@@ -696,16 +719,16 @@ export const PLAN_LIMITS = {
     legacy: false,
     price: {
       USD: {
-        monthly: 45,
-        yearly: 450,
+        monthly: 49,
+        yearly: 490,
       },
       EUR: {
-        monthly: 45,
-        yearly: 450,
+        monthly: 42,
+        yearly: 420,
       },
       GBP: {
-        monthly: 40,
-        yearly: 400,
+        monthly: 39,
+        yearly: 390,
       },
     },
     pid: 854656, // Plan ID
@@ -719,16 +742,16 @@ export const PLAN_LIMITS = {
     legacy: false,
     price: {
       USD: {
-        monthly: 59,
-        yearly: 590,
+        monthly: 79,
+        yearly: 790,
       },
       EUR: {
-        monthly: 57,
-        yearly: 570,
+        monthly: 69,
+        yearly: 690,
       },
       GBP: {
-        monthly: 49,
-        yearly: 490,
+        monthly: 59,
+        yearly: 590,
       },
     },
     pid: 752317,
@@ -742,16 +765,16 @@ export const PLAN_LIMITS = {
     legacy: false,
     price: {
       USD: {
-        monthly: 84,
-        yearly: 840,
+        monthly: 119,
+        yearly: 1190,
       },
       EUR: {
-        monthly: 84,
-        yearly: 840,
+        monthly: 99,
+        yearly: 990,
       },
       GBP: {
-        monthly: 74,
-        yearly: 740,
+        monthly: 89,
+        yearly: 890,
       },
     },
     pid: 854663,
@@ -765,16 +788,16 @@ export const PLAN_LIMITS = {
     legacy: false,
     price: {
       USD: {
-        monthly: 110,
-        yearly: 1100,
+        monthly: 179,
+        yearly: 1790,
       },
       EUR: {
-        monthly: 110,
-        yearly: 1100,
+        monthly: 149,
+        yearly: 1490,
       },
       GBP: {
-        monthly: 95,
-        yearly: 950,
+        monthly: 139,
+        yearly: 1390,
       },
     },
     pid: 752318,
@@ -788,25 +811,71 @@ export const PLAN_LIMITS = {
     legacy: false,
     price: {
       USD: {
-        monthly: 150,
-        yearly: 1500,
+        monthly: 249,
+        yearly: 2490,
       },
       EUR: {
-        monthly: 150,
-        yearly: 1500,
+        monthly: 209,
+        yearly: 2090,
       },
       GBP: {
-        monthly: 130,
-        yearly: 1300,
+        monthly: 189,
+        yearly: 1890,
       },
     },
     pid: 854665,
     ypid: 854666,
     maxAlerts: 50,
   },
+  '15m': {
+    index: 9, // 'downgrade' or 'upgrade' logic depends on this
+    planCode: '15m',
+    monthlyUsageLimit: 15000000,
+    legacy: false,
+    price: {
+      USD: {
+        monthly: 349,
+        yearly: 3490,
+      },
+      EUR: {
+        monthly: 299,
+        yearly: 2990,
+      },
+      GBP: {
+        monthly: 259,
+        yearly: 2590,
+      },
+    },
+    pid: 916451,
+    ypid: 916452,
+    maxAlerts: 50,
+  },
+  '20m': {
+    index: 10, // 'downgrade' or 'upgrade' logic depends on this
+    planCode: '20m',
+    monthlyUsageLimit: 20000000,
+    legacy: false,
+    price: {
+      USD: {
+        monthly: 419,
+        yearly: 4190,
+      },
+      EUR: {
+        monthly: 359,
+        yearly: 3590,
+      },
+      GBP: {
+        monthly: 319,
+        yearly: 3190,
+      },
+    },
+    pid: 916453,
+    ypid: 916454,
+    maxAlerts: 50,
+  },
 }
 
-export const STANDARD_PLANS = ['hobby', 'freelancer', '200k', '500k', 'startup', '2m', 'enterprise', '10m']
+export const STANDARD_PLANS = ['100k', '200k', '500k', 'startup', '2m', 'enterprise', '10m', '15m', '20m']
 
 export const TRIAL_DAYS = 14
 

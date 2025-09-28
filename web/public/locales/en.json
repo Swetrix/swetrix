@@ -1221,7 +1221,6 @@
   "billing": {
     "title": "Billing & Plans",
     "desc": "It is free to get started and use our services.\nIf you need to handle more traffic, you probably need to upgrade your plan.\nBelow is a list of available plans. No hidden fees or other BS, everything is clear and transparent!",
-    "contact": "Do you have more than {{amount}} million events per month? <url>Get in touch</url> to discuss your needs!",
     "update": "Update payment details",
     "nextBillDate": "Next bill date:",
     "nextBillDateIs": "Your next bill date is {{date}}",
@@ -1290,6 +1289,7 @@
     "subscribe": "Subscribe",
     "free": "Free",
     "legacy": "Legacy",
+    "legacyDescription": "This plan or pricing is no longer available for new users. It is still available for existing users.",
     "perMonth": "mo",
     "perYear": "yr",
     "yourPlan": "Your plan",
@@ -1307,6 +1307,8 @@
     "trialEnded": "Trial ended",
     "trialEndsToday": "Trial ends today",
     "trialEndsTomorrow": "Trial ends tomorrow",
+    "overXEvents": "Over {{amount}} events",
+    "contactUs": "Contact us",
     "tiers": {
       "trial": "Free trial",
       "upToXEVMo": "Up to {{amount}} events per month",
@@ -1315,11 +1317,14 @@
       "evXPlanIncl": "Everything {{plan}} plan includes",
       "dataExports": "Unlimited data exports",
       "dataOwnership": "100% data ownership",
+      "teamMembers": "Team members",
       "apiAccess": "API access",
       "reports": "Email reports",
-      "userFlowAnalysis": "User flow analysis",
+      "funnels": "Funnels",
+      "websiteSpeedAnalytics": "Website speed analytics",
       "sessionAnalysis": "Session analysis",
-      "errorTracking": "Error tracking"
+      "errorTracking": "Error tracking",
+      "moreWebsitesForFee": "Swetrix has no limit on the number of websites you can add. {{amount}} websites are the default limit all plans have. You can purchase more websites for an additional fee."
     },
     "downgradeTitle": "Are you sure you want to downgrade?",
     "downgradeDesc": "After downgrading, your plan will include fewer projects and available events per month. In case your website contains more traffic than the plan you want to downgrade to includes, this will result in not all events being stored in our database.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}.",

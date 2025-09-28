@@ -2,15 +2,16 @@ import { Label, Radio, RadioGroup } from '@headlessui/react'
 import { CheckIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 import _map from 'lodash/map'
-import { ArrowRightIcon } from 'lucide-react'
+import { ArrowRightIcon, CircleHelpIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { getPaymentMetainfo } from '~/api'
 import { CURRENCIES, PLAN_LIMITS, STANDARD_PLANS, BillingFrequency, TRIAL_DAYS } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { useAuth } from '~/providers/AuthProvider'
+import Tooltip from '~/ui/Tooltip'
 import routes from '~/utils/routes'
 
 const formatEventsLong = (value: number) => value.toLocaleString('en-US')
@@ -48,15 +49,52 @@ const MarketingPricing = () => {
 
             <div className='mt-8 space-y-3'>
               {[
-                t('pricing.tiers.upToXWebsites', { amount: 50 }),
-                t('pricing.tiers.userFlowAnalysis'),
-                t('pricing.tiers.sessionAnalysis'),
-                t('pricing.tiers.errorTracking'),
-                t('pricing.tiers.apiAccess'),
-                t('pricing.tiers.dataOwnership'),
-                t('pricing.tiers.reports'),
-              ].map((label) => (
-                <div key={label} className='flex items-center text-gray-100'>
+                {
+                  label: (
+                    <div className='flex items-center gap-2'>
+                      <span>{t('pricing.tiers.upToXWebsites', { amount: 50 })}</span>
+                      <Tooltip
+                        text={t('pricing.tiers.moreWebsitesForFee', { amount: 50 })}
+                        tooltipNode={<CircleHelpIcon className='size-4 stroke-gray-50' strokeWidth={1.5} />}
+                      />
+                    </div>
+                  ),
+                  key: 'upToXWebsites',
+                },
+                {
+                  label: t('pricing.tiers.teamMembers'),
+                  key: 'teamMembers',
+                },
+                {
+                  label: t('pricing.tiers.sessionAnalysis'),
+                  key: 'sessionAnalysis',
+                },
+                {
+                  label: t('pricing.tiers.websiteSpeedAnalytics'),
+                  key: 'websiteSpeedAnalytics',
+                },
+                {
+                  label: t('pricing.tiers.funnels'),
+                  key: 'funnels',
+                },
+                {
+                  label: t('pricing.tiers.errorTracking'),
+                  key: 'errorTracking',
+                },
+                {
+                  label: t('pricing.tiers.apiAccess'),
+                  key: 'apiAccess',
+                },
+                {
+                  label: t('pricing.tiers.dataOwnership'),
+                  key: 'dataOwnership',
+                },
+                {
+                  label: t('pricing.tiers.reports'),
+                  key: 'reports',
+                },
+              ].map(({ label, key }) => (
+                <div key={key} className='flex items-center text-gray-100'>
                   <CheckIcon className='mr-3 size-5' />
                   <span className='text-sm'>{label}</span>
                 </div>
@@ -138,24 +176,18 @@ const MarketingPricing = () => {
                 </div>
               ))}
 
-              <p className='mt-6 text-slate-200'>
-                <Trans
-                  t={t}
-                  i18nKey='billing.contact'
-                  values={{ amount: 10 }}
-                  components={{
-                    url: (
-                      <a
-                        href={routes.contact}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='underline decoration-dashed hover:decoration-solid'
-                        aria-label={`${t('footer.contact')} (opens in a new tab)`}
-                      />
-                    ),
-                  }}
-                />
-              </p>
+              <a
+                href={routes.contact}
+                target='_blank'
+                rel='noopener noreferrer'
+                aria-label={`${t('footer.contact')} (opens in a new tab)`}
+                className='group flex items-center justify-between rounded-xl border border-white/10 bg-white/2 px-4 py-3 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10'
+              >
+                <span className='text-base font-medium'>
+                  {t('pricing.overXEvents', { amount: formatEventsLong(20000000) })}
+                </span>
+                <p className='text-sm group-hover:underline'>{t('pricing.contactUs')}</p>
+              </a>
             </div>
           </div>
         </div>

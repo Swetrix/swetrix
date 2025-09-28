@@ -4,9 +4,9 @@ import dayjs from 'dayjs'
 import _includes from 'lodash/includes'
 import _isNil from 'lodash/isNil'
 import _map from 'lodash/map'
+import { CircleHelpIcon } from 'lucide-react'
 import React, { memo, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 import { toast } from 'sonner'
 
 import { changeSubscriptionPlan, getPaymentMetainfo, previewSubscriptionUpdate } from '~/api'
@@ -22,9 +22,11 @@ import {
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
+import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
@@ -284,6 +286,25 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
                 <span className='text-sm text-gray-500 dark:text-gray-400'>{t('pricing.eventsPerMonth')}</span>
               </div>
               <div className='flex items-center gap-3 text-sm'>
+                {tier.legacy ? (
+                  <Badge
+                    label={
+                      <Tooltip
+                        text={t('pricing.legacyDescription')}
+                        tooltipNode={
+                          <span className='flex items-center gap-1'>
+                            {t('pricing.legacy')}
+                            <CircleHelpIcon
+                              className='size-4 stroke-yellow-800 dark:stroke-yellow-500'
+                              strokeWidth={1.5}
+                            />
+                          </span>
+                        }
+                      />
+                    }
+                    colour='yellow'
+                  />
+                ) : null}
                 <div className='text-sm'>
                   <span className='font-semibold text-black dark:text-white'>
                     {currency.symbol}
@@ -320,22 +341,17 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
             </div>
           ))}
 
-          <p className='mt-6 text-slate-800 dark:text-slate-200'>
-            <Trans
-              t={t}
-              i18nKey='billing.contact'
-              values={{ amount: 10 }}
-              components={{
-                url: (
-                  <Link
-                    to={routes.contact}
-                    className='underline decoration-dashed hover:decoration-solid'
-                    aria-label={t('footer.tos')}
-                  />
-                ),
-              }}
-            />
-          </p>
+          <a
+            href={routes.contact}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='group flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-black backdrop-blur-sm dark:border-white/10 dark:bg-white/2 dark:text-white'
+          >
+            <span className='text-base font-medium'>
+              {t('pricing.overXEvents', { amount: formatEventsLong(20000000) })}
+            </span>
+            <p className='text-sm group-hover:underline'>{t('pricing.contactUs')}</p>
+          </a>
         </div>
       </div>
 

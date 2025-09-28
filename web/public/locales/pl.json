@@ -1221,7 +1221,6 @@
   "billing": {
     "title": "Cennik i plany",
     "desc": "Rozpoczęcie i korzystanie z naszych usług jest darmowe.\nJeśli musisz poradzić sobie z większą liczbą ruchów, prawdopodobnie będziesz musiał zaktualizować swój plan.\nPoniżej znajduje się lista dostępnych planów. Żadnych ukrytych opłat ani innych BS, wszystko jest jasne i przejrzyste!",
-    "contact": "Czy masz więcej niż {{amount}} milion wydarzeń miesięcznie? <url>Skontaktuj się z nami</url>, aby omówić swoje potrzeby!",
     "update": "Zaktualizuj metodę płatności",
     "nextBillDate": "Data następnego rozliczenia:",
     "nextBillDateIs": "Data twojej następnej faktury to {{date}}",
@@ -1290,6 +1289,7 @@
     "subscribe": "Subskrybuj",
     "free": "Za darmo",
     "legacy": "Wygasły",
+    "legacyDescription": "Ten plan lub ta oferta cenowa nie jest już dostępna dla nowych użytkowników. Nadal jest dostępna dla obecnych użytkowników.",
     "perMonth": "mies.",
     "perYear": "rocznie",
     "yourPlan": "Twój plan",
@@ -1307,6 +1307,8 @@
     "trialEnded": "Zakończono okres próbny",
     "trialEndsToday": "Okres próbny kończy się dzisiaj",
     "trialEndsTomorrow": "Okres próbny kończy się jutro",
+    "overXEvents": "Ponad {{amount}} zdarzeń",
+    "contactUs": "Skontaktuj się z nami",
     "tiers": {
       "trial": "Bezpłatna wersja próbna",
       "upToXEVMo": "Do {{amount}} zdarzeń miesięcznie",
@@ -1315,11 +1317,14 @@
       "evXPlanIncl": "Wszystko, co zawiera plan {{plan}}",
       "dataExports": "Nielimitowany eksport danych",
       "dataOwnership": "100% własności danych",
+      "teamMembers": "Członkowie zespołu",
       "apiAccess": "Dostęp do API",
       "reports": "Raporty e-mail",
-      "userFlowAnalysis": "Analiza przepływu użytkownika",
+      "funnels": "Lejki",
+      "websiteSpeedAnalytics": "Analiza szybkości witryny",
       "sessionAnalysis": "Analiza sesji",
-      "errorTracking": "Śledzenie błędów"
+      "errorTracking": "Śledzenie błędów",
+      "moreWebsitesForFee": "Swetrix nie nakłada ograniczenia na liczbę witryn, które możesz dodać. Domyślny limit we wszystkich planach to {{amount}} witryn. Możesz dokupić więcej witryn za dodatkową opłatą."
     },
     "downgradeTitle": "Czy na pewno chcesz obniżyć swój plan?",
     "downgradeDesc": "Po obniżeniu planu, będzie zawierał on mniej projektów i dostępnych zdarzeń na miesiąc. W przypadku, gdy Twoja strona zawiera więcej ruchu niż zawiera plan, do którego chcesz przejść, spowoduje to, że nie wszystkie zdarzenia zostaną zapisane w naszej bazie danych.\nW każdej chwili będziesz mógł powrócić do swojego obecnego planu.\nJeśli masz jakiekolwiek pytania, zawsze możesz wysłać do nas e-mail na adres {{email}}.",

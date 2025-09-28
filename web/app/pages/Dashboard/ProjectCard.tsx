@@ -235,7 +235,7 @@ export const ProjectCard = ({
         </div>
         <div className='mt-1 flex shrink-0 flex-wrap gap-2'>
           {badges.length > 0 ? (
-            badges.map((badge) => <Badge key={badge.label} {...badge} />)
+            badges.map((badge) => <Badge key={badge.label as string} {...badge} />)
           ) : (
             <Badge label='I' colour='slate' className='invisible' />
           )}

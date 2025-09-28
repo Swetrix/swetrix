@@ -1221,7 +1221,6 @@
   "billing": {
     "title": "Facturation & Plans",
     "desc": "Il est gratuit de commencer et d'utiliser nos services.\nSi vous avez besoin de gérer plus de trafic, vous devrez probablement mettre à niveau votre plan.\nVoici une liste des plans disponibles. Pas de frais cachés ou autres BS, tout est clair et transparent !",
-    "contact": "Avez-vous plus de {{amount}} millions d'événements par mois ? <url>Contactez-nous</url> pour discuter de vos besoins !",
     "update": "Mettre à jour les détails de paiement",
     "nextBillDate": "Prochaine date de facturation :",
     "nextBillDateIs": "La date de votre prochaine facture est le {{date}}",
@@ -1290,6 +1289,7 @@
     "subscribe": "S'abonner",
     "free": "Gratuit",
     "legacy": "Héritage",
+    "legacyDescription": "Cette offre n’est plus disponible pour les nouveaux utilisateurs. Elle reste disponible pour les utilisateurs existants.",
     "perMonth": "mois",
     "perYear": "an",
     "yourPlan": "Votre plan",
@@ -1307,6 +1307,8 @@
     "trialEnded": "Essai terminé",
     "trialEndsToday": "L'essai se termine aujourd'hui",
     "trialEndsTomorrow": "L'essai se termine demain",
+    "overXEvents": "Plus de {{amount}} événements",
+    "contactUs": "Contactez-nous",
     "tiers": {
       "trial": "Essai gratuit",
       "upToXEVMo": "Jusqu'à {{amount}} événements par mois",
@@ -1315,11 +1317,14 @@
       "evXPlanIncl": "Tout ce que le plan {{plan}} inclut",
       "dataExports": "Exportations de données illimitées",
       "dataOwnership": "Propriété des données à 100%",
+      "teamMembers": "Membres de l'équipe",
       "apiAccess": "Accès à l’API",
       "reports": "Rapports par e-mail",
-      "userFlowAnalysis": "Analyse du flux utilisateur",
+      "funnels": "Entonnoirs",
+      "websiteSpeedAnalytics": "Analyse de la vitesse du site web",
       "sessionAnalysis": "Analyse des sessions",
-      "errorTracking": "Suivi des erreurs"
+      "errorTracking": "Suivi des erreurs",
+      "moreWebsitesForFee": "Swetrix n’impose aucune limite au nombre de sites web que vous pouvez ajouter. {{amount}} sites web constituent la limite par défaut de tous les forfaits. Vous pouvez ajouter davantage de sites moyennant des frais supplémentaires."
     },
     "downgradeTitle": "Êtes-vous sûr de vouloir rétrograder ?",
     "downgradeDesc": "Après la rétrogradation, votre plan inclura moins de projets et d'événements disponibles par mois. Si votre site web contient plus de trafic que le plan auquel vous souhaitez rétrograder, cela entraînera le non-stockage de tous les événements dans notre base de données.\nVous pourrez revenir à votre plan actuel à tout moment.\nSi vous avez des questions, vous pouvez toujours nous envoyer un e-mail à {{email}}.",
