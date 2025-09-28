@@ -1290,6 +1290,7 @@
     "subscribe": "Subscribe",
     "free": "Free",
     "legacy": "Legacy",
+    "legacyDescription": "This plan or pricing is no longer available for new users. It is still available for existing users.",
     "perMonth": "mo",
     "perYear": "yr",
     "yourPlan": "Your plan",

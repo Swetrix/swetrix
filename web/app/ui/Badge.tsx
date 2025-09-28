@@ -1,7 +1,9 @@
+import React from 'react'
+
 import { cn } from '~/utils/generic'
 
 export interface BadgeProps {
-  label: string
+  label: React.ReactNode
   className?: string
   colour?: 'red' | 'yellow' | 'green' | 'indigo' | 'slate' | 'sky'
 }
