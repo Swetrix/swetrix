@@ -1761,7 +1761,8 @@ const ViewProject = () => {
     setErrorsLoading(true)
 
     try {
-      const skip = typeof forcedSkip === 'number' ? forcedSkip : errorsSkip
+      // If errors list is empty (e.g., after navigating back), default to first page
+      const skip = typeof forcedSkip === 'number' ? forcedSkip : _isEmpty(errors) ? 0 : errorsSkip
       let dataErrors: { errors: SwetrixError[] }
       let from
       let to
