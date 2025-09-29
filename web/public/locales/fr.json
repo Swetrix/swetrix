@@ -773,6 +773,8 @@
     "sortDateDesc": "Plus récents d'abord",
     "pageviewsDesc": "Le plus de pages vues",
     "pageviewsAsc": "Le moins de pages vues",
+    "page": "Page",
+    "event": "Événement",
     "noProjectsForCriteria": "Aucun projet trouvé pour les critères sélectionnés",
     "lastVisitDesc": "Les plus récemment visités en premier",
     "captcha": "CAPTCHA",
@@ -991,6 +993,7 @@
     "changeInSettings": "Modifiez cela dans les paramètres de votre compte",
     "events": "Événements",
     "dropoff": "Abandon",
+    "conversionFromStart": "Conversion depuis le début",
     "neverEnteredTheFunnel": "Jamais entré dans le tunnel",
     "aggregation": "Agrégation",
     "locked": {
@@ -1216,7 +1219,13 @@
     "compareDateRangeError": "Cette plage de dates ne peut pas être comparée, veuillez sélectionner une autre plage de dates",
     "previousPeriod": "Période précédente",
     "disableCompare": "Désactiver la comparaison",
-    "compare": "Comparer"
+    "compare": "Comparer",
+    "funnelSummary": {
+      "xStepFunnel": "entonnoir à {{x}} étapes",
+      "conversionRateShort": "taux de conversion de {{x}} %",
+      "startShort": "Début",
+      "endShort": "Fin"
+    }
   },
   "billing": {
     "title": "Facturation & Plans",

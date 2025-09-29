@@ -1,5 +1,4 @@
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
-import { AdjustmentsVerticalIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _find from 'lodash/find'
 import _isNumber from 'lodash/isNumber'
@@ -7,6 +6,7 @@ import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _round from 'lodash/round'
 import _size from 'lodash/size'
+import { Settings2Icon } from 'lucide-react'
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -228,8 +228,9 @@ export const ProjectCard = ({
               className='rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               onClick={(e) => e.stopPropagation()}
               to={_replace(routes.project_settings, ':id', id)}
+              aria-label={`${t('project.settings.settings')} ${name}`}
             >
-              <AdjustmentsVerticalIcon className='size-5' aria-label={`${t('project.settings.settings')} ${name}`} />
+              <Settings2Icon className='size-5' strokeWidth={1.5} />
             </Link>
           ) : null}
         </div>

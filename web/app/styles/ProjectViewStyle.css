@@ -157,11 +157,11 @@ body.dark .bb-ygrid {
 }
 
 .bb-target-events .bb-bar {
-  stroke: var(--color-blue-500) !important;
+  stroke: var(--color-blue-700) !important;
 }
 
 .bb-target-dropoff .bb-bar {
-  stroke: rgba(37, 99, 235, 0.4) !important;
+  stroke: rgba(71, 85, 105, 0.4) !important;
 }
 
 .bb-target-Technical-Expenses .bb-bar {

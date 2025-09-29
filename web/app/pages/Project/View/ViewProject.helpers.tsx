@@ -1146,6 +1146,16 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
   const events = _map(funnel, (step) => step.events)
   const dropoff = _map(funnel, (step) => step.dropoff)
 
+  // Calculate optimal Y axis ticks based on the data
+  const allYValues: number[] = []
+  if (events && !_isEmpty(events)) {
+    allYValues.push(...events.filter((n) => n !== undefined && n !== null))
+  }
+  if (dropoff && !_isEmpty(dropoff)) {
+    allYValues.push(...dropoff.filter((n) => n !== undefined && n !== null))
+  }
+  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+
   return {
     data: {
       x: 'x',
@@ -1159,8 +1169,8 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
         dropoff: bar(),
       },
       colors: {
-        events: '#2563eb', // blue-600
-        dropoff: 'rgba(37, 99, 235, 0.2)', // blue-600 + opacity
+        events: '#1d4ed8', // blue-700
+        dropoff: 'rgba(71, 85, 105, 0.2)', // slate-600 + opacity
       },
       groups: [['events', 'dropoff']],
       // @ts-expect-error
@@ -1175,6 +1185,11 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
       auto: true,
       timer: false,
     },
+    grid: {
+      y: {
+        show: true,
+      },
+    },
     axis: {
       x: {
         type: 'category',
@@ -1182,7 +1197,10 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
       y: {
         tick: {
           format: (d: number) => nFormatter(d, 1),
+          values: optimalTicks,
         },
+        show: true,
+        inner: true,
       },
     },
     tooltip: {
@@ -1246,6 +1264,16 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
           </tr>
         `
 
+        const conversionFromStart = `
+          <tr class='tracking-tight'>
+            <td class='pr-7'>
+              <span class='font-semibold'>${t('project.conversionFromStart')}</span>
+            </td>
+            <td class='pr-3 font-semibold text-right'>${step.eventsPerc}%</td>
+            <td class='text-right'></td>
+          </tr>
+        `
+
         return `
           <div class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
             ${title}
@@ -1261,19 +1289,14 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
               <tbody>
                 ${events}
                 ${dropoff}
+                ${conversionFromStart}
               </tbody>
             </table>
           </div>
         `
       },
     },
-    padding: {
-      left: 40,
-    },
-    bar: {
-      linearGradient: true,
-    },
-    bindto: '#dataChart',
+    bindto: '#funnelChart',
   }
 }
 

@@ -773,6 +773,8 @@
     "sortDateDesc": "Newest first",
     "pageviewsDesc": "Most pageviews",
     "pageviewsAsc": "Least pageviews",
+    "page": "Page",
+    "event": "Event",
     "noProjectsForCriteria": "No projects found for the selected criteria",
     "lastVisitDesc": "Recently visited first",
     "captcha": "CAPTCHA",
@@ -991,6 +993,7 @@
     "changeInSettings": "Change this in your account settings",
     "events": "Events",
     "dropoff": "Dropoff",
+    "conversionFromStart": "Conversion from start",
     "neverEnteredTheFunnel": "Never entered the funnel",
     "aggregation": "Aggregation",
     "locked": {
@@ -1216,7 +1219,13 @@
     "compareDateRangeError": "This date range cannot be compared, please select a other date range",
     "previousPeriod": "Previous period",
     "disableCompare": "Disable comparison",
-    "compare": "Compare"
+    "compare": "Compare",
+    "funnelSummary": {
+      "xStepFunnel": "{{x}}-step funnel",
+      "conversionRateShort": "{{x}}% conversion rate",
+      "startShort": "Start",
+      "endShort": "End"
+    }
   },
   "billing": {
     "title": "Billing & Plans",

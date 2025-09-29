@@ -1,5 +1,3 @@
-import { MagnifyingGlassIcon, ChevronLeftIcon } from '@heroicons/react/24/outline'
-import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import SwetrixSDK from '@swetrix/sdk'
 import billboard, { Chart } from 'billboard.js'
 import cx from 'clsx'
@@ -18,6 +16,10 @@ import _replace from 'lodash/replace'
 import _some from 'lodash/some'
 import _uniqBy from 'lodash/uniqBy'
 import {
+  MoonIcon,
+  SunIcon,
+  ChevronLeftIcon,
+  SearchIcon,
   BugIcon,
   GaugeIcon,
   Trash2Icon,
@@ -526,6 +528,10 @@ const ViewProject = () => {
 
   const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(undefined)
   const [funnelActionLoading, setFunnelActionLoading] = useState(false)
+  const [funnelAnalytics, setFunnelAnalytics] = useState<{
+    funnel: AnalyticsFunnel[]
+    totalPageviews: number
+  } | null>(null)
   const activeFunnel = useMemo(() => {
     if (!project) {
       return null
@@ -2013,7 +2019,15 @@ const ViewProject = () => {
 
       const { funnel, totalPageviews } = dataFunnel
 
+      setFunnelAnalytics({ funnel, totalPageviews })
+
       const bbSettings = getSettingsFunnels(funnel, totalPageviews, t)
+
+      // Unhide the wrapper first, then mount the chart on the next tick
+      setAnalyticsLoading(false)
+      setDataLoading(false)
+
+      await new Promise((resolve) => setTimeout(resolve, 1))
 
       if (activeTab === PROJECT_TABS.funnels) {
         setMainChart(() => {
@@ -2025,9 +2039,6 @@ const ViewProject = () => {
           return generate
         })
       }
-
-      setAnalyticsLoading(false)
-      setDataLoading(false)
     } catch (reason) {
       setAnalyticsLoading(false)
       setDataLoading(false)
@@ -2071,6 +2082,24 @@ const ViewProject = () => {
     newSearchParams.set('tab', key)
     setSearchParams(newSearchParams)
   }
+
+  const funnelSummary = useMemo(() => {
+    if (!funnelAnalytics || _isEmpty(funnelAnalytics.funnel)) {
+      return null
+    }
+
+    const stepsCount = funnelAnalytics.funnel.length
+    const startVisitors = funnelAnalytics.funnel[0]?.events || 0
+    const endVisitors = funnelAnalytics.funnel[stepsCount - 1]?.events || 0
+    const conversionRate = Number(((endVisitors / Math.max(startVisitors, 1)) * 100).toFixed(2))
+
+    return {
+      stepsCount,
+      startVisitors,
+      endVisitors,
+      conversionRate,
+    }
+  }, [funnelAnalytics])
 
   const refreshStats = async () => {
     if (!authLoading && !dataLoading) {
@@ -3011,7 +3040,7 @@ const ViewProject = () => {
                                   },
                                 )}
                               >
-                                <MagnifyingGlassIcon className='h-5 w-5 stroke-2 text-gray-700 dark:text-gray-50' />
+                                <SearchIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                               </button>
                             </div>
                             {activeTab === PROJECT_TABS.traffic ? (
@@ -4356,10 +4385,27 @@ const ViewProject = () => {
                   </div>
                 ) : null}
                 {activeTab === PROJECT_TABS.funnels ? (
-                  <div className={cx('pt-4 md:pt-0', { hidden: !activeFunnel || analyticsLoading })}>
-                    <div className='h-80'>
-                      <div className='mt-5 h-80 md:mt-0' id='dataChart' />
-                    </div>
+                  <div
+                    className={cx(
+                      'relative overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25',
+                      { hidden: !activeFunnel || analyticsLoading },
+                    )}
+                  >
+                    {funnelSummary ? (
+                      <>
+                        <p className='font-medium text-gray-900 lg:text-left dark:text-gray-50'>
+                          {t('project.funnelSummary.xStepFunnel', { x: funnelSummary.stepsCount })}
+                          <span className='mx-2 text-gray-400'>•</span>
+                          {t('project.funnelSummary.conversionRateShort', { x: funnelSummary.conversionRate })}
+                        </p>
+                        <p className='text-center text-gray-900 lg:text-left dark:text-gray-50'>
+                          {t('project.funnelSummary.startShort')}: {nLocaleFormatter(funnelSummary.startVisitors)}
+                          <span className='mx-1'>→</span>
+                          {t('project.funnelSummary.endShort')}: {nLocaleFormatter(funnelSummary.endVisitors)}
+                        </p>
+                      </>
+                    ) : null}
+                    <div className='mt-5 h-80 [&_svg]:!overflow-visible' id='funnelChart' />
                   </div>
                 ) : null}
 
@@ -4398,11 +4444,12 @@ const ViewProject = () => {
                         headless
                       />
                       <div className='flex items-center gap-4'>
-                        <button type='button'>
-                          <KeyboardIcon
-                            onClick={() => setIsHotkeysHelpOpened(true)}
-                            className='h-6 w-6 cursor-pointer text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300'
-                          />
+                        <button
+                          type='button'
+                          onClick={() => setIsHotkeysHelpOpened(true)}
+                          aria-label={t('modals.shortcuts.title')}
+                        >
+                          <KeyboardIcon className='h-6 w-6 cursor-pointer text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300' />
                         </button>
                         <Dropdown
                           title={

@@ -1,7 +1,6 @@
-import { AdjustmentsVerticalIcon, PlusCircleIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _map from 'lodash/map'
-import { Trash2Icon } from 'lucide-react'
+import { Settings2Icon, Trash2Icon, CirclePlusIcon } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
@@ -53,29 +52,33 @@ const FunnelCard = ({ funnel, openFunnelSettings, deleteFunnel, loading, allowed
             <button
               type='button'
               onClick={(e) => {
+                e.preventDefault()
                 e.stopPropagation()
                 openFunnelSettings(funnel)
               }}
               aria-label={t('common.settings')}
+              className='rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
             >
-              <AdjustmentsVerticalIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
+              <Settings2Icon className='size-5' strokeWidth={1.5} />
             </button>
             {allowedToManage ? (
-              <Trash2Icon
+              <button
+                type='button'
                 onClick={(e) => {
+                  e.preventDefault()
                   e.stopPropagation()
                   deleteFunnel(funnel.id)
                 }}
-                role='button'
                 aria-label={t('common.delete')}
                 className={cx(
-                  'h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500',
+                  'rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300',
                   {
                     'cursor-not-allowed': loading,
                   },
                 )}
-                strokeWidth={1.5}
-              />
+              >
+                <Trash2Icon className='size-5' strokeWidth={1.5} />
+              </button>
             ) : null}
           </div>
         </div>
@@ -97,7 +100,10 @@ const AddFunnel = ({ openFunnelSettings }: AddFunnelProps) => {
       className='group flex h-auto min-h-[120px] cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
     >
       <div>
-        <PlusCircleIcon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
+        <CirclePlusIcon
+          className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
+          strokeWidth={1.5}
+        />
         <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
           {t('dashboard.newFunnel')}
         </span>

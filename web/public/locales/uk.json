@@ -773,6 +773,8 @@
     "sortDateDesc": "Спочатку нові",
     "pageviewsDesc": "Найпопулярніші",
     "pageviewsAsc": "Найменш популярні",
+    "page": "Сторінка",
+    "event": "Подія",
     "noProjectsForCriteria": "Не знайдено проєктів за вибраними критеріями",
     "lastVisitDesc": "Нещодавно відвідані перші",
     "captcha": "CAPTCHA",
@@ -991,6 +993,7 @@
     "changeInSettings": "Змініть це в налаштуваннях свого профілю",
     "events": "Події",
     "dropoff": "Випадання",
+    "conversionFromStart": "Конверсія від початку",
     "neverEnteredTheFunnel": "Ніколи не попав у воронку",
     "aggregation": "Агрегація",
     "locked": {
@@ -1216,7 +1219,13 @@
     "compareDateRangeError": "Цей діапазон не можна порівняти, будь ласка, оберіть інший діапазон дат",
     "previousPeriod": "Попередній період",
     "disableCompare": "Відключити порівняння",
-    "compare": "Порівняти"
+    "compare": "Порівняти",
+    "funnelSummary": {
+      "xStepFunnel": "{{x}}-крокова воронка",
+      "conversionRateShort": "коефіцієнт конверсії {{x}}%",
+      "startShort": "Початок",
+      "endShort": "Кінець"
+    }
   },
   "billing": {
     "title": "Ціни та тарифи",

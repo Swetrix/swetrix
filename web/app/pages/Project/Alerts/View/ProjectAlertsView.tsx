@@ -1,10 +1,4 @@
-import {
-  CurrencyDollarIcon,
-  AdjustmentsVerticalIcon,
-  PlusCircleIcon,
-  ExclamationTriangleIcon,
-  XCircleIcon,
-} from '@heroicons/react/24/outline'
+import { XCircleIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
@@ -12,7 +6,14 @@ import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 import _replace from 'lodash/replace'
 import _values from 'lodash/values'
-import { Trash2Icon, BellRingIcon } from 'lucide-react'
+import {
+  Settings2Icon,
+  Trash2Icon,
+  BellRingIcon,
+  CirclePlusIcon,
+  DollarSignIcon,
+  TriangleAlertIcon,
+} from 'lucide-react'
 import { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, Link } from 'react-router'
@@ -41,19 +42,19 @@ const NoNotificationChannelSet = () => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='rounded-lg bg-yellow-300 dark:bg-yellow-500'>
+    <div className='rounded-lg bg-yellow-100 ring-1 ring-yellow-600/20 ring-inset dark:bg-yellow-400/10 dark:text-yellow-500 dark:ring-yellow-400/20'>
       <div className='mx-auto max-w-7xl px-3 py-3 sm:px-6 lg:px-8'>
         <div className='flex flex-wrap items-center justify-between'>
           <div className='flex flex-1 items-center'>
             <span className='flex rounded-lg bg-yellow-500 p-2 dark:bg-yellow-600'>
-              <ExclamationTriangleIcon className='h-6 w-6 text-white' aria-hidden='true' />
+              <TriangleAlertIcon className='h-6 w-6 text-white' aria-hidden='true' />
             </span>
-            <p className='ml-3 font-medium text-black'>{t('alert.noNotificationChannel')}</p>
+            <p className='ml-3 font-medium text-slate-900 dark:text-gray-50'>{t('alert.noNotificationChannel')}</p>
           </div>
           <div className='order-3 mt-2 w-full shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
             <Link
               to={routes.user_settings}
-              className='flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-gray-50 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-yellow-50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+              className='cursor-pointer rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-gray-50 transition-colors duration-200 hover:bg-slate-700 dark:hover:bg-slate-900'
             >
               {t('common.fixIt')}
             </Link>
@@ -131,7 +132,7 @@ const AlertCard = ({
                 aria-label={t('common.settings')}
                 className='rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
               >
-                <AdjustmentsVerticalIcon className='size-5' />
+                <Settings2Icon className='size-5' strokeWidth={1.5} />
               </button>
 
               <button
@@ -178,9 +179,15 @@ const AddAlert = ({ handleNewAlert, isLimitReached }: AddAlertProps) => {
     >
       <div>
         {isLimitReached ? (
-          <CurrencyDollarIcon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
+          <DollarSignIcon
+            className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
+            strokeWidth={1.5}
+          />
         ) : (
-          <PlusCircleIcon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
+          <CirclePlusIcon
+            className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
+            strokeWidth={1.5}
+          />
         )}
         <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
           {t('alert.add')}
@@ -335,7 +342,7 @@ const ProjectAlerts = () => {
               secondary
               large
             >
-              {isLimitReached ? <CurrencyDollarIcon className='mr-1 h-5 w-5' /> : null}
+              {isLimitReached ? <DollarSignIcon className='mr-1 h-5 w-5' strokeWidth={1.5} /> : null}
               {t('alert.add')}
             </Button>
           </div>

@@ -1,9 +1,9 @@
-import { AdjustmentsVerticalIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _find from 'lodash/find'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _size from 'lodash/size'
+import { Settings2Icon } from 'lucide-react'
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -128,12 +128,15 @@ export const OrganisationCard = ({ organisation, reloadOrganisations }: Organisa
         <div className='flex items-center justify-between'>
           <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
-          <div className='flex items-center gap-2' onClick={(e) => e.stopPropagation()}>
+          <div className='flex items-center gap-2'>
             {membership?.role === 'viewer' ? null : (
-              <AdjustmentsVerticalIcon
-                className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
+              // dummy button, since the whole card is clickable
+              <div
                 aria-label={`${t('project.settings.settings')} ${name}`}
-              />
+                className='rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+              >
+                <Settings2Icon className='size-5' strokeWidth={1.5} />
+              </div>
             )}
           </div>
         </div>

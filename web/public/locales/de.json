@@ -773,6 +773,8 @@
     "sortDateDesc": "Neueste zuerst",
     "pageviewsDesc": "Meiste Seitenaufrufe",
     "pageviewsAsc": "Die wenigsten Seitenaufrufe",
+    "page": "Seite",
+    "event": "Ereignis",
     "noProjectsForCriteria": "Keine Projekte für die ausgewählten Kriterien gefunden",
     "lastVisitDesc": "Zuletzt besucht zuerst",
     "captcha": "CAPTCHA",
@@ -991,6 +993,7 @@
     "changeInSettings": "Ändern Sie dies in Ihren Kontoeinstellungen",
     "events": "Ereignisse",
     "dropoff": "Dropoff",
+    "conversionFromStart": "Konversion ab Start",
     "neverEnteredTheFunnel": "Nie den Trichter betreten",
     "aggregation": "Aggregation",
     "locked": {
@@ -1216,7 +1219,13 @@
     "compareDateRangeError": "Dieser Zeitraum kann nicht verglichen werden, bitte wählen Sie einen anderen Zeitraum",
     "previousPeriod": "Vorherige Periode",
     "disableCompare": "Vergleich deaktivieren",
-    "compare": "Vergleichen"
+    "compare": "Vergleichen",
+    "funnelSummary": {
+      "xStepFunnel": "Funnel mit {{x}} Schritten",
+      "conversionRateShort": "Konversionsrate von {{x}} %",
+      "startShort": "Start",
+      "endShort": "Ende"
+    }
   },
   "billing": {
     "title": "Rechnung & Abonnement",

@@ -1,18 +1,15 @@
-import cx from 'clsx'
 import _every from 'lodash/every'
-import _isUndefined from 'lodash/isUndefined'
 import _map from 'lodash/map'
 import { Trash2Icon } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { getFilters } from '~/api'
 import { MIN_FUNNEL_STEPS, MAX_FUNNEL_STEPS } from '~/lib/constants'
 import { Funnel } from '~/lib/models/Project'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
-import Combobox from '~/ui/Combobox'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
+import Select from '~/ui/Select'
 
 interface NewFunnelProps {
   onClose: () => void
@@ -22,16 +19,26 @@ interface NewFunnelProps {
   funnel?: Funnel
 }
 
-const INITIAL_FUNNEL_STEPS = [null, null]
+type FunnelStepType = 'page' | 'event'
+
+interface FunnelStep {
+  type: FunnelStepType
+  value: string
+}
+
+const createEmptyStep = (type: FunnelStepType = 'page'): FunnelStep => ({ type, value: '' })
+const INITIAL_FUNNEL_STEPS: FunnelStep[] = [createEmptyStep(), createEmptyStep()]
 
 const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelProps) => {
-  const { project, id, allowedToManage } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
+  const { allowedToManage } = useCurrentProject()
   const { t } = useTranslation('common')
   const [name, setName] = useState(funnel?.name || '')
-  const [steps, setSteps] = useState<any[]>(funnel?.steps || INITIAL_FUNNEL_STEPS)
-  const [filters, setFilters] = useState<string[]>([])
-  const allStepsFulfilled = useMemo(() => _every(steps, (step) => step), [steps])
+  const [steps, setSteps] = useState<FunnelStep[]>(
+    funnel?.steps
+      ? funnel.steps.map((s) => ({ type: s?.startsWith('/') ? 'page' : 'event', value: s }))
+      : INITIAL_FUNNEL_STEPS,
+  )
+  const allStepsFulfilled = useMemo(() => _every(steps, (step) => step.value && step.value.trim()), [steps])
 
   useEffect(() => {
     if (!isOpened) {
@@ -39,40 +46,12 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
     }
 
     setName(funnel?.name || '')
-    setSteps(funnel?.steps || INITIAL_FUNNEL_STEPS)
+    setSteps(
+      funnel?.steps
+        ? funnel.steps.map((s) => ({ type: s?.startsWith('/') ? 'page' : 'event', value: s }))
+        : INITIAL_FUNNEL_STEPS,
+    )
   }, [isOpened, funnel])
-
-  useEffect(() => {
-    // if project.name is underfined - that means that project is not loaded yet
-    // (it may be password protected, hence making a filters list request will fail with 403)
-    if (_isUndefined(project?.name) || !isOpened) {
-      return
-    }
-
-    const getFiltersData = async () => {
-      let pgFilters: string[] = []
-      let ceFilters: string[] = []
-
-      const promises = [
-        (async () => {
-          pgFilters = await getFilters(id, 'pg', projectPassword)
-        })(),
-        (async () => {
-          ceFilters = await getFilters(id, 'ev', projectPassword)
-        })(),
-      ]
-
-      try {
-        await Promise.allSettled(promises)
-      } catch (reason) {
-        console.error('[ERROR] (NewFunnel -> getFiltersData):', reason)
-      }
-
-      setFilters([...pgFilters, ...ceFilters])
-    }
-
-    getFiltersData()
-  }, [id, project, isOpened, projectPassword])
 
   const _onClose = () => {
     setTimeout(() => {
@@ -87,7 +66,10 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
       return
     }
 
-    await onSubmit(name, steps)
+    await onSubmit(
+      name,
+      steps.map((s) => s.value.trim()),
+    )
     _onClose()
   }
 
@@ -109,34 +91,45 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
           <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('modals.funnels.steps')}</p>
           {_map(steps, (step, index) => (
             <div key={index} className='mt-1 flex items-center space-x-2'>
-              <Combobox
-                className='!ml-0 w-full'
-                buttonClassName={cx({
-                  'h-9': !step,
-                })}
-                items={filters}
-                keyExtractor={(item) => item}
-                labelExtractor={(item) => item}
+              <Select
+                className={`!ml-0 w-36${!allowedToManage ? 'pointer-events-none opacity-60' : ''}`}
+                items={[
+                  { key: 'page', label: t('dashboard.page') },
+                  { key: 'event', label: t('dashboard.event') },
+                ]}
+                keyExtractor={(item) => item.key}
+                labelExtractor={(item) => item.label}
                 onSelect={(item) => {
                   const newSteps = [...steps]
-                  newSteps[index] = item
+                  newSteps[index] = { ...newSteps[index], type: item.key as FunnelStepType }
                   setSteps(newSteps)
                 }}
-                title={step || ''}
+                title={step.type === 'page' ? t('dashboard.page') : t('dashboard.event')}
+              />
+              <Input
+                className='!ml-0 w-full'
+                value={step.value}
+                placeholder={step.type === 'page' ? '/pricing' : 'Registration'}
+                onChange={(e) => {
+                  const newSteps = [...steps]
+                  newSteps[index] = { ...newSteps[index], value: e.target.value }
+                  setSteps(newSteps)
+                }}
                 disabled={!allowedToManage}
               />
               {steps.length > MIN_FUNNEL_STEPS && allowedToManage ? (
-                <Trash2Icon
-                  role='button'
-                  aria-label='Remove step'
-                  className='h-5 w-5 cursor-pointer text-gray-400 hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-300'
+                <button
+                  type='button'
+                  className='rounded-md p-2 text-gray-800 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
                   onClick={() => {
                     const newSteps = [...steps]
                     newSteps.splice(index, 1)
                     setSteps(newSteps)
                   }}
-                  strokeWidth={1.5}
-                />
+                  aria-label='Remove step'
+                >
+                  <Trash2Icon className='size-5' strokeWidth={1.5} />
+                </button>
               ) : null}
             </div>
           ))}
@@ -144,7 +137,7 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
             <button
               type='button'
               onClick={() => {
-                setSteps([...steps, null])
+                setSteps([...steps, createEmptyStep()])
               }}
               className='mt-2 cursor-pointer text-indigo-600 hover:underline dark:text-indigo-400'
             >

@@ -773,6 +773,8 @@
     "sortDateDesc": "Najnowsze jako pierwsze",
     "pageviewsDesc": "Najwięcej odsłon",
     "pageviewsAsc": "Najmniej odsłon",
+    "page": "Strona",
+    "event": "Zdarzenie",
     "noProjectsForCriteria": "Nie znaleziono projektów spełniających wybrane kryteria",
     "lastVisitDesc": "Ostatnio odwiedzony pierwszy",
     "captcha": "CAPTCHA",
@@ -991,6 +993,7 @@
     "changeInSettings": "Zmień to w ustawieniach konta",
     "events": "Zdarzenia",
     "dropoff": "Rezygnacja",
+    "conversionFromStart": "Konwersja od początku",
     "neverEnteredTheFunnel": "Nigdy nie wszedł do lejka",
     "aggregation": "Agregacja",
     "locked": {
@@ -1216,7 +1219,13 @@
     "compareDateRangeError": "Tego zakresu dat nie można porównać, proszę wybrać inny zakres dat",
     "previousPeriod": "Poprzedni okres",
     "disableCompare": "Wyłącz porównanie",
-    "compare": "Porównaj"
+    "compare": "Porównaj",
+    "funnelSummary": {
+      "xStepFunnel": "lejek {{x}}-etapowy",
+      "conversionRateShort": "współczynnik konwersji {{x}}%",
+      "startShort": "Początek",
+      "endShort": "Koniec"
+    }
   },
   "billing": {
     "title": "Cennik i plany",
