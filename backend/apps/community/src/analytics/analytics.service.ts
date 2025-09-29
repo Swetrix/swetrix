@@ -1101,9 +1101,12 @@ export class AnalyticsService {
         const prev = data[index - 1]
         events = row.c
         dropoff = prev.c - row.c
-        eventsPerc = _round((row.c / data[0].c) * 100, 2)
-        eventsPercStep = _round((row.c / prev.c) * 100, 2)
-        dropoffPercStep = _round((dropoff / prev.c) * 100, 2)
+        eventsPerc =
+          data[0].c > 0 ? Number(_round((row.c / data[0].c) * 100, 2)) : 0
+        eventsPercStep =
+          prev.c > 0 ? Number(_round((row.c / prev.c) * 100, 2)) : 0
+        dropoffPercStep =
+          prev.c > 0 ? Number(_round((dropoff / prev.c) * 100, 2)) : 0
       }
 
       return {
