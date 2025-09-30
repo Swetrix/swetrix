@@ -73,11 +73,11 @@ You can use the [@swetrix/captcha-validator](https://www.npmjs.com/package/@swet
 You can use this package in your Node.js (or NestJS, ExpressJS, etc.) project to validate the user's response to the CAPTCHA.
 The package exports a single function `validateToken` which takes arguments listed below and returns a Promise.
 
-| Argument  | Type   | Description                                                                                                             | Required |
-| --------- | ------ | ----------------------------------------------------------------------------------------------------------------------- | -------- |
-| token     | string | The token returned by the CAPTCHA widget.                                                                               | YES      |
-| secretKey | string | Your CAPTCHA project secret key.                                                                                        | YES      |
-| apiURL    | string | The API URL to use (default: https://api.swetrix.com/captcha), this one may be used in case you're selfhosting the API. | NO       |
+| Argument  | Type   | Description                                                                                                               | Required |
+| --------- | ------ | ------------------------------------------------------------------------------------------------------------------------- | -------- |
+| token     | string | The token returned by the CAPTCHA widget.                                                                                 | YES      |
+| secretKey | string | Your CAPTCHA project secret key.                                                                                          | YES      |
+| apiURL    | string | The API URL to use (default: `https://api.swetrix.com/captcha`), this one may be used in case you're selfhosting the API. | NO       |
 
 <br />
 
