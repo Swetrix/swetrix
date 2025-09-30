@@ -18,7 +18,7 @@ module.exports = {
       defer: true,
     },
     {
-      src: 'js/setupswetrix.js',
+      src: '/js/setupswetrix.js',
       defer: true,
     },
   ],
