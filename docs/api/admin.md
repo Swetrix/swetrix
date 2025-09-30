@@ -5,7 +5,7 @@ slug: /admin-api
 
 Swetrix provides the ability to control your projects (and soon your account) via an API as well.
 
-Each request must be authenticated with an API key using `X-Api-Key` HTTP header. You can obtain an API key in your Swetrix [account settings](https://swetrix.com/settings).
+Each request must be authenticated with an API key using `X-Api-Key` HTTP header. You can obtain an API key in your Swetrix [account settings](https://swetrix.com/user-settings).
 
 Rate limit for the API depends on your plan, you can find more information on the billing (or the main) page.
 As of 9 February 2023, the rate limits are as follows:
