@@ -57,7 +57,7 @@ const Modal = ({
     <Dialog className={cn('relative z-40', className)} open={isOpened} onClose={onClose}>
       <DialogBackdrop
         transition
-        className='fixed inset-0 bg-gray-500/75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in'
+        className='fixed inset-0 bg-gray-500/75 transition-opacity data-closed:opacity-0 data-enter:ease-out data-leave:duration-200 data-leave:ease-in'
       />
 
       <div className='fixed inset-0 z-10 w-screen overflow-y-auto'>
@@ -66,7 +66,7 @@ const Modal = ({
             transition
             className={cn(
               'inline-block transform rounded-lg bg-white px-4 pt-5 pb-4 text-left align-bottom transition-all sm:my-8 sm:px-5 sm:py-4 sm:align-middle dark:bg-slate-900',
-              'transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in',
+              'transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:ease-out data-leave:duration-200 data-leave:ease-in',
               {
                 'w-[90vw] md:w-full md:max-w-lg': size === 'regular',
                 'w-[90vw] max-w-5xl md:w-full': size === 'large',
