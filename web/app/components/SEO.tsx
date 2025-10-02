@@ -3,7 +3,7 @@ import _toUpper from 'lodash/toUpper'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
 
-import { getOgImageUrl } from '~/lib/constants'
+import { getOgImageUrl, MAIN_URL, defaultLanguage } from '~/lib/constants'
 import routes from '~/utils/routes'
 import { getPageMeta } from '~/utils/server'
 
@@ -12,7 +12,7 @@ export const SEO = () => {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const { pathname } = useLocation()
+  const { pathname, search, hash } = useLocation()
   const { title, prefixLessTitle } = getPageMeta(t, undefined, pathname)
 
   const isBlogPage = _startsWith(pathname, '/blog')
@@ -20,6 +20,17 @@ export const SEO = () => {
   const isErrorsPage = pathname === routes.errorTracking
   const isProjectViewPage = _startsWith(pathname, '/projects/')
   const ogImageUrl = getOgImageUrl(prefixLessTitle)
+
+  const canonicalUrl = (() => {
+    const url = new URL(`${MAIN_URL}${pathname}${search}${hash}`)
+    if (language === defaultLanguage) {
+      url.searchParams.delete('lng')
+    } else {
+      // Ensure the canonical of non-default locales includes the language param
+      url.searchParams.set('lng', language)
+    }
+    return url.toString()
+  })()
 
   return (
     <>
@@ -60,11 +71,12 @@ export const SEO = () => {
           ) : null}
         </>
       ) : null}
+      <link rel='canonical' href={canonicalUrl} />
       <meta name='theme-color' content='#818cf8' />
       <meta name='twitter:site' content='@swetrix' />
       <meta name='twitter:card' content='summary_large_image' />
       <meta property='og:site_name' content='Swetrix' />
-      <meta property='og:url' content='https://swetrix.com' />
+      <meta property='og:url' content={canonicalUrl} />
       <meta property='og:type' content='website' />
       <meta name='language' content={_toUpper(language)} />
       <meta httpEquiv='content-language' content={_toUpper(language)} />
