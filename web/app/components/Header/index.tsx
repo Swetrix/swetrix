@@ -12,6 +12,7 @@ import {
   DialogPanel,
   DisclosureButton,
   DisclosurePanel,
+  PopoverBackdrop,
 } from '@headlessui/react'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
@@ -108,16 +109,17 @@ const SolutionsMenu = () => {
             />
           </PopoverButton>
 
+          <PopoverBackdrop className='fixed inset-0 z-30 bg-transparent' />
           <Transition
             as={Fragment}
-            enter='transition ease-out duration-200'
+            enter='transition-all ease-out duration-200'
             enterFrom='opacity-0 translate-y-1'
             enterTo='opacity-100 translate-y-0'
-            leave='transition ease-in duration-150'
+            leave='transition-all ease-in duration-150'
             leaveFrom='opacity-100 translate-y-0'
             leaveTo='opacity-0 translate-y-1'
           >
-            <PopoverPanel className='absolute z-30 mt-4 flex w-screen max-w-max'>
+            <PopoverPanel className='absolute z-40 mt-4 flex w-screen max-w-max'>
               <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-50/50 p-1.5 backdrop-blur-md dark:divide-slate-700/60 dark:border-slate-700/60 dark:bg-slate-900/50'>
                 <div className='grid w-full grid-cols-2 gap-1 p-4'>
                   {_map(solutions, (item) => (
