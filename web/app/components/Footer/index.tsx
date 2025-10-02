@@ -315,7 +315,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                   title={item.name}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='text-white hover:text-gray-200'
+                  className='text-white transition-colors hover:text-gray-400'
                   aria-label={`${item.name} (opens in a new tab)`}
                 >
                   <span className='sr-only'>{item.name}</span>
