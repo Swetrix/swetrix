@@ -243,7 +243,7 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
                 cx(
                   checked
                     ? 'bg-slate-900 text-gray-50 dark:bg-white/90 dark:text-slate-900'
-                    : 'text-slate-700 dark:text-gray-200',
+                    : 'text-slate-700 hover:bg-slate-200 dark:text-gray-200 dark:hover:bg-white/30 dark:hover:text-white',
                   'flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-all',
                 )
               }
@@ -257,7 +257,7 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
                 cx(
                   checked
                     ? 'bg-slate-900 text-gray-50 dark:bg-white/90 dark:text-slate-900'
-                    : 'text-slate-700 dark:text-gray-200',
+                    : 'text-slate-700 hover:bg-slate-200 dark:text-gray-200 dark:hover:bg-white/30 dark:hover:text-white',
                   'flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-all',
                 )
               }

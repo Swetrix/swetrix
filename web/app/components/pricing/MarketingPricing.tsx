@@ -103,7 +103,7 @@ const MarketingPricing = () => {
 
             <Link
               to={isAuthenticated ? routes.billing : routes.signup}
-              className='mt-8 flex max-w-max items-center justify-center rounded-md border-2 border-slate-50 bg-gray-50 px-8 py-4 text-slate-900 transition-all duration-300 hover:bg-transparent hover:text-gray-50'
+              className='mt-8 flex max-w-max items-center justify-center rounded-md border-2 border-slate-50 bg-gray-50 px-8 py-4 text-slate-900 transition-all hover:bg-transparent hover:text-gray-50'
               aria-label={
                 isAuthenticated ? t('main.goToBilling') : t('main.startAXDayFreeTrial', { amount: TRIAL_DAYS })
               }
@@ -128,7 +128,7 @@ const MarketingPricing = () => {
                   value={BillingFrequency.monthly}
                   className={({ checked }) =>
                     cx(
-                      checked ? 'bg-white/90 text-slate-900' : 'text-gray-200',
+                      checked ? 'bg-white/90 text-slate-900' : 'text-gray-200 hover:bg-white/30 hover:text-white',
                       'flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-all',
                     )
                   }
@@ -140,7 +140,7 @@ const MarketingPricing = () => {
                   value={BillingFrequency.yearly}
                   className={({ checked }) =>
                     cx(
-                      checked ? 'bg-white/90 text-slate-900' : 'text-gray-200',
+                      checked ? 'bg-white/90 text-slate-900' : 'text-gray-200 hover:bg-white/30 hover:text-white',
                       'flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-all',
                     )
                   }
@@ -153,7 +153,7 @@ const MarketingPricing = () => {
               {_map(plans, (tier) => (
                 <div
                   key={tier.planCode}
-                  className='flex items-center justify-between rounded-xl border border-white/10 bg-white/2 px-4 py-3 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10'
+                  className='flex items-center justify-between rounded-xl border border-white/10 bg-white/2 px-4 py-3 text-white backdrop-blur-sm transition-all hover:bg-white/10'
                 >
                   <div>
                     <span className='text-base font-medium'>{formatEventsLong(tier.monthlyUsageLimit)}</span>
@@ -181,7 +181,7 @@ const MarketingPricing = () => {
                 target='_blank'
                 rel='noopener noreferrer'
                 aria-label={`${t('footer.contact')} (opens in a new tab)`}
-                className='group flex items-center justify-between rounded-xl border border-white/10 bg-white/2 px-4 py-3 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/10'
+                className='group flex items-center justify-between rounded-xl border border-white/10 bg-white/2 px-4 py-3 text-white backdrop-blur-sm transition-all hover:bg-white/10'
               >
                 <span className='text-base font-medium'>
                   {t('pricing.overXEvents', { amount: formatEventsLong(20000000) })}

@@ -326,7 +326,7 @@ const Hero = () => {
             <div className='mt-8 flex flex-col items-stretch sm:flex-row sm:items-center'>
               <Link
                 to={routesPath.signup}
-                className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all duration-300 hover:bg-transparent hover:text-slate-900 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
+                className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all hover:bg-transparent hover:text-slate-900 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
                 aria-label={t('titles.signup')}
               >
                 <span className='mr-1 text-center text-base font-semibold'>
