@@ -59,6 +59,7 @@ function Dropdown<T>({
             onClick={onClick}
             disabled={disabled}
             className={cn(
+              'transition-colors',
               {
                 'justify-between': aside,
                 'justify-center': !aside,
@@ -75,7 +76,6 @@ function Dropdown<T>({
             {chevron === 'regular' ? (
               <ChevronDownIcon
                 className={cn('ml-2 h-5 w-5 transform-gpu transition-transform', {
-                  'group-hover:text-slate-500 dark:group-hover:text-slate-400': headless,
                   'rotate-180': open,
                 })}
                 aria-hidden='true'
@@ -84,7 +84,6 @@ function Dropdown<T>({
             {chevron === 'mini' ? (
               <ChevronDownIconMini
                 className={cn('ml-1 h-5 w-5 transform-gpu transition-transform', {
-                  'group-hover:text-slate-500 dark:group-hover:text-slate-400': headless,
                   'rotate-180': open,
                 })}
                 aria-hidden='true'
