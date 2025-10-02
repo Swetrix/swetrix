@@ -660,8 +660,10 @@ const CustomEventsPreview = () => {
 const PerformancePreview = () => {
   const { t } = useTranslation('common')
 
+  type SeriesId = 'frontend' | 'backend' | 'network'
+
   type Series = {
-    key: string
+    id: SeriesId
     color: string
     values: number[]
     base: number
@@ -676,9 +678,9 @@ const PerformancePreview = () => {
     Array.from({ length: POINTS }, (_, i) => Math.max(0, base + (Math.sin(i / 3) + (Math.random() - 0.5)) * amp))
 
   const [series, setSeries] = useState<Series[]>([
-    { key: t('dashboard.frontend'), color: '#709775', base: 0.5, amp: 0.15, values: init(0.5, 0.15) },
-    { key: t('dashboard.backend'), color: '#00A8E8', base: 0.14, amp: 0.06, values: init(0.14, 0.06) },
-    { key: t('dashboard.network'), color: '#F7A265', base: 0.06, amp: 0.03, values: init(0.06, 0.03) },
+    { id: 'frontend', color: '#709775', base: 0.5, amp: 0.15, values: init(0.5, 0.15) },
+    { id: 'backend', color: '#00A8E8', base: 0.14, amp: 0.06, values: init(0.14, 0.06) },
+    { id: 'network', color: '#F7A265', base: 0.06, amp: 0.03, values: init(0.06, 0.03) },
   ])
 
   useEffect(() => {
@@ -710,24 +712,25 @@ const PerformancePreview = () => {
     return d
   }
 
-  const last = (key: string) => series.find((s) => s.key === key)!.values[POINTS - 1]
-  const prev = (key: string) => series.find((s) => s.key === key)!.values[POINTS - 2]
+  const label = (id: SeriesId) => t(`dashboard.${id}`)
+  const last = (id: SeriesId) => series.find((s) => s.id === id)!.values[POINTS - 1]
+  const prev = (id: SeriesId) => series.find((s) => s.id === id)!.values[POINTS - 2]
 
   const fmt = (v: number) => `${v.toFixed(2)}s`
 
-  const frontend = last(t('dashboard.frontend'))
-  const frontendPrev = prev(t('dashboard.frontend'))
-  const backend = last(t('dashboard.backend'))
-  const backendPrev = prev(t('dashboard.backend'))
-  const network = last(t('dashboard.network'))
-  const networkPrev = prev(t('dashboard.network'))
+  const frontend = last('frontend')
+  const frontendPrev = prev('frontend')
+  const backend = last('backend')
+  const backendPrev = prev('backend')
+  const network = last('network')
+  const networkPrev = prev('network')
 
   const legend = (
     <ul className='flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-slate-600 dark:text-gray-300'>
       {series.map((s) => (
-        <li key={s.key} className='inline-flex items-center gap-1'>
+        <li key={s.id} className='inline-flex items-center gap-1'>
           <span className='inline-block size-2 rounded-[2px]' style={{ backgroundColor: s.color }} />
-          {s.key}
+          {label(s.id)}
         </li>
       ))}
     </ul>
@@ -768,9 +771,9 @@ const PerformancePreview = () => {
     <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-3 sm:p-4 dark:from-slate-800 dark:to-slate-900'>
       <div className='mb-2 flex flex-wrap items-center justify-between gap-2'>
         <div className='flex min-w-0 flex-1 gap-2'>
-          {metric(t('dashboard.frontend'), frontend, frontendPrev)}
-          {metric(t('dashboard.backend'), backend, backendPrev)}
-          {metric(t('dashboard.network'), network, networkPrev)}
+          {metric(label('frontend'), frontend, frontendPrev)}
+          {metric(label('backend'), backend, backendPrev)}
+          {metric(label('network'), network, networkPrev)}
         </div>
       </div>
 
@@ -786,7 +789,7 @@ const PerformancePreview = () => {
             <line key={r} x1={0} x2={width} y1={height * r} y2={height * r} stroke='url(#gridfade)' strokeWidth={1} />
           ))}
           {series.map((s) => (
-            <g key={s.key}>
+            <g key={s.id}>
               <motion.path
                 d={toPath(s.values)}
                 fill='none'
