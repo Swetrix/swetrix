@@ -98,10 +98,10 @@ const SolutionsMenu = () => {
     <Popover>
       {({ open }) => (
         <>
-          <PopoverButton className='inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'>
+          <PopoverButton className='underline-animate inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 dark:text-white'>
             <span>{t('header.solutions.title')}</span>
             <ChevronDownIcon
-              className={cx('h-3 w-3 stroke-2 transition-all', {
+              className={cx('h-3 w-3 stroke-2 transition-transform', {
                 'rotate-180': open,
               })}
               aria-hidden='true'
@@ -118,12 +118,12 @@ const SolutionsMenu = () => {
             leaveTo='opacity-0 translate-y-1'
           >
             <PopoverPanel className='absolute z-30 mt-4 flex w-screen max-w-max'>
-              <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-100/80 p-[6px] backdrop-blur-2xl dark:divide-slate-900/60 dark:border-slate-900/80 dark:bg-slate-800/80'>
+              <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-50/50 p-1.5 backdrop-blur-md dark:divide-slate-700/60 dark:border-slate-700/60 dark:bg-slate-900/50'>
                 <div className='grid w-full grid-cols-2 gap-1 p-4'>
                   {_map(solutions, (item) => (
                     <div
                       key={item.name}
-                      className='group relative flex gap-x-2 rounded-lg p-2 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                      className='group relative flex gap-x-2 rounded-lg p-2 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50'
                     >
                       <item.icon
                         className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300'
@@ -160,7 +160,7 @@ const SolutionsMenu = () => {
                         <Link
                           key={item.name}
                           to={item.link}
-                          className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-800 hover:bg-gray-300/50 dark:text-gray-100 dark:hover:bg-slate-700/80'
+                          className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                         >
                           <item.icon
                             className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300'
@@ -178,7 +178,7 @@ const SolutionsMenu = () => {
                         href={item.link}
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-800 hover:bg-gray-300/50 dark:text-gray-100 dark:hover:bg-slate-700/80'
+                        className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                       >
                         <item.icon
                           className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300'
@@ -211,7 +211,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
       {({ open }) => (
         <>
           <div>
-            <MenuButton className='flex items-center justify-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'>
+            <MenuButton className='underline-animate flex items-center justify-center text-base leading-6 font-semibold text-slate-800 dark:text-white'>
               <span>{t('common.account')}</span>
               <ChevronDownIcon
                 className={cx('ml-1 h-4 w-4 transform-gpu stroke-2 transition-transform', {
@@ -248,7 +248,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <Disclosure>
                 {({ open }) => (
                   <>
-                    <DisclosureButton className='flex w-full justify-between rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'>
+                    <DisclosureButton className='flex w-full justify-between rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'>
                       <div className='flex'>
                         <Flag
                           className='mr-1.5 rounded-xs'
@@ -286,7 +286,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                           <DisclosureButton
                             key={lng}
                             as='span'
-                            className='block cursor-pointer rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
+                            className='block cursor-pointer rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
                             onClick={() => changeLanguage(lng)}
                           >
                             <div className='flex'>
@@ -314,7 +314,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                     href={CONTACT_US_URL}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                    className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
                   >
                     {t('footer.support')}
                   </a>
@@ -323,7 +323,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                 <MenuItem>
                   <Link
                     to={routes.contact}
-                    className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                    className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
                   >
                     {t('footer.support')}
                   </Link>
@@ -333,7 +333,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                 <MenuItem>
                   <Link
                     to={routes.billing}
-                    className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                    className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
                   >
                     {t('common.billing')}
                   </Link>
@@ -345,7 +345,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <MenuItem>
                 <Link
                   to={routes.user_settings}
-                  className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
                 >
                   {t('common.accountSettings')}
                 </Link>
@@ -354,7 +354,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                 <MenuItem>
                   <Link
                     to={routes.organisations}
-                    className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                    className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
                   >
                     {t('organisations.organisations')}
                   </Link>
@@ -363,7 +363,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <MenuItem>
                 <button
                   type='button'
-                  className='w-full rounded-md p-2 text-left text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  className='w-full rounded-md p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
                   onClick={logoutHandler}
                 >
                   {t('common.logout')}
@@ -417,9 +417,9 @@ const AuthedHeader = ({
               {user?.planCode === 'trial' ? (
                 <Link
                   to={routes.billing}
-                  className={cx('text-base leading-6 font-semibold', {
-                    'text-amber-600 hover:text-amber-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
-                    'text-rose-600 hover:text-rose-500':
+                  className={cx('underline-animate text-base leading-6 font-semibold', {
+                    'text-amber-600': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
+                    'text-rose-600':
                       rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY ||
                       rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW ||
                       rawStatus === TRIAL_STATUS_MAPPING.ENDED,
@@ -432,7 +432,7 @@ const AuthedHeader = ({
               {user?.planCode === 'none' ? (
                 <Link
                   to={routes.billing}
-                  className='text-base leading-6 font-semibold text-rose-600 hover:text-rose-500'
+                  className='underline-animate text-base leading-6 font-semibold text-rose-600'
                   key='NoSubscription'
                 >
                   {t('billing.inactive')}
@@ -444,7 +444,7 @@ const AuthedHeader = ({
                   href={`https://swetrix.com${routes.blog}`}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
+                  className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
                 >
                   {t('footer.blog')}
                 </a>
@@ -452,14 +452,14 @@ const AuthedHeader = ({
               {!isSelfhosted && !isDisableMarketingPages ? (
                 <Link
                   to={routes.blog}
-                  className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
+                  className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
                 >
                   {t('footer.blog')}
                 </Link>
               ) : null}
               <a
                 href={DOCS_URL}
-                className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
+                className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
                 target='_blank'
                 rel='noreferrer noopener'
               >
@@ -467,7 +467,7 @@ const AuthedHeader = ({
               </a>
               <Link
                 to={routes.dashboard}
-                className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
+                className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
               >
                 {t('common.dashboard')}
               </Link>
@@ -480,7 +480,7 @@ const AuthedHeader = ({
             <button
               type='button'
               onClick={openMenu}
-              className='flex items-center gap-x-1 text-sm leading-6 font-semibold text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300'
+              className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
             >
               <span className='sr-only'>{t('common.openMenu')}</span>
               <Bars3Icon className='h-8 w-8 flex-none' aria-hidden='true' />
@@ -529,7 +529,7 @@ const NotAuthedHeader = ({
                     href={`https://swetrix.com${routes.blog}`}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
+                    className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
                   >
                     {t('footer.blog')}
                   </a>
@@ -537,7 +537,7 @@ const NotAuthedHeader = ({
                 {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
                     to={routes.blog}
-                    className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
+                    className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
                   >
                     {t('footer.blog')}
                   </Link>
@@ -545,7 +545,7 @@ const NotAuthedHeader = ({
                 {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
                     to={`${routes.main}#pricing`}
-                    className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
+                    className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
                     key='Pricing'
                   >
                     {t('common.pricing')}
@@ -553,7 +553,7 @@ const NotAuthedHeader = ({
                 ) : null}
                 <a
                   href={DOCS_URL}
-                  className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
+                  className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
                   target='_blank'
                   rel='noreferrer noopener'
                 >
@@ -567,14 +567,14 @@ const NotAuthedHeader = ({
               <>
                 <Link
                   to={routes.signin}
-                  className='flex items-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
+                  className='underline-animate flex items-center text-base leading-6 font-semibold text-slate-800 dark:text-white'
                 >
                   {t('auth.common.signin')}
                 </Link>
                 <Separator />
                 <Link
                   to={routes.signup}
-                  className='flex items-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-white dark:hover:text-slate-200'
+                  className='underline-animate flex items-center text-base leading-6 font-semibold text-slate-800 dark:text-white'
                 >
                   {isSelfhosted ? t('header.signUp') : t('header.startForFree')}
                   <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-4 stroke-2' />
@@ -586,7 +586,7 @@ const NotAuthedHeader = ({
             <button
               type='button'
               onClick={openMenu}
-              className='flex items-center gap-x-1 text-sm leading-6 font-semibold text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300'
+              className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
             >
               <span className='sr-only'>{t('common.openMenu')}</span>
               <Bars3Icon className='h-8 w-8 flex-none' aria-hidden='true' />
@@ -678,26 +678,30 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
             <div className='flex items-center justify-center space-x-3'>
               {/* Theme switch */}
               {theme === 'dark' ? (
-                <div className='rotate-180 transition-all duration-1000 ease-in-out'>
-                  <SunIcon
-                    onClick={() => setTheme('light')}
-                    className='h-8 w-8 cursor-pointer text-gray-200 hover:text-gray-300'
-                  />
-                </div>
+                <button
+                  type='button'
+                  onClick={() => setTheme('light')}
+                  className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
+                  aria-label={t('header.light')}
+                >
+                  <SunIcon className='h-8 w-8 flex-none' aria-hidden='true' />
+                </button>
               ) : (
-                <div className='transition-all duration-1000 ease-in-out'>
-                  <MoonIcon
-                    onClick={() => setTheme('dark')}
-                    className='h-8 w-8 cursor-pointer text-slate-700 hover:text-slate-600'
-                  />
-                </div>
+                <button
+                  type='button'
+                  onClick={() => setTheme('dark')}
+                  className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
+                  aria-label={t('header.dark')}
+                >
+                  <MoonIcon className='h-8 w-8 flex-none' aria-hidden='true' />
+                </button>
               )}
               <button
                 type='button'
                 onClick={() => setMobileMenuOpen(false)}
-                className='flex items-center gap-x-1 text-sm leading-6 font-semibold text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300'
+                className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
               >
-                <span className='sr-only'>{t('common.openMenu')}</span>
+                <span className='sr-only'>{t('common.close')}</span>
                 <XMarkIcon className='h-8 w-8 flex-none' aria-hidden='true' />
               </button>
             </div>
@@ -709,49 +713,63 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   <Disclosure as='div' className='-mx-3'>
                     {({ open }) => (
                       <>
-                        <Disclosure.Button className='flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'>
+                        <DisclosureButton className='flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'>
                           {t('header.solutions.title')}
                           <ChevronDownIcon
                             className={cx(open ? 'rotate-180' : '', 'h-5 w-5 flex-none')}
                             aria-hidden='true'
                           />
-                        </Disclosure.Button>
-                        <Disclosure.Panel className='mt-2 space-y-2'>
-                          {_map(solutions, (item) => (
-                            <Disclosure.Button
-                              key={item.name}
-                              as='div'
-                              className='group relative flex gap-x-2 rounded-lg p-2 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
-                            >
-                              <item.icon className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300' aria-hidden='true' />
-                              <div>
-                                {_startsWith(item.link, '/') ? (
-                                  <Link
-                                    to={item.link}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className='text-sm font-semibold text-gray-900 dark:text-gray-50'
-                                  >
-                                    {item.name}
-                                    <span className='absolute inset-0' />
-                                  </Link>
-                                ) : (
-                                  <a
-                                    href={item.link}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    target='_blank'
-                                    rel='noopener noreferrer'
-                                    className='text-sm font-semibold text-gray-900 dark:text-gray-50'
-                                  >
-                                    {item.name}
-                                    <span className='absolute inset-0' />
-                                  </a>
-                                )}
+                        </DisclosureButton>
+                        <Transition
+                          show={open}
+                          as={Fragment}
+                          enter='transition transform ease-out duration-200'
+                          enterFrom='opacity-0 -translate-y-2'
+                          enterTo='opacity-100 translate-y-0'
+                          leave='transition transform ease-in duration-150'
+                          leaveFrom='opacity-100 translate-y-0'
+                          leaveTo='opacity-0 -translate-y-2'
+                        >
+                          <DisclosurePanel className='mt-2 space-y-2'>
+                            {_map(solutions, (item) => (
+                              <DisclosureButton
+                                key={item.name}
+                                as='div'
+                                className='group relative flex gap-x-2 rounded-lg p-2 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50'
+                              >
+                                <item.icon
+                                  className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300'
+                                  aria-hidden='true'
+                                />
+                                <div>
+                                  {_startsWith(item.link, '/') ? (
+                                    <Link
+                                      to={item.link}
+                                      onClick={() => setMobileMenuOpen(false)}
+                                      className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                                    >
+                                      {item.name}
+                                      <span className='absolute inset-0' />
+                                    </Link>
+                                  ) : (
+                                    <a
+                                      href={item.link}
+                                      onClick={() => setMobileMenuOpen(false)}
+                                      target='_blank'
+                                      rel='noopener noreferrer'
+                                      className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                                    >
+                                      {item.name}
+                                      <span className='absolute inset-0' />
+                                    </a>
+                                  )}
 
-                                <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>{item.description}</p>
-                              </div>
-                            </Disclosure.Button>
-                          ))}
-                        </Disclosure.Panel>
+                                  <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>{item.description}</p>
+                                </div>
+                              </DisclosureButton>
+                            ))}
+                          </DisclosurePanel>
+                        </Transition>
                       </>
                     )}
                   </Disclosure>
@@ -761,7 +779,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cx(
-                      '-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold hover:bg-gray-300/50 dark:hover:bg-slate-700/80',
+                      '-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold hover:bg-gray-400/20 dark:hover:bg-slate-700/50',
                       {
                         'text-amber-600': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
                         'text-rose-600':
@@ -779,7 +797,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-rose-600 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-rose-600 hover:bg-gray-400/20 dark:hover:bg-slate-700/50'
                     key='NoSubscription'
                   >
                     {t('billing.inactive')}
@@ -789,7 +807,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                     key='Billing'
                   >
                     {t('common.billing')}
@@ -799,7 +817,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   <Link
                     to={`${routes.main}#pricing`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                     key='Pricing'
                   >
                     {t('common.pricing')}
@@ -811,7 +829,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     href={`https://swetrix.com${routes.blog}`}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                   >
                     {t('footer.blog')}
                   </a>
@@ -820,7 +838,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   <Link
                     to={routes.blog}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                   >
                     {t('footer.blog')}
                   </Link>
@@ -828,7 +846,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                 <a
                   href={DOCS_URL}
                   onClick={() => setMobileMenuOpen(false)}
-                  className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                  className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                   target='_blank'
                   rel='noreferrer noopener'
                 >
@@ -838,7 +856,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   <Link
                     to={routes.dashboard}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                   >
                     {t('common.dashboard')}
                   </Link>
@@ -850,7 +868,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     <Link
                       to={routes.user_settings}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                     >
                       {t('common.accountSettings')}
                     </Link>
@@ -858,13 +876,13 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                       <Link
                         to={routes.organisations}
                         onClick={() => setMobileMenuOpen(false)}
-                        className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                        className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                       >
                         {t('organisations.organisations')}
                       </Link>
                     ) : null}
                     <span
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                       onClick={logoutHandler}
                     >
                       {t('common.logout')}
@@ -875,14 +893,14 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     <Link
                       to={routes.signin}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                     >
                       {t('auth.common.signin')}
                     </Link>
                     <Link
                       to={routes.signup}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                       aria-label={t('titles.signup')}
                     >
                       {isSelfhosted ? t('header.signUp') : t('header.startForFree')}
