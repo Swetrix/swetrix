@@ -58,7 +58,7 @@
     transform-origin: center;
     transition: transform var(--default-transition-duration, 250ms) ease;
     background: currentColor;
-    opacity: 0.7;
+    opacity: 1;
   }
   .underline-animate:hover::after,
   .underline-animate:focus-visible::after {
