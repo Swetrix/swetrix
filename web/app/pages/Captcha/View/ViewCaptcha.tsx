@@ -410,7 +410,7 @@ const ViewCaptcha = () => {
           <>
             <EventsRunningOutBanner />
             <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
-              <div className='min-h-min-footer mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' ref={dashboardRef}>
+              <div className='mx-auto min-h-min-footer w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' ref={dashboardRef}>
                 <div className='mt-2 flex flex-col items-center justify-between lg:flex-row lg:items-start'>
                   <h2 className='text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
                     {project.name}

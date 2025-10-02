@@ -38,7 +38,7 @@ export default function Posts() {
 
   if (_filter(posts, (post) => !post.hidden).length === 0) {
     return (
-      <div className='min-h-min-footer flex items-center justify-center'>
+      <div className='flex min-h-min-footer items-center justify-center'>
         <h1 className='text-3xl font-bold text-slate-900 dark:text-slate-200'>No posts found</h1>
       </div>
     )
@@ -78,7 +78,7 @@ export default function Posts() {
                       </h3>
                     </Link>
                     {post.intro ? (
-                      <div className='prose prose-slate mt-2 mb-4 line-clamp-3 text-sm leading-7 dark:text-slate-400'>
+                      <div className='prose mt-2 mb-4 line-clamp-3 text-sm leading-7 prose-slate dark:text-slate-400'>
                         <p>{post.intro}</p>
                       </div>
                     ) : null}

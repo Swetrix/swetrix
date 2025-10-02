@@ -317,7 +317,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
 
   if (isLoading || isLoading === null) {
     return (
-      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <Loader />
       </div>
     )
@@ -362,7 +362,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
 
   return (
     <div
-      className={cx('min-h-min-footer flex flex-col bg-gray-50 dark:bg-slate-900', {
+      className={cx('flex min-h-min-footer flex-col bg-gray-50 dark:bg-slate-900', {
         'pb-40': isSettings,
       })}
     >

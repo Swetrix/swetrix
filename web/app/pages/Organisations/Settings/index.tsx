@@ -211,7 +211,7 @@ const OrganisationSettings = () => {
 
   if (isLoading || isLoading === null || !organisation) {
     return (
-      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <Loader />
       </div>
     )
@@ -255,7 +255,7 @@ const OrganisationSettings = () => {
   }
 
   return (
-    <div className='min-h-min-footer flex flex-col bg-gray-50 pb-40 dark:bg-slate-900'>
+    <div className='flex min-h-min-footer flex-col bg-gray-50 pb-40 dark:bg-slate-900'>
       <form className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
         <h3 className='mt-4 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
