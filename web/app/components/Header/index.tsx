@@ -165,7 +165,7 @@ const SolutionsMenu = () => {
                           className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                         >
                           <item.icon
-                            className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300'
+                            className='h-5 w-5 flex-none text-gray-600 dark:text-gray-300'
                             aria-hidden='true'
                             strokeWidth={1.5}
                           />
@@ -183,7 +183,7 @@ const SolutionsMenu = () => {
                         className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                       >
                         <item.icon
-                          className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300'
+                          className='h-5 w-5 flex-none text-gray-600 dark:text-gray-300'
                           aria-hidden='true'
                           strokeWidth={1.5}
                         />
