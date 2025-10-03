@@ -215,7 +215,7 @@ export const ProjectCard = ({
       }}
       onClick={onElementClick}
       className={cx(
-        'cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700',
+        'cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60',
         viewMode === 'list' ? 'flex items-center justify-between px-6 py-4' : 'min-h-[153.1px]',
       )}
     >
@@ -225,7 +225,7 @@ export const ProjectCard = ({
 
           {project.isAccessConfirmed && role !== 'viewer' ? (
             <Link
-              className='rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+              className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               onClick={(e) => e.stopPropagation()}
               to={_replace(routes.project_settings, ':id', id)}
               aria-label={`${t('project.settings.settings')} ${name}`}

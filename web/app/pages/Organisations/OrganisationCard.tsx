@@ -128,17 +128,15 @@ export const OrganisationCard = ({ organisation, reloadOrganisations }: Organisa
         <div className='flex items-center justify-between'>
           <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
-          <div className='flex items-center gap-2'>
-            {membership?.role === 'viewer' ? null : (
-              // dummy button, since the whole card is clickable
-              <div
-                aria-label={`${t('project.settings.settings')} ${name}`}
-                className='rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
-              >
-                <Settings2Icon className='size-5' strokeWidth={1.5} />
-              </div>
-            )}
-          </div>
+          {membership?.role === 'viewer' ? null : (
+            // dummy button, since the whole card is clickable
+            <div
+              aria-label={`${t('project.settings.settings')} ${name}`}
+              className='rounded-md p-1.5 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+            >
+              <Settings2Icon className='size-5' strokeWidth={1.5} />
+            </div>
+          )}
         </div>
         <div className='mt-1 flex shrink-0 flex-wrap gap-2'>
           {badges.map((badge) => (

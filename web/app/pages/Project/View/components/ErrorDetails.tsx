@@ -137,7 +137,7 @@ export const ErrorDetails = ({ details }: ErrorDetailsProps) => {
             {isStackTraceExpanded ? (
               <button
                 onClick={handleCopyStackTrace}
-                className='relative flex items-center rounded-md border border-gray-50/0 bg-gray-50 p-1 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                className='relative flex items-center rounded-md border border-gray-50/0 bg-gray-50 p-1 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
               >
                 {isCopied ? (
                   <>

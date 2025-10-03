@@ -43,12 +43,12 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBP
     <Popover className='relative'>
       {({ open }) => (
         <>
-          <PopoverButton className='group inline-flex w-full rounded-md border border-gray-50/0 !p-2 text-sm font-medium text-gray-700 outline-hidden hover:border-gray-300 hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden md:px-4 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'>
+          <PopoverButton className='group inline-flex w-full rounded-md border border-gray-50/0 p-2 text-sm font-medium text-gray-700 outline-hidden transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'>
             <CalendarIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             <span>{title}</span>
             <ChevronDownIcon
               className={cx(
-                'ml-2 h-5 w-5 transform-gpu text-gray-700 transition duration-150 ease-in-out group-hover:text-gray-500 dark:text-gray-50',
+                'ml-2 h-5 w-5 transform-gpu text-gray-700 transition ease-in-out group-hover:text-gray-500 dark:text-gray-50',
                 {
                   'rotate-180': open,
                 },
@@ -58,7 +58,7 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBP
           </PopoverButton>
           <Transition
             as={Fragment}
-            enter='transition ease-out duration-200'
+            enter='transition ease-out'
             enterFrom='opacity-0 translate-y-1'
             enterTo='opacity-100 translate-y-0'
             leave='transition ease-in duration-150'
@@ -66,7 +66,7 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBP
             leaveTo='opacity-0 translate-y-1'
           >
             {/* w-56 */}
-            <PopoverPanel className='absolute right-2.5 z-20 mt-2 w-max max-w-sm transform px-4 sm:px-0 md:left-auto md:transform-none lg:max-w-3xl'>
+            <PopoverPanel className='absolute right-0 z-20 mt-2 w-max max-w-sm px-4 sm:px-0 lg:max-w-3xl'>
               <div className='overflow-hidden rounded-lg bg-gray-50 p-1 ring-1 ring-black/10 dark:bg-slate-800'>
                 <CurrentTime />
                 <div
@@ -87,7 +87,7 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBP
                         updateTimebucket(value)
                       }}
                       className={cx(
-                        'relative inline-flex items-center rounded px-2 py-1.5 text-sm font-medium capitalize transition-colors duration-150 ease-in-out',
+                        'relative inline-flex items-center rounded px-2 py-1.5 text-sm font-medium capitalize transition-colors',
                         {
                           'bg-gray-50 font-semibold text-gray-900 dark:bg-slate-800 dark:text-gray-50':
                             timeBucket === value,
@@ -111,7 +111,7 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBP
                       key={item.label}
                       onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(item, e)}
                       className={cx(
-                        'flex cursor-pointer items-center justify-between space-x-1 rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700',
+                        'flex cursor-pointer items-center justify-between space-x-1 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700',
                         {
                           'cursor-wait': dataLoading,
                         },

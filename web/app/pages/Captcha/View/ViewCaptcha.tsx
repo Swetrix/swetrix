@@ -421,7 +421,7 @@ const ViewCaptcha = () => {
                       title={t('project.refreshStats')}
                       onClick={refreshStats}
                       className={cx(
-                        'relative mr-3 rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                        'relative mr-3 rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                         {
                           'cursor-not-allowed opacity-50': authLoading || dataLoading,
                         },
@@ -438,7 +438,7 @@ const ViewCaptcha = () => {
                       onSelect={(item) => item.onClick()}
                       className={cx('mr-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
                       chevron='mini'
-                      buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:dark:ring-gray-200'
+                      buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:dark:ring-gray-200'
                       headless
                     />
                     <TBPeriodSelector

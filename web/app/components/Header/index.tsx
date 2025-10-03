@@ -99,7 +99,7 @@ const SolutionsMenu = () => {
     <Popover>
       {({ open }) => (
         <>
-          <PopoverButton className='underline-animate inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 dark:text-white'>
+          <PopoverButton className='underline-animate inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'>
             <span>{t('header.solutions.title')}</span>
             <ChevronDownIcon
               className={cx('h-3 w-3 stroke-2 transition-transform', {
@@ -213,7 +213,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
       {({ open }) => (
         <>
           <div>
-            <MenuButton className='underline-animate flex items-center justify-center text-base leading-6 font-semibold text-slate-800 dark:text-white'>
+            <MenuButton className='underline-animate flex items-center justify-center text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'>
               <span>{t('common.account')}</span>
               <ChevronDownIcon
                 className={cx('ml-1 h-4 w-4 transform-gpu stroke-2 transition-transform', {
@@ -223,156 +223,147 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               />
             </MenuButton>
           </div>
-          <Transition
-            as={Fragment}
-            enter='transition ease-out duration-100'
-            enterFrom='transform opacity-0 scale-95'
-            enterTo='transform opacity-100 scale-100'
-            leave='transition ease-in duration-75'
-            leaveFrom='transform opacity-100 scale-100'
-            leaveTo='transform opacity-0 scale-95'
+          <MenuItems
+            className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 transition duration-200 ease-out focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 dark:bg-slate-900 dark:ring-slate-800'
+            transition
+            modal={false}
           >
-            <MenuItems
-              className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'
-              modal={false}
-            >
-              <p className='truncate p-2' role='none'>
-                <span className='block text-xs text-gray-500 dark:text-gray-300' role='none'>
-                  {t('header.signedInAs')}
-                </span>
-                <span className='mt-0.5 text-sm font-semibold text-gray-700 dark:text-gray-50' role='none'>
-                  {user?.email}
-                </span>
-              </p>
-              <div className='my-0.5 w-full border-b-[1px] border-gray-200 dark:border-slate-700/50' />
+            <p className='truncate p-2' role='none'>
+              <span className='block text-xs text-gray-500 dark:text-gray-300' role='none'>
+                {t('header.signedInAs')}
+              </span>
+              <span className='mt-0.5 text-sm font-semibold text-gray-700 dark:text-gray-50' role='none'>
+                {user?.email}
+              </span>
+            </p>
+            <div className='my-0.5 w-full border-b-[1px] border-gray-200 dark:border-slate-700/50' />
 
-              {/* Language selector */}
-              <Disclosure>
-                {({ open }) => (
-                  <>
-                    <DisclosureButton className='flex w-full justify-between rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'>
-                      <div className='flex'>
-                        <Flag
-                          className='mr-1.5 rounded-xs'
-                          country={languageFlag[language]}
-                          size={20}
-                          alt=''
-                          aria-hidden='true'
-                        />
-                        {languages[language]}
-                      </div>
-                      <ChevronDownIcon
-                        className={cx(
-                          open ? 'rotate-180' : '',
-                          '-mr-1 ml-2 h-5 w-5 transform-gpu stroke-2 transition-transform',
-                        )}
+            {/* Language selector */}
+            <Disclosure>
+              {({ open }) => (
+                <>
+                  <DisclosureButton className='flex w-full justify-between rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'>
+                    <div className='flex'>
+                      <Flag
+                        className='mr-1.5 rounded-xs'
+                        country={languageFlag[language]}
+                        size={20}
+                        alt=''
                         aria-hidden='true'
                       />
-                    </DisclosureButton>
+                      {languages[language]}
+                    </div>
+                    <ChevronDownIcon
+                      className={cx(
+                        open ? 'rotate-180' : '',
+                        '-mr-1 ml-2 h-5 w-5 transform-gpu stroke-2 transition-transform',
+                      )}
+                      aria-hidden='true'
+                    />
+                  </DisclosureButton>
 
-                    <Transition
-                      show={open}
-                      as={Fragment}
-                      enter='transition ease-out duration-100'
-                      enterFrom='transform opacity-0 scale-95'
-                      enterTo='transform opacity-100 scale-100'
-                      leave='transition ease-in duration-75'
-                      leaveFrom='transform opacity-100 scale-100'
-                      leaveTo='transform opacity-0 scale-95'
+                  <Transition
+                    show={open}
+                    as={Fragment}
+                    enter='transition ease-out duration-100'
+                    enterFrom='transform opacity-0 scale-95'
+                    enterTo='transform opacity-100 scale-100'
+                    leave='transition ease-in duration-75'
+                    leaveFrom='transform opacity-100 scale-100'
+                    leaveTo='transform opacity-0 scale-95'
+                  >
+                    <DisclosurePanel
+                      className='absolute right-0 z-50 w-full min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
+                      static
                     >
-                      <DisclosurePanel
-                        className='absolute right-0 z-50 w-full min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
-                        static
-                      >
-                        {_map(whitelist, (lng) => (
-                          <DisclosureButton
-                            key={lng}
-                            as='span'
-                            className='block cursor-pointer rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
-                            onClick={() => changeLanguage(lng)}
-                          >
-                            <div className='flex'>
-                              <div className='pt-1'>
-                                <Flag
-                                  className='mr-1.5 rounded-xs'
-                                  country={languageFlag[lng]}
-                                  size={20}
-                                  alt={languageFlag[lng]}
-                                />
-                              </div>
-                              {languages[lng]}
+                      {_map(whitelist, (lng) => (
+                        <DisclosureButton
+                          key={lng}
+                          as='span'
+                          className='block cursor-pointer rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
+                          onClick={() => changeLanguage(lng)}
+                        >
+                          <div className='flex'>
+                            <div className='pt-1'>
+                              <Flag
+                                className='mr-1.5 rounded-xs'
+                                country={languageFlag[lng]}
+                                size={20}
+                                alt={languageFlag[lng]}
+                              />
                             </div>
-                          </DisclosureButton>
-                        ))}
-                      </DisclosurePanel>
-                    </Transition>
-                  </>
-                )}
-              </Disclosure>
-
-              {isSelfhosted ? (
-                <MenuItem>
-                  <a
-                    href={CONTACT_US_URL}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
-                  >
-                    {t('footer.support')}
-                  </a>
-                </MenuItem>
-              ) : (
-                <MenuItem>
-                  <Link
-                    to={routes.contact}
-                    className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
-                  >
-                    {t('footer.support')}
-                  </Link>
-                </MenuItem>
+                            {languages[lng]}
+                          </div>
+                        </DisclosureButton>
+                      ))}
+                    </DisclosurePanel>
+                  </Transition>
+                </>
               )}
-              {!isSelfhosted ? (
-                <MenuItem>
-                  <Link
-                    to={routes.billing}
-                    className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
-                  >
-                    {t('common.billing')}
-                  </Link>
-                </MenuItem>
-              ) : null}
+            </Disclosure>
 
-              <div className='my-0.5 w-full border-b-[1px] border-gray-200 dark:border-slate-700/50' />
-
+            {isSelfhosted ? (
               <MenuItem>
-                <Link
-                  to={routes.user_settings}
+                <a
+                  href={CONTACT_US_URL}
+                  target='_blank'
+                  rel='noopener noreferrer'
                   className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
                 >
-                  {t('common.accountSettings')}
+                  {t('footer.support')}
+                </a>
+              </MenuItem>
+            ) : (
+              <MenuItem>
+                <Link
+                  to={routes.contact}
+                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                >
+                  {t('footer.support')}
                 </Link>
               </MenuItem>
-              {!isSelfhosted ? (
-                <MenuItem>
-                  <Link
-                    to={routes.organisations}
-                    className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
-                  >
-                    {t('organisations.organisations')}
-                  </Link>
-                </MenuItem>
-              ) : null}
+            )}
+            {!isSelfhosted ? (
               <MenuItem>
-                <button
-                  type='button'
-                  className='w-full rounded-md p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
-                  onClick={logoutHandler}
+                <Link
+                  to={routes.billing}
+                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
                 >
-                  {t('common.logout')}
-                </button>
+                  {t('common.billing')}
+                </Link>
               </MenuItem>
-            </MenuItems>
-          </Transition>
+            ) : null}
+
+            <div className='my-0.5 w-full border-b-[1px] border-gray-200 dark:border-slate-700/50' />
+
+            <MenuItem>
+              <Link
+                to={routes.user_settings}
+                className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+              >
+                {t('common.accountSettings')}
+              </Link>
+            </MenuItem>
+            {!isSelfhosted ? (
+              <MenuItem>
+                <Link
+                  to={routes.organisations}
+                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                >
+                  {t('organisations.organisations')}
+                </Link>
+              </MenuItem>
+            ) : null}
+            <MenuItem>
+              <button
+                type='button'
+                className='w-full rounded-md p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                onClick={logoutHandler}
+              >
+                {t('common.logout')}
+              </button>
+            </MenuItem>
+          </MenuItems>
         </>
       )}
     </Menu>
@@ -419,7 +410,7 @@ const AuthedHeader = ({
               {user?.planCode === 'trial' ? (
                 <Link
                   to={routes.billing}
-                  className={cx('underline-animate text-base leading-6 font-semibold', {
+                  className={cx('underline-animate text-base leading-6 font-semibold focus:outline-hidden', {
                     'text-amber-600': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
                     'text-rose-600':
                       rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY ||
@@ -434,7 +425,7 @@ const AuthedHeader = ({
               {user?.planCode === 'none' ? (
                 <Link
                   to={routes.billing}
-                  className='underline-animate text-base leading-6 font-semibold text-rose-600'
+                  className='underline-animate text-base leading-6 font-semibold text-rose-600 focus:outline-hidden'
                   key='NoSubscription'
                 >
                   {t('billing.inactive')}
@@ -446,7 +437,7 @@ const AuthedHeader = ({
                   href={`https://swetrix.com${routes.blog}`}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
+                  className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
                 >
                   {t('footer.blog')}
                 </a>
@@ -454,14 +445,14 @@ const AuthedHeader = ({
               {!isSelfhosted && !isDisableMarketingPages ? (
                 <Link
                   to={routes.blog}
-                  className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
+                  className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
                 >
                   {t('footer.blog')}
                 </Link>
               ) : null}
               <a
                 href={DOCS_URL}
-                className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
+                className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
                 target='_blank'
                 rel='noreferrer noopener'
               >
@@ -469,7 +460,7 @@ const AuthedHeader = ({
               </a>
               <Link
                 to={routes.dashboard}
-                className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
+                className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
               >
                 {t('common.dashboard')}
               </Link>
@@ -531,7 +522,7 @@ const NotAuthedHeader = ({
                     href={`https://swetrix.com${routes.blog}`}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
+                    className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
                   >
                     {t('footer.blog')}
                   </a>
@@ -539,7 +530,7 @@ const NotAuthedHeader = ({
                 {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
                     to={routes.blog}
-                    className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
+                    className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
                   >
                     {t('footer.blog')}
                   </Link>
@@ -547,7 +538,7 @@ const NotAuthedHeader = ({
                 {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
                     to={`${routes.main}#pricing`}
-                    className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
+                    className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
                     key='Pricing'
                   >
                     {t('common.pricing')}
@@ -555,7 +546,7 @@ const NotAuthedHeader = ({
                 ) : null}
                 <a
                   href={DOCS_URL}
-                  className='underline-animate text-base leading-6 font-semibold text-slate-800 dark:text-white'
+                  className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
                   target='_blank'
                   rel='noreferrer noopener'
                 >

@@ -43,12 +43,12 @@ const FunnelCard = ({ funnel, openFunnelSettings, deleteFunnel, loading, allowed
       to={{
         search,
       }}
-      className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-[#162032] dark:hover:bg-slate-800'
+      className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'
     >
       <div className='px-4 py-4'>
         <div className='flex items-center justify-between'>
           <p className='truncate text-base font-semibold text-slate-900 dark:text-gray-50'>{funnel.name}</p>
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-1'>
             <button
               type='button'
               onClick={(e) => {
@@ -57,7 +57,7 @@ const FunnelCard = ({ funnel, openFunnelSettings, deleteFunnel, loading, allowed
                 openFunnelSettings(funnel)
               }}
               aria-label={t('common.settings')}
-              className='rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+              className='rounded-md p-1.5 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
             >
               <Settings2Icon className='size-5' strokeWidth={1.5} />
             </button>
@@ -71,7 +71,7 @@ const FunnelCard = ({ funnel, openFunnelSettings, deleteFunnel, loading, allowed
                 }}
                 aria-label={t('common.delete')}
                 className={cx(
-                  'rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300',
+                  'rounded-md p-1.5 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300',
                   {
                     'cursor-not-allowed': loading,
                   },

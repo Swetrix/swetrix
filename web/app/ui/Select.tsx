@@ -87,7 +87,7 @@ function Select<T>({
                   <ListboxOption
                     key={keyExtractor ? keyExtractor(item, index) : (item as Key)}
                     className={({ focus, selected }) =>
-                      cx('relative mx-1 cursor-pointer rounded-md py-2 pr-4 pl-8 select-none', {
+                      cx('relative mx-1 cursor-pointer rounded-md py-2 pr-4 pl-8 transition-colors select-none', {
                         'bg-gray-200 dark:bg-slate-700': focus && !selected,
                         'bg-gray-300 dark:bg-slate-600': selected,
                         'text-gray-700 dark:text-gray-50': !focus && !selected,

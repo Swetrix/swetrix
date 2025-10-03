@@ -281,7 +281,7 @@ const ChartTypeSwitcher = ({
           type='button'
           title={t('project.lineChart')}
           onClick={() => onSwitch(chartTypes.line)}
-          className='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+          className='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
         >
           <ChartLineIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
         </button>
@@ -291,7 +291,7 @@ const ChartTypeSwitcher = ({
           type='button'
           title={t('project.barChart')}
           onClick={() => onSwitch(chartTypes.bar)}
-          className='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+          className='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
         >
           <ChartColumnIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
         </button>
@@ -3001,7 +3001,7 @@ const ViewProject = () => {
                         </h2>
                         {activeTab !== PROJECT_TABS.funnels ? <LiveVisitorsDropdown /> : null}
                       </div>
-                      <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center space-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
+                      <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
                         {activeTab !== PROJECT_TABS.funnels ? (
                           <>
                             <button
@@ -3009,7 +3009,7 @@ const ViewProject = () => {
                               title={t('project.refreshStats')}
                               onClick={refreshStats}
                               className={cx(
-                                'relative rounded-md border border-transparent p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                                'relative rounded-md border border-transparent p-2 text-sm font-medium transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                                 {
                                   'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                 },
@@ -3035,7 +3035,7 @@ const ViewProject = () => {
                                   setShowFiltersSearch(true)
                                 }}
                                 className={cx(
-                                  'relative rounded-md border border-transparent p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                                  'relative rounded-md border border-transparent p-2 text-sm font-medium transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                                   {
                                     'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                   },
@@ -3139,7 +3139,7 @@ const ViewProject = () => {
                                   }
                                 }}
                                 chevron='mini'
-                                buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200'
+                                buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200'
                                 headless
                               />
                             ) : null}
@@ -3177,7 +3177,7 @@ const ViewProject = () => {
                                   item.onClick(panelsData, t)
                                 }}
                                 chevron='mini'
-                                buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:dark:ring-gray-200'
+                                buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:dark:ring-gray-200'
                                 headless
                               />
                             ) : null}
@@ -3251,7 +3251,7 @@ const ViewProject = () => {
                             title={t('project.refreshStats')}
                             onClick={refreshStats}
                             className={cx(
-                              'relative rounded-md border border-transparent p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                              'relative rounded-md border border-transparent p-2 text-sm font-medium transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                               {
                                 'cursor-not-allowed opacity-50': authLoading || dataLoading,
                               },
@@ -3260,44 +3260,70 @@ const ViewProject = () => {
                             <RotateCw className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                           </button>
                         ) : null}
-                        <TBPeriodSelector
-                          classes={{
-                            timeBucket: activeTab === PROJECT_TABS.errors && !activeEID ? 'hidden' : '',
-                          }}
-                          activePeriod={activePeriod}
-                          items={timeBucketSelectorItems}
-                          title={activePeriod?.label}
-                          onSelect={(pair) => {
-                            if (dataLoading) {
-                              return
-                            }
-
-                            if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
-                              // @ts-expect-error
-                              if (activeTab === PROJECT_TABS.alerts) {
+                        <div className='flex items-center'>
+                          <TBPeriodSelector
+                            classes={{
+                              timeBucket: activeTab === PROJECT_TABS.errors && !activeEID ? 'hidden' : '',
+                            }}
+                            activePeriod={activePeriod}
+                            items={timeBucketSelectorItems}
+                            title={activePeriod?.label}
+                            onSelect={(pair) => {
+                              if (dataLoading) {
                                 return
                               }
 
-                              if (isActiveCompare) {
-                                compareDisable()
-                              } else {
-                                setIsActiveCompare(true)
+                              if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
+                                // @ts-expect-error
+                                if (activeTab === PROJECT_TABS.alerts) {
+                                  return
+                                }
+
+                                if (isActiveCompare) {
+                                  compareDisable()
+                                } else {
+                                  setIsActiveCompare(true)
+                                }
+
+                                return
                               }
 
-                              return
-                            }
-
-                            if (pair.isCustomDate) {
-                              setTimeout(() => {
-                                // @ts-expect-error
-                                refCalendar.current.openCalendar()
-                              }, 100)
-                            } else {
-                              resetDateRange()
-                              updatePeriod(pair)
-                            }
-                          }}
-                        />
+                              if (pair.isCustomDate) {
+                                setTimeout(() => {
+                                  // @ts-expect-error
+                                  refCalendar.current.openCalendar()
+                                }, 100)
+                              } else {
+                                resetDateRange()
+                                updatePeriod(pair)
+                              }
+                            }}
+                          />
+                          <DatePicker
+                            ref={refCalendar}
+                            onChange={([from, to]) => {
+                              const newSearchParams = new URLSearchParams(searchParams.toString())
+                              newSearchParams.set('from', from.toISOString())
+                              newSearchParams.set('to', to.toISOString())
+                              newSearchParams.set('period', 'custom')
+                              setSearchParams(newSearchParams)
+                            }}
+                            value={dateRange || []}
+                            maxDateMonths={MAX_MONTHS_IN_PAST}
+                            maxRange={0}
+                          />
+                          <DatePicker
+                            ref={refCalendarCompare}
+                            onChange={(date) => {
+                              setDateRangeCompare(date)
+                              setActivePeriodCompare(PERIOD_PAIRS_COMPARE.CUSTOM)
+                              setPeriodPairsCompare(tbPeriodPairsCompare(t, date, language))
+                            }}
+                            value={dateRangeCompare || []}
+                            maxDateMonths={MAX_MONTHS_IN_PAST}
+                            maxRange={maxRangeCompare}
+                          />
+                        </div>
                         {isActiveCompare && activeTab !== PROJECT_TABS.errors ? (
                           <>
                             <div className='text-md mx-2 font-medium whitespace-pre-line text-gray-600 dark:text-gray-200'>
@@ -3330,32 +3356,6 @@ const ViewProject = () => {
                             />
                           </>
                         ) : null}
-                        <DatePicker
-                          className='!mx-0 w-0'
-                          ref={refCalendar}
-                          onChange={([from, to]) => {
-                            const newSearchParams = new URLSearchParams(searchParams.toString())
-                            newSearchParams.set('from', from.toISOString())
-                            newSearchParams.set('to', to.toISOString())
-                            newSearchParams.set('period', 'custom')
-                            setSearchParams(newSearchParams)
-                          }}
-                          value={dateRange || []}
-                          maxDateMonths={MAX_MONTHS_IN_PAST}
-                          maxRange={0}
-                        />
-                        <DatePicker
-                          className='!mx-0 w-0'
-                          ref={refCalendarCompare}
-                          onChange={(date) => {
-                            setDateRangeCompare(date)
-                            setActivePeriodCompare(PERIOD_PAIRS_COMPARE.CUSTOM)
-                            setPeriodPairsCompare(tbPeriodPairsCompare(t, date, language))
-                          }}
-                          value={dateRangeCompare || []}
-                          maxDateMonths={MAX_MONTHS_IN_PAST}
-                          maxRange={maxRangeCompare}
-                        />
                       </div>
                     </div>
                     {activeTab === PROJECT_TABS.funnels ? (
@@ -3446,7 +3446,7 @@ const ViewProject = () => {
                         title={t('project.loadMore')}
                         onClick={() => loadSessions()}
                         className={cx(
-                          'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                          'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                           {
                             'cursor-not-allowed opacity-50': sessionsLoading || sessionsLoading === null,
                             hidden: sessionsLoading && _isEmpty(sessions),
@@ -3477,7 +3477,7 @@ const ViewProject = () => {
                         title={t('project.refreshStats')}
                         onClick={refreshStats}
                         className={cx(
-                          'flex items-center text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
+                          'flex items-center text-sm text-gray-900 transition-colors hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
                           {
                             'cursor-not-allowed': authLoading || dataLoading || sessionLoading,
                           },
@@ -3543,7 +3543,7 @@ const ViewProject = () => {
                         title={t('project.loadMore')}
                         onClick={() => loadErrors()}
                         className={cx(
-                          'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                          'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                           {
                             'cursor-not-allowed opacity-50': errorsLoading,
                             hidden: errorsLoading && _isEmpty(errors),
@@ -3836,7 +3836,7 @@ const ViewProject = () => {
                               />
                             )
                           }}
-                          buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                          buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
                           selectItemClassName='p-0'
                           keyExtractor={(pair) => pair.id}
                           onSelect={({ id: pairID, conflicts }, e) => {
@@ -4164,7 +4164,7 @@ const ViewProject = () => {
                           onSelect={({ id: pairID }) => {
                             setActiveChartMetricsPerf(pairID)
                           }}
-                          buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                          buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
                           chevron='mini'
                           headless
                         />
@@ -4185,7 +4185,7 @@ const ViewProject = () => {
                           onSelect={({ id: pairID }) => {
                             setActivePerfMeasure(pairID)
                           }}
-                          buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                          buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
                           chevron='mini'
                           headless
                         />

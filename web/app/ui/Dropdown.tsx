@@ -123,7 +123,7 @@ function Dropdown<T>({
                   <MenuItem key={keyExtractor ? keyExtractor(item, close) : (item as Key)}>
                     <span
                       className={cn(
-                        'block cursor-pointer rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700',
+                        'block cursor-pointer rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700',
                         selectItemClassName,
                       )}
                       role='menuitem'

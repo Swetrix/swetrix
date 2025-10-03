@@ -123,7 +123,7 @@ const Modal = ({
                           onClose?.()
                         }}
                         aria-label={t('common.close')}
-                        className='rounded-md p-1 text-gray-800 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+                        className='rounded-md p-1.5 text-gray-800 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
                       >
                         <XMarkIcon className='size-5' />
                       </button>
