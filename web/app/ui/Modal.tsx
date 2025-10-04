@@ -123,7 +123,7 @@ const Modal = ({
                           onClose?.()
                         }}
                         aria-label={t('common.close')}
-                        className='rounded-md p-1.5 text-gray-800 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+                        className='rounded-md p-1.5 text-gray-800 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
                       >
                         <XMarkIcon className='size-5' />
                       </button>
@@ -133,7 +133,7 @@ const Modal = ({
                 <div className='mt-2 text-sm whitespace-pre-line text-gray-600 dark:text-gray-200'>{message}</div>
               </div>
             </div>
-            <div className='px-4 py-3 sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
+            <div className='px-4 py-3 transition-colors sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
               {customButtons}
               {submitText ? (
                 <button
