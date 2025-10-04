@@ -512,6 +512,7 @@ const ViewProject = () => {
   const activePSID = useMemo(() => {
     return searchParams.get('psid')
   }, [searchParams])
+  const prevActivePSIDRef = useRef<string | null>(activePSID)
   const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(null)
   const [sessionChartInstance, setSessionChartInstance] = useState<Chart | null>(null)
 
@@ -526,6 +527,7 @@ const ViewProject = () => {
   const activeEID = useMemo(() => {
     return searchParams.get('eid')
   }, [searchParams])
+  const prevActiveEIDRef = useRef<string | null>(activeEID)
 
   const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(undefined)
   const [funnelActionLoading, setFunnelActionLoading] = useState(false)
@@ -1168,6 +1170,7 @@ const ViewProject = () => {
     setErrorsSkip(0)
     setErrors([])
     setErrorsLoading(null)
+    setCanLoadMoreErrors(false)
   }
 
   const switchActiveErrorFilter = _debounce((pairID: string) => {
@@ -1692,20 +1695,34 @@ const ViewProject = () => {
   useEffect(() => {
     if (!activePSID) {
       setActiveSession(null)
+      // Coming back from a session detail to the list: reset pagination and reload first page
+      if (prevActivePSIDRef.current) {
+        resetSessions()
+        loadSessions(0)
+      }
+      prevActivePSIDRef.current = null
       return
     }
 
     loadSession(activePSID)
+    prevActivePSIDRef.current = activePSID
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, dateRange, timeBucket, activePSID])
 
   useEffect(() => {
     if (!activeEID) {
       setActiveError(null)
+      // Coming back from an error detail to the list: reset pagination and reload first page
+      if (prevActiveEIDRef.current) {
+        resetErrors()
+        loadErrors(0, true)
+      }
+      prevActiveEIDRef.current = null
       return
     }
 
     loadError(activeEID)
+    prevActiveEIDRef.current = activeEID
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, dateRange, timeBucket, activeEID, filters])
 
@@ -2487,6 +2504,7 @@ const ViewProject = () => {
     setSessionsSkip(0)
     setSessions([])
     setSessionsLoading(null)
+    setCanLoadMoreSessions(false)
   }
 
   // We can assume period provided is never custom, as it's handled separately in the Datepicker callback function

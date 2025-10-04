@@ -3,7 +3,7 @@ import cx from 'clsx'
 import _map from 'lodash/map'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { SwetrixError } from '~/lib/models/Project'
@@ -34,6 +34,7 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
     t,
     i18n: { language },
   } = useTranslation('common')
+  const location = useLocation()
   const lastSeen = useMemo(() => {
     return getRelativeDateIfPossible(error.last_seen, language)
   }, [error.last_seen, language])
@@ -61,12 +62,11 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
     }
   }, [error.status, t])
 
-  const eidUrl = new URL(window.location.href)
-  eidUrl.searchParams.set('eid', error.eid)
-  const stringifiedUrl = eidUrl.toString()
+  const params = new URLSearchParams(location.search)
+  params.set('eid', error.eid)
 
   return (
-    <Link to={stringifiedUrl}>
+    <Link to={{ search: params.toString() }}>
       <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'>
         <div className='flex min-w-0 gap-x-4'>
           <div className='min-w-0 flex-auto'>
