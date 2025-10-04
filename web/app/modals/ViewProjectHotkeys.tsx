@@ -96,7 +96,6 @@ const ViewProjectHotkeys = ({ onClose, isOpened }: ViewProjectHotkeysProps) => {
   return (
     <Modal
       onClose={onClose}
-      closeText={t('common.close')}
       message={
         <div className='mt-3 columns-1 gap-5 md:columns-2'>
           {_map(hotkeys, (_hotkeys, title) => (
