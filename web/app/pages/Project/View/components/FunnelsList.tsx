@@ -97,7 +97,7 @@ const AddFunnel = ({ openFunnelSettings }: AddFunnelProps) => {
   return (
     <li
       onClick={onClick}
-      className='group flex h-auto min-h-[120px] cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
+      className='group flex h-auto min-h-[120px] cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
     >
       <div>
         <CirclePlusIcon
