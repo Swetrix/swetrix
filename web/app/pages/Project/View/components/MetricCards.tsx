@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _isNumber from 'lodash/isNumber'
@@ -125,34 +125,46 @@ export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: 
             onClick={() => setShow(!show)}
           >
             {values[selected].label}{' '}
-            {show ? <ChevronUpIcon className='inline h-4 w-4' /> : <ChevronDownIcon className='inline h-4 w-4' />}
+            <ChevronDownIcon
+              className={cx(
+                'inline h-4 w-4 transform transition-transform duration-200',
+                show ? 'rotate-180' : 'rotate-0',
+              )}
+            />
           </span>
-          {show ? (
-            <div className='absolute top-4 z-10 mt-2 max-h-[200px] min-w-[250px] overflow-auto rounded-md border border-black/10 bg-white text-gray-900 dark:border-slate-700/50 dark:bg-slate-900'>
-              <div className='flex w-full flex-col p-1'>
-                <div className='flex items-center justify-between px-2 py-1'>
-                  <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>{selectLabel}</p>
-                  <button
-                    className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-700'
-                    type='button'
-                    onClick={() => setShow(!show)}
-                  >
-                    <XMarkIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
-                  </button>
-                </div>
+          <div
+            className={cx(
+              'absolute top-4 z-10 mt-2 min-w-[250px] origin-top transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white break-words whitespace-normal text-gray-900 shadow-lg transition-all duration-200 ease-out dark:border-slate-700/50 dark:bg-slate-900',
+              show
+                ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
+                : 'pointer-events-none -translate-y-1 scale-95 opacity-0',
+            )}
+          >
+            <div className='flex w-full flex-col'>
+              <div className='flex items-center justify-between border-b border-black/10 bg-white p-2 dark:border-slate-700/50 dark:bg-slate-900'>
+                <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>{selectLabel}</p>
+                <button
+                  className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-700'
+                  type='button'
+                  onClick={() => setShow(!show)}
+                >
+                  <XMarkIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
+                </button>
+              </div>
+              <div className='scrollbar-thin max-h-[200px] overflow-x-hidden overflow-y-auto p-1'>
                 {_map(values, ({ label }, index) => (
                   <button
                     type='button'
                     key={label}
                     onClick={() => _onSelect(index)}
-                    className='rounded-md p-2 text-left text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                    className='w-full rounded-md p-2 text-left text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
                   >
                     {label}
                   </button>
                 ))}
               </div>
             </div>
-          ) : null}
+          </div>
         </OutsideClickHandler>
       </div>
     </div>
