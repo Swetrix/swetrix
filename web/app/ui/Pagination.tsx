@@ -91,13 +91,17 @@ const Pagination = ({
         </p>
         <div className='flex items-center gap-4'>
           {pageSizeOptions && onPageSizeChange ? (
-            <Select<string>
-              label={t('common.resultsPerPage')}
-              title={pageSize.toString()}
-              items={processedPageSizeOptions}
-              onSelect={(item) => onPageSizeChange(Number(item))}
-              labelClassName='!overflow-visible'
-            />
+            <div className='flex items-center gap-2'>
+              <span className='text-sm text-gray-700 dark:text-gray-200'>{t('common.resultsPerPage')}</span>
+              <Select<string>
+                label={t('common.resultsPerPage')}
+                fieldLabelClassName='sr-only'
+                title={pageSize.toString()}
+                items={processedPageSizeOptions}
+                onSelect={(item) => onPageSizeChange(Number(item))}
+                labelClassName='!overflow-visible'
+              />
+            </div>
           ) : null}
           <nav className='isolate inline-flex -space-x-px rounded-md' aria-label='Pagination'>
             <button

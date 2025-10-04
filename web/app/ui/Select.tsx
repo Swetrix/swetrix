@@ -17,6 +17,8 @@ interface SelectProps<T> {
   label?: string
   hint?: string | React.ReactNode
   className?: string
+  // Optional className to customise the top field label (not the option labels)
+  fieldLabelClassName?: string
   labelClassName?: string
   buttonClassName?: string
   capitalise?: boolean
@@ -42,6 +44,7 @@ function Select<T>({
   buttonClassName,
   capitalise,
   labelClassName,
+  fieldLabelClassName,
 }: SelectProps<T>) {
   return (
     // @ts-expect-error
@@ -49,7 +52,12 @@ function Select<T>({
       {({ open }) => (
         <>
           {label ? (
-            <Label className='mb-1 block text-sm font-medium whitespace-pre-line text-gray-700 dark:text-gray-100'>
+            <Label
+              className={cx(
+                'mb-1 block text-sm font-medium whitespace-pre-line text-gray-700 dark:text-gray-100',
+                fieldLabelClassName,
+              )}
+            >
               {label}
             </Label>
           ) : null}
