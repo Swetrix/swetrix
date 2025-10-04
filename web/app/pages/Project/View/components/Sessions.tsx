@@ -97,7 +97,7 @@ const Session = ({ session, timeFormat }: SessionProps) => {
 
   return (
     <Link to={stringifiedUrl}>
-      <li className='relative mb-4 flex cursor-pointer justify-between gap-x-6 rounded-lg bg-gray-200/60 px-4 py-4 hover:bg-gray-200 sm:px-6 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'>
+      <li className='relative mb-4 flex cursor-pointer justify-between gap-x-6 rounded-lg bg-gray-200/60 px-4 py-4 transition-colors hover:bg-gray-200 sm:px-6 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'>
         <div className='flex min-w-0 gap-x-4'>
           <div className='min-w-0 flex-auto'>
             <p className='flex items-center text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>
