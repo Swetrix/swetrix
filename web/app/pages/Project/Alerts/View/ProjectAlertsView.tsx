@@ -349,7 +349,7 @@ const ProjectAlerts = () => {
         ) : (
           <>
             {!isIntegrationLinked ? <NoNotificationChannelSet /> : null}
-            <ul className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
+            <ul className='mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3'>
               {_map(alerts, (alert) => (
                 <AlertCard
                   key={alert.id}

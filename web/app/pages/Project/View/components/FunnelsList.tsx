@@ -116,7 +116,7 @@ const FunnelsList = ({ funnels, openFunnelSettings, deleteFunnel, loading, allow
   const { isAuthenticated } = useAuth()
 
   return (
-    <div role='list' className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
+    <div role='list' className='mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3'>
       {_map(funnels, (funnel) => (
         <FunnelCard
           key={funnel.id}
