@@ -176,41 +176,33 @@
   /* Open animations (handle both delayed and instant) */
   .tooltip-content[data-state='delayed-open'][data-side='top'],
   .tooltip-content[data-state='instant-open'][data-side='top'] {
-    animation: tooltipSlideUpAndFadeIn var(--default-transition-duration, 250ms)
-      cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideUpAndFadeIn var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
   .tooltip-content[data-state='delayed-open'][data-side='bottom'],
   .tooltip-content[data-state='instant-open'][data-side='bottom'] {
-    animation: tooltipSlideDownAndFadeIn var(--default-transition-duration, 250ms)
-      cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideDownAndFadeIn var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
   .tooltip-content[data-state='delayed-open'][data-side='left'],
   .tooltip-content[data-state='instant-open'][data-side='left'] {
-    animation: tooltipSlideLeftAndFadeIn var(--default-transition-duration, 250ms)
-      cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideLeftAndFadeIn var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
   .tooltip-content[data-state='delayed-open'][data-side='right'],
   .tooltip-content[data-state='instant-open'][data-side='right'] {
-    animation: tooltipSlideRightAndFadeIn var(--default-transition-duration, 250ms)
-      cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideRightAndFadeIn var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Close animations */
   .tooltip-content[data-state='closed'][data-side='top'] {
-    animation: tooltipSlideUpAndFadeOut var(--default-transition-duration, 250ms)
-      cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideUpAndFadeOut var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
   .tooltip-content[data-state='closed'][data-side='bottom'] {
-    animation: tooltipSlideDownAndFadeOut var(--default-transition-duration, 250ms)
-      cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideDownAndFadeOut var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
   .tooltip-content[data-state='closed'][data-side='left'] {
-    animation: tooltipSlideLeftAndFadeOut var(--default-transition-duration, 250ms)
-      cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideLeftAndFadeOut var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
   .tooltip-content[data-state='closed'][data-side='right'] {
-    animation: tooltipSlideRightAndFadeOut var(--default-transition-duration, 250ms)
-      cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideRightAndFadeOut var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
