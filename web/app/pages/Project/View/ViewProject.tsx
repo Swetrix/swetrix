@@ -3003,7 +3003,7 @@ const ViewProject = () => {
                     (activeFunnel || activeTab !== PROJECT_TABS.funnels) ? (
                       <>
                         <div className='top-0 z-20 flex flex-col items-center justify-between bg-gray-50/50 py-2 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
-                          <div className='flex flex-wrap items-center justify-center gap-x-5 gap-y-2'>
+                          <div className='flex flex-wrap items-center justify-center gap-2'>
                             <h2 className='text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
                               {/* If tab is funnels - then display a funnel name, otherwise a project name */}
                               {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : project.name}

@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -10,6 +10,7 @@ import Flag from '~/ui/Flag'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import Spin from '~/ui/icons/Spin'
 import OutsideClickHandler from '~/ui/OutsideClickHandler'
+import { cn } from '~/utils/generic'
 
 import { useCurrentProject, useProjectPassword } from '../../../../providers/CurrentProjectProvider'
 
@@ -47,47 +48,61 @@ const LiveVisitorsDropdown = () => {
 
   return (
     <OutsideClickHandler onOutsideClick={() => setIsDropdownVisible(false)}>
-      <div
-        className='relative flex h-5 cursor-pointer items-center text-base text-gray-900 dark:text-gray-50'
-        onClick={onOpen}
-      >
-        <PulsatingCircle className='mr-1.5' type='small' />
-        <span>
-          {t('dashboard.xLiveVisitors', {
-            amount: liveVisitors,
-          })}{' '}
-        </span>
-        {isDropdownVisible ? (
-          <ChevronUpIcon className='ml-1 inline h-4 w-4' />
-        ) : (
-          <ChevronDownIcon className='ml-1 inline h-4 w-4' />
-        )}
-        {isDropdownVisible ? (
-          <div
-            className={`scrollbar-thin absolute top-3 right-0 z-10 mt-2 max-h-[200px] cursor-auto overflow-y-auto rounded-md border border-black/10 bg-white text-gray-900 dark:border-slate-700/50 dark:bg-slate-900 ${
-              liveInfo.length === 0 || isLoading ? 'min-w-[200px]' : 'min-w-max'
-            }`}
-          >
-            <div className='flex w-full flex-col p-2'>
-              <div className='flex items-center justify-between'>
-                <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>{t('dashboard.liveVisitors')}</p>
+      <div className='relative'>
+        <button
+          type='button'
+          aria-expanded={isDropdownVisible}
+          aria-controls='live-visitors-dropdown'
+          className={cn(
+            'flex cursor-pointer items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-900 transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+          )}
+          onClick={onOpen}
+        >
+          <PulsatingCircle className='mr-1.5' type='small' />
+          <span>
+            {t('dashboard.xLiveVisitors', {
+              amount: liveVisitors,
+            })}{' '}
+          </span>
+          <ChevronDownIcon
+            className={cn('ml-1 inline h-4 w-4 transition-transform duration-150 ease-out', {
+              'rotate-180': isDropdownVisible,
+            })}
+          />
+        </button>
 
-                <button
-                  className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-700'
-                  type='button'
-                  onClick={() => setIsDropdownVisible(false)}
-                >
-                  <XMarkIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
-                </button>
-              </div>
+        <div
+          id='live-visitors-dropdown'
+          className={cn(
+            'scrollbar-thin absolute top-5 right-0 z-10 mt-2 origin-top-right transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white text-gray-900 shadow-lg transition duration-150 ease-out outline-none dark:border-slate-700/50 dark:bg-slate-900',
+            liveInfo.length === 0 || isLoading ? 'min-w-[200px]' : 'min-w-max',
+            isDropdownVisible
+              ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
+              : 'pointer-events-none -translate-y-1 scale-95 opacity-0',
+          )}
+          aria-hidden={!isDropdownVisible}
+        >
+          <div className='flex w-full flex-col'>
+            <div className='flex items-center justify-between border-b border-black/10 bg-white p-2 dark:border-slate-700/50 dark:bg-slate-900'>
+              <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>{t('dashboard.liveVisitors')}</p>
+
+              <button
+                className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-700'
+                type='button'
+                onClick={() => setIsDropdownVisible(false)}
+              >
+                <XMarkIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
+              </button>
+            </div>
+            <div className='scrollbar-thin max-h-[200px] overflow-y-auto px-2'>
               {isLoading ? (
-                <p className='mt-2 flex items-center text-sm text-gray-900 dark:text-gray-50'>
+                <p className='mt-2 flex items-center py-2 text-sm text-gray-900 dark:text-gray-50'>
                   <Spin className='ml-0' />
 
                   {t('common.loading')}
                 </p>
               ) : liveInfo.length === 0 ? (
-                <p className='mt-2 text-sm text-gray-900 dark:text-gray-50'>{t('project.noData')}</p>
+                <p className='mt-2 py-2 text-sm text-gray-900 dark:text-gray-50'>{t('project.noData')}</p>
               ) : (
                 <div className='table w-full border-separate border-spacing-y-2'>
                   <div className='table-row-group'>
@@ -123,7 +138,7 @@ const LiveVisitorsDropdown = () => {
               )}
             </div>
           </div>
-        ) : null}
+        </div>
       </div>
     </OutsideClickHandler>
   )
