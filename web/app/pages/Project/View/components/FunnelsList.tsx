@@ -1,6 +1,6 @@
 import cx from 'clsx'
 import _map from 'lodash/map'
-import { Settings2Icon, Trash2Icon, CirclePlusIcon } from 'lucide-react'
+import { Settings2Icon, Trash2Icon, FunnelPlusIcon } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
@@ -97,12 +97,12 @@ const AddFunnel = ({ openFunnelSettings }: AddFunnelProps) => {
   return (
     <li
       onClick={onClick}
-      className='group flex h-auto min-h-[120px] cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
+      className='group flex h-auto min-h-[120px] cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 transition-colors hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
     >
       <div>
-        <CirclePlusIcon
-          className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
-          strokeWidth={1.5}
+        <FunnelPlusIcon
+          className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
+          strokeWidth={1}
         />
         <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
           {t('dashboard.newFunnel')}

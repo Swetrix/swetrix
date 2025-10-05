@@ -6,14 +6,7 @@ import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 import _replace from 'lodash/replace'
 import _values from 'lodash/values'
-import {
-  Settings2Icon,
-  Trash2Icon,
-  BellRingIcon,
-  CirclePlusIcon,
-  DollarSignIcon,
-  TriangleAlertIcon,
-} from 'lucide-react'
+import { Settings2Icon, Trash2Icon, BellRingIcon, DollarSignIcon, TriangleAlertIcon, BellPlusIcon } from 'lucide-react'
 import { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, Link } from 'react-router'
@@ -175,18 +168,18 @@ const AddAlert = ({ handleNewAlert, isLimitReached }: AddAlertProps) => {
   return (
     <li
       onClick={handleNewAlert}
-      className='group flex h-auto min-h-[120px] cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
+      className='group flex h-auto min-h-[120px] cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 transition-colors hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
     >
       <div>
         {isLimitReached ? (
           <DollarSignIcon
-            className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
-            strokeWidth={1.5}
+            className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
+            strokeWidth={1}
           />
         ) : (
-          <CirclePlusIcon
-            className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
-            strokeWidth={1.5}
+          <BellPlusIcon
+            className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
+            strokeWidth={1}
           />
         )}
         <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
