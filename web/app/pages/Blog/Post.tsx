@@ -47,78 +47,76 @@ export default function PostSlug() {
       <ExitIntentPopup isStandalone={post.standalone} />
       <div className='mx-auto max-w-[52rem] px-4 pb-28 sm:px-6 md:px-8 lg:max-w-6xl xl:px-12'>
         <div className='overflow-hidden'>
-          <div className='px-4 sm:px-6 md:px-8'>
-            <div className='mx-auto max-w-4xl pb-28'>
-              <main className='bg-gray-50 dark:bg-slate-900'>
-                {post.standalone ? (
-                  <div className='mt-10 mb-6' />
-                ) : (
-                  <Link
-                    to='/blog'
-                    className='group mt-10 mb-6 flex text-sm leading-6 font-semibold text-slate-700 uppercase hover:text-slate-900 dark:text-slate-200 dark:hover:text-white'
+          <div className='mx-auto max-w-4xl pb-28'>
+            <main className='bg-gray-50 dark:bg-slate-900'>
+              {post.standalone ? (
+                <div className='mt-10 mb-6' />
+              ) : (
+                <Link
+                  to='/blog'
+                  className='group mt-10 mb-6 flex text-sm leading-6 font-semibold text-slate-700 uppercase hover:text-slate-900 dark:text-slate-200 dark:hover:text-white'
+                >
+                  <svg
+                    viewBox='0 -9 3 24'
+                    className='mr-3 h-6 w-auto overflow-visible text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
                   >
-                    <svg
-                      viewBox='0 -9 3 24'
-                      className='mr-3 h-6 w-auto overflow-visible text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
-                    >
-                      <path
-                        d='M3 0L0 3L3 6'
-                        fill='none'
-                        stroke='currentColor'
-                        strokeWidth='2'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                      />
-                    </svg>
-                    {t('common.allPosts')}
-                  </Link>
-                )}
-                <article className='relative'>
-                  <div className='mb-2 font-mono text-sm leading-6 font-medium tracking-wide uppercase'>
-                    <dl>
-                      <dt className='sr-only'>Date</dt>
-                      <dd className='text-slate-700 dark:text-slate-400'>
-                        <time dateTime={post.date}>{post.date}</time>
-                      </dd>
-                    </dl>
-                  </div>
-                  <h1 className='inline-block max-w-3xl text-[2.5rem]/10 tracking-tight text-pretty text-gray-950 max-lg:font-medium lg:text-6xl dark:text-gray-200'>
-                    {post.title}
-                  </h1>
-                  <div className='mt-6'>
-                    <ul className='-mx-5 -mt-6 flex flex-wrap text-sm leading-6'>
-                      <li className='mt-6 flex items-center gap-4 px-5 font-medium whitespace-nowrap'>
-                        {post?.twitter_handle ? (
-                          <img
-                            className='size-12 rounded-full'
-                            src={`/assets/blog-authors/${post.twitter_handle}.png`}
-                            alt=''
-                          />
+                    <path
+                      d='M3 0L0 3L3 6'
+                      fill='none'
+                      stroke='currentColor'
+                      strokeWidth='2'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                    />
+                  </svg>
+                  {t('common.allPosts')}
+                </Link>
+              )}
+              <article className='relative'>
+                <div className='mb-2 font-mono text-sm leading-6 font-medium tracking-wide uppercase'>
+                  <dl>
+                    <dt className='sr-only'>Date</dt>
+                    <dd className='text-slate-700 dark:text-slate-400'>
+                      <time dateTime={post.date}>{post.date}</time>
+                    </dd>
+                  </dl>
+                </div>
+                <h1 className='inline-block max-w-3xl text-[2.5rem]/10 tracking-tight text-pretty text-gray-950 max-lg:font-medium lg:text-6xl dark:text-gray-200'>
+                  {post.title}
+                </h1>
+                <div className='mt-6'>
+                  <ul className='-mx-5 -mt-6 flex flex-wrap text-sm leading-6'>
+                    <li className='mt-6 flex items-center gap-4 px-5 font-medium whitespace-nowrap'>
+                      {post?.twitter_handle ? (
+                        <img
+                          className='size-12 rounded-full'
+                          src={`/assets/blog-authors/${post.twitter_handle}.png`}
+                          alt=''
+                        />
+                      ) : null}
+                      <div className='flex flex-col gap-0.5 text-sm leading-4'>
+                        {post?.author ? (
+                          <div className='font-semibold text-slate-900 dark:text-slate-200'>{post.author}</div>
                         ) : null}
-                        <div className='flex flex-col gap-0.5 text-sm leading-4'>
-                          {post?.author ? (
-                            <div className='font-semibold text-slate-900 dark:text-slate-200'>{post.author}</div>
-                          ) : null}
-                          {post?.twitter_handle ? (
-                            <div className='mt-1'>
-                              <a
-                                href={`https://x.com/${post.twitter_handle}`}
-                                className='text-indigo-600 hover:underline dark:text-indigo-400'
-                              >
-                                @{post.twitter_handle}
-                              </a>
-                            </div>
-                          ) : null}
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className='prose mt-6 max-w-4xl prose-slate dark:prose-invert'>
-                    <div dangerouslySetInnerHTML={{ __html: post.html }} />
-                  </div>
-                </article>
-              </main>
-            </div>
+                        {post?.twitter_handle ? (
+                          <div className='mt-1'>
+                            <a
+                              href={`https://x.com/${post.twitter_handle}`}
+                              className='text-indigo-600 hover:underline dark:text-indigo-400'
+                            >
+                              @{post.twitter_handle}
+                            </a>
+                          </div>
+                        ) : null}
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                <div className='prose mt-6 max-w-4xl prose-slate dark:prose-invert'>
+                  <div dangerouslySetInnerHTML={{ __html: post.html }} />
+                </div>
+              </article>
+            </main>
           </div>
         </div>
       </div>
