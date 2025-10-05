@@ -64,7 +64,7 @@ function Select<T>({
           <div className={cx('relative', className)}>
             <ListboxButton
               className={cx(
-                'relative w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-left font-medium hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 focus:outline-hidden sm:text-sm dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700',
+                'relative w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-left font-medium transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 focus:outline-hidden sm:text-sm dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700',
                 buttonClassName,
               )}
             >
@@ -83,6 +83,9 @@ function Select<T>({
             <Transition
               show={open}
               as={Fragment}
+              enter='transition ease-in duration-100'
+              enterFrom='opacity-0'
+              enterTo='opacity-100'
               leave='transition ease-in duration-100'
               leaveFrom='opacity-100'
               leaveTo='opacity-0'
