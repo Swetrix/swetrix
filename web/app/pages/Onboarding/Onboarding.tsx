@@ -224,7 +224,7 @@ const Onboarding = () => {
 
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-      <div className='flex min-h-screen'>
+      <div className='mx-auto flex min-h-screen max-w-7xl md:px-6 lg:px-8'>
         <div className='hidden md:block md:w-80 md:border-r md:border-gray-200 md:bg-white md:p-8 md:dark:border-slate-700 md:dark:bg-slate-800/50'>
           <div className='mb-8'>
             <div className='mb-2 text-sm font-medium text-gray-500 uppercase dark:text-gray-400'>
@@ -296,8 +296,8 @@ const Onboarding = () => {
                         ) : null}
                         <div className='group relative flex items-start'>
                           <span aria-hidden='true' className='flex h-9 items-center'>
-                            <span className='relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-white group-hover:border-gray-400 dark:border-slate-600 dark:bg-slate-800'>
-                              <span className='h-2.5 w-2.5 rounded-full bg-transparent group-hover:bg-gray-300 dark:group-hover:bg-slate-600' />
+                            <span className='relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-white transition-colors group-hover:border-gray-400 dark:border-slate-600 dark:bg-slate-800'>
+                              <span className='h-2.5 w-2.5 rounded-full bg-transparent transition-colors group-hover:bg-gray-300 dark:group-hover:bg-slate-600' />
                             </span>
                           </span>
                           <span className='ml-4 flex min-w-0 flex-col'>
