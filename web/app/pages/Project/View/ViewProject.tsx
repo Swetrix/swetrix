@@ -4458,7 +4458,7 @@ const ViewProject = () => {
                     <div className='mt-4 flex w-full items-center justify-between gap-2'>
                       <Dropdown
                         items={whitelist}
-                        buttonClassName='!py-2 !px-3 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-slate-900 dark:text-gray-50'
+                        buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-slate-900 dark:text-gray-50'
                         title={
                           <span className='inline-flex items-center'>
                             <Flag
@@ -4486,28 +4486,23 @@ const ViewProject = () => {
                         }}
                         headless
                       />
-                      <div className='flex items-center gap-4'>
+                      <div className='flex items-center gap-2'>
                         <button
                           type='button'
                           onClick={() => setIsHotkeysHelpOpened(true)}
                           aria-label={t('modals.shortcuts.title')}
+                          className='relative rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
                         >
-                          <KeyboardIcon className='h-6 w-6 cursor-pointer text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300' />
+                          <KeyboardIcon className='h-6 w-6 text-slate-700 dark:text-gray-200' />
                         </button>
                         <Dropdown
                           title={
                             <span className='flex items-center justify-center'>
                               <span className='sr-only'>{t('header.switchTheme')}</span>
                               {theme === 'dark' ? (
-                                <SunIcon
-                                  className='h-6 w-6 cursor-pointer text-gray-200 hover:text-gray-300'
-                                  aria-hidden='true'
-                                />
+                                <SunIcon className='h-6 w-6 text-gray-200' aria-hidden='true' />
                               ) : (
-                                <MoonIcon
-                                  className='h-6 w-6 cursor-pointer text-slate-700 hover:text-slate-600'
-                                  aria-hidden='true'
-                                />
+                                <MoonIcon className='h-6 w-6 text-slate-700' aria-hidden='true' />
                               )}
                             </span>
                           }
@@ -4537,7 +4532,7 @@ const ViewProject = () => {
                           className='flex'
                           chevron={null}
                           headless
-                          buttonClassName='p-0 md:p-0'
+                          buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 md:px-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
                           menuItemsClassName='top-5'
                           selectItemClassName='font-semibold'
                         />
