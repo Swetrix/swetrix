@@ -90,7 +90,7 @@ export default function Posts() {
                     </dl>
                   </div>
                   <Link
-                    className='flex items-center text-sm font-medium text-indigo-500 hover:text-indigo-600 dark:text-gray-50 dark:hover:text-gray-200'
+                    className='underline-animate flex max-w-max items-center text-sm font-medium text-indigo-600 dark:text-gray-50'
                     to={post.slug}
                   >
                     <span className='relative'>Read more</span>
