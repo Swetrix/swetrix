@@ -1040,7 +1040,9 @@
       "ca": "UTM Campaign",
       "te": "UTM Term",
       "co": "UTM Content",
-      "userFlow": "User flow"
+      "userFlow": "User flow",
+      "entryPage": "Entry page",
+      "exitPage": "Exit page"
     },
     "entryPages": "Entry pages",
     "exitPages": "Exit pages",
