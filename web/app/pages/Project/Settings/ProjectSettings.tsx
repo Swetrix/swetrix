@@ -746,22 +746,10 @@ const ProjectSettings = () => {
                   />
                 ) : null}
 
-                <div className='mt-8 flex flex-wrap justify-center gap-2 sm:justify-between'>
-                  <div className='flex flex-wrap items-center gap-2'>
-                    <Button
-                      className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-                      as={Link}
-                      // @ts-expect-error
-                      to={_replace(routes.project, ':id', id)}
-                      secondary
-                      regular
-                    >
-                      {t('common.cancel')}
-                    </Button>
-                    <Button type='submit' loading={isSaving} primary regular>
-                      {t('common.save')}
-                    </Button>
-                  </div>
+                <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-between'>
+                  <Button type='submit' loading={isSaving} primary regular>
+                    {t('common.save')}
+                  </Button>
                 </div>
               </form>
             ) : null}
