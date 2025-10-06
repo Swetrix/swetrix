@@ -100,6 +100,7 @@ const Pagination = ({
                 items={processedPageSizeOptions}
                 onSelect={(item) => onPageSizeChange(Number(item))}
                 labelClassName='!overflow-visible'
+                selectedItem={pageSize.toString()}
               />
             </div>
           ) : null}

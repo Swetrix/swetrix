@@ -667,6 +667,7 @@ const ProjectSettings = () => {
                 return <Icon className='h-4 w-4' strokeWidth={1.5} />
               }}
               onSelect={(item: any) => setActiveTab(item.id as typeof activeTab)}
+              selectedItem={tabs.find((tab) => tab.id === activeTab)}
             />
           </div>
 

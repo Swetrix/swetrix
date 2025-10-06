@@ -54,6 +54,7 @@ const Shields = ({ form, errors, beenSubmitted, handleInput, botsProtectionLevel
           labelExtractor={(item: any) => item.title}
           onSelect={(item) => setBotsLevel(item.name)}
           capitalise
+          selectedItem={botsProtectionLevels.find((predicate) => predicate.name === form.botsProtectionLevel)}
         />
       </div>
     </>

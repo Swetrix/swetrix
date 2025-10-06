@@ -485,6 +485,7 @@ const UserSettings = () => {
               }}
               title={activeTabLabel}
               capitalise
+              selectedItem={tabs.find((tab) => tab.id === activeTab)}
             />
           </div>
 
@@ -773,6 +774,9 @@ const UserSettings = () => {
                               }))
                             }
                             capitalise
+                            selectedItem={
+                              translatedTimeFormat[_findIndex(timeFormatArray, (freq) => freq === form.timeFormat)]
+                            }
                           />
                         </div>
                       </div>
@@ -821,6 +825,11 @@ const UserSettings = () => {
                                   )
                                 }
                                 capitalise
+                                selectedItem={
+                                  translatedFrequencies[
+                                    _findIndex(reportFrequencies, (freq) => freq === reportFrequency)
+                                  ]
+                                }
                               />
                             </div>
                           </div>

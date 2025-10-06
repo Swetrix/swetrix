@@ -172,6 +172,7 @@ const NewProject = () => {
               }}
               label={t('project.settings.organisation')}
               title={organisations.find((org) => org.id === form.organisationId)?.name}
+              selectedItem={organisations.find((org) => org.id === form.organisationId)}
             />
           </div>
         ) : null}

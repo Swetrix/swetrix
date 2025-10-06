@@ -420,6 +420,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
               }))
             }}
             capitalise
+            selectedItem={form.queryMetric ? queryMetricTMapping[form.queryMetric] : undefined}
           />
         </div>
         {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS ? (
@@ -486,6 +487,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
                   }))
                 }}
                 capitalise
+                selectedItem={form.queryCondition ? queryConditionTMapping[form.queryCondition] : undefined}
               />
             </div>
             <Input
@@ -513,6 +515,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
                   }))
                 }}
                 capitalise
+                selectedItem={form.queryTime ? queryTimeTMapping[form.queryTime] : undefined}
               />
             </div>
           </>

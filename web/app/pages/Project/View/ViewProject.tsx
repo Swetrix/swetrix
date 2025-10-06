@@ -2497,6 +2497,7 @@ const ViewProjectContent = () => {
           }}
           title={activeTabLabel}
           capitalise
+          selectedItem={tabs.find((tab) => tab.id === activeTab)}
         />
       </div>
       <div className='hidden sm:block'>

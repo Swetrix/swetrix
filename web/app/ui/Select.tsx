@@ -28,6 +28,8 @@ interface SelectProps<T> {
   keyExtractor?: (item: T, index: number) => string
   iconExtractor?: (item: T, index: number) => React.ReactNode | null
   onSelect: (item: T) => void
+  // The currently selected item - used for comparison to show checkmark
+  selectedItem?: T
 }
 
 function Select<T>({
@@ -45,10 +47,20 @@ function Select<T>({
   capitalise,
   labelClassName,
   fieldLabelClassName,
+  selectedItem,
 }: SelectProps<T>) {
+  const isItemSelected = (item: T): boolean => {
+    if (!selectedItem) return false
+
+    if (keyExtractor) {
+      return keyExtractor(item, 0) === keyExtractor(selectedItem, 0)
+    }
+
+    return item === selectedItem
+  }
+
   return (
-    // @ts-expect-error
-    <Listbox as='div' id={id || ''} value={title} onChange={onSelect}>
+    <Listbox as='div' id={id || ''} value={selectedItem} onChange={onSelect}>
       {({ open }) => (
         <>
           {label ? (
@@ -94,20 +106,21 @@ function Select<T>({
                 static
                 className='absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md bg-gray-50 py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-800'
               >
-                {_map(items, (item, index) => (
-                  <ListboxOption
-                    key={keyExtractor ? keyExtractor(item, index) : (item as Key)}
-                    className={({ focus, selected }) =>
-                      cx('relative mx-1 cursor-pointer rounded-md py-2 pr-4 pl-8 transition-colors select-none', {
-                        'bg-gray-200 dark:bg-slate-700': focus && !selected,
-                        'bg-gray-300 dark:bg-slate-600': selected,
-                        'text-gray-700 dark:text-gray-50': !focus && !selected,
-                        'text-gray-900 dark:text-white': focus || selected,
-                      })
-                    }
-                    value={item}
-                  >
-                    {({ selected }) => (
+                {_map(items, (item, index) => {
+                  const selected = isItemSelected(item)
+                  return (
+                    <ListboxOption
+                      key={keyExtractor ? keyExtractor(item, index) : (item as Key)}
+                      className={({ focus }) =>
+                        cx('relative mx-1 cursor-pointer rounded-md py-2 pr-4 pl-8 transition-colors select-none', {
+                          'bg-gray-200 dark:bg-slate-700': focus && !selected,
+                          'bg-gray-300 dark:bg-slate-600': selected,
+                          'text-gray-700 dark:text-gray-50': !focus && !selected,
+                          'text-gray-900 dark:text-white': focus || selected,
+                        })
+                      }
+                      value={item}
+                    >
                       <>
                         <span
                           className={cx(
@@ -129,7 +142,7 @@ function Select<T>({
                           </span>
                         ) : null}
 
-                        {selected ? (
+                        {selected && !iconExtractor ? (
                           <span
                             className={cx(
                               'absolute inset-y-0 left-0 flex items-center pl-1.5 text-gray-600 dark:text-gray-300',
@@ -139,9 +152,9 @@ function Select<T>({
                           </span>
                         ) : null}
                       </>
-                    )}
-                  </ListboxOption>
-                ))}
+                    </ListboxOption>
+                  )
+                })}
               </ListboxOptions>
             </Transition>
           </div>
