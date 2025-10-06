@@ -3,7 +3,6 @@ import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import _reduce from 'lodash/reduce'
 import _size from 'lodash/size'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -35,21 +34,11 @@ interface AddAViewModalProps {
   defaultView?: ProjectView
 }
 
-const getLabelToTypeMap = (t: any): Record<string, string> =>
-  _reduce(
-    FILTERS_PANELS_ORDER,
-    (acc, curr) => ({
-      ...acc,
-      [t(`project.mapping.${curr}`)]: curr,
-    }),
-    {},
-  )
-
 const InlineButton = ({ text, onClick }: { text: string; onClick: () => void }) => (
   <button
     type='button'
     onClick={onClick}
-    className='mt-2 text-sm font-medium text-indigo-600 underline decoration-dashed hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+    className='mt-2 text-sm font-medium text-indigo-600 underline decoration-dashed hover:decoration-solid dark:text-indigo-400'
   >
     {text}
   </button>
@@ -95,12 +84,14 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: EditMetri
         label={
           <p className='flex w-full items-center justify-between'>
             <span>{t('project.customEvent')}</span>
-            <XMarkIcon
-              role='button'
-              aria-label='Delete custom event'
-              className='size-5 w-full max-w-max cursor-pointer hover:text-gray-900 dark:hover:text-gray-50'
+            <button
+              type='button'
+              className='-m-1 rounded-md p-1 text-gray-800 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
               onClick={onDelete}
-            />
+              aria-label='Delete custom event'
+            >
+              <XMarkIcon className='size-5' />
+            </button>
           </p>
         }
         maxLength={100}
@@ -210,8 +201,6 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
   const [customEvents, setCustomEvents] = useState<Partial<ProjectViewCustomEvent>[]>(defaultView?.customEvents || [])
   const [isViewSubmitting, setIsViewSubmitting] = useState(false)
   const [errors, setErrors] = useState<AddAViewModalErrors>({})
-
-  const labelToTypeMap = useMemo(() => getLabelToTypeMap(t), [t])
 
   const getFiltersList = useCallback(
     async (category: string) => {
@@ -378,10 +367,11 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
             label={t('project.selectCategoryOptional')}
             items={FILTERS_PANELS_ORDER}
             labelExtractor={(item) => t(`project.mapping.${item}`)}
-            onSelect={(item) => setFilterType(labelToTypeMap[item])}
+            onSelect={(item) => setFilterType(item)}
             title={
               _isEmpty(filterType) ? t('project.settings.reseted.selectFilters') : t(`project.mapping.${filterType}`)
             }
+            selectedItem={_isEmpty(filterType) ? undefined : filterType}
           />
           {filterType && !_isEmpty(searchList) ? (
             <>
