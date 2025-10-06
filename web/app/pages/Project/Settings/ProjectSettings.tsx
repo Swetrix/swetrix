@@ -1,7 +1,6 @@
 import { XCircleIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _filter from 'lodash/filter'
-import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
@@ -12,7 +11,15 @@ import _replace from 'lodash/replace'
 import _size from 'lodash/size'
 import _split from 'lodash/split'
 import _toUpper from 'lodash/toUpper'
-import { ArrowLeftRight, RotateCcw, Trash2Icon } from 'lucide-react'
+import {
+  Settings2Icon,
+  ShieldIcon,
+  LockIcon,
+  UserRoundIcon,
+  MailIcon,
+  TriangleAlertIcon,
+  ChevronLeftIcon,
+} from 'lucide-react'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLoaderData, useNavigate, Link } from 'react-router'
@@ -35,7 +42,6 @@ import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from '~/l
 import { Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
-import Checkbox from '~/ui/Checkbox'
 import DatePicker from '~/ui/Datepicker'
 import Dropdown from '~/ui/Dropdown'
 import Input from '~/ui/Input'
@@ -43,6 +49,7 @@ import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import MultiSelect from '~/ui/MultiSelect'
 import Select from '~/ui/Select'
+// Select is used inside tab components
 import countries from '~/utils/isoCountries'
 import routes from '~/utils/routes'
 
@@ -51,6 +58,10 @@ import { getFormatDate } from '../View/ViewProject.helpers'
 
 import Emails from './Emails'
 import People from './People'
+import AccessSettings from './tabs/AccessSettings'
+import DangerZone from './tabs/DangerZone'
+import General from './tabs/General'
+import Shields from './tabs/Shields'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -291,6 +302,9 @@ const ProjectSettings = () => {
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'general' | 'shields' | 'access' | 'emails' | 'people' | 'danger'>(
+    'general',
+  )
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
@@ -559,6 +573,28 @@ const ProjectSettings = () => {
     document.title = `${t('project.settings.settings')} ${form.name} ${TITLE_SUFFIX}`
   }, [form, t])
 
+  const tabs = useMemo(
+    () =>
+      [
+        { id: 'general', label: t('project.settings.tabs.general'), icon: Settings2Icon, visible: true },
+        { id: 'access', label: t('project.settings.tabs.access'), icon: LockIcon, visible: true },
+        { id: 'shields', label: t('project.settings.tabs.shields'), icon: ShieldIcon, visible: true },
+        { id: 'emails', label: t('project.settings.tabs.emails'), icon: MailIcon, visible: !isSelfhosted },
+        { id: 'people', label: t('project.settings.tabs.people'), icon: UserRoundIcon, visible: true },
+        {
+          id: 'danger',
+          label: t('project.settings.tabs.danger'),
+          icon: TriangleAlertIcon,
+          visible: project?.role === 'owner',
+        },
+      ].filter((tab) => tab.visible),
+    [t, project?.role],
+  )
+
+  const currentTabLabel = useMemo(() => {
+    return (tabs.find((t) => t.id === activeTab)?.label as string) || ''
+  }, [tabs, activeTab])
+
   if (error && !isLoading) {
     return (
       <div className='min-h-page bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
@@ -598,210 +634,142 @@ const ProjectSettings = () => {
 
   if (isLoading || isLoading === null || !project) {
     return (
-      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <Loader />
       </div>
     )
   }
 
   return (
-    <div className='min-h-min-footer flex flex-col bg-gray-50 pb-40 dark:bg-slate-900'>
-      <form className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
-        <h3 className='mt-4 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
-        <Input
-          name='name'
-          label={t('project.settings.name')}
-          value={form.name}
-          placeholder='My awesome project'
-          className='mt-2'
-          onChange={handleInput}
-          error={beenSubmitted ? errors.name : null}
-        />
-        <Input
-          name='id'
-          label={t('project.settings.pid')}
-          value={form.id}
-          className='mt-4'
-          onChange={handleInput}
-          error={null}
-          disabled
-        />
-        <Input
-          name='sharableLink'
-          label={t('project.settings.sharableLink')}
-          hint={t('project.settings.sharableDesc')}
-          value={sharableLink}
-          className='mt-4'
-          onChange={handleInput}
-          error={null}
-          disabled
-        />
+    <div className='flex min-h-min-footer flex-col bg-gray-50 pb-40 dark:bg-slate-900'>
+      <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
+        <Link
+          to={_replace(routes.project, ':id', id)}
+          className='flex max-w-max items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+        >
+          <ChevronLeftIcon className='mr-1 size-3' strokeWidth={1.5} />
+          {t('project.backToStats')}
+        </Link>
+        <h2 className='mt-1 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
 
-        <h3 className='mt-6 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.settings.shields')}</h3>
-        <Input
-          name='origins'
-          label={t('project.settings.origins')}
-          hint={t('project.settings.originsHint')}
-          value={form.origins || ''}
-          className='mt-2'
-          onChange={handleInput}
-          error={beenSubmitted ? errors.origins : null}
-        />
-        <Input
-          name='ipBlacklist'
-          label={t('project.settings.ipBlacklist')}
-          hint={t('project.settings.ipBlacklistHint')}
-          value={form.ipBlacklist || ''}
-          className='mt-4'
-          onChange={handleInput}
-          error={beenSubmitted ? errors.ipBlacklist : null}
-        />
-        <div className='mt-4'>
-          <Select
-            id='botsProtectionLevel'
-            label={t('project.settings.botsProtectionLevel.title')}
-            // @ts-expect-error
-            items={botsProtectionLevels}
-            title={_find(botsProtectionLevels, (predicate) => predicate.name === form.botsProtectionLevel)?.title || ''}
-            labelExtractor={(item: any) => item.title}
-            onSelect={(item) => {
-              setForm((prevForm) => ({
-                ...prevForm,
-                botsProtectionLevel: item.name,
-              }))
-            }}
-            capitalise
-          />
-        </div>
+        <hr className='mt-5 border-gray-200 dark:border-gray-600' />
 
-        <h3 className='mt-6 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.settings.access')}</h3>
-        <Checkbox
-          checked={Boolean(form.active)}
-          onChange={(checked) =>
-            setForm((prev) => ({
-              ...prev,
-              active: checked,
-            }))
-          }
-          name='active'
-          classes={{
-            label: 'mt-2',
-          }}
-          label={t('project.settings.enabled')}
-          hint={t('project.settings.enabledHint')}
-        />
-        <Checkbox
-          checked={Boolean(form.public)}
-          onChange={(checked) => {
-            if (!form.isPasswordProtected || !checked) {
-              setForm((prev) => ({
-                ...prev,
-                public: checked,
-              }))
-            }
-          }}
-          name='public'
-          classes={{
-            label: 'mt-4',
-          }}
-          label={t('project.settings.public')}
-          hint={t('project.settings.publicHint')}
-        />
-        <Checkbox
-          checked={Boolean(form.isPasswordProtected)}
-          onChange={(checked) => {
-            if (!checked) {
-              setForm({
-                ...form,
-                isPasswordProtected: false,
-              })
-              return
-            }
-
-            if (!form.public) {
-              setShowProtected(true)
-            }
-          }}
-          name='isPasswordProtected'
-          classes={{
-            label: 'mt-4',
-          }}
-          label={t('project.settings.protected')}
-          hint={t('project.settings.protectedHint')}
-        />
-        {organisations.length > 1 ? (
-          <div className='mt-4'>
+        <div className='mt-6 flex flex-col gap-6 md:flex-row'>
+          <div className='md:hidden'>
             <Select
-              items={organisations}
-              keyExtractor={(item) => item.id || 'not-set'}
-              labelExtractor={(item) => {
-                if (item.id === undefined) {
-                  return <span className='italic'>{t('common.notSet')}</span>
-                }
-
-                return item.name
+              id='project-settings-tab-select'
+              title={currentTabLabel}
+              items={tabs}
+              keyExtractor={(item) => item.id}
+              labelExtractor={(item) => item.label}
+              iconExtractor={(item) => {
+                const Icon = item.icon
+                return <Icon className='h-4 w-4' strokeWidth={1.5} />
               }}
-              onSelect={async (item) => {
-                await assignOrganisation(item.id)
-                setForm((oldForm) => ({
-                  ...oldForm,
-                  organisationId: item.id,
-                }))
-              }}
-              label={t('project.settings.organisation')}
-              title={organisations.find((org) => org.id === form.organisationId)?.name}
+              onSelect={(item: any) => setActiveTab(item.id as typeof activeTab)}
+              selectedItem={tabs.find((tab) => tab.id === activeTab)}
             />
           </div>
-        ) : null}
-        <div className='mt-8 flex flex-wrap justify-center gap-2 sm:justify-between'>
-          <div className='flex flex-wrap items-center gap-2'>
-            <Button
-              className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              as={Link}
-              // @ts-expect-error
-              to={_replace(routes.project, ':id', id)}
-              secondary
-              regular
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button type='submit' loading={isSaving} primary regular>
-              {t('common.save')}
-            </Button>
-          </div>
-          {project.role === 'owner' ? (
-            <div className='flex flex-wrap justify-center gap-2'>
-              <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
-                <>
-                  <ArrowLeftRight className='mr-1 h-5 w-5' />
-                  {t('project.settings.transfer')}
-                </>
-              </Button>
-              <Button onClick={() => !setResetting && setShowReset(true)} loading={isDeleting} semiDanger semiSmall>
-                <>
-                  <RotateCcw className='mr-1 h-5 w-5' />
-                  {t('project.settings.reset')}
-                </>
-              </Button>
-              <Button onClick={() => !isDeleting && setShowDelete(true)} loading={isDeleting} danger semiSmall>
-                <>
-                  <Trash2Icon className='mr-1 h-5 w-5' strokeWidth={1.5} />
-                  {t('project.settings.delete')}
-                </>
-              </Button>
-            </div>
-          ) : null}
+
+          <aside className='hidden w-56 shrink-0 md:block'>
+            <nav className='flex flex-col space-y-1' aria-label='Sidebar'>
+              {_map(tabs, (tab) => {
+                const isCurrent = tab.id === activeTab
+                const Icon = tab.icon
+
+                return (
+                  <button
+                    key={tab.id}
+                    type='button'
+                    onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                    className={cx(
+                      'group flex items-center rounded-md px-3 py-2 text-left text-sm text-gray-900 transition-colors',
+                      {
+                        'bg-gray-200 font-semibold dark:bg-slate-800 dark:text-gray-50': isCurrent,
+                        'hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-slate-800 dark:hover:text-gray-50':
+                          !isCurrent,
+                      },
+                    )}
+                    aria-current={isCurrent ? 'page' : undefined}
+                  >
+                    <Icon
+                      className={cx('mr-2 h-5 w-5 shrink-0 transition-colors', {
+                        'text-gray-900 dark:text-gray-50': isCurrent,
+                        'text-gray-500 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300':
+                          !isCurrent,
+                      })}
+                      strokeWidth={1.5}
+                    />
+                    <span>{tab.label}</span>
+                  </button>
+                )
+              })}
+            </nav>
+          </aside>
+
+          <section className='flex-1'>
+            {['general', 'shields', 'access'].includes(activeTab) ? (
+              <form onSubmit={handleSubmit}>
+                {activeTab === 'general' ? (
+                  <General
+                    form={form}
+                    errors={errors}
+                    beenSubmitted={beenSubmitted}
+                    handleInput={handleInput}
+                    sharableLink={sharableLink}
+                  />
+                ) : null}
+
+                {activeTab === 'shields' ? (
+                  <Shields
+                    form={form}
+                    errors={errors}
+                    beenSubmitted={beenSubmitted}
+                    handleInput={handleInput}
+                    botsProtectionLevels={botsProtectionLevels}
+                    setBotsLevel={(name) =>
+                      setForm((prevForm) => ({
+                        ...prevForm,
+                        // cast to maintain allowed literal types
+                        botsProtectionLevel: name as any,
+                      }))
+                    }
+                  />
+                ) : null}
+
+                {activeTab === 'access' ? (
+                  <AccessSettings
+                    form={form}
+                    setForm={setForm as any}
+                    organisations={organisations}
+                    onAssignOrganisation={assignOrganisation}
+                    openPasswordModal={() => setShowProtected(true)}
+                  />
+                ) : null}
+
+                <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-between'>
+                  <Button type='submit' loading={isSaving} primary regular>
+                    {t('common.save')}
+                  </Button>
+                </div>
+              </form>
+            ) : null}
+
+            {activeTab === 'emails' && !isSelfhosted ? <Emails projectId={id} /> : null}
+            {activeTab === 'people' ? <People project={project} reloadProject={reloadProject} /> : null}
+
+            {activeTab === 'danger' ? (
+              <DangerZone
+                setShowTransfer={setShowTransfer}
+                setShowReset={setShowReset}
+                setShowDelete={setShowDelete}
+                isDeleting={isDeleting}
+                setResetting={setResetting}
+              />
+            ) : null}
+          </section>
         </div>
-        {!isSelfhosted ? (
-          <>
-            <hr className='xs:mt-2 mt-8 border-gray-200 sm:mt-5 dark:border-gray-600' />
-            <Emails projectId={id} />
-          </>
-        ) : null}
-        <hr className='mt-2 border-gray-200 sm:mt-5 dark:border-gray-600' />
-        <People project={project} reloadProject={reloadProject} />
-      </form>
+      </div>
       <Modal
         onClose={() => setShowDelete(false)}
         onSubmit={onDelete}

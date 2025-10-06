@@ -171,6 +171,7 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
                 ? t('project.settings.reseted.selectFilters')
                 : tnMapping[filterType] || t(`project.mapping.${filterType}`)
             }
+            selectedItem={_isEmpty(filterType) ? undefined : filterType}
           />
           {!_isEmpty(filters) ? (
             <>

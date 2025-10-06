@@ -100,7 +100,7 @@ const CreateNewPassword = () => {
 
   return (
     <div>
-      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-10 sm:px-6 lg:px-8 dark:bg-slate-900'>
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-10 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <div className='sm:mx-auto sm:w-full sm:max-w-md'>
           <h2 className='text-center text-2xl leading-9 font-bold text-gray-900 dark:text-gray-50'>
             {t('auth.recovery.title')}

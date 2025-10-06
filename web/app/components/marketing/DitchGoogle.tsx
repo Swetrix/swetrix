@@ -33,7 +33,7 @@ export const DitchGoogle = () => {
             <div className='mb-8 flex flex-col items-center justify-center gap-4 sm:flex-row'>
               <Link
                 to={routes.signup}
-                className='flex items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-6 py-4 text-white transition-all duration-300 hover:bg-transparent hover:text-slate-900 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
+                className='flex items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-6 py-4 text-white transition-all hover:bg-transparent hover:text-slate-900 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
                 aria-label={t('titles.signup')}
               >
                 <span className='mr-1 text-center text-base font-semibold'>

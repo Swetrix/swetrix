@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import useOnClickOutside from '~/hooks/useOnClickOutside'
 import { MAX_MONTHS_IN_PAST } from '~/lib/constants'
+import { cn } from '~/utils/generic'
 
 interface DatePickerProps {
   onChange?: (dates: Date[]) => void
@@ -231,10 +232,8 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(function DatePi
     [locale, start, end],
   )
 
-  const anchoredContainerClasses = 'relative inline-block h-0 align-top ' + (className || '')
-
   return (
-    <div className={options ? undefined : anchoredContainerClasses}>
+    <div className={options ? undefined : cn('relative inline-block h-0 align-top', className)}>
       {/* Trigger input (optional visible) */}
       {options ? (
         <input

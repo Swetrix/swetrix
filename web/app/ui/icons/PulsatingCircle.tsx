@@ -2,16 +2,16 @@ import cx from 'clsx'
 
 const types = {
   small: {
-    pulse: 'h-2.5 w-2.5',
-    base: 'h-2 w-2',
+    pulse: 'size-2.5',
+    base: 'size-2',
   },
   big: {
-    pulse: 'h-3 w-3',
-    base: 'h-2.5 w-2.5',
+    pulse: 'size-3',
+    base: 'size-2.5',
   },
   giant: {
-    pulse: 'h-12 sm:h-20 w-12 sm:w-20',
-    base: 'h-10 sm:h-16 w-10 sm:w-16',
+    pulse: 'size-6',
+    base: 'size-5',
   },
 }
 

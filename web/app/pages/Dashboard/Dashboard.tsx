@@ -1,10 +1,8 @@
-import { FolderPlusIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { XCircleIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { StretchHorizontal as StretchHorizontalIcon, LayoutGrid as LayoutGridIcon } from 'lucide-react'
+import { StretchHorizontalIcon, LayoutGridIcon, SearchIcon, XIcon, FolderPlusIcon, CircleXIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLoaderData, useNavigate, useSearchParams } from 'react-router'
@@ -287,7 +285,7 @@ const Dashboard = () => {
       <div className='min-h-page bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
         <div className='mx-auto max-w-max'>
           <main className='sm:flex'>
-            <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
+            <CircleXIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
             <div className='sm:ml-6'>
               <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
                 <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
@@ -301,13 +299,13 @@ const Dashboard = () => {
                 <button
                   type='button'
                   onClick={() => window.location.reload()}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700'
                 >
                   {t('dashboard.reloadPage')}
                 </button>
                 <Link
                   to={routes.contact}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
                 >
                   {t('notFoundPage.support')}
                 </Link>
@@ -336,18 +334,22 @@ const Dashboard = () => {
                   <span>{t('titles.dashboard')}</span>
                   {isSearchActive ? (
                     <button
-                      className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
                       type='button'
                       onClick={() => {
                         setSearch('')
                         setIsSearchActive(false)
                       }}
+                      aria-label={t('common.close')}
                     >
-                      <XMarkIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
+                      <XIcon
+                        className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50'
+                        strokeWidth={1.5}
+                      />
                     </button>
                   ) : (
                     <button
-                      className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
                       type='button'
                       onClick={() => {
                         setIsSearchActive(true)
@@ -355,23 +357,31 @@ const Dashboard = () => {
                           searchInputRef.current?.focus()
                         }, 100)
                       }}
+                      aria-label={t('project.search')}
                     >
-                      <MagnifyingGlassIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
+                      <SearchIcon
+                        className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50'
+                        strokeWidth={1.5}
+                      />
                     </button>
                   )}
                 </h2>
                 {isSearchActive ? (
                   <div className='hidden w-full max-w-md items-center px-2 pb-1 sm:ml-2 sm:flex'>
-                    <label htmlFor='simple-search' className='sr-only'>
-                      Search
+                    <label htmlFor='project-search' className='sr-only'>
+                      {t('project.search')}
                     </label>
                     <div className='relative w-full'>
                       <div className='pointer-events-none absolute inset-y-0 left-0 hidden items-center sm:flex'>
-                        <MagnifyingGlassIcon className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50' />
+                        <SearchIcon
+                          className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
+                          strokeWidth={1.5}
+                        />
                       </div>
                       <input
                         ref={searchInputRef}
                         type='text'
+                        id='project-search'
                         onChange={onSearch}
                         value={search}
                         className='block h-7 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 sm:pl-10 dark:bg-slate-900 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200'
@@ -381,7 +391,7 @@ const Dashboard = () => {
                   </div>
                 ) : null}
               </div>
-              <div className='flex flex-wrap items-center gap-1'>
+              <div className='flex flex-wrap items-center gap-2'>
                 {activeTab === 'lost-traffic' ? null : showPeriodSelector ? (
                   <PeriodSelector
                     activePeriod={activePeriod}
@@ -397,59 +407,54 @@ const Dashboard = () => {
                     isLoading={isLoading === null || isLoading}
                   />
                 )}
-                <div className='ml-1 hidden space-x-2 sm:mr-3 lg:block lg:px-3'>
-                  <button
-                    type='button'
-                    title={t('dashboard.gridView')}
-                    onClick={() => {
-                      handleViewModeChange(DASHBOARD_VIEW.GRID)
-                    }}
-                    className={cx(
-                      'rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                      viewMode === DASHBOARD_VIEW.GRID
-                        ? 'bg-gray-100 text-gray-900 dark:bg-slate-700 dark:text-gray-50'
-                        : 'text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-700',
-                    )}
-                  >
-                    <LayoutGridIcon className='h-5 w-5 [&_path]:stroke-[3.5%]' />
-                  </button>
-                  <button
-                    type='button'
-                    title={t('dashboard.listView')}
-                    onClick={() => {
-                      handleViewModeChange(DASHBOARD_VIEW.LIST)
-                    }}
-                    className={cx(
-                      'rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                      viewMode === DASHBOARD_VIEW.LIST
-                        ? 'bg-gray-100 text-gray-900 dark:bg-slate-700 dark:text-gray-50'
-                        : 'text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-700',
-                    )}
-                  >
-                    <StretchHorizontalIcon className='h-5 w-5' />
-                  </button>
+                <div className='hidden lg:block'>
+                  {viewMode === DASHBOARD_VIEW.GRID ? (
+                    <button
+                      type='button'
+                      title={t('dashboard.listView')}
+                      onClick={() => handleViewModeChange(DASHBOARD_VIEW.LIST)}
+                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
+                    >
+                      <StretchHorizontalIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+                    </button>
+                  ) : null}
+                  {viewMode === DASHBOARD_VIEW.LIST ? (
+                    <button
+                      type='button'
+                      title={t('dashboard.gridView')}
+                      onClick={() => {
+                        handleViewModeChange(DASHBOARD_VIEW.GRID)
+                      }}
+                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
+                    >
+                      <LayoutGridIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+                    </button>
+                  ) : null}
                 </div>
                 <Link
                   to={routes.new_project}
                   onClick={onNewProject}
-                  className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 px-3 py-2 !pl-2 text-center text-sm leading-4 font-medium text-white hover:bg-slate-700 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:outline-hidden dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+                  className='ml-3 inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 p-2 text-center text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
                 >
-                  <FolderPlusIcon className='mr-1 h-5 w-5' />
+                  <FolderPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                   {t('dashboard.newProject')}
                 </Link>
               </div>
             </div>
             {isSearchActive ? (
               <div className='mb-2 flex w-full items-center sm:hidden'>
-                <label htmlFor='search-projects' className='sr-only'>
-                  Search
+                <label htmlFor='project-search' className='sr-only'>
+                  {t('project.search')}
                 </label>
                 <div className='relative w-full'>
                   <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center'>
-                    <MagnifyingGlassIcon className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50' />
+                    <SearchIcon
+                      className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
+                      strokeWidth={1.5}
+                    />
                   </div>
                   <input
-                    id='search-projects'
+                    id='project-search'
                     type='text'
                     onChange={onSearch}
                     value={search}
@@ -493,10 +498,8 @@ const Dashboard = () => {
                     ) : (
                       <div
                         className={cx(
-                          'grid gap-x-6 gap-y-3',
-                          _viewMode === DASHBOARD_VIEW.GRID
-                            ? 'grid-cols-1 lg:grid-cols-3 lg:gap-y-6'
-                            : 'grid-cols-1 gap-y-3',
+                          'grid gap-3',
+                          _viewMode === DASHBOARD_VIEW.GRID ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1',
                         )}
                       >
                         {_map(projects, (project) => (

@@ -105,6 +105,11 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
                   setSteps(newSteps)
                 }}
                 title={step.type === 'page' ? t('dashboard.page') : t('dashboard.event')}
+                selectedItem={
+                  step.type === 'page'
+                    ? { key: 'page', label: t('dashboard.page') }
+                    : { key: 'event', label: t('dashboard.event') }
+                }
               />
               <Input
                 className='!ml-0 w-full'

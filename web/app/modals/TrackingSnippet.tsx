@@ -62,7 +62,6 @@ const TrackingSnippet = ({ onClose, isOpened }: TrackingSnippetProps) => {
   return (
     <Modal
       onClose={onClose}
-      closeText={t('common.close')}
       message={
         <div>
           <p>

@@ -174,6 +174,7 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: EditMetri
             hint={t('project.metrics.metricType.description')}
             title={activeCustomEventType}
             capitalise
+            selectedItem={customEventTypes.find((item) => item.key === metric.metaValueType)}
           />
         </div>
       </div>

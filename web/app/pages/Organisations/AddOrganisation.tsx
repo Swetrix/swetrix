@@ -15,14 +15,17 @@ export const AddOrganisation = ({ onClick, sitesCount }: AddOrganisationProps) =
       type='button'
       onClick={onClick}
       className={cx(
-        'group flex h-auto min-h-[153.1px] cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400',
+        'group flex h-auto min-h-[153.1px] cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 transition-colors hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600',
         {
           'lg:min-h-[auto]': sitesCount % 3 !== 0,
         },
       )}
     >
       <div>
-        <BuildingOffice2Icon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
+        <BuildingOffice2Icon
+          className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
+          strokeWidth={1}
+        />
         <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
           {t('organisations.new')}
         </span>

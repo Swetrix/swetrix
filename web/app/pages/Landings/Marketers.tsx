@@ -67,7 +67,7 @@ const Marketers = () => {
               <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
                 <Link
                   to={routesPath.signup}
-                  className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all duration-300 hover:bg-transparent hover:text-slate-900 sm:mr-6 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
+                  className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all hover:bg-transparent hover:text-slate-900 sm:mr-6 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
                   aria-label={t('titles.signup')}
                 >
                   <span className='mr-1 text-center text-base font-semibold'>
@@ -77,7 +77,7 @@ const Marketers = () => {
                 </Link>
                 <a
                   href={LIVE_DEMO_URL}
-                  className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-xs ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200/60 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-slate-800/60'
+                  className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-xs ring-1 ring-slate-900 transition-all hover:bg-slate-200/60 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-slate-800/60'
                   target='_blank'
                   rel='noopener noreferrer'
                   aria-label={`${t('common.liveDemo')} (opens in a new tab)`}

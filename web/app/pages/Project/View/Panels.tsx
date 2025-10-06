@@ -1311,7 +1311,6 @@ const Panel = ({
 
       <Modal
         onClose={() => setDetailsOpened(false)}
-        closeText={t('common.close')}
         isOpened={detailsOpened}
         title={name}
         message={

@@ -289,7 +289,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                         href='https://swetrix.com'
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='text-indigo-400 hover:underline'
+                        className='underline-animate text-indigo-400'
                       />
                     ),
                   }}
@@ -315,7 +315,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                   title={item.name}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='text-white hover:text-gray-200'
+                  className='text-white transition-colors hover:text-gray-400'
                   aria-label={`${item.name} (opens in a new tab)`}
                 >
                   <span className='sr-only'>{item.name}</span>
@@ -335,7 +335,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                 href='https://u24.gov.ua/'
                 target='_blank'
                 rel='noreferrer noopener'
-                className='block max-w-max items-center border-b-2 border-transparent text-base text-white hover:border-white'
+                className='underline-animate block max-w-max items-center border-b-2 border-transparent text-base text-white'
               >
                 {t('main.ukrSupport')}
                 <SquareArrowOutUpRightIcon className='mb-1 ml-1 inline size-4' strokeWidth={1.5} />
@@ -356,13 +356,13 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                     return (
                       <li key={displayValue}>
                         {internal ? (
-                          <Link to={href} className='text-base text-white hover:underline'>
+                          <Link to={href} className='underline-animate text-base text-white'>
                             {displayValue}
                           </Link>
                         ) : (
                           <a
                             href={href}
-                            className='text-base text-white hover:underline'
+                            className='underline-animate text-base text-white'
                             target='_blank'
                             rel='noopener noreferrer'
                             aria-label={`${displayValue} (opens in a new tab)`}
@@ -381,13 +381,13 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                   {_map(navigation.company, ({ key, href, internal }) => (
                     <li key={key}>
                       {internal ? (
-                        <Link to={href} className='text-base text-white hover:underline'>
+                        <Link to={href} className='underline-animate text-base text-white'>
                           {t(`footer.${key}`)}
                         </Link>
                       ) : (
                         <a
                           href={href}
-                          className='text-base text-white hover:underline'
+                          className='underline-animate text-base text-white'
                           target='_blank'
                           rel='noopener noreferrer'
                           aria-label={`${t(`footer.${key}`)} (opens in a new tab)`}
@@ -408,13 +408,13 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                     return (
                       <li key={key}>
                         {internal ? (
-                          <Link to={href} className='text-base text-white hover:underline'>
+                          <Link to={href} className='underline-animate text-base text-white'>
                             {t(`footer.${key}`)}
                           </Link>
                         ) : (
                           <a
                             href={href}
-                            className='text-base text-white hover:underline'
+                            className='underline-animate text-base text-white'
                             target='_blank'
                             rel='noopener noreferrer'
                             aria-label={`${t(`footer.${key}`)} (opens in a new tab)`}
@@ -429,7 +429,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                   {showDBIPMessage ? (
                     <li>
                       <a
-                        className='text-base text-white hover:underline'
+                        className='underline-animate text-base text-white'
                         target='_blank'
                         rel='noopener noreferrer'
                         href='https://db-ip.com'

@@ -13,49 +13,38 @@ const WaitingForAnEvent = () => {
   const [isModalOpened, setIsModalOpened] = useState(false)
 
   return (
-    <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
-      <div className='mx-auto max-w-max'>
-        <main className='sm:flex'>
-          <PulsatingCircle type='giant' className='mb-2 -ml-1.5 sm:m-0' />
-          <div className='sm:ml-6'>
-            <div className='sm:border-l sm:border-gray-200 sm:pl-6'>
-              <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
-                {t('project.waiting.title')}
-              </h1>
-              <p className='mt-4 max-w-[100ch] text-sm whitespace-pre-line text-gray-800 dark:text-gray-200'>
-                <Trans
-                  t={t}
-                  i18nKey='project.waiting.desc'
-                  components={{
-                    turl: (
-                      <a
-                        href={TROUBLESHOOTING_URL}
-                        className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                        target='_blank'
-                        rel='noreferrer noopener'
-                      />
-                    ),
-                    curl: (
-                      <Link
-                        to={routes.contact}
-                        className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                      />
-                    ),
-                    snippet: (
-                      <span
-                        tabIndex={0}
-                        role='button'
-                        className='cursor-pointer font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                        onClick={() => setIsModalOpened(true)}
-                      />
-                    ),
-                  }}
-                />
-              </p>
-            </div>
-          </div>
-        </main>
+    <div className='mx-auto w-full max-w-2xl py-16 text-center text-gray-900 dark:text-gray-50'>
+      <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800'>
+        <PulsatingCircle type='giant' />
       </div>
+      <h3 className='text-xl font-medium tracking-tight'>{t('project.waiting.title')}</h3>
+      <p className='mx-auto mt-2 max-w-md text-sm whitespace-pre-line text-gray-800 dark:text-gray-200'>
+        <Trans
+          t={t}
+          i18nKey='project.waiting.desc'
+          components={{
+            turl: (
+              <a
+                href={TROUBLESHOOTING_URL}
+                className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                target='_blank'
+                rel='noreferrer noopener'
+              />
+            ),
+            curl: (
+              <Link to={routes.contact} className='font-medium text-indigo-600 hover:underline dark:text-indigo-400' />
+            ),
+            snippet: (
+              <span
+                tabIndex={0}
+                role='button'
+                className='cursor-pointer font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                onClick={() => setIsModalOpened(true)}
+              />
+            ),
+          }}
+        />
+      </p>
       <TrackingSnippet isOpened={isModalOpened} onClose={() => setIsModalOpened(false)} />
     </div>
   )

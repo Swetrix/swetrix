@@ -5,7 +5,7 @@ import _map from 'lodash/map'
 import { FileTextIcon, BugIcon, MousePointerClickIcon } from 'lucide-react'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { Session as SessionType } from '~/lib/models/Project'
@@ -37,6 +37,7 @@ const Session = ({ session, timeFormat }: SessionProps) => {
     t,
     i18n: { language },
   } = useTranslation('common')
+  const location = useLocation()
 
   const sessionStartTime = dayjs(session.sessionStart)
 
@@ -91,13 +92,12 @@ const Session = ({ session, timeFormat }: SessionProps) => {
     return `${startDateTimeStr} - ${endTimeStr}${durationDisplay}`
   }, [session, language, timeFormat, sessionDurationString, sessionStartTime])
 
-  const psidUrl = new URL(window.location.href)
-  psidUrl.searchParams.set('psid', session.psid)
-  const stringifiedUrl = psidUrl.toString()
+  const params = new URLSearchParams(location.search)
+  params.set('psid', session.psid)
 
   return (
-    <Link to={stringifiedUrl}>
-      <li className='relative mb-4 flex cursor-pointer justify-between gap-x-6 rounded-lg bg-gray-200/60 px-4 py-4 hover:bg-gray-200 sm:px-6 dark:bg-[#162032] dark:hover:bg-slate-800'>
+    <Link to={{ search: params.toString() }}>
+      <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'>
         <div className='flex min-w-0 gap-x-4'>
           <div className='min-w-0 flex-auto'>
             <p className='flex items-center text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>

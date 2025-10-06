@@ -3,15 +3,12 @@ import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import React, { memo } from 'react'
 
-import Beta from '~/ui/Beta'
-
 interface InputProps {
   label?: React.ReactNode
   hint?: React.ReactNode
   className?: string
   error?: string | null | boolean
   disabled?: boolean
-  isBeta?: boolean
   hintPosition?: 'top' | 'bottom'
   classes?: {
     input?: string
@@ -26,7 +23,6 @@ const Input = ({
   className,
   error,
   disabled,
-  isBeta,
   classes,
   hintPosition = 'bottom',
   ...rest
@@ -36,16 +32,7 @@ const Input = ({
 
   return (
     <Field as='div' className={className}>
-      {label ? (
-        <Label className='mb-1 flex text-sm font-medium text-gray-900 dark:text-gray-200'>
-          {label}
-          {isBeta ? (
-            <div className='ml-5'>
-              <Beta />
-            </div>
-          ) : null}
-        </Label>
-      ) : null}
+      {label ? <Label className='mb-1 flex text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label> : null}
       {hint && hintPosition === 'top' ? (
         <Description className='mt-1 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</Description>
       ) : null}

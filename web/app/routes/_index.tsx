@@ -267,7 +267,7 @@ const LiveDemoPreview = () => {
             href={LIVE_DEMO_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all duration-300 hover:bg-gray-50 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
             aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
           >
             <ArrowRightIcon className='mr-2 h-4 w-4' />
@@ -279,20 +279,21 @@ const LiveDemoPreview = () => {
   }
 
   return (
-    <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 transition-shadow duration-300 ease-out hover:ring-indigo-300/50 sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-800 dark:ring-white/10 dark:hover:ring-indigo-400/40'>
+    <div className='group relative -mr-6 ml-auto w-[140%] overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 transition-shadow ease-out sm:-mr-12 sm:w-[160%] lg:-mr-16 lg:w-[180%] xl:-mr-24 2xl:-mr-32 dark:bg-slate-800 dark:ring-white/10'>
       <div className='pointer-events-none relative h-[580px] lg:h-[640px] xl:h-[700px]'>
         <iframe
           src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true&lng=${language}`}
           className='size-full'
           title='Swetrix Analytics Live Demo'
           style={{ pointerEvents: 'none' }}
+          tabIndex={-1}
         />
         <div className='pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-900/40 opacity-0 backdrop-blur-[2px] transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100'>
           <a
             href={LIVE_DEMO_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all duration-300 hover:bg-gray-50 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
             aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
           >
             <ArrowRightIcon className='mr-2 h-4 w-4' />
@@ -326,7 +327,7 @@ const Hero = () => {
             <div className='mt-8 flex flex-col items-stretch sm:flex-row sm:items-center'>
               <Link
                 to={routesPath.signup}
-                className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all duration-300 hover:bg-transparent hover:text-slate-900 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
+                className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-slate-900 px-4 text-white transition-all hover:bg-transparent hover:text-slate-900 dark:border-slate-50 dark:bg-gray-50 dark:text-slate-900 dark:hover:text-gray-50'
                 aria-label={t('titles.signup')}
               >
                 <span className='mr-1 text-center text-base font-semibold'>

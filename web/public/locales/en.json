@@ -725,6 +725,8 @@
   "organisations": {
     "create": "Create organisation",
     "organisations": "Organisations",
+    "noOrganisations": "No organisations yet",
+    "createOrganisation": "You haven't created or joined any organisations yet. Get started by creating your first organisation.",
     "new": "New organisation",
     "invite": {
       "title": "Invite a user to {{organisation}}",
@@ -789,8 +791,8 @@
     "accountLocked": "Your account has been temporarily suspended due to a billing issue.",
     "accountLockedTitle": "Account temporarily suspended",
     "eventsXPercUsed": "You have used more than {{amount}}% of the available events per your tier for this month.",
-    "noProjects": "You have not yet created any projects",
-    "createProject": "Create a new project here to start using our service",
+    "noProjects": "No projects yet",
+    "createProject": "You haven't created any projects yet. Get started by creating your first project.",
     "active": "Active",
     "public": "Public",
     "shared": "Shared",
@@ -902,6 +904,7 @@
     "support": "Contact support"
   },
   "project": {
+    "backToStats": "Back to stats",
     "directNone": "Direct / None",
     "loadingMapData": "Loading map data...",
     "copy": "Copy",
@@ -1008,12 +1011,12 @@
       "manageSubscription": "Manage subscription"
     },
     "waiting": {
-      "title": "Waiting for your first pageview",
-      "desc": "We're waiting for your first pageview! If your integration is set up correctly, you should see it within 1 minute.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+      "title": "No events yet",
+      "desc": "You haven't tracked any events yet.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
     },
     "waitingError": {
-      "title": "Waiting for your first error.. hopefully not :)",
-      "desc": "We're waiting for your first error event! If your integration is set up correctly, you should see it within 1 minute when it happens.\n<howto>Click here</howto> to learn how to set up error tracking for your website.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+      "title": "No errors yet",
+      "desc": "You haven't tracked any errors yet.\n<howto>Click here</howto> to learn how to set up error tracking for your website.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
     },
     "trendlineTotal": "Pageviews trendline",
     "noEvContent": "No events have been recorded for the specified period, please try a different period.",
@@ -1110,6 +1113,14 @@
       "organisation": "Organisation",
       "shields": "Shields",
       "access": "Access settings",
+      "tabs": {
+        "general": "General",
+        "access": "Access",
+        "shields": "Shields",
+        "emails": "Emails",
+        "people": "People",
+        "danger": "Danger zone"
+      },
       "botsProtectionLevel": {
         "title": "Bots protection level",
         "levels": {

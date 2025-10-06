@@ -9,15 +9,21 @@ export const NoOrganisations = ({ onClick }: NoOrganisationsProps) => {
   const { t } = useTranslation('common')
 
   return (
-    <button
-      type='button'
-      onClick={onClick}
-      className='relative mx-auto block max-w-lg rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
-    >
-      <BuildingOffice2Icon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200' />
-      <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50'>
-        {t('dashboard.createProject')}
-      </span>
-    </button>
+    <div className='mx-auto w-full max-w-2xl py-16 text-center text-gray-900 dark:text-gray-50'>
+      <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800'>
+        <BuildingOffice2Icon className='size-7 text-gray-700 dark:text-gray-200' strokeWidth={1.5} />
+      </div>
+      <h3 className='text-xl font-medium tracking-tight'>{t('organisations.noOrganisations')}</h3>
+      <p className='mx-auto mt-2 max-w-md text-sm text-gray-800 dark:text-gray-200'>
+        {t('organisations.createOrganisation')}
+      </p>
+      <button
+        type='button'
+        onClick={onClick}
+        className='mt-6 rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+      >
+        {t('organisations.new')}
+      </button>
+    </div>
   )
 }

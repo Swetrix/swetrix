@@ -266,7 +266,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
 
   if (isLoading || isLoading === null || !project) {
     return (
-      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <Loader />
       </div>
     )
@@ -311,7 +311,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
 
   return (
     <div
-      className={cx('min-h-min-footer flex flex-col bg-gray-50 dark:bg-slate-900', {
+      className={cx('flex min-h-min-footer flex-col bg-gray-50 dark:bg-slate-900', {
         'pb-40': isSettings,
       })}
     >
@@ -355,7 +355,6 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
               className='mt-4'
               onChange={handleInput}
               error={beenSubmitted ? errors.ipBlacklist : null}
-              isBeta
             />
             <hr className='mt-5 border-gray-200 dark:border-gray-600' />
             <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>

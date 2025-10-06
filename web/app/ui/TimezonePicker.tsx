@@ -91,6 +91,7 @@ const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
       keyExtractor={keyExtractor}
       onSelect={handleChange}
       capitalise
+      selectedItem={parseTimezone(value)}
     />
   )
 }

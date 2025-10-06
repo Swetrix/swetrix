@@ -123,7 +123,7 @@ const ProjectProtectedPassword = () => {
   return (
     <>
       {!isEmbedded ? <Header /> : null}
-      <div className='min-h-page flex flex-col bg-gray-50 dark:bg-slate-900'>
+      <div className='flex min-h-page flex-col bg-gray-50 dark:bg-slate-900'>
         <form className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.passwordProtected')}</h2>
           <Input

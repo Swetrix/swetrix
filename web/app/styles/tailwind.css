@@ -16,6 +16,8 @@
   /* Minimum Heights */
   --min-height-page: calc(100vh - 74px);
   --min-height-min-footer: calc(100vh - 157px);
+
+  --default-transition-duration: 250ms;
 }
 
 /* Custom Animations */
@@ -40,6 +42,28 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Animated underline on hover for nav links */
+  .underline-animate {
+    position: relative;
+  }
+  .underline-animate::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform var(--default-transition-duration, 250ms) ease;
+    background: currentColor;
+    opacity: 1;
+  }
+  .underline-animate:hover::after,
+  .underline-animate:focus-visible::after {
+    transform: scaleX(1);
+  }
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -51,6 +75,134 @@
   }
   100% {
     transform: translateX(var(--move-x-to));
+  }
+}
+
+/* Tooltip animations */
+@keyframes tooltipSlideDownAndFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tooltipSlideUpAndFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tooltipSlideLeftAndFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateX(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tooltipSlideRightAndFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tooltipSlideDownAndFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes tooltipSlideUpAndFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@keyframes tooltipSlideLeftAndFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(4px);
+  }
+}
+
+@keyframes tooltipSlideRightAndFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+}
+
+@layer utilities {
+  /* Base class to enable smooth transform/opacity animations */
+  .tooltip-content {
+    will-change: transform, opacity;
+  }
+
+  /* Open animations (handle both delayed and instant) */
+  .tooltip-content[data-state='delayed-open'][data-side='top'],
+  .tooltip-content[data-state='instant-open'][data-side='top'] {
+    animation: tooltipSlideUpAndFadeIn var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tooltip-content[data-state='delayed-open'][data-side='bottom'],
+  .tooltip-content[data-state='instant-open'][data-side='bottom'] {
+    animation: tooltipSlideDownAndFadeIn var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tooltip-content[data-state='delayed-open'][data-side='left'],
+  .tooltip-content[data-state='instant-open'][data-side='left'] {
+    animation: tooltipSlideLeftAndFadeIn var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tooltip-content[data-state='delayed-open'][data-side='right'],
+  .tooltip-content[data-state='instant-open'][data-side='right'] {
+    animation: tooltipSlideRightAndFadeIn var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Close animations */
+  .tooltip-content[data-state='closed'][data-side='top'] {
+    animation: tooltipSlideUpAndFadeOut var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tooltip-content[data-state='closed'][data-side='bottom'] {
+    animation: tooltipSlideDownAndFadeOut var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tooltip-content[data-state='closed'][data-side='left'] {
+    animation: tooltipSlideLeftAndFadeOut var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tooltip-content[data-state='closed'][data-side='right'] {
+    animation: tooltipSlideRightAndFadeOut var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 

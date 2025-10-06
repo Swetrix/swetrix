@@ -1,7 +1,9 @@
-import billboard, { type ChartOptions, type Chart } from 'billboard.js'
-import { useEffect, useRef } from 'react'
+import { ChartOptions } from 'billboard.js'
+import React, { useMemo } from 'react'
 
 import { getSettingsSession } from '../ViewProject.helpers'
+
+import { MainChart } from './MainChart'
 
 interface SessionChartProps {
   chart?: {
@@ -16,7 +18,7 @@ interface SessionChartProps {
   chartType: string
   dataNames: any
   onZoom?: (domain: [Date, Date] | null) => void
-  onChartReady?: (chart: Chart | null) => void
+  className?: string
 }
 
 export const SessionChart = ({
@@ -27,44 +29,24 @@ export const SessionChart = ({
   chartType,
   dataNames,
   onZoom,
-  onChartReady,
+  className,
 }: SessionChartProps) => {
-  const chartRef = useRef<Chart | null>(null)
+  const options: ChartOptions = useMemo(() => {
+    return getSettingsSession(chart, timeBucket as string, timeFormat, rotateXAxis, chartType, onZoom)
+  }, [chart, timeBucket, timeFormat, rotateXAxis, chartType, onZoom])
 
-  useEffect(() => {
-    const bbSettings: ChartOptions = getSettingsSession(
-      chart,
-      timeBucket as string,
-      timeFormat,
-      rotateXAxis,
-      chartType,
-      onZoom,
-    )
+  const deps = useMemo(
+    () => [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames, onZoom],
+    [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames, onZoom],
+  )
 
-    if (chartRef.current) {
-      chartRef.current.destroy()
-    }
-
-    const generate = billboard.generate(bbSettings)
-    chartRef.current = generate
-    generate.data.names(dataNames)
-
-    if (onChartReady) {
-      onChartReady(generate)
-    }
-
-    return () => {
-      if (!generate) {
-        return
-      }
-
-      generate.destroy()
-      chartRef.current = null
-      if (onChartReady) {
-        onChartReady(null)
-      }
-    }
-  }, [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames, onZoom, onChartReady])
-
-  return <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='sessionChart' />
+  return (
+    <MainChart
+      chartId='session-chart'
+      options={options}
+      dataNames={dataNames}
+      className={className || 'mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible'}
+      deps={deps}
+    />
+  )
 }

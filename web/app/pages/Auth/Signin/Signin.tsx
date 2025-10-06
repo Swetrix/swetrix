@@ -249,7 +249,7 @@ const Signin = () => {
 
   if (isTwoFARequired) {
     return (
-      <div className='min-h-page flex flex-col bg-gray-50 px-4 py-10 sm:px-6 lg:px-8 dark:bg-slate-900'>
+      <div className='flex min-h-page flex-col bg-gray-50 px-4 py-10 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <form className='mx-auto max-w-prose' onSubmit={_submit2FA}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('auth.signin.2fa')}</h2>
           <p className='mt-4 text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
@@ -288,7 +288,7 @@ const Signin = () => {
   }
 
   return (
-    <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-10 sm:px-6 lg:px-8 dark:bg-slate-900'>
+    <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-10 sm:px-6 lg:px-8 dark:bg-slate-900'>
       <div className='sm:mx-auto sm:w-full sm:max-w-md'>
         <h2 className='text-center text-2xl leading-9 font-bold text-gray-900 dark:text-gray-50'>
           {t('auth.signin.title')}

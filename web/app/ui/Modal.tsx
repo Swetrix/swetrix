@@ -9,7 +9,6 @@ import {
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import Beta from '~/ui/Beta'
 import { cn } from '~/utils/generic'
 
 import Spin from './icons/Spin'
@@ -28,7 +27,6 @@ interface ModalProps {
   submitType?: 'regular' | 'danger'
   size?: 'regular' | 'large'
   customButtons?: React.ReactNode
-  isBeta?: boolean
   isLoading?: boolean
   overflowVisible?: boolean
 }
@@ -46,7 +44,6 @@ const Modal = ({
   submitType = 'regular',
   size = 'regular',
   customButtons,
-  isBeta,
   isLoading,
   submitDisabled,
   overflowVisible,
@@ -57,7 +54,7 @@ const Modal = ({
     <Dialog className={cn('relative z-40', className)} open={isOpened} onClose={onClose}>
       <DialogBackdrop
         transition
-        className='fixed inset-0 bg-gray-500/75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in'
+        className='fixed inset-0 bg-gray-500/75 transition-opacity data-closed:opacity-0 data-enter:ease-out data-leave:duration-200 data-leave:ease-in'
       />
 
       <div className='fixed inset-0 z-10 w-screen overflow-y-auto'>
@@ -66,7 +63,7 @@ const Modal = ({
             transition
             className={cn(
               'inline-block transform rounded-lg bg-white px-4 pt-5 pb-4 text-left align-bottom transition-all sm:my-8 sm:px-5 sm:py-4 sm:align-middle dark:bg-slate-900',
-              'transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in',
+              'transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:ease-out data-leave:duration-200 data-leave:ease-in',
               {
                 'w-[90vw] md:w-full md:max-w-lg': size === 'regular',
                 'w-[90vw] max-w-5xl md:w-full': size === 'large',
@@ -110,10 +107,7 @@ const Modal = ({
                       'justify-center sm:justify-start': closeText,
                     })}
                   >
-                    <div>
-                      {title}
-                      {isBeta ? <Beta className='ml-10' /> : null}
-                    </div>
+                    <div>{title}</div>
                     {!closeText ? (
                       <button
                         type='button'
@@ -123,7 +117,7 @@ const Modal = ({
                           onClose?.()
                         }}
                         aria-label={t('common.close')}
-                        className='rounded-md p-1 text-gray-800 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+                        className='rounded-md p-1.5 text-gray-800 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
                       >
                         <XMarkIcon className='size-5' />
                       </button>
@@ -133,13 +127,13 @@ const Modal = ({
                 <div className='mt-2 text-sm whitespace-pre-line text-gray-600 dark:text-gray-200'>{message}</div>
               </div>
             </div>
-            <div className='px-4 py-3 sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
+            <div className='px-4 py-3 transition-colors sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
               {customButtons}
               {submitText ? (
                 <button
                   type='button'
                   className={cn(
-                    'inline-flex w-full justify-center rounded-md px-4 py-2 text-base font-medium text-white sm:ml-3 sm:w-auto sm:text-sm',
+                    'inline-flex w-full justify-center rounded-md px-4 py-2 text-base font-medium text-white transition-colors sm:ml-3 sm:w-auto sm:text-sm',
                     {
                       'bg-indigo-600': submitType === 'regular',
                       'bg-red-600': submitType === 'danger',
@@ -157,7 +151,7 @@ const Modal = ({
               {closeText ? (
                 <button
                   type='button'
-                  className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
+                  className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
