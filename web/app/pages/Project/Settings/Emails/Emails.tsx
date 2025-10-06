@@ -389,10 +389,10 @@ const Emails = ({ projectId }: { projectId: string }) => {
   }
 
   return (
-    <div className='mt-6 mb-6'>
+    <div>
       <div className='mb-3 flex flex-col items-start justify-between gap-y-2 sm:flex-row sm:items-center'>
         <div>
-          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.emails.title')}</h3>
+          <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.emails.title')}</h3>
           <p className='text-sm text-gray-500 dark:text-gray-400'>{t('project.emails.description')}</p>
         </div>
         <Button className='h-8 pl-2 whitespace-nowrap' primary regular type='button' onClick={() => setShowModal(true)}>

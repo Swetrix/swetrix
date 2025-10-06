@@ -266,10 +266,10 @@ const People = ({ project, reloadProject }: PeopleProps) => {
   }
 
   return (
-    <div className='mt-6 mb-6'>
+    <div>
       <div className='mb-3 flex items-center justify-between'>
         <div>
-          <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+          <h3 className='flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('project.settings.people')}
           </h3>
           <p className='text-sm text-gray-500 dark:text-gray-400'>{t('project.settings.inviteCoworkers')}</p>
