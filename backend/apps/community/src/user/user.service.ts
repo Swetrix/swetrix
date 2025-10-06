@@ -120,6 +120,13 @@ export class UserService {
     return this.findOne({ id: userId })
   }
 
+  async delete(userId: string) {
+    await clickhouse.command({
+      query: `ALTER TABLE user DELETE WHERE id = {id:FixedString(36)}`,
+      query_params: { id: userId },
+    })
+  }
+
   async create(user: Pick<ClickhouseInputUser, 'email' | 'password'>) {
     const id = randomUUID()
 

@@ -415,11 +415,25 @@ const deleteProjectClickhouse = async (id: string) => {
   })
 }
 
+const deleteProjectsByUserIdClickhouse = async (userId: string) => {
+  await clickhouse.command({
+    query: `ALTER TABLE project DELETE WHERE adminId = {userId:FixedString(36)}`,
+    query_params: { userId },
+  })
+}
+
 const deleteProjectSharesByProjectClickhouse = async (projectId: string) => {
   await clickhouse.command({
     query:
       'ALTER TABLE project_share DELETE WHERE projectId = {projectId:FixedString(12)}',
     query_params: { projectId },
+  })
+}
+
+const deleteProjectSharesByUserIdClickhouse = async (userId: string) => {
+  await clickhouse.command({
+    query: `ALTER TABLE project_share DELETE WHERE userId = {userId:FixedString(36)}`,
+    query_params: { userId },
   })
 }
 
@@ -1060,4 +1074,6 @@ export {
   updateProjectShareClickhouse,
   deleteProjectShareClickhouse,
   deleteProjectSharesByProjectClickhouse,
+  deleteProjectSharesByUserIdClickhouse,
+  deleteProjectsByUserIdClickhouse,
 }

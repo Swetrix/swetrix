@@ -5,9 +5,15 @@ import { UserService } from './user.service'
 import { AppLoggerModule } from '../logger/logger.module'
 import { MailerModule } from '../mailer/mailer.module'
 import { AuthModule } from '../auth/auth.module'
+import { ProjectModule } from '../project/project.module'
 
 @Module({
-  imports: [AppLoggerModule, MailerModule, forwardRef(() => AuthModule)],
+  imports: [
+    AppLoggerModule,
+    MailerModule,
+    forwardRef(() => AuthModule),
+    ProjectModule,
+  ],
   providers: [UserService],
   exports: [UserService],
   controllers: [UserController],

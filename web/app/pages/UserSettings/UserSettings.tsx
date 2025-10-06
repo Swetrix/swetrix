@@ -21,7 +21,7 @@ import {
   confirmEmail,
   exportUserData,
   generateApiKey,
-  deleteApiKey, // setTheme,
+  deleteApiKey,
   receiveLoginNotification,
   setShowLiveVisitorsInTitle,
   changeUserDetails,
@@ -706,37 +706,41 @@ const UserSettings = () => {
                               {t('profileSettings.noLink')}
                             </div>
                           ) : null}
-                          <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-between'>
-                            <Button onClick={() => setShowExportModal(true)} semiSmall primary>
-                              <>
-                                <DownloadIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
-                                {t('profileSettings.requestExport')}
-                              </>
-                            </Button>
-                            <div className='flex flex-wrap justify-center gap-2'>
-                              <Button
-                                onClick={() => {
-                                  logout(true)
-                                }}
-                                semiSmall
-                                semiDanger
-                              >
-                                <>
-                                  {/* We need this div for the button to match the height of the button after it */}
-                                  <div className='h-5' />
-                                  {t('profileSettings.logoutAll')}
-                                </>
-                              </Button>
-                              <Button onClick={() => setShowModal(true)} semiSmall semiDanger>
-                                <>
-                                  <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
-                                  {t('profileSettings.delete')}
-                                </>
-                              </Button>
-                            </div>
-                          </div>
                         </>
                       )}
+                      <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-between'>
+                        {isSelfhosted ? (
+                          <div />
+                        ) : (
+                          <Button onClick={() => setShowExportModal(true)} semiSmall primary>
+                            <>
+                              <DownloadIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
+                              {t('profileSettings.requestExport')}
+                            </>
+                          </Button>
+                        )}
+                        <div className='flex flex-wrap justify-center gap-2'>
+                          <Button
+                            onClick={() => {
+                              logout(true)
+                            }}
+                            semiSmall
+                            semiDanger
+                          >
+                            <>
+                              {/* We need this div for the button to match the height of the button after it */}
+                              <div className='h-5' />
+                              {t('profileSettings.logoutAll')}
+                            </>
+                          </Button>
+                          <Button onClick={() => setShowModal(true)} semiSmall semiDanger>
+                            <>
+                              <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
+                              {t('profileSettings.delete')}
+                            </>
+                          </Button>
+                        </div>
+                      </div>
                     </>
                   )
                 }
@@ -916,15 +920,17 @@ const UserSettings = () => {
         message={
           <>
             {t('profileSettings.deactivateConfirmation')}
-            <Textarea
-              classes={{
-                container: 'mt-4',
-              }}
-              placeholder={t('profileSettings.deletionFeedback')}
-              onChange={(e) => setDeletionFeedback(e.target.value)}
-              value={deletionFeedback}
-              label={t('profileSettings.deletionFeedbackLabel')}
-            />
+            {isSelfhosted ? null : (
+              <Textarea
+                classes={{
+                  container: 'mt-4',
+                }}
+                placeholder={t('profileSettings.deletionFeedback')}
+                onChange={(e) => setDeletionFeedback(e.target.value)}
+                value={deletionFeedback}
+                label={t('profileSettings.deletionFeedbackLabel')}
+              />
+            )}
           </>
         }
         isOpened={showModal}

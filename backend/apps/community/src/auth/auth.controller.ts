@@ -362,6 +362,23 @@ export class AuthController {
     await this.authService.logout(user.id, refreshToken)
   }
 
+  @ApiOperation({ summary: 'Log out from all devices' })
+  @ApiOkResponse({
+    description: 'Logged out from all devices',
+  })
+  @UseGuards(JwtRefreshTokenGuard)
+  @Post('logout-all')
+  @HttpCode(200)
+  public async logoutAll(@CurrentUserId() userId: string): Promise<void> {
+    const user = await this.userService.findOne({ id: userId })
+
+    if (!user) {
+      throw new UnauthorizedException()
+    }
+
+    await this.authService.logoutAll(user.id)
+  }
+
   @ApiOperation({ summary: 'Initiate OIDC authentication' })
   @ApiOkResponse({
     description: 'OIDC authentication initiated',

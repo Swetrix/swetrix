@@ -11,11 +11,14 @@ import {
   ConflictException,
   Delete,
   Param,
+  HttpCode,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger'
 import _isEmpty from 'lodash/isEmpty'
 import _omit from 'lodash/omit'
 import _isNull from 'lodash/isNull'
+import _map from 'lodash/map'
+import _join from 'lodash/join'
 import { randomUUID } from 'crypto'
 
 import { JwtAccessTokenGuard } from '../auth/guards'
@@ -27,7 +30,14 @@ import { RolesGuard } from '../auth/guards/roles.guard'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { AppLoggerService } from '../logger/logger.service'
 import { UserService } from './user.service'
-import { checkRateLimit, getIPFromHeaders } from '../common/utils'
+import {
+  checkRateLimit,
+  deleteAllRefreshTokensClickhouse,
+  deleteProjectsByUserIdClickhouse,
+  deleteProjectSharesByUserIdClickhouse,
+  getIPFromHeaders,
+  getProjectsClickhouse,
+} from '../common/utils'
 import {
   findProjectShareClickhouse,
   findProjectSharesByUserClickhouse,
@@ -41,6 +51,8 @@ import { LetterTemplate } from '../mailer/letter'
 import { Request } from 'express'
 import { Req } from '@nestjs/common'
 import { redis } from '../common/constants'
+import { ProjectService } from '../project/project.service'
+import { clickhouse } from '../common/integrations/clickhouse'
 
 @ApiTags('User')
 @Controller('user')
@@ -51,6 +63,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly mailerService: MailerService,
     private readonly authService: AuthService,
+    private readonly projectService: ProjectService,
   ) {}
 
   @ApiBearerAuth()
@@ -136,6 +149,57 @@ export class UserController {
     return {
       showLiveVisitorsInTitle: show,
     }
+  }
+
+  @ApiBearerAuth()
+  @Delete('/')
+  @HttpCode(204)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async deleteSelf(@CurrentUserId() id: string): Promise<any> {
+    this.logger.log({ id }, 'DELETE /user')
+
+    const user = await this.userService.findOne({
+      id,
+    })
+
+    if (_isEmpty(user)) {
+      throw new BadRequestException('User not found')
+    }
+
+    const chResults = await getProjectsClickhouse(id)
+    const projects = _map(chResults, this.projectService.formatFromClickhouse)
+
+    try {
+      if (!_isEmpty(projects)) {
+        const pids = _join(
+          _map(projects, el => `'${el.id}'`),
+          ',',
+        )
+        const queries = [
+          `ALTER TABLE analytics DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE customEV DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE performance DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE errors DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE error_statuses DELETE WHERE pid IN (${pids})`,
+        ]
+        await deleteProjectsByUserIdClickhouse(id)
+        const promises = _map(queries, async query =>
+          clickhouse.command({
+            query,
+          }),
+        )
+        await Promise.all(promises)
+      }
+      await deleteAllRefreshTokensClickhouse(id)
+      await deleteProjectSharesByUserIdClickhouse(id)
+      await this.userService.delete(id)
+    } catch (reason) {
+      this.logger.error(reason)
+      throw new BadRequestException('accountDeleteError')
+    }
+
+    return 'accountDeleted'
   }
 
   @ApiBearerAuth()
