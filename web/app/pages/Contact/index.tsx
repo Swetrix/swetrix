@@ -14,7 +14,7 @@ const Panel = ({ href, title, description }: PanelProps) => (
     href={href}
     target='_blank'
     rel='noopener noreferrer'
-    className='relative block rounded-2xl border border-gray-300/80 bg-gray-100 p-10 hover:bg-gray-200 dark:border-slate-900/80 dark:bg-slate-800/80 dark:hover:bg-slate-800'
+    className='relative block rounded-2xl border border-gray-300/80 bg-gray-100 p-10 transition-colors hover:bg-gray-200 dark:border-slate-900/80 dark:bg-slate-800/80 dark:hover:bg-slate-800'
   >
     <SquareArrowOutUpRightIcon
       className='absolute top-5 right-5 h-5 w-5 text-gray-900 dark:text-gray-100'
