@@ -9,7 +9,6 @@ import {
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import Beta from '~/ui/Beta'
 import { cn } from '~/utils/generic'
 
 import Spin from './icons/Spin'
@@ -28,7 +27,6 @@ interface ModalProps {
   submitType?: 'regular' | 'danger'
   size?: 'regular' | 'large'
   customButtons?: React.ReactNode
-  isBeta?: boolean
   isLoading?: boolean
   overflowVisible?: boolean
 }
@@ -46,7 +44,6 @@ const Modal = ({
   submitType = 'regular',
   size = 'regular',
   customButtons,
-  isBeta,
   isLoading,
   submitDisabled,
   overflowVisible,
@@ -110,10 +107,7 @@ const Modal = ({
                       'justify-center sm:justify-start': closeText,
                     })}
                   >
-                    <div>
-                      {title}
-                      {isBeta ? <Beta className='ml-10' /> : null}
-                    </div>
+                    <div>{title}</div>
                     {!closeText ? (
                       <button
                         type='button'

@@ -355,7 +355,6 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
               className='mt-4'
               onChange={handleInput}
               error={beenSubmitted ? errors.ipBlacklist : null}
-              isBeta
             />
             <hr className='mt-5 border-gray-200 dark:border-gray-600' />
             <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
