@@ -1,9 +1,10 @@
-import { MagnifyingGlassIcon, XMarkIcon, BuildingOffice2Icon } from '@heroicons/react/24/outline'
+import { BuildingOffice2Icon } from '@heroicons/react/24/outline'
 import { XCircleIcon } from '@heroicons/react/24/solid'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import React, { useState, useEffect, useCallback } from 'react'
+import { SearchIcon, XIcon } from 'lucide-react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
@@ -31,6 +32,7 @@ const Organisations = () => {
 
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce<string>(search, 500)
@@ -178,36 +180,58 @@ const Organisations = () => {
           <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
             <div className='mb-6 flex flex-wrap justify-between gap-2'>
               <div className='flex items-end justify-between'>
-                <h2 className='mt-2 flex items-baseline text-3xl font-bold text-gray-900 dark:text-gray-50'>
-                  {t('titles.organisations')}
+                <h2 className='mt-2 flex items-baseline gap-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+                  <span>{t('titles.organisations')}</span>
                   {isSearchActive ? (
-                    <XMarkIcon
-                      className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
+                    <button
+                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
+                      type='button'
                       onClick={() => {
                         setSearch('')
                         setIsSearchActive(false)
                       }}
-                    />
+                      aria-label={t('common.close')}
+                    >
+                      <XIcon
+                        className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50'
+                        strokeWidth={1.5}
+                      />
+                    </button>
                   ) : (
-                    <MagnifyingGlassIcon
-                      className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
+                    <button
+                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
+                      type='button'
                       onClick={() => {
                         setIsSearchActive(true)
+                        setTimeout(() => {
+                          searchInputRef.current?.focus()
+                        }, 100)
                       }}
-                    />
+                      aria-label={t('project.search')}
+                    >
+                      <SearchIcon
+                        className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50'
+                        strokeWidth={1.5}
+                      />
+                    </button>
                   )}
                 </h2>
                 {isSearchActive ? (
-                  <div className='hidden w-full max-w-md items-center px-2 pb-1 sm:ml-5 sm:flex'>
-                    <label htmlFor='simple-search' className='sr-only'>
-                      Search
+                  <div className='hidden w-full max-w-md items-center px-2 pb-1 sm:ml-2 sm:flex'>
+                    <label htmlFor='organisation-search' className='sr-only'>
+                      {t('project.search')}
                     </label>
                     <div className='relative w-full'>
                       <div className='pointer-events-none absolute inset-y-0 left-0 hidden items-center sm:flex'>
-                        <MagnifyingGlassIcon className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50' />
+                        <SearchIcon
+                          className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
+                          strokeWidth={1.5}
+                        />
                       </div>
                       <input
+                        ref={searchInputRef}
                         type='text'
+                        id='organisation-search'
                         onChange={onSearch}
                         value={search}
                         className='block h-7 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 sm:pl-10 dark:bg-slate-900 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200'
@@ -217,24 +241,29 @@ const Organisations = () => {
                   </div>
                 ) : null}
               </div>
-              <span
+              <button
+                type='button'
                 onClick={onNewOrganisation}
-                className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 px-3 py-2 !pl-2 text-center text-sm leading-4 font-medium text-white hover:bg-slate-700 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:outline-hidden dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+                className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 p-2 text-center text-sm leading-4 font-medium text-white transition-colors hover:bg-slate-700 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:outline-hidden dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               >
                 <BuildingOffice2Icon className='mr-1 h-5 w-5' />
                 {t('organisations.new')}
-              </span>
+              </button>
             </div>
             {isSearchActive ? (
               <div className='mb-2 flex w-full items-center sm:hidden'>
-                <label htmlFor='simple-search' className='sr-only'>
-                  Search
+                <label htmlFor='organisation-search-mobile' className='sr-only'>
+                  {t('project.search')}
                 </label>
                 <div className='relative w-full'>
                   <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center'>
-                    <MagnifyingGlassIcon className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50' />
+                    <SearchIcon
+                      className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
+                      strokeWidth={1.5}
+                    />
                   </div>
                   <input
+                    id='organisation-search-mobile'
                     type='text'
                     onChange={onSearch}
                     value={search}

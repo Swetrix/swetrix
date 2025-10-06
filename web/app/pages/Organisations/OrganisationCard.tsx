@@ -118,9 +118,9 @@ export const OrganisationCard = ({ organisation, reloadOrganisations }: Organisa
       to={_replace(routes.organisation, ':id', organisation.id)}
       onClick={onElementClick}
       className={cx(
-        'min-h-[153.1px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-slate-800/25 dark:bg-slate-800',
+        'min-h-[153.1px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/25 dark:bg-slate-800/70',
         {
-          'cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700': membership?.role !== 'viewer',
+          'cursor-pointer hover:bg-gray-200/70 dark:hover:bg-slate-700/60': membership?.role !== 'viewer',
         },
       )}
     >
@@ -132,7 +132,7 @@ export const OrganisationCard = ({ organisation, reloadOrganisations }: Organisa
             // dummy button, since the whole card is clickable
             <div
               aria-label={`${t('project.settings.settings')} ${name}`}
-              className='rounded-md p-1.5 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+              className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
             >
               <Settings2Icon className='size-5' strokeWidth={1.5} />
             </div>
