@@ -725,6 +725,8 @@
   "organisations": {
     "create": "Organisation erstellen",
     "organisations": "Organisationen",
+    "noOrganisations": "Noch keine Organisationen",
+    "createOrganisation": "Sie haben noch keine Organisationen erstellt oder sind keiner beigetreten. Legen Sie los, indem Sie Ihre erste Organisation erstellen.",
     "new": "Neue Organisation",
     "invite": {
       "title": "Einen Benutzer zu {{organisation}} einladen",
@@ -789,8 +791,8 @@
     "accountLocked": "Ihr Konto wurde aufgrund eines Rechnungsproblems vorübergehend gesperrt.",
     "accountLockedTitle": "Konto vorübergehend gesperrt",
     "eventsXPercUsed": "Sie haben für diesen Monat mehr als {{amount}}% ihres verfügbaren Event-Kontingents für ihr Abonnement verbraucht.",
-    "noProjects": "Sie haben noch keine Projekte erstellt",
-    "createProject": "Erstellen Sie hier ein neues Projekt, um unseren Dienst zu nutzen",
+    "noProjects": "Noch keine Projekte",
+    "createProject": "Sie haben noch keine Projekte erstellt. Legen Sie los, indem Sie Ihr erstes Projekt erstellen.",
     "active": "Aktiv",
     "public": "Öffentliche",
     "shared": "Freigegeben",
@@ -902,6 +904,7 @@
     "support": "Support kontaktieren"
   },
   "project": {
+    "backToStats": "Zurück zu den Statistiken",
     "directNone": "Direkt / Keine",
     "loadingMapData": "Kartendaten werden geladen...",
     "copy": "Kopieren",
@@ -916,8 +919,8 @@
     "addASegment": "Segment hinzufügen",
     "loadMore": "Mehr laden",
     "unknownCountry": "Unbekanntes Land",
-    "selectCategory": "Kategorie zum Filtern auswählen",
-    "selectCategoryOptional": "Wählen Sie eine Kategorie zum filtern (optional)",
+    "selectCategory": "Wählen Sie eine Kategorie zum Filtern aus",
+    "selectCategoryOptional": "Wählen Sie eine Kategorie zum Filtern aus (optional)",
     "customEventsAndMetrics": "Benutzerdefinierte Ereignisse und Metriken (optional)",
     "addAMetric": "Metrik hinzufügen",
     "customEvent": "Benutzerdefinierte Tracking-Events",
@@ -1008,12 +1011,12 @@
       "manageSubscription": "Abonnement verwalten"
     },
     "waiting": {
-      "title": "Warten auf Ihre erste Seitenansicht",
-      "desc": "Wir warten auf Ihre erste Seitenansicht! Wenn Ihre Integration korrekt eingerichtet ist, sollten Sie sie innerhalb einer Minute sehen.\n<snippet>Klicken Sie hier</snippet> um Ihren JavaScript-Tracking-Code anzuzeigen.\nFunktioniert immer noch nicht? Versuchen Sie <turl>Fehlerbehebung</turl> Ihrer Integration oder <curl>kontaktieren Sie uns</curl> für Hilfe bei Ihrer Einrichtung."
+      "title": "Noch keine Ereignisse",
+      "desc": "Sie haben noch keine Ereignisse erfasst. <snippet>Hier klicken</snippet>, um Ihren JavaScript-Tracking-Code anzuzeigen.\n\nFunktioniert es immer noch nicht? Versuchen Sie die <turl>Fehlerbehebung</turl> Ihrer Integration oder <curl>kontaktieren Sie uns</curl>, um Hilfe bei der Einrichtung zu erhalten."
     },
     "waitingError": {
-      "title": "Warte auf Ihren ersten Fehler... hoffentlich nicht :)",
-      "desc": "Wir warten auf dein erstes Fehler-Ereigniss! Wenn deine Integration korrekt eingerichtet ist, solltest du sie innerhalb einer Minute sehen, wenn dies geschieht.\n<howto>Klicken Sie hier</howto> um zu erfahren, wie Sie Fehlerverfolgung für Ihre Website einrichten.\nFunktioniert immer noch nicht? Versuchen Sie <turl>Fehlerbehebung</turl> Ihrer Integration oder <curl>kontaktieren Sie uns</curl> für Hilfe bei Ihrer Einrichtung."
+      "title": "Noch keine Fehler",
+      "desc": "Sie haben noch keine Fehler erfasst. <howto>Hier klicken</howto>, um zu erfahren, wie Sie das Fehler-Tracking für Ihre Website einrichten.\n\nFunktioniert es immer noch nicht? Versuchen Sie die <turl>Fehlerbehebung</turl> Ihrer Integration oder <curl>kontaktieren Sie uns</curl>, um Hilfe bei der Einrichtung zu erhalten."
     },
     "trendlineTotal": "Seitenansichten Trendlinie",
     "noEvContent": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst. Bitte versuchen Sie einen anderen Zeitraum.",
@@ -1037,7 +1040,9 @@
       "ca": "UTM Campaign",
       "te": "UTM-Begriff",
       "co": "UTM-Inhalt",
-      "userFlow": "Nutzerfluss"
+      "userFlow": "Nutzerfluss",
+      "entryPage": "Einstiegsseite",
+      "exitPage": "Ausstiegsseite"
     },
     "entryPages": "Einstiegsseiten",
     "exitPages": "Ausstiegsseiten",
@@ -1110,6 +1115,14 @@
       "organisation": "Organisation",
       "shields": "Schutzschilde",
       "access": "Zugangseinstellungen",
+      "tabs": {
+        "general": "Allgemein",
+        "access": "Zugriff",
+        "shields": "Schilde",
+        "emails": "E-Mails",
+        "people": "Personen",
+        "danger": "Gefahrenzone"
+      },
       "botsProtectionLevel": {
         "title": "Bot-Schutz Level",
         "levels": {

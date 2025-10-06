@@ -725,6 +725,8 @@
   "organisations": {
     "create": "Créer une organisation",
     "organisations": "Organisations",
+    "noOrganisations": "Aucune organisation pour le moment",
+    "createOrganisation": "Vous n'avez encore créé ni rejoint aucune organisation. Commencez par créer votre première organisation.",
     "new": "Nouvelle organisation",
     "invite": {
       "title": "Inviter un utilisateur à {{organisation}}",
@@ -789,8 +791,8 @@
     "accountLocked": "Votre compte a été temporairement suspendu en raison d'un problème de facturation.",
     "accountLockedTitle": "Compte temporairement suspendu",
     "eventsXPercUsed": "Vous avez utilisé plus de {{amount}}% des événements disponibles ce mois-ci selon votre forfait.",
-    "noProjects": "Vous n'avez pas encore créé de projets",
-    "createProject": "Créez un nouveau projet ici pour commencer à utiliser notre service",
+    "noProjects": "Aucun projet pour le moment",
+    "createProject": "Vous n'avez pas encore créé de projet. Commencez par créer votre premier projet.",
     "active": "Actif",
     "public": "Public",
     "shared": "Partagé",
@@ -902,6 +904,7 @@
     "support": "Contacter le service client"
   },
   "project": {
+    "backToStats": "Retour aux statistiques",
     "directNone": "Direct / Aucun",
     "loadingMapData": "Chargement des données de la carte...",
     "copy": "Copier",
@@ -916,8 +919,8 @@
     "addASegment": "Ajouter un segment",
     "loadMore": "Afficher plus",
     "unknownCountry": "Pays inconnu",
-    "selectCategory": "Sélectionner une catégorie à filtrer",
-    "selectCategoryOptional": "Sélectionnez une catégorie à filtrer (facultatif)",
+    "selectCategory": "Sélectionnez une catégorie pour filtrer",
+    "selectCategoryOptional": "Sélectionnez une catégorie pour filtrrer (facultatif)",
     "customEventsAndMetrics": "Événements et métriques personnalisés (facultatif)",
     "addAMetric": "Ajouter une métrique",
     "customEvent": "Événement personnalisé",
@@ -1008,12 +1011,12 @@
       "manageSubscription": "Gérer l'abonnement"
     },
     "waiting": {
-      "title": "En attente de votre première vue de page",
-      "desc": "Nous attendons votre première page vue ! Si votre intégration est configurée correctement, vous devriez la voir apparaître en moins d'une minute.\n<snippet>Cliquez ici</snippet> pour voir votre code de suivi JavaScript.\nCela ne fonctionne toujours pas ? Essayez de <turl>dépanner</turl> votre intégration ou <curl>contactez-nous</curl> pour obtenir de l'aide avec votre configuration."
+      "title": "Aucun événement pour le moment",
+      "desc": "Vous n'avez encore suivi aucun événement. <snippet>Cliquez ici</snippet> pour afficher votre code de suivi JavaScript.\n\nCela ne fonctionne toujours pas ? Essayez le <turl>dépannage</turl> de votre intégration ou <curl>contactez-nous</curl> pour obtenir de l'aide concernant la configuration."
     },
     "waitingError": {
-      "title": "En attente de votre première erreur... espérons que non :)",
-      "desc": "Nous attendons votre premier événement d'erreur ! Si votre intégration est configurée correctement, vous devriez le voir apparaître en moins d'une minute lorsqu'il se produit.\n<howto>Cliquez ici</howto> pour apprendre à configurer le suivi des erreurs pour votre site web.\nCela ne fonctionne toujours pas ? Essayez de <turl>dépanner</turl> votre intégration ou <curl>contactez-nous</curl> pour obtenir de l'aide avec votre configuration."
+      "title": "Aucune erreur pour le moment",
+      "desc": "Vous n'avez encore enregistré aucune erreur. <howto>Cliquez ici</howto> pour apprendre à configurer le suivi des erreurs pour votre site web.\n\nCela ne fonctionne toujours pas ? Essayez le <turl>dépannage</turl> de votre intégration ou <curl>contactez-nous</curl> pour obtenir de l'aide concernant la configuration."
     },
     "trendlineTotal": "Tendance des pages vues",
     "noEvContent": "Aucun événement n'a été capturé pour la période spécifiée.\nSi vous n'avez pas encore suivi d'événements, vous pouvez consulter notre <url>Documentation</url> pour intégrer facilement le suivi dans votre application.",
@@ -1037,7 +1040,9 @@
       "ca": "Campagne UTM",
       "te": "Terme UTM",
       "co": "Contenu UTM",
-      "userFlow": "Parcours utilisateur"
+      "userFlow": "Parcours utilisateur",
+      "entryPage": "Page d'entrée",
+      "exitPage": "Page de sortie"
     },
     "entryPages": "Pages d’entrée",
     "exitPages": "Pages de sortie",
@@ -1110,6 +1115,14 @@
       "organisation": "Organisation",
       "shields": "Boucliers",
       "access": "Paramètres d'accès",
+      "tabs": {
+        "general": "Général",
+        "access": "Accès",
+        "shields": "Boucliers",
+        "emails": "E-mails",
+        "people": "Personnes",
+        "danger": "Zone de danger"
+      },
       "botsProtectionLevel": {
         "title": "Niveau de protection contre les bots",
         "levels": {

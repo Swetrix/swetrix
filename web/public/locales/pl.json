@@ -725,6 +725,8 @@
   "organisations": {
     "create": "Utwórz organizację",
     "organisations": "Organizacje",
+    "noOrganisations": "Nie ma jeszcze żadnych organizacji",
+    "createOrganisation": "Nie utworzyłeś ani nie dołączyłeś jeszcze do żadnej organizacji. Zacznij od utworzenia pierwszej organizacji.",
     "new": "Nowa organizacja",
     "invite": {
       "title": "Zaproś użytkownika do {{organisation}}",
@@ -789,8 +791,8 @@
     "accountLocked": "Twoje konto zostało tymczasowo zablokowane z powodu problemu z płatnością.",
     "accountLockedTitle": "Konto tymczasowo zawieszone",
     "eventsXPercUsed": "Wykorzystałeś więcej niż {{amount}}% dostępnych zdarzeń w Twoim planie w tym miesiącu.",
-    "noProjects": "Nie utworzyłeś jeszcze żadnego projektu",
-    "createProject": "Utwórz nowy projekt tutaj, aby zacząć korzystać z naszych usług",
+    "noProjects": "Nie ma jeszcze żadnych projektów",
+    "createProject": "Nie utworzyłeś jeszcze żadnych projektów. Zacznij od utworzenia pierwszego projektu.",
     "active": "Aktywny",
     "public": "Publiczne",
     "shared": "Udostępnione",
@@ -902,6 +904,7 @@
     "support": "Skontaktuj się z obsługą"
   },
   "project": {
+    "backToStats": "Wróć do statystyk",
     "directNone": "Bezpośrednie / Brak",
     "loadingMapData": "Wczytywanie danych mapy...",
     "copy": "Kopiuj",
@@ -916,8 +919,8 @@
     "addASegment": "Dodaj segment",
     "loadMore": "Załaduj więcej",
     "unknownCountry": "Nieznany kraj",
-    "selectCategory": "Wybierz kategorię do filtrowania",
-    "selectCategoryOptional": "Wybierz kategorię do filtrowania (opcjonalnie)",
+    "selectCategory": "Wybierz kategorię, aby filtrować",
+    "selectCategoryOptional": "Wybierz kategorię, aby filtrować (opcjonalnie)",
     "customEventsAndMetrics": "Wydarzenia i metryki niestandardowe (opcjonalnie)",
     "addAMetric": "Dodaj metrykę",
     "customEvent": "Wydarzenie niestandardowe",
@@ -1008,12 +1011,12 @@
       "manageSubscription": "Zarządzaj subskrypcją"
     },
     "waiting": {
-      "title": "Oczekiwanie na Twój pierwszy odsłonę strony",
-      "desc": "Czekamy na Twój pierwszy odsłonę! Jeśli Twoja integracja jest poprawnie skonfigurowana, powinieneś ją zobaczyć w ciągu 1 minuty.\n<snippet>Kliknij tutaj</snippet>, aby zobaczyć swój kod śledzenia JavaScript.\nNadal nie działa? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc przy ustawieniach."
+      "title": "Nie ma jeszcze żadnych zdarzeń",
+      "desc": "Nie śledzono jeszcze żadnych zdarzeń. <snippet>Kliknij tutaj</snippet>, aby wyświetlić swój kod śledzenia JavaScript.\n\nNadal nie działa? Spróbuj <turl>rozwiązywania problemów</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc przy konfiguracji."
     },
     "waitingError": {
-      "title": "Czekamy na twój pierwszy błąd... oby go nie było :)",
-      "desc": "Czekamy na Twoje pierwsze zdarzenie błędu! Jeśli Twoja integracja jest poprawnie skonfigurowana, powinieneś zobaczyć je w ciągu 1 minuty po wystąpieniu.\n<howto>Kliknij tutaj</howto>, aby dowiedzieć się, jak skonfigurować śledzenie błędów na swojej stronie internetowej.\nNadal nie działa? Spróbuj <turl>rozwiązać problemy</turl> z integracją lub <curl>skontaktuj się z nami</curl> w sprawie pomocy przy konfiguracji."
+      "title": "Nie ma jeszcze żadnych błędów",
+      "desc": "Nie zarejestrowano jeszcze żadnych błędów. <howto>Kliknij tutaj</howto>, aby dowiedzieć się, jak skonfigurować śledzenie błędów na swojej stronie.\n\nNadal nie działa? Spróbuj <turl>rozwiązywania problemów</turl> z integracją lub <curl>skontaktuj się z nami</curl>, aby uzyskać pomoc przy konfiguracji."
     },
     "trendlineTotal": "Linia trendu odsłon witryny",
     "noEvContent": "W wybranym okresie nie zarejestrowano żadnych zdarzeń, proszę spróbować inny okres.",
@@ -1037,7 +1040,9 @@
       "ca": "Kampania UTM",
       "te": "Termin UTM",
       "co": "Zawartość UTM",
-      "userFlow": "Ścieżka użytkownika"
+      "userFlow": "Ścieżka użytkownika",
+      "entryPage": "Strona wejścia",
+      "exitPage": "Strona wyjścia"
     },
     "entryPages": "Strony wejścia",
     "exitPages": "Strony wyjścia",
@@ -1110,6 +1115,14 @@
       "organisation": "Organizacja",
       "shields": "Tarcze",
       "access": "Ustawienia dostępu",
+      "tabs": {
+        "general": "Ogólne",
+        "access": "Dostęp",
+        "shields": "Tarcze",
+        "emails": "E-maile",
+        "people": "Osoby",
+        "danger": "Strefa zagrożenia"
+      },
       "botsProtectionLevel": {
         "title": "Poziom ochrony przed botami",
         "levels": {
