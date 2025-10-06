@@ -36,6 +36,7 @@ import {
 } from '~/lib/constants'
 import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
+import TBPeriodSelector from '~/pages/Project/View/components/TBPeriodSelector'
 import { Filter } from '~/pages/Project/View/interfaces/traffic'
 import { Panel } from '~/pages/Project/View/Panels'
 import { parseFilters } from '~/pages/Project/View/utils/filters'
@@ -47,11 +48,11 @@ import { useTheme } from '~/providers/ThemeProvider'
 import DatePicker from '~/ui/Datepicker'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import routes from '~/utils/routes'
 
 import CCRow from '../../Project/View/components/CCRow'
 
-import TBPeriodSelector from './components/TBPeriodSelector'
 import {
   getFormatDate,
   panelIconMapping,
@@ -408,6 +409,7 @@ const ViewCaptcha = () => {
           }}
         >
           <>
+            {dataLoading ? <LoadingBar /> : null}
             <EventsRunningOutBanner />
             <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
               <div className='mx-auto min-h-min-footer w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' ref={dashboardRef}>
@@ -415,13 +417,13 @@ const ViewCaptcha = () => {
                   <h2 className='text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
                     {project.name}
                   </h2>
-                  <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-between sm:mx-0 sm:w-auto sm:max-w-none lg:mt-0'>
+                  <div className='lg:mt- mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between'>
                     <button
                       type='button'
                       title={t('project.refreshStats')}
                       onClick={refreshStats}
                       className={cx(
-                        'relative mr-3 rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                        'relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                         {
                           'cursor-not-allowed opacity-50': authLoading || dataLoading,
                         },
@@ -436,33 +438,45 @@ const ViewCaptcha = () => {
                       labelExtractor={(item) => item.label}
                       keyExtractor={(item) => item.label}
                       onSelect={(item) => item.onClick()}
-                      className={cx('mr-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                      className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
                       chevron='mini'
                       buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:dark:ring-gray-200'
                       headless
                     />
-                    <TBPeriodSelector
-                      activePeriod={activePeriod}
-                      updateTimebucket={updateTimebucket}
-                      timeBucket={timeBucket}
-                      items={_filter(periodPairs, (item) => !_includes(['all', '1h'], item.period))}
-                      title={activePeriod?.label}
-                      onSelect={(pair) => {
-                        if (pair.isCustomDate) {
-                          setTimeout(() => {
-                            // @ts-expect-error
-                            refCalendar.current.openCalendar()
-                          }, 100)
-                        } else {
-                          resetDateRange()
-                          updatePeriod(pair)
-                        }
-                      }}
-                    />
+                    <div className='flex items-center'>
+                      <TBPeriodSelector
+                        activePeriod={activePeriod}
+                        items={_filter(periodPairs, (item) => !_includes(['all', '1h'], item.period))}
+                        title={activePeriod?.label}
+                        onSelect={(pair) => {
+                          if (pair.isCustomDate) {
+                            setTimeout(() => {
+                              // @ts-expect-error
+                              refCalendar.current.openCalendar()
+                            }, 100)
+                          } else {
+                            resetDateRange()
+                            updatePeriod(pair)
+                          }
+                        }}
+                      />
+                      <DatePicker
+                        ref={refCalendar}
+                        onChange={([from, to]) => {
+                          const newSearchParams = new URLSearchParams(searchParams.toString())
+                          newSearchParams.set('from', from.toISOString())
+                          newSearchParams.set('to', to.toISOString())
+                          newSearchParams.set('period', 'custom')
+                          setSearchParams(newSearchParams)
+                        }}
+                        value={dateRange || []}
+                        maxDateMonths={MAX_MONTHS_IN_PAST}
+                      />
+                    </div>
                     {project.role === 'admin' || project.role === 'owner' ? (
                       <Link
                         to={_replace(routes.captcha_settings, ':id', id)}
-                        className='flex px-3 text-sm font-medium text-gray-700 hover:text-gray-600 dark:text-gray-50 dark:hover:text-gray-200'
+                        className='flex rounded-md border border-transparent p-2 px-3 text-sm font-medium text-gray-700 transition-colors hover:border-gray-300 hover:bg-white hover:text-gray-600 focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-gray-200 focus:dark:ring-gray-200'
                       >
                         <>
                           <SettingsIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
@@ -470,19 +484,6 @@ const ViewCaptcha = () => {
                         </>
                       </Link>
                     ) : null}
-                    <DatePicker
-                      className='!mx-0 w-0'
-                      ref={refCalendar}
-                      onChange={([from, to]) => {
-                        const newSearchParams = new URLSearchParams(searchParams.toString())
-                        newSearchParams.set('from', from.toISOString())
-                        newSearchParams.set('to', to.toISOString())
-                        newSearchParams.set('period', 'custom')
-                        setSearchParams(newSearchParams)
-                      }}
-                      value={dateRange || []}
-                      maxDateMonths={MAX_MONTHS_IN_PAST}
-                    />
                   </div>
                 </div>
                 {analyticsLoading ? <Loader /> : null}
@@ -500,7 +501,7 @@ const ViewCaptcha = () => {
                       </div>
                     </div>
                   ) : null}
-                  <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                  <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
                     {!_isEmpty(panelsData.types)
                       ? _map(PANELS_ORDER, (type: keyof typeof tnMapping) => {
                           const panelName = tnMapping[type]
@@ -526,6 +527,7 @@ const ViewCaptcha = () => {
                                 name={panelName}
                                 data={panelsData.data[type]}
                                 rowMapper={rowMapper}
+                                activeTabId={type}
                               />
                             )
                           }
@@ -557,6 +559,7 @@ const ViewCaptcha = () => {
                                   )
                                 }}
                                 capitalize
+                                activeTabId={type}
                               />
                             )
                           }
@@ -595,6 +598,7 @@ const ViewCaptcha = () => {
                                 name={panelName}
                                 data={panelsData.data[type]}
                                 rowMapper={rowMapper}
+                                activeTabId={type}
                               />
                             )
                           }
@@ -640,6 +644,7 @@ const ViewCaptcha = () => {
                                 name={panelName}
                                 data={panelsData.data[type]}
                                 rowMapper={rowMapper}
+                                activeTabId={type}
                               />
                             )
                           }
@@ -652,6 +657,7 @@ const ViewCaptcha = () => {
                               getFilterLink={getFilterLink}
                               name={panelName}
                               data={panelsData.data[type]}
+                              activeTabId={type}
                             />
                           )
                         })
