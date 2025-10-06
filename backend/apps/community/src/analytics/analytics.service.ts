@@ -117,6 +117,7 @@ const MEASURES_MAP = {
   average: 'avg',
   median: 'median',
   p95: 'quantileExact(0.95)',
+  p75: 'quantileExact(0.75)',
 }
 
 // mapping of allowed timebuckets per difference between days
@@ -3972,7 +3973,7 @@ export class AnalyticsService {
   }
 
   checkIfPerfMeasureIsValid(measure: PerfMeasure) {
-    const validMeasures = ['average', 'median', 'p95', 'quantiles']
+    const validMeasures = ['average', 'median', 'p95', 'p75', 'quantiles']
 
     if (!_includes(validMeasures, measure)) {
       throw new UnprocessableEntityException(

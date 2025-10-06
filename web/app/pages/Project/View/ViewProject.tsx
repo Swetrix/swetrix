@@ -992,9 +992,14 @@ const ViewProjectContent = () => {
   const chartMeasuresPerf = useMemo(() => {
     return [
       {
-        id: CHART_MEASURES_MAPPING_PERF.average,
-        label: t('dashboard.average'),
-        active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.average,
+        id: CHART_MEASURES_MAPPING_PERF.p95,
+        label: t('dashboard.xPercentile', { x: 95 }),
+        active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.p95,
+      },
+      {
+        id: CHART_MEASURES_MAPPING_PERF.p75,
+        label: t('dashboard.xPercentile', { x: 75 }),
+        active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.p75,
       },
       {
         id: CHART_MEASURES_MAPPING_PERF.median,
@@ -1002,9 +1007,9 @@ const ViewProjectContent = () => {
         active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.median,
       },
       {
-        id: CHART_MEASURES_MAPPING_PERF.p95,
-        label: t('dashboard.xPercentile', { x: 95 }),
-        active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.p95,
+        id: CHART_MEASURES_MAPPING_PERF.average,
+        label: t('dashboard.average'),
+        active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.average,
       },
     ]
   }, [t, activePerfMeasure])

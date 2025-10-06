@@ -243,6 +243,7 @@ const CHART_MEASURES_MAPPING_PERF = {
   average: 'average',
   median: 'median',
   p95: 'p95',
+  p75: 'p75',
 
   // Independent measure that provides it's own metrics
   quantiles: 'quantiles',

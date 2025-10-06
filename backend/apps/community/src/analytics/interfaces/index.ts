@@ -186,4 +186,4 @@ export interface ICustomEvent {
   [key: string]: number
 }
 
-export type PerfMeasure = 'average' | 'median' | 'p95' | 'quantiles'
+export type PerfMeasure = 'average' | 'median' | 'p95' | 'p75' | 'quantiles'
