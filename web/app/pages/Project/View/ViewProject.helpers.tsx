@@ -1131,7 +1131,6 @@ const getSettingsError = (
     bar: {
       linearGradient: true,
     },
-    bindto: '#errorChart',
   }
 }
 
@@ -1296,7 +1295,6 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
         `
       },
     },
-    bindto: '#funnelChart',
   }
 }
 
@@ -1758,7 +1756,6 @@ export {
   typeNameMapping,
   noRegionPeriods,
   getSettings,
-  getColumns,
   onCSVExportClick,
   CHART_METRICS_MAPPING,
   CHART_METRICS_MAPPING_PERF,

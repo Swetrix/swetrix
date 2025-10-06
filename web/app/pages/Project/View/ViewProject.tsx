@@ -1,5 +1,4 @@
 import SwetrixSDK from '@swetrix/sdk'
-import billboard, { Chart } from 'billboard.js'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -155,12 +154,14 @@ import ProjectAlertsView from '../Alerts/View'
 
 import AddAViewModal from './components/AddAViewModal'
 import CCRow from './components/CCRow'
+import { ChartManagerProvider } from './components/ChartManager'
 import CustomEventsSubmenu from './components/CustomEventsSubmenu'
 import CustomMetrics from './components/CustomMetrics'
 import { ErrorChart } from './components/ErrorChart'
 import { ErrorDetails } from './components/ErrorDetails'
 import { Errors } from './components/Errors'
 import Filters from './components/Filters'
+import { FunnelChart } from './components/FunnelChart'
 import FunnelsList from './components/FunnelsList'
 const InteractiveMap = lazy(() => import('./components/InteractiveMap'))
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
@@ -170,12 +171,14 @@ import NoErrorDetails from './components/NoErrorDetails'
 import NoEvents from './components/NoEvents'
 import NoSessionDetails from './components/NoSessionDetails'
 import { Pageflow } from './components/Pageflow'
+import { PerformanceChart } from './components/PerformanceChart'
 import RefRow from './components/RefRow'
 import SearchFilters, { getFiltersUrlParams } from './components/SearchFilters'
 import { SessionChart } from './components/SessionChart'
 import { SessionDetails } from './components/SessionDetails'
 import { Sessions } from './components/Sessions'
 import TBPeriodSelector from './components/TBPeriodSelector'
+import { TrafficChart } from './components/TrafficChart'
 import UserFlow from './components/UserFlow'
 import WaitingForAnError from './components/WaitingForAnError'
 import WaitingForAnEvent from './components/WaitingForAnEvent'
@@ -197,12 +200,8 @@ import {
   panelIconMapping,
   typeNameMapping,
   noRegionPeriods,
-  getSettings,
-  getColumns,
   CHART_METRICS_MAPPING,
   CHART_METRICS_MAPPING_PERF,
-  getSettingsPerf,
-  getSettingsFunnels,
   SHORTCUTS_TABS_LISTENERS,
   SHORTCUTS_TABS_MAP,
   SHORTCUTS_GENERAL_LISTENERS,
@@ -301,7 +300,7 @@ const ChartTypeSwitcher = ({
   )
 }
 
-const ViewProject = () => {
+const ViewProjectContent = () => {
   const { id, project, preferences, updatePreferences, extensions, mergeProject, allowedToManage, liveVisitors } =
     useCurrentProject()
   const projectPassword = useProjectPassword(id)
@@ -359,8 +358,7 @@ const ViewProject = () => {
 
   // @ts-expect-error
   const [chartData, setChartData] = useState<TrafficLogResponse['chart'] & { [key: string]: number[] }>({})
-  const [mainChart, setMainChart] = useState<Chart | null>(null)
-  const prevY2NeededRef = useRef<boolean>(false)
+  // prevY2NeededRef removed - no longer needed with new chart management
   const [dataLoading, setDataLoading] = useState(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
@@ -514,7 +512,7 @@ const ViewProject = () => {
   }, [searchParams])
   const prevActivePSIDRef = useRef<string | null>(activePSID)
   const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(null)
-  const [sessionChartInstance, setSessionChartInstance] = useState<Chart | null>(null)
+  const [sessionChartInstance, _setSessionChartInstance] = useState<any>(null)
 
   // errors
   const [errorsSkip, setErrorsSkip] = useState(0)
@@ -1289,47 +1287,6 @@ const ViewProject = () => {
       updatePreferences({
         customEvents: events,
       })
-
-      // If no actual series selected (only trendlines without base series), skip rendering
-      const prospectiveColumns = getColumns(chartData as any, activeChartMetrics, dataChartCompare as any)
-      if (prospectiveColumns.length <= 1 && _isEmpty(customEventsChartData)) {
-        try {
-          mainChart?.destroy()
-        } catch {
-          /* ignore */
-        }
-        setMainChart(null)
-        return
-      }
-
-      const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-      const bbSettings = getSettings(
-        chartData,
-        timeBucket,
-        activeChartMetrics,
-        applyRegions,
-        timeFormat,
-        rotateXAxis,
-        chartType,
-        events,
-        undefined,
-        onMainChartZoom,
-        shouldEnableZoom,
-      )
-      if (checkIfAllMetricsAreDisabled) {
-        try {
-          mainChart?.destroy()
-        } catch {
-          /* ignore destroy errors */
-        }
-        setMainChart(null)
-      } else {
-        setMainChart(() => {
-          const generate = billboard.generate(bbSettings)
-          generate.data.names(dataNames)
-          return generate
-        })
-      }
     } catch (reason) {
       console.error('[ERROR] Failed to load custom events:', reason)
     } finally {
@@ -1544,21 +1501,6 @@ const ViewProject = () => {
       if (_isEmpty(params)) {
         setIsPanelsDataEmpty(true)
       } else {
-        const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-        const bbSettings = getSettings(
-          chart as any,
-          newTimebucket,
-          activeChartMetrics,
-          applyRegions,
-          timeFormat,
-          rotateXAxis,
-          chartType,
-          customEventsChart,
-          // @ts-expect-error
-          dataCompare?.chart,
-          onMainChartZoom,
-          shouldEnableZoom,
-        )
         setChartData(chart as any)
 
         setPanelsData({
@@ -1568,23 +1510,6 @@ const ViewProject = () => {
           properties,
           meta,
         })
-
-        if (activeTab === PROJECT_TABS.traffic) {
-          if (checkIfAllMetricsAreDisabled) {
-            try {
-              mainChart?.destroy()
-            } catch {
-              /* ignore destroy errors */
-            }
-            setMainChart(null)
-          } else {
-            setMainChart(() => {
-              const generate = billboard.generate(bbSettings)
-              generate.data.names(dataNames)
-              return generate
-            })
-          }
-        }
 
         setIsPanelsDataEmpty(false)
       }
@@ -1974,31 +1899,12 @@ const ViewProject = () => {
         setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
-        const bbSettings = getSettingsPerf(
-          chartPerf,
-          timeBucket,
-          activeChartMetricsPerf,
-          rotateXAxis,
-          chartType,
-          timeFormat,
-          dataCompare?.chart,
-          onMainChartZoom,
-          shouldEnableZoom,
-        )
         setChartDataPerf(chartPerf)
 
         setPanelsDataPerf({
           types: _keys(dataPerf.params),
           data: dataPerf.params,
         })
-
-        if (activeTab === PROJECT_TABS.performance) {
-          setMainChart(() => {
-            const generate = billboard.generate(bbSettings)
-            generate.data.names(dataNamesPerf)
-            return generate
-          })
-        }
 
         setIsPanelsDataEmptyPerf(false)
       }
@@ -2040,24 +1946,11 @@ const ViewProject = () => {
 
       setFunnelAnalytics({ funnel, totalPageviews })
 
-      const bbSettings = getSettingsFunnels(funnel, totalPageviews, t)
-
       // Unhide the wrapper first, then mount the chart on the next tick
       setAnalyticsLoading(false)
       setDataLoading(false)
 
       await new Promise((resolve) => setTimeout(resolve, 1))
-
-      if (activeTab === PROJECT_TABS.funnels) {
-        setMainChart(() => {
-          const generate = billboard.generate(bbSettings)
-          generate.data.names({
-            dropoff: t('project.dropoff'),
-            events: t('project.visitors'),
-          })
-          return generate
-        })
-      }
     } catch (reason) {
       setAnalyticsLoading(false)
       setDataLoading(false)
@@ -2216,156 +2109,6 @@ const ViewProject = () => {
     loadErrors()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, errorOptions, dateRange, filters, id, period, projectPassword, timezone, authLoading, project])
-
-  useEffect(() => {
-    if (authLoading || !project) {
-      return
-    }
-
-    if (activeTab === PROJECT_TABS.traffic) {
-      if (_isEmpty(chartData)) {
-        return
-      }
-
-      if (isActiveCompare && _isEmpty(dataChartCompare)) {
-        return
-      }
-      if (checkIfAllMetricsAreDisabled) {
-        try {
-          mainChart?.destroy()
-        } catch {
-          /* ignore */
-        }
-        setMainChart(null)
-        return
-      }
-
-      // If no actual series selected (only 'x' or only trendlines without base series), hide chart
-      const prospectiveColumns = getColumns(chartData as any, activeChartMetrics, dataChartCompare as any)
-      if (prospectiveColumns.length <= 1 && _isEmpty(customEventsChartData)) {
-        try {
-          mainChart?.destroy()
-        } catch {
-          /* ignore */
-        }
-        setMainChart(null)
-        return
-      }
-
-      const y2Needed = !!activeChartMetrics.bounce || !!activeChartMetrics.sessionDuration
-      const shouldRegen = !mainChart || prevY2NeededRef.current !== y2Needed
-
-      if (shouldRegen) {
-        const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-        const bbSettings = getSettings(
-          chartData,
-          timeBucket,
-          activeChartMetrics,
-          applyRegions,
-          timeFormat,
-          rotateXAxis,
-          chartType,
-          customEventsChartData,
-          dataChartCompare,
-          onMainChartZoom,
-          shouldEnableZoom,
-        )
-
-        try {
-          mainChart?.destroy()
-        } catch {
-          /* ignore */
-        }
-        setMainChart(() => {
-          const generate = billboard.generate(bbSettings)
-          generate.data.names(dataNames)
-          return generate
-        })
-        prevY2NeededRef.current = y2Needed
-        return
-      }
-
-      // Update existing chart with new/removed series for smooth animation
-      try {
-        mainChart?.load({
-          columns: getColumns(chartData as any, activeChartMetrics, dataChartCompare as any),
-        })
-      } catch {
-        /* ignore */
-      }
-
-      const unloadIds: string[] = []
-      const hasCompare = !_isEmpty(dataChartCompare)
-
-      if (!activeChartMetrics.views) {
-        unloadIds.push('total')
-        if (hasCompare) unloadIds.push('totalCompare')
-      }
-      if (!activeChartMetrics.unique) {
-        unloadIds.push('unique')
-        if (hasCompare) unloadIds.push('uniqueCompare')
-      }
-      if (!activeChartMetrics.viewsPerUnique) {
-        unloadIds.push('viewsPerUnique')
-      }
-      if (!activeChartMetrics.trendlines) {
-        unloadIds.push('trendlineUnique', 'trendlineTotal')
-      }
-      if (!activeChartMetrics.bounce) {
-        unloadIds.push('bounce')
-      }
-      if (!activeChartMetrics.sessionDuration) {
-        unloadIds.push('sessionDuration')
-        if (hasCompare) unloadIds.push('sessionDurationCompare')
-      }
-
-      if (unloadIds.length && mainChart) {
-        try {
-          mainChart.unload({ ids: unloadIds })
-        } catch {
-          /* ignore */
-        }
-      }
-    }
-
-    if (activeTab === PROJECT_TABS.performance) {
-      if (_isEmpty(chartDataPerf)) {
-        return
-      }
-
-      if (isActiveCompare && _isEmpty(dataChartPerfCompare)) {
-        return
-      }
-
-      const bbSettings = getSettingsPerf(
-        chartDataPerf,
-        timeBucket,
-        activeChartMetricsPerf,
-        rotateXAxis,
-        chartType,
-        timeFormat,
-        dataChartPerfCompare,
-        onMainChartZoom,
-        shouldEnableZoom,
-      )
-
-      setMainChart(() => {
-        const generate = billboard.generate(bbSettings)
-        generate.data.names(dataNamesPerf)
-        return generate
-      })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    authLoading,
-    project,
-    activeChartMetrics,
-    chartData,
-    chartDataPerf,
-    activeChartMetricsPerf,
-    dataChartCompare,
-    checkIfAllMetricsAreDisabled,
-  ])
 
   useEffect(() => {
     let sdk: SwetrixSDK | null = null
@@ -2639,62 +2382,6 @@ const ViewProject = () => {
   const setChartTypeOnClick = (type: keyof typeof chartTypes) => {
     setItem('chartType', type)
     setChartType(type)
-
-    if (activeTab === PROJECT_TABS.traffic) {
-      if (checkIfAllMetricsAreDisabled) {
-        try {
-          mainChart?.destroy()
-        } catch {
-          /* ignore */
-        }
-        setMainChart(null)
-        return
-      }
-      const bbSettings = getSettings(
-        chartData,
-        timeBucket,
-        activeChartMetrics,
-        !_includes(noRegionPeriods, activePeriod?.period),
-        timeFormat,
-        rotateXAxis,
-        type,
-        customEventsChartData,
-        dataChartCompare,
-        onMainChartZoom,
-        shouldEnableZoom,
-      )
-
-      try {
-        mainChart?.destroy()
-      } catch {
-        /* ignore */
-      }
-      setMainChart(() => {
-        const generate = billboard.generate(bbSettings)
-        generate.data.names(dataNames)
-        return generate
-      })
-    }
-
-    if (activeTab === PROJECT_TABS.performance) {
-      const bbPerfSettings = getSettingsPerf(
-        chartDataPerf,
-        timeBucket,
-        activeChartMetricsPerf,
-        rotateXAxis,
-        type,
-        timeFormat,
-        dataChartPerfCompare,
-        onMainChartZoom,
-        shouldEnableZoom,
-      )
-
-      setMainChart(() => {
-        const generate = billboard.generate(bbPerfSettings)
-        generate.data.names(dataNamesPerf)
-        return generate
-      })
-    }
   }
 
   const resetDateRange = () => {
@@ -3531,7 +3218,6 @@ const ViewProject = () => {
                               chartType={chartType}
                               dataNames={dataNames}
                               onZoom={setZoomedTimeRange}
-                              onChartReady={setSessionChartInstance}
                             />
                             {zoomedTimeRange ? (
                               <button
@@ -3920,12 +3606,23 @@ const ViewProject = () => {
                                 : null}
                             </div>
                           ) : null}
-                          <div
-                            className={cx('mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible', {
-                              hidden: checkIfAllMetricsAreDisabled,
-                            })}
-                            id='dataChart'
-                          />
+                          {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData) ? (
+                            <TrafficChart
+                              chartData={chartData}
+                              timeBucket={timeBucket}
+                              activeChartMetrics={activeChartMetrics}
+                              applyRegions={!_includes(noRegionPeriods, activePeriod?.period)}
+                              timeFormat={timeFormat}
+                              rotateXAxis={rotateXAxis}
+                              chartType={chartType}
+                              customEventsChartData={customEventsChartData}
+                              dataChartCompare={dataChartCompare}
+                              onZoom={onMainChartZoom}
+                              enableZoom={shouldEnableZoom}
+                              dataNames={dataNames}
+                              className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible'
+                            />
+                          ) : null}
                         </div>
                         {!isPanelsDataEmpty ? <Filters tnMapping={tnMapping} /> : null}
                         <CustomMetrics
@@ -4236,12 +3933,21 @@ const ViewProject = () => {
                               activePeriodCompare={activePeriodCompare}
                             />
                           ) : null}
-                          <div
-                            className={cx('mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible', {
-                              hidden: checkIfAllMetricsAreDisabled,
-                            })}
-                            id='dataChart'
-                          />
+                          {!checkIfAllMetricsAreDisabled && !_isEmpty(chartDataPerf) ? (
+                            <PerformanceChart
+                              chart={chartDataPerf}
+                              timeBucket={timeBucket}
+                              activeChartMetrics={activeChartMetricsPerf}
+                              rotateXAxis={rotateXAxis}
+                              chartType={chartType}
+                              timeFormat={timeFormat}
+                              compareChart={dataChartPerfCompare}
+                              onZoom={onMainChartZoom}
+                              enableZoom={shouldEnableZoom}
+                              dataNames={dataNamesPerf}
+                              className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible'
+                            />
+                          ) : null}
                         </div>
                         {!isPanelsDataEmptyPerf ? <Filters tnMapping={tnMapping} /> : null}
                         <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
@@ -4446,7 +4152,14 @@ const ViewProject = () => {
                             </p>
                           </>
                         ) : null}
-                        <div className='mt-5 h-80 [&_svg]:!overflow-visible' id='funnelChart' />
+                        {funnelAnalytics?.funnel ? (
+                          <FunnelChart
+                            funnel={funnelAnalytics.funnel}
+                            totalPageviews={funnelAnalytics.totalPageviews}
+                            t={t}
+                            className='mt-5 h-80 [&_svg]:!overflow-visible'
+                          />
+                        ) : null}
                       </div>
                     ) : null}
                   </motion.div>
@@ -4586,6 +4299,14 @@ const ViewProject = () => {
         </ViewProjectContext.Provider>
       )}
     </ClientOnly>
+  )
+}
+
+const ViewProject = () => {
+  return (
+    <ChartManagerProvider>
+      <ViewProjectContent />
+    </ChartManagerProvider>
   )
 }
 
