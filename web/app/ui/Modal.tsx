@@ -133,7 +133,7 @@ const Modal = ({
                 <button
                   type='button'
                   className={cn(
-                    'inline-flex w-full justify-center rounded-md px-4 py-2 text-base font-medium text-white sm:ml-3 sm:w-auto sm:text-sm',
+                    'inline-flex w-full justify-center rounded-md px-4 py-2 text-base font-medium text-white transition-colors sm:ml-3 sm:w-auto sm:text-sm',
                     {
                       'bg-indigo-600': submitType === 'regular',
                       'bg-red-600': submitType === 'danger',
@@ -151,7 +151,7 @@ const Modal = ({
               {closeText ? (
                 <button
                   type='button'
-                  className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
+                  className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
