@@ -12,7 +12,7 @@ import { ProjectModule } from '../project/project.module'
     AppLoggerModule,
     MailerModule,
     forwardRef(() => AuthModule),
-    ProjectModule,
+    forwardRef(() => ProjectModule),
   ],
   providers: [UserService],
   exports: [UserService],
