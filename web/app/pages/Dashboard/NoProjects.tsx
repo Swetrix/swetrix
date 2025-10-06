@@ -33,7 +33,7 @@ export const NoProjects = ({ onClick, activeTab, search }: NoProjectsProps) => {
         <FolderInputIcon className='size-7 text-gray-700 dark:text-gray-200' strokeWidth={1.5} />
       </div>
       <h3 className='text-xl font-medium tracking-tight'>{t('dashboard.noProjects')}</h3>
-      <p className='mx-auto mt-2 max-w-md text-sm text-gray-600 dark:text-gray-300'>{t('dashboard.createProject')}</p>
+      <p className='mx-auto mt-2 max-w-md text-sm text-gray-800 dark:text-gray-200'>{t('dashboard.createProject')}</p>
       <div className='mt-6'>
         <Link
           to={routes.new_project}
