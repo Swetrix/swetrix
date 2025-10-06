@@ -172,21 +172,19 @@ export class UserController {
 
     try {
       if (!_isEmpty(projects)) {
-        const pids = _join(
-          _map(projects, el => `'${el.id}'`),
-          ',',
-        )
+        const pidArray = projects.map(el => el.id)
         const queries = [
-          `ALTER TABLE analytics DELETE WHERE pid IN (${pids})`,
-          `ALTER TABLE customEV DELETE WHERE pid IN (${pids})`,
-          `ALTER TABLE performance DELETE WHERE pid IN (${pids})`,
-          `ALTER TABLE errors DELETE WHERE pid IN (${pids})`,
-          `ALTER TABLE error_statuses DELETE WHERE pid IN (${pids})`,
+          'ALTER TABLE analytics DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+          'ALTER TABLE customEV DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+          'ALTER TABLE performance DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+          'ALTER TABLE errors DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+          'ALTER TABLE error_statuses DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
         ]
         await deleteProjectsByUserIdClickhouse(id)
         const promises = _map(queries, async query =>
           clickhouse.command({
             query,
+            query_params: { pids: pidArray },
           }),
         )
         await Promise.all(promises)
