@@ -23,6 +23,10 @@ So if you're self-hosting on subdomains, you might run swetrix.mydomain.com prox
 This is the most common issue users encounter when self-hosting Swetrix Community Edition, so please make sure to set it correctly.
 :::
 
+:::tip
+The `API_URL` must be publicly reachable from your users' browsers. Do not set it to a Docker network hostname like `http://swetrix-api:8080` or `http://swetrix-api:5005`. Use a public domain or IP that resolves from the internet, for example `https://api.example.com`.
+:::
+
 ## Backend (swetrix-api image)
 
 ### Basic configuration
