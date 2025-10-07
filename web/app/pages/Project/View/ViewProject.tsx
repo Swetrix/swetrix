@@ -513,6 +513,8 @@ const ViewProjectContent = () => {
   const prevActivePSIDRef = useRef<string | null>(activePSID)
   const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(null)
   const [sessionChartInstance, _setSessionChartInstance] = useState<any>(null)
+  const sessionsRequestIdRef = useRef(0)
+  const skipNextSessionsAutoLoadRef = useRef(false)
 
   // errors
   const [errorsSkip, setErrorsSkip] = useState(0)
@@ -526,6 +528,8 @@ const ViewProjectContent = () => {
     return searchParams.get('eid')
   }, [searchParams])
   const prevActiveEIDRef = useRef<string | null>(activeEID)
+  const errorsRequestIdRef = useRef(0)
+  const skipNextErrorsAutoLoadRef = useRef(false)
 
   const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(undefined)
   const [funnelActionLoading, setFunnelActionLoading] = useState(false)
@@ -555,6 +559,8 @@ const ViewProjectContent = () => {
 
   // Reset sessions and errors when filters change so lists reload with correct pagination
   useEffect(() => {
+    sessionsRequestIdRef.current += 1
+    errorsRequestIdRef.current += 1
     setSessionsSkip(0)
     setSessions([])
     setSessionsLoading(null)
@@ -1170,6 +1176,7 @@ const ViewProjectContent = () => {
   }
 
   const resetErrors = () => {
+    errorsRequestIdRef.current += 1
     setErrorsSkip(0)
     setErrors([])
     setErrorsLoading(null)
@@ -1627,6 +1634,7 @@ const ViewProjectContent = () => {
       setActiveSession(null)
       // Coming back from a session detail to the list: reset pagination and reload first page
       if (prevActivePSIDRef.current) {
+        skipNextSessionsAutoLoadRef.current = true
         resetSessions()
         loadSessions(0)
       }
@@ -1644,6 +1652,7 @@ const ViewProjectContent = () => {
       setActiveError(null)
       // Coming back from an error detail to the list: reset pagination and reload first page
       if (prevActiveEIDRef.current) {
+        skipNextErrorsAutoLoadRef.current = true
         resetErrors()
         loadErrors(0, true)
       }
@@ -1661,6 +1670,7 @@ const ViewProjectContent = () => {
       return
     }
 
+    const requestId = sessionsRequestIdRef.current
     setSessionsLoading(true)
 
     try {
@@ -1680,24 +1690,28 @@ const ViewProjectContent = () => {
         dataSessions = await getSessions(id, period, filters, '', '', SESSIONS_TAKE, skip, timezone, projectPassword)
       }
 
-      setSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
-      setSessionsSkip((prev) => {
-        if (typeof forcedSkip === 'number') {
-          return SESSIONS_TAKE + forcedSkip
+      if (requestId === sessionsRequestIdRef.current) {
+        setSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
+        setSessionsSkip((prev) => {
+          if (typeof forcedSkip === 'number') {
+            return SESSIONS_TAKE + forcedSkip
+          }
+
+          return SESSIONS_TAKE + prev
+        })
+
+        if (dataSessions?.sessions?.length < SESSIONS_TAKE) {
+          setCanLoadMoreSessions(false)
+        } else {
+          setCanLoadMoreSessions(true)
         }
-
-        return SESSIONS_TAKE + prev
-      })
-
-      if (dataSessions?.sessions?.length < SESSIONS_TAKE) {
-        setCanLoadMoreSessions(false)
-      } else {
-        setCanLoadMoreSessions(true)
       }
     } catch (reason) {
       console.error('[ERROR](loadSessions) Loading sessions data failed:', reason)
     } finally {
-      setSessionsLoading(false)
+      if (requestId === sessionsRequestIdRef.current) {
+        setSessionsLoading(false)
+      }
     }
   }
 
@@ -1706,6 +1720,7 @@ const ViewProjectContent = () => {
       return
     }
 
+    const requestId = errorsRequestIdRef.current
     setErrorsLoading(true)
 
     try {
@@ -1748,29 +1763,33 @@ const ViewProjectContent = () => {
         )
       }
 
-      if (override) {
-        setErrors(dataErrors?.errors || [])
-      } else {
-        setErrors((prev) => [...prev, ...(dataErrors?.errors || [])])
-      }
-
-      setErrorsSkip((prev) => {
-        if (typeof forcedSkip === 'number') {
-          return ERRORS_TAKE + forcedSkip
+      if (requestId === errorsRequestIdRef.current) {
+        if (override) {
+          setErrors(dataErrors?.errors || [])
+        } else {
+          setErrors((prev) => [...prev, ...(dataErrors?.errors || [])])
         }
 
-        return ERRORS_TAKE + prev
-      })
+        setErrorsSkip((prev) => {
+          if (typeof forcedSkip === 'number') {
+            return ERRORS_TAKE + forcedSkip
+          }
 
-      if (dataErrors?.errors?.length < ERRORS_TAKE) {
-        setCanLoadMoreErrors(false)
-      } else {
-        setCanLoadMoreErrors(true)
+          return ERRORS_TAKE + prev
+        })
+
+        if (dataErrors?.errors?.length < ERRORS_TAKE) {
+          setCanLoadMoreErrors(false)
+        } else {
+          setCanLoadMoreErrors(true)
+        }
       }
     } catch (reason) {
       console.error('[ERROR](loadErrors) Loading errors data failed:', reason)
     } finally {
-      setErrorsLoading(false)
+      if (requestId === errorsRequestIdRef.current) {
+        setErrorsLoading(false)
+      }
     }
   }
 
@@ -2098,22 +2117,45 @@ const ViewProjectContent = () => {
   }, [activeFunnel, activeTab, authLoading, project, dateRange, period, timeBucket])
 
   useEffect(() => {
-    if (authLoading || activeTab !== PROJECT_TABS.sessions || authLoading || !project) {
+    if (authLoading || activeTab !== PROJECT_TABS.sessions || authLoading || !project || activePSID) {
+      return
+    }
+
+    if (skipNextSessionsAutoLoadRef.current) {
+      // We've explicitly loaded the first page already when closing a session detail
+      skipNextSessionsAutoLoadRef.current = false
       return
     }
 
     loadSessions()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, dateRange, filters, id, period, projectPassword, timezone, authLoading, project])
+  }, [activeTab, dateRange, filters, id, period, projectPassword, timezone, authLoading, project, activePSID])
 
   useEffect(() => {
-    if (authLoading || activeTab !== PROJECT_TABS.errors || authLoading || !project) {
+    if (authLoading || activeTab !== PROJECT_TABS.errors || authLoading || !project || activeEID) {
+      return
+    }
+
+    if (skipNextErrorsAutoLoadRef.current) {
+      skipNextErrorsAutoLoadRef.current = false
       return
     }
 
     loadErrors()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, errorOptions, dateRange, filters, id, period, projectPassword, timezone, authLoading, project])
+  }, [
+    activeTab,
+    errorOptions,
+    dateRange,
+    filters,
+    id,
+    period,
+    projectPassword,
+    timezone,
+    authLoading,
+    project,
+    activeEID,
+  ])
 
   useEffect(() => {
     let sdk: SwetrixSDK | null = null
@@ -2249,6 +2291,7 @@ const ViewProjectContent = () => {
   }, [t, language])
 
   const resetSessions = () => {
+    sessionsRequestIdRef.current += 1
     setSessionsSkip(0)
     setSessions([])
     setSessionsLoading(null)
