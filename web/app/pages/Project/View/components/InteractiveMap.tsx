@@ -12,6 +12,7 @@ import { ClientOnly } from 'remix-utils/client-only'
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import { useTheme } from '~/providers/ThemeProvider'
+import Flag from '~/ui/Flag'
 import Modal from '~/ui/Modal'
 import { getTimeFromSeconds, getStringFromTime, nFormatter } from '~/utils/generic'
 import { loadCountriesGeoData, loadRegionsGeoData } from '~/utils/geoData'
@@ -31,7 +32,6 @@ interface TooltipContent {
   code: string
   count: number
   percentage: number
-  perCapita?: number
 }
 
 interface TooltipPosition {
@@ -211,7 +211,6 @@ const InteractiveMapCore = ({
                   code: result.key || '',
                   count,
                   percentage,
-                  perCapita: 0,
                 })
               }
             }
@@ -258,6 +257,8 @@ const InteractiveMapCore = ({
     },
     [tooltipContent],
   )
+
+  console.log('tooltipContent:', tooltipContent)
 
   return (
     <div className='relative h-full w-full' onMouseMove={handleMouseMove}>
@@ -338,7 +339,8 @@ const InteractiveMapCore = ({
           }}
         >
           <div className='flex items-center gap-1 font-medium'>
-            <strong>{tooltipContent.name}</strong>
+            <Flag className='rounded-xs' country={tooltipContent.code} size={18} alt='' aria-hidden='true' />
+            <span>{tooltipContent.name}</span>
           </div>
           <div>
             <span className='font-bold text-blue-600 dark:text-blue-400'>
