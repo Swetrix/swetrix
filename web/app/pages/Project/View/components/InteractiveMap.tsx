@@ -1,5 +1,5 @@
 import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline'
-import { scalePow } from 'd3-scale'
+import { scalePow, scaleQuantize } from 'd3-scale'
 import { Feature, GeoJsonObject } from 'geojson'
 import { Layer } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -57,6 +57,9 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
 
   const isTrafficTab = activeTab === PROJECT_TABS.traffic
   const isErrorsTab = activeTab === PROJECT_TABS.errors
+  const isPerformanceTab = activeTab === PROJECT_TABS.performance
+
+  console.log('activeTab:', activeTab)
 
   useEffect(() => {
     const loadGeoData = async () => {
@@ -107,12 +110,41 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
     const dataToUse = mapView === 'countries' ? data : regionData
     const values = dataToUse?.map((d) => d.count) || [0]
     const maxValue = Math.max(...values)
+    const minValue = Math.min(...values)
 
+    // Errors: light red to deep red, higher == worse
+    if (isErrorsTab) {
+      return scalePow<string>()
+        .exponent(0.4)
+        .domain([0, maxValue])
+        .range(['hsla(0, 75%, 50%, 0.08)', 'hsla(0, 75%, 45%, 0.85)'])
+    }
+
+    // Performance: discrete, darker Tailwind palette with 80% opacity -> blue (fast) to warm (slow)
+    if (isPerformanceTab) {
+      if (minValue === maxValue) {
+        const singleColor = 'rgba(29, 78, 216, 0.8)' // blue-700 @ 80%
+        return () => singleColor
+      }
+      const perfColors = [
+        'rgba(29, 78, 216, 0.8)', // blue-700 @ 80%
+        'rgba(37, 99, 235, 0.8)', // blue-600 @ 80%
+        'rgba(59, 130, 246, 0.8)', // blue-500 @ 80%
+        'rgba(217, 119, 6, 0.8)', // amber-600 @ 80%
+        'rgba(234, 88, 12, 0.8)', // orange-600 @ 80%
+        'rgba(220, 38, 38, 0.8)', // red-600 @ 80%
+        'rgba(185, 28, 28, 0.8)', // red-700 @ 80%
+        'rgba(153, 27, 27, 0.8)', // red-800 @ 80%
+      ]
+      return scaleQuantize<string>().domain([minValue, maxValue]).range(perfColors)
+    }
+
+    // Traffic (default): light to saturated blue with power easing
     return scalePow<string>()
       .exponent(0.4)
       .domain([0, maxValue])
       .range(['hsla(220, 70%, 50%, 0.05)', 'hsla(220, 70%, 50%, 0.8)'])
-  }, [data, regionData, mapView])
+  }, [data, regionData, mapView, isErrorsTab, isPerformanceTab])
 
   const findDataForFeature = useCallback(
     (feature: Feature | undefined) => {
