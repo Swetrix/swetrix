@@ -172,6 +172,7 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
         fillColor: color,
         fillOpacity: hoveredId === featureId ? 0.9 : metricValue > 0 ? 0.7 : 0.3,
         opacity: 1,
+        smoothFactor: 0,
       }
     },
     [mapView, colorScale, hoveredId, findDataForFeature],
