@@ -247,6 +247,7 @@ if (fs.existsSync(PRODUCTION_GEOIP_DB_PATH)) {
 interface IPGeoDetails {
   country: string | null
   region: string | null
+  regionCode: string | null
   city: string | null
 }
 
@@ -254,19 +255,19 @@ export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   // Stage 1: Using IP address based geo lookup
   const data = lookup.get(ip)
 
-  console.log('data:', JSON.stringify(data, null, 2))
-
   const country = data?.country?.iso_code || null
   // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
   const city = data?.city?.names?.en || null
   // TODO: Store ISO code, not region name
   const region = data?.subdivisions?.[0]?.names?.en || null
+  const regionCode = data?.subdivisions?.[0]?.iso_code || null
 
   if (country) {
     return {
       country,
       city,
       region,
+      regionCode,
     }
   }
 
@@ -277,6 +278,7 @@ export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
     country: tzCountry,
     city: null,
     region: null,
+    regionCode: null,
   }
 }
 
