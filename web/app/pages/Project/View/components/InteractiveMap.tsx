@@ -1,3 +1,4 @@
+import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline'
 import { scalePow } from 'd3-scale'
 import { Feature, GeoJsonObject } from 'geojson'
 import { Layer } from 'leaflet'
@@ -11,6 +12,7 @@ import { ClientOnly } from 'remix-utils/client-only'
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import { useTheme } from '~/providers/ThemeProvider'
+import Modal from '~/ui/Modal'
 import { getTimeFromSeconds, getStringFromTime, nFormatter } from '~/utils/generic'
 import { loadCountriesGeoData, loadRegionsGeoData } from '~/utils/geoData'
 
@@ -21,6 +23,7 @@ interface InteractiveMapProps {
   regionData?: Entry[]
   onClickCountry: (country: string) => void
   total: number
+  showFullscreenToggle?: boolean
 }
 
 interface TooltipContent {
@@ -36,7 +39,13 @@ interface TooltipPosition {
   y: number
 }
 
-const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: InteractiveMapProps) => {
+const InteractiveMapCore = ({
+  data,
+  regionData,
+  onClickCountry,
+  total,
+  showFullscreenToggle = true,
+}: InteractiveMapProps) => {
   const { t } = useTranslation('common')
   const { activeTab, dataLoading } = useViewProjectContext()
   const { theme } = useTheme()
@@ -48,6 +57,7 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
   const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({ x: 0, y: 0 })
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false)
 
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -251,6 +261,19 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
 
   return (
     <div className='relative h-full w-full' onMouseMove={handleMouseMove}>
+      {showFullscreenToggle ? (
+        <div className='absolute top-0.5 right-0.5 z-20'>
+          <button
+            type='button'
+            onClick={() => setIsFullscreenOpen(true)}
+            aria-label='Fullscreen'
+            title='Fullscreen'
+            className='rounded-md p-1.5 text-gray-800 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+          >
+            <ArrowsPointingOutIcon className='size-5' />
+          </button>
+        </div>
+      ) : null}
       {dataLoading ? (
         <div className='absolute inset-0 z-10 flex items-center justify-center bg-neutral-900/30 backdrop-blur-sm'>
           <div className='flex flex-col items-center gap-2'>
@@ -330,6 +353,40 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
           </div>
         </div>
       ) : null}
+
+      <Modal
+        isOpened={isFullscreenOpen}
+        onClose={() => setIsFullscreenOpen(false)}
+        closeText={t('common.close')}
+        size='large'
+        overflowVisible
+        message={
+          <div className='h-[70vh] w-full'>
+            <ClientOnly
+              fallback={
+                <div className='relative flex h-full w-full items-center justify-center'>
+                  <div className='flex flex-col items-center gap-2'>
+                    <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
+                    <span className='text-sm text-neutral-600 dark:text-neutral-300'>
+                      {t('project.loadingMapData')}
+                    </span>
+                  </div>
+                </div>
+              }
+            >
+              {() => (
+                <InteractiveMapCore
+                  data={data}
+                  regionData={regionData}
+                  onClickCountry={onClickCountry}
+                  total={total}
+                  showFullscreenToggle={false}
+                />
+              )}
+            </ClientOnly>
+          </div>
+        }
+      />
     </div>
   )
 }
