@@ -10,6 +10,7 @@ import { ClientOnly } from 'remix-utils/client-only'
 
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
+import { useTheme } from '~/providers/ThemeProvider'
 import { getTimeFromSeconds, getStringFromTime, nFormatter } from '~/utils/generic'
 import { loadCountriesGeoData, loadRegionsGeoData } from '~/utils/geoData'
 
@@ -38,6 +39,7 @@ interface TooltipPosition {
 const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: InteractiveMapProps) => {
   const { t } = useTranslation('common')
   const { activeTab, dataLoading } = useViewProjectContext()
+  const { theme } = useTheme()
 
   const [countriesGeoData, setCountriesGeoData] = useState<GeoJsonObject | null>(null)
   const [regionsGeoData, setRegionsGeoData] = useState<GeoJsonObject | null>(null)
@@ -150,8 +152,13 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
 
       const isHovered = hoveredId === featureId
 
+      // slate-700 / slate-300
+      const borderBaseColour = theme === 'dark' ? '#475569' : '#cbd5e1'
+      // blue-700 / blue-400
+      const borderHoverColour = theme === 'dark' ? '#1d4ed8' : '#60a5fa'
+
       return {
-        color: isHovered ? '#60a5fa' : mapView === 'regions' ? '#666666' : '#ffffff',
+        color: isHovered ? borderHoverColour : borderBaseColour,
         weight: isHovered ? 1.5 : mapView === 'regions' ? 0.8 : 0.5,
         fill: true,
         fillColor: color,
@@ -162,7 +169,7 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
         className: 'transition-all duration-200 ease-out',
       }
     },
-    [mapView, colorScale, hoveredId, findDataForFeature],
+    [mapView, colorScale, hoveredId, findDataForFeature, theme],
   )
 
   const handleEachFeature = useCallback(
