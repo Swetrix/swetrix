@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { GeoJSON, MapContainer, useMapEvent } from 'react-leaflet'
 import { ClientOnly } from 'remix-utils/client-only'
 
-import { PROJECT_TABS } from '~/lib/constants'
+import { isSelfhosted, PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
@@ -67,7 +67,10 @@ const InteractiveMapCore = ({
   useEffect(() => {
     const loadGeoData = async () => {
       try {
-        const [countries, regions] = await Promise.all([loadCountriesGeoData(), loadRegionsGeoData()])
+        const [countries, regions] = await Promise.all([
+          loadCountriesGeoData(),
+          isSelfhosted ? Promise.resolve(null) : loadRegionsGeoData(),
+        ])
         setCountriesGeoData(countries)
         setRegionsGeoData(regions)
         setFilteredRegionsGeoData(regions)
@@ -236,6 +239,8 @@ const InteractiveMapCore = ({
 
   const MapEventHandler = () => {
     const map = useMapEvent('zoomend', () => {
+      if (isSelfhosted) return
+
       const currentZoom = map.getZoom()
       const newMapView = currentZoom >= 4 ? 'regions' : 'countries'
       if (newMapView !== mapView) {
@@ -257,8 +262,6 @@ const InteractiveMapCore = ({
     },
     [tooltipContent],
   )
-
-  console.log('tooltipContent:', tooltipContent)
 
   return (
     <div className='relative h-full w-full' onMouseMove={handleMouseMove}>
