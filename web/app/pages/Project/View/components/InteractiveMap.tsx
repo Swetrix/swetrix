@@ -80,11 +80,17 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
     if (!currentData) return lookup
 
     currentData.forEach((item) => {
-      const key = mapView === 'countries' ? item.cc || item.name : item.name
-      if (key) {
-        lookup.set(key.toLowerCase(), item)
-        // For regions, only add exact name matches to avoid conflicts
-        // Don't create word-based lookups that can cause multiple regions to match the same data
+      if (mapView === 'countries') {
+        const key = item.cc || item.name
+        if (key) {
+          lookup.set(key.toLowerCase(), item)
+        }
+      } else {
+        // Regions: use ISO-based key "CC-RGC" (e.g., UA-05, GB-ENG)
+        if (item.cc && item.rgc) {
+          const isoKey = `${item.cc}-${item.rgc}`.toLowerCase()
+          lookup.set(isoKey, item)
+        }
       }
     })
 
@@ -116,28 +122,11 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
         const found = dataLookup.get(props.iso_a2?.toLowerCase() || '')
         if (found) return { data: found, key: found.cc || found.name }
       } else {
-        const { name } = props
-        if (name) {
-          const found = dataLookup.get(name.toLowerCase() || '')
-          if (found) return { data: found, key: found.name }
-
-          // For regions, also try some common name variations but avoid fuzzy matching
-          // TODO: Replace is with ISO code lookup later
-          const variations = [
-            name.toLowerCase().trim(),
-            name.toLowerCase().replace(/\s+/g, ''),
-            name
-              .toLowerCase()
-              .replace(/oblast|province|region|state/g, '')
-              .trim(),
-          ]
-
-          for (const variation of variations) {
-            if (variation && variation.length > 1) {
-              const found = dataLookup.get(variation)
-              if (found) return { data: found, key: found.name }
-            }
-          }
+        // Regions: match strictly by ISO code from GeoJSON
+        const iso = (props as any)?.iso_3166_2 as string | undefined
+        if (iso) {
+          const found = dataLookup.get(iso.toLowerCase())
+          if (found) return { data: found, key: found.cc || found.name }
         }
       }
 
