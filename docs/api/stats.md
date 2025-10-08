@@ -133,11 +133,13 @@ curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7
       {
         "name": "Kyiv Oblast'",
         "cc": "UA",
+        "rgc": "30",
         "count": 3
       },
       {
         "name": "Prague",
         "cc": "CZ",
+        "rgc": "10",
         "count": 1
       }
     ],
