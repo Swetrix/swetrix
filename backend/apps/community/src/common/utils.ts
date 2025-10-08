@@ -948,12 +948,12 @@ const dummyLookup = () => ({
 const DEVELOPMENT_GEOIP_DB_PATH = path.join(
   __dirname,
   '../../../..',
-  'dbip-city-lite.mmdb',
+  'ip-geolocation-db.mmdb',
 )
 const PRODUCTION_GEOIP_DB_PATH = path.join(
   __dirname,
   '../..',
-  'dbip-city-lite.mmdb',
+  'ip-geolocation-db.mmdb',
 )
 
 let lookup: Reader<CityResponse> = {

@@ -223,12 +223,12 @@ const dummyLookup = () => ({
 const DEVELOPMENT_GEOIP_DB_PATH = path.join(
   __dirname,
   '../../../..',
-  'dbip-city-lite.mmdb',
+  'ip-geolocation-db.mmdb',
 )
 const PRODUCTION_GEOIP_DB_PATH = path.join(
   __dirname,
   '../..',
-  'dbip-city-lite.mmdb',
+  'ip-geolocation-db.mmdb',
 )
 
 let lookup: Reader<CityResponse> = {
@@ -253,6 +253,8 @@ interface IPGeoDetails {
 export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   // Stage 1: Using IP address based geo lookup
   const data = lookup.get(ip)
+
+  console.log('data:', JSON.stringify(data, null, 2))
 
   const country = data?.country?.iso_code || null
   // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
