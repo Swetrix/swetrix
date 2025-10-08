@@ -249,7 +249,7 @@ const generateParamsQuery = (
 ): string => {
   let columns = [`${col} as name`]
 
-  // For regions and cities we'll return an array of objects, that will also include the country code
+  // For regions and cities we'll return an array of objects, that will also include the country code and region code
   // We need the conutry code to display the flag next to the region/city name
   if (col === 'rg') {
     columns = [...columns, 'cc', 'rgc']
