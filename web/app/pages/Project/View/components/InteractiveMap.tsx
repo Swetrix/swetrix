@@ -154,14 +154,18 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
         color = 'rgba(180, 180, 180, 0.3)'
       }
 
+      const isHovered = hoveredId === featureId
+
       return {
-        color: mapView === 'regions' ? '#666666' : '#ffffff',
-        weight: mapView === 'regions' ? 0.8 : 0.5,
+        color: isHovered ? '#60a5fa' : mapView === 'regions' ? '#666666' : '#ffffff',
+        weight: isHovered ? 1.5 : mapView === 'regions' ? 0.8 : 0.5,
         fill: true,
         fillColor: color,
-        fillOpacity: hoveredId === featureId ? 0.9 : metricValue > 0 ? 0.7 : 0.3,
+        // Keep fill opacity stable; highlight via stroke on hover instead
+        fillOpacity: metricValue > 0 ? 0.7 : 0.3,
         opacity: 1,
         smoothFactor: 0.1,
+        className: 'transition-all duration-200 ease-out',
       }
     },
     [mapView, colorScale, hoveredId, findDataForFeature],
@@ -275,7 +279,15 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
           <MapEventHandler />
 
           {countriesGeoData && mapView === 'countries' ? (
-            <GeoJSON data={countriesGeoData} style={handleStyle} onEachFeature={handleEachFeature} />
+            <GeoJSON
+              data={countriesGeoData}
+              style={handleStyle}
+              onEachFeature={handleEachFeature}
+              pathOptions={{
+                interactive: true,
+                bubblingMouseEvents: false,
+              }}
+            />
           ) : null}
 
           {filteredRegionsGeoData && mapView === 'regions' ? (
