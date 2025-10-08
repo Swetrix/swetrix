@@ -22,7 +22,7 @@ import { useViewProjectContext } from '../ViewProject'
 interface InteractiveMapProps {
   data: Entry[]
   regionData?: Entry[]
-  onClickCountry: (country: string) => void
+  onClick: (type: 'cc' | 'rg', key: string) => void
   total: number
   showFullscreenToggle?: boolean
 }
@@ -39,13 +39,7 @@ interface TooltipPosition {
   y: number
 }
 
-const InteractiveMapCore = ({
-  data,
-  regionData,
-  onClickCountry,
-  total,
-  showFullscreenToggle = true,
-}: InteractiveMapProps) => {
+const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenToggle = true }: InteractiveMapProps) => {
   const { t } = useTranslation('common')
   const { activeTab, dataLoading } = useViewProjectContext()
   const { theme } = useTheme()
@@ -228,13 +222,16 @@ const InteractiveMapCore = ({
         },
         click: () => {
           const result = findDataForFeature(feature)
-          if (result?.key) {
-            onClickCountry(result.key)
-          }
+
+          const key = result?.data?.name
+
+          if (!key) return
+
+          onClick(mapView === 'regions' ? 'rg' : 'cc', key)
         },
       })
     },
-    [findDataForFeature, total, onClickCountry, mapView],
+    [findDataForFeature, total, onClick, mapView],
   )
 
   const MapEventHandler = () => {
@@ -383,7 +380,7 @@ const InteractiveMapCore = ({
                 <InteractiveMapCore
                   data={data}
                   regionData={regionData}
-                  onClickCountry={onClickCountry}
+                  onClick={onClick}
                   total={total}
                   showFullscreenToggle={false}
                 />
@@ -396,7 +393,7 @@ const InteractiveMapCore = ({
   )
 }
 
-const InteractiveMap = ({ data, regionData, onClickCountry, total }: InteractiveMapProps) => {
+const InteractiveMap = ({ data, regionData, onClick, total }: InteractiveMapProps) => {
   const { t } = useTranslation('common')
 
   return (
@@ -410,7 +407,7 @@ const InteractiveMap = ({ data, regionData, onClickCountry, total }: Interactive
         </div>
       }
     >
-      {() => <InteractiveMapCore data={data} regionData={regionData} onClickCountry={onClickCountry} total={total} />}
+      {() => <InteractiveMapCore data={data} regionData={regionData} onClick={onClick} total={total} />}
     </ClientOnly>
   )
 }

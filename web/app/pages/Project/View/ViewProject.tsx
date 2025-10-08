@@ -3425,8 +3425,8 @@ const ViewProjectContent = () => {
                                                     data={countryData}
                                                     regionData={regionData}
                                                     total={total}
-                                                    onClickCountry={(key) => {
-                                                      const link = getFilterLink('cc', key)
+                                                    onClick={(type, key) => {
+                                                      const link = getFilterLink(type, key)
                                                       navigate(link)
                                                     }}
                                                   />
@@ -3759,8 +3759,8 @@ const ViewProjectContent = () => {
                                                     data={countryData}
                                                     regionData={regionData}
                                                     total={total}
-                                                    onClickCountry={(key) => {
-                                                      const link = getFilterLink('cc', key)
+                                                    onClick={(type, key) => {
+                                                      const link = getFilterLink(type, key)
                                                       navigate(link)
                                                     }}
                                                   />
@@ -4064,8 +4064,8 @@ const ViewProjectContent = () => {
                                                     data={countryData}
                                                     regionData={regionData}
                                                     total={total}
-                                                    onClickCountry={(key) => {
-                                                      const link = getFilterLink('cc', key)
+                                                    onClick={(type, key) => {
+                                                      const link = getFilterLink(type, key)
                                                       navigate(link)
                                                     }}
                                                   />
