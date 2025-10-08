@@ -426,7 +426,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                     )
                   })}
 
-                  {showDBIPMessage ? (
+                  {showDBIPMessage && isSelfhosted ? (
                     <li>
                       <a
                         className='underline-animate text-base text-white'
