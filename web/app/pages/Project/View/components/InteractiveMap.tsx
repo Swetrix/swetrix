@@ -157,7 +157,6 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
         const found = dataLookup.get(props.iso_a2?.toLowerCase() || '')
         if (found) return { data: found, key: found.cc || found.name }
       } else {
-        // Regions: match strictly by ISO code from GeoJSON
         const iso = (props as any)?.iso_3166_2 as string | undefined
         if (iso) {
           const found = dataLookup.get(iso.toLowerCase())
