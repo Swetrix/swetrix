@@ -918,6 +918,7 @@ export const BROWSER_LOGO_MAP = {
   Chromium: '/assets/browsers/chromium_48x48.png',
   'Chrome Headless': '/assets/browsers/chromium_48x48.png',
   Vivaldi: '/assets/browsers/vivaldi_48x48.png',
+  Whale: '/assets/browsers/whale_48x48.png',
   Puffin: '/assets/browsers/puffin_48x48.png',
   'Opera Mini': '/assets/browsers/opera-mini_48x48.png',
   Mozilla: '/assets/browsers/firefox_48x48.png',
