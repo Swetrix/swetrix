@@ -1,4 +1,3 @@
-/* eslint-disable */
 const https = require('https')
 const fs = require('fs')
 const zlib = require('zlib')
@@ -14,8 +13,8 @@ function getDownloadLink(date) {
 // Update the DOWNLOAD_LINK to use the helper function
 const DOWNLOAD_LINK = getDownloadLink(new Date())
 
-const DESTINATION_FILE = 'dbip-city-lite.mmdb'
-const ORIGINAL_FILE = 'dbip-city-lite.mmdb.gz'
+const DESTINATION_FILE = 'ip-geolocation-db.mmdb'
+const ORIGINAL_FILE = 'ip-geolocation-db.mmdb.gz'
 const DESTINATION_FOLDER = path.join(__dirname, '../')
 const GEOIP_DB_PATH = path.join(DESTINATION_FOLDER, ORIGINAL_FILE)
 const UNZIPPED_PATH = path.join(DESTINATION_FOLDER, DESTINATION_FILE)

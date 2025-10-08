@@ -948,12 +948,12 @@ const dummyLookup = () => ({
 const DEVELOPMENT_GEOIP_DB_PATH = path.join(
   __dirname,
   '../../../..',
-  'dbip-city-lite.mmdb',
+  'ip-geolocation-db.mmdb',
 )
 const PRODUCTION_GEOIP_DB_PATH = path.join(
   __dirname,
   '../..',
-  'dbip-city-lite.mmdb',
+  'ip-geolocation-db.mmdb',
 )
 
 let lookup: Reader<CityResponse> = {
@@ -976,6 +976,7 @@ interface IPGeoDetails {
   country: string | null
   region: string | null
   city: string | null
+  regionCode: string | null
 }
 
 const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
@@ -986,12 +987,14 @@ const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
   const city = data?.city?.names?.en || null
   const region = data?.subdivisions?.[0]?.names?.en || null
+  const regionCode = data?.subdivisions?.[0]?.iso_code || null
 
   if (country) {
     return {
       country,
       city,
       region,
+      regionCode,
     }
   }
 
@@ -1002,6 +1005,7 @@ const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
     country: tzCountry,
     city: null,
     region: null,
+    regionCode: null,
   }
 }
 

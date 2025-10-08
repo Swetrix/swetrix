@@ -1089,7 +1089,7 @@ export class AnalyticsController {
 
     await this.analyticsService.processInteractionSD(psid, errorDTO.pid)
 
-    const { city, region, country } = getGeoDetails(ip, errorDTO.tz)
+    const { city, region, regionCode, country } = getGeoDetails(ip, errorDTO.tz)
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1111,6 +1111,7 @@ export class AnalyticsController {
       errorDTO.lc,
       country,
       region,
+      regionCode,
       city,
       name,
       message,
@@ -1195,7 +1196,10 @@ export class AnalyticsController {
       }
     }
 
-    const { city, region, country } = getGeoDetails(ip, eventsDTO.tz)
+    const { city, region, regionCode, country } = getGeoDetails(
+      ip,
+      eventsDTO.tz,
+    )
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1226,6 +1230,7 @@ export class AnalyticsController {
       eventsDTO.co,
       country,
       region,
+      regionCode,
       city,
       eventsDTO.meta,
     )
@@ -1313,7 +1318,7 @@ export class AnalyticsController {
       )
     }
 
-    const { city, region, country } = getGeoDetails(ip, logDTO.tz)
+    const { city, region, regionCode, country } = getGeoDetails(ip, logDTO.tz)
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1337,6 +1342,7 @@ export class AnalyticsController {
       logDTO.co,
       country,
       region,
+      regionCode,
       city,
       logDTO.meta,
     )
@@ -1364,6 +1370,7 @@ export class AnalyticsController {
         browserVersion,
         country,
         region,
+        regionCode,
         city,
         dns,
         tls,
@@ -1437,7 +1444,7 @@ export class AnalyticsController {
 
     await this.analyticsService.processInteractionSD(psid, logDTO.pid)
 
-    const { city, region, country } = getGeoDetails(ip)
+    const { city, region, regionCode, country } = getGeoDetails(ip)
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1461,6 +1468,7 @@ export class AnalyticsController {
       null,
       country,
       region,
+      regionCode,
       city,
       null,
     )

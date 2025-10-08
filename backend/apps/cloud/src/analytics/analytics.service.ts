@@ -257,9 +257,11 @@ const generateParamsQuery = (
 ): string => {
   let columns = [`${col} as name`]
 
-  // For regions and cities we'll return an array of objects, that will also include the country code
+  // For regions and cities we'll return an array of objects, that will also include the country code and region code
   // We need the conutry code to display the flag next to the region/city name
-  if (col === 'rg' || col === 'ct') {
+  if (col === 'rg') {
+    columns = [...columns, 'cc', 'rgc']
+  } else if (col === 'ct') {
     columns = [...columns, 'cc']
   }
 
@@ -1998,11 +2000,11 @@ export class AnalyticsService {
     })
 
     const EXTRA_FIELDS = {
-      rg: 'cc',
-      ct: 'cc',
-      brv: 'br',
-      osv: 'os',
-    }
+      rg: ['cc', 'rgc'],
+      ct: ['cc'],
+      brv: ['br'],
+      osv: ['os'],
+    } as const
 
     const query = `
       WITH ${withClauses.join(',\n')}
@@ -2010,11 +2012,21 @@ export class AnalyticsService {
         column_name,
         name,
         count,
-        extra_field
+        extra_fields
       FROM (
         ${columns
           .map(col => {
-            const extraField = `${EXTRA_FIELDS[col] || 'NULL'} as extra_field`
+            let extraField = `CAST([] AS Array(Nullable(String))) as extra_fields`
+
+            if (col === 'rg') {
+              extraField = `CAST([CAST(cc AS Nullable(String)), CAST(rgc AS Nullable(String))] AS Array(Nullable(String))) as extra_fields`
+            } else if (col === 'ct') {
+              extraField = `CAST([CAST(cc AS Nullable(String))] AS Array(Nullable(String))) as extra_fields`
+            } else if (col === 'brv') {
+              extraField = `CAST([CAST(br AS Nullable(String))] AS Array(Nullable(String))) as extra_fields`
+            } else if (col === 'osv') {
+              extraField = `CAST([CAST(os AS Nullable(String))] AS Array(Nullable(String))) as extra_fields`
+            }
 
             return `
               SELECT 
@@ -2044,12 +2056,25 @@ export class AnalyticsService {
     for (let i = 0; i < length; ++i) {
       const row = data[i]
 
+      const extras: Record<string, string | null> = {}
+      const extraKeys =
+        EXTRA_FIELDS[row.column_name as keyof typeof EXTRA_FIELDS]
+      const extraValues = row.extra_fields as (string | null)[] | undefined
+
+      if (extraKeys && extraValues && extraValues.length > 0) {
+        for (let j = 0; j < extraKeys.length; j++) {
+          const key = extraKeys[j]
+          const value = extraValues[j]
+          if (key && typeof value !== 'undefined') {
+            extras[key] = value
+          }
+        }
+      }
+
       params[row.column_name].push({
         name: row.name,
         count: row.count,
-        ...(row.extra_field
-          ? { [EXTRA_FIELDS[row.column_name]]: row.extra_field }
-          : {}),
+        ...extras,
       })
     }
 

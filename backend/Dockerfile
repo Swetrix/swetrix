@@ -5,7 +5,7 @@ COPY package*.json .
 RUN npm install --force
 COPY . .
 RUN npm run deploy:community
-RUN node ./meta/dbip-sync.js
+RUN node ./meta/dbip-free-sync.js
 
 #Stage 2: Runtime
 FROM node:lts-alpine as run
@@ -50,7 +50,7 @@ WORKDIR /app
 # Copy files (updated to remove user:group ownership since we're not creating them)
 COPY --from=build /build/package*.json ./
 COPY --from=build /build/dist/ ./dist/
-COPY --from=build /build/dbip-city-lite.mmdb ./dbip-city-lite.mmdb
+COPY --from=build /build/ip-geolocation-db.mmdb ./ip-geolocation-db.mmdb
 COPY --from=build /build/migrations ./migrations
 COPY --from=build /build/node_modules/ ./node_modules/
 

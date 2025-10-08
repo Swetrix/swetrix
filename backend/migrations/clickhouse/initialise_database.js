@@ -25,6 +25,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     co Nullable(String),
     cc Nullable(FixedString(2)),
     rg LowCardinality(Nullable(String)),
+    rgc LowCardinality(Nullable(String)),
     ct Nullable(String),
     meta Nested
     (
@@ -69,6 +70,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     co Nullable(String),
     cc Nullable(FixedString(2)),
     rg LowCardinality(Nullable(String)),
+    rgc LowCardinality(Nullable(String)),
     ct Nullable(String),
     meta Nested
     (
@@ -92,6 +94,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     brv Nullable(String),
     cc Nullable(FixedString(2)),
     rg LowCardinality(Nullable(String)),
+    rgc LowCardinality(Nullable(String)),
     ct Nullable(String),
     dns Nullable(UInt32),
     tls Nullable(UInt32),
@@ -123,6 +126,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     lc LowCardinality(Nullable(String)),
     cc LowCardinality(Nullable(FixedString(2))),
     rg LowCardinality(Nullable(String)),
+    rgc LowCardinality(Nullable(String)),
     ct Nullable(String),
     name String,
     message Nullable(String),

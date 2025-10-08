@@ -1,3 +1,4 @@
+import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline'
 import { scalePow } from 'd3-scale'
 import { Feature, GeoJsonObject } from 'geojson'
 import { Layer } from 'leaflet'
@@ -5,14 +6,15 @@ import 'leaflet/dist/leaflet.css'
 import _round from 'lodash/round'
 import React, { memo, useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-// eslint-disable-next-line
 import { GeoJSON, MapContainer, useMapEvent } from 'react-leaflet'
 import { ClientOnly } from 'remix-utils/client-only'
 
-import { PROJECT_TABS } from '~/lib/constants'
+import { isSelfhosted, PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
+import { useTheme } from '~/providers/ThemeProvider'
+import Flag from '~/ui/Flag'
+import Modal from '~/ui/Modal'
 import { getTimeFromSeconds, getStringFromTime, nFormatter } from '~/utils/generic'
-// eslint-disable-next-line
 import { loadCountriesGeoData, loadRegionsGeoData } from '~/utils/geoData'
 
 import { useViewProjectContext } from '../ViewProject'
@@ -22,6 +24,7 @@ interface InteractiveMapProps {
   regionData?: Entry[]
   onClickCountry: (country: string) => void
   total: number
+  showFullscreenToggle?: boolean
 }
 
 interface TooltipContent {
@@ -29,7 +32,6 @@ interface TooltipContent {
   code: string
   count: number
   percentage: number
-  perCapita?: number
 }
 
 interface TooltipPosition {
@@ -37,18 +39,25 @@ interface TooltipPosition {
   y: number
 }
 
-const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: InteractiveMapProps) => {
+const InteractiveMapCore = ({
+  data,
+  regionData,
+  onClickCountry,
+  total,
+  showFullscreenToggle = true,
+}: InteractiveMapProps) => {
   const { t } = useTranslation('common')
   const { activeTab, dataLoading } = useViewProjectContext()
+  const { theme } = useTheme()
 
   const [countriesGeoData, setCountriesGeoData] = useState<GeoJsonObject | null>(null)
   const [regionsGeoData, setRegionsGeoData] = useState<GeoJsonObject | null>(null)
   const [filteredRegionsGeoData, setFilteredRegionsGeoData] = useState<GeoJsonObject | null>(null)
-  // eslint-disable-next-line
   const [mapView, setMapView] = useState<'countries' | 'regions'>('countries')
   const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({ x: 0, y: 0 })
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false)
 
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -60,7 +69,7 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
       try {
         const [countries, regions] = await Promise.all([
           loadCountriesGeoData(),
-          Promise.resolve(null), // loadRegionsGeoData()
+          isSelfhosted ? Promise.resolve(null) : loadRegionsGeoData(),
         ])
         setCountriesGeoData(countries)
         setRegionsGeoData(regions)
@@ -80,11 +89,17 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
     if (!currentData) return lookup
 
     currentData.forEach((item) => {
-      const key = mapView === 'countries' ? item.cc || item.name : item.name
-      if (key) {
-        lookup.set(key.toLowerCase(), item)
-        // For regions, only add exact name matches to avoid conflicts
-        // Don't create word-based lookups that can cause multiple regions to match the same data
+      if (mapView === 'countries') {
+        const key = item.cc || item.name
+        if (key) {
+          lookup.set(key.toLowerCase(), item)
+        }
+      } else {
+        // Regions: use ISO-based key "CC-RGC" (e.g., UA-05, GB-ENG)
+        if (item.cc && item.rgc) {
+          const isoKey = `${item.cc}-${item.rgc}`.toLowerCase()
+          lookup.set(isoKey, item)
+        }
       }
     })
 
@@ -116,28 +131,11 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
         const found = dataLookup.get(props.iso_a2?.toLowerCase() || '')
         if (found) return { data: found, key: found.cc || found.name }
       } else {
-        const { name } = props
-        if (name) {
-          const found = dataLookup.get(name.toLowerCase() || '')
-          if (found) return { data: found, key: found.name }
-
-          // For regions, also try some common name variations but avoid fuzzy matching
-          // TODO: Replace is with ISO code lookup later
-          const variations = [
-            name.toLowerCase().trim(),
-            name.toLowerCase().replace(/\s+/g, ''),
-            name
-              .toLowerCase()
-              .replace(/oblast|province|region|state/g, '')
-              .trim(),
-          ]
-
-          for (const variation of variations) {
-            if (variation && variation.length > 1) {
-              const found = dataLookup.get(variation)
-              if (found) return { data: found, key: found.name }
-            }
-          }
+        // Regions: match strictly by ISO code from GeoJSON
+        const iso = (props as any)?.iso_3166_2 as string | undefined
+        if (iso) {
+          const found = dataLookup.get(iso.toLowerCase())
+          if (found) return { data: found, key: found.cc || found.name }
         }
       }
 
@@ -165,17 +163,26 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
         color = 'rgba(180, 180, 180, 0.3)'
       }
 
+      const isHovered = hoveredId === featureId
+
+      // slate-700 / slate-300
+      const borderBaseColour = theme === 'dark' ? '#475569' : '#cbd5e1'
+      // blue-700 / blue-400
+      const borderHoverColour = theme === 'dark' ? '#1d4ed8' : '#60a5fa'
+
       return {
-        color: mapView === 'regions' ? '#666666' : '#ffffff',
-        weight: mapView === 'regions' ? 0.8 : 0.5,
+        color: isHovered ? borderHoverColour : borderBaseColour,
+        weight: isHovered ? 1.5 : mapView === 'regions' ? 0.8 : 0.5,
         fill: true,
         fillColor: color,
-        fillOpacity: hoveredId === featureId ? 0.9 : metricValue > 0 ? 0.7 : 0.3,
+        // Keep fill opacity stable; highlight via stroke on hover instead
+        fillOpacity: metricValue > 0 ? 0.7 : 0.3,
         opacity: 1,
         smoothFactor: 0.1,
+        className: 'transition-all duration-200 ease-out',
       }
     },
-    [mapView, colorScale, hoveredId, findDataForFeature],
+    [mapView, colorScale, hoveredId, findDataForFeature, theme],
   )
 
   const handleEachFeature = useCallback(
@@ -207,7 +214,6 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
                   code: result.key || '',
                   count,
                   percentage,
-                  perCapita: 0,
                 })
               }
             }
@@ -232,14 +238,16 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
   )
 
   const MapEventHandler = () => {
-    // const map = useMapEvent('zoomend', () => {
-    // const currentZoom = map.getZoom()
-    // const newMapView = currentZoom >= 4 ? 'regions' : 'countries'
-    // if (newMapView !== mapView) {
-    //   setMapView(newMapView)
-    //   setTooltipContent(null)
-    // }
-    // })
+    const map = useMapEvent('zoomend', () => {
+      if (isSelfhosted) return
+
+      const currentZoom = map.getZoom()
+      const newMapView = currentZoom >= 4 ? 'regions' : 'countries'
+      if (newMapView !== mapView) {
+        setMapView(newMapView)
+        setTooltipContent(null)
+      }
+    })
     return null
   }
 
@@ -257,6 +265,19 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
 
   return (
     <div className='relative h-full w-full' onMouseMove={handleMouseMove}>
+      {showFullscreenToggle ? (
+        <div className='absolute top-0.5 right-0.5 z-20'>
+          <button
+            type='button'
+            onClick={() => setIsFullscreenOpen(true)}
+            aria-label='Fullscreen'
+            title='Fullscreen'
+            className='rounded-md p-1.5 text-gray-800 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+          >
+            <ArrowsPointingOutIcon className='size-5' />
+          </button>
+        </div>
+      ) : null}
       {dataLoading ? (
         <div className='absolute inset-0 z-10 flex items-center justify-center bg-neutral-900/30 backdrop-blur-sm'>
           <div className='flex flex-col items-center gap-2'>
@@ -286,7 +307,15 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
           <MapEventHandler />
 
           {countriesGeoData && mapView === 'countries' ? (
-            <GeoJSON data={countriesGeoData} style={handleStyle} onEachFeature={handleEachFeature} />
+            <GeoJSON
+              data={countriesGeoData}
+              style={handleStyle}
+              onEachFeature={handleEachFeature}
+              pathOptions={{
+                interactive: true,
+                bubblingMouseEvents: false,
+              }}
+            />
           ) : null}
 
           {filteredRegionsGeoData && mapView === 'regions' ? (
@@ -313,7 +342,8 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
           }}
         >
           <div className='flex items-center gap-1 font-medium'>
-            <strong>{tooltipContent.name}</strong>
+            <Flag className='rounded-xs' country={tooltipContent.code} size={18} alt='' aria-hidden='true' />
+            <span>{tooltipContent.name}</span>
           </div>
           <div>
             <span className='font-bold text-blue-600 dark:text-blue-400'>
@@ -328,6 +358,40 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
           </div>
         </div>
       ) : null}
+
+      <Modal
+        isOpened={isFullscreenOpen}
+        onClose={() => setIsFullscreenOpen(false)}
+        closeText={t('common.close')}
+        size='large'
+        overflowVisible
+        message={
+          <div className='h-[70vh] w-full'>
+            <ClientOnly
+              fallback={
+                <div className='relative flex h-full w-full items-center justify-center'>
+                  <div className='flex flex-col items-center gap-2'>
+                    <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
+                    <span className='text-sm text-neutral-600 dark:text-neutral-300'>
+                      {t('project.loadingMapData')}
+                    </span>
+                  </div>
+                </div>
+              }
+            >
+              {() => (
+                <InteractiveMapCore
+                  data={data}
+                  regionData={regionData}
+                  onClickCountry={onClickCountry}
+                  total={total}
+                  showFullscreenToggle={false}
+                />
+              )}
+            </ClientOnly>
+          </div>
+        }
+      />
     </div>
   )
 }
