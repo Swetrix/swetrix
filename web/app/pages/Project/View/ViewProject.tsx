@@ -3426,7 +3426,7 @@ const ViewProjectContent = () => {
                                                     regionData={regionData}
                                                     total={total}
                                                     onClickCountry={(key) => {
-                                                      const link = getFilterLink(id, key)
+                                                      const link = getFilterLink('cc', key)
                                                       navigate(link)
                                                     }}
                                                   />
@@ -3760,7 +3760,7 @@ const ViewProjectContent = () => {
                                                     regionData={regionData}
                                                     total={total}
                                                     onClickCountry={(key) => {
-                                                      const link = getFilterLink(id, key)
+                                                      const link = getFilterLink('cc', key)
                                                       navigate(link)
                                                     }}
                                                   />
@@ -4065,7 +4065,7 @@ const ViewProjectContent = () => {
                                                     regionData={regionData}
                                                     total={total}
                                                     onClickCountry={(key) => {
-                                                      const link = getFilterLink(id, key)
+                                                      const link = getFilterLink('cc', key)
                                                       navigate(link)
                                                     }}
                                                   />
