@@ -59,8 +59,6 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
   const isErrorsTab = activeTab === PROJECT_TABS.errors
   const isPerformanceTab = activeTab === PROJECT_TABS.performance
 
-  console.log('activeTab:', activeTab)
-
   useEffect(() => {
     const loadGeoData = async () => {
       try {
