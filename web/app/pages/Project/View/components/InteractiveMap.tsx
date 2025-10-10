@@ -58,6 +58,7 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
   const isTrafficTab = activeTab === PROJECT_TABS.traffic
   const isErrorsTab = activeTab === PROJECT_TABS.errors
   const isPerformanceTab = activeTab === PROJECT_TABS.performance
+  const isGeoDataLoading = mapView === 'regions' ? !regionsGeoData : !countriesGeoData
 
   useEffect(() => {
     const loadGeoData = async () => {
@@ -304,7 +305,7 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
           </button>
         </div>
       ) : null}
-      {dataLoading ? (
+      {dataLoading || isGeoDataLoading ? (
         <div className='absolute inset-0 z-10 flex items-center justify-center bg-neutral-900/30 backdrop-blur-sm'>
           <div className='flex flex-col items-center gap-2'>
             <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
