@@ -1,5 +1,5 @@
 import { XIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
@@ -18,6 +18,8 @@ export default function ExitIntentPopup({ isStandalone = false }: ExitIntentPopu
   const { t } = useTranslation('common')
   const [isVisible, setIsVisible] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
+  const contextMenuActiveRef = useRef(false)
+  const contextMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (isStandalone) {
@@ -33,16 +35,36 @@ export default function ExitIntentPopup({ isStandalone = false }: ExitIntentPopu
     let hasTriggered = false
 
     const handleMouseLeave = (e: MouseEvent) => {
+      if (contextMenuActiveRef.current) {
+        return
+      }
       if (!e.relatedTarget && !hasTriggered && !isDismissed) {
         hasTriggered = true
         setIsVisible(true)
       }
     }
 
+    const handleContextMenu = () => {
+      contextMenuActiveRef.current = true
+      if (contextMenuTimeoutRef.current) {
+        clearTimeout(contextMenuTimeoutRef.current)
+      }
+      contextMenuTimeoutRef.current = setTimeout(() => {
+        contextMenuActiveRef.current = false
+        contextMenuTimeoutRef.current = null
+      }, 1500)
+    }
+
     document.addEventListener('mouseout', handleMouseLeave)
+    document.addEventListener('contextmenu', handleContextMenu)
 
     return () => {
       document.removeEventListener('mouseout', handleMouseLeave)
+      document.removeEventListener('contextmenu', handleContextMenu)
+      if (contextMenuTimeoutRef.current) {
+        clearTimeout(contextMenuTimeoutRef.current)
+        contextMenuTimeoutRef.current = null
+      }
     }
   }, [isStandalone, isDismissed])
 
