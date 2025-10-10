@@ -124,6 +124,19 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
     return lookup
   }, [data, regionData, mapView])
 
+  // Country-level lookup used for special-cases while viewing regions (e.g., TW)
+  const countryDataLookup = useMemo<Map<string, any>>(() => {
+    const lookup = new Map()
+    if (!data) return lookup
+    data.forEach((item) => {
+      const key = (item.cc || item.name)?.toLowerCase()
+      if (key) {
+        lookup.set(key, item)
+      }
+    })
+    return lookup
+  }, [data])
+
   const colorScale = useMemo(() => {
     if (mapView === 'countries' && !data) return () => '#eee'
     if (mapView === 'regions' && !regionData) return () => '#eee'
@@ -180,6 +193,16 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
       } else {
         const iso = (props as any)?.iso_3166_2 as string | undefined
         if (iso) {
+          // For Taiwan in regions view, use country-level data for TW
+          // Because IP geolocation provider does not provide ISO code for regions
+          const upperIso = iso.toUpperCase()
+          if (upperIso === 'TW') {
+            const twCountry = countryDataLookup.get('tw')
+            if (twCountry) {
+              return { data: twCountry, key: twCountry.cc || twCountry.name }
+            }
+          }
+
           const found = dataLookup.get(iso.toLowerCase())
           if (found) return { data: found, key: found.cc || found.name }
         }
@@ -187,7 +210,7 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
 
       return null
     },
-    [mapView, dataLookup],
+    [mapView, dataLookup, countryDataLookup],
   )
 
   const handleStyle = useCallback(
@@ -283,7 +306,13 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
 
           if (!key) return
 
-          onClick(mapView === 'regions' ? 'rg' : 'cc', key)
+          // For Taiwan, in regions view, emit a cc filter instead of rg
+          const props: any = feature.properties || {}
+          const iso = props?.iso_3166_2 as string | undefined
+          const isTaiwanRegion = !!(iso && iso.toUpperCase() === 'TW')
+          const clickType = mapView === 'regions' ? (isTaiwanRegion ? 'cc' : 'rg') : 'cc'
+
+          onClick(clickType, key)
         },
       })
     },
