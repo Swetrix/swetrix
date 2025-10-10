@@ -33,7 +33,8 @@ import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
 import { trackError } from '~/utils/analytics'
-import { nFormatter } from '~/utils/generic'
+import { nFormatter, getLocaleDisplayName } from '~/utils/generic'
+import countries from '~/utils/isoCountries'
 
 import { Customs, Filter, Properties } from './interfaces/traffic'
 import { useViewProjectContext } from './ViewProject'
@@ -886,7 +887,10 @@ const DetailsTable = ({
   activeTabId,
   closeDetails,
 }: DetailsTableProps) => {
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const { activeTab } = useViewProjectContext()
   const tnMapping = typeNameMapping(t)
   const parentRef = useRef<HTMLDivElement>(null)
@@ -901,11 +905,30 @@ const DetailsTable = ({
   const filteredData = useMemo(() => {
     if (!search) return sortedData
     const searchLower = search.toLowerCase()
+    const getSearchLabel = (entry: Entry): string => {
+      if (activeTabId === 'cc') {
+        const code = (entry as any)?.cc || entry?.name
+        try {
+          const countryName = code ? countries.getName(code, language) : ''
+          return (countryName || '').toLowerCase()
+        } catch {
+          return (entry?.name || '').toLowerCase()
+        }
+      }
+      if (activeTabId === 'lc') {
+        try {
+          return (getLocaleDisplayName(entry?.name, language) || entry?.name || '').toLowerCase()
+        } catch {
+          return (entry?.name || '').toLowerCase()
+        }
+      }
+      return (entry?.name || '').toLowerCase()
+    }
+
     return sortedData.filter((entry) => {
-      const label = entry?.name?.toLowerCase() || ''
-      return label.includes(searchLower)
+      return getSearchLabel(entry).includes(searchLower)
     })
-  }, [search, sortedData])
+  }, [search, sortedData, activeTabId, language])
 
   const rowVirtualizer = useVirtualizer({
     count: filteredData.length,
@@ -1312,7 +1335,18 @@ const Panel = ({
       <Modal
         onClose={() => setDetailsOpened(false)}
         isOpened={detailsOpened}
-        title={name}
+        title={(() => {
+          if (!activeTabId) return name as string
+          const flatTabs: { id: string; label: string }[] = []
+          ;(tabs || []).forEach((t) => {
+            if (Array.isArray(t)) flatTabs.push(...t)
+            else flatTabs.push(t)
+          })
+          const found = flatTabs.find((t) => t.id === activeTabId)
+          return (
+            found?.label || (tnMapping[activeTabId as keyof typeof tnMapping] as unknown as string) || (name as string)
+          )
+        })()}
         message={
           <DetailsTable
             id={id}
