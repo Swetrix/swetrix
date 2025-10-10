@@ -1,7 +1,7 @@
 import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline'
 import { scalePow, scaleQuantize } from 'd3-scale'
 import { Feature, GeoJsonObject } from 'geojson'
-import { Layer } from 'leaflet'
+import { Layer, Path } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import _round from 'lodash/round'
 import React, { memo, useState, useMemo, useEffect, useCallback, useRef } from 'react'
@@ -13,6 +13,7 @@ import { isSelfhosted, PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
+import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
 import { getTimeFromSeconds, getStringFromTime, nFormatter } from '~/utils/generic'
 import { loadCountriesGeoData, loadRegionsGeoData } from '~/utils/geoData'
@@ -27,18 +28,6 @@ interface InteractiveMapProps {
   showFullscreenToggle?: boolean
 }
 
-interface TooltipContent {
-  name: string
-  code: string
-  count: number
-  percentage: number
-}
-
-interface TooltipPosition {
-  x: number
-  y: number
-}
-
 const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenToggle = true }: InteractiveMapProps) => {
   const { t } = useTranslation('common')
   const { activeTab, dataLoading } = useViewProjectContext()
@@ -48,10 +37,17 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
   const [regionsGeoData, setRegionsGeoData] = useState<GeoJsonObject | null>(null)
   const [filteredRegionsGeoData, setFilteredRegionsGeoData] = useState<GeoJsonObject | null>(null)
   const [mapView, setMapView] = useState<'countries' | 'regions'>('countries')
-  const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null)
-  const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({ x: 0, y: 0 })
-  const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [tooltipContent, setTooltipContent] = useState<{
+    name: string
+    code: string
+    count: number
+    percentage: number
+  } | null>(null)
+  const tooltipRef = useRef<HTMLDivElement | null>(null)
+  const rafRef = useRef<number | null>(null)
+  const mousePosRef = useRef({ x: 0, y: 0 })
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false)
+  const [geoJsonKey, setGeoJsonKey] = useState(0)
 
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -76,6 +72,32 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
     }
 
     loadGeoData()
+  }, [])
+
+  useEffect(() => {
+    setGeoJsonKey((v) => v + 1)
+  }, [data, regionData, mapView])
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+    }
+  }, [])
+
+  const repositionTooltip = useCallback((x: number, y: number) => {
+    mousePosRef.current = { x, y }
+    if (rafRef.current == null) {
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null
+        const el = tooltipRef.current
+        if (!el) return
+        const { x: mx, y: my } = mousePosRef.current
+        el.style.left = `${mx}px`
+        el.style.top = `${my - 10}px`
+        el.style.transform = 'translate(-50%, -100%)'
+      })
+    }
   }, [])
 
   const dataLookup = useMemo<Map<string, any>>(() => {
@@ -172,82 +194,86 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
     (feature: Feature | undefined) => {
       const result = findDataForFeature(feature)
       const metricValue = result?.data?.count || 0
-      const matchedKey = result?.key
 
-      // Create a unique identifier for each geographic feature to prevent cross-highlighting
-      const featureId =
-        mapView === 'regions'
-          ? `${feature?.properties?.name || ''}_${feature?.properties?.iso_3166_2 || feature?.properties?.admin || ''}`
-          : matchedKey
+      const fill = metricValue > 0 ? colorScale(metricValue) : 'rgba(180, 180, 180, 0.3)'
 
-      let color: string
-      if (metricValue > 0) {
-        color = colorScale(metricValue)
-      } else {
-        color = 'rgba(180, 180, 180, 0.3)'
-      }
-
-      const isHovered = hoveredId === featureId
-
-      // slate-700 / slate-300
       const borderBaseColour = theme === 'dark' ? '#475569' : '#cbd5e1'
-      // blue-700 / blue-400
-      const borderHoverColour = theme === 'dark' ? '#1d4ed8' : '#60a5fa'
 
       return {
-        color: isHovered ? borderHoverColour : borderBaseColour,
-        weight: isHovered ? 1.5 : mapView === 'regions' ? 0.8 : 0.5,
+        color: borderBaseColour,
+        weight: mapView === 'regions' ? 0.8 : 0.5,
         fill: true,
-        fillColor: color,
-        // Keep fill opacity stable; highlight via stroke on hover instead
+        fillColor: fill,
         fillOpacity: metricValue > 0 ? 0.7 : 0.3,
         opacity: 1,
-        smoothFactor: 0.1,
-        className: 'transition-all duration-200 ease-out',
+        smoothFactor: mapView === 'regions' ? 1 : 0.3,
+        className: 'transition-[stroke,stroke-width,fill-opacity] duration-200 ease-out',
       }
     },
-    [mapView, colorScale, hoveredId, findDataForFeature, theme],
+    [mapView, colorScale, findDataForFeature, theme],
   )
 
   const handleEachFeature = useCallback(
     (feature: Feature, layer: Layer) => {
       layer.on({
-        mouseover: () => {
+        mouseover: (e: any) => {
+          const resultNow = findDataForFeature(feature)
+          const hasData = (resultNow?.data?.count || 0) > 0
+          const borderHoverColour = theme === 'dark' ? '#1d4ed8' : '#60a5fa'
+          const borderNeutralHoverColour = '#94a3b8' // slate-400
+          const pathLayer = layer as unknown as Path
+          const canSetStyle = typeof (pathLayer as any).setStyle === 'function'
+          if (canSetStyle) {
+            pathLayer.setStyle({ color: hasData ? borderHoverColour : borderNeutralHoverColour, weight: 1.5 } as any)
+            ;(pathLayer as any).bringToFront?.()
+          }
+          const cx = e?.originalEvent?.clientX ?? 0
+          const cy = e?.originalEvent?.clientY ?? 0
+          repositionTooltip(cx, cy)
+
           if (hoverTimeoutRef.current) {
             clearTimeout(hoverTimeoutRef.current)
           }
 
           hoverTimeoutRef.current = setTimeout(() => {
             const result = findDataForFeature(feature)
+            const props: any = feature.properties || {}
+            const isCountryView = mapView === 'countries'
 
-            if (result) {
-              const featureId =
-                mapView === 'regions'
-                  ? `${feature?.properties?.name || ''}_${feature?.properties?.iso_3166_2 || feature?.properties?.admin || ''}`
-                  : result.key
+            const name = props['name'] || props['ADMIN'] || result?.key || 'Unknown'
+            const count = result?.data?.count ?? 0
+            const percentage = total > 0 ? _round((count / total) * 100, 2) : 0
 
-              setHoveredId(featureId)
+            const ccFromProps = isCountryView ? props?.iso_a2 : (props?.iso_3166_2 || '').split('-')[0]
+            const cc = (result?.data?.cc as string | undefined) || ccFromProps || ''
 
-              const name = feature.properties?.['name'] || result.key
-              const count = result.data?.count || 0
-              const percentage = total > 0 ? _round((count / total) * 100, 2) : 0
+            setTooltipContent({
+              name,
+              code: (cc || '').toUpperCase(),
+              count,
+              percentage,
+            })
 
-              if (count > 0 || name) {
-                setTooltipContent({
-                  name: name || 'Unknown',
-                  code: result.key || '',
-                  count,
-                  percentage,
-                })
-              }
-            }
+            // Ensure tooltip positions right after it mounts
+            const { x, y } = mousePosRef.current
+            setTimeout(() => repositionTooltip(x, y), 0)
           }, 50)
+        },
+        mousemove: (e: any) => {
+          const cx = e?.originalEvent?.clientX ?? 0
+          const cy = e?.originalEvent?.clientY ?? 0
+          repositionTooltip(cx, cy)
         },
         mouseout: () => {
           if (hoverTimeoutRef.current) {
             clearTimeout(hoverTimeoutRef.current)
           }
-          setHoveredId(null)
+          // Revert to base style for this layer only
+          const base = handleStyle(feature)
+          const pathLayer = layer as unknown as Path
+          if (typeof (pathLayer as any).setStyle === 'function') {
+            pathLayer.setStyle(base as any)
+          }
           setTooltipContent(null)
         },
         click: () => {
@@ -261,7 +287,7 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
         },
       })
     },
-    [findDataForFeature, total, onClick, mapView],
+    [findDataForFeature, total, onClick, mapView, theme, handleStyle, repositionTooltip],
   )
 
   const MapEventHandler = () => {
@@ -280,14 +306,10 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
-      if (tooltipContent) {
-        setTooltipPosition({
-          x: e.clientX,
-          y: e.clientY,
-        })
-      }
+      if (!tooltipContent) return
+      repositionTooltip(e.clientX, e.clientY)
     },
-    [tooltipContent],
+    [tooltipContent, repositionTooltip],
   )
 
   return (
@@ -306,23 +328,20 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
         </div>
       ) : null}
       {dataLoading || isGeoDataLoading ? (
-        <div className='absolute inset-0 z-10 flex items-center justify-center bg-neutral-900/30 backdrop-blur-sm'>
+        <div className='absolute inset-0 z-10 flex items-center justify-center rounded-md bg-slate-900/20 backdrop-blur-sm'>
           <div className='flex flex-col items-center gap-2'>
-            <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
-            <span className='text-sm text-neutral-300'>{t('project.loadingMapData')}</span>
+            <Spin />
+            <span className='text-sm text-slate-900 dark:text-gray-50'>{t('project.loadingMapData')}</span>
           </div>
         </div>
       ) : null}
 
       {countriesGeoData || regionsGeoData ? (
         <MapContainer
-          preferCanvas={true}
-          attributionControl={false}
-          zoomControl={false}
           center={[40, 3]}
-          zoom={showFullscreenToggle ? 1 : 2}
           minZoom={1}
           maxZoom={8}
+          zoom={showFullscreenToggle ? 1 : 2}
           style={{
             height: '100%',
             background: 'transparent',
@@ -330,11 +349,15 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
             outline: 'none',
             zIndex: 1,
           }}
+          attributionControl={false}
+          zoomControl={false}
+          preferCanvas
         >
           <MapEventHandler />
 
           {countriesGeoData && mapView === 'countries' ? (
             <GeoJSON
+              key={geoJsonKey}
               data={countriesGeoData}
               style={handleStyle}
               onEachFeature={handleEachFeature}
@@ -347,6 +370,7 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
 
           {filteredRegionsGeoData && mapView === 'regions' ? (
             <GeoJSON
+              key={geoJsonKey}
               data={filteredRegionsGeoData}
               style={handleStyle}
               onEachFeature={handleEachFeature}
@@ -361,12 +385,9 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
 
       {tooltipContent ? (
         <div
+          ref={tooltipRef}
           className='pointer-events-none fixed z-50 rounded-md border bg-gray-100 p-2 text-sm text-gray-900 shadow-lg dark:bg-slate-900 dark:text-white'
-          style={{
-            left: tooltipPosition.x,
-            top: tooltipPosition.y - 10,
-            transform: 'translate(-50%, -100%)',
-          }}
+          style={{ left: 0, top: 0, transform: 'translate(-50%, -100%)' }}
         >
           <div className='flex items-center gap-1 font-medium'>
             <Flag className='rounded-xs' country={tooltipContent.code} size={18} alt='' aria-hidden='true' />
