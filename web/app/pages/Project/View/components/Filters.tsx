@@ -150,12 +150,13 @@ export const Filter = ({
       {canChangeExclusive ? (
         <Link
           to={createToggleExclusivePath()}
-          className={cx(
-            'cursor-pointer border-b-2 border-dotted border-blue-400 text-blue-400 hover:border-blue-500 hover:text-blue-500',
-            {
-              'cursor-wait': dataLoading,
-            },
-          )}
+          className={cx('cursor-pointer hover:underline', {
+            'cursor-wait': dataLoading,
+            'text-green-400': !isExclusive && !isContains,
+            'text-red-400': isExclusive && !isContains,
+            'text-yellow-400': !isExclusive && isContains,
+            'text-orange-400': isExclusive && isContains,
+          })}
           onClick={(e: MouseEvent) => {
             if (dataLoading) {
               e.preventDefault()
