@@ -925,8 +925,10 @@
     "addAMetric": "Додати метрику",
     "customEvent": "Користувацька подія",
     "removeFilter": "Видалити фільтр",
-    "toggleFilterToIs": "Змінити фільтр з '{{column}} не є \"{{filter}}\"' на '{{column}} є \"{{filter}}\"'",
-    "toggleFilterToIsNot": "Змінити фільтр з '{{column}} є \"{{filter}}\"' на '{{column}} не є \"{{filter}}\"'",
+    "toggleFilterToIs": "Zmień filtr na '{{column}} jest \"{{filter}}\"'",
+    "toggleFilterToIsNot": "Zmień filtr na '{{column}} nie jest \"{{filter}}\"'",
+    "toggleFilterToContains": "Zmień filtr na '{{column}} zawiera \"{{filter}}\"'",
+    "toggleFilterToNotContains": "Zmień filtr na '{{column}} nie zawiera \"{{filter}}\"'",
     "location": "Локація",
     "pages": "Сторінки",
     "devices": "Пристрої",
@@ -1102,6 +1104,10 @@
     "codeExample": "Або вставте наступний код на ваш вебсайт, щоб відстежувати ваші події:",
     "metricVis": "Візуалізація метрик",
     "filters": "Фільтри",
+    "contains": {
+      "is": "zawiera",
+      "not": "nie zawiera"
+    },
     "showResolved": "Показати вирішені",
     "resolve": "Вирішити",
     "markAsActive": "Позначити як активну",

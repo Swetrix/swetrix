@@ -925,8 +925,10 @@
     "addAMetric": "Dodaj metrykę",
     "customEvent": "Wydarzenie niestandardowe",
     "removeFilter": "Usuń filtr",
-    "toggleFilterToIs": "Zmień filtr z '{{column}} nie jest \"{{filter}}\"' na '{{column}} jest \"{{filter}}\"'",
-    "toggleFilterToIsNot": "Zmień filtr z '{{column}} jest \"{{filter}}\"' na '{{column}} nie jest \"{{filter}}\"'",
+    "toggleFilterToIs": "Змінити фільтр на '{{column}} дорівнює \"{{filter}}\"'",
+    "toggleFilterToIsNot": "Змінити фільтр на '{{column}} не дорівнює \"{{filter}}\"'",
+    "toggleFilterToContains": "Змінити фільтр на '{{column}} містить \"{{filter}}\"'",
+    "toggleFilterToNotContains": "Змінити фільтр на '{{column}} не містить \"{{filter}}\"'",
     "location": "Lokalizacja",
     "pages": "Strony",
     "devices": "Urządzenia",
@@ -1102,6 +1104,10 @@
     "codeExample": "Lub wstaw poniższy kod do swojej strony internetowej, aby śledzić zdarzenia:",
     "metricVis": "Wizualizacja metryczna",
     "filters": "Filtry",
+    "contains": {
+      "is": "містить",
+      "not": "не містить"
+    },
     "showResolved": "Pokaż rozwiązane",
     "resolve": "Rozwiąż",
     "markAsActive": "Oznacz jako aktywne",

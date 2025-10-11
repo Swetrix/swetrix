@@ -925,8 +925,10 @@
     "addAMetric": "Metrik hinzufügen",
     "customEvent": "Benutzerdefinierte Tracking-Events",
     "removeFilter": "Filter entfernen",
-    "toggleFilterToIs": "Filter ändern von '{{column}} ist nicht \"{{filter}}\"' zu '{{column}} ist \"{{filter}}\"'",
-    "toggleFilterToIsNot": "Filter ändern von '{{column}} ist \"{{filter}}\"' zu '{{column}} ist nicht \"{{filter}}\"'",
+    "toggleFilterToIs": "Filter ändern auf '{{column}} ist \"{{filter}}\"'",
+    "toggleFilterToIsNot": "Filter ändern auf '{{column}} ist nicht \"{{filter}}\"'",
+    "toggleFilterToContains": "Filter ändern auf '{{column}} enthält \"{{filter}}\"'",
+    "toggleFilterToNotContains": "Filter ändern auf '{{column}} enthält nicht \"{{filter}}\"'",
     "location": "Standort",
     "pages": "Seiten",
     "devices": "Geräte",
@@ -1102,6 +1104,10 @@
     "codeExample": "Oder fügen Sie den folgenden Code in Ihre Website ein, um Ihre Events zu tracken:",
     "metricVis": "Visualisierung von Metriken",
     "filters": "Filtern",
+    "contains": {
+      "is": "enthält",
+      "not": "enthält nicht"
+    },
     "showResolved": "Aufgelöste anzeigen",
     "resolve": "Auflösen",
     "markAsActive": "Als aktiv markieren",

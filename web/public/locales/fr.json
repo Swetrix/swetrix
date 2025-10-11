@@ -925,8 +925,10 @@
     "addAMetric": "Ajouter une métrique",
     "customEvent": "Événement personnalisé",
     "removeFilter": "Supprimer le filtre",
-    "toggleFilterToIs": "Modifier le filtre de '{{column}} n'est pas \"{{filter}}\"' à '{{column}} est \"{{filter}}\"'",
-    "toggleFilterToIsNot": "Changer le filtre de '{{column}} est \"{{filter}}\"' à '{{column}} n'est pas \"{{filter}}\"'",
+    "toggleFilterToIs": "Modifier le filtre en '{{column}} est \"{{filter}}\"'",
+    "toggleFilterToIsNot": "Modifier le filtre en '{{column}} n'est pas \"{{filter}}\"'",
+    "toggleFilterToContains": "Modifier le filtre en '{{column}} contient \"{{filter}}\"'",
+    "toggleFilterToNotContains": "Modifier le filtre en '{{column}} ne contient pas \"{{filter}}\"'",
     "location": "Localisation",
     "pages": "Pages",
     "devices": "Appareils",
@@ -1102,6 +1104,10 @@
     "codeExample": "Ou insérez le code suivant dans votre site web pour suivre vos événements :",
     "metricVis": "Visualisation des métriques",
     "filters": "Filtres",
+    "contains": {
+      "is": "contient",
+      "not": "ne contient pas"
+    },
     "showResolved": "Afficher les résolus",
     "resolve": "Résoudre",
     "markAsActive": "Marquer comme actif",
