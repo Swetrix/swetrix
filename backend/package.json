@@ -22,7 +22,8 @@
     "lint:fix": "eslint --c eslint.config.mjs \"{apps/cloud/src,apps/community/src}/**/*.ts\" --fix",
     "lint:tsc": "tsc --noEmit",
     "find-deadcode": "ts-prune",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org swetrix --project swetrix-api ./dist && sentry-cli sourcemaps upload --org swetrix --project swetrix-api ./dist"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org swetrix --project swetrix-api ./dist && sentry-cli sourcemaps upload --org swetrix --project swetrix-api ./dist",
+    "knip": "knip"
   },
   "dependencies": {
     "@clickhouse/client": "^1.12.1",
@@ -99,8 +100,7 @@
     "@types/express": "^5.0.3",
     "@types/ioredis": "^4.28.10",
     "@types/lodash": "^4.17.20",
-    "@types/multer": "^2.0.0",
-    "@types/node": "^24.5.2",
+    "@types/node": "^24.7.2",
     "@types/nodemailer": "^7.0.1",
     "@types/passport-jwt": "^4.0.1",
     "@types/randomstring": "^1.3.0",
@@ -110,10 +110,10 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "globals": "^16.4.0",
+    "knip": "^5.64.3",
     "prettier": "^3.6.2",
-    "ts-loader": "^9.5.4",
     "ts-prune": "^0.10.3",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   },
   "resolutions": {
     "string-width": "4.2.3"
