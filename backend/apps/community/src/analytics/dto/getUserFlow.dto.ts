@@ -33,7 +33,7 @@ export class GetUserFlowDto {
 
   @ApiProperty({
     description:
-      'A stringified array of properties to filter [{ column, filter, isExclusive }]',
+      'A stringified array of properties to filter [{ column, filter, isExclusive, isContains }]',
   })
   filters: string
 }

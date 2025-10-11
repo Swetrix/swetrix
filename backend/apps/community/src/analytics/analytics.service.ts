@@ -838,13 +838,14 @@ export class AnalyticsService {
     return _reduce(
       parsedFilters,
       (prev, curr) => {
-        const { column, filter, isExclusive } = curr
+        const { column, filter, isExclusive, isContains = false } = curr
 
         if (_isArray(filter)) {
           const filterArray = _map(filter, f => ({
             column,
             filter: f,
             isExclusive,
+            isContains,
           }))
           return [...prev, ...filterArray]
         }
@@ -1032,8 +1033,6 @@ export class AnalyticsService {
           sqlColumn = 'meta.value'
           isArrayDataset = true
         }
-
-        // TODO: In future I will add contains / not contains filters as well via ILIKE operator
 
         const isNullFilter =
           filter === null ||
