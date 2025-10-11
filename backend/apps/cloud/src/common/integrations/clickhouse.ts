@@ -7,7 +7,7 @@ import { createClient, ClickHouseLogLevel } from '@clickhouse/client'
 import { Logger } from '@nestjs/common'
 import 'dotenv/config'
 
-export class CHLogger implements _CHLogger {
+class CHLogger implements _CHLogger {
   debug({ module, message, args }: LogParams): void {
     Logger.debug({
       type: '@clickhouse/client',

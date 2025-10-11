@@ -35,7 +35,7 @@ const DUMMY_SECRETS = {
   TOKEN_USED_FAIL: 'USED000000000000000000',
 }
 
-export const isDummyPID = (pid: string): boolean => {
+const isDummyPID = (pid: string): boolean => {
   return _includes(_values(DUMMY_PIDS), pid)
 }
 

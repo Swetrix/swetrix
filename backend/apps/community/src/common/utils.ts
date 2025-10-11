@@ -44,7 +44,7 @@ export interface ClickhouseProjectShare {
   updated: string
 }
 
-export interface ClickhouseProjectShareWithUser {
+interface ClickhouseProjectShareWithUser {
   id: string
   role: string
   confirmed: number
@@ -54,7 +54,7 @@ export interface ClickhouseProjectShareWithUser {
   email: string
 }
 
-export interface ClickhouseProjectShareWithProject {
+interface ClickhouseProjectShareWithProject {
   id: string
   role: string
   confirmed: number
@@ -380,28 +380,6 @@ const assignUnassignedProjectsToUserClickhouse = async (userId: string) => {
       userId,
     },
   })
-}
-
-/**
- * Checking the % change in one number relative to the other
- * @param oldVal The initial value
- * @param newVal The value that changed
- * @param round Numbers after floating point
- */
-const calculateRelativePercentage = (
-  oldVal: number,
-  newVal: number,
-  round = 2,
-) => {
-  if (oldVal === newVal) return 0
-  if (oldVal === 0) return 100
-  if (newVal === 0) return -100
-
-  if (newVal > oldVal) {
-    return _round((newVal / oldVal) * 100, round)
-  }
-
-  return _round((1 - newVal / oldVal) * -100, round)
 }
 
 const deleteProjectClickhouse = async (id: string) => {
@@ -1048,7 +1026,6 @@ export {
   getProjectsClickhouse,
   updateProjectClickhouse,
   deleteProjectClickhouse,
-  calculateRelativePercentage,
   millisecondsToSeconds,
   saveRefreshTokenClickhouse,
   findRefreshTokenClickhouse,

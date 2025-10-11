@@ -138,7 +138,7 @@ interface IOverallPeriodStats {
   sdur: number
 }
 
-export interface ICaptchaObject {
+interface ICaptchaObject {
   current: {
     all: number
   }
@@ -148,7 +148,7 @@ export interface ICaptchaObject {
   change: number
 }
 
-export interface IPerformanceObject {
+interface IPerformanceObject {
   current: {
     frontend: number
     backend: number
@@ -164,7 +164,7 @@ export interface IPerformanceObject {
   networkChange: number
 }
 
-export interface IOverallObject {
+interface IOverallObject {
   current: IOverallPeriodStats
   previous: IOverallPeriodStats
   change: number

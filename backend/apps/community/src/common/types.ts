@@ -24,18 +24,6 @@ export interface User {
   apiKey: string | null
 }
 
-export interface ClickhouseProject {
-  id: string
-  name: string
-  origins: string | null
-  ipBlacklist: string | null
-  active: number
-  public: number
-  isPasswordProtected: number
-  passwordHash: string | null
-  created: string
-}
-
 export interface ClickhouseFunnel {
   id: string
   name: string

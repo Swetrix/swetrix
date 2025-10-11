@@ -321,5 +321,3 @@ export const sumArrays = (source: number[], target: number[]) => {
 
   return result
 }
-
-export { lookup }

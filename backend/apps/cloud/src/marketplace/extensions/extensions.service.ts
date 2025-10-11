@@ -13,10 +13,10 @@ import { IUpdateExtension } from './interfaces/update-extension.interface'
 import { CreateExtensionType, UpdateExtensionType } from './types'
 import { ExtensionStatus } from './enums/extension-status.enum'
 import { CdnService } from '../cdn/cdn.service'
-import { ExtensionVersionType } from './dtos'
 import { VersionTypes } from './interfaces'
 import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
+import { ExtensionVersionType } from './dtos/create-extension.dto'
 
 const DEFAULT_EXTENSION_VERSION = '0.0.1'
 

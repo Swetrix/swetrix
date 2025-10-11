@@ -1,5 +1,5 @@
 import { type Express } from 'express'
-import { ExtensionVersionType } from '../dtos'
+import { type ExtensionVersionType } from '../dtos/create-extension.dto'
 
 export type CreateExtensionType = {
   ownerId: string

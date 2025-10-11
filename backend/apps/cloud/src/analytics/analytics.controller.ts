@@ -95,7 +95,7 @@ import { GetHeartbeatStatsDto } from './dto/get-heartbeat-stats'
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
 
-export const DEFAULT_MEASURE = 'median'
+const DEFAULT_MEASURE = 'median'
 
 // Silent 200 response for bots
 // https://github.com/Swetrix/swetrix/issues/371

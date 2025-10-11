@@ -92,6 +92,7 @@ import {
   updateProjectShareClickhouse,
   deleteProjectShareClickhouse,
   deleteProjectSharesByProjectClickhouse,
+  ClickhouseProjectShare,
 } from '../common/utils'
 import { Funnel } from './entity/funnel.entity'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -422,7 +423,7 @@ export class ProjectController {
     @Param('shareId') shareId: string,
     @Body() body: { role: 'admin' | 'viewer' },
     @CurrentUserId() userId: string,
-  ) {
+  ): Promise<ClickhouseProjectShare> {
     this.logger.log({ userId, shareId, body }, 'PUT /project/share/:shareId')
 
     if (!body?.role || !['admin', 'viewer'].includes(body.role)) {

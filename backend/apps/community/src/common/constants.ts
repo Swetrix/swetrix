@@ -52,8 +52,6 @@ const isValidPID = (pid: string) => PID_REGEX.test(pid)
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
 
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
-const REDIS_USERS_COUNT_KEY = 'stats:users_count'
-const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
 const REDIS_OIDC_SESSION_KEY = 'oidc:session'
 
 // 3600 sec -> 1 hour
@@ -117,8 +115,6 @@ export {
   UNIQUE_SESSION_LIFE_TIME,
   TRAFFIC_METAKEY_COLUMNS,
   REDIS_SESSION_SALT_KEY,
-  REDIS_USERS_COUNT_KEY,
-  REDIS_PROJECTS_COUNT_KEY,
   IP_REGEX,
   ORIGINS_REGEX,
   isDevelopment,
