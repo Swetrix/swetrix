@@ -59,6 +59,17 @@ export const Filter = ({
     displayFilter = getLocaleDisplayName(displayFilter, language)
   }
 
+  // Normalise "null" filter values to human-friendly labels
+  if ((displayFilter as unknown as string)?.toString().toLowerCase() === 'null') {
+    if (column === 'ref') {
+      displayFilter = t('project.directNone')
+    } else if (column === 'host') {
+      displayFilter = t('project.unknownHost')
+    } else {
+      displayFilter = t('common.notSet')
+    }
+  }
+
   if (_startsWith(column, 'ev:key:')) {
     const key = _replace(column, /^ev:key:/, '')
     displayColumn = t('project.metamapping.ev.dynamicKey', {
