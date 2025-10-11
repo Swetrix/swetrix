@@ -127,16 +127,20 @@ export class WebhookController {
           )
         }
 
-        const currentUser = uid
+        let currentUser = uid
           ? await this.userService.findOne({ where: { id: uid } })
           : await this.userService.findOne({ where: { email } })
 
         if (!currentUser) {
-          this.logger.error(
-            '[PADDLE WEBHOOK / FATAL] Cannot find the webhook user',
-          )
-          this.logger.error(JSON.stringify(body, null, 2))
-          return
+          currentUser = await this.userService.findOne({ where: { subID } })
+
+          if (!currentUser) {
+            this.logger.error(
+              '[PADDLE WEBHOOK / FATAL] Cannot find the webhook user',
+            )
+            this.logger.error(JSON.stringify(body, null, 2))
+            return
+          }
         }
 
         const shouldUnlock =
