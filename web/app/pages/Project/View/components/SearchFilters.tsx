@@ -53,7 +53,7 @@ export const getFiltersUrlParams = (
   // Preserve non-filter parameters from the current URL
   for (const [key, value] of currentUrlParams.entries()) {
     let processedKey = key
-    if (key.startsWith('!')) {
+    if (key.startsWith('!') || key.startsWith('~') || key.startsWith('^')) {
       processedKey = key.substring(1)
     }
     if (!isFilterValid(processedKey, true)) {
@@ -62,7 +62,10 @@ export const getFiltersUrlParams = (
   }
 
   resultingFilters.forEach((f) => {
-    const filterKey = f.isExclusive ? `!${f.column}` : f.column
+    let filterKey = f.isExclusive ? `!${f.column}` : f.column
+    if (f.isContains) {
+      filterKey = f.isExclusive ? `^${f.column}` : `~${f.column}`
+    }
     newUrlParams.append(filterKey, f.filter)
   })
 
@@ -133,6 +136,7 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
         column: filterType,
         filter: processedItem,
         isExclusive: false,
+        isContains: false,
       },
     ])
   }
@@ -207,7 +211,7 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
             </>
           ) : null}
           <div className='mt-2'>
-            {_map(activeFilters, ({ filter, column, isExclusive }) => (
+            {_map(activeFilters, ({ filter, column, isExclusive, isContains }) => (
               <Filter
                 key={`${column}-${filter}`}
                 onRemoveFilter={(e) => {
@@ -226,11 +230,24 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
                   setActiveFilters((prevFilters: any) => {
                     return _map(prevFilters, (item) => {
                       if (item.column === column && item.filter === filter) {
-                        return {
-                          column,
-                          filter,
-                          isExclusive: !isExclusive,
+                        // Cycle: is -> is not -> contains -> not contains -> is
+                        let nextContains = isContains
+                        let nextExclusive = isExclusive
+                        if (!isContains && !isExclusive) {
+                          nextContains = false
+                          nextExclusive = true
+                        } else if (!isContains && isExclusive) {
+                          nextContains = true
+                          nextExclusive = false
+                        } else if (isContains && !isExclusive) {
+                          nextContains = true
+                          nextExclusive = true
+                        } else {
+                          nextContains = false
+                          nextExclusive = false
                         }
+
+                        return { column, filter, isExclusive: nextExclusive, isContains: nextContains }
                       }
 
                       return item
@@ -241,6 +258,7 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
                 column={column}
                 filter={filter}
                 tnMapping={tnMapping}
+                isContains={isContains}
                 canChangeExclusive
                 removable
               />

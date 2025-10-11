@@ -25,6 +25,7 @@ interface FilterProps {
   removable?: boolean
   onChangeExclusive?: (e: MouseEvent) => void
   onRemoveFilter?: (e: MouseEvent) => void
+  isContains?: boolean
 }
 
 export const Filter = ({
@@ -36,6 +37,7 @@ export const Filter = ({
   removable,
   onChangeExclusive,
   onRemoveFilter,
+  isContains,
 }: FilterProps) => {
   const { dataLoading } = useViewProjectContext()
   const [searchParams] = useSearchParams()
@@ -88,15 +90,44 @@ export const Filter = ({
 
   const createRemoveFilterPath = () => {
     const newSearchParams = new URLSearchParams(searchParams.toString())
-    const paramKeyInUrl = isExclusive ? `!${column}` : column
+    const paramKeyInUrl = isContains ? (isExclusive ? `^${column}` : `~${column}`) : isExclusive ? `!${column}` : column
     newSearchParams.delete(paramKeyInUrl, filter)
     return { search: newSearchParams.toString() }
   }
 
   const createToggleExclusivePath = () => {
     const newSearchParams = new URLSearchParams(searchParams.toString())
-    const oldParamKey = isExclusive ? `!${column}` : column
-    const newParamKey = isExclusive ? column : `!${column}`
+
+    const getKey = (contains: boolean, exclusive: boolean) =>
+      contains ? (exclusive ? `^${column}` : `~${column}`) : exclusive ? `!${column}` : column
+
+    const c = Boolean(isContains)
+    const e = Boolean(isExclusive)
+
+    const oldParamKey = getKey(c, e)
+
+    let nextContains = c
+    let nextExclusive = e
+
+    if (!c && !e) {
+      // is -> is not
+      nextContains = false
+      nextExclusive = true
+    } else if (!c && e) {
+      // is not -> contains
+      nextContains = true
+      nextExclusive = false
+    } else if (c && !e) {
+      // contains -> not contains
+      nextContains = true
+      nextExclusive = true
+    } else {
+      // not contains -> is
+      nextContains = false
+      nextExclusive = false
+    }
+
+    const newParamKey = getKey(nextContains, nextExclusive)
 
     newSearchParams.delete(oldParamKey, filter)
     newSearchParams.append(newParamKey, filter)
@@ -132,21 +163,43 @@ export const Filter = ({
             }
             onChangeExclusive?.(e)
           }}
-          title={
-            isExclusive
-              ? t('project.toggleFilterToIs', { column: displayColumn, filter: truncatedFilter })
-              : t('project.toggleFilterToIsNot', { column: displayColumn, filter: truncatedFilter })
-          }
-          aria-label={
-            isExclusive
-              ? t('project.toggleFilterToIs', { column: displayColumn, filter: truncatedFilter })
-              : t('project.toggleFilterToIsNot', { column: displayColumn, filter: truncatedFilter })
-          }
+          title={(() => {
+            const c = Boolean(isContains)
+            const e = Boolean(isExclusive)
+            const nextKey =
+              !c && !e
+                ? 'toggleFilterToIsNot'
+                : !c && e
+                  ? 'toggleFilterToContains'
+                  : c && !e
+                    ? 'toggleFilterToNotContains'
+                    : 'toggleFilterToIs'
+            return t(`project.${nextKey}`, { column: displayColumn, filter: truncatedFilter })
+          })()}
+          aria-label={(() => {
+            const c = Boolean(isContains)
+            const e = Boolean(isExclusive)
+            const nextKey =
+              !c && !e
+                ? 'toggleFilterToIsNot'
+                : !c && e
+                  ? 'toggleFilterToContains'
+                  : c && !e
+                    ? 'toggleFilterToNotContains'
+                    : 'toggleFilterToIs'
+            return t(`project.${nextKey}`, { column: displayColumn, filter: truncatedFilter })
+          })()}
         >
-          {t(`common.${isExclusive ? 'isNot' : 'is'}`)}
+          {isContains
+            ? t(`project.contains.${isExclusive ? 'not' : 'is'}`)
+            : t(`common.${isExclusive ? 'isNot' : 'is'}`)}
         </Link>
       ) : (
-        <span>{t(`common.${isExclusive ? 'isNot' : 'is'}`)}</span>
+        <span>
+          {isContains
+            ? t(`project.contains.${isExclusive ? 'not' : 'is'}`)
+            : t(`common.${isExclusive ? 'isNot' : 'is'}`)}
+        </span>
       )}
       &nbsp;&quot;
       {truncatedFilter}
@@ -195,7 +248,7 @@ const Filters = ({ tnMapping }: FiltersProps) => {
 
     for (const [key] of entries) {
       let processedKey = key
-      if (key.startsWith('!')) {
+      if (key.startsWith('!') || key.startsWith('~') || key.startsWith('^')) {
         processedKey = key.substring(1)
       }
 
