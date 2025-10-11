@@ -31,6 +31,9 @@ jobs:
       - name: Backend TypeScript Validation
         run: npm run lint:tsc
         working-directory: backend
+      - name: Backend Knip Validation
+        run: npm run knip
+        working-directory: backend
 
   web-checks:
     name: Web Checks
