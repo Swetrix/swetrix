@@ -17,7 +17,6 @@ import _omit from 'lodash/omit'
 import { UserService } from '../../user/user.service'
 import { ExtensionsService } from '../extensions/extensions.service'
 import { Auth, CurrentUserId } from '../../auth/decorators'
-import { UserType } from '../../user/entities/user.entity'
 import { CommentsService } from './comments.service'
 import { CreateCommentBodyDto } from './dtos/bodies/create-comment.dto'
 import { DeleteCommentParamDto } from './dtos/params/delete-comment.dto'
@@ -124,9 +123,7 @@ export class CommentsController {
       throw new NotFoundException('Comment not found.')
     }
 
-    const user = await this.userService.findOne({ where: { id: userId } })
-
-    if (!_includes(user.roles, UserType.ADMIN) && comment.user.id !== userId) {
+    if (comment.user.id !== userId) {
       throw new ConflictException('You are not allowed to do this.')
     }
 
@@ -222,13 +219,7 @@ export class CommentsController {
       throw new NotFoundException('Comment reply not found.')
     }
 
-    const user = await this.userService.findOne({ where: { id: userId } })
-
-    if (
-      !(
-        commentReply.user.id === userId || _includes(user.roles, UserType.ADMIN)
-      )
-    ) {
+    if (commentReply.user.id !== userId) {
       throw new ConflictException('You are not allowed to do this.')
     }
 

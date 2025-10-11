@@ -43,7 +43,6 @@ import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
 import { ProjectShare, Role } from './entity/project-share.entity'
 import { ProjectDTO } from './dto/project.dto'
-import { UserType } from '../user/entities/user.entity'
 import { MAX_PROJECT_PASSWORD_LENGTH } from './dto/project-password.dto'
 import {
   isValidPID,
@@ -393,7 +392,6 @@ export class ProjectService {
         },
         admin: {
           id: true,
-          roles: true,
           dashboardBlockReason: true,
           isAccountBillingSuspended: true,
         },
@@ -650,12 +648,10 @@ export class ProjectService {
   allowedToManage(
     project: Project,
     uid: string,
-    roles: Array<UserType> = [],
     message = 'You are not allowed to manage this project',
   ): void {
     if (
       uid === project.admin?.id ||
-      _includes(roles, UserType.ADMIN) ||
       _findIndex(
         project.share,
         share => share.user?.id === uid && share.role === Role.admin,

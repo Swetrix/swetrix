@@ -606,10 +606,6 @@ export class UserService {
     return !user
   }
 
-  async findUserV2(id: string, select?: (keyof User)[]) {
-    return this.usersRepository.findOne({ select, where: { id } })
-  }
-
   async getReportUsers(
     reportFrequency:
       | ReportFrequency.WEEKLY

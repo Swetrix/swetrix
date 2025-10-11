@@ -451,7 +451,7 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     return this.projectService.createFunnel(project.id, funnelDTO)
   }
@@ -502,7 +502,7 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     if (_size(project.funnels) >= MAX_FUNNELS) {
       throw new ForbiddenException(
@@ -649,13 +649,12 @@ export class ProjectController {
     }
 
     const project = await this.projectService.getFullProject(pid)
-    const user = await this.userService.findOne({ where: { id: uid } })
 
     if (_isEmpty(project)) {
       throw new NotFoundException()
     }
 
-    this.projectService.allowedToManage(project, uid, user.roles)
+    this.projectService.allowedToManage(project, uid)
 
     const secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
 
@@ -865,7 +864,7 @@ export class ProjectController {
       )
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const invitee = await this.userService.findOne({
       where: { email: shareDTO.email },
@@ -960,7 +959,6 @@ export class ProjectController {
       throw new BadRequestException('The provided ShareUpdateDTO is incorrect')
     }
 
-    const user = await this.userService.findOne({ where: { id: uid } })
     const share = await this.projectService.findOneShare({
       where: { id: shareId },
       relations: [
@@ -976,7 +974,7 @@ export class ProjectController {
     }
 
     // TODO: ORG
-    this.projectService.allowedToManage(share.project, uid, user.roles)
+    this.projectService.allowedToManage(share.project, uid)
 
     const adminShare = _find(
       share.project.share,
@@ -1162,7 +1160,6 @@ export class ProjectController {
     this.projectService.allowedToManage(
       project,
       userId,
-      [],
       "You are not allowed to manage this project's subscribers",
     )
 
@@ -1206,7 +1203,6 @@ export class ProjectController {
     this.projectService.allowedToManage(
       project,
       userId,
-      [],
       "You are not allowed to manage this project's subscribers",
     )
 
@@ -1354,7 +1350,6 @@ export class ProjectController {
     this.projectService.allowedToManage(
       project,
       userId,
-      [],
       "You are not allowed to manage this project's subscribers",
     )
 
@@ -1592,13 +1587,12 @@ export class ProjectController {
 
     this.projectService.validateProject(projectDTO)
     const project = await this.projectService.getFullProject(id)
-    const user = await this.userService.findOne({ where: { id: uid } })
 
     if (_isEmpty(project)) {
       throw new NotFoundException()
     }
 
-    this.projectService.allowedToManage(project, uid, user.roles)
+    this.projectService.allowedToManage(project, uid)
 
     if (_isBoolean(projectDTO.public)) {
       project.public = projectDTO.public
@@ -1677,9 +1671,7 @@ export class ProjectController {
       throw new NotFoundException(`Project with ID ${pid} does not exist`)
     }
 
-    const user = await this.userService.findOne({ where: { id: uid } })
-
-    this.projectService.allowedToManage(project, uid, user.roles)
+    this.projectService.allowedToManage(project, uid)
 
     await deleteProjectRedis(pid)
     await this.projectService.deleteShare(shareId)
@@ -1814,13 +1806,13 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    const user = await this.userService.findUserV2(userId, ['roles'])
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!user) {
       throw new NotFoundException('User not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const createdProjectView =
       await this.projectsViewsRepository.createProjectView(params.projectId, {
@@ -1874,13 +1866,13 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    const user = await this.userService.findUserV2(userId, ['roles'])
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!user) {
       throw new NotFoundException('User not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const view = await this.projectsViewsRepository.findProjectView(
       params.projectId,
@@ -1920,13 +1912,13 @@ export class ProjectController {
       throw new NotFoundException('Project not found')
     }
 
-    const user = await this.userService.findUserV2(userId, ['roles'])
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!user) {
       throw new NotFoundException('User not found')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const view = await this.projectsViewsRepository.findProjectView(
       params.projectId,

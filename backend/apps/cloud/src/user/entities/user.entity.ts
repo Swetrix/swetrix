@@ -183,11 +183,6 @@ export const isNextPlan = (
   return nextPlanLimit > currentPlanLimit
 }
 
-export enum UserType {
-  CUSTOMER = 'customer',
-  ADMIN = 'admin',
-}
-
 export enum ReportFrequency {
   Never = 'never',
   Weekly = 'weekly',
@@ -233,13 +228,6 @@ export enum FeatureFlag {
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string
-
-  @Column({
-    type: 'set',
-    enum: UserType,
-    default: UserType.CUSTOMER,
-  })
-  roles: UserType[]
 
   @Column({
     type: 'set',

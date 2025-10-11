@@ -1,10 +1,5 @@
 import _omit from 'lodash/omit'
 
-export enum UserType {
-  CUSTOMER = 'customer',
-  ADMIN = 'admin',
-}
-
 export enum TimeFormat {
   '12-hour' = '12-hour',
   '24-hour' = '24-hour',

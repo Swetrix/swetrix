@@ -444,7 +444,7 @@ export class ExtensionsController {
       throw new NotFoundException('Project not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const extensionToProject =
       await this.extensionsService.findOneExtensionToProject({
@@ -515,7 +515,7 @@ export class ExtensionsController {
       throw new NotFoundException('Project not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const extensionToProject =
       await this.extensionsService.findOneExtensionToProject({

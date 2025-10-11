@@ -145,7 +145,6 @@ export class AlertController {
     this.projectService.allowedToManage(
       project,
       uid,
-      user.roles,
       'You are not allowed to add alerts to this project',
     )
 
@@ -240,12 +239,9 @@ export class AlertController {
       throw new NotFoundException()
     }
 
-    const user = await this.userService.findOne({ where: { id: uid } })
-
     this.projectService.allowedToManage(
       alert.project,
       uid,
-      user.roles,
       'You are not allowed to manage this alert',
     )
 
@@ -316,12 +312,9 @@ export class AlertController {
       throw new NotFoundException()
     }
 
-    const user = await this.userService.findOne({ where: { id: uid } })
-
     this.projectService.allowedToManage(
       alert.project,
       uid,
-      user.roles,
       'You are not allowed to manage this alert',
     )
 
