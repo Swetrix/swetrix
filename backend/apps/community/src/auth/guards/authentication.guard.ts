@@ -3,22 +3,13 @@ import { Reflector } from '@nestjs/core'
 import { ExtractJwt } from 'passport-jwt'
 import { verify } from 'jsonwebtoken'
 
-import { UserType } from '../../user/entities/user.entity'
 import { JWT_ACCESS_TOKEN_SECRET } from '../../common/constants'
-import { ROLES_KEY } from '../decorators'
 
 @Injectable()
-export class RolesGuard implements CanActivate {
+export class AuthenticationGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext) {
-    const roles = this.reflector.get<UserType[]>(
-      ROLES_KEY,
-      context.getHandler(),
-    )
-
-    if (!roles || roles.length === 0) return true
-
     const request = context.switchToHttp().getRequest()
 
     let token = ''
@@ -27,6 +18,10 @@ export class RolesGuard implements CanActivate {
     } else {
       const extract = ExtractJwt.fromAuthHeaderAsBearerToken()
       token = extract(request)
+    }
+
+    if (!token) {
+      return true
     }
 
     try {

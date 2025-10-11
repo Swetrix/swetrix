@@ -1,7 +1,6 @@
 import {
   Controller,
   Post,
-  UseGuards,
   HttpCode,
   Body,
   BadRequestException,
@@ -10,16 +9,14 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 
-import { JwtAccessTokenGuard } from '../auth/guards'
+import { Auth } from '../auth/decorators'
 import { TwoFactorAuthService } from './twoFactorAuth.service'
 import { UserService } from '../user/user.service'
 import { AuthService } from '../auth/auth.service'
-import { UserType } from '../user/entities/user.entity'
 import { AppLoggerService } from '../logger/logger.service'
 import { MailerService } from '../mailer/mailer.service'
 import { LetterTemplate } from '../mailer/letter'
-import { TwoFaNotRequired, Roles, CurrentUserId } from '../auth/decorators'
-import { RolesGuard } from '../auth/guards/roles.guard'
+import { TwoFaNotRequired, CurrentUserId } from '../auth/decorators'
 import { TwoFactorAuthDTO } from './dto/2fa-auth.dto'
 import {
   generateRecoveryCode,
@@ -40,8 +37,7 @@ export class TwoFactorAuthController {
 
   @ApiBearerAuth()
   @Post('generate')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   @TwoFaNotRequired()
   async register(@CurrentUserId() id: string) {
     const user = await this.userService.findOne({ where: { id } })
@@ -51,8 +47,7 @@ export class TwoFactorAuthController {
 
   @ApiBearerAuth()
   @Post('enable')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   @TwoFaNotRequired()
   async turnOnTwoFactorAuthentication(
     @Body() body: TwoFactorAuthDTO,
@@ -101,8 +96,7 @@ export class TwoFactorAuthController {
   @ApiBearerAuth()
   @Post('disable')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   async turnOffTwoFactorAuthentication(
     @Body() body: TwoFactorAuthDTO,
     @CurrentUserId() id: string,
@@ -141,8 +135,7 @@ export class TwoFactorAuthController {
   @ApiBearerAuth()
   @Post('authenticate')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   @TwoFaNotRequired()
   async authenticate(
     @Body() body: TwoFactorAuthDTO,

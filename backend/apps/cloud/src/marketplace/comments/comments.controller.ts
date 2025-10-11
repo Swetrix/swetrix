@@ -41,7 +41,7 @@ export class CommentsController {
     private readonly userService: UserService,
   ) {}
 
-  @Auth([], true, true)
+  @Auth()
   @Get()
   @ApiQuery({ name: 'offset', required: false, type: String })
   @ApiQuery({ name: 'limit', required: false, type: String })
@@ -61,7 +61,7 @@ export class CommentsController {
     }
   }
 
-  @Auth([UserType.CUSTOMER, UserType.ADMIN])
+  @Auth()
   @Post()
   @ApiQuery({ name: 'userId', required: true, type: String })
   async createComment(
@@ -108,7 +108,7 @@ export class CommentsController {
     })
   }
 
-  @Auth([UserType.CUSTOMER, UserType.ADMIN])
+  @Auth()
   @Delete(':commentId')
   @ApiParam({ name: 'commentId', required: true, type: String })
   async deleteComment(
@@ -133,7 +133,7 @@ export class CommentsController {
     await this.commentsService.delete(params.commentId)
   }
 
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth()
   @Post('reply')
   async createCommentReply(
     @Body() commentReplyDto: CreateReplyCommentBodyDto,
@@ -180,7 +180,7 @@ export class CommentsController {
     }
   }
 
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth()
   @Put('reply/:id')
   async updateCommentReply(
     @Param('id') id: string,
@@ -210,7 +210,7 @@ export class CommentsController {
     }
   }
 
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth()
   @Delete('reply/:id')
   async deleteCommentReply(
     @Param('id') id: string,

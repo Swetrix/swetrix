@@ -40,7 +40,7 @@ import {
 import { VALID_PERIODS } from './decorators/validate-period.decorator'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
-import { RolesGuard } from '../auth/guards/roles.guard'
+import { AuthenticationGuard } from '../auth/guards/authentication.guard'
 import { PageviewsDto } from './dto/pageviews.dto'
 import { EventsDto } from './dto/events.dto'
 import { GetDataDto, ChartRenderMode } from './dto/getData.dto'
@@ -184,7 +184,7 @@ const TRANSPARENT_GIF_BUFFER = Buffer.from(
 )
 
 @ApiTags('Analytics')
-@UseGuards(OptionalJwtAccessTokenGuard, RolesGuard)
+@UseGuards(OptionalJwtAccessTokenGuard, AuthenticationGuard)
 @UsePipes(
   new ValidationPipe({
     transform: true,
@@ -199,7 +199,7 @@ export class AnalyticsController {
 
   @ApiBearerAuth()
   @Get()
-  @Auth([], true, true)
+  @Auth(true, true)
   async getData(
     @Query() data: GetDataDto,
     @CurrentUserId() uid: string,
@@ -367,7 +367,7 @@ export class AnalyticsController {
   }
 
   @Get('funnel')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getFunnel(
     @Query() data: GetFunnelsDto,
     @CurrentUserId() uid: string,
@@ -442,7 +442,7 @@ export class AnalyticsController {
   }
 
   @Get('meta')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getCustomEventMetadata(
     @Query() data: GetCustomEventMetadata,
     @CurrentUserId() uid: string,
@@ -462,7 +462,7 @@ export class AnalyticsController {
   }
 
   @Get('property')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getPagePropertyMetadata(
     @Query() data: GetPagePropertyMetaDto,
     @CurrentUserId() uid: string,
@@ -482,7 +482,7 @@ export class AnalyticsController {
   }
 
   @Get('filters')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getFilters(
     @Query() data: GetFiltersDto,
     @CurrentUserId() uid: string,
@@ -502,7 +502,7 @@ export class AnalyticsController {
   }
 
   @Get('errors-filters')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getErrorsFilters(
     @Query() data: GetFiltersDto,
     @CurrentUserId() uid: string,
@@ -522,7 +522,7 @@ export class AnalyticsController {
   }
 
   @Get('chart')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getChartData(
     @Query() data: GetDataDto,
     @CurrentUserId() uid: string,
@@ -575,7 +575,7 @@ export class AnalyticsController {
   }
 
   @Get('performance')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getPerfData(
     @Query() data: GetDataDto & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
@@ -656,7 +656,7 @@ export class AnalyticsController {
   }
 
   @Get('performance/chart')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getPerfChartData(
     @Query() data: GetDataDto & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
@@ -710,7 +710,7 @@ export class AnalyticsController {
   }
 
   @Get('captcha')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getCaptchaData(
     @Query() data: GetDataDto,
     @CurrentUserId() uid: string,
@@ -719,7 +719,7 @@ export class AnalyticsController {
   }
 
   @Get('user-flow')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getUserFlow(
     @Query() data: GetUserFlowDto,
     @CurrentUserId() uid: string,
@@ -767,7 +767,7 @@ export class AnalyticsController {
   }
 
   @Get('birdseye')
-  @Auth([], true, true)
+  @Auth(true, true)
   // returns overall short statistics per project
   async getOverallStats(
     @Query() data: GetOverallStatsDto,
@@ -825,7 +825,7 @@ export class AnalyticsController {
   }
 
   @Get('captcha/birdseye')
-  @Auth([], true, true)
+  @Auth(true, true)
   // returns overall short statistics per CAPTCHA project
   async getCaptchaOverallStats(
     @Query() data: GetOverallStatsDto,
@@ -876,7 +876,7 @@ export class AnalyticsController {
   }
 
   @Get('performance/birdseye')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getPerformanceOverallStats(
     @Query() data: GetOverallStatsDto & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
@@ -997,7 +997,7 @@ export class AnalyticsController {
   }
 
   @Get('live-visitors')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getLiveVisitors(
     @Query() queryParams: LiveVisitorsDto,
     @CurrentUserId() uid: string,
@@ -1141,7 +1141,7 @@ export class AnalyticsController {
 
   // Update error(s) status
   @Patch('error-status')
-  @Auth([], true, true)
+  @Auth(true, true)
   async patchStatus(
     @Body() statusDTO: PatchStatusDto,
     @CurrentUserId() uid: string,
@@ -1253,7 +1253,7 @@ export class AnalyticsController {
   }
 
   @Post('hb')
-  @Auth([], true, true)
+  @Auth(true, true)
   async heartbeat(
     @Body() logDTO: PageviewsDto,
     @Headers() headers,
@@ -1489,7 +1489,7 @@ export class AnalyticsController {
   }
 
   @Get('sessions')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getSessions(
     @Query() data: GetSessionsDto,
     @CurrentUserId() uid: string,
@@ -1564,7 +1564,7 @@ export class AnalyticsController {
   }
 
   @Get('errors')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getErrors(
     @Query() data: GetErrorsDto,
     @CurrentUserId() uid: string,
@@ -1647,7 +1647,7 @@ export class AnalyticsController {
   }
 
   @Get('get-error')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getError(
     @Query() data: GetErrorDto,
     @CurrentUserId() uid: string,
@@ -1708,7 +1708,7 @@ export class AnalyticsController {
   }
 
   @Get('session')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getSession(
     @Query() data: GetSessionDto,
     @CurrentUserId() uid: string,
@@ -1741,7 +1741,7 @@ export class AnalyticsController {
   }
 
   @Get('custom-events')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getCustomEvents(
     @Query() data: GetCustomEventsDto,
     @CurrentUserId() uid: string,

@@ -1,33 +1,17 @@
 import {
-  Body,
-  ConflictException,
   Controller,
-  Delete,
   Get,
   NotFoundException,
   Param,
-  Patch,
-  Post,
   Query,
-  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
-import { JwtAccessTokenGuard } from '../../auth/guards'
-import { Roles } from '../../auth/decorators/roles.decorator'
-import { RolesGuard } from '../../auth/guards/roles.guard'
-import { UserType } from '../../user/entities/user.entity'
+import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { CategoriesService } from './categories.service'
 import { Category } from './category.entity'
-import { CreateCategory } from './dtos/create-category.dto'
-import { DeleteCategoryParams } from './dtos/delete-category-params.dto'
 import { GetAllCategoriesQueries } from './dtos/get-all-categories-queries.dto'
 import { GetCategoryParams } from './dtos/get-category-params.dto'
-import { UpdateCategoryParams } from './dtos/update-category-params.dto'
-import { UpdateCategory } from './dtos/update-category.dto'
-import { ISaveCategory } from './interfaces/save-category.interface'
-import { BodyValidationPipe } from '../common/pipes/body-validation.pipe'
 
 @ApiTags('categories')
 @UsePipes(
@@ -89,76 +73,5 @@ export class CategoriesController {
     }
 
     return category
-  }
-
-  @ApiBearerAuth()
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
-  @Post()
-  async createCategory(
-    @Body() body: CreateCategory,
-  ): Promise<ISaveCategory & Category> {
-    const categoryName = await this.categoriesService.findByName(body.name)
-
-    if (categoryName) {
-      throw new ConflictException('A category with that name already exists.')
-    }
-
-    const categoryInstance = this.categoriesService.create(body)
-
-    return this.categoriesService.save(categoryInstance)
-  }
-
-  @ApiBearerAuth()
-  @ApiParam({
-    name: 'categoryId',
-    description: 'Category ID',
-    example: 1,
-    type: Number,
-  })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
-  @Patch(':categoryId')
-  async updateCategory(
-    @Param() params: UpdateCategoryParams,
-    @Body(new BodyValidationPipe()) body: UpdateCategory,
-  ): Promise<UpdateCategory> {
-    const category = await this.categoriesService.findById(params.categoryId)
-
-    if (!category) {
-      throw new NotFoundException('Category not found.')
-    }
-
-    if (body.name) {
-      const categoryName = await this.categoriesService.findByName(body.name)
-
-      if (categoryName) {
-        throw new ConflictException('A category with that name already exists.')
-      }
-    }
-
-    await this.categoriesService.update(category.id, body)
-
-    return body
-  }
-
-  @ApiBearerAuth()
-  @ApiParam({
-    name: 'categoryId',
-    description: 'Category ID',
-    example: 1,
-    type: Number,
-  })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
-  @Delete(':categoryId')
-  async deleteCategory(@Param() params: DeleteCategoryParams): Promise<void> {
-    const category = await this.categoriesService.findById(params.categoryId)
-
-    if (!category) {
-      throw new NotFoundException('Category not found.')
-    }
-
-    await this.categoriesService.delete(category.id)
   }
 }

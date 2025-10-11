@@ -3,7 +3,6 @@ import {
   Body,
   Query,
   Param,
-  UseGuards,
   Get,
   Post,
   Put,
@@ -43,7 +42,6 @@ import _includes from 'lodash/includes'
 import dayjs from 'dayjs'
 import { hash } from 'bcrypt'
 
-import { JwtAccessTokenGuard } from '../auth/guards'
 import { Auth } from '../auth/decorators'
 import { isValidDate } from '../analytics/analytics.service'
 import {
@@ -52,7 +50,6 @@ import {
   ProjectService,
   deleteProjectRedis,
 } from './project.service'
-import { RolesGuard } from '../auth/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
@@ -101,8 +98,6 @@ import { ProjectIdDto } from './dto/project-id.dto'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
 import { UpdateProjectViewDto } from './dto/update-project-view.dto'
 import { UserService } from '../user/user.service'
-import { Roles } from '../auth/decorators/roles.decorator'
-import { UserType } from '../user/entities/user.entity'
 import { MailerService } from '../mailer/mailer.service'
 import { LetterTemplate } from '../mailer/letter'
 
@@ -126,7 +121,7 @@ export class ProjectController {
     type: String,
   })
   @ApiResponse({ status: 200, type: [Project] })
-  @Auth([], true)
+  @Auth(true)
   async get(
     @CurrentUserId() userId: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
@@ -295,7 +290,7 @@ export class ProjectController {
   }
 
   @Post('transfer')
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth()
   async transferProject(
     @Body() body: TransferProjectBodyDto,
     @CurrentUserId() userId: string,
@@ -331,8 +326,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Post('/:pid/share')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   async share(
     @Param('pid') pid: string,
     @Body() body: { email: string; role: 'admin' | 'viewer' },
@@ -417,8 +411,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Put('/share/:shareId')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   async updateShare(
     @Param('shareId') shareId: string,
     @Body() body: { role: 'admin' | 'viewer' },
@@ -453,7 +446,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
-  @Auth([], true)
+  @Auth(true)
   async create(
     @Body() projectDTO: CreateProjectDTO,
     @CurrentUserId() userId: string,
@@ -482,7 +475,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Delete('/reset/:id')
   @HttpCode(204)
-  @Auth([], true)
+  @Auth(true)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async reset(
     @Param('id') id: string,
@@ -519,7 +512,7 @@ export class ProjectController {
 
   @Post('/funnel')
   @ApiResponse({ status: 201 })
-  @Auth([], true)
+  @Auth(true)
   async createFunnel(
     @Body() funnelDTO: FunnelCreateDTO,
     @CurrentUserId() userId: string,
@@ -559,7 +552,7 @@ export class ProjectController {
 
   @Patch('/funnel')
   @ApiResponse({ status: 200 })
-  @Auth([], true)
+  @Auth(true)
   async updateFunnel(
     @Body() funnelDTO: FunnelUpdateDTO,
     @CurrentUserId() userId: string,
@@ -597,7 +590,7 @@ export class ProjectController {
 
   @Delete('/funnel/:id/:pid')
   @ApiResponse({ status: 200 })
-  @Auth([], true)
+  @Auth(true)
   async deleteFunnel(
     @Param('id') id: string,
     @Param('pid') pid: string,
@@ -628,7 +621,7 @@ export class ProjectController {
 
   @Get('/funnels/:pid')
   @ApiResponse({ status: 200 })
-  @Auth([], true)
+  @Auth(true)
   async getFunnels(
     @Param('pid') pid: string,
     @CurrentUserId() userId: string,
@@ -654,7 +647,7 @@ export class ProjectController {
   }
 
   @Get('password/:projectId')
-  @Auth([], true, true)
+  @Auth(true, true)
   @ApiResponse({ status: 200, type: Project })
   async checkPassword(
     @Param('projectId') projectId: string,
@@ -694,8 +687,8 @@ export class ProjectController {
     type: 'string',
   })
   @ApiResponse({ status: 200 })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Auth([], true)
+  @Auth()
+  @Auth(true)
   async deletePartially(
     @Param('pid') pid: string,
     @Query('from') from: string,
@@ -737,7 +730,7 @@ export class ProjectController {
 
   @Delete('/:id')
   @HttpCode(204)
-  @Auth([], true)
+  @Auth(true)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async delete(
     @Param('id') id: string,
@@ -778,7 +771,7 @@ export class ProjectController {
 
   @Put('/:id')
   @HttpCode(200)
-  @Auth([], true)
+  @Auth(true)
   @ApiResponse({ status: 200, type: Project })
   async update(
     @Param('id') id: string,
@@ -846,7 +839,7 @@ export class ProjectController {
   }
 
   @Get('/:id')
-  @Auth([], true, true)
+  @Auth(true, true)
   @ApiResponse({ status: 200, type: Project })
   async getOne(
     @Param('id') id: string,
@@ -945,7 +938,7 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Get(':projectId/views/:viewId')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getProjectView(
     @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,
@@ -966,7 +959,7 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Post(':projectId/views')
-  @Auth([], true)
+  @Auth(true)
   async createProjectView(
     @Param() params: ProjectIdDto,
     @Body() body: CreateProjectViewDto,
@@ -1019,7 +1012,7 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Get(':projectId/views')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getProjectViews(
     @Param() params: ProjectIdDto,
     @CurrentUserId() userId: string,
@@ -1042,7 +1035,7 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Patch(':projectId/views/:viewId')
-  @Auth([], true)
+  @Auth(true)
   async updateProjectView(
     @Param() params: ProjectViewIdsDto,
     @Body() body: UpdateProjectViewDto,
@@ -1090,8 +1083,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Delete('/:pid/:shareId')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   async deleteShare(
     @Param('pid') pid: string,
     @Param('shareId') shareId: string,
@@ -1128,7 +1120,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':projectId/views/:viewId')
-  @Auth([], true)
+  @Auth(true)
   async deleteProjectView(
     @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,

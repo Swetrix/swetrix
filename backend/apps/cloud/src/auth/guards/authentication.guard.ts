@@ -3,47 +3,27 @@ import { Reflector } from '@nestjs/core'
 import { ExtractJwt } from 'passport-jwt'
 import { verify } from 'jsonwebtoken'
 
-import { UserType } from '../../user/entities/user.entity'
 import { UserService } from '../../user/user.service'
 import { JWT_ACCESS_TOKEN_SECRET } from '../../common/constants'
-import { IS_TWO_FA_NOT_REQUIRED_KEY, ROLES_KEY } from '../decorators'
+import { IS_TWO_FA_NOT_REQUIRED_KEY } from '../decorators'
 
 @Injectable()
-export class RolesGuard implements CanActivate {
+export class AuthenticationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly userService: UserService,
   ) {}
 
   async canActivate(context: ExecutionContext) {
-    const roles = this.reflector.get<UserType[]>(
-      ROLES_KEY,
-      context.getHandler(),
-    )
-
     const isTwoFaNotRequired = this.reflector.get<boolean>(
       IS_TWO_FA_NOT_REQUIRED_KEY,
       context.getHandler(),
     )
 
-    if (!roles || roles.length === 0) return true
-
     const request = context.switchToHttp().getRequest()
     const userFromRequest = request.user
 
     const user = await this.userService.findUserById(userFromRequest.id)
-
-    // this is a temp measure as well due to some fucking bug related to undefined user, will revert it when I find the cause
-    let hasRole
-    try {
-      hasRole = user.roles.some(role => roles.includes(role))
-    } catch (error) {
-      console.error(`[AUTH ERROR - ROLES GUARD] ${error.message}`)
-      console.error(user, roles)
-      console.error(request?.path, request?.originalUrl, request?.method)
-    }
-
-    if (!hasRole) return false
 
     let token = ''
     if (request.cookies.token) {
@@ -53,12 +33,14 @@ export class RolesGuard implements CanActivate {
       token = extract(request)
     }
 
-    if (isTwoFaNotRequired) {
+    if (isTwoFaNotRequired || !token) {
       return true
     }
 
     try {
       const decoded: any = verify(token, JWT_ACCESS_TOKEN_SECRET)
+
+      console.log('AuthenticationGuard decoded', decoded)
 
       // If the token is not decoded, it means it's invalid
       if (!decoded) {
