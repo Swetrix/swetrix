@@ -63,7 +63,7 @@ export interface GetFiltersQuery extends Array<string | object | boolean> {
   0: string
   // an object that has structure like { cf_pg: '/signup', ev_exclusive: false }
   1: { [key: string]: string | boolean }
-  // an array of objects like [{ "column":"pg", "filter":"/signup", "isExclusive":true }]
+  // an array of objects like [{ "column":"pg", "filter":"/signup", "isExclusive":true, "isContains":false }]
   2: Array<{ [key: string]: string }> | []
   // flag that indicates if there is an 'ev' filter for custom events
   3: boolean

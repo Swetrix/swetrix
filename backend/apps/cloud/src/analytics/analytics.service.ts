@@ -857,13 +857,14 @@ export class AnalyticsService {
     return _reduce(
       parsedFilters,
       (prev, curr) => {
-        const { column, filter, isExclusive } = curr
+        const { column, filter, isExclusive, isContains = false } = curr
 
         if (_isArray(filter)) {
           const filterArray = _map(filter, f => ({
             column,
             filter: f,
             isExclusive,
+            isContains,
           }))
           return [...prev, ...filterArray]
         }
@@ -929,7 +930,7 @@ export class AnalyticsService {
     const converted = _reduce(
       parsed,
       (prev, curr) => {
-        const { column, filter, isExclusive = false } = curr
+        const { column, filter, isExclusive = false, isContains = false } = curr
 
         if (column === 'ev' && ignoreEV) {
           return prev
@@ -966,7 +967,7 @@ export class AnalyticsService {
             // }
 
             // res.push({ filter: encoded, isExclusive })
-            res.push({ filter: f, isExclusive })
+            res.push({ filter: f, isExclusive, isContains })
           }
         } else {
           // let encoded = filter
@@ -976,7 +977,7 @@ export class AnalyticsService {
           // }
 
           // res.push({ filter: encoded, isExclusive })
-          res.push({ filter, isExclusive })
+          res.push({ filter, isExclusive, isContains })
         }
 
         if (prev[column]) {
@@ -1001,7 +1002,7 @@ export class AnalyticsService {
           query += ' OR '
         }
 
-        const { filter, isExclusive } = converted[column][f]
+        const { filter, isExclusive, isContains } = converted[column][f]
         let sqlColumn = column
         let isArrayDataset = false
 
@@ -1014,7 +1015,9 @@ export class AnalyticsService {
             column === 'entryPage'
               ? 'argMin(pg, created)'
               : 'argMax(pg, created)'
-          const subQueryForPages = `SELECT psid FROM (SELECT psid, ${pageSelector} as page FROM analytics WHERE pid = {pid:FixedString(12)} GROUP BY psid) WHERE page = {${param}:String}`
+          const subQueryForPages = isContains
+            ? `SELECT psid FROM (SELECT psid, ${pageSelector} as page FROM analytics WHERE pid = {pid:FixedString(12)} GROUP BY psid) WHERE page ILIKE concat('%', {${param}:String}, '%')`
+            : `SELECT psid FROM (SELECT psid, ${pageSelector} as page FROM analytics WHERE pid = {pid:FixedString(12)} GROUP BY psid) WHERE page = {${param}:String}`
 
           // For exclusive filter (isNot) we exclude sessions with matching entry/exit page
           query += `psid ${isExclusive ? 'NOT IN' : 'IN'} (${subQueryForPages})`
@@ -1027,9 +1030,15 @@ export class AnalyticsService {
           const keyParam = `qfk_${col}_${f}`
           params[keyParam] = key
 
-          query += `indexOf(meta.key, {${keyParam}:String}) > 0 AND meta.value[indexOf(meta.key, {${keyParam}:String})] ${
-            isExclusive ? '!= ' : '='
-          } {${param}:String}`
+          if (isContains) {
+            query += `indexOf(meta.key, {${keyParam}:String}) > 0 AND ${
+              isExclusive ? 'NOT ' : ''
+            }(meta.value[indexOf(meta.key, {${keyParam}:String})] ILIKE concat('%', {${param}:String}, '%'))`
+          } else {
+            query += `indexOf(meta.key, {${keyParam}:String}) > 0 AND meta.value[indexOf(meta.key, {${keyParam}:String})] ${
+              isExclusive ? '!= ' : '='
+            } {${param}:String}`
+          }
           continue
         }
 
@@ -1045,8 +1054,6 @@ export class AnalyticsService {
           isArrayDataset = true
         }
 
-        // TODO: In future I will add contains / not contains filters as well via ILIKE operator
-
         const isNullFilter =
           filter === null ||
           (typeof filter === 'string' && filter.toLowerCase() === 'null')
@@ -1058,11 +1065,20 @@ export class AnalyticsService {
           continue
         }
 
-        query += isArrayDataset
-          ? `indexOf(${sqlColumn}, {${param}:String}) ${
-              isExclusive ? '=' : '>'
-            } 0`
-          : `${isExclusive ? 'NOT ' : ''}${sqlColumn} = {${param}:String}`
+        if (isContains) {
+          if (isArrayDataset) {
+            // any array element contains substring (case-insensitive)
+            query += `${isExclusive ? 'NOT ' : ''}arrayExists(v -> positionCaseInsensitive(v, {${param}:String}) > 0, ${sqlColumn})`
+          } else {
+            query += `${isExclusive ? 'NOT ' : ''}${sqlColumn} ILIKE concat('%', {${param}:String}, '%')`
+          }
+        } else {
+          query += isArrayDataset
+            ? `indexOf(${sqlColumn}, {${param}:String}) ${
+                isExclusive ? '=' : '>'
+              } 0`
+            : `${isExclusive ? 'NOT ' : ''}${sqlColumn} = {${param}:String}`
+        }
       }
 
       query += ')'

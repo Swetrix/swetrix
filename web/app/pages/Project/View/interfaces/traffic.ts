@@ -4,6 +4,8 @@ export interface Filter {
   column: string
   filter: string
   isExclusive: boolean
+  // When true, this filter uses substring match (contains/not contains) instead of equality
+  isContains?: boolean
 }
 
 export enum ProjectViewCustomEventMetaValueType {

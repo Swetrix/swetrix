@@ -925,8 +925,10 @@
     "addAMetric": "Add a metric",
     "customEvent": "Custom event",
     "removeFilter": "Remove filter",
-    "toggleFilterToIs": "Change filter from '{{column}} is not \"{{filter}}\"' to '{{column}} is \"{{filter}}\"'",
-    "toggleFilterToIsNot": "Change filter from '{{column}} is \"{{filter}}\"' to '{{column}} is not \"{{filter}}\"'",
+    "toggleFilterToIs": "Change filter to '{{column}} is \"{{filter}}\"'",
+    "toggleFilterToIsNot": "Change filter to '{{column}} is not \"{{filter}}\"'",
+    "toggleFilterToContains": "Change filter to '{{column}} contains \"{{filter}}\"'",
+    "toggleFilterToNotContains": "Change filter to '{{column}} not contains \"{{filter}}\"'",
     "location": "Location",
     "pages": "Pages",
     "devices": "Devices",
@@ -1102,6 +1104,10 @@
     "codeExample": "Or insert the following code into your website to track your events:",
     "metricVis": "Metrics visualisation",
     "filters": "Filters",
+    "contains": {
+      "is": "contains",
+      "not": "not contains"
+    },
     "showResolved": "Show resolved",
     "resolve": "Resolve",
     "markAsActive": "Mark as active",

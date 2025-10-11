@@ -2403,7 +2403,10 @@ const ViewProjectContent = () => {
     let searchString = ''
 
     if (isFilterActive) {
-      newSearchParams.delete(column)
+      newSearchParams.delete(column, value)
+      newSearchParams.delete(`!${column}`, value)
+      newSearchParams.delete(`~${column}`, value)
+      newSearchParams.delete(`^${column}`, value)
       searchString = newSearchParams.toString()
     } else {
       newSearchParams.append(column, value)

@@ -45,7 +45,7 @@ export class GetDataDto {
 
   @ApiProperty({
     description:
-      'A stringified array of properties to filter [{ column, filter, isExclusive }]',
+      'A stringified array of properties to filter [{ column, filter, isExclusive, isContains }]',
     required: false,
   })
   filters: string

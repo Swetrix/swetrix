@@ -74,11 +74,17 @@ export const filterInvalidPreferences = (
 }
 
 export const isFilterValid = (filter: string, checkDynamicFilters = false) => {
-  if (_includes(validFilters, filter)) {
+  // normalise by removing operator prefixes from the URL key
+  let normalised = filter
+  if (_startsWith(normalised, '!') || _startsWith(normalised, '~') || _startsWith(normalised, '^')) {
+    normalised = normalised.substring(1)
+  }
+
+  if (_includes(validFilters, normalised)) {
     return true
   }
 
-  if (checkDynamicFilters && _some(validDynamicFilters, (prefix) => _startsWith(filter, prefix))) {
+  if (checkDynamicFilters && _some(validDynamicFilters, (prefix) => _startsWith(normalised, prefix))) {
     return true
   }
 
@@ -94,9 +100,17 @@ export const parseFilters = (searchParams: URLSearchParams): Filter[] => {
     let actualColumn = key
 
     let isExclusive = false
+    let isContains = false
 
     if (key.startsWith('!')) {
       isExclusive = true
+      actualColumn = key.substring(1)
+    } else if (key.startsWith('~')) {
+      isContains = true
+      actualColumn = key.substring(1)
+    } else if (key.startsWith('^')) {
+      isExclusive = true
+      isContains = true
       actualColumn = key.substring(1)
     }
 
@@ -108,6 +122,7 @@ export const parseFilters = (searchParams: URLSearchParams): Filter[] => {
       column: actualColumn,
       filter: value,
       isExclusive: isExclusive,
+      isContains,
     })
   }
 

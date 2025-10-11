@@ -51,6 +51,7 @@ export interface Filter {
   column: keyof typeof TRAFFIC_COLUMNS
   filter: string
   isExclusive: boolean
+  isContains?: boolean
 }
 
 export const MAX_METRICS_IN_VIEW = 3
@@ -70,7 +71,7 @@ export class CreateProjectViewDto {
 
   @ApiProperty({
     description:
-      'An array of properties to filter [{ column, filter, isExclusive }]',
+      'An array of properties to filter [{ column, filter, isExclusive, isContains }]',
     required: false,
     isArray: true,
   })

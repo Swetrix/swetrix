@@ -265,6 +265,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
         column: filterType,
         filter: processedItem,
         isExclusive: false,
+        isContains: false,
       },
     ])
   }
@@ -391,7 +392,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
             </>
           ) : null}
           <div className='mt-2'>
-            {_map(activeFilters, ({ filter, column, isExclusive }) => (
+            {_map(activeFilters, ({ filter, column, isExclusive, isContains }) => (
               <Filter
                 key={`${column}-${filter}`}
                 onRemoveFilter={(e) => {
@@ -410,11 +411,23 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
                   setActiveFilters((prevFilters: any) => {
                     return _map(prevFilters, (item) => {
                       if (item.column === column && item.filter === filter) {
-                        return {
-                          column,
-                          filter,
-                          isExclusive: !isExclusive,
+                        let nextContains = isContains
+                        let nextExclusive = isExclusive
+                        if (!isContains && !isExclusive) {
+                          nextContains = false
+                          nextExclusive = true
+                        } else if (!isContains && isExclusive) {
+                          nextContains = true
+                          nextExclusive = false
+                        } else if (isContains && !isExclusive) {
+                          nextContains = true
+                          nextExclusive = true
+                        } else {
+                          nextContains = false
+                          nextExclusive = false
                         }
+
+                        return { column, filter, isExclusive: nextExclusive, isContains: nextContains }
                       }
 
                       return item
@@ -425,6 +438,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
                 column={column}
                 filter={filter}
                 tnMapping={tnMapping}
+                isContains={isContains}
                 canChangeExclusive
                 removable
               />
