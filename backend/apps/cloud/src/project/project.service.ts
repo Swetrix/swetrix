@@ -1031,16 +1031,6 @@ export class ProjectService {
     await deleteProjectsRedis(pids)
   }
 
-  async clearProjectsRedisCacheByEmail(email: string): Promise<void> {
-    const user = await this.userService.findOne({ where: { email } })
-
-    if (!user) {
-      return
-    }
-
-    await this.clearProjectsRedisCache(user.id)
-  }
-
   async clearProjectsRedisCacheBySubId(subID: string): Promise<void> {
     const user = await this.userService.findOne({ where: { subID } })
 

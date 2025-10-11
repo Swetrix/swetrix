@@ -175,13 +175,8 @@ export class WebhookController {
           ...statusParams,
         }
 
-        if (uid) {
-          await this.userService.update(uid, updateParams)
-          await this.projectService.clearProjectsRedisCache(uid)
-        } else {
-          await this.userService.updateByEmail(email, updateParams)
-          await this.projectService.clearProjectsRedisCacheByEmail(email)
-        }
+        await this.userService.update(currentUser.id, updateParams)
+        await this.projectService.clearProjectsRedisCache(currentUser.id)
 
         if (status === 'paused') {
           await this.mailerService.sendEmail(
