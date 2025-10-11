@@ -5,8 +5,6 @@ import countriesFr from 'i18n-iso-countries/langs/fr.json'
 import countriesPl from 'i18n-iso-countries/langs/pl.json'
 import countriesUk from 'i18n-iso-countries/langs/uk.json'
 
-console.log('countriesEn:', countriesEn)
-
 countries.registerLocale({
   locale: 'en',
   countries: {
