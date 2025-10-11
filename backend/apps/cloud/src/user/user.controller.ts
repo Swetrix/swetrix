@@ -43,7 +43,6 @@ import {
   User,
   MAX_EMAIL_REQUESTS,
   PlanCode,
-  Theme,
   FeatureFlag,
   OnboardingStep,
 } from './entities/user.entity'
@@ -117,15 +116,6 @@ export class UserController {
       user: sanitizedUser,
       totalMonthlyEvents,
     }
-  }
-
-  @ApiBearerAuth()
-  @Put('/theme')
-  async setTheme(
-    @CurrentUserId() userId: string,
-    @Body('theme') theme: Theme,
-  ): Promise<User> {
-    return this.userService.update(userId, { theme })
   }
 
   @ApiBearerAuth()

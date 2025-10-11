@@ -40,8 +40,6 @@ export class AuthenticationGuard implements CanActivate {
     try {
       const decoded: any = verify(token, JWT_ACCESS_TOKEN_SECRET)
 
-      console.log('AuthenticationGuard decoded', decoded)
-
       // If the token is not decoded, it means it's invalid
       if (!decoded) {
         return false
