@@ -2403,7 +2403,6 @@ const ViewProjectContent = () => {
     let searchString = ''
 
     if (isFilterActive) {
-      // Remove any operator variant for this column/value
       newSearchParams.delete(column, value)
       newSearchParams.delete(`!${column}`, value)
       newSearchParams.delete(`~${column}`, value)
