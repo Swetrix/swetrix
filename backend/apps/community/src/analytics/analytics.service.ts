@@ -881,7 +881,7 @@ export class AnalyticsService {
     let query = ''
     let customEVFilterApplied = false
 
-    if (_isEmpty(filters)) {
+    if (filters === '""' || _isEmpty(filters)) {
       return [query, params, parsed, customEVFilterApplied]
     }
 
@@ -989,13 +989,15 @@ export class AnalyticsService {
         const param = `qf_${col}_${f}`
         params[param] = filter
 
-        // Entry/Exit page virtual filters
+        // Entry/Exit page filters (virtual columns via session scope)
         if (column === 'entryPage' || column === 'exitPage') {
           const pageSelector =
             column === 'entryPage'
               ? 'argMin(pg, created)'
               : 'argMax(pg, created)'
           const subQueryForPages = `SELECT psid FROM (SELECT psid, ${pageSelector} as page FROM analytics WHERE pid = {pid:FixedString(12)} GROUP BY psid) WHERE page = {${param}:String}`
+
+          // For exclusive filter (isNot) we exclude sessions with matching entry/exit page
           query += `psid ${isExclusive ? 'NOT IN' : 'IN'} (${subQueryForPages})`
           continue
         }
@@ -1026,7 +1028,11 @@ export class AnalyticsService {
 
         // TODO: In future I will add contains / not contains filters as well via ILIKE operator
 
-        if (filter === null) {
+        const isNullFilter =
+          filter === null ||
+          (typeof filter === 'string' && filter.toLowerCase() === 'null')
+
+        if (isNullFilter) {
           query += isArrayDataset
             ? ''
             : `${sqlColumn} IS ${isExclusive ? 'NOT' : ''} NULL`

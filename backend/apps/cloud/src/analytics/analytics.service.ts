@@ -1047,7 +1047,11 @@ export class AnalyticsService {
 
         // TODO: In future I will add contains / not contains filters as well via ILIKE operator
 
-        if (filter === null) {
+        const isNullFilter =
+          filter === null ||
+          (typeof filter === 'string' && filter.toLowerCase() === 'null')
+
+        if (isNullFilter) {
           query += isArrayDataset
             ? ''
             : `${sqlColumn} IS ${isExclusive ? 'NOT' : ''} NULL`
