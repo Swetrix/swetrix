@@ -23,7 +23,7 @@ export class AuthenticationGuard implements CanActivate {
     const request = context.switchToHttp().getRequest()
     const userFromRequest = request.user
 
-    const user = await this.userService.findUserById(userFromRequest.id)
+    const user = await this.userService.findUserById(userFromRequest?.id)
 
     let token = ''
     if (request.cookies.token) {
@@ -47,7 +47,7 @@ export class AuthenticationGuard implements CanActivate {
 
       // If the user has 2FA enabled, but the token is temporary (meant to be used for 2FA routes only) then return false
       if (
-        user.isTwoFactorAuthenticationEnabled &&
+        user?.isTwoFactorAuthenticationEnabled &&
         !decoded.isSecondFactorAuthenticated
       ) {
         return false
