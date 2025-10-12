@@ -43,7 +43,6 @@ import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Project } from './entity/project.entity'
 import { ProjectShare, Role } from './entity/project-share.entity'
 import { ProjectDTO } from './dto/project.dto'
-import { UserType } from '../user/entities/user.entity'
 import { MAX_PROJECT_PASSWORD_LENGTH } from './dto/project-password.dto'
 import {
   isValidPID,
@@ -321,7 +320,6 @@ export class ProjectService {
           'project.passwordHash',
           'project.isPasswordProtected',
           'admin.id',
-          'admin.roles',
           'admin.dashboardBlockReason',
           'admin.isAccountBillingSuspended',
           'organisation.id',
@@ -393,7 +391,6 @@ export class ProjectService {
         },
         admin: {
           id: true,
-          roles: true,
           dashboardBlockReason: true,
           isAccountBillingSuspended: true,
         },
@@ -650,12 +647,10 @@ export class ProjectService {
   allowedToManage(
     project: Project,
     uid: string,
-    roles: Array<UserType> = [],
     message = 'You are not allowed to manage this project',
   ): void {
     if (
       uid === project.admin?.id ||
-      _includes(roles, UserType.ADMIN) ||
       _findIndex(
         project.share,
         share => share.user?.id === uid && share.role === Role.admin,
@@ -1033,16 +1028,6 @@ export class ProjectService {
     const pids = _map(projects, 'id')
 
     await deleteProjectsRedis(pids)
-  }
-
-  async clearProjectsRedisCacheByEmail(email: string): Promise<void> {
-    const user = await this.userService.findOne({ where: { email } })
-
-    if (!user) {
-      return
-    }
-
-    await this.clearProjectsRedisCache(user.id)
   }
 
   async clearProjectsRedisCacheBySubId(subID: string): Promise<void> {

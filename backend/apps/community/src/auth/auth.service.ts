@@ -57,27 +57,23 @@ export class AuthService {
     })
   }
 
-  private getFirstFiveChars(passwordHash: string): string {
-    return passwordHash.slice(0, 5)
-  }
+  public async checkIfLeaked(potentialPassword: string): Promise<boolean> {
+    const sha1Hash = await this.createSha1Hash(potentialPassword)
+    const firstFiveChars = sha1Hash.slice(0, 5)
+    const lastChars = sha1Hash.slice(5)
 
-  private async sendRequestToApi(passwordHash: string) {
-    const url = `https://api.pwnedpasswords.com/range/${passwordHash}`
-    const response = await axios.get(url)
+    const response = await axios.get(
+      `https://api.pwnedpasswords.com/range/${firstFiveChars}`,
+    )
 
     if (response.status !== 200) {
-      throw new InternalServerErrorException()
+      console.error(
+        `[ERROR][AuthService -> checkIfLeaked]: Failed to get pwned passwords for ${firstFiveChars}: ${response.status}`,
+      )
+      return false
     }
 
-    return response.data
-  }
-
-  public async checkIfLeaked(password: string): Promise<boolean> {
-    const sha1Hash = await this.createSha1Hash(password)
-    const firstFiveChars = this.getFirstFiveChars(sha1Hash)
-    const response = await this.sendRequestToApi(firstFiveChars)
-
-    return response.includes(firstFiveChars)
+    return response.data.includes(lastChars)
   }
 
   public async hashPassword(password: string): Promise<string> {

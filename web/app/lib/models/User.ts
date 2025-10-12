@@ -38,7 +38,6 @@ enum OnboardingStep {
 
 export interface User {
   id: string
-  roles: string[]
   planCode: PlanCode
   featureFlags: FeatureFlag[]
   nickname: string
@@ -55,7 +54,6 @@ export interface User {
   subUpdateURL: string | null
   subCancelURL: string | null
   timezone: string
-  theme: string | null
   isTwoFactorAuthenticationEnabled: boolean
   trialReminderSent: boolean
   billingFrequency: string | null

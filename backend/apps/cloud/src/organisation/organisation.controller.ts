@@ -4,7 +4,6 @@ import {
   Delete,
   Body,
   Param,
-  UseGuards,
   BadRequestException,
   NotFoundException,
   HttpCode,
@@ -19,11 +18,7 @@ import {
 import { ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { isEmpty as _isEmpty, find as _find, trim as _trim } from 'lodash'
 
-import { JwtAccessTokenGuard } from '../auth/guards/jwt-access-token.guard'
-import { RolesGuard } from '../auth/guards/roles.guard'
-import { Roles } from '../auth/decorators/roles.decorator'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
-import { UserType } from '../user/entities/user.entity'
 import { Organisation } from './entity/organisation.entity'
 import { OrganisationService } from './organisation.service'
 import { UserService } from '../user/user.service'
@@ -65,7 +60,7 @@ export class OrganisationController {
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiResponse({ status: 200, type: [Organisation] })
-  @Auth([], true)
+  @Auth(true)
   async get(
     @CurrentUserId() userId: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
@@ -80,7 +75,7 @@ export class OrganisationController {
   @ApiBearerAuth()
   @Get('/:orgId')
   @ApiResponse({ status: 200, type: Organisation })
-  @Auth([], true)
+  @Auth(true)
   async getOne(
     @Param('orgId') orgId: string,
     @CurrentUserId() userId: string,
@@ -126,10 +121,9 @@ export class OrganisationController {
 
   @ApiBearerAuth()
   @Post('/')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   @ApiResponse({ status: 200, type: Organisation })
-  @Auth([], true)
+  @Auth(true)
   async create(
     @Body() createOrgDTO: CreateOrganisationDTO,
     @CurrentUserId() uid: string,
@@ -155,9 +149,8 @@ export class OrganisationController {
   @ApiBearerAuth()
   @Post('/:orgId/invite')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @Auth([], true)
+  @Auth()
+  @Auth(true)
   async inviteMember(
     @Param('orgId') orgId: string,
     @Body() inviteDTO: InviteMemberDTO,
@@ -263,9 +256,8 @@ export class OrganisationController {
   @ApiBearerAuth()
   @Patch('/member/:memberId')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @Auth([], true)
+  @Auth()
+  @Auth(true)
   async updateMemberRole(
     @Param('memberId') memberId: string,
     @Body() updateDTO: UpdateMemberRoleDTO,
@@ -313,9 +305,8 @@ export class OrganisationController {
   @ApiBearerAuth()
   @Delete('/member/:memberId')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @Auth([], true)
+  @Auth()
+  @Auth(true)
   async removeMember(
     @Param('memberId') memberId: string,
     @CurrentUserId() uid: string,
@@ -350,7 +341,7 @@ export class OrganisationController {
   @ApiBearerAuth()
   @Delete('/:orgId')
   @ApiResponse({ status: 200, type: Organisation })
-  @Auth([], true)
+  @Auth(true)
   async delete(@Param('orgId') orgId: string, @CurrentUserId() userId: string) {
     this.logger.log({ orgId, userId }, 'DELETE /organisation/:orgId')
 
@@ -382,7 +373,7 @@ export class OrganisationController {
   @ApiBearerAuth()
   @Patch('/:orgId')
   @ApiResponse({ status: 200, type: Organisation })
-  @Auth([], true)
+  @Auth(true)
   async update(
     @Param('orgId') orgId: string,
     @Body() updateOrgDTO: UpdateOrganisationDTO,

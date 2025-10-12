@@ -1,6 +1,5 @@
 import {
   Controller,
-  Query,
   Req,
   Body,
   Param,
@@ -17,10 +16,9 @@ import {
   Ip,
   Patch,
   NotFoundException,
-  ParseIntPipe,
 } from '@nestjs/common'
 import { Request } from 'express'
-import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import _map from 'lodash/map'
@@ -36,32 +34,27 @@ import { HttpService } from '@nestjs/axios'
 import { catchError, firstValueFrom, map, of } from 'rxjs'
 
 import { Markup } from 'telegraf'
-import { JwtAccessTokenGuard } from '../auth/guards'
 
-import { Public, Roles, CurrentUserId, Auth } from '../auth/decorators'
+import { Public, CurrentUserId, Auth } from '../auth/decorators'
 import { TelegramService } from '../integrations/telegram/telegram.service'
 import { UserService } from './user.service'
 import { ProjectService, deleteProjectRedis } from '../project/project.service'
 import {
   User,
-  UserType,
   MAX_EMAIL_REQUESTS,
   PlanCode,
-  Theme,
   FeatureFlag,
   OnboardingStep,
 } from './entities/user.entity'
-import { Pagination } from '../common/pagination/pagination'
 import {
   GDPR_EXPORT_TIMEFRAME,
   isDevelopment,
   PRODUCTION_ORIGIN,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
-import { RolesGuard } from '../auth/guards/roles.guard'
+import { AuthenticationGuard } from '../auth/guards/authentication.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { IChangePlanDTO } from './dto/change-plan.dto'
-import { AdminUpdateUserProfileDTO } from './dto/admin-update-user.dto'
 import { SetShowLiveVisitorsDTO } from './dto/set-show-live-visitors.dto'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
@@ -69,7 +62,6 @@ import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { AuthService } from '../auth/auth.service'
 import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
-import { UserProfileDTO } from './dto/user.dto'
 import { DeleteSelfDTO } from './dto/delete-self.dto'
 import {
   checkRateLimit,
@@ -87,7 +79,7 @@ const UNPAID_PLANS = [PlanCode.free, PlanCode.trial, PlanCode.none]
 
 @ApiTags('User')
 @Controller('user')
-@UseGuards(JwtAccessTokenGuard, RolesGuard)
+@Auth()
 export class UserController {
   constructor(
     private readonly userService: UserService,
@@ -103,8 +95,7 @@ export class UserController {
 
   @ApiBearerAuth()
   @Get('/me')
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @UseGuards(AuthenticationGuard)
   async me(@CurrentUserId() uid: string) {
     this.logger.log({ uid }, 'GET /user/me')
 
@@ -128,34 +119,7 @@ export class UserController {
   }
 
   @ApiBearerAuth()
-  @Get('/')
-  @ApiQuery({ name: 'take', required: false })
-  @ApiQuery({ name: 'skip', required: false })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
-  async get(
-    @Query('take', new ParseIntPipe({ optional: true })) take?: number,
-    @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
-  ): Promise<Pagination<User> | User[]> {
-    this.logger.log({ take, skip }, 'GET /user')
-    return this.userService.paginate({ take, skip })
-  }
-
-  @ApiBearerAuth()
-  @Put('/theme')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async setTheme(
-    @CurrentUserId() userId: string,
-    @Body('theme') theme: Theme,
-  ): Promise<User> {
-    return this.userService.update(userId, { theme })
-  }
-
-  @ApiBearerAuth()
   @Put('/feature-flags')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async setFeatureFlags(
     @CurrentUserId() userId: string,
     @Body('featureFlags') featureFlags: FeatureFlag[],
@@ -165,8 +129,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Put('/live-visitors')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async setShowLiveVisitors(
     @CurrentUserId() userId: string,
     @Body() body: SetShowLiveVisitorsDTO,
@@ -181,44 +143,7 @@ export class UserController {
   }
 
   @ApiBearerAuth()
-  @Get('/search')
-  @ApiQuery({ name: 'query', required: false })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
-  async searchUsers(
-    @Query('query') query: string | undefined,
-  ): Promise<User[]> {
-    this.logger.log({ query }, 'GET /user/search')
-    return this.userService.search(query)
-  }
-
-  @ApiBearerAuth()
-  @Post('/')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
-  async create(@Body() userDTO: UserProfileDTO): Promise<User | null> {
-    this.logger.log({ userDTO }, 'POST /user')
-    this.userService.validatePassword(userDTO.password)
-    userDTO.password = await this.authService.hashPassword(userDTO.password)
-
-    try {
-      const user = await this.userService.create({ ...userDTO, isActive: true })
-      return user
-    } catch (e) {
-      if (e.code === 'ER_DUP_ENTRY') {
-        if (e.sqlMessage.includes(userDTO.email)) {
-          throw new BadRequestException('User with this email already exists')
-        }
-      }
-    }
-
-    return null
-  }
-
-  @ApiBearerAuth()
   @Post('/recieve-login-notifications')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async receiveLoginNotifications(
     @CurrentUserId() userId: string,
     @Body('receiveLoginNotifications') receiveLoginNotifications: boolean,
@@ -233,8 +158,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Patch('/set-paypal-email')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async setPaypalEmail(
     @CurrentUserId() userId: string,
     @Body('paypalPaymentsEmail') paypalPaymentsEmail: string,
@@ -269,8 +192,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Post('/api-key')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async generateApiKey(
     @CurrentUserId() userId: string,
     @Headers() headers,
@@ -299,8 +220,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Delete('/api-key')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteApiKey(@CurrentUserId() userId: string): Promise<void> {
     this.logger.log({ userId }, 'DELETE /user/api-key')
 
@@ -314,76 +233,8 @@ export class UserController {
   }
 
   @ApiBearerAuth()
-  @Delete('/:id')
-  @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
-  async delete(
-    @Param('id') id: string,
-    @CurrentUserId() uid: string,
-  ): Promise<any> {
-    this.logger.log({ id, uid }, 'DELETE /user/:id')
-    const user = await this.userService.findOne({
-      where: { id },
-      relations: ['projects'],
-      select: ['id', 'planCode'],
-    })
-
-    if (_isEmpty(user)) {
-      throw new BadRequestException(`User with id ${id} does not exist`)
-    }
-
-    if (!_includes(UNPAID_PLANS, user.planCode)) {
-      throw new BadRequestException('cancelSubFirst')
-    }
-
-    try {
-      if (!_isEmpty(user.projects)) {
-        const pids = _join(
-          _map(user.projects, el => `'${el.id}'`),
-          ',',
-        )
-
-        const queries = [
-          `ALTER TABLE analytics DELETE WHERE pid IN (${pids})`,
-          `ALTER TABLE customEV DELETE WHERE pid IN (${pids})`,
-          `ALTER TABLE performance DELETE WHERE pid IN (${pids})`,
-          `ALTER TABLE errors DELETE WHERE pid IN (${pids})`,
-          `ALTER TABLE error_statuses DELETE WHERE pid IN (${pids})`,
-          `ALTER TABLE captcha DELETE WHERE pid IN (${pids})`,
-        ]
-
-        await this.projectService.deleteMultiple(user.projects.map(el => el.id))
-
-        const promises = _map(queries, async query =>
-          clickhouse.command({
-            query,
-          }),
-        )
-        await Promise.all(promises)
-      }
-      await this.actionTokensService.deleteMultiple(`userId="${id}"`)
-      await this.userService.deleteAllRefreshTokens(id)
-      await this.projectService.deleteMultipleShare(`userId="${id}"`)
-      await this.organisationService.deleteMemberships({
-        user: {
-          id,
-        },
-      })
-      await this.userService.delete(id)
-
-      return 'accountDeleted'
-    } catch (e) {
-      this.logger.error(e)
-      throw new BadRequestException('accountDeleteError')
-    }
-  }
-
-  @ApiBearerAuth()
   @Delete('/')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteSelf(
     @CurrentUserId() id: string,
     @Body() deleteSelfDTO: DeleteSelfDTO,
@@ -456,8 +307,6 @@ export class UserController {
   @ApiBearerAuth()
   @Delete('/share/:actionId')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteShare(
     @Param('actionId') actionId: string,
@@ -501,8 +350,6 @@ export class UserController {
   @ApiBearerAuth()
   @Get('/share/:actionId')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async acceptShare(
     @Param('actionId') actionId: string,
@@ -548,8 +395,6 @@ export class UserController {
   @ApiBearerAuth()
   @Delete('/organisation/:actionId')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async rejectOrganisationInvitation(
     @Param('actionId') actionId: string,
@@ -598,8 +443,6 @@ export class UserController {
   @ApiBearerAuth()
   @Post('/organisation/:actionId')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Auth([], true)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async acceptOrganisationInvitation(
     @Param('actionId') actionId: string,
@@ -656,8 +499,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Post('/confirm_email')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async sendEmailConfirmation(
     @CurrentUserId() id: string,
     @Req() request: Request,
@@ -691,45 +532,7 @@ export class UserController {
   }
 
   @ApiBearerAuth()
-  @Put('/:id')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
-  async update(
-    @Body() userDTO: AdminUpdateUserProfileDTO,
-    @Param('id') id: string,
-  ): Promise<Partial<User>> {
-    this.logger.log({ userDTO, id }, 'PUT /user/:id')
-
-    if (userDTO.password) {
-      this.userService.validatePassword(userDTO.password)
-      userDTO.password = await this.authService.hashPassword(userDTO.password)
-    }
-
-    const user = await this.userService.findOne({ where: { id } })
-
-    try {
-      if (!user) {
-        await this.userService.create({ ...userDTO })
-      }
-      await this.userService.update(id, { ...user, ...userDTO })
-      // omit sensitive data before returning using this.userService.omitSensitiveData function
-      return this.userService.omitSensitiveData(
-        await this.userService.findOne({ where: { id } }),
-      )
-    } catch (e) {
-      if (e.code === 'ER_DUP_ENTRY') {
-        if (e.sqlMessage.includes(userDTO.email)) {
-          throw new BadRequestException('User with this email already exists')
-        }
-      }
-      throw new BadRequestException(e.message)
-    }
-  }
-
-  @ApiBearerAuth()
   @Delete('/tg/:id')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @HttpCode(204)
   async deleteTelegramConnection(
     @Param('id') tgID: string,
@@ -749,8 +552,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Put('/')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async updateCurrentUser(
     @Body() userDTO: UpdateUserProfileDTO,
     @CurrentUserId() id: string,
@@ -922,8 +723,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Get('referrals')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async getReferralsList(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'GET /user/referrals')
 
@@ -938,8 +737,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Get('payouts/info')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async getPayoutsInfo(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'GET /user/payouts/info')
 
@@ -954,8 +751,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Post('generate-ref-code')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async generateRefCode(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'POST /user/generate-ref-code')
 
@@ -984,8 +779,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Get('/export')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async exportUserData(@CurrentUserId() user_id: string): Promise<User> {
     this.logger.log({ user_id }, 'GET /user/export')
     const user = await this.userService.findOne({ where: { id: user_id } })
@@ -1090,8 +883,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Post('change-plan')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async changePlan(
     @CurrentUserId() id: string,
     @Body() body: IChangePlanDTO,
@@ -1105,8 +896,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Post('preview-plan')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async previewPlan(
     @CurrentUserId() id: string,
     @Body() body: IChangePlanDTO,
@@ -1147,8 +936,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Post('onboarding/step')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204 })
   async updateOnboardingStep(
     @CurrentUserId() userId: string,
@@ -1167,8 +954,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Post('onboarding/complete')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204 })
   async completeOnboarding(@CurrentUserId() userId: string): Promise<void> {
     this.logger.log({ userId }, 'POST /user/onboarding/complete')

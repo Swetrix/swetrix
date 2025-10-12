@@ -183,11 +183,6 @@ export const isNextPlan = (
   return nextPlanLimit > currentPlanLimit
 }
 
-export enum UserType {
-  CUSTOMER = 'customer',
-  ADMIN = 'admin',
-}
-
 export enum ReportFrequency {
   Never = 'never',
   Weekly = 'weekly',
@@ -198,11 +193,6 @@ export enum ReportFrequency {
 export enum BillingFrequency {
   Monthly = 'monthly',
   Yearly = 'yearly',
-}
-
-export enum Theme {
-  classic = 'classic',
-  christmas = 'christmas',
 }
 
 export enum TimeFormat {
@@ -233,13 +223,6 @@ export enum FeatureFlag {
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string
-
-  @Column({
-    type: 'set',
-    enum: UserType,
-    default: UserType.CUSTOMER,
-  })
-  roles: UserType[]
 
   @Column({
     type: 'set',
@@ -310,9 +293,6 @@ export class User {
 
   @Column('varchar', { length: 30, nullable: true })
   twoFactorRecoveryCode: string
-
-  @Column('varchar', { length: 50, default: Theme.classic })
-  theme: Theme
 
   @Column('int', { default: 50 })
   maxProjects: number

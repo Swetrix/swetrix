@@ -28,10 +28,10 @@ import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import _pick from 'lodash/pick'
 
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
-import { UserType, User } from '../user/entities/user.entity'
+import { User } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
 import { AuthService } from './auth.service'
-import { Public, CurrentUserId, CurrentUser, Roles } from './decorators'
+import { Public, CurrentUserId, CurrentUser } from './decorators'
 import {
   RegisterResponseDto,
   RegisterRequestDto,
@@ -50,7 +50,11 @@ import {
   SSOUnlinkDto,
   SSOProviders,
 } from './dtos'
-import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
+import {
+  JwtAccessTokenGuard,
+  JwtRefreshTokenGuard,
+  AuthenticationGuard,
+} from './guards'
 import { ProjectService } from '../project/project.service'
 
 const OAUTH_RATE_LIMIT = 15
@@ -101,7 +105,9 @@ export class AuthController {
       const isLeaked = await this.authService.checkIfLeaked(body.password)
 
       if (isLeaked) {
-        throw new ConflictException(i18n.t('auth.leakedPassword'))
+        throw new ConflictException(
+          'The provided password is leaked, please use another one',
+        )
       }
     }
 
@@ -257,8 +263,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Resend of the verification email requested',
   })
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @UseGuards(AuthenticationGuard)
   @Post('verify-email')
   public async requestResendVerificationEmail(
     @CurrentUserId() userId: string,
@@ -289,8 +294,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'User email changed',
   })
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @UseGuards(AuthenticationGuard)
   @Post('change-email')
   public async requestChangeEmail(
     @Body() body: RequestChangeEmailDto,
@@ -496,8 +500,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'SSO provider linked to an existing account',
   })
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @UseGuards(AuthenticationGuard)
   @Post('sso/link_by_hash')
   public async linkGoogleToAccount(
     @Body() body: SSOLinkDto,
@@ -513,8 +516,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'SSO provider unlinked from an existing account',
   })
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @UseGuards(AuthenticationGuard)
   @Delete('sso/unlink')
   public async unlinkSSOFromAccount(
     @Body() body: SSOUnlinkDto,

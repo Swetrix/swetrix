@@ -3,7 +3,6 @@ import {
   Get,
   Put,
   Delete,
-  UseGuards,
   Query,
   Param,
   Body,
@@ -25,10 +24,9 @@ import _pick from 'lodash/pick'
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
-import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
-import { JwtAccessTokenGuard } from '../auth/guards'
+import { ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
+import { Auth } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
-import { Roles } from '../auth/decorators/roles.decorator'
 import { Alert } from './entity/alert.entity'
 import {
   AlertDTO,
@@ -37,7 +35,6 @@ import {
   QueryCondition,
   QueryTime,
 } from './dto/alert.dto'
-import { RolesGuard } from '../auth/guards/roles.guard'
 import { AlertService } from './alert.service'
 
 const ALERTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxAlerts
@@ -54,8 +51,7 @@ export class AlertController {
 
   @ApiBearerAuth()
   @Get('/:alertId')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN, UserType.CUSTOMER)
+  @Auth()
   @ApiResponse({ status: 200, type: Alert })
   async getAlert(
     @CurrentUserId() userId: string,
@@ -81,8 +77,7 @@ export class AlertController {
 
   @ApiBearerAuth()
   @Get('/project/:projectId')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN, UserType.CUSTOMER)
+  @Auth()
   @ApiResponse({ status: 200, type: Alert })
   async getProjectAlerts(
     @CurrentUserId() userId: string,
@@ -117,8 +112,7 @@ export class AlertController {
 
   @ApiBearerAuth()
   @Post('/')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN, UserType.CUSTOMER)
+  @Auth()
   @ApiResponse({ status: 201, type: Alert })
   async createAlert(
     @Body() alertDTO: CreateAlertDTO,
@@ -151,7 +145,6 @@ export class AlertController {
     this.projectService.allowedToManage(
       project,
       uid,
-      user.roles,
       'You are not allowed to add alerts to this project',
     )
 
@@ -231,8 +224,7 @@ export class AlertController {
 
   @ApiBearerAuth()
   @Put('/:id')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN, UserType.CUSTOMER)
+  @Auth()
   @ApiResponse({ status: 200, type: Alert })
   async updateAlert(
     @Param('id') id: string,
@@ -247,12 +239,9 @@ export class AlertController {
       throw new NotFoundException()
     }
 
-    const user = await this.userService.findOne({ where: { id: uid } })
-
     this.projectService.allowedToManage(
       alert.project,
       uid,
-      user.roles,
       'You are not allowed to manage this alert',
     )
 
@@ -312,8 +301,7 @@ export class AlertController {
 
   @ApiBearerAuth()
   @Delete('/:id')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN, UserType.CUSTOMER)
+  @Auth()
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteAlert(@Param('id') id: string, @CurrentUserId() uid: string) {
     this.logger.log({ id, uid }, 'DELETE /alert/:id')
@@ -324,12 +312,9 @@ export class AlertController {
       throw new NotFoundException()
     }
 
-    const user = await this.userService.findOne({ where: { id: uid } })
-
     this.projectService.allowedToManage(
       alert.project,
       uid,
-      user.roles,
       'You are not allowed to manage this alert',
     )
 

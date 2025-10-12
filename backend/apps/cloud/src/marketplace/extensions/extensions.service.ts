@@ -8,7 +8,7 @@ import { ExtensionToUser } from './entities/extension-to-user.entity'
 import { Extension } from './entities/extension.entity'
 import { ICreateExtension } from './interfaces/create-extension.interface'
 import { ISaveExtension } from './interfaces/save-extension.interface'
-import { User, UserType } from '../../user/entities/user.entity'
+import { User } from '../../user/entities/user.entity'
 import { IUpdateExtension } from './interfaces/update-extension.interface'
 import { CreateExtensionType, UpdateExtensionType } from './types'
 import { ExtensionStatus } from './enums/extension-status.enum'
@@ -209,12 +209,6 @@ export class ExtensionsService {
     const user = await this.userService.findUserById(userId)
 
     if (!user) return null
-
-    if (user.roles.includes(UserType.ADMIN)) {
-      return this.extensionRepository.findOne({
-        where: { id: extensionId },
-      })
-    }
 
     return this.extensionRepository.findOne({
       where: { id: extensionId, owner: { id: userId } },

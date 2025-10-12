@@ -11,17 +11,14 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { FormDataRequest } from 'nestjs-form-data'
-import { Like } from 'typeorm'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import { CurrentUserId } from '../../auth/decorators/current-user-id.decorator'
-import { JwtAccessTokenGuard } from '../../auth/guards'
 import { Auth } from '../../auth/decorators'
 import { AppLoggerService } from '../../logger/logger.service'
 import { DeleteExtensionParams } from './dtos/delete-extension-params.dto'
@@ -29,7 +26,6 @@ import { GetExtensionParams } from './dtos/get-extension-params.dto'
 import { GetAllExtensionsQueries } from './dtos/get-all-extensions-queries.dto'
 import { ExtensionsService } from './extensions.service'
 import { UserService } from '../../user/user.service'
-import { UpdateExtensionParams } from './dtos/update-extension-params.dto'
 import { SearchExtensionQueries } from './dtos/search-extension-queries.dto'
 import { CategoriesService } from '../categories/categories.service'
 import { Extension } from './entities/extension.entity'
@@ -39,10 +35,6 @@ import { UninstallExtensionParamsDto } from './dtos/params/uninstall-extension.d
 import { InstallExtensionBodyDto } from './dtos/bodies/install-extension.dto'
 import { UninstallExtensionBodyDto } from './dtos/bodies/uninstall-extension.dto'
 import { ProjectService } from '../../project/project.service'
-import { Roles } from '../../auth/decorators/roles.decorator'
-import { RolesGuard } from '../../auth/guards/roles.guard'
-import { UserType } from '../../user/entities/user.entity'
-import { ExtensionStatus } from './enums/extension-status.enum'
 import {
   CreateExtensionBodyDto,
   UpdateExtensionBodyDto,
@@ -69,7 +61,7 @@ export class ExtensionsController {
   ) {}
 
   @Get('installed')
-  @Auth([UserType.CUSTOMER, UserType.ADMIN])
+  @Auth()
   async getInstalledExtensions(
     @Query() queries: GetInstalledExtensionsQueriesDto,
     @CurrentUserId() userId: string,
@@ -153,47 +145,6 @@ export class ExtensionsController {
   }
 
   @ApiQuery({
-    description: 'Extension offset',
-    example: '5',
-    name: 'offset',
-    required: false,
-    type: String,
-  })
-  @ApiQuery({
-    description: 'Extension limit',
-    example: '25',
-    name: 'limit',
-    required: false,
-    type: String,
-  })
-  @Auth([UserType.ADMIN])
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Get('admin')
-  async getAllExtensionsAdmin(
-    @Query() queries: GetAllExtensionsQueries,
-  ): Promise<{
-    extensions: Extension[]
-    count: number
-  }> {
-    let [extensions, count] = await this.extensionsService.findAndCount({
-      skip: queries.offset || 0,
-      take: queries.limit > 100 ? 25 : queries.limit || 25,
-      relations: ['owner', 'users', 'category'],
-    })
-
-    extensions = _map(extensions, extension => {
-      // @ts-expect-error
-      extension.usersQuantity = _size(extension.users)
-      extension.users = undefined
-      // @ts-expect-error
-      extension.owner = this.extensionsService.filterOwner(extension.owner)
-      return extension
-    })
-
-    return { extensions, count }
-  }
-
-  @ApiQuery({
     description: 'Extension term',
     example: '',
     name: 'term',
@@ -235,7 +186,7 @@ export class ExtensionsController {
     type: String,
   })
   @Get('published')
-  @Auth([UserType.CUSTOMER, UserType.ADMIN])
+  @Auth()
   async getAllPublishedExtensions(
     @Query() queries: GetAllExtensionsQueries,
     @CurrentUserId() userId: string,
@@ -321,47 +272,6 @@ export class ExtensionsController {
     return { extensions, count }
   }
 
-  @ApiQuery({
-    description: 'Extension term',
-    example: '',
-    name: 'term',
-    type: String,
-  })
-  @ApiQuery({
-    description: 'Extension offset',
-    example: '5',
-    name: 'offset',
-    required: false,
-    type: String,
-  })
-  @ApiQuery({
-    description: 'Extension limit',
-    example: '25',
-    name: 'limit',
-    required: false,
-    type: String,
-  })
-  @ApiBearerAuth()
-  @Roles(UserType.ADMIN)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Get('admin/search')
-  async searchExtensionAdmin(
-    @Query() queries: SearchExtensionQueries,
-  ): Promise<{
-    extensions: Extension[]
-    count: number
-  }> {
-    const [extensions, count] = await this.extensionsService.findAndCount({
-      where: {
-        name: Like(`%${queries.term}%`),
-      },
-      skip: queries.offset || 0,
-      take: queries.limit > 100 ? 25 : queries.limit || 25,
-    })
-
-    return { extensions, count }
-  }
-
   @ApiParam({
     name: 'extensionId',
     description: 'Extension ID',
@@ -385,7 +295,7 @@ export class ExtensionsController {
   }
 
   @Post()
-  @Auth([UserType.CUSTOMER, UserType.ADMIN])
+  @Auth()
   @FormDataRequest()
   async createExtension(
     @Body() body: CreateExtensionBodyDto,
@@ -408,7 +318,7 @@ export class ExtensionsController {
   }
 
   @Patch(':extensionId')
-  @Auth([UserType.CUSTOMER, UserType.ADMIN])
+  @Auth()
   @FormDataRequest()
   async updateExtension(
     @Param() params: UpdateExtensionParamsDto,
@@ -464,62 +374,6 @@ export class ExtensionsController {
     )
   }
 
-  @ApiBearerAuth()
-  @ApiParam({
-    name: 'extensionId',
-    description: 'Extension ID',
-    example: 'de025965-3221-4d09-ba35-a09da59793a6',
-    type: String,
-  })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
-  @Patch(':extensionId/approve')
-  async approveExtension(
-    @Param() params: UpdateExtensionParams,
-  ): Promise<Extension> {
-    const { extensionId } = params
-
-    const extension = await this.extensionsService.findOne({
-      where: { id: extensionId },
-    })
-
-    if (!extension) {
-      throw new NotFoundException('Extension not found.')
-    }
-
-    extension.status = ExtensionStatus.ACCEPTED
-
-    return this.extensionsService.save(extension)
-  }
-
-  @ApiBearerAuth()
-  @ApiParam({
-    name: 'extensionId',
-    description: 'Extension ID',
-    example: 'de025965-3221-4d09-ba35-a09da59793a6',
-    type: String,
-  })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
-  @Patch(':extensionId/reject')
-  async rejectExtension(
-    @Param() params: UpdateExtensionParams,
-  ): Promise<Extension> {
-    const { extensionId } = params
-
-    const extension = await this.extensionsService.findOne({
-      where: { id: extensionId },
-    })
-
-    if (!extension) {
-      throw new NotFoundException('Extension not found.')
-    }
-
-    extension.status = ExtensionStatus.REJECTED
-
-    return this.extensionsService.save(extension)
-  }
-
   @ApiParam({
     name: 'extensionId',
     description: 'Extension ID',
@@ -539,7 +393,7 @@ export class ExtensionsController {
   }
 
   @Post(':extensionId/install')
-  @Auth([UserType.CUSTOMER, UserType.ADMIN])
+  @Auth()
   async installExtension(
     @Param() params: InstallExtensionParamsDto,
     @Body() body: InstallExtensionBodyDto,
@@ -590,7 +444,7 @@ export class ExtensionsController {
       throw new NotFoundException('Project not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const extensionToProject =
       await this.extensionsService.findOneExtensionToProject({
@@ -610,7 +464,7 @@ export class ExtensionsController {
   }
 
   @Delete(':extensionId/uninstall')
-  @Auth([UserType.CUSTOMER, UserType.ADMIN])
+  @Auth()
   async uninstallExtension(
     @Param() params: UninstallExtensionParamsDto,
     @Body() body: UninstallExtensionBodyDto,
@@ -661,7 +515,7 @@ export class ExtensionsController {
       throw new NotFoundException('Project not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const extensionToProject =
       await this.extensionsService.findOneExtensionToProject({

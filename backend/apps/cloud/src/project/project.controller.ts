@@ -3,7 +3,6 @@ import {
   Body,
   Query,
   Param,
-  UseGuards,
   Get,
   Post,
   Put,
@@ -48,7 +47,6 @@ import _find from 'lodash/find'
 import dayjs from 'dayjs'
 
 import { hash } from 'bcrypt'
-import { JwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'
 import { isValidDate } from '../analytics/analytics.service'
 import {
@@ -58,13 +56,11 @@ import {
   LEGAL_PID_CHARACTERS,
   PID_LENGTH,
 } from './project.service'
-import { UserType, PlanCode } from '../user/entities/user.entity'
+import { PlanCode } from '../user/entities/user.entity'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
 import { LetterTemplate } from '../mailer/letter'
-import { Roles } from '../auth/decorators/roles.decorator'
-import { RolesGuard } from '../auth/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
 import { ProjectShare, roles } from './entity/project-share.entity'
@@ -163,7 +159,7 @@ export class ProjectController {
     type: String,
   })
   @ApiResponse({ status: 200, type: [Project] })
-  @Auth([], true)
+  @Auth(true)
   async get(
     @CurrentUserId() userId: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
@@ -255,7 +251,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiResponse({ status: 200, type: [Project] })
-  @Auth([], true)
+  @Auth(true)
   async getAvailableProjectsForOrganization(
     @CurrentUserId() userId: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
@@ -277,65 +273,9 @@ export class ProjectController {
   }
 
   @ApiBearerAuth()
-  @Post('/admin/:id')
-  @ApiResponse({ status: 201, type: Project })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
-  async createForAdmin(
-    @Param('id') userId: string,
-    @Body() projectDTO: ProjectDTO,
-  ): Promise<Project> {
-    this.logger.log({ userId, projectDTO }, 'POST /project/admin/:id')
-
-    const user = await this.userService.findOne({
-      where: { id: userId },
-      relations: ['projects'],
-    })
-    const { maxProjects = PROJECTS_MAXIMUM } = user
-
-    if (!user.isActive) {
-      throw new ForbiddenException(
-        "User's email address has to be verified first",
-      )
-    }
-
-    if (_size(user.projects) >= maxProjects) {
-      throw new ForbiddenException(
-        `The user's plan supports maximum of ${maxProjects} projects`,
-      )
-    }
-
-    this.projectService.validateProject(projectDTO)
-    await this.projectService.checkIfIDUnique(projectDTO.id)
-
-    try {
-      const project = new Project()
-      Object.assign(project, projectDTO)
-      project.origins = _map(projectDTO.origins, _trim) as string[]
-
-      const newProject = await this.projectService.create(project)
-      user.projects.push(project)
-
-      await this.userService.create(user)
-
-      return newProject
-    } catch (e) {
-      if (e.code === 'ER_DUP_ENTRY') {
-        if (e.sqlMessage.includes(projectDTO.id)) {
-          throw new BadRequestException(
-            'Project with selected ID already exists',
-          )
-        }
-      }
-
-      throw new BadRequestException(e)
-    }
-  }
-
-  @ApiBearerAuth()
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
-  @Auth([], true)
+  @Auth(true)
   async create(
     @Body() projectDTO: CreateProjectDTO,
     @CurrentUserId() userId: string,
@@ -468,7 +408,7 @@ export class ProjectController {
 
   @Post('/funnel')
   @ApiResponse({ status: 201 })
-  @Auth([], true)
+  @Auth(true)
   async createFunnel(
     @Body() funnelDTO: FunnelCreateDTO,
     @CurrentUserId() userId: string,
@@ -511,14 +451,14 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     return this.projectService.createFunnel(project.id, funnelDTO)
   }
 
   @Patch('/funnel')
   @ApiResponse({ status: 200 })
-  @Auth([], true)
+  @Auth(true)
   async updateFunnel(
     @Body() funnelDTO: FunnelUpdateDTO,
     @CurrentUserId() userId: string,
@@ -562,7 +502,7 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     if (_size(project.funnels) >= MAX_FUNNELS) {
       throw new ForbiddenException(
@@ -588,7 +528,7 @@ export class ProjectController {
 
   @Delete('/funnel/:id/:pid')
   @ApiResponse({ status: 200 })
-  @Auth([], true)
+  @Auth(true)
   async deleteFunnel(
     @Param('id') id: string,
     @Param('pid') pid: string,
@@ -619,7 +559,7 @@ export class ProjectController {
 
   @Get('/funnels/:pid')
   @ApiResponse({ status: 200 })
-  @Auth([], true)
+  @Auth(true)
   async getFunnels(
     @Param('pid') pid: string,
     @CurrentUserId() userId: string,
@@ -645,8 +585,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Delete('/reset/:id')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   @ApiResponse({ status: 204, description: 'Empty body' })
   async reset(
     @Param('id') id: string,
@@ -695,8 +634,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Post('/secret-gen/:pid')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   @ApiResponse({ status: 200, description: 'A regenerated CAPTCHA secret key' })
   async secretGen(
     @Param('pid') pid: string,
@@ -711,13 +649,12 @@ export class ProjectController {
     }
 
     const project = await this.projectService.getFullProject(pid)
-    const user = await this.userService.findOne({ where: { id: uid } })
 
     if (_isEmpty(project)) {
       throw new NotFoundException()
     }
 
-    this.projectService.allowedToManage(project, uid, user.roles)
+    this.projectService.allowedToManage(project, uid)
 
     const secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
 
@@ -745,8 +682,8 @@ export class ProjectController {
     type: 'string',
   })
   @ApiResponse({ status: 200 })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth()
+  @Auth()
   async deletePartially(
     @Param('pid') pid: string,
     @Query('from') from: string,
@@ -789,9 +726,8 @@ export class ProjectController {
   @ApiBearerAuth()
   @Post('organisation/:orgId')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @Auth([], true)
+  @Auth()
+  @Auth(true)
   async addProject(
     @Param('orgId') orgId: string,
     @Body() addProjectDTO: ProjectIdDto,
@@ -824,9 +760,8 @@ export class ProjectController {
   @ApiBearerAuth()
   @Delete('organisation/:orgId/:projectId')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @Auth([], true)
+  @Auth()
+  @Auth(true)
   async removeProject(
     @Param('orgId') orgId: string,
     @Param('projectId') projectId: string,
@@ -858,8 +793,8 @@ export class ProjectController {
 
   @Delete('/reset-filters/:pid')
   @ApiResponse({ status: 200 })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth()
+  @Auth()
   async resetFilters(
     @Param('pid') pid: string,
     @Query('type') type: string,
@@ -890,8 +825,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Post('/:pid/share')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   @ApiResponse({ status: 200, type: Project })
   async share(
     @Param('pid') pid: string,
@@ -930,7 +864,7 @@ export class ProjectController {
       )
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const invitee = await this.userService.findOne({
       where: { email: shareDTO.email },
@@ -1012,8 +946,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Put('/share/:shareId')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   @ApiResponse({ status: 200, type: Project })
   async updateShare(
     @Param('shareId') shareId: string,
@@ -1026,7 +959,6 @@ export class ProjectController {
       throw new BadRequestException('The provided ShareUpdateDTO is incorrect')
     }
 
-    const user = await this.userService.findOne({ where: { id: uid } })
     const share = await this.projectService.findOneShare({
       where: { id: shareId },
       relations: [
@@ -1042,7 +974,7 @@ export class ProjectController {
     }
 
     // TODO: ORG
-    this.projectService.allowedToManage(share.project, uid, user.roles)
+    this.projectService.allowedToManage(share.project, uid)
 
     const adminShare = _find(
       share.project.share,
@@ -1066,8 +998,6 @@ export class ProjectController {
 
   @ApiBearerAuth()
   @HttpCode(204)
-  // @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  // @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @Public()
   @ApiResponse({ status: 204, description: 'Empty body' })
   @Get('/share/:id')
@@ -1103,7 +1033,7 @@ export class ProjectController {
   }
 
   @Post('transfer')
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth()
   async transferProject(
     @Body() body: TransferProjectBodyDto,
     @CurrentUserId() userId: string,
@@ -1182,7 +1112,7 @@ export class ProjectController {
   }
 
   @Delete('transfer')
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth()
   async cancelTransferProject(
     @Query() queries: CancelTransferProjectQueriesDto,
   ) {
@@ -1211,7 +1141,7 @@ export class ProjectController {
   }
 
   @Delete(':projectId/subscribers/:subscriberId')
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth()
   async removeSubscriber(
     @Param() params: RemoveSubscriberParamsDto,
     @CurrentUserId() userId: string,
@@ -1230,7 +1160,6 @@ export class ProjectController {
     this.projectService.allowedToManage(
       project,
       userId,
-      [],
       "You are not allowed to manage this project's subscribers",
     )
 
@@ -1250,7 +1179,7 @@ export class ProjectController {
   }
 
   @Post(':projectId/subscribers')
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth()
   async addSubscriber(
     @Param() params: AddSubscriberParamsDto,
     @Body() body: AddSubscriberBodyDto,
@@ -1274,7 +1203,6 @@ export class ProjectController {
     this.projectService.allowedToManage(
       project,
       userId,
-      [],
       "You are not allowed to manage this project's subscribers",
     )
 
@@ -1310,7 +1238,7 @@ export class ProjectController {
   }
 
   @Get('password/:projectId')
-  @Auth([], true, true)
+  @Auth(true, true)
   @ApiResponse({ status: 200, type: Project })
   async checkPassword(
     @Param('projectId') projectId: string,
@@ -1382,7 +1310,7 @@ export class ProjectController {
   }
 
   @Get(':projectId/subscribers')
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth()
   async getSubscribers(
     @Param() params: GetSubscribersParamsDto,
     @Query() queries: GetSubscribersQueriesDto,
@@ -1402,7 +1330,7 @@ export class ProjectController {
   }
 
   @Patch(':projectId/subscribers/:subscriberId')
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth()
   async updateSubscriber(
     @Param() params: UpdateSubscriberParamsDto,
     @Body() body: UpdateSubscriberBodyDto,
@@ -1422,7 +1350,6 @@ export class ProjectController {
     this.projectService.allowedToManage(
       project,
       userId,
-      [],
       "You are not allowed to manage this project's subscribers",
     )
 
@@ -1444,7 +1371,7 @@ export class ProjectController {
 
   @Delete('/:id')
   @HttpCode(204)
-  @Auth([], true)
+  @Auth(true)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async delete(
     @Param('id') id: string,
@@ -1601,7 +1528,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Patch('/:id/organisation')
   @HttpCode(204)
-  @Auth([], true)
+  @Auth(true)
   async updateOrganisation(
     @Param('id') id: string,
     @Body() body: ProjectOrganisationDto,
@@ -1642,7 +1569,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Put('/:id')
   @HttpCode(200)
-  @Auth([], true)
+  @Auth(true)
   @ApiResponse({ status: 200, type: Project })
   async update(
     @Param('id') id: string,
@@ -1660,13 +1587,12 @@ export class ProjectController {
 
     this.projectService.validateProject(projectDTO)
     const project = await this.projectService.getFullProject(id)
-    const user = await this.userService.findOne({ where: { id: uid } })
 
     if (_isEmpty(project)) {
       throw new NotFoundException()
     }
 
-    this.projectService.allowedToManage(project, uid, user.roles)
+    this.projectService.allowedToManage(project, uid)
 
     if (_isBoolean(projectDTO.public)) {
       project.public = projectDTO.public
@@ -1724,8 +1650,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Delete('/:pid/:shareId')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteShare(
     @Param('pid') pid: string,
@@ -1746,9 +1671,7 @@ export class ProjectController {
       throw new NotFoundException(`Project with ID ${pid} does not exist`)
     }
 
-    const user = await this.userService.findOne({ where: { id: uid } })
-
-    this.projectService.allowedToManage(project, uid, user.roles)
+    this.projectService.allowedToManage(project, uid)
 
     await deleteProjectRedis(pid)
     await this.projectService.deleteShare(shareId)
@@ -1756,7 +1679,7 @@ export class ProjectController {
 
   @ApiBearerAuth()
   @Get('/:id')
-  @Auth([], true, true)
+  @Auth(true, true)
   @ApiResponse({ status: 200, type: Project })
   async getOne(
     @Param('id') id: string,
@@ -1847,7 +1770,7 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Get(':projectId/views/:viewId')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getProjectView(
     @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,
@@ -1871,8 +1794,7 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Post(':projectId/views')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   async createProjectView(
     @Param() params: ProjectIdDto,
     @Body() body: CreateProjectViewDto,
@@ -1884,13 +1806,13 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    const user = await this.userService.findUserV2(userId, ['roles'])
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!user) {
       throw new NotFoundException('User not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const createdProjectView =
       await this.projectsViewsRepository.createProjectView(params.projectId, {
@@ -1911,7 +1833,7 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Get(':projectId/views')
-  @Auth([], true, true)
+  @Auth(true, true)
   async getProjectViews(
     @Param() params: ProjectIdDto,
     @CurrentUserId() userId: string,
@@ -1932,8 +1854,7 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Patch(':projectId/views/:viewId')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   async updateProjectView(
     @Param() params: ProjectViewIdsDto,
     @Body() body: UpdateProjectViewDto,
@@ -1945,13 +1866,13 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    const user = await this.userService.findUserV2(userId, ['roles'])
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!user) {
       throw new NotFoundException('User not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const view = await this.projectsViewsRepository.findProjectView(
       params.projectId,
@@ -1980,8 +1901,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':projectId/views/:viewId')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   async deleteProjectView(
     @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,
@@ -1992,13 +1912,13 @@ export class ProjectController {
       throw new NotFoundException('Project not found')
     }
 
-    const user = await this.userService.findUserV2(userId, ['roles'])
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!user) {
       throw new NotFoundException('User not found')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const view = await this.projectsViewsRepository.findProjectView(
       params.projectId,

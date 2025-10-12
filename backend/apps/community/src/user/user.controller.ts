@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Put,
-  UseGuards,
   Body,
   BadRequestException,
   Post,
@@ -21,12 +20,9 @@ import _map from 'lodash/map'
 import _join from 'lodash/join'
 import { randomUUID } from 'crypto'
 
-import { JwtAccessTokenGuard } from '../auth/guards'
-import { OnboardingStep, UserType } from './entities/user.entity'
+import { OnboardingStep } from './entities/user.entity'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { SetShowLiveVisitorsDTO } from './dto/set-show-live-visitors.dto'
-import { Roles } from '../auth/decorators/roles.decorator'
-import { RolesGuard } from '../auth/guards/roles.guard'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { AppLoggerService } from '../logger/logger.service'
 import { UserService } from './user.service'
@@ -53,10 +49,11 @@ import { Req } from '@nestjs/common'
 import { redis } from '../common/constants'
 import { ProjectService } from '../project/project.service'
 import { clickhouse } from '../common/integrations/clickhouse'
+import { Auth } from '../auth/decorators'
 
 @ApiTags('User')
 @Controller('user')
-@UseGuards(JwtAccessTokenGuard, RolesGuard)
+@Auth()
 export class UserController {
   constructor(
     private readonly logger: AppLoggerService,
@@ -68,8 +65,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Get('/me')
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async me(@CurrentUserId() uid: string) {
     this.logger.log({ uid }, 'GET /user/me')
 
@@ -124,8 +119,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Put('/live-visitors')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async setShowLiveVisitors(
     @Body() body: SetShowLiveVisitorsDTO,
     @CurrentUserId() id: string,
@@ -154,8 +147,6 @@ export class UserController {
   @ApiBearerAuth()
   @Delete('/')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteSelf(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'DELETE /user')
 
@@ -202,8 +193,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Delete('/share/:actionId')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteShare(
     @CurrentUserId() uid: string,
@@ -230,8 +219,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Get('/share/:actionId')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async acceptShare(
     @CurrentUserId() uid: string,
@@ -258,8 +245,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Post('onboarding/step')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204 })
   async updateOnboardingStep(
     @CurrentUserId() userId: string,
@@ -278,8 +263,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Post('onboarding/complete')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204 })
   async completeOnboarding(@CurrentUserId() userId: string): Promise<void> {
     this.logger.log({ userId }, 'POST /user/onboarding/complete')
@@ -292,8 +275,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Post('api-key')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async generateApiKey(
     @CurrentUserId() userId: string,
     @Headers() headers,
@@ -324,8 +305,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Delete('/api-key')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteApiKey(@CurrentUserId() userId: string) {
     this.logger.log({ userId }, 'DELETE /user/api-key')
 
@@ -344,8 +323,6 @@ export class UserController {
 
   @ApiBearerAuth()
   @Put('/')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async updateCurrentUser(
     @Body() userDTO: UpdateUserProfileDTO,
     @CurrentUserId() id: string,

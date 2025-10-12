@@ -30,7 +30,7 @@ import { Response } from 'express'
 
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
 import { AuthService } from './auth.service'
-import { Public, CurrentUserId, CurrentUser, Roles } from './decorators'
+import { Public, CurrentUserId, CurrentUser, Auth } from './decorators'
 import {
   LoginResponseDto,
   LoginRequestDto,
@@ -45,8 +45,7 @@ import {
   ConfirmResetPasswordDto,
   ResetPasswordDto,
 } from './dtos'
-import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
-import { UserType } from '../user/entities/user.entity'
+import { JwtAccessTokenGuard, JwtRefreshTokenGuard } from './guards'
 import { LetterTemplate } from '../mailer/letter'
 import { MailerService } from '../mailer/mailer.service'
 import { redis } from '../common/constants'
@@ -111,7 +110,9 @@ export class AuthController {
       const isLeaked = await this.authService.checkIfLeaked(body.password)
 
       if (isLeaked) {
-        throw new ConflictException(i18n.t('auth.leakedPassword'))
+        throw new ConflictException(
+          'The provided password is leaked, please use another one',
+        )
       }
     }
 
@@ -173,8 +174,7 @@ export class AuthController {
   @ApiOkResponse({
     description: 'Change email requested',
   })
-  @UseGuards(RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth()
   @Post('change-email')
   public async requestChangeEmail(
     @Body() body: RequestChangeEmailDto,
