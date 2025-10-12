@@ -320,7 +320,6 @@ export class ProjectService {
           'project.passwordHash',
           'project.isPasswordProtected',
           'admin.id',
-          'admin.roles',
           'admin.dashboardBlockReason',
           'admin.isAccountBillingSuspended',
           'organisation.id',
