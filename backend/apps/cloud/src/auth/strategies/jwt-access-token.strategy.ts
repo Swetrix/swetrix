@@ -17,7 +17,10 @@ export class JwtAccessTokenStrategy extends PassportStrategy(
     private readonly userService: UserService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        (request: any) => request?.cookies?.token,
+      ]),
       ignoreExpiration: false,
       secretOrKey: JWT_ACCESS_TOKEN_SECRET,
     })
@@ -30,6 +33,9 @@ export class JwtAccessTokenStrategy extends PassportStrategy(
       throw new UnauthorizedException()
     }
 
-    return user
+    return {
+      ...user,
+      isSecondFactorAuthenticated: payload.isSecondFactorAuthenticated,
+    }
   }
 }
