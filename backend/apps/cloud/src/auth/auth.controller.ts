@@ -105,7 +105,9 @@ export class AuthController {
       const isLeaked = await this.authService.checkIfLeaked(body.password)
 
       if (isLeaked) {
-        throw new ConflictException(i18n.t('auth.leakedPassword'))
+        throw new ConflictException(
+          'The provided password is leaked, please use another one',
+        )
       }
     }
 
