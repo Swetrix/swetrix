@@ -38,6 +38,10 @@ const PATHS_REPLACEMENT_MAP = [
     replacement: '/change-email/[token]',
   },
   {
+    regex: /^\/reports-unsubscribe/i,
+    replacement: '/reports-unsubscribe/[token]',
+  },
+  {
     regex: /^\/share/i,
     replacement: '/share/[token]',
   },
