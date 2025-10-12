@@ -57,8 +57,8 @@ export class AuthService {
     })
   }
 
-  public async checkIfLeaked(password: string): Promise<boolean> {
-    const sha1Hash = await this.createSha1Hash(password)
+  public async checkIfLeaked(potentialPassword: string): Promise<boolean> {
+    const sha1Hash = await this.createSha1Hash(potentialPassword)
     const firstFiveChars = sha1Hash.slice(0, 5)
     const lastChars = sha1Hash.slice(5)
 
