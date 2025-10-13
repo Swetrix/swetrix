@@ -219,14 +219,6 @@ export const confirmEmail = () =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const exportUserData = () =>
-  api
-    .get('/user/export')
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const createNewPassword = (id: string, password: string) =>
   api
     .post(`v1/auth/reset-password/confirm/${id}`, { newPassword: password })

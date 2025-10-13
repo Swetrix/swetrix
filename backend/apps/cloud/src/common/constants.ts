@@ -73,9 +73,6 @@ const UNIQUE_SESSION_LIFE_TIME = 1800
 
 const AFFILIATE_CUT = 0.2
 
-// how often can user request a fresh GDPR export of their data; in days.
-const GDPR_EXPORT_TIMEFRAME = 14
-
 // send email warning when 85% of events in tier are used
 const SEND_WARNING_AT_PERC = 85
 
@@ -180,7 +177,6 @@ export {
   getRedisProjectKey,
   redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
-  GDPR_EXPORT_TIMEFRAME,
   getRedisUserCountKey,
   redisProjectCountCacheTimeout,
   REDIS_SESSION_SALT_KEY,

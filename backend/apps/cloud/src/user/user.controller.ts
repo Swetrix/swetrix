@@ -10,7 +10,6 @@ import {
   HttpCode,
   BadRequestException,
   UseGuards,
-  MethodNotAllowedException,
   ConflictException,
   Headers,
   Ip,
@@ -46,11 +45,7 @@ import {
   FeatureFlag,
   OnboardingStep,
 } from './entities/user.entity'
-import {
-  GDPR_EXPORT_TIMEFRAME,
-  isDevelopment,
-  PRODUCTION_ORIGIN,
-} from '../common/constants'
+import { isDevelopment, PRODUCTION_ORIGIN } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { AuthenticationGuard } from '../auth/guards/authentication.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
@@ -775,78 +770,6 @@ export class UserController {
     return {
       refCode,
     }
-  }
-
-  @ApiBearerAuth()
-  @Get('/export')
-  async exportUserData(@CurrentUserId() user_id: string): Promise<User> {
-    this.logger.log({ user_id }, 'GET /user/export')
-    const user = await this.userService.findOne({ where: { id: user_id } })
-    const projects = await this.projectService.find({
-      where: {
-        admin: { id: user_id },
-      },
-      relations: ['alerts'],
-    })
-
-    if (
-      !_isNull(user.exportedAt) &&
-      !dayjs().isAfter(
-        dayjs.utc(user.exportedAt).add(GDPR_EXPORT_TIMEFRAME, 'day'),
-        'day',
-      )
-    ) {
-      throw new MethodNotAllowedException(
-        `Please, try again later. You can request a GDPR Export only once per ${GDPR_EXPORT_TIMEFRAME} days.`,
-      )
-    }
-
-    const data = {
-      user: {
-        ...user,
-        created: dayjs(user.created).format('YYYY/MM/DD HH:mm:ss'),
-        updated: dayjs(user.updated).format('YYYY/MM/DD HH:mm:ss'),
-        cancellationEffectiveDate: _isNull(user.cancellationEffectiveDate)
-          ? '-'
-          : dayjs(user.cancellationEffectiveDate).format('YYYY/MM/DD HH:mm:ss'),
-        planExceedContactedAt: _isNull(user.planExceedContactedAt)
-          ? '-'
-          : dayjs(user.planExceedContactedAt).format('YYYY/MM/DD HH:mm:ss'),
-        exportedAt: _isNull(user.exportedAt)
-          ? '-'
-          : dayjs(user.exportedAt).format('YYYY/MM/DD HH:mm:ss'),
-        evWarningSentOn: _isNull(user.evWarningSentOn)
-          ? '-'
-          : dayjs(user.evWarningSentOn).format('YYYY/MM/DD HH:mm:ss'),
-        subID: user.subID || '-',
-        subUpdateURL: user.subUpdateURL || '-',
-        subCancelURL: user.subCancelURL || '-',
-        telegramChatId: user.telegramChatId || '-',
-        dashboardBlockReason: user.dashboardBlockReason || '-',
-        refCode: user.refCode || '-',
-        referrerID: user.referrerID || '-',
-        paypalPaymentsEmail: user.paypalPaymentsEmail || '-',
-        tierCurrency: user.tierCurrency || '-',
-        nickname: user.nickname || '-',
-      },
-      projects: _map(projects, project => ({
-        ...project,
-        created: dayjs(project.created).format('YYYY/MM/DD HH:mm:ss'),
-        origins: _join(project.origins, ', '),
-        ipBlacklist: _join(project.ipBlacklist, ', '),
-      })),
-    }
-
-    await this.mailerService.sendEmail(
-      user.email,
-      LetterTemplate.GDPRDataExport,
-      data,
-    )
-    await this.userService.update(user.id, {
-      exportedAt: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
-    })
-
-    return user
   }
 
   @Get('metainfo')

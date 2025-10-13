@@ -6,11 +6,10 @@ import type i18next from 'i18next'
 import _find from 'lodash/find'
 import _findIndex from 'lodash/findIndex'
 import _isEmpty from 'lodash/isEmpty'
-import _isNull from 'lodash/isNull'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { DownloadIcon, MessageSquareTextIcon, MonitorIcon, UserRoundIcon, MousePointerClickIcon } from 'lucide-react'
+import { MessageSquareTextIcon, MonitorIcon, UserRoundIcon, MousePointerClickIcon } from 'lucide-react'
 import React, { useState, useEffect, memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -19,7 +18,6 @@ import { toast } from 'sonner'
 
 import {
   confirmEmail,
-  exportUserData,
   generateApiKey,
   deleteApiKey,
   receiveLoginNotification,
@@ -28,15 +26,7 @@ import {
   deleteUser,
 } from '~/api'
 import { withAuthentication, auth } from '~/hoc/protected'
-import {
-  reportFrequencies,
-  DEFAULT_TIMEZONE,
-  CONFIRMATION_TIMEOUT,
-  GDPR_REQUEST,
-  GDPR_EXPORT_TIMEFRAME,
-  TimeFormat,
-  isSelfhosted,
-} from '~/lib/constants'
+import { reportFrequencies, DEFAULT_TIMEZONE, CONFIRMATION_TIMEOUT, TimeFormat, isSelfhosted } from '~/lib/constants'
 import { User } from '~/lib/models/User'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
@@ -142,7 +132,6 @@ const UserSettings = () => {
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
-  const [showExportModal, setShowExportModal] = useState(false)
   const [error, setError] = useState<null | string>(null)
   const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`))
   const translatedTimeFormat = _map(TimeFormat, (key) => t(`profileSettings.${key}`))
@@ -329,29 +318,6 @@ const UserSettings = () => {
       navigate(routes.main)
     } catch (reason: any) {
       toast.error(t(`apiNotifications.${reason}`, 'apiNotifications.somethingWentWrong'))
-    }
-  }
-
-  const onExport = async (exportedAt: string | null) => {
-    try {
-      if (
-        getCookie(GDPR_REQUEST) ||
-        (!_isNull(exportedAt) && !dayjs().isAfter(dayjs.utc(exportedAt).add(GDPR_EXPORT_TIMEFRAME, 'day'), 'day'))
-      ) {
-        toast.error(
-          t('profileSettings.tryAgainInXDays', {
-            amount: GDPR_EXPORT_TIMEFRAME,
-          }),
-        )
-        return
-      }
-      await exportUserData()
-
-      trackCustom('GDPR_EXPORT')
-      toast.success(t('profileSettings.reportSent'))
-      setCookie(GDPR_REQUEST, true, 1209600) // setting cookie for 14 days
-    } catch (reason: any) {
-      toast.error(reason)
     }
   }
 
@@ -708,38 +674,26 @@ const UserSettings = () => {
                           ) : null}
                         </>
                       )}
-                      <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-between'>
-                        {isSelfhosted ? (
-                          <div />
-                        ) : (
-                          <Button onClick={() => setShowExportModal(true)} semiSmall primary>
-                            <>
-                              <DownloadIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
-                              {t('profileSettings.requestExport')}
-                            </>
-                          </Button>
-                        )}
-                        <div className='flex flex-wrap justify-center gap-2'>
-                          <Button
-                            onClick={() => {
-                              logout(true)
-                            }}
-                            semiSmall
-                            semiDanger
-                          >
-                            <>
-                              {/* We need this div for the button to match the height of the button after it */}
-                              <div className='h-5' />
-                              {t('profileSettings.logoutAll')}
-                            </>
-                          </Button>
-                          <Button onClick={() => setShowModal(true)} semiSmall semiDanger>
-                            <>
-                              <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
-                              {t('profileSettings.delete')}
-                            </>
-                          </Button>
-                        </div>
+                      <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-end'>
+                        <Button
+                          onClick={() => {
+                            logout(true)
+                          }}
+                          semiSmall
+                          semiDanger
+                        >
+                          <>
+                            {/* We need this div for the button to match the height of the button after it */}
+                            <div className='h-5' />
+                            {t('profileSettings.logoutAll')}
+                          </>
+                        </Button>
+                        <Button onClick={() => setShowModal(true)} semiSmall semiDanger>
+                          <>
+                            <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
+                            {t('profileSettings.delete')}
+                          </>
+                        </Button>
                       </div>
                     </>
                   )
@@ -890,19 +844,6 @@ const UserSettings = () => {
       </form>
 
       <PaidFeature isOpened={isPaidFeatureOpened} onClose={() => setIsPaidFeatureOpened(false)} />
-      <Modal
-        onClose={() => setShowExportModal(false)}
-        onSubmit={() => {
-          setShowExportModal(false)
-          onExport(user?.exportedAt || null)
-        }}
-        submitText={t('common.continue')}
-        closeText={t('common.close')}
-        title={t('profileSettings.dataExport')}
-        type='info'
-        message={t('profileSettings.exportConfirmation')}
-        isOpened={showExportModal}
-      />
       <Modal
         onClose={() => {
           setDeletionFeedback('')

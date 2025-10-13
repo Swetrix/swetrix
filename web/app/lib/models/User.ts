@@ -49,7 +49,6 @@ export interface User {
   created: string
   updated: string
   evWarningSentOn: string | null
-  exportedAt: string
   subID: string | null
   subUpdateURL: string | null
   subCancelURL: string | null

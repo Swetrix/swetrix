@@ -4,7 +4,6 @@ export enum LetterTemplate {
   PasswordChanged = 'password-change_information',
   MailAddressChangeConfirmation = 'mailaddress-change_confirmation',
   MailAddressHadChanged = 'mailaddress-change_information',
-  GDPRDataExport = 'gdpr_data_export',
   ProjectReport = 'project-report',
   TierWarning = 'tier-warning',
   SubscriptionCancelled = 'subscription-cancelled',

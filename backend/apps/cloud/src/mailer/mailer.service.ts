@@ -34,11 +34,6 @@ const metaInfoJson = {
       en: () => 'Your password was successfully changed',
     },
   },
-  [LetterTemplate.GDPRDataExport]: {
-    subject: {
-      en: () => 'Swetrix Account data export',
-    },
-  },
   [LetterTemplate.ProjectReport]: {
     subject: {
       en: (p: Params) =>
