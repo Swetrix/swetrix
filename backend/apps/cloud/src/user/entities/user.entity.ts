@@ -273,9 +273,6 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   evWarningSentOn: Date
 
-  @Column({ type: 'timestamp', nullable: true })
-  exportedAt: Date
-
   @Column('varchar', { length: 15, nullable: true })
   subID: string
 

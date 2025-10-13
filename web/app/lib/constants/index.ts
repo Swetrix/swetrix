@@ -320,8 +320,6 @@ export const reportFrequencyForEmailsOptions: {
   { value: 'never', label: 'Never' },
 ]
 
-export const GDPR_EXPORT_TIMEFRAME = 14 // days
-
 export const SHOW_BANNER_AT_PERC = 85 // show banner when 85% of events in tier are used
 
 export const LS_THEME_SETTING = 'colour-theme'
@@ -407,7 +405,6 @@ export const getOgImageUrl = (title: string) => {
 }
 
 // Cookies
-export const GDPR_REQUEST = 'gdpr_request'
 export const CONFIRMATION_TIMEOUT = 'confirmation_timeout'
 export const LOW_EVENTS_WARNING = 'low_events_warning'
 export const TOKEN = 'access_token'
