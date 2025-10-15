@@ -67,6 +67,7 @@ const Billing = () => {
   const isNoSub = planCode === 'none'
 
   const totalUsage = maxEventsCount ? _round((usageInfo.total / maxEventsCount) * 100, 2) : 0
+  const remainingUsage = _round(100 - totalUsage, 2)
 
   const [isLoading, setIsLoading] = useState(true)
 
@@ -443,7 +444,7 @@ const Billing = () => {
                   {t('billing.xPercentUsed', { percentage: totalUsage })}
                 </p>
                 <p className='text-sm text-gray-600 dark:text-gray-400'>
-                  {t('billing.xPercentRemaining', { percentage: 100 - totalUsage })}
+                  {t('billing.xPercentRemaining', { percentage: remainingUsage })}
                 </p>
               </div>
 
