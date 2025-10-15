@@ -27,7 +27,7 @@
   </p>
 </p>
 
-## 🚀 About the Project
+## ℹ️ About the Project
 
 [Swetrix](https://swetrix.com) is an open source, privacy-focused and cookie-less alternative to Google Analytics. Swetrix is designed to be easy to use while providing all the features you need to understand your website users. With Swetrix you can track your site's traffic, monitor your site's speed, analyse user sessions and page flows, see user flows and much more!
 
@@ -40,11 +40,13 @@ We are a bootstrapped company that is passionate about privacy and open source, 
   <img alt="Swetrix Dashboard demonstration" src="https://swetrix.com/assets/screenshot_light.png?v=1">
 </picture>
 
-## Why Swetrix?
+## ✨ Why Swetrix?
 
 TODO
 
-## Selfhosting
+## 🚀 Getting Started
+
+### Selfhosting
 
 If you want to self-host Swetrix, please refer to our official [self-hosting documentation](https://docs.swetrix.com/selfhosting/how-to).
 
