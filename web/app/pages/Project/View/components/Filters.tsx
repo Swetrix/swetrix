@@ -152,10 +152,10 @@ export const Filter = ({
           to={createToggleExclusivePath()}
           className={cx('cursor-pointer hover:underline', {
             'cursor-wait': dataLoading,
-            'text-green-400': !isExclusive && !isContains,
-            'text-red-400': isExclusive && !isContains,
-            'text-yellow-400': !isExclusive && isContains,
-            'text-orange-400': isExclusive && isContains,
+            'text-green-600 dark:text-green-400': !isExclusive && !isContains,
+            'text-red-600 dark:text-red-400': isExclusive && !isContains,
+            'text-yellow-600 dark:text-yellow-400': !isExclusive && isContains,
+            'text-orange-600 dark:text-orange-400': isExclusive && isContains,
           })}
           onClick={(e: MouseEvent) => {
             if (dataLoading) {
