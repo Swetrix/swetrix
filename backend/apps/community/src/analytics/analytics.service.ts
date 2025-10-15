@@ -3097,12 +3097,19 @@ export class AnalyticsService {
   ): Promise<IPageProperty> {
     const query = `
       SELECT
-        meta.key AS property,
+        key AS property,
         count()
-      FROM  analytics
-      WHERE pid = {pid:FixedString(12)}
-        ${filtersQuery}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      FROM (
+        SELECT
+          meta.key AS key
+        FROM
+          analytics
+        WHERE
+          pid = {pid:FixedString(12)}
+          ${filtersQuery}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      )
+      ARRAY JOIN key
       GROUP BY property`
     const result = {}
 
@@ -3115,8 +3122,7 @@ export class AnalyticsService {
     const size = _size(data)
 
     for (let i = 0; i < size; ++i) {
-      const { property: propertyArr, 'count()': c } = data[i]
-      const [property] = propertyArr
+      const { property, 'count()': c } = data[i]
 
       if (!property) {
         continue
