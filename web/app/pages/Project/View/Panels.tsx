@@ -387,7 +387,7 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
             onClick={() => {
               onClick(listId, event)
             }}
-            className='group cursor-pointer py-3 text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+            className='group cursor-pointer py-3 text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
           >
             <td className='flex w-2/5 items-center py-1 pl-2 text-left sm:w-4/6'>
               {event}
@@ -524,6 +524,16 @@ const Metadata = ({
   }, [customs, properties, activeTabId])
 
   useEffect(() => {
+    setEventsMetadata({})
+    const evToSkip = triggerEventWhenFiltersChange
+    const openEvents = Object.keys(activeEvents).filter((key) => activeEvents[key] && key !== evToSkip)
+    openEvents.forEach((ev) => {
+      toggleDetails(ev)()
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
+
+  useEffect(() => {
     if (!triggerEventWhenFiltersChange) {
       return
     }
@@ -534,7 +544,7 @@ const Metadata = ({
   }, [filters, triggerEventWhenFiltersChange])
 
   // is "e" is not set, then details loading is forced and all checks are skipped
-  const toggleDetails = (ev: string) => async (e?: React.MouseEvent<HTMLTableRowElement>) => {
+  const toggleDetails = (ev: string) => async (e?: React.MouseEvent<HTMLButtonElement>) => {
     if (e) {
       e.stopPropagation()
 
@@ -630,7 +640,7 @@ const Metadata = ({
               className='flex w-2/5 cursor-pointer items-center pl-2 text-left hover:opacity-90 sm:w-4/6'
               onClick={() => onSortBy('event')}
             >
-              {t('project.event')}
+              {activeTabId === 'props' ? t('project.property') : t('project.event')}
               <Sort
                 className='ml-1'
                 sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
@@ -670,23 +680,35 @@ const Metadata = ({
           {_map(keys, (ev) => (
             <Fragment key={ev}>
               <tr
-                className={cx(
-                  'group cursor-pointer text-base text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700',
-                  {
-                    'animate-pulse bg-gray-100 dark:bg-slate-700': loadingEvents[ev],
-                  },
-                )}
-                onClick={toggleDetails(ev)}
+                className='group cursor-pointer text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  const link = _getFilterLink(null, ev)
+                  navigate(link)
+                  setTriggerEventWhenFiltersChange(ev)
+                }}
               >
                 <td className='flex items-center py-1 text-left'>
-                  {loadingEvents[ev] ? (
-                    <Spin className='mr-2 ml-1' />
-                  ) : activeEvents[ev] ? (
-                    <ChevronUpIcon className='h-5 w-auto pr-2 pl-1 text-gray-500 hover:opacity-80 dark:text-gray-300' />
-                  ) : (
-                    <ChevronDownIcon className='h-5 w-auto pr-2 pl-1 text-gray-500 hover:opacity-80 dark:text-gray-300' />
-                  )}
-                  {ev}
+                  <button
+                    className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                    type='button'
+                    onClick={toggleDetails(ev)}
+                  >
+                    {loadingEvents[ev] ? (
+                      <Spin className='!m-0.5' />
+                    ) : activeEvents[ev] ? (
+                      <ChevronUpIcon className='size-5 text-gray-500 dark:text-gray-300' />
+                    ) : (
+                      <ChevronDownIcon className='size-5 text-gray-500 dark:text-gray-300' />
+                    )}
+                  </button>
+                  <span className='pl-2'>{ev}</span>
+                  <FilterIcon
+                    className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block peer-hover:hidden dark:text-gray-300'
+                    strokeWidth={1.5}
+                  />
+                  <div className='ml-2 h-4 w-4 group-hover:hidden peer-hover:block' />
                 </td>
                 <td className='w-[30%] py-1 text-right sm:w-1/6'>
                   {eventsData[ev]}
@@ -727,7 +749,9 @@ const Metadata = ({
     return (
       <>
         <div className='mb-1 flex items-center justify-between px-1 py-1'>
-          <span className='w-4/6 text-sm font-medium text-gray-600 dark:text-gray-400'>{t('project.event')}</span>
+          <span className='w-4/6 text-sm font-medium text-gray-600 dark:text-gray-400'>
+            {activeTabId === 'props' ? t('project.property') : t('project.event')}
+          </span>
           <span className='w-1/6 text-right text-sm font-medium text-gray-600 dark:text-gray-400'>
             {t('project.quantity')}
           </span>
@@ -786,7 +810,7 @@ const Metadata = ({
         <Modal
           onClose={onModalClose}
           isOpened={detailsOpened}
-          title={t('project.customEv')}
+          title={activeTabId === 'props' ? t('project.properties') : t('project.customEv')}
           message={<CustomEventsTable />}
           size='large'
         />
