@@ -44,7 +44,7 @@ export const getSnippet = (pid: string) => {
 
 <noscript>
   <img
-    src="${API_URL_WITHOUT_TRAILING_SLASH}/log/noscript?pid=${pid}"
+    src="https://api.swetrix.com/log/noscript?pid=${pid}"
     alt=""
     referrerpolicy="no-referrer-when-downgrade"
   />
