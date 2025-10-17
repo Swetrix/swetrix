@@ -1162,7 +1162,7 @@ const FeaturesShowcase = () => {
             </>
           }
           media={
-            <div className='relative space-y-2 overflow-hidden px-10 pt-5'>
+            <div className='relative space-y-2 overflow-hidden p-4 sm:p-6'>
               <ClientOnly>
                 {() => (
                   <MetricCardSelect
