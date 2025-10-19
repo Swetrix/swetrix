@@ -48,10 +48,6 @@ export const withAuthentication = <P extends PropsType>(WrappedComponent: any, a
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated, shouldBeAuthenticated, isLoading])
 
-    // if (!selector) {
-    //   return null
-    // }
-
     return <WrappedComponent {...props} />
   }
 
