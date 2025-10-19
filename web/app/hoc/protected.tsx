@@ -26,7 +26,7 @@ export const withAuthentication = <P extends PropsType>(WrappedComponent: any, a
   const WithAuthentication = (props: P) => {
     const { shouldBeAuthenticated, redirectPath } = authParam
     const navigate = useNavigate()
-    const { isAuthenticated } = useAuth()
+    const { isAuthenticated, isLoading } = useAuth()
 
     // We need to use ref to avoid 404 errors - https://github.com/remix-run/react-router/pull/12853
     const navigating = useRef(false)
@@ -36,13 +36,17 @@ export const withAuthentication = <P extends PropsType>(WrappedComponent: any, a
         return
       }
 
+      if (isLoading) {
+        return
+      }
+
       if (shouldBeAuthenticated !== isAuthenticated) {
         navigate(redirectPath)
         navigating.current = true
       }
       // TODO: Investigate this later. https://github.com/remix-run/react-router/discussions/8465
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isAuthenticated, shouldBeAuthenticated])
+    }, [isAuthenticated, shouldBeAuthenticated, isLoading])
 
     // if (!selector) {
     //   return null
