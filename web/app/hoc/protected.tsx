@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 
 import { useAuth } from '~/providers/AuthProvider'
@@ -28,21 +28,13 @@ export const withAuthentication = <P extends PropsType>(WrappedComponent: any, a
     const navigate = useNavigate()
     const { isAuthenticated, isLoading } = useAuth()
 
-    // We need to use ref to avoid 404 errors - https://github.com/remix-run/react-router/pull/12853
-    const navigating = useRef(false)
-
     useEffect(() => {
-      if (navigating.current) {
-        return
-      }
-
       if (isLoading) {
         return
       }
 
       if (shouldBeAuthenticated !== isAuthenticated) {
         navigate(redirectPath)
-        navigating.current = true
       }
       // TODO: Investigate this later. https://github.com/remix-run/react-router/discussions/8465
       // eslint-disable-next-line react-hooks/exhaustive-deps
