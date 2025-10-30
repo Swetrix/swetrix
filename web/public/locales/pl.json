@@ -85,6 +85,8 @@
     }
   },
   "common": {
+    "connect": "Połącz",
+    "disconnect": "Odłącz",
     "features": "Funkcje",
     "docs": "Dokumentacja",
     "bookACall": "Umów się na rozmowę z założycielem",
@@ -511,6 +513,10 @@
   "unsubscribe": {
     "success": "Zrezygnowałeś z otrzymywania raportów e-mailowych z analiz"
   },
+  "gsc": {
+    "failed": "Połączenie nie powiodło się",
+    "failedDesc": "Wystąpił błąd podczas łączenia z Google Search Console. Spróbuj ponownie lub skontaktuj się z pomocą techniczną."
+  },
   "auth": {
     "recovery": {
       "title": "Odzyskiwanie konta",
@@ -902,6 +908,9 @@
     "support": "Skontaktuj się z obsługą"
   },
   "project": {
+    "impressions": "Wyświetlenia",
+    "position": "Pozycja",
+    "ctr": "CTR (współczynnik klikalności)",
     "backToStats": "Wróć do statystyk",
     "directNone": "Bezpośrednie / Brak",
     "loadingMapData": "Wczytywanie danych mapy...",
@@ -1042,10 +1051,17 @@
       "co": "Zawartość UTM",
       "userFlow": "Ścieżka użytkownika",
       "entryPage": "Strona wejścia",
-      "exitPage": "Strona wyjścia"
+      "exitPage": "Strona wyjścia",
+      "keywords": "Słowa kluczowe",
+      "keyword": "Słowo kluczowe"
     },
+    "connectGsc": "Połącz Google Search Console, aby zobaczyć słowa kluczowe dla tego projektu.",
+    "gscConnectionRequired": "Aby wyświetlać słowa kluczowe dla tego projektu, wymagane jest połączenie z Google Search Console. Poproś administratora projektu, aby najpierw nawiązał to połączenie.",
+    "goToProjectSettings": "Przejdź do ustawień projektu",
+    "noKeywordsFound": "Nie znaleziono słów kluczowych dla wybranego okresu.",
     "entryPages": "Strony wejścia",
     "exitPages": "Strony wyjścia",
+    "clicks": "Kliknięcia",
     "metamapping": {
       "ev": {
         "key": "Klucz zdarzenia",
@@ -1119,13 +1135,24 @@
       "organisation": "Organizacja",
       "shields": "Tarcze",
       "access": "Ustawienia dostępu",
+      "gsc": {
+        "connect": "Połącz swój projekt z kontem Google Search Console, aby uzyskiwać statystyki, np. jakie słowa kluczowe użytkownicy wpisują, aby znaleźć Twoją witrynę.",
+        "disconnected": "Projekt został odłączony od Twojego konta Google Search Console.",
+        "selectProperty": "Wybierz usługę",
+        "connectDisclamer": "Aby integracja działała, upewnij się, że Twoja witryna jest najpierw skonfigurowana w <url>Google Search Console</url>.",
+        "propertyConnected": "Wybrana usługa została zapisana w Twoim projekcie",
+        "websiteProperty": "Usługa witryny",
+        "websitePropertyHint": "Wybierz usługę Google Search Console, dla której chcesz zobaczyć słowa kluczowe. Jeśli nie widzisz tutaj swojej domeny, upewnij się, że została dodana i zweryfikowana w Google Search Console.",
+        "linkedGoogleAccount": "Powiązane konto Google"
+      },
       "tabs": {
         "general": "Ogólne",
         "access": "Dostęp",
         "shields": "Tarcze",
         "emails": "E-maile",
         "people": "Osoby",
-        "danger": "Strefa zagrożenia"
+        "danger": "Strefa zagrożenia",
+        "integrations": "Integracje"
       },
       "botsProtectionLevel": {
         "title": "Poziom ochrony przed botami",

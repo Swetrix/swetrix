@@ -3979,19 +3979,19 @@ const ViewProjectContent = () => {
                                         panelsActiveTabs.source === 'keywords'
                                           ? [
                                               {
-                                                header: 'Impressions',
+                                                header: t('project.impressions'),
                                                 render: (entry: any) => entry.impressions,
                                                 sortLabel: 'impressions',
                                                 getSortValue: (entry: any) => Number(entry.impressions || 0),
                                               },
                                               {
-                                                header: 'Position',
+                                                header: t('project.position'),
                                                 render: (entry: any) => entry.position,
                                                 sortLabel: 'position',
                                                 getSortValue: (entry: any) => Number(entry.position || 0),
                                               },
                                               {
-                                                header: 'CTR',
+                                                header: t('project.ctr'),
                                                 render: (entry: any) => `${entry.ctr}%`,
                                                 sortLabel: 'ctr',
                                                 getSortValue: (entry: any) => Number(entry.ctr || 0),

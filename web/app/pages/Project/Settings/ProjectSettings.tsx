@@ -846,7 +846,12 @@ const ProjectSettings = () => {
                     </div>
                   ) : (
                     <div className='flex flex-col gap-3'>
-                      <Input className='lg:w-1/2' label={'Linked Google account'} value={gscEmail || ''} disabled />
+                      <Input
+                        className='lg:w-1/2'
+                        label={t('project.settings.gsc.linkedGoogleAccount')}
+                        value={gscEmail || ''}
+                        disabled
+                      />
 
                       <Button
                         type='button'
