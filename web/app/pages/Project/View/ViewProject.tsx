@@ -3931,7 +3931,7 @@ const ViewProjectContent = () => {
                                 if (type === 'traffic-sources') {
                                   const trafficSourcesTabs = [
                                     { id: 'ref', label: t('project.mapping.ref') },
-                                    { id: 'keywords', label: t('project.mapping.keywords') },
+                                    !isSelfhosted && { id: 'keywords', label: t('project.mapping.keywords') },
                                     [
                                       { id: 'so', label: t('project.mapping.so') },
                                       { id: 'me', label: t('project.mapping.me') },
@@ -3939,7 +3939,7 @@ const ViewProjectContent = () => {
                                       { id: 'te', label: t('project.mapping.te') },
                                       { id: 'co', label: t('project.mapping.co') },
                                     ],
-                                  ]
+                                  ].filter((x) => !!x)
 
                                   const getTrafficSourcesRowMapper = (activeTab: string) => {
                                     if (activeTab === 'ref') {

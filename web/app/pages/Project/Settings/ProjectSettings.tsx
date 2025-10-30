@@ -315,11 +315,35 @@ const ProjectSettings = () => {
 
   type SettingsTab = 'general' | 'shields' | 'access' | 'integrations' | 'emails' | 'people' | 'danger'
 
+  const tabs = useMemo(
+    () =>
+      [
+        { id: 'general', label: t('project.settings.tabs.general'), icon: Settings2Icon, visible: true },
+        { id: 'access', label: t('project.settings.tabs.access'), icon: LockIcon, visible: true },
+        { id: 'shields', label: t('project.settings.tabs.shields'), icon: ShieldIcon, visible: true },
+        {
+          id: 'integrations',
+          label: t('project.settings.tabs.integrations'),
+          icon: PuzzleIcon,
+          visible: !isSelfhosted,
+        },
+        { id: 'emails', label: t('project.settings.tabs.emails'), icon: MailIcon, visible: !isSelfhosted },
+        { id: 'people', label: t('project.settings.tabs.people'), icon: UserRoundIcon, visible: true },
+        {
+          id: 'danger',
+          label: t('project.settings.tabs.danger'),
+          icon: TriangleAlertIcon,
+          visible: project?.role === 'owner',
+        },
+      ].filter((tab) => tab.visible),
+    [t, project?.role],
+  )
+
   const activeTab = useMemo<SettingsTab>(() => {
     const tab = searchParams.get('tab') as SettingsTab
-    const allowed = new Set<SettingsTab>(['general', 'shields', 'access', 'integrations', 'emails', 'people', 'danger'])
+    const allowed = new Set(tabs.map((t) => t.id as SettingsTab))
     return allowed.has(tab) ? tab : 'general'
-  }, [searchParams])
+  }, [searchParams, tabs])
 
   const setActiveTab = (tab: SettingsTab) => {
     const newSearchParams = new URLSearchParams(searchParams.toString())
@@ -620,25 +644,6 @@ const ProjectSettings = () => {
   useEffect(() => {
     document.title = `${t('project.settings.settings')} ${form.name} ${TITLE_SUFFIX}`
   }, [form, t])
-
-  const tabs = useMemo(
-    () =>
-      [
-        { id: 'general', label: t('project.settings.tabs.general'), icon: Settings2Icon, visible: true },
-        { id: 'access', label: t('project.settings.tabs.access'), icon: LockIcon, visible: true },
-        { id: 'shields', label: t('project.settings.tabs.shields'), icon: ShieldIcon, visible: true },
-        { id: 'integrations', label: t('project.settings.tabs.integrations'), icon: PuzzleIcon, visible: true },
-        { id: 'emails', label: t('project.settings.tabs.emails'), icon: MailIcon, visible: !isSelfhosted },
-        { id: 'people', label: t('project.settings.tabs.people'), icon: UserRoundIcon, visible: true },
-        {
-          id: 'danger',
-          label: t('project.settings.tabs.danger'),
-          icon: TriangleAlertIcon,
-          visible: project?.role === 'owner',
-        },
-      ].filter((tab) => tab.visible),
-    [t, project?.role],
-  )
 
   const currentTabLabel = useMemo(() => {
     return (tabs.find((t) => t.id === activeTab)?.label as string) || ''
