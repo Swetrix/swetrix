@@ -908,6 +908,9 @@
     "support": "Contact support"
   },
   "project": {
+    "impressions": "Impressions",
+    "position": "Position",
+    "ctr": "CTR",
     "backToStats": "Back to stats",
     "directNone": "Direct / None",
     "loadingMapData": "Loading map data...",
@@ -1139,7 +1142,8 @@
         "connectDisclamer": "For the integration to work, make sure you have set up your website on the <url>Google Search Console</url> first.",
         "propertyConnected": "Selected property saved to your project",
         "websiteProperty": "Website property",
-        "websitePropertyHint": "Select the Google Search Console property you want to see the keywords for. If you don't see your domain here, make sure you have added and verified it on the Google Search Console."
+        "websitePropertyHint": "Select the Google Search Console property you want to see the keywords for. If you don't see your domain here, make sure you have added and verified it on the Google Search Console.",
+        "linkedGoogleAccount": "Linked Google account"
       },
       "tabs": {
         "general": "General",
