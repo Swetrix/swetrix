@@ -87,14 +87,13 @@ export class GSCService {
     const { tokens } = await oauth2Client.getToken(code)
     oauth2Client.setCredentials(tokens)
 
-    // Try to fetch connected Google account email
     let accountEmail: string | null = null
     try {
       const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client })
       const { data } = await oauth2.userinfo.get({})
       accountEmail = (data as any)?.email || null
     } catch {
-      // ignore email fetch failures
+      //
     }
 
     const toStore: StoredTokens = {
@@ -108,12 +107,10 @@ export class GSCService {
 
     await this.setStoredTokens(pid, toStore)
 
-    // Persist connected account email separately
     await this.projectService.update({ id: pid }, {
       gscAccountEmail: accountEmail,
     } as any)
 
-    // One-time state
     await redis.del(REDIS_STATE_PREFIX + state)
 
     return { pid }

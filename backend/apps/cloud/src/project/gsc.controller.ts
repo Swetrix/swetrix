@@ -40,7 +40,6 @@ export class GSCController {
   @Post(':pid/connect')
   @Auth()
   async connect(@Param('pid') pid: string, @CurrentUserId() uid: string) {
-    // ensure user can manage project
     const project = await this.projectService.getRedisProject(pid)
     this.projectService.allowedToManage(project, uid)
     return this.gscService.generateConnectURL(uid, pid)
