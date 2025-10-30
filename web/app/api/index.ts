@@ -1577,7 +1577,9 @@ export const getGSCKeywords = (
       headers: { 'x-password': password },
     })
     .then(
-      (response): {
+      (
+        response,
+      ): {
         keywords: { name: string; count: number; impressions: number; position: number; ctr: number }[]
       } => response.data,
     )

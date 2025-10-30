@@ -109,10 +109,9 @@ export class GSCService {
     await this.setStoredTokens(pid, toStore)
 
     // Persist connected account email separately
-    await this.projectService.update(
-      { id: pid },
-      { gscAccountEmail: accountEmail } as any,
-    )
+    await this.projectService.update({ id: pid }, {
+      gscAccountEmail: accountEmail,
+    } as any)
 
     // One-time state
     await redis.del(REDIS_STATE_PREFIX + state)
@@ -186,7 +185,9 @@ export class GSCService {
     return !_isEmpty(tokens?.refresh_token || tokens?.access_token)
   }
 
-  async getStatus(pid: string): Promise<{ connected: boolean; email: string | null }> {
+  async getStatus(
+    pid: string,
+  ): Promise<{ connected: boolean; email: string | null }> {
     const connected = await this.isConnected(pid)
     if (!connected) return { connected, email: null }
     const project = await this.projectService.findOne({
