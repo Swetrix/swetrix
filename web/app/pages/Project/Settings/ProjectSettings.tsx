@@ -19,6 +19,7 @@ import {
   MailIcon,
   TriangleAlertIcon,
   ChevronLeftIcon,
+  PuzzleIcon,
 } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -626,7 +627,7 @@ const ProjectSettings = () => {
         { id: 'general', label: t('project.settings.tabs.general'), icon: Settings2Icon, visible: true },
         { id: 'access', label: t('project.settings.tabs.access'), icon: LockIcon, visible: true },
         { id: 'shields', label: t('project.settings.tabs.shields'), icon: ShieldIcon, visible: true },
-        { id: 'integrations', label: t('project.settings.tabs.integrations'), icon: Settings2Icon, visible: true },
+        { id: 'integrations', label: t('project.settings.tabs.integrations'), icon: PuzzleIcon, visible: true },
         { id: 'emails', label: t('project.settings.tabs.emails'), icon: MailIcon, visible: !isSelfhosted },
         { id: 'people', label: t('project.settings.tabs.people'), icon: UserRoundIcon, visible: true },
         {
