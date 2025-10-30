@@ -85,6 +85,8 @@
     }
   },
   "common": {
+    "connect": "Connect",
+    "disconnect": "Disconnect",
     "features": "Features",
     "docs": "Docs",
     "bookACall": "Book a call with the founder",
@@ -1042,10 +1044,17 @@
       "co": "UTM Content",
       "userFlow": "User flow",
       "entryPage": "Entry page",
-      "exitPage": "Exit page"
+      "exitPage": "Exit page",
+      "keywords": "Keywords"
     },
+    "connectGsc": "Connect Google Search Console to see keywords for this project.",
+    "gscConnectionRequired": "Google Search Console connection is required to view keywords for this project. Ask the project administrator to connect it first.",
+    "goToProjectSettings": "Go to Project Settings",
+    "noKeywordsFound": "No keywords found for the selected period.",
     "entryPages": "Entry pages",
     "exitPages": "Exit pages",
+    "keyword": "Keyword",
+    "clicks": "Clicks",
     "metamapping": {
       "ev": {
         "key": "Event key",
@@ -1119,13 +1128,22 @@
       "organisation": "Organisation",
       "shields": "Shields",
       "access": "Access settings",
+      "gsc": {
+        "connect": "Connect your project to your Google Search Console account to get stats like what keywords people are using to find your website.",
+        "accountConnected": "Your account is connected. If you do not see your property list, ensure the account has access to your site in Search Console.",
+        "connected": "The project has been connected to your Google Search Console account.",
+        "disconnected": "The project has been disconnected from your Google Search Console account.",
+        "selectProperty": "Select a property",
+        "connectDisclamer": "For the integration to work, make sure you have set up your website on the <url>Google Search Console</url> first."
+      },
       "tabs": {
         "general": "General",
         "access": "Access",
         "shields": "Shields",
         "emails": "Emails",
         "people": "People",
-        "danger": "Danger zone"
+        "danger": "Danger zone",
+        "integrations": "Integrations"
       },
       "botsProtectionLevel": {
         "title": "Bots protection level",

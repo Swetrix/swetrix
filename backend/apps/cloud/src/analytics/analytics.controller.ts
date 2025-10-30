@@ -91,6 +91,8 @@ import { GetOverallStatsDto } from './dto/get-overall-stats.dto'
 import { NoscriptDto } from './dto/noscript.dto'
 import { LiveVisitorsDto } from './dto/live-visitors.dto'
 import { GetHeartbeatStatsDto } from './dto/get-heartbeat-stats'
+import { GetKeywordsDto } from './dto/get-keywords.dto'
+import { GSCService } from '../project/gsc.service'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -195,6 +197,7 @@ export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
+    private readonly gscService: GSCService,
   ) {}
 
   @ApiBearerAuth()
@@ -764,6 +767,48 @@ export class AnalyticsController {
     const flow = await this.analyticsService.getUserFlow(params, filtersQuery)
 
     return { ...flow, appliedFilters }
+  }
+
+  @Get('keywords')
+  @Auth(true, true)
+  async getKeywords(
+    @Query() data: GetKeywordsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, period, from, to, timezone = DEFAULT_TIMEZONE } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      diff = res.diff
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const keywords = await this.gscService.getKeywords(pid, groupFrom, groupTo)
+    return { keywords }
   }
 
   @Get('birdseye')

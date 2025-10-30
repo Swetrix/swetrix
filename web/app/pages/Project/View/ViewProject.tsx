@@ -164,6 +164,7 @@ import Filters from './components/Filters'
 import { FunnelChart } from './components/FunnelChart'
 import FunnelsList from './components/FunnelsList'
 const InteractiveMap = lazy(() => import('./components/InteractiveMap'))
+import Keywords from './components/Keywords'
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import LockedDashboard from './components/LockedDashboard'
 import { MetricCard, MetricCards, PerformanceMetricCards } from './components/MetricCards'
@@ -690,7 +691,7 @@ const ViewProjectContent = () => {
     location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
     page: 'pg' | 'host' | 'userFlow' | 'entryPage' | 'exitPage'
     device: 'br' | 'os' | 'dv'
-    source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co'
+    source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co' | 'keywords'
     metadata: 'ce' | 'props'
   }>({
     location: 'cc',
@@ -3877,6 +3878,7 @@ const ViewProjectContent = () => {
                                 if (type === 'traffic-sources') {
                                   const trafficSourcesTabs = [
                                     { id: 'ref', label: t('project.mapping.ref') },
+                                    { id: 'keywords', label: t('project.mapping.keywords') },
                                     [
                                       { id: 'so', label: t('project.mapping.so') },
                                       { id: 'me', label: t('project.mapping.me') },
@@ -3905,12 +3907,19 @@ const ViewProjectContent = () => {
                                       onTabChange={(tab) =>
                                         setPanelsActiveTabs({
                                           ...panelsActiveTabs,
-                                          source: tab as 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co',
+                                          source: tab as 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co' | 'keywords',
                                         })
                                       }
                                       activeTabId={panelsActiveTabs.source}
-                                      data={panelsData.data[panelsActiveTabs.source]}
+                                      data={
+                                        panelsActiveTabs.source === 'keywords'
+                                          ? []
+                                          : panelsData.data[panelsActiveTabs.source]
+                                      }
                                       rowMapper={getTrafficSourcesRowMapper(panelsActiveTabs.source)}
+                                      customRenderer={
+                                        panelsActiveTabs.source === 'keywords' ? () => <Keywords /> : undefined
+                                      }
                                     />
                                   )
                                 }

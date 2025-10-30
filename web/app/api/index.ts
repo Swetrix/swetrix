@@ -1514,3 +1514,61 @@ export const completeOnboarding = () =>
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
+
+// Google Search Console integration
+export const generateGSCAuthURL = (pid: string) =>
+  api
+    .post(`project/${pid}/gsc/connect`)
+    .then((response): { url: string } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getGSCStatus = (pid: string) =>
+  api
+    .get(`project/${pid}/gsc/status`)
+    .then((response): { connected: boolean } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getGSCProperties = (pid: string) =>
+  api
+    .get(`project/${pid}/gsc/properties`)
+    .then((response): { siteUrl: string; permissionLevel?: string }[] => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const setGSCProperty = (pid: string, propertyUri: string) =>
+  api
+    .post(`project/${pid}/gsc/property`, { propertyUri })
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const disconnectGSC = (pid: string) =>
+  api
+    .delete(`project/${pid}/gsc`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getGSCKeywords = (
+  pid: string,
+  period = '3d',
+  from = '',
+  to = '',
+  timezone = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(`log/keywords?pid=${pid}&period=${period}&from=${from}&to=${to}&timezone=${timezone}`, {
+      headers: { 'x-password': password },
+    })
+    .then((response): { keywords: { name: string; count: number }[] } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })

@@ -21,7 +21,7 @@ import {
   ChevronLeftIcon,
 } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { useLoaderData, useNavigate, Link } from 'react-router'
 import { toast } from 'sonner'
 
@@ -35,6 +35,11 @@ import {
   resetFilters,
   getProject,
   assignProjectToOrganisation,
+  generateGSCAuthURL,
+  getGSCStatus,
+  getGSCProperties,
+  setGSCProperty,
+  disconnectGSC,
 } from '~/api'
 import { withAuthentication, auth } from '~/hoc/protected'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
@@ -44,6 +49,8 @@ import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import DatePicker from '~/ui/Datepicker'
 import Dropdown from '~/ui/Dropdown'
+import GoogleGSVG from '~/ui/icons/GoogleG'
+import GoogleSearchConsoleSVG from '~/ui/icons/GoogleSearchConsole'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -302,9 +309,14 @@ const ProjectSettings = () => {
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'general' | 'shields' | 'access' | 'emails' | 'people' | 'danger'>(
-    'general',
-  )
+  const [activeTab, setActiveTab] = useState<
+    'general' | 'shields' | 'access' | 'integrations' | 'emails' | 'people' | 'danger'
+  >('general')
+
+  // Google Search Console integration state
+  const [gscConnected, setGscConnected] = useState<boolean | null>(null)
+  const [gscProperties, setGscProperties] = useState<{ siteUrl: string; permissionLevel?: string }[]>([])
+  const [gscProperty, setGscProperty] = useState<string>('')
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
@@ -371,6 +383,29 @@ const ProjectSettings = () => {
       setIsLoading(false)
     }
   }
+
+  const refreshGSCStatus = useCallback(async () => {
+    try {
+      const { connected } = await getGSCStatus(id)
+      setGscConnected(connected)
+      if (connected) {
+        try {
+          const props = await getGSCProperties(id)
+          setGscProperties(props)
+        } catch {
+          //
+        }
+      } else {
+        setGscProperties([])
+      }
+    } catch {
+      setGscConnected(false)
+    }
+  }, [id])
+
+  useEffect(() => {
+    refreshGSCStatus()
+  }, [refreshGSCStatus])
 
   useEffect(() => {
     if (authLoading) {
@@ -579,6 +614,7 @@ const ProjectSettings = () => {
         { id: 'general', label: t('project.settings.tabs.general'), icon: Settings2Icon, visible: true },
         { id: 'access', label: t('project.settings.tabs.access'), icon: LockIcon, visible: true },
         { id: 'shields', label: t('project.settings.tabs.shields'), icon: ShieldIcon, visible: true },
+        { id: 'integrations', label: t('project.settings.tabs.integrations'), icon: Settings2Icon, visible: true },
         { id: 'emails', label: t('project.settings.tabs.emails'), icon: MailIcon, visible: !isSelfhosted },
         { id: 'people', label: t('project.settings.tabs.people'), icon: UserRoundIcon, visible: true },
         {
@@ -757,6 +793,120 @@ const ProjectSettings = () => {
 
             {activeTab === 'emails' && !isSelfhosted ? <Emails projectId={id} /> : null}
             {activeTab === 'people' ? <People project={project} reloadProject={reloadProject} /> : null}
+
+            {activeTab === 'integrations' ? (
+              <div>
+                <div className='rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
+                  <h3 className='mb-2 flex items-center gap-2 text-lg font-medium text-gray-900 dark:text-gray-50'>
+                    <GoogleSearchConsoleSVG className='size-6' />
+                    Google Search Console
+                  </h3>
+                  {gscConnected === null ? (
+                    <Loader />
+                  ) : !gscConnected ? (
+                    <div className='flex flex-col items-center justify-between gap-4 md:flex-row'>
+                      <p className='text-sm text-gray-800 dark:text-gray-200'>{t('project.settings.gsc.connect')}</p>
+                      <Button
+                        className='flex items-center gap-2'
+                        type='button'
+                        onClick={async () => {
+                          try {
+                            const { url } = await generateGSCAuthURL(id)
+                            window.location.href = url
+                          } catch (reason: any) {
+                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+                          }
+                        }}
+                        primary
+                        regular
+                      >
+                        <GoogleGSVG className='size-4' />
+                        {t('common.connect')}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className='flex flex-col gap-3'>
+                      {_isEmpty(gscProperties) ? (
+                        <p className='text-sm text-gray-800 dark:text-gray-200'>
+                          {t('project.settings.gsc.accountConnected')}
+                        </p>
+                      ) : (
+                        <div className='flex items-center gap-3'>
+                          <div className='flex-1'>
+                            <Select
+                              items={_map(gscProperties, (p) => ({ key: p.siteUrl, label: p.siteUrl }))}
+                              keyExtractor={(item) => item.key}
+                              labelExtractor={(item) => item.label}
+                              onSelect={(item: { key: string; label: string }) => setGscProperty(item.key)}
+                              title={gscProperty || t('project.settings.gsc.selectProperty')}
+                              selectedItem={gscProperty ? { key: gscProperty, label: gscProperty } : undefined}
+                            />
+                          </div>
+                          <Button
+                            type='button'
+                            onClick={async () => {
+                              if (!gscProperty) return
+                              try {
+                                await setGSCProperty(id, gscProperty)
+                                toast.success(t('project.settings.gsc.connected'))
+                              } catch (reason: any) {
+                                toast.error(
+                                  typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'),
+                                )
+                              }
+                            }}
+                            primary
+                            regular
+                          >
+                            {t('common.save')}
+                          </Button>
+                        </div>
+                      )}
+                      <div>
+                        <Button
+                          type='button'
+                          onClick={async () => {
+                            try {
+                              await disconnectGSC(id)
+                              setGscConnected(false)
+                              setGscProperties([])
+                              setGscProperty('')
+                              toast.success(t('project.settings.gsc.disconnected'))
+                            } catch (reason: any) {
+                              toast.error(
+                                typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'),
+                              )
+                            }
+                          }}
+                          regular
+                        >
+                          {t('common.disconnect')}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  <hr className='-mx-4 mt-4 mb-4 border-gray-200 dark:border-slate-800' />
+
+                  <p className='text-sm text-gray-800 dark:text-gray-200'>
+                    <Trans
+                      t={t}
+                      i18nKey='project.settings.gsc.connectDisclamer'
+                      components={{
+                        url: (
+                          <a
+                            href='https://search.google.com/search-console/about'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                          />
+                        ),
+                      }}
+                    />
+                  </p>
+                </div>
+              </div>
+            ) : null}
 
             {activeTab === 'danger' ? (
               <DangerZone
