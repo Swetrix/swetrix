@@ -354,6 +354,7 @@ const ProjectSettings = () => {
   // Google Search Console integration state
   const [gscConnected, setGscConnected] = useState<boolean | null>(null)
   const [gscProperties, setGscProperties] = useState<{ siteUrl: string; permissionLevel?: string }[]>([])
+  const [gscEmail, setGscEmail] = useState<string | null>(null)
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
@@ -423,8 +424,9 @@ const ProjectSettings = () => {
 
   const refreshGSCStatus = useCallback(async () => {
     try {
-      const { connected } = await getGSCStatus(id)
+      const { connected, email } = await getGSCStatus(id)
       setGscConnected(connected)
+      setGscEmail(email || null)
       if (connected) {
         try {
           const props = await getGSCProperties(id)
@@ -844,96 +846,95 @@ const ProjectSettings = () => {
                     </div>
                   ) : (
                     <div className='flex flex-col gap-3'>
-                      {_isEmpty(gscProperties) ? (
-                        <p className='text-sm text-gray-800 dark:text-gray-200'>
-                          {t('project.settings.gsc.accountConnected')}
-                        </p>
-                      ) : (
-                        <div className='flex items-center gap-3'>
-                          <div className='flex-1'>
-                            <Select
-                              items={_map(gscProperties, (p) => ({ key: p.siteUrl, label: p.siteUrl }))}
-                              keyExtractor={(item) => item.key}
-                              labelExtractor={(item) => item.label}
-                              onSelect={(item: { key: string; label: string }) => {
-                                setForm((prevForm) => ({
-                                  ...prevForm,
-                                  gscPropertyUri: item.key,
-                                }))
-                              }}
-                              title={form.gscPropertyUri || t('project.settings.gsc.selectProperty')}
-                              selectedItem={
-                                form.gscPropertyUri
-                                  ? { key: form.gscPropertyUri, label: form.gscPropertyUri }
-                                  : undefined
-                              }
-                            />
-                          </div>
-                          <Button
-                            type='button'
-                            onClick={async () => {
-                              if (!form.gscPropertyUri) return
-                              try {
-                                await setGSCProperty(id, form.gscPropertyUri)
-                                toast.success(t('project.settings.gsc.propertyConnected'))
-                              } catch (reason: any) {
-                                toast.error(
-                                  typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'),
-                                )
-                              }
-                            }}
-                            primary
-                            regular
-                          >
-                            {t('common.save')}
-                          </Button>
-                        </div>
-                      )}
-                      <div>
-                        <Button
-                          type='button'
-                          onClick={async () => {
-                            try {
-                              await disconnectGSC(id)
-                              setGscConnected(false)
-                              setGscProperties([])
-                              setForm((prevForm) => ({
-                                ...prevForm,
-                                gscPropertyUri: null,
-                              }))
-                              toast.success(t('project.settings.gsc.disconnected'))
-                            } catch (reason: any) {
-                              toast.error(
-                                typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'),
-                              )
-                            }
-                          }}
-                          regular
-                        >
-                          {t('common.disconnect')}
-                        </Button>
-                      </div>
+                      <Input className='lg:w-1/2' label={'Linked Google account'} value={gscEmail || ''} disabled />
+
+                      <Button
+                        type='button'
+                        className='max-w-max'
+                        semiDanger
+                        regular
+                        onClick={async () => {
+                          try {
+                            await disconnectGSC(id)
+                            setGscConnected(false)
+                            setGscProperties([])
+                            setGscEmail(null)
+                            setForm((prevForm) => ({
+                              ...prevForm,
+                              gscPropertyUri: null,
+                            }))
+                            toast.success(t('project.settings.gsc.disconnected'))
+                          } catch (reason: any) {
+                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+                          }
+                        }}
+                      >
+                        {t('common.disconnect')}
+                      </Button>
+
+                      <Select
+                        fieldLabelClassName='mt-4 max-w-max'
+                        className='lg:w-1/2'
+                        hintClassName='lg:w-2/3'
+                        label={t('project.settings.gsc.websiteProperty')}
+                        hint={t('project.settings.gsc.websitePropertyHint')}
+                        items={_map(gscProperties, (p) => ({ key: p.siteUrl, label: p.siteUrl }))}
+                        keyExtractor={(item) => item.key}
+                        labelExtractor={(item) => item.label}
+                        onSelect={(item: { key: string; label: string }) => {
+                          setForm((prevForm) => ({
+                            ...prevForm,
+                            gscPropertyUri: item.key,
+                          }))
+                        }}
+                        title={form.gscPropertyUri || t('project.settings.gsc.selectProperty')}
+                        selectedItem={
+                          form.gscPropertyUri ? { key: form.gscPropertyUri, label: form.gscPropertyUri } : undefined
+                        }
+                      />
+
+                      <Button
+                        type='button'
+                        className='max-w-max'
+                        onClick={async () => {
+                          if (!form.gscPropertyUri) return
+                          try {
+                            await setGSCProperty(id, form.gscPropertyUri)
+                            toast.success(t('project.settings.gsc.propertyConnected'))
+                          } catch (reason: any) {
+                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+                          }
+                        }}
+                        primary
+                        regular
+                      >
+                        {t('common.save')}
+                      </Button>
                     </div>
                   )}
 
-                  <hr className='-mx-4 mt-4 mb-4 border-gray-200 dark:border-slate-800' />
+                  {gscConnected ? null : (
+                    <>
+                      <hr className='-mx-4 mt-4 mb-4 border-gray-200 dark:border-slate-800' />
 
-                  <p className='text-sm text-gray-800 dark:text-gray-200'>
-                    <Trans
-                      t={t}
-                      i18nKey='project.settings.gsc.connectDisclamer'
-                      components={{
-                        url: (
-                          <a
-                            href='https://search.google.com/search-console/about'
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                          />
-                        ),
-                      }}
-                    />
-                  </p>
+                      <p className='text-sm text-gray-800 dark:text-gray-200'>
+                        <Trans
+                          t={t}
+                          i18nKey='project.settings.gsc.connectDisclamer'
+                          components={{
+                            url: (
+                              <a
+                                href='https://search.google.com/search-console/about'
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+                              />
+                            ),
+                          }}
+                        />
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             ) : null}

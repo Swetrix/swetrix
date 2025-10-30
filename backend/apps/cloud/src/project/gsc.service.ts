@@ -64,7 +64,10 @@ export class GSCService {
 
     const url = oauth2Client.generateAuthUrl({
       access_type: 'offline',
-      scope: ['https://www.googleapis.com/auth/webmasters.readonly'],
+      scope: [
+        'https://www.googleapis.com/auth/webmasters.readonly',
+        'https://www.googleapis.com/auth/userinfo.email',
+      ],
       prompt: 'consent',
       state,
     })
@@ -82,6 +85,17 @@ export class GSCService {
 
     const oauth2Client = this.getOAuthClient()
     const { tokens } = await oauth2Client.getToken(code)
+    oauth2Client.setCredentials(tokens)
+
+    // Try to fetch connected Google account email
+    let accountEmail: string | null = null
+    try {
+      const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client })
+      const { data } = await oauth2.userinfo.get({})
+      accountEmail = (data as any)?.email || null
+    } catch {
+      // ignore email fetch failures
+    }
 
     const toStore: StoredTokens = {
       access_token: tokens.access_token,
@@ -93,6 +107,12 @@ export class GSCService {
     }
 
     await this.setStoredTokens(pid, toStore)
+
+    // Persist connected account email separately
+    await this.projectService.update(
+      { id: pid },
+      { gscAccountEmail: accountEmail } as any,
+    )
 
     // One-time state
     await redis.del(REDIS_STATE_PREFIX + state)
@@ -157,12 +177,23 @@ export class GSCService {
       gscTokenExpiry: null,
       gscScope: null,
       gscPropertyUri: null,
+      gscAccountEmail: null,
     } as any)
   }
 
   async isConnected(pid: string) {
     const tokens = await this.getStoredTokens(pid)
     return !_isEmpty(tokens?.refresh_token || tokens?.access_token)
+  }
+
+  async getStatus(pid: string): Promise<{ connected: boolean; email: string | null }> {
+    const connected = await this.isConnected(pid)
+    if (!connected) return { connected, email: null }
+    const project = await this.projectService.findOne({
+      where: { id: pid },
+      select: ['gscAccountEmail'],
+    })
+    return { connected, email: project?.gscAccountEmail || null }
   }
 
   private async getAuthedClientForPid(pid: string) {

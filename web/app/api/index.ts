@@ -1527,7 +1527,7 @@ export const generateGSCAuthURL = (pid: string) =>
 export const getGSCStatus = (pid: string) =>
   api
     .get(`v1/project/gsc/${pid}/status`)
-    .then((response): { connected: boolean } => response.data)
+    .then((response): { connected: boolean; email?: string | null } => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

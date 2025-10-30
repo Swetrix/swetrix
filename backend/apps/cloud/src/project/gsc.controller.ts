@@ -52,8 +52,7 @@ export class GSCController {
   async status(@Param('pid') pid: string, @CurrentUserId() uid: string) {
     const project = await this.projectService.getRedisProject(pid)
     this.projectService.allowedToManage(project, uid)
-    const connected = await this.gscService.isConnected(pid)
-    return { connected }
+    return this.gscService.getStatus(pid)
   }
 
   @ApiBearerAuth()

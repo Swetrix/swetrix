@@ -1134,12 +1134,13 @@
       "access": "Access settings",
       "gsc": {
         "connect": "Connect your project to your Google Search Console account to get stats like what keywords people are using to find your website.",
-        "accountConnected": "Your account is connected. If you do not see your property list, ensure the account has access to your site in Search Console.",
         "connected": "The project has been connected to your Google Search Console account.",
         "disconnected": "The project has been disconnected from your Google Search Console account.",
         "selectProperty": "Select a property",
         "connectDisclamer": "For the integration to work, make sure you have set up your website on the <url>Google Search Console</url> first.",
-        "propertyConnected": "Selected property saved to your project"
+        "propertyConnected": "Selected property saved to your project",
+        "websiteProperty": "Website property",
+        "websitePropertyHint": "Select the Google Search Console property you want to see the keywords for. If you don't see your domain here, make sure you have added and verified it on the Google Search Console."
       },
       "tabs": {
         "general": "General",

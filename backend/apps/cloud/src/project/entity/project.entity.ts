@@ -150,4 +150,7 @@ export class Project {
 
   @Column('varchar', { nullable: true, default: null, length: 512 })
   gscScope: string | null
+
+  @Column('varchar', { nullable: true, default: null, length: 256 })
+  gscAccountEmail: string | null
 }

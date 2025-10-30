@@ -1,12 +1,4 @@
-import {
-  Listbox,
-  Transition,
-  Description,
-  Label,
-  ListboxButton,
-  ListboxOptions,
-  ListboxOption,
-} from '@headlessui/react'
+import { Listbox, Transition, Label, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 import _map from 'lodash/map'
@@ -21,6 +13,7 @@ interface SelectProps<T> {
   fieldLabelClassName?: string
   labelClassName?: string
   buttonClassName?: string
+  hintClassName?: string
   capitalise?: boolean
   items: T[]
   id?: string
@@ -48,6 +41,7 @@ function Select<T>({
   labelClassName,
   fieldLabelClassName,
   selectedItem,
+  hintClassName,
 }: SelectProps<T>) {
   const isItemSelected = (item: T): boolean => {
     if (!selectedItem) return false
@@ -159,9 +153,9 @@ function Select<T>({
             </Transition>
           </div>
           {hint ? (
-            <Description className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>
+            <p className={cx('mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300', hintClassName)}>
               {hint}
-            </Description>
+            </p>
           ) : null}
         </>
       )}
