@@ -3,7 +3,9 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 
 import { authMe } from '~/api'
 import { User } from '~/lib/models/User'
+import { getAccessToken } from '~/utils/accessToken'
 import { logout as logoutCookies } from '~/utils/auth'
+import { getRefreshToken } from '~/utils/refreshToken'
 
 interface AuthContextType {
   isAuthenticated: boolean
@@ -80,6 +82,27 @@ export const AuthProvider = ({ children, initialIsAuthenticated }: AuthProviderP
 
     loadUser(abortController.signal)
 
+    return () => abortController.abort()
+  }, [initialIsAuthenticated, loadUser])
+
+  useEffect(() => {
+    const abortController = new AbortController()
+
+    if (initialIsAuthenticated) {
+      loadUser(abortController.signal)
+      return () => abortController.abort()
+    }
+
+    // Client-side rehydration: if tokens exist but SSR did not receive cookies
+    const hasClientToken = Boolean(getAccessToken() || getRefreshToken())
+
+    if (hasClientToken) {
+      setIsLoading(true)
+      loadUser(abortController.signal)
+      return () => abortController.abort()
+    }
+
+    setIsLoading(false)
     return () => abortController.abort()
   }, [initialIsAuthenticated, loadUser])
 
