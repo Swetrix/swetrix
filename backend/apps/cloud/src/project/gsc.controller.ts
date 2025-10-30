@@ -27,12 +27,16 @@ export class GSCController {
   ) {}
 
   @Post('process-token')
-  async processGSCToken(@Body() body: { code: string; state: string }) {
+  @Auth()
+  async processGSCToken(
+    @Body() body: { code: string; state: string },
+    @CurrentUserId() uid: string,
+  ) {
     const { code, state } = body
     if (!code || !state) {
       throw new BadRequestException('Invalid GSC token parameters')
     }
-    const { pid } = await this.gscService.handleOAuthCallback(code, state)
+    const { pid } = await this.gscService.handleOAuthCallback(uid, code, state)
     return { pid }
   }
 

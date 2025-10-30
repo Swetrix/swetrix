@@ -52,6 +52,9 @@ export class GSCService {
   }
 
   async generateConnectURL(uid: string, pid: string): Promise<{ url: string }> {
+    const project = await this.projectService.getRedisProject(pid)
+    this.projectService.allowedToManage(project, uid)
+
     const oauth2Client = this.getOAuthClient()
 
     const state = `${pid}:${uid}:${Date.now()}`
@@ -75,13 +78,17 @@ export class GSCService {
     return { url }
   }
 
-  async handleOAuthCallback(code: string, state: string) {
+  async handleOAuthCallback(uid: string, code: string, state: string) {
     const cached = await redis.get(REDIS_STATE_PREFIX + state)
     if (!cached) {
       throw new BadRequestException('Invalid or expired OAuth state')
     }
 
     const { pid } = JSON.parse(cached)
+
+    const project = await this.projectService.getRedisProject(pid)
+
+    this.projectService.allowedToManage(project, uid)
 
     const oauth2Client = this.getOAuthClient()
     const { tokens } = await oauth2Client.getToken(code)
