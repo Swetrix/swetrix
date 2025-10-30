@@ -879,7 +879,7 @@ interface PanelProps {
   getVersionFilterLink?: (parent: string, version: string) => LinkProps['to']
   valuesHeaderName?: string
   highlightColour?: 'blue' | 'red' | 'orange'
-  // When true, rows are non-interactive (no hover state, no filter link/navigation)
+  // When true, rows are non-interactive (no filter link/navigation)
   disableRowClick?: boolean
   // Details modal specific overrides
   hidePercentageInDetails?: boolean
@@ -1122,10 +1122,12 @@ const DetailsTable = ({
                     width: '100%',
                     display: 'flex',
                   }}
-                  className={cx('text-base text-gray-900 even:bg-gray-50 dark:text-gray-50 dark:even:bg-slate-800', {
-                    'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !disableRowClick,
-                    'cursor-default': !!disableRowClick,
-                  })}
+                  className={cx(
+                    'group cursor-pointer text-base text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700',
+                    {
+                      'cursor-default': disableRowClick,
+                    },
+                  )}
                   onClick={() => {
                     if (disableRowClick) return
                     const link = getFilterLink(id, entryName)
@@ -1303,7 +1305,7 @@ const Panel = ({
                       'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                       {
                         'group hover:bg-gray-50 hover:dark:bg-slate-800':
-                          !disableRowClick && !hideFilters && !dataLoading && (link || hasVersionsForItem),
+                          !hideFilters && !dataLoading && (link || hasVersionsForItem),
                         'cursor-wait': dataLoading,
                       },
                     )}
