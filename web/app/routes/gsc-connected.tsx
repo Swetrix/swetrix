@@ -53,7 +53,7 @@ export default function GscConnected() {
         const { pid } = await processGSCToken(code, state)
         navigate({
           pathname: _replace(routes.project_settings, ':id', pid),
-          search: new URLSearchParams({ tab: 'integrations', gsc: 'connected' }).toString(),
+          search: new URLSearchParams({ tab: 'integrations' }).toString(),
         })
       } catch (reason) {
         setIsError(true)
