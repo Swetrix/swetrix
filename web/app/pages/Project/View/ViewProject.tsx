@@ -757,9 +757,10 @@ const ViewProjectContent = () => {
   const [panelsDataPerf, setPanelsDataPerf] = useState<any>({})
 
   // GSC Keywords state
+  type KeywordEntry = Entry & { impressions: number; position: number; ctr: number }
   const [keywordsLoading, setKeywordsLoading] = useState<boolean>(false)
   const [keywordsNotConnected, setKeywordsNotConnected] = useState<boolean>(false)
-  const [keywords, setKeywords] = useState<Entry[]>([])
+  const [keywords, setKeywords] = useState<KeywordEntry[]>([])
 
   const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user?.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize()
@@ -2136,10 +2137,15 @@ const ViewProjectContent = () => {
         }
 
         const res = await getGSCKeywords(id, period, from, to, timezone, projectPassword)
-        const list = (res?.keywords || []).map((k: { name: string; count: number }) => ({
-          name: k.name,
-          count: k.count,
-        }))
+        const list = (res?.keywords || []).map(
+          (k: { name: string; count: number; impressions: number; position: number; ctr: number }) => ({
+            name: k.name,
+            count: k.count,
+            impressions: k.impressions,
+            position: k.position,
+            ctr: k.ctr,
+          }),
+        )
         setKeywords(list)
       } catch (error: any) {
         const message = typeof error === 'string' ? error : error?.message
@@ -3968,6 +3974,31 @@ const ViewProjectContent = () => {
                                       }
                                       rowMapper={getTrafficSourcesRowMapper(panelsActiveTabs.source)}
                                       disableRowClick={panelsActiveTabs.source === 'keywords'}
+                                      hidePercentageInDetails={panelsActiveTabs.source === 'keywords'}
+                                      detailsExtraColumns={
+                                        panelsActiveTabs.source === 'keywords'
+                                          ? [
+                                              {
+                                                header: 'Impressions',
+                                                render: (entry: any) => entry.impressions,
+                                                sortLabel: 'impressions',
+                                                getSortValue: (entry: any) => Number(entry.impressions || 0),
+                                              },
+                                              {
+                                                header: 'Position',
+                                                render: (entry: any) => entry.position,
+                                                sortLabel: 'position',
+                                                getSortValue: (entry: any) => Number(entry.position || 0),
+                                              },
+                                              {
+                                                header: 'CTR',
+                                                render: (entry: any) => `${entry.ctr}%`,
+                                                sortLabel: 'ctr',
+                                                getSortValue: (entry: any) => Number(entry.ctr || 0),
+                                              },
+                                            ]
+                                          : undefined
+                                      }
                                       customRenderer={
                                         panelsActiveTabs.source === 'keywords'
                                           ? keywordsLoading

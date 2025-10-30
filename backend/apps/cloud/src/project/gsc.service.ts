@@ -230,7 +230,15 @@ export class GSCService {
     pid: string,
     from: string,
     to: string,
-  ): Promise<{ name: string; count: number }[]> {
+  ): Promise<
+    {
+      name: string
+      count: number
+      impressions: number
+      position: number
+      ctr: number
+    }[]
+  > {
     const tokens = await this.getStoredTokens(pid)
     if (_isEmpty(tokens) || _isEmpty(tokens.property_uri)) {
       throw new BadRequestException(
@@ -260,11 +268,17 @@ export class GSCService {
       const rows = (data.rows || []) as Array<{
         keys: string[]
         clicks?: number
+        impressions?: number
+        ctr?: number
+        position?: number
       }>
       return rows
         .map(row => ({
           name: row.keys?.[0] || '(not set)',
           count: Math.round(row.clicks || 0),
+          impressions: Math.round(row.impressions || 0),
+          position: Number(Number(row.position || 0).toFixed(2)),
+          ctr: Number(Number((row.ctr || 0) * 100).toFixed(2)), // return CTR in percent
         }))
         .filter(Boolean)
     } catch {

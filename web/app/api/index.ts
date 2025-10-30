@@ -1576,7 +1576,11 @@ export const getGSCKeywords = (
     .get(`log/keywords?pid=${pid}&period=${period}&from=${from}&to=${to}&timezone=${timezone}`, {
       headers: { 'x-password': password },
     })
-    .then((response): { keywords: { name: string; count: number }[] } => response.data)
+    .then(
+      (response): {
+        keywords: { name: string; count: number; impressions: number; position: number; ctr: number }[]
+      } => response.data,
+    )
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
