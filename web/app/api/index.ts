@@ -1514,3 +1514,75 @@ export const completeOnboarding = () =>
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
+
+// Google Search Console integration
+export const generateGSCAuthURL = (pid: string) =>
+  api
+    .post(`v1/project/gsc/${pid}/connect`)
+    .then((response): { url: string } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getGSCStatus = (pid: string) =>
+  api
+    .get(`v1/project/gsc/${pid}/status`)
+    .then((response): { connected: boolean; email?: string | null } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const processGSCToken = (code: string, state: string) =>
+  api
+    .post(`v1/project/gsc/process-token`, { code, state })
+    .then((response): { pid: string } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getGSCProperties = (pid: string) =>
+  api
+    .get(`v1/project/gsc/${pid}/properties`)
+    .then((response): { siteUrl: string; permissionLevel?: string }[] => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const setGSCProperty = (pid: string, propertyUri: string) =>
+  api
+    .post(`v1/project/gsc/${pid}/property`, { propertyUri })
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const disconnectGSC = (pid: string) =>
+  api
+    .delete(`v1/project/gsc/${pid}/disconnect`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getGSCKeywords = (
+  pid: string,
+  period = '3d',
+  from = '',
+  to = '',
+  timezone = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(`log/keywords?pid=${pid}&period=${period}&from=${from}&to=${to}&timezone=${timezone}`, {
+      headers: { 'x-password': password },
+    })
+    .then(
+      (
+        response,
+      ): {
+        keywords: { name: string; count: number; impressions: number; position: number; ctr: number }[]
+      } => response.data,
+    )
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })

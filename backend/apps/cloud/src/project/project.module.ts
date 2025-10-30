@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { ProjectService } from './project.service'
 import { ProjectController } from './project.controller'
+import { GSCController } from './gsc.controller'
+import { GSCService } from './gsc.service'
 import { UserModule } from '../user/user.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { MailerModule } from '../mailer/mailer.module'
@@ -30,8 +32,18 @@ import { ProjectExtraService } from './project-extra.service'
     ActionTokensModule,
     MailerModule,
   ],
-  providers: [ProjectService, ProjectExtraService, ProjectsViewsRepository],
-  exports: [ProjectService, ProjectExtraService, ProjectsViewsRepository],
-  controllers: [ProjectController],
+  providers: [
+    ProjectService,
+    ProjectExtraService,
+    ProjectsViewsRepository,
+    GSCService,
+  ],
+  exports: [
+    ProjectService,
+    ProjectExtraService,
+    ProjectsViewsRepository,
+    GSCService,
+  ],
+  controllers: [ProjectController, GSCController],
 })
 export class ProjectModule {}

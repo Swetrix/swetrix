@@ -78,6 +78,7 @@ import {
   getProjectViews,
   deleteProjectView,
   getFunnels,
+  getGSCKeywords,
 } from '~/api'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
@@ -164,6 +165,7 @@ import Filters from './components/Filters'
 import { FunnelChart } from './components/FunnelChart'
 import FunnelsList from './components/FunnelsList'
 const InteractiveMap = lazy(() => import('./components/InteractiveMap'))
+// Keywords list now reuses shared Panel UI; dedicated component removed from render
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import LockedDashboard from './components/LockedDashboard'
 import { MetricCard, MetricCards, PerformanceMetricCards } from './components/MetricCards'
@@ -690,7 +692,7 @@ const ViewProjectContent = () => {
     location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
     page: 'pg' | 'host' | 'userFlow' | 'entryPage' | 'exitPage'
     device: 'br' | 'os' | 'dv'
-    source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co'
+    source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co' | 'keywords'
     metadata: 'ce' | 'props'
   }>({
     location: 'cc',
@@ -753,6 +755,12 @@ const ViewProjectContent = () => {
   const [chartDataPerf, setChartDataPerf] = useState<any>({})
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
   const [panelsDataPerf, setPanelsDataPerf] = useState<any>({})
+
+  // GSC Keywords state
+  type KeywordEntry = Entry & { impressions: number; position: number; ctr: number }
+  const [keywordsLoading, setKeywordsLoading] = useState<boolean>(false)
+  const [keywordsNotConnected, setKeywordsNotConnected] = useState<boolean>(false)
+  const [keywords, setKeywords] = useState<KeywordEntry[]>([])
 
   const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user?.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize()
@@ -2108,6 +2116,52 @@ const ViewProjectContent = () => {
     period,
     timeBucket,
   ])
+
+  // Load GSC Keywords when the traffic sources panel switches to 'keywords'
+  useEffect(() => {
+    const loadKeywords = async () => {
+      if (authLoading || !project) return
+      if (activeTab !== PROJECT_TABS.traffic) return
+      if (panelsActiveTabs.source !== 'keywords') return
+      if (keywordsLoading) return
+
+      setKeywordsLoading(true)
+      setKeywordsNotConnected(false)
+
+      try {
+        let from: string | undefined
+        let to: string | undefined
+        if (dateRange) {
+          from = getFormatDate(dateRange[0])
+          to = getFormatDate(dateRange[1])
+        }
+
+        const res = await getGSCKeywords(id, period, from, to, timezone, projectPassword)
+        const list = (res?.keywords || []).map(
+          (k: { name: string; count: number; impressions: number; position: number; ctr: number }) => ({
+            name: k.name,
+            count: k.count,
+            impressions: k.impressions,
+            position: k.position,
+            ctr: k.ctr,
+          }),
+        )
+        setKeywords(list)
+      } catch (error: any) {
+        const message = typeof error === 'string' ? error : error?.message
+        if (message && (message as string).toLowerCase().includes('search console')) {
+          setKeywordsNotConnected(true)
+        } else {
+          toast.error(typeof error === 'string' ? error : t('apiNotifications.somethingWentWrong'))
+        }
+      } finally {
+        setKeywordsLoading(false)
+      }
+    }
+
+    loadKeywords()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, panelsActiveTabs.source, period, dateRange, timezone, id, project, authLoading])
 
   useEffect(() => {
     if (activeTab !== PROJECT_TABS.funnels || authLoading || !project) return
@@ -3877,6 +3931,7 @@ const ViewProjectContent = () => {
                                 if (type === 'traffic-sources') {
                                   const trafficSourcesTabs = [
                                     { id: 'ref', label: t('project.mapping.ref') },
+                                    !isSelfhosted && { id: 'keywords', label: t('project.mapping.keywords') },
                                     [
                                       { id: 'so', label: t('project.mapping.so') },
                                       { id: 'me', label: t('project.mapping.me') },
@@ -3884,7 +3939,7 @@ const ViewProjectContent = () => {
                                       { id: 'te', label: t('project.mapping.te') },
                                       { id: 'co', label: t('project.mapping.co') },
                                     ],
-                                  ]
+                                  ].filter((x) => !!x)
 
                                   const getTrafficSourcesRowMapper = (activeTab: string) => {
                                     if (activeTab === 'ref') {
@@ -3905,12 +3960,70 @@ const ViewProjectContent = () => {
                                       onTabChange={(tab) =>
                                         setPanelsActiveTabs({
                                           ...panelsActiveTabs,
-                                          source: tab as 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co',
+                                          source: tab as 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co' | 'keywords',
                                         })
                                       }
                                       activeTabId={panelsActiveTabs.source}
-                                      data={panelsData.data[panelsActiveTabs.source]}
+                                      data={
+                                        panelsActiveTabs.source === 'keywords'
+                                          ? keywords
+                                          : panelsData.data[panelsActiveTabs.source]
+                                      }
+                                      valuesHeaderName={
+                                        panelsActiveTabs.source === 'keywords' ? t('project.clicks') : undefined
+                                      }
                                       rowMapper={getTrafficSourcesRowMapper(panelsActiveTabs.source)}
+                                      disableRowClick={panelsActiveTabs.source === 'keywords'}
+                                      hidePercentageInDetails={panelsActiveTabs.source === 'keywords'}
+                                      detailsExtraColumns={
+                                        panelsActiveTabs.source === 'keywords'
+                                          ? [
+                                              {
+                                                header: t('project.impressions'),
+                                                render: (entry: any) => entry.impressions,
+                                                sortLabel: 'impressions',
+                                                getSortValue: (entry: any) => Number(entry.impressions || 0),
+                                              },
+                                              {
+                                                header: t('project.position'),
+                                                render: (entry: any) => entry.position,
+                                                sortLabel: 'position',
+                                                getSortValue: (entry: any) => Number(entry.position || 0),
+                                              },
+                                              {
+                                                header: t('project.ctr'),
+                                                render: (entry: any) => `${entry.ctr}%`,
+                                                sortLabel: 'ctr',
+                                                getSortValue: (entry: any) => Number(entry.ctr || 0),
+                                              },
+                                            ]
+                                          : undefined
+                                      }
+                                      customRenderer={
+                                        panelsActiveTabs.source === 'keywords'
+                                          ? keywordsLoading
+                                            ? () => <Loader />
+                                            : keywordsNotConnected
+                                              ? () => (
+                                                  <div className='mt-4 text-center'>
+                                                    <p className='text-sm text-gray-800 dark:text-gray-200'>
+                                                      {['owner', 'admin'].includes(project?.role || '')
+                                                        ? t('project.connectGsc')
+                                                        : t('project.gscConnectionRequired')}
+                                                    </p>
+                                                    {['owner', 'admin'].includes(project?.role || '') ? (
+                                                      <Link
+                                                        to={`${routes.project_settings.replace(':id', id)}?tab=integrations`}
+                                                        className='mt-2 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+                                                      >
+                                                        {t('project.goToProjectSettings')}
+                                                      </Link>
+                                                    ) : null}
+                                                  </div>
+                                                )
+                                              : undefined
+                                          : undefined
+                                      }
                                     />
                                   )
                                 }

@@ -149,6 +149,7 @@ export interface Project {
   isErrorDataExists: boolean
   botsProtectionLevel: 'off' | 'basic'
   role?: Role
+  gscPropertyUri?: string | null
 }
 
 export interface CaptchaProject extends Project {

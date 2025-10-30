@@ -1559,6 +1559,7 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   exitPage: t('project.exitPages'),
   lc: t('project.mapping.lc'),
   ref: t('project.mapping.ref'),
+  keywords: t('project.mapping.keyword'),
   dv: t('project.mapping.dv'),
   br: t('project.mapping.br'),
   brv: t('project.mapping.brv'),

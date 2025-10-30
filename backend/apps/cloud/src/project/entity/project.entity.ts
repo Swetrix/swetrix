@@ -134,4 +134,23 @@ export class Project {
 
   @ManyToOne(() => Organisation, org => org.projects, { nullable: true })
   organisation: Organisation | null
+
+  // Google Search Console integration
+  @Column('varchar', { nullable: true, default: null, length: 512 })
+  gscPropertyUri: string | null
+
+  @Column('text', { nullable: true, default: null })
+  gscAccessTokenEnc: string | null
+
+  @Column('text', { nullable: true, default: null })
+  gscRefreshTokenEnc: string | null
+
+  @Column('bigint', { nullable: true, default: null })
+  gscTokenExpiry: string | null
+
+  @Column('varchar', { nullable: true, default: null, length: 512 })
+  gscScope: string | null
+
+  @Column('varchar', { nullable: true, default: null, length: 256 })
+  gscAccountEmail: string | null
 }

@@ -85,6 +85,8 @@
     }
   },
   "common": {
+    "connect": "Connect",
+    "disconnect": "Disconnect",
     "features": "Features",
     "docs": "Docs",
     "bookACall": "Book a call with the founder",
@@ -511,6 +513,10 @@
   "unsubscribe": {
     "success": "You've unsubscribed from analytics email reports"
   },
+  "gsc": {
+    "failed": "Connection failed",
+    "failedDesc": "An error has occurred while connecting to your Google Search Console, please try again or contact support."
+  },
   "auth": {
     "recovery": {
       "title": "Account recovery",
@@ -902,6 +908,9 @@
     "support": "Contact support"
   },
   "project": {
+    "impressions": "Impressions",
+    "position": "Position",
+    "ctr": "CTR",
     "backToStats": "Back to stats",
     "directNone": "Direct / None",
     "loadingMapData": "Loading map data...",
@@ -1042,10 +1051,17 @@
       "co": "UTM Content",
       "userFlow": "User flow",
       "entryPage": "Entry page",
-      "exitPage": "Exit page"
+      "exitPage": "Exit page",
+      "keywords": "Keywords",
+      "keyword": "Keyword"
     },
+    "connectGsc": "Connect Google Search Console to see keywords for this project.",
+    "gscConnectionRequired": "Google Search Console connection is required to view keywords for this project. Ask the project administrator to connect it first.",
+    "goToProjectSettings": "Go to Project Settings",
+    "noKeywordsFound": "No keywords found for the selected period.",
     "entryPages": "Entry pages",
     "exitPages": "Exit pages",
+    "clicks": "Clicks",
     "metamapping": {
       "ev": {
         "key": "Event key",
@@ -1119,13 +1135,24 @@
       "organisation": "Organisation",
       "shields": "Shields",
       "access": "Access settings",
+      "gsc": {
+        "connect": "Connect your project to your Google Search Console account to get stats like what keywords people are using to find your website.",
+        "disconnected": "The project has been disconnected from your Google Search Console account.",
+        "selectProperty": "Select a property",
+        "connectDisclamer": "For the integration to work, make sure you have set up your website on the <url>Google Search Console</url> first.",
+        "propertyConnected": "Selected property saved to your project",
+        "websiteProperty": "Website property",
+        "websitePropertyHint": "Select the Google Search Console property you want to see the keywords for. If you don't see your domain here, make sure you have added and verified it on the Google Search Console.",
+        "linkedGoogleAccount": "Linked Google account"
+      },
       "tabs": {
         "general": "General",
         "access": "Access",
         "shields": "Shields",
         "emails": "Emails",
         "people": "People",
-        "danger": "Danger zone"
+        "danger": "Danger zone",
+        "integrations": "Integrations"
       },
       "botsProtectionLevel": {
         "title": "Bots protection level",

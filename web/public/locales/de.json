@@ -85,6 +85,8 @@
     }
   },
   "common": {
+    "connect": "Verbinden",
+    "disconnect": "Trennen",
     "features": "Funktionen",
     "docs": "Dokumentation",
     "bookACall": "Ein Telefonat mit dem Gründer buchen",
@@ -511,6 +513,10 @@
   "unsubscribe": {
     "success": "Sie haben sich von analytischen E-Mail-Berichten abgemeldet"
   },
+  "gsc": {
+    "failed": "Verbindung fehlgeschlagen",
+    "failedDesc": "Beim Herstellen der Verbindung zur Google Search Console ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support."
+  },
   "auth": {
     "recovery": {
       "title": "Kontenwiederherstellung",
@@ -902,6 +908,9 @@
     "support": "Support kontaktieren"
   },
   "project": {
+    "impressions": "Impressionen",
+    "position": "Position",
+    "ctr": "CTR (Klickrate)",
     "backToStats": "Zurück zu den Statistiken",
     "directNone": "Direkt / Keine",
     "loadingMapData": "Kartendaten werden geladen...",
@@ -1042,10 +1051,17 @@
       "co": "UTM-Inhalt",
       "userFlow": "Nutzerfluss",
       "entryPage": "Einstiegsseite",
-      "exitPage": "Ausstiegsseite"
+      "exitPage": "Ausstiegsseite",
+      "keywords": "Keywords",
+      "keyword": "Keyword"
     },
+    "connectGsc": "Stellen Sie eine Verbindung zur Google Search Console her, um die Keywords für dieses Projekt anzuzeigen.",
+    "gscConnectionRequired": "Zum Anzeigen der Keywords für dieses Projekt ist eine Verbindung zur Google Search Console erforderlich. Bitten Sie den Projektadministrator, die Verbindung zuerst herzustellen.",
+    "goToProjectSettings": "Zu den Projekteinstellungen",
+    "noKeywordsFound": "Für den ausgewählten Zeitraum wurden keine Keywords gefunden.",
     "entryPages": "Einstiegsseiten",
     "exitPages": "Ausstiegsseiten",
+    "clicks": "Klicks",
     "metamapping": {
       "ev": {
         "key": "Event-Schlüssel",
@@ -1119,13 +1135,24 @@
       "organisation": "Organisation",
       "shields": "Schutzschilde",
       "access": "Zugangseinstellungen",
+      "gsc": {
+        "connect": "Verbinden Sie Ihr Projekt mit Ihrem Google Search Console-Konto, um Statistiken zu erhalten, z. B. welche Keywords Nutzer verwenden, um Ihre Website zu finden.",
+        "disconnected": "Das Projekt wurde von Ihrem Google Search Console-Konto getrennt.",
+        "selectProperty": "Property auswählen",
+        "connectDisclamer": "Damit die Integration funktioniert, stellen Sie sicher, dass Ihre Website zuerst in der <url>Google Search Console</url> eingerichtet ist.",
+        "propertyConnected": "Ausgewählte Property wurde in Ihrem Projekt gespeichert",
+        "websiteProperty": "Website-Property",
+        "websitePropertyHint": "Wählen Sie die Google Search Console-Property aus, für die Sie die Keywords sehen möchten. Wenn Ihre Domain hier nicht angezeigt wird, stellen Sie sicher, dass Sie sie in der Google Search Console hinzugefügt und verifiziert haben.",
+        "linkedGoogleAccount": "Verknüpftes Google-Konto"
+      },
       "tabs": {
         "general": "Allgemein",
         "access": "Zugriff",
         "shields": "Schilde",
         "emails": "E-Mails",
         "people": "Personen",
-        "danger": "Gefahrenzone"
+        "danger": "Gefahrenzone",
+        "integrations": "Integrationen"
       },
       "botsProtectionLevel": {
         "title": "Bot-Schutz Level",
