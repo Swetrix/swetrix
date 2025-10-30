@@ -513,6 +513,10 @@
   "unsubscribe": {
     "success": "You've unsubscribed from analytics email reports"
   },
+  "gsc": {
+    "failed": "Connection failed",
+    "failedDesc": "An error has occurred while connecting to your Google Search Console, please try again or contact support."
+  },
   "auth": {
     "recovery": {
       "title": "Account recovery",
@@ -1134,7 +1138,8 @@
         "connected": "The project has been connected to your Google Search Console account.",
         "disconnected": "The project has been disconnected from your Google Search Console account.",
         "selectProperty": "Select a property",
-        "connectDisclamer": "For the integration to work, make sure you have set up your website on the <url>Google Search Console</url> first."
+        "connectDisclamer": "For the integration to work, make sure you have set up your website on the <url>Google Search Console</url> first.",
+        "propertyConnected": "Selected property saved to your project"
       },
       "tabs": {
         "general": "General",

@@ -288,6 +288,7 @@ const ProjectSettings = () => {
     origins: null,
     ipBlacklist: null,
     botsProtectionLevel: 'basic',
+    gscPropertyUri: null,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
@@ -329,7 +330,6 @@ const ProjectSettings = () => {
   // Google Search Console integration state
   const [gscConnected, setGscConnected] = useState<boolean | null>(null)
   const [gscProperties, setGscProperties] = useState<{ siteUrl: string; permissionLevel?: string }[]>([])
-  const [gscProperty, setGscProperty] = useState<string>('')
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
@@ -850,18 +850,27 @@ const ProjectSettings = () => {
                               items={_map(gscProperties, (p) => ({ key: p.siteUrl, label: p.siteUrl }))}
                               keyExtractor={(item) => item.key}
                               labelExtractor={(item) => item.label}
-                              onSelect={(item: { key: string; label: string }) => setGscProperty(item.key)}
-                              title={gscProperty || t('project.settings.gsc.selectProperty')}
-                              selectedItem={gscProperty ? { key: gscProperty, label: gscProperty } : undefined}
+                              onSelect={(item: { key: string; label: string }) => {
+                                setForm((prevForm) => ({
+                                  ...prevForm,
+                                  gscPropertyUri: item.key,
+                                }))
+                              }}
+                              title={form.gscPropertyUri || t('project.settings.gsc.selectProperty')}
+                              selectedItem={
+                                form.gscPropertyUri
+                                  ? { key: form.gscPropertyUri, label: form.gscPropertyUri }
+                                  : undefined
+                              }
                             />
                           </div>
                           <Button
                             type='button'
                             onClick={async () => {
-                              if (!gscProperty) return
+                              if (!form.gscPropertyUri) return
                               try {
-                                await setGSCProperty(id, gscProperty)
-                                toast.success(t('project.settings.gsc.connected'))
+                                await setGSCProperty(id, form.gscPropertyUri)
+                                toast.success(t('project.settings.gsc.propertyConnected'))
                               } catch (reason: any) {
                                 toast.error(
                                   typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'),
@@ -883,7 +892,10 @@ const ProjectSettings = () => {
                               await disconnectGSC(id)
                               setGscConnected(false)
                               setGscProperties([])
-                              setGscProperty('')
+                              setForm((prevForm) => ({
+                                ...prevForm,
+                                gscPropertyUri: null,
+                              }))
                               toast.success(t('project.settings.gsc.disconnected'))
                             } catch (reason: any) {
                               toast.error(

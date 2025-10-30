@@ -9,8 +9,9 @@ import { ConfigService } from '@nestjs/config'
 import { google } from 'googleapis'
 import CryptoJS from 'crypto-js'
 
-import { EMAIL_ACTION_ENCRYPTION_KEY, redis } from '../common/constants'
+import { isDevelopment, PRODUCTION_ORIGIN, redis } from '../common/constants'
 import { ProjectService } from './project.service'
+import { deriveKey } from '../common/utils'
 
 type StoredTokens = {
   access_token?: string
@@ -21,7 +22,12 @@ type StoredTokens = {
 }
 
 const REDIS_STATE_PREFIX = 'gsc:state:'
-// tokens are stored in DB; Redis is used only for short-lived OAuth state
+
+const GSC_REDIRECT_URL = isDevelopment
+  ? 'http://localhost:3000/gsc-connected'
+  : `${PRODUCTION_ORIGIN}/gsc-connected`
+
+const ENCRYPTION_KEY = deriveKey('gsc-token')
 
 @Injectable()
 export class GSCService {
@@ -30,30 +36,19 @@ export class GSCService {
     private readonly projectService: ProjectService,
   ) {}
 
-  private getRedirectUri(): string {
-    const override = this.configService.get<string>(
-      'GOOGLE_OAUTH2_GSC_REDIRECT_URL',
-    )
-    if (override) return override
-
-    const origin =
-      this.configService.get<string>('PRODUCTION_ORIGIN') ||
-      'http://localhost:5005'
-    // Nest versioned path - /v1/project/gsc/callback
-    return `${origin.replace(/\/$/, '')}/v1/project/gsc/callback`
-  }
-
   private getOAuthClient() {
-    const clientId = this.configService.get<string>('GOOGLE_OAUTH2_CLIENT_ID')
+    const clientId = this.configService.get<string>('GOOGLE_GSC_CLIENT_ID')
     const clientSecret = this.configService.get<string>(
-      'GOOGLE_OAUTH2_CLIENT_SECRET',
+      'GOOGLE_GSC_CLIENT_SECRET',
     )
 
     if (!clientId || !clientSecret) {
-      throw new InternalServerErrorException('Google OAuth2 is not configured')
+      throw new InternalServerErrorException(
+        'Google GSC Client is not configured',
+      )
     }
 
-    return new google.auth.OAuth2(clientId, clientSecret, this.getRedirectUri())
+    return new google.auth.OAuth2(clientId, clientSecret, GSC_REDIRECT_URL)
   }
 
   async generateConnectURL(uid: string, pid: string): Promise<{ url: string }> {
@@ -122,7 +117,7 @@ export class GSCService {
     const decrypt = (val?: string | null) => {
       if (!val) return undefined
       try {
-        const bytes = CryptoJS.Rabbit.decrypt(val, EMAIL_ACTION_ENCRYPTION_KEY)
+        const bytes = CryptoJS.Rabbit.decrypt(val, ENCRYPTION_KEY)
         return bytes.toString(CryptoJS.enc.Utf8) || undefined
       } catch {
         return undefined
@@ -144,9 +139,7 @@ export class GSCService {
 
   private async setStoredTokens(pid: string, tokens: StoredTokens) {
     const encrypt = (val?: string) =>
-      val
-        ? CryptoJS.Rabbit.encrypt(val, EMAIL_ACTION_ENCRYPTION_KEY).toString()
-        : null
+      val ? CryptoJS.Rabbit.encrypt(val, ENCRYPTION_KEY).toString() : null
 
     await this.projectService.update({ id: pid }, {
       gscAccessTokenEnc: encrypt(tokens.access_token),
@@ -228,7 +221,9 @@ export class GSCService {
         'Search Console is not connected for this project',
       )
     }
-    await this.setStoredTokens(pid, { ...tokens, property_uri: propertyUri })
+    await this.projectService.update({ id: pid }, {
+      gscPropertyUri: propertyUri ?? null,
+    } as any)
   }
 
   async getKeywords(
