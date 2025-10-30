@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useLoaderData, useNavigate, Link } from 'react-router'
+import { useLoaderData, useNavigate, Link, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import {
@@ -309,9 +309,21 @@ const ProjectSettings = () => {
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<
-    'general' | 'shields' | 'access' | 'integrations' | 'emails' | 'people' | 'danger'
-  >('general')
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  type SettingsTab = 'general' | 'shields' | 'access' | 'integrations' | 'emails' | 'people' | 'danger'
+
+  const activeTab = useMemo<SettingsTab>(() => {
+    const tab = searchParams.get('tab') as SettingsTab
+    const allowed = new Set<SettingsTab>(['general', 'shields', 'access', 'integrations', 'emails', 'people', 'danger'])
+    return allowed.has(tab) ? tab : 'general'
+  }, [searchParams])
+
+  const setActiveTab = (tab: SettingsTab) => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.set('tab', tab)
+    setSearchParams(newSearchParams)
+  }
 
   // Google Search Console integration state
   const [gscConnected, setGscConnected] = useState<boolean | null>(null)
