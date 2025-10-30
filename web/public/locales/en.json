@@ -1049,7 +1049,8 @@
       "userFlow": "User flow",
       "entryPage": "Entry page",
       "exitPage": "Exit page",
-      "keywords": "Keywords"
+      "keywords": "Keywords",
+      "keyword": "Keyword"
     },
     "connectGsc": "Connect Google Search Console to see keywords for this project.",
     "gscConnectionRequired": "Google Search Console connection is required to view keywords for this project. Ask the project administrator to connect it first.",
@@ -1057,7 +1058,6 @@
     "noKeywordsFound": "No keywords found for the selected period.",
     "entryPages": "Entry pages",
     "exitPages": "Exit pages",
-    "keyword": "Keyword",
     "clicks": "Clicks",
     "metamapping": {
       "ev": {

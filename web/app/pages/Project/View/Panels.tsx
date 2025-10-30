@@ -879,6 +879,8 @@ interface PanelProps {
   getVersionFilterLink?: (parent: string, version: string) => LinkProps['to']
   valuesHeaderName?: string
   highlightColour?: 'blue' | 'red' | 'orange'
+  // When true, rows are non-interactive (no hover state, no filter link/navigation)
+  disableRowClick?: boolean
 }
 
 interface DetailsTableProps
@@ -896,6 +898,7 @@ interface DetailsTableProps
   > {
   total: number
   closeDetails: () => void
+  disableRowClick?: boolean
 }
 
 const DetailsTable = ({
@@ -910,6 +913,7 @@ const DetailsTable = ({
   valuesHeaderName,
   activeTabId,
   closeDetails,
+  disableRowClick,
 }: DetailsTableProps) => {
   const {
     t,
@@ -1073,8 +1077,15 @@ const DetailsTable = ({
                     width: '100%',
                     display: 'flex',
                   }}
-                  className='group cursor-pointer text-base text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+                  className={cx(
+                    'text-base text-gray-900 even:bg-gray-50 dark:text-gray-50 dark:even:bg-slate-800',
+                    {
+                      'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !disableRowClick,
+                      'cursor-default': !!disableRowClick,
+                    },
+                  )}
                   onClick={() => {
+                    if (disableRowClick) return
                     const link = getFilterLink(id, entryName)
                     if (link) {
                       navigate(link)
@@ -1102,11 +1113,15 @@ const DetailsTable = ({
                         rowData
                       )}
                     </span>
-                    <FilterIcon
-                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                      strokeWidth={1.5}
-                    />
-                    <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                    {!disableRowClick ? (
+                      <>
+                        <FilterIcon
+                          className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
+                          strokeWidth={1.5}
+                        />
+                        <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                      </>
+                    ) : null}
                   </td>
                   <td className='w-[30%] py-1 text-right sm:w-1/6'>
                     {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
@@ -1142,6 +1157,7 @@ const Panel = ({
   getVersionFilterLink = () => '',
   valuesHeaderName,
   highlightColour = 'blue',
+  disableRowClick = false,
 }: PanelProps) => {
   const { dataLoading, activeTab } = useViewProjectContext()
   const { t } = useTranslation('common')
@@ -1216,7 +1232,7 @@ const Panel = ({
                       'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                       {
                         'group hover:bg-gray-50 hover:dark:bg-slate-800':
-                          !hideFilters && !dataLoading && (link || hasVersionsForItem),
+                          !disableRowClick && !hideFilters && !dataLoading && (link || hasVersionsForItem),
                         'cursor-wait': dataLoading,
                       },
                     )}
@@ -1251,10 +1267,10 @@ const Panel = ({
                       ) : null}
 
                       <FilterWrapper
-                        as={link ? 'Link' : 'div'}
+                        as={!disableRowClick && link ? 'Link' : 'div'}
                         to={link}
                         className={cx('flex min-w-0 flex-1 items-center', {
-                          'cursor-pointer': !hideFilters && !dataLoading && link,
+                          'cursor-pointer': !disableRowClick && !hideFilters && !dataLoading && link,
                           'cursor-wait': dataLoading,
                         })}
                       >
@@ -1302,18 +1318,18 @@ const Panel = ({
                       {_map(versions, (versionEntry) => {
                         const versionPerc = _round((versionEntry.count / total) * 100, 2)
                         const versionValueData = valueMapper(versionEntry.count)
-                        const versionLink = getVersionFilterLink?.(entryName, versionEntry.name)
+                        const versionLink = disableRowClick ? undefined : getVersionFilterLink?.(entryName, versionEntry.name)
 
                         return (
                           <FilterWrapper
                             key={`${id}-${entryName}-${versionEntry.name}`}
-                            as={versionLink ? 'Link' : 'div'}
+                            as={!disableRowClick && versionLink ? 'Link' : 'div'}
                             to={versionLink}
                             className={cx(
                               'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                               {
                                 'group cursor-pointer hover:bg-gray-50 hover:dark:bg-slate-800':
-                                  !hideFilters && !dataLoading && versionLink,
+                                  !disableRowClick && !hideFilters && !dataLoading && versionLink,
                                 'cursor-wait': dataLoading,
                               },
                             )}
@@ -1383,7 +1399,10 @@ const Panel = ({
             valueMapper={valueMapper}
             capitalize={capitalize || false}
             linkContent={linkContent || false}
-            getFilterLink={getFilterLink as (id: string, name: string) => string}
+            getFilterLink={(
+              disableRowClick ? (() => '') : (getFilterLink as (id: string, name: string) => string)
+            )}
+            disableRowClick={disableRowClick}
           />
         }
         size='large'
