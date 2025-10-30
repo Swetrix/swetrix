@@ -68,7 +68,7 @@ const Keywords = () => {
         </p>
         {['owner', 'admin'].includes(project?.role || '') ? (
           <Link
-            to={routes.project_settings.replace(':id', id)}
+            to={`${routes.project_settings.replace(':id', id)}?tab=integrations`}
             className='mt-2 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
           >
             {t('project.goToProjectSettings')}
