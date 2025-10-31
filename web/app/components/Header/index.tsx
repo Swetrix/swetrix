@@ -17,7 +17,7 @@ import {
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
-import { SiYoutube } from '@icons-pack/react-simple-icons'
+import { SiYoutube, SiProducthunt } from '@icons-pack/react-simple-icons'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
@@ -28,7 +28,7 @@ import _startsWith from 'lodash/startsWith'
 import { GaugeIcon, ChartPieIcon, BugIcon, PuzzleIcon, PhoneIcon } from 'lucide-react'
 import { memo, Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useRouteLoaderData } from 'react-router'
 
 import { changeLanguage } from '~/i18n'
 import {
@@ -39,11 +39,14 @@ import {
   DOCS_URL,
   CAPTCHA_URL,
   isDisableMarketingPages,
+  LS_PH_BANNER_DISMISSED,
 } from '~/lib/constants'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
+import { trackCustom } from '~/utils/analytics'
+import { getCookie, setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
 
 dayjs.extend(utc)
@@ -376,6 +379,68 @@ const Separator = () => (
   </svg>
 )
 
+const ProductHuntBanner = () => {
+  const { t } = useTranslation('common')
+  const rootData = useRouteLoaderData('root') as { phBannerDismissed?: boolean } | undefined
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    if (rootData?.phBannerDismissed) return true
+    try {
+      return getCookie(LS_PH_BANNER_DISMISSED) === '1'
+    } catch {
+      return false
+    }
+  })
+
+  if (isSelfhosted || dismissed) {
+    return null
+  }
+
+  const dismiss = () => {
+    try {
+      // 3 days in seconds
+      setCookie(LS_PH_BANNER_DISMISSED, '1', 3 * 24 * 60 * 60)
+    } catch {
+      //
+    }
+    setDismissed(true)
+  }
+
+  return (
+    <div className='bg-gradient-to-r from-orange-600 via-orange-500 to-orange-400 text-white ring-1 ring-black/5 dark:to-orange-500/80 dark:ring-white/10'>
+      <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+        <div className='flex items-center justify-center gap-3 py-1.5 text-center sm:justify-between'>
+          <div className='inline-flex items-center gap-2 text-sm font-medium md:text-base'>
+            <SiProducthunt className='h-5 w-5 shrink-0' aria-hidden='true' />
+            <span>We&apos;re live on Product Hunt! Please support us by upvoting 🙂</span>
+          </div>
+          <div className='inline-flex items-center gap-2'>
+            <a
+              href='https://www.producthunt.com/products/swetrix-analytics/launches/swetrix-5'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='rounded-md bg-white/10 px-3 py-1.5 text-sm font-semibold text-white ring-1 ring-white/30 transition-colors hover:bg-white/15'
+              aria-label={`Upvote on Product Hunt (opens in a new tab)`}
+              onClick={() => {
+                trackCustom('PRODUCT_HUNT_BANNER_UPVOTE_CLICKED')
+              }}
+            >
+              Upvote on Product Hunt
+            </a>
+            <button
+              type='button'
+              onClick={dismiss}
+              className='rounded-md p-1 text-white/90 transition-colors hover:bg-white/10 hover:text-white'
+              aria-label={t('common.close')}
+            >
+              <XMarkIcon className='h-5 w-5' />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const AuthedHeader = ({
   rawStatus,
   status,
@@ -398,6 +463,7 @@ const AuthedHeader = ({
         'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
       })}
     >
+      <ProductHuntBanner />
       <nav className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8' aria-label='Top'>
         <div className='flex w-full items-center justify-between py-4'>
           <div className='flex items-center'>
@@ -502,6 +568,7 @@ const NotAuthedHeader = ({
         'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
       })}
     >
+      <ProductHuntBanner />
       <nav className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8' aria-label='Top'>
         <div className='flex w-full items-center justify-between py-4'>
           <div className='flex items-center'>
