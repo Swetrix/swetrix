@@ -22,7 +22,13 @@ import { ExternalScripts } from 'remix-utils/external-scripts'
 import { LocaleLinks } from '~/components/LocaleLinks'
 import SelfhostedApiUrlBanner from '~/components/SelfhostedApiUrlBanner'
 import { SEO } from '~/components/SEO'
-import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER, LS_PH_BANNER_DISMISSED } from '~/lib/constants'
+import {
+  CONTACT_EMAIL,
+  LS_THEME_SETTING,
+  isSelfhosted,
+  I18N_CACHE_BREAKER,
+  LS_PH_BANNER_DISMISSED,
+} from '~/lib/constants'
 import mainCss from '~/styles/index.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
 import { trackViews, trackErrors, trackError } from '~/utils/analytics'
