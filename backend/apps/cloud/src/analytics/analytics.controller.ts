@@ -52,6 +52,7 @@ import { AppLoggerService } from '../logger/logger.service'
 import {
   redis,
   REDIS_USERS_COUNT_KEY,
+  REDIS_TRIALS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
   UNIQUE_SESSION_LIFE_TIME,
@@ -975,14 +976,16 @@ export class AnalyticsController {
       REDIS_USERS_COUNT_KEY,
       REDIS_PROJECTS_COUNT_KEY,
       REDIS_EVENTS_COUNT_KEY,
+      REDIS_TRIALS_COUNT_KEY,
     )
 
     if (exists) {
       const users = _toNumber(await redis.get(REDIS_USERS_COUNT_KEY))
+      const trials = _toNumber(await redis.get(REDIS_TRIALS_COUNT_KEY))
       const projects = _toNumber(await redis.get(REDIS_PROJECTS_COUNT_KEY))
       const events = _toNumber(await redis.get(REDIS_EVENTS_COUNT_KEY))
 
-      return { users, projects, events }
+      return { users, trials, projects, events }
     }
 
     return this.analyticsService.getGeneralStats()

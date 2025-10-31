@@ -39,7 +39,7 @@ import {
 } from '@nestjs/common'
 import { isbot } from 'isbot'
 
-import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
+import { DEFAULT_TIMEZONE, PlanCode } from '../user/entities/user.entity'
 import {
   redis,
   UNIQUE_SESSION_LIFE_TIME,
@@ -55,6 +55,7 @@ import {
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
   TRAFFIC_METAKEY_COLUMNS,
+  REDIS_TRIALS_COUNT_KEY,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
@@ -103,6 +104,7 @@ import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-v
 import { ProjectViewCustomEventDto } from '../project/dto/create-project-view.dto'
 import { UAParser } from '@ua-parser-js/pro-business'
 import { extensions } from './utils/ua-parser'
+import { In, Not } from 'typeorm'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -4350,6 +4352,7 @@ export class AnalyticsService {
 
   async getGeneralStats(): Promise<{
     users: number
+    trials: number
     projects: number
     events: number
   }> {
@@ -4365,7 +4368,12 @@ export class AnalyticsService {
       SELECT 'errors' AS type, count(*) AS count FROM errors
     `
 
-    const users = await this.userService.count()
+    const users = await this.userService.count({
+      where: {
+        planCode: Not(In([PlanCode.free, PlanCode.trial, PlanCode.none])),
+      },
+    })
+    const trials = await this.userService.count()
     const projects = await this.projectService.count()
     const { data } = await clickhouse
       .query({
@@ -4377,11 +4385,13 @@ export class AnalyticsService {
     const events = data.reduce((total, row) => total + row.count, 0) as number
 
     await redis.set(REDIS_USERS_COUNT_KEY, users, 'EX', 630)
+    await redis.set(REDIS_TRIALS_COUNT_KEY, trials, 'EX', 630)
     await redis.set(REDIS_PROJECTS_COUNT_KEY, projects, 'EX', 630)
     await redis.set(REDIS_EVENTS_COUNT_KEY, events, 'EX', 630)
 
     return {
       users,
+      trials,
       projects,
       events,
     }

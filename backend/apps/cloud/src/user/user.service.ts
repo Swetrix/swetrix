@@ -155,7 +155,7 @@ export class UserService {
     return this.usersRepository.delete(id)
   }
 
-  async count(options?: any): Promise<number> {
+  async count(options?: FindManyOptions<User>): Promise<number> {
     return this.usersRepository.count(options)
   }
 
