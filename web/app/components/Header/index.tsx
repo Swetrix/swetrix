@@ -408,17 +408,17 @@ const ProductHuntBanner = () => {
   return (
     <div className='bg-gradient-to-r from-orange-600 via-orange-500 to-orange-400 text-white ring-1 ring-black/5 dark:to-orange-500/80 dark:ring-white/10'>
       <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-        <div className='flex items-center justify-center gap-3 py-1.5 text-center sm:justify-between'>
-          <div className='inline-flex items-center gap-2 text-sm font-medium md:text-base'>
+        <div className='flex flex-col items-center justify-center gap-2 py-1.5 text-center sm:flex-row sm:justify-between'>
+          <div className='flex items-center gap-2 text-sm font-medium sm:text-left md:text-base'>
             <SiProducthunt className='h-5 w-5 shrink-0' aria-hidden='true' />
             <span>We&apos;re live on Product Hunt! Please support us by upvoting 🙂</span>
           </div>
-          <div className='inline-flex items-center gap-2'>
+          <div className='mt-2 flex w-full items-center justify-center gap-2 sm:mt-0 sm:w-auto sm:justify-end'>
             <a
               href='https://www.producthunt.com/products/swetrix-analytics/launches/swetrix-5'
               target='_blank'
               rel='noopener noreferrer'
-              className='rounded-md bg-white/10 px-3 py-1.5 text-sm font-semibold text-white ring-1 ring-white/30 transition-colors hover:bg-white/15'
+              className='block w-full rounded-md bg-white/10 px-3 py-2 text-center text-sm font-semibold text-white ring-1 ring-white/30 transition-colors hover:bg-white/15 sm:inline-block sm:w-auto'
               aria-label={`Upvote on Product Hunt (opens in a new tab)`}
               onClick={() => {
                 trackCustom('PRODUCT_HUNT_BANNER_UPVOTE_CLICKED')
