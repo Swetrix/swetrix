@@ -22,7 +22,13 @@ import { ExternalScripts } from 'remix-utils/external-scripts'
 import { LocaleLinks } from '~/components/LocaleLinks'
 import SelfhostedApiUrlBanner from '~/components/SelfhostedApiUrlBanner'
 import { SEO } from '~/components/SEO'
-import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
+import {
+  CONTACT_EMAIL,
+  LS_THEME_SETTING,
+  isSelfhosted,
+  I18N_CACHE_BREAKER,
+  LS_PH_BANNER_DISMISSED,
+} from '~/lib/constants'
 import mainCss from '~/styles/index.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
 import { trackViews, trackErrors, trackError } from '~/utils/analytics'
@@ -186,6 +192,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const locale = detectLanguage(request)
   const theme = detectTheme(request)
   const isAuthed = isAuthenticated(request)
+  const cookieHeader = request.headers.get('Cookie')
+  const phBannerDismissedMatch = cookieHeader?.match(new RegExp(`(?:^|; )${LS_PH_BANNER_DISMISSED}=([^;]*)`))
+  const phBannerDismissed = phBannerDismissedMatch?.[1] === '1'
 
   const REMIX_ENV = {
     NODE_ENV: process.env.NODE_ENV,
@@ -200,7 +209,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     COOKIE_DOMAIN: process.env.COOKIE_DOMAIN,
   }
 
-  return { locale, url, theme, REMIX_ENV, isAuthed, pathname: urlObject.pathname }
+  return { locale, url, theme, REMIX_ENV, isAuthed, pathname: urlObject.pathname, phBannerDismissed }
 }
 
 export const handle = { i18n: 'common' }
