@@ -325,7 +325,6 @@ export const SHOW_BANNER_AT_PERC = 85 // show banner when 85% of events in tier 
 export const LS_THEME_SETTING = 'colour-theme'
 export const LS_VIEW_PREFS_SETTING = 'proj-view-preferences'
 export const LS_CAPTCHA_VIEW_PREFS_SETTING = 'captcha-view-preferences'
-export const LS_PH_BANNER_DISMISSED = 'ph-banner-dismissed'
 
 export const DEFAULT_TIMEZONE = 'Etc/GMT'
 
