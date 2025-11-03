@@ -640,6 +640,29 @@ export const PLAN_LIMITS = {
     ypid: 813695, // Plan ID - Yearly billing
     maxAlerts: 50,
   },
+  '50k': {
+    index: 1.5, // 'downgrade' or 'upgrade' logic depends on this
+    planCode: '50k',
+    monthlyUsageLimit: 50000,
+    legacy: true,
+    price: {
+      USD: {
+        monthly: 12,
+        yearly: 120,
+      },
+      EUR: {
+        monthly: 10,
+        yearly: 100,
+      },
+      GBP: {
+        monthly: 10,
+        yearly: 100,
+      },
+    },
+    pid: 918109, // Plan ID
+    ypid: 918110, // Plan ID - Yearly billing
+    maxAlerts: 50,
+  },
   freelancer: {
     index: 2, // 'downgrade' or 'upgrade' logic depends on this
     planCode: 'freelancer',

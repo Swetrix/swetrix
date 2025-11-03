@@ -24,6 +24,7 @@ export enum PlanCode {
   trial = 'trial',
   hobby = 'hobby',
   freelancer = 'freelancer',
+  '50k' = '50k',
   '100k' = '100k',
   '200k' = '200k',
   '500k' = '500k',
@@ -78,6 +79,13 @@ export const ACCOUNT_PLANS = {
     monthlyUsageLimit: 10000,
     pid: '813694', // Plan ID
     ypid: '813695', // Plan ID - Yearly billing
+    maxAlerts: 50,
+  },
+  [PlanCode['50k']]: {
+    id: PlanCode['50k'],
+    monthlyUsageLimit: 50000,
+    pid: '918109', // Plan ID
+    ypid: '918110', // Plan ID - Yearly billing
     maxAlerts: 50,
   },
   [PlanCode.freelancer]: {
