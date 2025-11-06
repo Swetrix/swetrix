@@ -1,5 +1,5 @@
 export interface Entry {
-  name: string
+  name: string | null
   count: number
   cc?: string
   rgc?: string

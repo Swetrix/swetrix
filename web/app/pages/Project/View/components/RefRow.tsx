@@ -2,15 +2,33 @@ import { LinkIcon } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { REFERRER_MAP, extractHostname } from '~/utils/referrers'
+
 const RefRow = ({ rowName }: { rowName: string }) => {
   const { t } = useTranslation('common')
 
-  const { isUrl, url } = useMemo(() => {
+  const { isUrl, faviconHost } = useMemo(() => {
+    // Try parse as URL
     try {
-      const urlObj = new URL(rowName)
-      return { isUrl: true, url: urlObj }
+      const urlObj = new URL(rowName as string)
+      return { isUrl: true, faviconHost: urlObj.hostname }
     } catch {
-      return { isUrl: false, url: null }
+      // Not a full URL. Try to resolve a hostname for grouped names/domains
+      const hostFromValue = extractHostname(rowName as string)
+      if (hostFromValue) {
+        return { isUrl: false, faviconHost: hostFromValue }
+      }
+
+      // Try map canonical name → representative domain (first literal domain pattern)
+      const mapping = REFERRER_MAP.find((m) => (rowName || '').toLowerCase() === m.name.toLowerCase())
+      if (mapping) {
+        const literal =
+          mapping.patterns.find((p) => !['[', ']', '{', '}', '*'].some((c) => p.includes(c))) || mapping.patterns[0]
+        const safe = literal.replace(/\[[^\]]+\]/g, 'com') // e.g., google.[a-z]{2,3} -> google.com
+        return { isUrl: false, faviconHost: safe }
+      }
+
+      return { isUrl: false, faviconHost: null as any }
     }
   }, [rowName])
 
@@ -27,10 +45,10 @@ const RefRow = ({ rowName }: { rowName: string }) => {
 
   return (
     <div className='scrollbar-thin hover-always-overflow flex items-center'>
-      {isUrl ? (
+      {faviconHost ? (
         <img
           className='float-left mr-1.5 size-5'
-          src={`https://icons.duckduckgo.com/ip3/${url?.hostname}.ico`}
+          src={`https://icons.duckduckgo.com/ip3/${faviconHost}.ico`}
           loading='lazy'
           alt=''
           aria-hidden='true'

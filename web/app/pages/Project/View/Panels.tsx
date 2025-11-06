@@ -985,7 +985,7 @@ const DetailsTable = ({
   const onSortBy = (label: string) => {
     const getValue = (entry: Entry): number | string => {
       if (label === 'quantity') return entry.count
-      if (label === 'name') return entry.name
+      if (label === 'name') return entry.name || ''
       const extra = detailsExtraColumns?.find((c) => c.sortLabel === label)
       if (extra) return extra.getSortValue(entry)
       return 0

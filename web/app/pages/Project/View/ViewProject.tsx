@@ -148,6 +148,7 @@ import {
   removeDuplicates,
 } from '~/utils/generic'
 import { getItem, setItem } from '~/utils/localstorage'
+import { groupRefEntries } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
 import { useCurrentProject, useProjectPassword } from '../../../providers/CurrentProjectProvider'
@@ -3421,8 +3422,11 @@ const ViewProjectContent = () => {
                                     const { name: entryName, cc } = entry
 
                                     if (errorsActiveTabs.location === 'lc') {
+                                      if (entryName === null) {
+                                        return <CCRow cc={null} language={language} />
+                                      }
                                       const entryNameArray = entryName.split('-')
-                                      const displayName = getLocaleDisplayName(entryName, language)
+                                      const displayName = getLocaleDisplayName(entryName || '', language)
 
                                       return (
                                         <CCRow
@@ -3434,7 +3438,7 @@ const ViewProjectContent = () => {
                                     }
 
                                     if (cc !== undefined) {
-                                      return <CCRow cc={cc} name={entryName} language={language} />
+                                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
                                     }
 
                                     return <CCRow cc={entryName} language={language} />
@@ -3769,7 +3773,7 @@ const ViewProjectContent = () => {
                                     }
 
                                     if (cc !== undefined) {
-                                      return <CCRow cc={cc} name={entryName} language={language} />
+                                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
                                     }
 
                                     return <CCRow cc={entryName} language={language} />
@@ -3954,7 +3958,14 @@ const ViewProjectContent = () => {
                                       key={panelsActiveTabs.source}
                                       icon={panelIconMapping.ref}
                                       id={panelsActiveTabs.source}
-                                      getFilterLink={getFilterLink}
+                                      getFilterLink={(column: string, value: string) => {
+                                        if (panelsActiveTabs.source === 'ref') {
+                                          // If grouped by name/domain (no refn filter active) -> filter by refn
+                                          const hasRefNameFilter = filters.some((f) => f.column === 'refn')
+                                          return getFilterLink(hasRefNameFilter ? 'ref' : 'refn', value)
+                                        }
+                                        return getFilterLink(column, value)
+                                      }}
                                       name={t('project.trafficSources')}
                                       tabs={trafficSourcesTabs}
                                       onTabChange={(tab) =>
@@ -3967,7 +3978,15 @@ const ViewProjectContent = () => {
                                       data={
                                         panelsActiveTabs.source === 'keywords'
                                           ? keywords
-                                          : panelsData.data[panelsActiveTabs.source]
+                                          : panelsActiveTabs.source === 'ref'
+                                            ? (() => {
+                                                const hasRefNameFilter = filters.some((f) => f.column === 'refn')
+                                                const raw = panelsData.data?.ref || []
+                                                return hasRefNameFilter
+                                                  ? (raw as unknown as Entry[])
+                                                  : (groupRefEntries(raw as any) as unknown as Entry[])
+                                              })()
+                                            : (panelsData.data[panelsActiveTabs.source] as unknown as Entry[])
                                       }
                                       valuesHeaderName={
                                         panelsActiveTabs.source === 'keywords' ? t('project.clicks') : undefined
@@ -4130,7 +4149,7 @@ const ViewProjectContent = () => {
                                     const { name: entryName, cc } = entry
 
                                     if (cc !== undefined) {
-                                      return <CCRow cc={cc} name={entryName} language={language} />
+                                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
                                     }
 
                                     return <CCRow cc={entryName} language={language} />
