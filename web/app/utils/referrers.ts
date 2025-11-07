@@ -5,10 +5,9 @@ type ReferrerMapping = {
   patterns: string[]
 }
 
-// Minimal curated map; extend as needed via JSON
-export const REFERRER_MAP: ReferrerMapping[] = MAP as ReferrerMapping[]
+const REFERRER_MAP: ReferrerMapping[] = MAP as ReferrerMapping[]
 
-export const extractHostname = (value: string | null | undefined): string | null => {
+const extractHostname = (value: string | null | undefined): string | null => {
   if (!value) return null
   try {
     const url = new URL(value)
@@ -47,7 +46,7 @@ const matchByMap = (host: string): string | null => {
   return null
 }
 
-export const getCanonicalRefGroup = (refValue: string | null | undefined): { key: string; name: string } | null => {
+const getCanonicalRefGroup = (refValue: string | null | undefined): { key: string; name: string } | null => {
   const value = (refValue || '').trim()
   // If a non-http(s) scheme is present, keep as-is (do not group)
   const scheme = value.match(/^([a-z][a-z0-9+.-]*):/i)?.[1]
