@@ -8,10 +8,10 @@ let cachedMap: ReferrerJson[] | null = null
 const loadMap = (): ReferrerJson[] => {
   if (cachedMap) return cachedMap
   const candidates = [
-    // Repo root (when running from project root)
-    path.resolve(process.cwd(), 'web/app/utils/referrers.map.json'),
-    // Relative to compiled file location
-    path.resolve(__dirname, '../../../../../web/app/utils/referrers.map.json'),
+    // Dev mode
+    path.resolve(__dirname, '../../../../../web/app/referrers.map.json'),
+    // Compiled mode
+    path.resolve(__dirname, '../../../../web/app/referrers.map.json'),
   ]
   for (const p of candidates) {
     try {
