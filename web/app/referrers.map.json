@@ -1,7 +1,11 @@
 [
   { "name": "Linktree", "patterns": ["linktr.ee"] },
   { "name": "Perplexity", "patterns": ["perplexity.ai"] },
-  { "name": "Yandex", "patterns": ["yandex.ru", "yandex.com", "yandex.kz", "yandex.by", "ya.ru", "yandex.eu", "yandex.fr"] },
+  { "name": "Wikipedia", "patterns": ["wikipedia.org"] },
+  {
+    "name": "Yandex",
+    "patterns": ["yandex.ru", "yandex.com", "yandex.kz", "yandex.by", "ya.ru", "yandex.eu", "yandex.fr"]
+  },
   { "name": "GitHub", "patterns": ["github.com"] },
   { "name": "Google", "patterns": ["google.com", "doubleclick.net"] },
   { "name": "Bing", "patterns": ["bing.com", "ntp.msn.com"] },

@@ -1129,7 +1129,7 @@ const DetailsTable = ({
                     },
                   )}
                   onClick={() => {
-                    if (disableRowClick) return
+                    if (disableRowClick || entryName === null) return
                     const link = getFilterLink(id, entryName)
                     if (link) {
                       navigate(link)
@@ -1257,7 +1257,8 @@ const Panel = ({
     })
   }
 
-  const hasVersions = (itemName: string) => {
+  const hasVersions = (itemName: string | null) => {
+    if (itemName === null) return false
     return versionData && versionData[itemName] && versionData[itemName].length > 0
   }
 
@@ -1296,7 +1297,7 @@ const Panel = ({
               const isExpanded = expandedItems.has(entryName)
               const versions = versionData?.[entryName] || []
 
-              const link = getFilterLink(id, entryName)
+              const link = entryName === null ? undefined : getFilterLink(id, entryName)
 
               return (
                 <div key={`${id}-${entryName}-${Object.values(rest).join('-')}`} className='space-y-0.5'>

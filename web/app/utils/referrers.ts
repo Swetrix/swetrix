@@ -5,9 +5,9 @@
   Otherwise, group by hostname (strips leading www.).
 */
 
-import MAP from './referrers.map.json'
+import MAP from '../referrers.map.json'
 
-export type ReferrerMapping = {
+type ReferrerMapping = {
   name: string
   patterns: string[]
 }
@@ -21,10 +21,21 @@ export const extractHostname = (value: string | null | undefined): string | null
     const url = new URL(value)
     return url.hostname.toLowerCase()
   } catch {
-    // If it's already a hostname (no protocol), return as lowercased
     const trimmed = value.trim().toLowerCase()
     if (trimmed.includes(' ')) return null
-    if (trimmed.includes('.') || /^[a-z0-9-]+\.[a-z]{2,}$/.test(trimmed)) return trimmed
+    // Try to parse assuming http scheme to reliably extract host from strings like "example.com/path"
+    try {
+      const url = new URL(`http://${trimmed}`)
+      const host = url.hostname.toLowerCase()
+      // Accept only real domains (has a dot) or IPv4; reject bare words like "reddit"
+      if (host.includes('.') || /^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
+        return host
+      }
+    } catch {
+      // Fallback: accept bare hostnames only
+      const bare = trimmed.split('/')[0].split('?')[0].split('#')[0]
+      if (/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(bare)) return bare
+    }
     return null
   }
 }
@@ -43,7 +54,7 @@ const matchByMap = (host: string): string | null => {
   return null
 }
 
-export const getCanonicalRefGroup = (refValue: string | null | undefined): { key: string; name: string } | null => {
+const getCanonicalRefGroup = (refValue: string | null | undefined): { key: string; name: string } | null => {
   const value = (refValue || '').trim()
   // If a non-http(s) scheme is present, keep as-is (do not group)
   const scheme = value.match(/^([a-z][a-z0-9+.-]*):/i)?.[1]
@@ -59,7 +70,7 @@ export const getCanonicalRefGroup = (refValue: string | null | undefined): { key
   return { key: plainHost, name: plainHost }
 }
 
-export type Entry = { name: string | null; count: number; [k: string]: any }
+type Entry = { name: string | null; count: number; [k: string]: any }
 
 // Group a list of ref entries by canonical name or hostname.
 export const groupRefEntries = (entries: Entry[]): Entry[] => {

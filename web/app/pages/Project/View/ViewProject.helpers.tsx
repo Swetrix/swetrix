@@ -203,7 +203,7 @@ const onCSVExportClick = (
       const perc = _round((entry.count / total) * 100 || 0, 2)
 
       if (item === 'cc') {
-        const name = countries.getName(entry.name, language)
+        const name = countries.getName(entry.name || '', language)
         return [`"${name}"`, entry.count, `${perc}%`]
       }
 

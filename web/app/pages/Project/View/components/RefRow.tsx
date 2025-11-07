@@ -4,31 +4,28 @@ import { useTranslation } from 'react-i18next'
 
 import { REFERRER_MAP, extractHostname } from '~/utils/referrers'
 
-const RefRow = ({ rowName }: { rowName: string }) => {
+const RefRow = ({ rowName }: { rowName: string | null }) => {
   const { t } = useTranslation('common')
 
   const { isUrl, faviconHost } = useMemo(() => {
-    // Try parse as URL
+    if (!rowName) return { isUrl: false, faviconHost: null as string | null }
+
     try {
-      const urlObj = new URL(rowName as string)
+      const urlObj = new URL(rowName)
       return { isUrl: true, faviconHost: urlObj.hostname }
     } catch {
-      // Not a full URL. Try to resolve a hostname for grouped names/domains
-      const hostFromValue = extractHostname(rowName as string)
+      const hostFromValue = extractHostname(rowName)
       if (hostFromValue) {
         return { isUrl: false, faviconHost: hostFromValue }
       }
 
-      // Try map canonical name → representative domain (first literal domain pattern)
+      // Find first literal domain pattern
       const mapping = REFERRER_MAP.find((m) => (rowName || '').toLowerCase() === m.name.toLowerCase())
       if (mapping) {
-        const literal =
-          mapping.patterns.find((p) => !['[', ']', '{', '}', '*'].some((c) => p.includes(c))) || mapping.patterns[0]
-        const safe = literal.replace(/\[[^\]]+\]/g, 'com') // e.g., google.[a-z]{2,3} -> google.com
-        return { isUrl: false, faviconHost: safe }
+        return { isUrl: false, faviconHost: mapping.patterns[0] }
       }
 
-      return { isUrl: false, faviconHost: null as any }
+      return { isUrl: false, faviconHost: null as string | null }
     }
   }, [rowName])
 
