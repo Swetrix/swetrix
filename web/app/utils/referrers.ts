@@ -1,10 +1,3 @@
-/*
-  Canonical referrer name mapping and helpers.
-
-  Group referrers by a friendly name when possible (e.g., *.wikipedia.org -> "Wikipedia").
-  Otherwise, group by hostname (strips leading www.).
-*/
-
 import MAP from '../referrers.map.json'
 
 type ReferrerMapping = {
