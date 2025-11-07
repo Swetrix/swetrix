@@ -47,7 +47,7 @@ const matchByMap = (host: string): string | null => {
   return null
 }
 
-const getCanonicalRefGroup = (refValue: string | null | undefined): { key: string; name: string } | null => {
+export const getCanonicalRefGroup = (refValue: string | null | undefined): { key: string; name: string } | null => {
   const value = (refValue || '').trim()
   // If a non-http(s) scheme is present, keep as-is (do not group)
   const scheme = value.match(/^([a-z][a-z0-9+.-]*):/i)?.[1]
@@ -88,4 +88,24 @@ export const groupRefEntries = (entries: Entry[]): Entry[] => {
   }
   // Sort desc by count
   return list.sort((a, b) => b.count - a.count)
+}
+
+// Best-effort favicon host derivation for a ref row value (URL, host or mapped group name)
+export const getFaviconHost = (value: string | null | undefined): string | null => {
+  if (!value) return null
+  // 1) Direct URL -> hostname
+  try {
+    const urlObj = new URL(value)
+    return urlObj.hostname
+  } catch {
+    // not a URL
+  }
+  // 2) Try to extract hostname from non-URL strings
+  const hostFromValue = extractHostname(value)
+  if (hostFromValue) return hostFromValue
+  // 3) If value is a mapped referrer group name, use the first domain-like pattern
+  const mapping = REFERRER_MAP.find((m) => value.toLowerCase() === m.name.toLowerCase())
+  if (!mapping) return null
+  const domainLike = mapping.patterns.find((p) => !p.includes('://') && p.includes('.'))
+  return domainLike || null
 }

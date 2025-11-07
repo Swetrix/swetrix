@@ -2,31 +2,24 @@ import { LinkIcon } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { REFERRER_MAP, extractHostname } from '~/utils/referrers'
+import { getFaviconHost } from '~/utils/referrers'
 
 const RefRow = ({ rowName }: { rowName: string | null }) => {
   const { t } = useTranslation('common')
 
   const { isUrl, faviconHost } = useMemo(() => {
     if (!rowName) return { isUrl: false, faviconHost: null as string | null }
-
+    let isUrl = false
     try {
-      const urlObj = new URL(rowName)
-      return { isUrl: true, faviconHost: urlObj.hostname }
+      // If it parses, we treat it as a URL for linking
+      // Favicon host will be derived by the util anyway
+      // from either the URL, a hostname string or a mapped group name
+      new URL(rowName)
+      isUrl = true
     } catch {
-      const hostFromValue = extractHostname(rowName)
-      if (hostFromValue) {
-        return { isUrl: false, faviconHost: hostFromValue }
-      }
-
-      // Find first literal domain pattern
-      const mapping = REFERRER_MAP.find((m) => (rowName || '').toLowerCase() === m.name.toLowerCase())
-      if (mapping) {
-        return { isUrl: false, faviconHost: mapping.patterns[0] }
-      }
-
-      return { isUrl: false, faviconHost: null as string | null }
+      isUrl = false
     }
+    return { isUrl, faviconHost: getFaviconHost(rowName) }
   }, [rowName])
 
   const linkClassName = 'text-blue-600 hover:underline dark:text-blue-500'

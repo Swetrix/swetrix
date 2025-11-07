@@ -3933,6 +3933,7 @@ const ViewProjectContent = () => {
                                 }
 
                                 if (type === 'traffic-sources') {
+                                  const hasRefNameFilter = filters.some((f) => f.column === 'refn')
                                   const trafficSourcesTabs = [
                                     { id: 'ref', label: t('project.mapping.ref') },
                                     !isSelfhosted && { id: 'keywords', label: t('project.mapping.keywords') },
@@ -3961,7 +3962,6 @@ const ViewProjectContent = () => {
                                       getFilterLink={(column: string, value: string) => {
                                         if (panelsActiveTabs.source === 'ref') {
                                           // If grouped by name/domain (no refn filter active) -> filter by refn
-                                          const hasRefNameFilter = filters.some((f) => f.column === 'refn')
                                           return getFilterLink(hasRefNameFilter ? 'ref' : 'refn', value)
                                         }
                                         return getFilterLink(column, value)
@@ -3980,7 +3980,6 @@ const ViewProjectContent = () => {
                                           ? keywords
                                           : panelsActiveTabs.source === 'ref'
                                             ? (() => {
-                                                const hasRefNameFilter = filters.some((f) => f.column === 'refn')
                                                 const raw = panelsData.data?.ref || []
                                                 return hasRefNameFilter
                                                   ? (raw as unknown as Entry[])
