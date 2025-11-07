@@ -235,7 +235,7 @@ const PanelContainer = ({
           ) : null}
         </div>
       </div>
-      <div className='relative flex h-[19.5rem] flex-col overflow-x-auto'>{contentRenderer()}</div>
+      <div className='relative flex h-[19.6rem] flex-col overflow-x-auto'>{contentRenderer()}</div>
       {onDetailsClick ? (
         <div className='mt-2 flex items-center justify-center'>
           <Button
