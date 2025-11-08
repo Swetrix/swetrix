@@ -3426,7 +3426,7 @@ const ViewProjectContent = () => {
                                         return <CCRow cc={null} language={language} />
                                       }
                                       const entryNameArray = entryName.split('-')
-                                      const displayName = getLocaleDisplayName(entryName || '', language)
+                                      const displayName = getLocaleDisplayName(entryName, language)
 
                                       return (
                                         <CCRow
