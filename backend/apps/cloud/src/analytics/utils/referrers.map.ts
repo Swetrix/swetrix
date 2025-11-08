@@ -22,6 +22,9 @@ const loadMap = (): ReferrerJson[] => {
       // try next location
     }
   }
+  console.warn(
+    '[WARN] Failed to load referrers map from all candidate paths, using empty map',
+  )
   cachedMap = []
   return cachedMap
 }
