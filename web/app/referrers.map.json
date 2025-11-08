@@ -15,7 +15,7 @@
   { "name": "Stack Overflow", "patterns": ["stackoverflow.com"] },
   { "name": "Hacker News", "patterns": ["news.ycombinator.com"] },
   { "name": "Medium", "patterns": ["medium.com"] },
-  { "name": "Twitter", "patterns": ["twitter.com", "x.com", "t.co"] },
+  { "name": "Twitter", "patterns": ["x.com", "twitter.com", "t.co"] },
   { "name": "Facebook", "patterns": ["facebook.com"] },
   { "name": "LinkedIn", "patterns": ["linkedin.com"] },
   { "name": "Product Hunt", "patterns": ["producthunt.com"] },
