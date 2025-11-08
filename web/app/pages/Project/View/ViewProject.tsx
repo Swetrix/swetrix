@@ -737,17 +737,17 @@ const ViewProjectContent = () => {
     }))
   }
 
-  const getVersionFilterLink = (parent: string, version: string, panelType: 'br' | 'os') => {
+  const getVersionFilterLink = (parent: string | null, version: string | null, panelType: 'br' | 'os') => {
     const filterParams = new URLSearchParams(searchParams.toString())
 
     if (panelType === 'br') {
       // Apply both browser and browser version filters together
-      filterParams.set('br', parent)
-      filterParams.set('brv', version)
+      filterParams.set('br', parent ?? 'null')
+      filterParams.set('brv', version ?? 'null')
     } else if (panelType === 'os') {
       // Apply both OS and OS version filters together
-      filterParams.set('os', parent)
-      filterParams.set('osv', version)
+      filterParams.set('os', parent ?? 'null')
+      filterParams.set('osv', version ?? 'null')
     }
 
     return `?${filterParams.toString()}`
@@ -2451,20 +2451,20 @@ const ViewProjectContent = () => {
     return daysDiff > 1
   }, [period, dateRange, isTouchDevice])
 
-  const getFilterLink = (column: string, value: string): LinkProps['to'] => {
+  const getFilterLink = (column: string, value: string | null): LinkProps['to'] => {
     const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
 
     const newSearchParams = new URLSearchParams(searchParams.toString())
     let searchString = ''
 
     if (isFilterActive) {
-      newSearchParams.delete(column, value)
-      newSearchParams.delete(`!${column}`, value)
-      newSearchParams.delete(`~${column}`, value)
-      newSearchParams.delete(`^${column}`, value)
+      newSearchParams.delete(column, value ?? 'null')
+      newSearchParams.delete(`!${column}`, value ?? 'null')
+      newSearchParams.delete(`~${column}`, value ?? 'null')
+      newSearchParams.delete(`^${column}`, value ?? 'null')
       searchString = newSearchParams.toString()
     } else {
-      newSearchParams.append(column, value)
+      newSearchParams.append(column, value ?? 'null')
       searchString = newSearchParams.toString()
     }
 
@@ -3959,10 +3959,13 @@ const ViewProjectContent = () => {
                                       key={panelsActiveTabs.source}
                                       icon={panelIconMapping.ref}
                                       id={panelsActiveTabs.source}
-                                      getFilterLink={(column: string, value: string) => {
+                                      getFilterLink={(column: string, value: string | null) => {
                                         if (panelsActiveTabs.source === 'ref') {
                                           // If grouped by name/domain (no refn filter active) -> filter by refn
-                                          return getFilterLink(hasRefNameFilter ? 'ref' : 'refn', value)
+                                          return getFilterLink(
+                                            hasRefNameFilter || value === null ? 'ref' : 'refn',
+                                            value,
+                                          )
                                         }
                                         return getFilterLink(column, value)
                                       }}

@@ -1,3 +1,5 @@
+import type { Entry } from '~/lib/models/Entry'
+
 import MAP from '../referrers.map.json'
 
 type ReferrerMapping = {
@@ -46,8 +48,9 @@ const matchByMap = (host: string): string | null => {
   return null
 }
 
-const getCanonicalRefGroup = (refValue: string | null | undefined): { key: string; name: string } | null => {
+const getCanonicalRefGroup = (refValue: string | null): { key: string; name: string } | null => {
   const value = (refValue || '').trim()
+
   // If a non-http(s) scheme is present, keep as-is (do not group)
   const scheme = value.match(/^([a-z][a-z0-9+.-]*):/i)?.[1]
   if (scheme && !/^https?$/i.test(scheme)) {
@@ -62,36 +65,27 @@ const getCanonicalRefGroup = (refValue: string | null | undefined): { key: strin
   return { key: plainHost, name: plainHost }
 }
 
-type Entry = { name: string | null; count: number; [k: string]: any }
-
-// Group a list of ref entries by canonical name or hostname.
 export const groupRefEntries = (entries: Entry[]): Entry[] => {
-  const acc = new Map<string, number>()
+  const acc = new Map<string | null, number>()
+
   for (const e of entries) {
-    if (e.name === null) {
-      acc.set('null', (acc.get('null') || 0) + e.count)
-      continue
-    }
     const group = getCanonicalRefGroup(e.name)
     const key = group?.key || e.name
     acc.set(key, (acc.get(key) || 0) + e.count)
   }
-  // Convert map to Entry[]
+
   const list: Entry[] = []
+
   for (const [key, count] of acc.entries()) {
-    if (key === 'null') {
-      list.push({ name: null, count })
-    } else {
-      list.push({ name: key, count })
-    }
+    list.push({ name: key, count })
   }
-  // Sort desc by count
+
   return list.sort((a, b) => b.count - a.count)
 }
 
-// Best-effort favicon host derivation for a ref row value (URL, host or mapped group name)
-export const getFaviconHost = (value: string | null | undefined): string | null => {
+export const getFaviconHost = (value: string | null): string | null => {
   if (!value) return null
+
   // 1) Direct URL -> hostname
   try {
     const urlObj = new URL(value)
@@ -99,9 +93,11 @@ export const getFaviconHost = (value: string | null | undefined): string | null 
   } catch {
     // not a URL
   }
+
   // 2) Try to extract hostname from non-URL strings
   const hostFromValue = extractHostname(value)
   if (hostFromValue) return hostFromValue
+
   // 3) If value is a mapped referrer group name, use the first domain-like pattern
   const mapping = REFERRER_MAP.find((m) => value.toLowerCase() === m.name.toLowerCase())
   if (!mapping) return null

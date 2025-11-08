@@ -266,7 +266,7 @@ interface MetadataProps {
   filters: Filter[]
   getCustomEventMetadata: (event: string) => Promise<any>
   getPropertyMetadata: (property: string) => Promise<any>
-  getFilterLink: (column: string, value: string) => LinkProps['to']
+  getFilterLink: (column: string, value: string | null) => LinkProps['to']
   onTabChange: (tab: string) => void
   activeTabId: string
 }
@@ -280,7 +280,7 @@ interface SortRows {
 interface KVTableContainerProps {
   data: any
   uniques: number
-  onClick: (key: string, value: string) => void
+  onClick: (key: string, value: string | null) => void
   displayKeyAsHeader?: boolean
 }
 
@@ -624,7 +624,7 @@ const Metadata = ({
     })
   }
 
-  const _getFilterLink = (column: string | null, value: string) => {
+  const _getFilterLink = (column: string | null, value: string | null) => {
     if (activeTabId === 'ce') {
       return getFilterLink('ev' + (column ? `:key:${column}` : ''), value)
     }
@@ -861,7 +861,7 @@ interface PanelProps {
   icon: any
   id: string
   hideFilters?: boolean
-  getFilterLink?: (column: string, value: string) => LinkProps['to']
+  getFilterLink?: (column: string, value: string | null) => LinkProps['to']
   tabs?: Array<
     | {
         id: string
@@ -876,7 +876,7 @@ interface PanelProps {
   activeTabId?: string
   customRenderer?: () => React.ReactNode
   versionData?: { [key: string]: Entry[] }
-  getVersionFilterLink?: (parent: string, version: string) => LinkProps['to']
+  getVersionFilterLink?: (parent: string | null, version: string | null) => LinkProps['to']
   valuesHeaderName?: string
   highlightColour?: 'blue' | 'red' | 'orange'
   // When true, rows are non-interactive (no filter link/navigation)
@@ -1129,7 +1129,7 @@ const DetailsTable = ({
                     },
                   )}
                   onClick={() => {
-                    if (disableRowClick || entryName === null) return
+                    if (disableRowClick) return
                     const link = getFilterLink(id, entryName)
                     if (link) {
                       navigate(link)
@@ -1236,7 +1236,7 @@ const Panel = ({
   const { t } = useTranslation('common')
   const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
   const [detailsOpened, setDetailsOpened] = useState(false)
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+  const [expandedItems, setExpandedItems] = useState<Set<string | null>>(new Set())
 
   const tnMapping = typeNameMapping(t)
 
@@ -1245,7 +1245,7 @@ const Panel = ({
     return _slice(orderedData, 0, ENTRIES_PER_PANEL)
   }, [data])
 
-  const toggleExpanded = (itemName: string) => {
+  const toggleExpanded = (itemName: string | null) => {
     setExpandedItems((prev) => {
       const newSet = new Set(prev)
       if (newSet.has(itemName)) {
@@ -1295,9 +1295,9 @@ const Panel = ({
               const valueData = valueMapper(count)
               const hasVersionsForItem = hasVersions(entryName)
               const isExpanded = expandedItems.has(entryName)
-              const versions = versionData?.[entryName] || []
+              const versions = entryName ? versionData?.[entryName] || [] : []
 
-              const link = entryName === null ? undefined : getFilterLink(id, entryName)
+              const link = getFilterLink(id, entryName)
 
               return (
                 <div key={`${id}-${entryName}-${Object.values(rest).join('-')}`} className='space-y-0.5'>
@@ -1475,7 +1475,7 @@ const Panel = ({
             valueMapper={valueMapper}
             capitalize={capitalize || false}
             linkContent={linkContent || false}
-            getFilterLink={disableRowClick ? () => '' : (getFilterLink as (id: string, name: string) => string)}
+            getFilterLink={disableRowClick ? () => '' : (getFilterLink as (id: string, name: string | null) => string)}
             disableRowClick={disableRowClick}
             hidePercentageInDetails={hidePercentageInDetails}
             detailsExtraColumns={detailsExtraColumns}
