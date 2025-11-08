@@ -3,6 +3,9 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
 import terser from '@rollup/plugin-terser'
 import pkg from './package.json' with { type: 'json' }
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
 
 export default [
   {
@@ -15,6 +18,7 @@ export default [
       typescript({
         outDir: './dist',
         sourceMap: true,
+        tslib: require.resolve('tslib'),
       }),
       nodeResolve(),
       commonjs(),
@@ -27,6 +31,7 @@ export default [
       typescript({
         outDir: './dist',
         sourceMap: true,
+        tslib: require.resolve('tslib'),
       }),
       nodeResolve(),
       commonjs(),
