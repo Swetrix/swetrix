@@ -18,7 +18,7 @@ export class Lib {
         this.captureError = this.captureError.bind(this);
     }
     captureError(event) {
-        if (typeof this.errorsOptions?.sampleRate === 'number' && this.errorsOptions.sampleRate > Math.random()) {
+        if (typeof this.errorsOptions?.sampleRate === 'number' && this.errorsOptions.sampleRate >= Math.random()) {
             return;
         }
         this.submitError({
@@ -48,6 +48,7 @@ export class Lib {
         return {
             stop: () => {
                 window.removeEventListener('error', this.captureError);
+                this.errorListenerExists = false;
             },
         };
     }
@@ -84,7 +85,11 @@ export class Lib {
         const data = {
             ...event,
             pid: this.projectID,
-            pg: this.activePage,
+            pg: this.activePage ||
+                getPath({
+                    hash: this.pageViewsOptions?.hash,
+                    search: this.pageViewsOptions?.search,
+                }),
             lc: getLocale(),
             tz: getTimezone(),
             ref: getReferrer(),

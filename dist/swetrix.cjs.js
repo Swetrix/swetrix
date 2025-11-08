@@ -157,7 +157,7 @@ var Lib = /** @class */ (function () {
     }
     Lib.prototype.captureError = function (event) {
         var _a, _b, _c, _d;
-        if (typeof ((_a = this.errorsOptions) === null || _a === void 0 ? void 0 : _a.sampleRate) === 'number' && this.errorsOptions.sampleRate > Math.random()) {
+        if (typeof ((_a = this.errorsOptions) === null || _a === void 0 ? void 0 : _a.sampleRate) === 'number' && this.errorsOptions.sampleRate >= Math.random()) {
             return;
         }
         this.submitError({
@@ -188,6 +188,7 @@ var Lib = /** @class */ (function () {
         return {
             stop: function () {
                 window.removeEventListener('error', _this.captureError);
+                _this.errorListenerExists = false;
             },
         };
     };
@@ -216,16 +217,21 @@ var Lib = /** @class */ (function () {
     Lib.prototype.track = function (event) {
         return __awaiter(this, void 0, void 0, function () {
             var data;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
                         if (!this.canTrack()) {
                             return [2 /*return*/];
                         }
-                        data = __assign(__assign({}, event), { pid: this.projectID, pg: this.activePage, lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign(), te: getUTMTerm(), co: getUTMContent() });
+                        data = __assign(__assign({}, event), { pid: this.projectID, pg: this.activePage ||
+                                getPath({
+                                    hash: (_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.hash,
+                                    search: (_b = this.pageViewsOptions) === null || _b === void 0 ? void 0 : _b.search,
+                                }), lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign(), te: getUTMTerm(), co: getUTMContent() });
                         return [4 /*yield*/, this.sendRequest('custom', data)];
                     case 1:
-                        _a.sent();
+                        _c.sent();
                         return [2 /*return*/];
                 }
             });

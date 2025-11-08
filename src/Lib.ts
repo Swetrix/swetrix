@@ -179,7 +179,7 @@ export class Lib {
   private pageData: PageData | null = null
   private pageViewsOptions?: PageViewsOptions | null = null
   private errorsOptions?: ErrorOptions | null = null
-  private perfStatsCollected: Boolean = false
+  private perfStatsCollected: boolean = false
   private activePage: string | null = null
   private errorListenerExists = false
 
@@ -190,7 +190,7 @@ export class Lib {
   }
 
   captureError(event: ErrorEvent): void {
-    if (typeof this.errorsOptions?.sampleRate === 'number' && this.errorsOptions.sampleRate > Math.random()) {
+    if (typeof this.errorsOptions?.sampleRate === 'number' && this.errorsOptions.sampleRate >= Math.random()) {
       return
     }
 
@@ -233,6 +233,7 @@ export class Lib {
     return {
       stop: () => {
         window.removeEventListener('error', this.captureError)
+        this.errorListenerExists = false
       },
     }
   }
@@ -279,7 +280,12 @@ export class Lib {
     const data = {
       ...event,
       pid: this.projectID,
-      pg: this.activePage,
+      pg:
+        this.activePage ||
+        getPath({
+          hash: this.pageViewsOptions?.hash,
+          search: this.pageViewsOptions?.search,
+        }),
       lc: getLocale(),
       tz: getTimezone(),
       ref: getReferrer(),
