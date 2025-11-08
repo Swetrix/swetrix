@@ -58,7 +58,7 @@ import {
   REDIS_TRIALS_COUNT_KEY,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
-import { getDomainsForRefName } from './referrers.map'
+import { getDomainsForRefName } from './utils/referrers.map'
 import {
   calculateRelativePercentage,
   hash,

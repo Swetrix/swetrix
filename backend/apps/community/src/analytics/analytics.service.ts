@@ -51,6 +51,7 @@ import {
   TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
+import { getDomainsForRefName } from './utils/referrers.map'
 import {
   getFunnelClickhouse,
   hash,
@@ -927,6 +928,7 @@ export class AnalyticsService {
           customEVFilterApplied = true
         } else if (
           !_includes(SUPPORTED_COLUMNS, column) &&
+          column !== 'refn' &&
           !_includes(TRAFFIC_METAKEY_COLUMNS, column) &&
           !_startsWith(column, 'tag:key:') &&
           column !== 'entryPage' &&
@@ -990,6 +992,34 @@ export class AnalyticsService {
         const param = `qf_${col}_${f}`
         params[param] = filter
 
+        // Special: refn (canonical referrer name/root domain)
+        if (column === 'refn') {
+          const patterns = getDomainsForRefName(String(filter)) || [
+            String(filter),
+          ]
+          const parts: string[] = []
+          for (let i = 0; i < patterns.length; i++) {
+            const pattern = String(patterns[i])
+            if (pattern.includes('://')) {
+              // Scheme-specific referrers (e.g., android-app://...) -> prefix match on full ref value
+              const pp = `qf_${col}_${f}_p_${i}`
+              params[pp] = pattern.toLowerCase()
+              parts.push(`startsWith(lower(ref), {${pp}:String})`)
+              continue
+            }
+
+            // Plain domain pattern -> host equals domain OR endsWith('.' + domain)
+            const dp = `qf_${col}_${f}_d_${i}`
+            params[dp] = pattern.toLowerCase()
+            parts.push(
+              `(domain(ref) != '' AND (lower(domain(ref)) = {${dp}:String} OR endsWith(lower(domain(ref)), concat('.', {${dp}:String})))) OR (domain(ref) = '' AND (lower(ref) = {${dp}:String} OR endsWith(lower(ref), concat('.', {${dp}:String}))))`,
+            )
+          }
+          const combined = parts.map(p => `(${p})`).join(' OR ')
+          query += isExclusive ? `NOT (${combined})` : `(${combined})`
+          continue
+        }
+
         // Entry/Exit page filters (virtual columns via session scope)
         if (column === 'entryPage' || column === 'exitPage') {
           const pageSelector =
@@ -1010,6 +1040,7 @@ export class AnalyticsService {
           const key = column.replace(/^ev:key:/, '').replace(/^tag:key:/, '')
           const keyParam = `qfk_${col}_${f}`
           params[keyParam] = key
+
           if (isContains) {
             query += `indexOf(meta.key, {${keyParam}:String}) > 0 AND ${
               isExclusive ? 'NOT ' : ''
@@ -1047,6 +1078,7 @@ export class AnalyticsService {
 
         if (isContains) {
           if (isArrayDataset) {
+            // any array element contains substring (case-insensitive)
             query += `${isExclusive ? 'NOT ' : ''}arrayExists(v -> positionCaseInsensitive(v, {${param}:String}) > 0, ${sqlColumn})`
           } else {
             query += `${isExclusive ? 'NOT ' : ''}${sqlColumn} ILIKE concat('%', {${param}:String}, '%')`
