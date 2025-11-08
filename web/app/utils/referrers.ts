@@ -13,7 +13,12 @@ const extractHostname = (value: string | null | undefined): string | null => {
   if (!value) return null
   try {
     const url = new URL(value)
-    return url.hostname.toLowerCase()
+    const host = url.hostname.toLowerCase()
+    // Accept only real domains (has a dot) or IPv4; reject ids like "abc123"
+    if (host.includes('.') || /^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
+      return host
+    }
+    return null
   } catch {
     const trimmed = value.trim().toLowerCase()
     if (trimmed.includes(' ')) return null
@@ -39,8 +44,21 @@ const normaliseHost = (host: string): string => host.replace(/^www\./, '')
 const matchByMap = (host: string): string | null => {
   for (const { name, patterns } of REFERRER_MAP) {
     for (const p of patterns) {
+      // Support patterns that may include a scheme (e.g. android-app://...)
+      // Extract hostname from the pattern and compare on host level.
+      let patternHost = p.toLowerCase()
+      if (p.includes('://')) {
+        try {
+          patternHost = new URL(p).hostname.toLowerCase()
+        } catch {
+          // Ignore malformed pattern entries
+          continue
+        }
+      }
+      patternHost = normaliseHost(patternHost)
+
       // Exact or subdomain match only
-      if (host === p || host.endsWith(`.${p}`)) {
+      if (host === patternHost || host.endsWith(`.${patternHost}`)) {
         return name
       }
     }
@@ -50,12 +68,6 @@ const matchByMap = (host: string): string | null => {
 
 const getCanonicalRefGroup = (refValue: string | null): { key: string; name: string } | null => {
   const value = (refValue || '').trim()
-
-  // If a non-http(s) scheme is present, keep as-is (do not group)
-  const scheme = value.match(/^([a-z][a-z0-9+.-]*):/i)?.[1]
-  if (scheme && !/^https?$/i.test(scheme)) {
-    return null
-  }
 
   const host = extractHostname(value)
   if (!host) return null
