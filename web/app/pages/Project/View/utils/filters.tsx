@@ -25,6 +25,7 @@ const validFilters = [
   'exitPage',
   'lc',
   'ref',
+  'refn',
   'dv',
   'br',
   'brv',

@@ -131,7 +131,9 @@ const displayNamesPolyfill = {
   of: (name: string) => name,
 }
 
-export const getLocaleDisplayName = (locale: string, language: string): string => {
+export const getLocaleDisplayName = (locale: string | null, language: string): string => {
+  if (!locale) return ''
+
   const languageNames = Intl.DisplayNames
     ? new Intl.DisplayNames([language], { type: 'language' })
     : displayNamesPolyfill

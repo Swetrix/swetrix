@@ -7,13 +7,14 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es2017",
+    "target": "es2022",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "inlineSources": true,
+    "resolveJsonModule": true,
 
     // Set `sourceRoot` to  "/" to strip the build path prefix
     // from generated source code references.

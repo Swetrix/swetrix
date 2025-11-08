@@ -203,7 +203,7 @@ const onCSVExportClick = (
       const perc = _round((entry.count / total) * 100 || 0, 2)
 
       if (item === 'cc') {
-        const name = countries.getName(entry.name, language)
+        const name = countries.getName(entry.name || '', language)
         return [`"${name}"`, entry.count, `${perc}%`]
       }
 
@@ -1559,6 +1559,7 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   exitPage: t('project.exitPages'),
   lc: t('project.mapping.lc'),
   ref: t('project.mapping.ref'),
+  refn: t('project.mapping.ref'),
   keywords: t('project.mapping.keyword'),
   dv: t('project.mapping.dv'),
   br: t('project.mapping.br'),
