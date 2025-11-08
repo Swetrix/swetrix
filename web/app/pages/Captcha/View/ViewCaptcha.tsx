@@ -300,17 +300,17 @@ const ViewCaptcha = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, authLoading, project, dateRange, period, timeBucket])
 
-  const getFilterLink = (column: string, value: string): LinkProps['to'] => {
+  const getFilterLink = (column: string, value: string | null): LinkProps['to'] => {
     const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
 
     const newSearchParams = new URLSearchParams(searchParams.toString())
     let searchString = ''
 
     if (isFilterActive) {
-      newSearchParams.delete(column)
+      newSearchParams.delete(column, value ?? 'null')
       searchString = newSearchParams.toString()
     } else {
-      newSearchParams.append(column, value)
+      newSearchParams.append(column, value ?? 'null')
       searchString = newSearchParams.toString()
     }
 
