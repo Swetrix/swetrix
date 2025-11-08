@@ -70,7 +70,7 @@
     "sanitize-html": "^2.17.0",
     "sonner": "^2.0.7",
     "spacetime": "^7.10.0",
-    "swetrix": "^3.7.1",
+    "swetrix": "^3.7.2",
     "tailwind-merge": "^3.3.1",
     "timezone-soft": "^1.5.2"
   },
