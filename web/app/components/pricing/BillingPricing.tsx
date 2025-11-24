@@ -17,6 +17,7 @@ import {
   PLAN_LIMITS,
   REFERRAL_DISCOUNT_CODE,
   STANDARD_PLANS,
+  PURCHASABLE_LEGACY_PLANS,
   paddleLanguageMapping,
 } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
@@ -58,19 +59,34 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
   } | null>(null)
   const [showDowngradeModal, setShowDowngradeModal] = useState(false)
   const [billingFrequency, setBillingFrequency] = useState(user?.billingFrequency || BillingFrequency.monthly)
+  const [enableLegacyPlans, setEnableLegacyPlans] = useState(false)
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const legacyParam = urlParams.get('__ENABLE_LEGACY_PLANS')
+    if (legacyParam === 'true') {
+      setEnableLegacyPlans(true)
+    }
+  }, [])
 
   const PLAN_CODES_ARRAY = useMemo(() => {
-    if (!isAuthenticated) return STANDARD_PLANS
+    let basePlans = STANDARD_PLANS
+
+    if (enableLegacyPlans) {
+      basePlans = [...PURCHASABLE_LEGACY_PLANS, ...STANDARD_PLANS]
+    }
+
+    if (!isAuthenticated) return basePlans
 
     const userPlan = user?.planCode
 
     // Hide non-purchasable pseudo-plans from the list
     if (userPlan === 'trial' || userPlan === 'none') {
-      return STANDARD_PLANS
+      return basePlans
     }
 
-    return _includes(STANDARD_PLANS, userPlan) ? STANDARD_PLANS : [userPlan, ...STANDARD_PLANS]
-  }, [isAuthenticated, user?.planCode])
+    return _includes(basePlans, userPlan) ? basePlans : [userPlan, ...basePlans]
+  }, [isAuthenticated, user?.planCode, enableLegacyPlans])
 
   const currencyCode = user?.tierCurrency || metainfo.code
   const currency = CURRENCIES[currencyCode]
