@@ -376,15 +376,71 @@ const Separator = () => (
   </svg>
 )
 
+const TrialBanner = () => {
+  const { t } = useTranslation('common')
+  const { user, isAuthenticated } = useAuth()
+
+  const [rawStatus, status] = useMemo(() => {
+    const { trialEndDate } = user || {}
+
+    if (!trialEndDate) {
+      return [null, null]
+    }
+
+    const now = dayjs.utc()
+    const future = dayjs.utc(trialEndDate)
+    const diff = future.diff(now)
+
+    if (diff < 0) {
+      // trial has already ended
+      return [TRIAL_STATUS_MAPPING.ENDED, t('header.trialBanner.ended')]
+    }
+
+    if (diff < dayjs.duration(1, 'day').asMilliseconds()) {
+      // trial ends today or tomorrow
+      const isToday = future.isSame(now, 'day')
+      const isTomorrow = future.isSame(now.add(1, 'day'), 'day')
+
+      if (isToday) {
+        return [TRIAL_STATUS_MAPPING.ENDS_TODAY, t('header.trialBanner.endsToday')]
+      }
+      if (isTomorrow) {
+        return [TRIAL_STATUS_MAPPING.ENDS_TOMORROW, t('header.trialBanner.endsTomorrow')]
+      }
+    }
+
+    // trial ends in more than 1 day
+    const amount = Math.round(dayjs.duration(diff).asDays())
+    return [TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS, t('header.trialBanner.youHaveXDaysLeft', { amount })]
+  }, [user, t])
+
+  if (!status || isSelfhosted || !isAuthenticated) {
+    return null
+  }
+
+  return (
+    <div className='w-full bg-slate-900 text-gray-100 dark:bg-slate-900'>
+      <div className='mx-auto max-w-7xl px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
+        <span className='font-medium'>{status}</span>
+        <span className='mx-1.5'>—</span>
+        <Link to={routes.billing} className='font-semibold underline'>
+          {t('header.trialBanner.pickAPlan')}
+        </Link>
+        <span className='ml-1.5'>
+          {rawStatus === TRIAL_STATUS_MAPPING.ENDED
+            ? t('header.trialBanner.keepUsingEnded')
+            : t('header.trialBanner.keepUsing')}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 const AuthedHeader = ({
-  rawStatus,
-  status,
   logoutHandler,
   colourBackground,
   openMenu,
 }: {
-  rawStatus: string | number
-  status: string
   logoutHandler: () => void
   colourBackground: boolean
   openMenu: () => void
@@ -407,21 +463,6 @@ const AuthedHeader = ({
             </Link>
 
             <div className='ml-10 hidden gap-4 space-x-1 lg:flex'>
-              {user?.planCode === 'trial' ? (
-                <Link
-                  to={routes.billing}
-                  className={cx('underline-animate text-base leading-6 font-semibold focus:outline-hidden', {
-                    'text-amber-600': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
-                    'text-rose-600':
-                      rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY ||
-                      rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW ||
-                      rawStatus === TRIAL_STATUS_MAPPING.ENDED,
-                  })}
-                  key='TrialNotification'
-                >
-                  {status}
-                </Link>
-              ) : null}
               {user?.planCode === 'none' ? (
                 <Link
                   to={routes.billing}
@@ -604,40 +645,6 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
 
   const solutions = getSolutions(t)
 
-  const [rawStatus, status] = useMemo(() => {
-    const { trialEndDate } = user || {}
-
-    if (!trialEndDate) {
-      return [null, null]
-    }
-
-    const now = dayjs.utc()
-    const future = dayjs.utc(trialEndDate)
-    const diff = future.diff(now)
-
-    if (diff < 0) {
-      // trial has already ended
-      return [TRIAL_STATUS_MAPPING.ENDED, t('pricing.trialEnded')]
-    }
-
-    if (diff < dayjs.duration(1, 'day').asMilliseconds()) {
-      // trial ends today or tomorrow
-      const isToday = future.isSame(now, 'day')
-      const isTomorrow = future.isSame(now.add(1, 'day'), 'day')
-
-      if (isToday) {
-        return [TRIAL_STATUS_MAPPING.ENDS_TODAY, t('pricing.trialEndsToday')]
-      }
-      if (isTomorrow) {
-        return [TRIAL_STATUS_MAPPING.ENDS_TOMORROW, t('pricing.trialEndsTomorrow')]
-      }
-    }
-
-    // trial ends in more than 1 day
-    const amount = Math.round(dayjs.duration(diff).asDays())
-    return [TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS, t('pricing.xTrialDaysLeft', { amount })]
-  }, [user, t])
-
   const logoutHandler = () => {
     setMobileMenuOpen(false)
     logout()
@@ -649,15 +656,11 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
 
   return (
     <Popover>
+      <TrialBanner />
+
       {/* Computer / Laptop / Tablet layout header */}
       {isAuthenticated ? (
-        <AuthedHeader
-          rawStatus={rawStatus || ''}
-          status={status || ''}
-          logoutHandler={logoutHandler}
-          colourBackground={!transparent}
-          openMenu={openMenu}
-        />
+        <AuthedHeader logoutHandler={logoutHandler} colourBackground={!transparent} openMenu={openMenu} />
       ) : (
         <NotAuthedHeader colourBackground={!transparent} refPage={refPage} openMenu={openMenu} />
       )}
@@ -766,25 +769,6 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                       </>
                     )}
                   </Disclosure>
-                ) : null}
-                {!isSelfhosted && isAuthenticated && user?.planCode === 'trial' ? (
-                  <Link
-                    to={routes.billing}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={cx(
-                      '-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold hover:bg-gray-400/20 dark:hover:bg-slate-700/50',
-                      {
-                        'text-amber-600': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
-                        'text-rose-600':
-                          rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY ||
-                          rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW ||
-                          rawStatus === TRIAL_STATUS_MAPPING.ENDED,
-                      },
-                    )}
-                    key='TrialNotification'
-                  >
-                    {status}
-                  </Link>
                 ) : null}
                 {!isSelfhosted && isAuthenticated && user?.planCode === 'none' ? (
                   <Link

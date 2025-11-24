@@ -1487,6 +1487,15 @@
     "signedInAs": "Podpisany jako",
     "watchDemo": "Obejrzyj demo",
     "contactSales": "Skontaktuj się ze sprzedażą",
+    "trialBanner": {
+      "pickAPlan": "Wybierz plan",
+      "keepUsing": "aby kontynuować korzystanie bez przerw.",
+      "keepUsingEnded": "aby dalej korzystać ze Swetrix.",
+      "youHaveXDaysLeft": "Masz jeszcze {{amount}} dni bezpłatnego okresu próbnego",
+      "endsToday": "Twój okres próbny kończy się dzisiaj",
+      "endsTomorrow": "Twój okres próbny kończy się jutro",
+      "ended": "Twój bezpłatny okres próbny dobiegł końca"
+    },
     "solutions": {
       "title": "Rozwiązania",
       "analytics": {

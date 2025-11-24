@@ -1487,6 +1487,15 @@
     "signedInAs": "Signed in as",
     "watchDemo": "Watch demo",
     "contactSales": "Contact sales",
+    "trialBanner": {
+      "pickAPlan": "Pick a plan",
+      "keepUsing": "to keep using without interruption.",
+      "keepUsingEnded": "to keep using Swetrix.",
+      "youHaveXDaysLeft": "You have {{amount}} days left on your free trial",
+      "endsToday": "Your free trial ends today",
+      "endsTomorrow": "Your free trial ends tomorrow",
+      "ended": "Your free trial has ended"
+    },
     "solutions": {
       "title": "Solutions",
       "analytics": {

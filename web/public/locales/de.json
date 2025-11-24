@@ -1487,6 +1487,15 @@
     "signedInAs": "Angemeldet als",
     "watchDemo": "Demo ansehen",
     "contactSales": "Kontakt zur Verkaufsabteilung",
+    "trialBanner": {
+      "pickAPlan": "Wählen Sie einen Tarif",
+      "keepUsing": "um die Nutzung ohne Unterbrechung fortzusetzen.",
+      "keepUsingEnded": "um Swetrix weiter zu nutzen.",
+      "youHaveXDaysLeft": "Sie haben noch {{amount}} Tage in Ihrer kostenlosen Testphase",
+      "endsToday": "Deine kostenlose Testversion endet heute",
+      "endsTomorrow": "Deine kostenlose Testversion endet morgen",
+      "ended": "Ihre kostenlose Testphase ist beendet"
+    },
     "solutions": {
       "title": "Lösungen",
       "analytics": {
