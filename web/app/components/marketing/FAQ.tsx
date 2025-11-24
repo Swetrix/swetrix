@@ -16,8 +16,8 @@ const FAQ = () => {
   }
 
   const values = {
-    lowestPlanEventsAmount: PLAN_LIMITS.hobby.monthlyUsageLimit.toLocaleString('en-US'),
-    moderatePlanEventsAmount: PLAN_LIMITS.freelancer.monthlyUsageLimit.toLocaleString('en-US'),
+    lowestPlanEventsAmount: PLAN_LIMITS['100k'].monthlyUsageLimit.toLocaleString('en-US'),
+    moderatePlanEventsAmount: PLAN_LIMITS['500k'].monthlyUsageLimit.toLocaleString('en-US'),
     freeTrialDays: TRIAL_DAYS,
   }
   const stripTags = (html: string) =>
