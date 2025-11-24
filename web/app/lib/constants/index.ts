@@ -897,7 +897,7 @@ export const PLAN_LIMITS = {
 
 export const STANDARD_PLANS = ['100k', '200k', '500k', 'startup', '2m', 'enterprise', '10m', '15m', '20m']
 
-export const PURCHASABLE_LEGACY_PLANS = ['hobby']
+export const PURCHASABLE_LEGACY_PLANS = ['hobby', '50k']
 
 export const TRIAL_DAYS = 14
 
