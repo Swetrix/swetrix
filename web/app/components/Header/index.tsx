@@ -414,7 +414,7 @@ const TrialBanner = () => {
     return [TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS, t('header.trialBanner.youHaveXDaysLeft', { amount })]
   }, [user, t])
 
-  if (!status || isSelfhosted || !isAuthenticated) {
+  if (!status || isSelfhosted || !isAuthenticated || !['none', 'trial'].includes(user?.planCode || '')) {
     return null
   }
 
