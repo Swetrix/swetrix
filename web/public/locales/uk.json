@@ -1127,6 +1127,8 @@
     "markAsActive": "Позначити як активну",
     "refreshStats": "Оновити статистику",
     "refresh": "Оновити",
+    "refreshingIn": "Оновлення через {{seconds}} секунди",
+    "refreshing": "Оновлення...",
     "resetZoom": "Скинути масштаб",
     "noEventsForSelectedPeriod": "Немає подій за вибраний період часу.",
     "barChart": "Гістограма",

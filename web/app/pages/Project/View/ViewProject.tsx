@@ -27,7 +27,6 @@ import {
   BellRingIcon,
   ChartNoAxesColumnIcon,
   FilterIcon,
-  RotateCw,
   BookmarkIcon,
   PencilIcon,
   DownloadIcon,
@@ -175,6 +174,7 @@ import NoEvents from './components/NoEvents'
 import NoSessionDetails from './components/NoSessionDetails'
 import { Pageflow } from './components/Pageflow'
 import { PerformanceChart } from './components/PerformanceChart'
+import { RefreshStatsButton } from './components/RefreshStatsButton'
 import RefRow from './components/RefRow'
 import SearchFilters, { getFiltersUrlParams } from './components/SearchFilters'
 import { SessionChart } from './components/SessionChart'
@@ -363,6 +363,7 @@ const ViewProjectContent = () => {
   const [chartData, setChartData] = useState<TrafficLogResponse['chart'] & { [key: string]: number[] }>({})
   // prevY2NeededRef removed - no longer needed with new chart management
   const [dataLoading, setDataLoading] = useState(false)
+  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
@@ -2046,43 +2047,51 @@ const ViewProjectContent = () => {
     }
   }, [funnelAnalytics])
 
-  const refreshStats = async () => {
-    if (!authLoading && !dataLoading) {
-      if (activeTab === PROJECT_TABS.performance) {
-        loadAnalyticsPerf()
-        return
+  const refreshStats = useCallback(
+    async (isManual = true) => {
+      if (!isManual) {
+        setIsAutoRefreshing(true)
       }
 
-      if (activeTab === PROJECT_TABS.funnels) {
-        loadFunnelsData()
-        return
-      }
-
-      if (activeTab === PROJECT_TABS.sessions) {
-        if (activePSID) {
-          await loadSession(activePSID)
+      if (!authLoading && !dataLoading) {
+        if (activeTab === PROJECT_TABS.performance) {
+          loadAnalyticsPerf()
           return
         }
 
-        resetSessions()
-        loadSessions(0)
-        return
-      }
-
-      if (activeTab === PROJECT_TABS.errors) {
-        if (activeEID) {
-          await loadError(activeEID)
+        if (activeTab === PROJECT_TABS.funnels) {
+          loadFunnelsData()
           return
         }
 
-        resetErrors()
-        loadErrors(0)
-        return
-      }
+        if (activeTab === PROJECT_TABS.sessions) {
+          if (activePSID) {
+            await loadSession(activePSID)
+            return
+          }
 
-      loadAnalytics()
-    }
-  }
+          resetSessions()
+          loadSessions(0)
+          return
+        }
+
+        if (activeTab === PROJECT_TABS.errors) {
+          if (activeEID) {
+            await loadError(activeEID)
+            return
+          }
+
+          resetErrors()
+          loadErrors(0)
+          return
+        }
+
+        loadAnalytics()
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [authLoading, dataLoading, activeTab, activePSID, activeEID],
+  )
 
   useEffect(() => {
     if (activeTab !== PROJECT_TABS.traffic || authLoading || !project) return
@@ -2344,6 +2353,13 @@ const ViewProjectContent = () => {
   useEffect(() => {
     setPeriodPairsCompare(tbPeriodPairsCompare(t, undefined, language))
   }, [t, language])
+
+  // Reset isAutoRefreshing when loading completes
+  useEffect(() => {
+    if (!dataLoading) {
+      setIsAutoRefreshing(false)
+    }
+  }, [dataLoading])
 
   const resetSessions = () => {
     sessionsRequestIdRef.current += 1
@@ -2785,7 +2801,7 @@ const ViewProjectContent = () => {
           }}
         >
           <>
-            {dataLoading ? <LoadingBar /> : null}
+            {dataLoading && !isAutoRefreshing ? <LoadingBar /> : null}
             {!isEmbedded ? <Header /> : null}
             <EventsRunningOutBanner />
             <div
@@ -2825,19 +2841,7 @@ const ViewProjectContent = () => {
                           <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
                             {activeTab !== PROJECT_TABS.funnels ? (
                               <>
-                                <button
-                                  type='button'
-                                  title={t('project.refreshStats')}
-                                  onClick={refreshStats}
-                                  className={cx(
-                                    'relative rounded-md border border-transparent p-2 text-sm font-medium transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
-                                    {
-                                      'cursor-not-allowed opacity-50': authLoading || dataLoading,
-                                    },
-                                  )}
-                                >
-                                  <RotateCw className='h-5 w-5 text-gray-700 dark:text-gray-50' />
-                                </button>
+                                <RefreshStatsButton onRefresh={refreshStats} />
                                 <div
                                   className={cx('border-gray-200 dark:border-gray-600', {
                                     // @ts-expect-error
@@ -3072,19 +3076,7 @@ const ViewProjectContent = () => {
                               />
                             ) : null}
                             {activeTab === PROJECT_TABS.funnels ? (
-                              <button
-                                type='button'
-                                title={t('project.refreshStats')}
-                                onClick={refreshStats}
-                                className={cx(
-                                  'relative rounded-md border border-transparent p-2 text-sm font-medium transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
-                                  {
-                                    'cursor-not-allowed opacity-50': authLoading || dataLoading,
-                                  },
-                                )}
-                              >
-                                <RotateCw className='h-5 w-5 text-gray-700 dark:text-gray-50' />
-                              </button>
+                              <RefreshStatsButton onRefresh={refreshStats} />
                             ) : null}
                             <div className='flex items-center'>
                               <TBPeriodSelector
@@ -3298,21 +3290,7 @@ const ViewProjectContent = () => {
                             <ChevronLeftIcon className='mr-1 size-3' />
                             {t('project.backToSessions')}
                           </Link>
-                          <button
-                            type='button'
-                            title={t('project.refreshStats')}
-                            onClick={refreshStats}
-                            className={cx(
-                              'flex items-center text-sm text-gray-900 transition-colors hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
-                              {
-                                'cursor-not-allowed': authLoading || dataLoading || sessionLoading,
-                              },
-                            )}
-                            disabled={authLoading || dataLoading || sessionLoading}
-                          >
-                            <RotateCw className='mr-1 size-4' />
-                            {t('project.refresh')}
-                          </button>
+                          <RefreshStatsButton onRefresh={refreshStats} />
                         </div>
                         {activeSession?.details ? <SessionDetails details={activeSession?.details} /> : null}
                         {!_isEmpty(activeSession?.chart) ? (

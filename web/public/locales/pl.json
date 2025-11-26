@@ -1127,6 +1127,8 @@
     "markAsActive": "Oznacz jako aktywne",
     "refreshStats": "Odśwież statystyki",
     "refresh": "Odśwież",
+    "refreshingIn": "Odświeżanie za {{seconds}} sek.",
+    "refreshing": "Odświeżanie...",
     "resetZoom": "Resetuj powiększenie",
     "noEventsForSelectedPeriod": "Brak zdarzeń dla wybranego przedziału czasowego.",
     "barChart": "Wykres słupkowy",

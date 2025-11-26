@@ -1127,6 +1127,8 @@
     "markAsActive": "Marquer comme actif",
     "refreshStats": "Actualiser les statistiques",
     "refresh": "Actualiser",
+    "refreshingIn": "Actualisation dans {{seconds}} secondes",
+    "refreshing": "Actualisation...",
     "resetZoom": "Réinitialiser le zoom",
     "noEventsForSelectedPeriod": "Il n'y a pas d'événements pour la période sélectionnée.",
     "barChart": "Graphique en barres",

@@ -1127,6 +1127,8 @@
     "markAsActive": "Als aktiv markieren",
     "refreshStats": "Statistiken aktualisieren",
     "refresh": "Aktualisieren",
+    "refreshingIn": "Aktualisierung in {{seconds}} Sekunden",
+    "refreshing": "Aktualisieren...",
     "resetZoom": "Zoom zurücksetzen",
     "noEventsForSelectedPeriod": "Für den ausgewählten Zeitraum sind keine Ereignisse vorhanden.",
     "barChart": "Balkendiagramm",
