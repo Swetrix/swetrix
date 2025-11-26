@@ -35,7 +35,7 @@
     "@ua-parser-js/pro-business": "^2.0.5",
     "axios": "^1.12.2",
     "axios-auth-refresh": "^3.3.6",
-    "billboard.js": "^3.16.0",
+    "billboard.js": "^3.17.2",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
     "d3-scale": "^4.0.2",
