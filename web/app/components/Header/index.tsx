@@ -498,8 +498,11 @@ const BlackFridayBanner = () => {
   if (!shouldShow || !timeLeft) return null
 
   return (
-    <div className='relative w-full overflow-hidden bg-gradient-to-r from-slate-950 via-purple-950 to-slate-950'>
-      <div className='absolute inset-0 overflow-hidden'>
+    <Link
+      to={routes.billing}
+      className='relative block w-full overflow-hidden bg-gradient-to-r from-slate-950 via-purple-950 to-slate-950'
+    >
+      <div className='absolute inset-0 hidden overflow-hidden sm:block'>
         <div className='absolute top-1 left-[10%] h-1 w-1 animate-pulse rounded-full bg-yellow-400/60' />
         <div className='absolute top-3 left-[25%] h-0.5 w-0.5 animate-pulse rounded-full bg-amber-300/50 [animation-delay:200ms]' />
         <div className='absolute top-1 left-[50%] h-1 w-1 animate-pulse rounded-full bg-orange-400/60 [animation-delay:400ms]' />
@@ -507,64 +510,76 @@ const BlackFridayBanner = () => {
         <div className='absolute top-1 left-[90%] h-1 w-1 animate-pulse rounded-full bg-amber-400/60 [animation-delay:800ms]' />
       </div>
 
-      <div className='relative mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8'>
-        <div className='flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-6'>
-          <div className='flex items-center gap-2'>
-            <span className='bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 bg-clip-text text-base font-black tracking-tight text-transparent sm:text-lg'>
-              ⚡ BLACK FRIDAY SALE ⚡
-            </span>
-          </div>
-
-          <div className='flex items-center gap-2 text-sm text-white/90'>
-            <span>Get</span>
-            <span className='rounded-md bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-sm font-bold text-white shadow-lg shadow-orange-500/25'>
-              50% OFF
-            </span>
-            <span>your first month</span>
-          </div>
-
-          <div className='flex items-center gap-2 text-sm'>
-            <span className='text-white/70'>Code:</span>
-            <code className='rounded border border-amber-500/30 bg-black/40 px-2 py-0.5 font-mono font-bold text-amber-400'>
-              BLACKFRIDAY
-            </code>
-          </div>
-
-          <div className='flex items-center gap-2'>
-            <span className='text-xs text-white/60'>Ends in:</span>
-            <div className='flex items-center gap-1 font-mono text-sm font-bold'>
-              <span className='rounded bg-white/10 px-1.5 py-0.5 text-white'>
-                {String(timeLeft.days).padStart(2, '0')}
-                <span className='text-xs text-white/60'>d</span>
-              </span>
-              <span className='text-white/40'>:</span>
-              <span className='rounded bg-white/10 px-1.5 py-0.5 text-white'>
-                {String(timeLeft.hours).padStart(2, '0')}
-                <span className='text-xs text-white/60'>h</span>
-              </span>
-              <span className='text-white/40'>:</span>
-              <span className='rounded bg-white/10 px-1.5 py-0.5 text-white'>
-                {String(timeLeft.minutes).padStart(2, '0')}
-                <span className='text-xs text-white/60'>m</span>
-              </span>
-              <span className='text-white/40'>:</span>
-              <span className='rounded bg-white/10 px-1.5 py-0.5 text-white'>
-                {String(timeLeft.seconds).padStart(2, '0')}
-                <span className='text-xs text-white/60'>s</span>
-              </span>
-            </div>
-          </div>
-
-          <Link
-            to={routes.billing}
-            className='group ml-2 hidden items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-1.5 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition-all hover:shadow-orange-500/40 sm:flex'
-          >
-            Claim offer
-            <ArrowRightIcon className='h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5' />
-          </Link>
-        </div>
+      {/* Mobile layout - compact, wraps if needed */}
+      <div className='relative flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-3 py-1.5 sm:hidden'>
+        <span className='flex items-center gap-2 text-sm text-white/90'>Get</span>
+        <span className='rounded bg-gradient-to-r from-amber-500 to-orange-500 px-1.5 py-0.5 text-xs font-bold text-white'>
+          50% OFF
+        </span>
+        <div className='flex items-center gap-2 text-sm text-white/90'>with the code:</div>
+        <code className='rounded bg-black/40 px-1.5 py-0.5 font-mono text-xs font-bold text-amber-400'>
+          BLACKFRIDAY
+        </code>
+        <span className='font-mono text-xs text-white/80'>
+          {String(timeLeft.days).padStart(2, '0')}:{String(timeLeft.hours).padStart(2, '0')}:
+          {String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+        </span>
       </div>
-    </div>
+
+      {/* Desktop layout - wraps if needed */}
+      <div className='relative mx-auto hidden max-w-7xl flex-wrap items-center justify-center gap-x-6 gap-y-1 px-6 py-2 sm:flex lg:px-8'>
+        <div className='flex items-center gap-2'>
+          <span className='bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 bg-clip-text text-lg font-black tracking-tight text-transparent'>
+            ⚡ BLACK FRIDAY SALE ⚡
+          </span>
+        </div>
+
+        <div className='flex items-center gap-2 text-sm text-white/90'>
+          <span>Get</span>
+          <span className='rounded-md bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-sm font-bold text-white shadow-lg shadow-orange-500/25'>
+            50% OFF
+          </span>
+          <span>your first month</span>
+        </div>
+
+        <div className='flex items-center gap-2 text-sm'>
+          <span className='text-white/70'>Code:</span>
+          <code className='rounded border border-amber-500/30 bg-black/40 px-2 py-0.5 font-mono font-bold text-amber-400'>
+            BLACKFRIDAY
+          </code>
+        </div>
+
+        <div className='flex items-center gap-2'>
+          <span className='text-xs text-white/60'>Ends in:</span>
+          <div className='flex items-center gap-1 font-mono text-sm font-bold'>
+            <span className='rounded bg-white/10 px-1.5 py-0.5 text-white'>
+              {String(timeLeft.days).padStart(2, '0')}
+              <span className='text-xs text-white/60'>d</span>
+            </span>
+            <span className='text-white/40'>:</span>
+            <span className='rounded bg-white/10 px-1.5 py-0.5 text-white'>
+              {String(timeLeft.hours).padStart(2, '0')}
+              <span className='text-xs text-white/60'>h</span>
+            </span>
+            <span className='text-white/40'>:</span>
+            <span className='rounded bg-white/10 px-1.5 py-0.5 text-white'>
+              {String(timeLeft.minutes).padStart(2, '0')}
+              <span className='text-xs text-white/60'>m</span>
+            </span>
+            <span className='text-white/40'>:</span>
+            <span className='rounded bg-white/10 px-1.5 py-0.5 text-white'>
+              {String(timeLeft.seconds).padStart(2, '0')}
+              <span className='text-xs text-white/60'>s</span>
+            </span>
+          </div>
+        </div>
+
+        <span className='group flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-1.5 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition-all hover:shadow-orange-500/40'>
+          Claim offer
+          <ArrowRightIcon className='h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5' />
+        </span>
+      </div>
+    </Link>
   )
 }
 
