@@ -39,6 +39,7 @@ export default function GscConnected() {
     // Prevent duplicate callback processing in React 18 StrictMode (dev) or other double-invocation scenarios
     const processedKey = state ? `gsc_processed:${state}` : null
     if (processedKey && sessionStorage.getItem(processedKey) === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Checking sessionStorage for duplicate processing
       setLoading(false)
       return
     }

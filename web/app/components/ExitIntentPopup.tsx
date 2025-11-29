@@ -28,6 +28,7 @@ export default function ExitIntentPopup({ isStandalone = false }: ExitIntentPopu
 
     const dismissed = getCookie(COOKIE_NAME)
     if (dismissed) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reading cookie once on mount
       setIsDismissed(true)
       return
     }

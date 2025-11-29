@@ -36,7 +36,7 @@ const FeatureFlagsPage = () => {
       return
     }
 
-    setFlags(user.featureFlags ?? [])
+    setFlags(user.featureFlags ?? []) // eslint-disable-line react-hooks/set-state-in-effect -- Initializing flags from user data once
     setInitialised(true)
   }, [isLoading, user, initialised])
 

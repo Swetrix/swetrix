@@ -114,6 +114,7 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
       return
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Fetching filter list when modal opens
     getFiltersList(filterType)
   }, [filterType, showModal, getFiltersList])
 

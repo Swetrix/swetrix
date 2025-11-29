@@ -104,7 +104,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(function DatePi
   // Sync with external value
   useEffect(() => {
     if (!_isEmpty(value)) {
-      setStart(value[0] ? startOfDay(value[0]) : null)
+      setStart(value[0] ? startOfDay(value[0]) : null) // eslint-disable-line react-hooks/set-state-in-effect -- Syncing internal state with controlled value prop
       setEnd(value[1] ? startOfDay(value[1]) : null)
       if (value[0]) setAnchorMonth(startOfDay(value[0]))
     }

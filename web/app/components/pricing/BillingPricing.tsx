@@ -65,6 +65,7 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
     const urlParams = new URLSearchParams(window.location.search)
     const legacyParam = urlParams.get('__ENABLE_LEGACY_PLANS')
     if (legacyParam === 'true') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reading URL param once on mount
       setEnableLegacyPlans(true)
     }
   }, [])

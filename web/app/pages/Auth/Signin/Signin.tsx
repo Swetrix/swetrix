@@ -75,6 +75,7 @@ const Signin = () => {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Form validation on input change
     validate()
   }, [form]) // eslint-disable-line
 

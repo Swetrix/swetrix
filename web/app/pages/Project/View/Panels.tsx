@@ -1534,6 +1534,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
     const sizeKeys = _size(metadata)
 
     if (currentIndex > sizeKeys) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset page when metadata size changes
       setPage(_floor(sizeKeys / ENTRIES_PER_PANEL))
     }
   }, [currentIndex, metadata])

@@ -142,15 +142,18 @@ export class BlogService {
     category?: string,
     infiniteRecursive?: boolean,
   ): Promise<any> {
-    const rawRedisSitemap = await redis.get(REDIS_SITEMAP_KEY)
+    // Only check/use cache at root level (when category is undefined)
+    if (!category) {
+      const rawRedisSitemap = await redis.get(REDIS_SITEMAP_KEY)
 
-    if (rawRedisSitemap) {
-      try {
-        return JSON.parse(rawRedisSitemap)
-      } catch (reason) {
-        this.logger.error(
-          `[getSitemapFileNames][JSON.parse] An error occured: ${reason}`,
-        )
+      if (rawRedisSitemap) {
+        try {
+          return JSON.parse(rawRedisSitemap)
+        } catch (reason) {
+          this.logger.error(
+            `[getSitemapFileNames][JSON.parse] An error occured: ${reason}`,
+          )
+        }
       }
     }
 
@@ -175,6 +178,10 @@ export class BlogService {
           )
 
           if (attributes.standalone === true) {
+            // Include category path for standalone articles in subfolders
+            if (category) {
+              return [category, slug]
+            }
             return slug
           }
 
@@ -207,12 +214,15 @@ export class BlogService {
 
     const sitemap = [...processedFiles, ...filesInDirectories]
 
-    await redis.set(
-      REDIS_SITEMAP_KEY,
-      JSON.stringify(sitemap),
-      'EX',
-      REDIS_SITEMAP_LIFETIME,
-    )
+    // Only cache at root level (when category is undefined)
+    if (!category) {
+      await redis.set(
+        REDIS_SITEMAP_KEY,
+        JSON.stringify(sitemap),
+        'EX',
+        REDIS_SITEMAP_LIFETIME,
+      )
+    }
 
     return sitemap
   }
