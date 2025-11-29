@@ -44,6 +44,7 @@ const AnnotationModal = ({
   const [text, setText] = useState(initialText)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing initial state with UI
     setDate(initialDate)
     setText(initialText)
   }, [initialDate, initialText])
