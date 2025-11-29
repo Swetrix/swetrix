@@ -1,5 +1,5 @@
 import { InfoIcon } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Annotation } from '~/lib/models/Project'
@@ -33,17 +33,20 @@ const AnnotationModal = ({
   allowedToManage = true,
 }: AnnotationModalProps) => {
   const { t } = useTranslation('common')
-  const [date, setDate] = useState(annotation?.date || defaultDate || '')
-  const [text, setText] = useState(annotation?.text || '')
+
+  const initialDate = useMemo(
+    () => (isOpened ? annotation?.date || defaultDate || '' : ''),
+    [isOpened, annotation?.date, defaultDate],
+  )
+  const initialText = useMemo(() => (isOpened ? annotation?.text || '' : ''), [isOpened, annotation?.text])
+
+  const [date, setDate] = useState(initialDate)
+  const [text, setText] = useState(initialText)
 
   useEffect(() => {
-    if (!isOpened) {
-      return
-    }
-
-    setDate(annotation?.date || defaultDate || '')
-    setText(annotation?.text || '')
-  }, [isOpened, annotation, defaultDate])
+    setDate(initialDate)
+    setText(initialText)
+  }, [initialDate, initialText])
 
   const _onClose = () => {
     setTimeout(() => {
