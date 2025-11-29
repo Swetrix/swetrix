@@ -847,58 +847,71 @@ const ViewProjectContent = () => {
     if (!existingAnnotation && xAxisData && xAxisData.length > 0) {
       const chartContainer = (event.currentTarget as HTMLElement).querySelector('.bb') as HTMLElement
       if (chartContainer) {
-        const rect = chartContainer.getBoundingClientRect()
-        const clickX = event.clientX - rect.left
+        const svg = chartContainer.querySelector('svg')
+        if (svg) {
+          const svgRect = svg.getBoundingClientRect()
+          const clickX = event.clientX - svgRect.left
 
-        // Get the chart area (excluding y-axis labels) - approximate 50px for y-axis
-        const chartAreaStart = 50
-        const chartAreaWidth = rect.width - chartAreaStart - 20 // 20px padding on right
+          // Get the actual chart area from the x-axis domain path (the axis line)
+          // This gives us the exact boundaries of the plotting area
+          let chartAreaStart = 50 // fallback
+          let chartAreaWidth = svgRect.width - 70 // fallback
 
-        // Calculate the relative position within the chart area
-        const relativeX = Math.max(0, clickX - chartAreaStart)
-        const percentage = Math.min(1, relativeX / chartAreaWidth)
-
-        // Calculate the index
-        const index = Math.round(percentage * (xAxisData.length - 1))
-        const clampedIndex = Math.max(0, Math.min(xAxisData.length - 1, index))
-
-        // Format date as YYYY-MM-DD for the date input
-        date = dayjs(xAxisData[clampedIndex]).format('YYYY-MM-DD')
-
-        // Check if there's an annotation for this calculated date (normalize both to YYYY-MM-DD)
-        existingAnnotation =
-          annotations.find((a) => {
-            const annotationDate = dayjs(a.date).format('YYYY-MM-DD')
-            return annotationDate === date
-          }) || null
-
-        // If no exact match, find the closest annotation within a pixel threshold
-        if (!existingAnnotation && annotations.length > 0) {
-          const pixelThreshold = 30 // pixels
-          let closestAnnotation: Annotation | null = null
-          let closestDistance = Infinity
-
-          for (const annotation of annotations) {
-            const annotationDate = dayjs(annotation.date).format('YYYY-MM-DD')
-            // Find the index of this date in xAxisData
-            const annotationIndex = xAxisData.findIndex((xDate) => dayjs(xDate).format('YYYY-MM-DD') === annotationDate)
-
-            if (annotationIndex !== -1) {
-              // Calculate the x position of this annotation
-              const annotationPercentage = annotationIndex / (xAxisData.length - 1)
-              const annotationX = chartAreaStart + annotationPercentage * chartAreaWidth
-              const distance = Math.abs(clickX - annotationX)
-
-              if (distance < pixelThreshold && distance < closestDistance) {
-                closestDistance = distance
-                closestAnnotation = annotation
-              }
-            }
+          const xAxisPath = chartContainer.querySelector('.bb-axis-x path.domain') as SVGPathElement
+          if (xAxisPath) {
+            const pathBBox = xAxisPath.getBBox()
+            chartAreaStart = pathBBox.x
+            chartAreaWidth = pathBBox.width
           }
 
-          if (closestAnnotation) {
-            existingAnnotation = closestAnnotation
-            date = dayjs(closestAnnotation.date).format('YYYY-MM-DD')
+          // Calculate the relative position within the chart area
+          const relativeX = Math.max(0, clickX - chartAreaStart)
+          const percentage = Math.min(1, relativeX / chartAreaWidth)
+
+          // Calculate the index
+          const index = Math.round(percentage * (xAxisData.length - 1))
+          const clampedIndex = Math.max(0, Math.min(xAxisData.length - 1, index))
+
+          // Format date as YYYY-MM-DD for the date input
+          date = dayjs(xAxisData[clampedIndex]).format('YYYY-MM-DD')
+
+          // Check if there's an annotation for this calculated date (normalize both to YYYY-MM-DD)
+          existingAnnotation =
+            annotations.find((a) => {
+              const annotationDate = dayjs(a.date).format('YYYY-MM-DD')
+              return annotationDate === date
+            }) || null
+
+          // If no exact match, find the closest annotation within a pixel threshold
+          if (!existingAnnotation && annotations.length > 0) {
+            const pixelThreshold = 30 // pixels
+            let closestAnnotation: Annotation | null = null
+            let closestDistance = Infinity
+
+            for (const annotation of annotations) {
+              const annotationDate = dayjs(annotation.date).format('YYYY-MM-DD')
+              // Find the index of this date in xAxisData
+              const annotationIndex = xAxisData.findIndex(
+                (xDate) => dayjs(xDate).format('YYYY-MM-DD') === annotationDate,
+              )
+
+              if (annotationIndex !== -1) {
+                // Calculate the x position of this annotation
+                const annotationPercentage = annotationIndex / (xAxisData.length - 1)
+                const annotationX = chartAreaStart + annotationPercentage * chartAreaWidth
+                const distance = Math.abs(clickX - annotationX)
+
+                if (distance < pixelThreshold && distance < closestDistance) {
+                  closestDistance = distance
+                  closestAnnotation = annotation
+                }
+              }
+            }
+
+            if (closestAnnotation) {
+              existingAnnotation = closestAnnotation
+              date = dayjs(closestAnnotation.date).format('YYYY-MM-DD')
+            }
           }
         }
       }
