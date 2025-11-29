@@ -26,5 +26,6 @@ export const DangerouslySetHtmlContent = ({
     divRef.current.appendChild(slotHtml) // Append the new content
   }, [html, divRef, allowRerender])
 
+  // eslint-disable-next-line react-hooks/refs -- Passing ref to DOM element is safe
   return createElement('div', { ...rest, ref: divRef })
 }

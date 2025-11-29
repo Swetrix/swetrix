@@ -45,7 +45,7 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
       return
     }
 
-    setName(funnel?.name || '')
+    setName(funnel?.name || '') // eslint-disable-line react-hooks/set-state-in-effect -- Resetting form state when modal opens
     setSteps(
       funnel?.steps
         ? funnel.steps.map((s) => ({ type: s?.startsWith('/') ? 'page' : 'event', value: s }))

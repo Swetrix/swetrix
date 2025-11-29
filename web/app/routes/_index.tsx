@@ -737,9 +737,9 @@ const PerformancePreview = () => {
     </ul>
   )
 
-  const metric = (label: string, value: number, _change: number) => {
-    const isUp = Math.random() > 0.5
-    const pct = Math.floor(Math.random() * 20) + 1 // 1-20%
+  const metric = (label: string, value: number, prevValue: number) => {
+    const isUp = value >= prevValue
+    const pct = prevValue > 0 ? Math.abs(Math.round(((value - prevValue) / prevValue) * 100)) : 0
     return (
       <div className='min-w-0 flex-1 rounded-md bg-white px-2.5 py-1.5 text-[11px] text-slate-900 ring-1 ring-black/5 dark:bg-slate-900 dark:text-gray-50 dark:ring-white/10'>
         <div className='text-lg font-bold'>{fmt(value)}</div>
@@ -1022,7 +1022,7 @@ const AlertsPreview = () => {
     }
 
     if (it.kind === 'online') {
-      const online = 10 + Math.floor(Math.random() * 10)
+      const online = 15 // Demo value
 
       return (
         <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>

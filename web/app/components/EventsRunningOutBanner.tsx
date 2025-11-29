@@ -1,5 +1,5 @@
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { memo, useEffect, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { LOW_EVENTS_WARNING, SHOW_BANNER_AT_PERC } from '~/lib/constants'
@@ -11,27 +11,27 @@ import { secondsTillNextMonth } from '~/utils/generic'
 
 const EventsRunningOutBanner = () => {
   const { t } = useTranslation('common')
-  const [shouldShowBanner, setShouldShowBanner] = useState(false)
   const [showMoreInfoModal, setShowMoreInfoModal] = useState(false)
+  const [isBannerClosed, setIsBannerClosed] = useState(false)
 
   const { user, totalMonthlyEvents } = useAuth()
 
-  useEffect(() => {
-    if (!user) {
-      return
+  const shouldShowBanner = useMemo(() => {
+    if (!user || isBannerClosed) {
+      return false
     }
 
     const { maxEventsCount } = user
 
     if (!totalMonthlyEvents || !maxEventsCount) {
-      return
+      return false
     }
 
-    setShouldShowBanner(shouldShowLowEventsBanner(totalMonthlyEvents, maxEventsCount))
-  }, [user, totalMonthlyEvents])
+    return shouldShowLowEventsBanner(totalMonthlyEvents, maxEventsCount)
+  }, [user, totalMonthlyEvents, isBannerClosed])
 
   const closeHandler = () => {
-    setShouldShowBanner(false)
+    setIsBannerClosed(true)
 
     const maxAge = secondsTillNextMonth() + 86400
     setCookie(LOW_EVENTS_WARNING, 1, maxAge)

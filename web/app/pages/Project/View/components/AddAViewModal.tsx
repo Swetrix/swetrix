@@ -217,6 +217,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
     }
 
     if (defaultView.filters) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing form state with defaultView prop
       setActiveFilters(defaultView.filters)
     }
 
@@ -232,6 +233,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
       return
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Fetching filter list when modal opens
     getFiltersList(filterType)
   }, [filterType, showModal, getFiltersList])
 

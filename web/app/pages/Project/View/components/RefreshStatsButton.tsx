@@ -20,6 +20,7 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
   const { t } = useTranslation('common')
   const [progress, setProgress] = useState(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  // eslint-disable-next-line react-hooks/purity -- Initial timestamp is intentionally set once
   const startTimeRef = useRef(Date.now())
   const hasTriggeredRefresh = useRef(false)
 

@@ -184,6 +184,7 @@ const useLiveVisitors = (project: Project | null) => {
       return
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Initial fetch and interval subscription
     updateLiveVisitors()
 
     const interval = setInterval(async () => {
