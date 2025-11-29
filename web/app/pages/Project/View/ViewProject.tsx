@@ -777,15 +777,17 @@ const ViewProjectContent = () => {
     setAnnotationActionLoading(false)
   }
 
-  const onAnnotationDelete = async () => {
-    if (annotationActionLoading || !annotationToEdit) {
+  const onAnnotationDelete = async (annotation?: Annotation) => {
+    const targetAnnotation = annotation || annotationToEdit
+
+    if (annotationActionLoading || !targetAnnotation) {
       return
     }
 
     setAnnotationActionLoading(true)
 
     try {
-      await deleteAnnotation(annotationToEdit.id, id)
+      await deleteAnnotation(targetAnnotation.id, id)
       await loadAnnotations()
       toast.success(t('apiNotifications.annotationDeleted'))
     } catch (reason: any) {
@@ -4753,8 +4755,7 @@ const ViewProjectContent = () => {
               onDeleteAnnotation={
                 contextMenu.annotation
                   ? () => {
-                      setAnnotationToEdit(contextMenu.annotation!)
-                      onAnnotationDelete()
+                      onAnnotationDelete(contextMenu.annotation!)
                     }
                   : undefined
               }
