@@ -994,7 +994,10 @@ const updateAnnotationClickhouse = async (annotation: {
   text?: string
 }) => {
   const filtered = _reduce(
-    _filter(_keys(annotation), key => ALLOWED_ANNOTATION_KEYS.includes(key)),
+    _filter(
+      _keys(annotation),
+      key => ALLOWED_ANNOTATION_KEYS.includes(key) && annotation[key] != null,
+    ),
     (obj, key) => {
       obj[key] = annotation[key]
       return obj
