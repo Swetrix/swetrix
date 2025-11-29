@@ -3,7 +3,7 @@ import { marked, type Tokens } from 'marked'
 
 import { getBlogPost, getBlogPostWithCategory } from '~/api'
 
-import { renderTimeToSwitchCta } from './renderCtaHtml'
+import { renderTimeToSwitchCta, renderDitchGoogleCta } from './renderCtaHtml'
 import { extractTableOfContents, ensureHeaderIds, generateSlug, renderTocAsHtml } from './toc'
 
 const renderer = new marked.Renderer()
@@ -212,8 +212,10 @@ export async function getPost(slug: string, category?: string, tryStandalone?: b
 
   const tocPlaceholder = '::TABLE_OF_CONTENTS::'
   const ctaTimeToSwitchPlaceholder = '::CTA:TIME_TO_SWITCH::'
+  const ctaDitchGooglePlaceholder = '::CTA:TIME_TO_DITCH_GOOGLE::'
   const hasTocPlaceholder = post.body.includes(tocPlaceholder)
   const hasCtaTimeToSwitch = post.body.includes(ctaTimeToSwitchPlaceholder)
+  const hasCtaDitchGoogle = post.body.includes(ctaDitchGooglePlaceholder)
 
   let html = marked(post.body, { renderer }) as string
 
@@ -236,6 +238,12 @@ export async function getPost(slug: string, category?: string, tryStandalone?: b
   if (hasCtaTimeToSwitch) {
     const ctaHtml = renderTimeToSwitchCta()
     html = html.replace(new RegExp(ctaTimeToSwitchPlaceholder, 'gi'), ctaHtml)
+  }
+
+  // Handle CTA:TIME_TO_DITCH_GOOGLE placeholder
+  if (hasCtaDitchGoogle) {
+    const ctaHtml = renderDitchGoogleCta()
+    html = html.replace(new RegExp(ctaDitchGooglePlaceholder, 'gi'), ctaHtml)
   }
 
   return {
