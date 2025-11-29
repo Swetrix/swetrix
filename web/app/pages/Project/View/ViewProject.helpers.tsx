@@ -509,13 +509,14 @@ const getSettings = (
   const xAxisSize = _size(chart.x)
 
   // Convert annotations to grid lines
+  // Each annotation gets a unique class identifier for DOM-based lookup
   const lines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
     value: dayjs(annotation.date).toDate(),
     text:
       annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
         ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
         : annotation.text,
-    class: 'annotation-line',
+    class: `annotation-line annotation-id-${annotation.id}`,
     position: 'start',
   }))
   const modifiedChart = { ...chart }
@@ -1023,13 +1024,14 @@ const getSettingsError = (
   const xAxisSize = _size(chart.x)
 
   // Convert annotations to grid lines
+  // Each annotation gets a unique class identifier for DOM-based lookup
   const annotationLines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
     value: dayjs(annotation.date).toDate(),
     text:
       annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
         ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
         : annotation.text,
-    class: 'annotation-line',
+    class: `annotation-line annotation-id-${annotation.id}`,
     position: 'start',
   }))
 
@@ -1359,13 +1361,14 @@ const getSettingsPerf = (
   const xAxisSize = _size(chart.x)
 
   // Convert annotations to grid lines
+  // Each annotation gets a unique class identifier for DOM-based lookup
   const annotationLines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
     value: dayjs(annotation.date).toDate(),
     text:
       annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
         ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
         : annotation.text,
-    class: 'annotation-line',
+    class: `annotation-line annotation-id-${annotation.id}`,
     position: 'start',
   }))
 

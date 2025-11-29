@@ -218,11 +218,162 @@ import {
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
   CHART_MEASURES_MAPPING_PERF,
   getDeviceRowMapper,
-  ANNOTATION_CHART_TEXT_MAX_LENGTH,
 } from './ViewProject.helpers'
 
 const SESSIONS_TAKE = 30
 const ERRORS_TAKE = 30
+
+/**
+ * Pixel distance threshold for snapping to nearby annotations when clicking on the chart.
+ * If a click is within this many pixels of an annotation line, that annotation will be selected.
+ */
+const ANNOTATION_CLICK_THRESHOLD_PX = 30
+
+/** Chart metrics derived from SVG/DOM layout */
+interface ChartMetrics {
+  /** X coordinate where the chart plotting area begins (left edge of x-axis) */
+  chartAreaStart: number
+  /** Width of the chart plotting area */
+  chartAreaWidth: number
+}
+
+/**
+ * Traverses up the DOM tree from a target element to find an annotation line element.
+ * @param target - The element where the click/event originated
+ * @param boundary - The boundary element to stop traversal (usually event.currentTarget)
+ * @returns The annotation line element if found, null otherwise
+ */
+const findAnnotationLineElement = (target: Element, boundary: Element): Element | null => {
+  let element: Element | null = target
+
+  while (element && element !== boundary) {
+    if (element.classList?.contains('annotation-line')) {
+      return element
+    }
+    element = element.parentElement
+  }
+
+  return null
+}
+
+/**
+ * Extracts the annotation ID from an annotation line element's class list.
+ * Annotation elements have classes in the format "annotation-line annotation-id-{uuid}".
+ * @param element - The annotation line DOM element
+ * @returns The annotation ID if found, null otherwise
+ */
+const getAnnotationIdFromElement = (element: Element): string | null => {
+  const classes = element.classList
+  for (const className of classes) {
+    if (className.startsWith('annotation-id-')) {
+      return className.replace('annotation-id-', '')
+    }
+  }
+  return null
+}
+
+/**
+ * Calculates the chart area metrics by examining the SVG's x-axis domain path.
+ * Falls back to sensible defaults if the DOM elements cannot be queried.
+ *
+ * @param svg - The SVG element containing the chart
+ * @param chartContainer - The billboard.js chart container element
+ * @returns Chart metrics with start position and width of the plotting area
+ *
+ * Fallback rationale:
+ * - chartAreaStart defaults to 50px (typical left margin for y-axis labels)
+ * - chartAreaWidth defaults to svgWidth - 70px (accounts for left margin + right padding)
+ */
+const calculateChartMetrics = (svg: SVGSVGElement, chartContainer: HTMLElement): ChartMetrics => {
+  const svgRect = svg.getBoundingClientRect()
+
+  // Default fallbacks based on typical billboard.js chart layout
+  let chartAreaStart = 50
+  let chartAreaWidth = svgRect.width - 70
+
+  // Try to get exact boundaries from the x-axis domain path (the axis line)
+  const xAxisPath = chartContainer.querySelector('.bb-axis-x path.domain') as SVGPathElement | null
+  if (xAxisPath) {
+    const pathBBox = xAxisPath.getBBox()
+    chartAreaStart = pathBBox.x
+    chartAreaWidth = pathBBox.width
+  }
+
+  return { chartAreaStart, chartAreaWidth }
+}
+
+/**
+ * Calculates the date corresponding to a click position on the chart.
+ *
+ * @param clientX - The X coordinate of the click event (event.clientX)
+ * @param svgRect - The bounding rectangle of the SVG element
+ * @param xAxisData - Array of date strings representing x-axis values
+ * @param chartMetrics - The computed chart area metrics
+ * @returns The date string in YYYY-MM-DD format for the clicked position
+ */
+const calculateDateFromPosition = (
+  clientX: number,
+  svgRect: DOMRect,
+  xAxisData: string[],
+  chartMetrics: ChartMetrics,
+): string => {
+  const clickX = clientX - svgRect.left
+  const { chartAreaStart, chartAreaWidth } = chartMetrics
+
+  // Calculate relative position within the chart area (clamped to [0, 1])
+  const relativeX = Math.max(0, clickX - chartAreaStart)
+  const percentage = Math.min(1, relativeX / chartAreaWidth)
+
+  // Map percentage to index in xAxisData
+  const index = Math.round(percentage * (xAxisData.length - 1))
+  const clampedIndex = Math.max(0, Math.min(xAxisData.length - 1, index))
+
+  return dayjs(xAxisData[clampedIndex]).format('YYYY-MM-DD')
+}
+
+/**
+ * Finds the closest annotation to a click position within the pixel threshold.
+ *
+ * @param clickX - The X coordinate of the click relative to the SVG's left edge
+ * @param annotations - Array of all annotations
+ * @param xAxisData - Array of date strings representing x-axis values
+ * @param chartMetrics - The computed chart area metrics
+ * @param pixelThreshold - Maximum distance in pixels to consider an annotation as "close"
+ * @returns The closest annotation if within threshold, null otherwise
+ */
+const findClosestAnnotation = (
+  clickX: number,
+  annotations: Annotation[],
+  xAxisData: string[],
+  chartMetrics: ChartMetrics,
+  pixelThreshold: number,
+): Annotation | null => {
+  const { chartAreaStart, chartAreaWidth } = chartMetrics
+
+  let closestAnnotation: Annotation | null = null
+  let closestDistance = Infinity
+
+  for (const annotation of annotations) {
+    const annotationDate = dayjs(annotation.date).format('YYYY-MM-DD')
+
+    // Find the index of this annotation's date in xAxisData
+    const annotationIndex = xAxisData.findIndex((xDate) => dayjs(xDate).format('YYYY-MM-DD') === annotationDate)
+
+    if (annotationIndex !== -1) {
+      // Calculate the x position of this annotation on the chart
+      const annotationPercentage = annotationIndex / (xAxisData.length - 1)
+      const annotationX = chartAreaStart + annotationPercentage * chartAreaWidth
+      const distance = Math.abs(clickX - annotationX)
+
+      if (distance < pixelThreshold && distance < closestDistance) {
+        closestDistance = distance
+        closestAnnotation = annotation
+      }
+    }
+  }
+
+  return closestAnnotation
+}
 
 interface ViewProjectContextType {
   // States
@@ -812,112 +963,53 @@ const ViewProjectContent = () => {
   }
 
   const handleChartContextMenu = (event: React.MouseEvent, xAxisData: string[] | undefined) => {
-    // Always prevent default - we'll show our own menu (even if empty for non-managers)
     event.preventDefault()
 
     let existingAnnotation: Annotation | null = null
     let date: string | null = null
 
-    // Check if user clicked directly on an annotation line (traverse up DOM tree for SVG compatibility)
-    let element: Element | null = event.target as Element
-    let annotationLineElement: Element | null = null
-
-    while (element && element !== event.currentTarget) {
-      if (element.classList?.contains('annotation-line')) {
-        annotationLineElement = element
-        break
-      }
-      element = element.parentElement
-    }
+    // Check if user clicked directly on an annotation line
+    const annotationLineElement = findAnnotationLineElement(event.target as Element, event.currentTarget as Element)
 
     if (annotationLineElement) {
-      // User clicked on an annotation line - find the annotation by its text
-      const textElement = annotationLineElement.querySelector('text')
-      if (textElement) {
-        const lineText = textElement.textContent || ''
-        // Find annotation that matches this text (could be truncated)
-        existingAnnotation =
-          annotations.find(
-            (a) =>
-              a.text === lineText ||
-              (a.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH &&
-                `${a.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...` === lineText),
-          ) || null
+      // User clicked on an annotation line - find it by ID from the element's class
+      const annotationId = getAnnotationIdFromElement(annotationLineElement)
+      if (annotationId) {
+        existingAnnotation = annotations.find((a) => a.id === annotationId) || null
         if (existingAnnotation) {
           date = dayjs(existingAnnotation.date).format('YYYY-MM-DD')
         }
       }
     }
 
-    // If not clicking on annotation line, calculate date from position
+    // If not clicking on an annotation line, calculate date from click position
     if (!existingAnnotation && xAxisData && xAxisData.length > 0) {
       const chartContainer = (event.currentTarget as HTMLElement).querySelector('.bb') as HTMLElement
-      if (chartContainer) {
-        const svg = chartContainer.querySelector('svg')
-        if (svg) {
-          const svgRect = svg.getBoundingClientRect()
-          const clickX = event.clientX - svgRect.left
+      const svg = chartContainer?.querySelector('svg') as SVGSVGElement | null
 
-          // Get the actual chart area from the x-axis domain path (the axis line)
-          // This gives us the exact boundaries of the plotting area
-          let chartAreaStart = 50 // fallback
-          let chartAreaWidth = svgRect.width - 70 // fallback
+      if (svg) {
+        const svgRect = svg.getBoundingClientRect()
+        const chartMetrics = calculateChartMetrics(svg, chartContainer)
+        const clickX = event.clientX - svgRect.left
 
-          const xAxisPath = chartContainer.querySelector('.bb-axis-x path.domain') as SVGPathElement
-          if (xAxisPath) {
-            const pathBBox = xAxisPath.getBBox()
-            chartAreaStart = pathBBox.x
-            chartAreaWidth = pathBBox.width
-          }
+        date = calculateDateFromPosition(event.clientX, svgRect, xAxisData, chartMetrics)
 
-          // Calculate the relative position within the chart area
-          const relativeX = Math.max(0, clickX - chartAreaStart)
-          const percentage = Math.min(1, relativeX / chartAreaWidth)
+        // Check for exact date match first
+        existingAnnotation = annotations.find((a) => dayjs(a.date).format('YYYY-MM-DD') === date) || null
 
-          // Calculate the index
-          const index = Math.round(percentage * (xAxisData.length - 1))
-          const clampedIndex = Math.max(0, Math.min(xAxisData.length - 1, index))
+        // If no exact match, try to find the closest annotation within threshold
+        if (!existingAnnotation && annotations.length > 0) {
+          const closestAnnotation = findClosestAnnotation(
+            clickX,
+            annotations,
+            xAxisData,
+            chartMetrics,
+            ANNOTATION_CLICK_THRESHOLD_PX,
+          )
 
-          // Format date as YYYY-MM-DD for the date input
-          date = dayjs(xAxisData[clampedIndex]).format('YYYY-MM-DD')
-
-          // Check if there's an annotation for this calculated date (normalize both to YYYY-MM-DD)
-          existingAnnotation =
-            annotations.find((a) => {
-              const annotationDate = dayjs(a.date).format('YYYY-MM-DD')
-              return annotationDate === date
-            }) || null
-
-          // If no exact match, find the closest annotation within a pixel threshold
-          if (!existingAnnotation && annotations.length > 0) {
-            const pixelThreshold = 30 // pixels
-            let closestAnnotation: Annotation | null = null
-            let closestDistance = Infinity
-
-            for (const annotation of annotations) {
-              const annotationDate = dayjs(annotation.date).format('YYYY-MM-DD')
-              // Find the index of this date in xAxisData
-              const annotationIndex = xAxisData.findIndex(
-                (xDate) => dayjs(xDate).format('YYYY-MM-DD') === annotationDate,
-              )
-
-              if (annotationIndex !== -1) {
-                // Calculate the x position of this annotation
-                const annotationPercentage = annotationIndex / (xAxisData.length - 1)
-                const annotationX = chartAreaStart + annotationPercentage * chartAreaWidth
-                const distance = Math.abs(clickX - annotationX)
-
-                if (distance < pixelThreshold && distance < closestDistance) {
-                  closestDistance = distance
-                  closestAnnotation = annotation
-                }
-              }
-            }
-
-            if (closestAnnotation) {
-              existingAnnotation = closestAnnotation
-              date = dayjs(closestAnnotation.date).format('YYYY-MM-DD')
-            }
+          if (closestAnnotation) {
+            existingAnnotation = closestAnnotation
+            date = dayjs(closestAnnotation.date).format('YYYY-MM-DD')
           }
         }
       }
