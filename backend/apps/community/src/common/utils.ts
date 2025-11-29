@@ -952,7 +952,7 @@ const getAnnotationClickhouse = async (
     FROM annotation
     WHERE
       projectId = {projectId:FixedString(12)}
-      AND id = {annotationId:String}`
+      AND id = {annotationId:FixedString(36)}`
 
   const { data } = await clickhouse
     .query({
