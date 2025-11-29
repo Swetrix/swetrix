@@ -48,7 +48,7 @@ export default function PostSlug() {
       <ExitIntentPopup isStandalone={post.standalone} />
       <div className='mx-auto max-w-[52rem] px-4 pb-28 sm:px-6 md:px-8 lg:max-w-6xl xl:px-12'>
         <div className='overflow-hidden'>
-          <div className='mx-auto max-w-4xl pb-28'>
+          <div className='mx-auto max-w-4xl'>
             <main className='bg-gray-50 dark:bg-slate-900'>
               {post.standalone ? (
                 <div className='mt-10 mb-6' />
