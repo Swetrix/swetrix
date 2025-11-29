@@ -1,7 +1,6 @@
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
-import { SiDiscord, SiGithub, SiX } from '@icons-pack/react-simple-icons'
+import { SiGithub } from '@icons-pack/react-simple-icons'
 import _map from 'lodash/map'
-import { SquareArrowOutUpRightIcon } from 'lucide-react'
 import React, { memo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -14,164 +13,87 @@ import {
   LINKEDIN_URL,
   STATUSPAGE_URL,
   TWITTER_URL,
-  SWETRIX_VS_GOOGLE,
-  SWETRIX_VS_CLOUDFLARE,
   DOCS_URL,
-  SWETRIX_VS_SIMPLE_ANALYTICS,
   DISCORD_URL,
+  CAPTCHA_URL,
   whitelist,
   languages,
   languageFlag,
 } from '~/lib/constants'
-import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
-import LinkedIn from '~/ui/icons/LinkedIn'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 import { cn } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 
 export const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
 
+const products = [
+  { key: 'header.solutions.analytics.title', href: routesPath.main, internal: true },
+  { key: 'header.solutions.performance.title', href: routesPath.performance, internal: true },
+  { key: 'header.solutions.errors.title', href: routesPath.errorTracking, internal: true },
+  { key: 'header.solutions.captcha.title', href: CAPTCHA_URL, internal: false },
+]
+
 const productionNavigation = {
-  company: [
-    { key: 'about', href: routesPath.about, internal: true },
-    { key: 'open', href: routesPath.open, internal: true },
-    { key: 'status', href: STATUSPAGE_URL, internal: false },
-    { key: 'blog', href: routesPath.blog, internal: true },
-  ],
-  legal: [
-    (
-      authenticated: boolean | undefined,
-    ): {
-      key: string
-      href: string
-      internal: boolean
-    } =>
-      authenticated
-        ? { key: 'billing', href: routesPath.billing, internal: true }
-        : { key: 'pricing', href: `${routesPath.main}#pricing`, internal: true },
-    (): {
-      key: string
-      href: string
-      internal: boolean
-    } => ({ key: 'docs', href: DOCS_URL, internal: false }),
-    (): {
-      key: string
-      href: string
-      internal: boolean
-    } => ({ key: 'contact', href: routesPath.contact, internal: true }),
-    (): {
-      key: string
-      href: string
-      internal: boolean
-    } => ({ key: 'privacy', href: routesPath.privacy, internal: true }),
-    (): {
-      key: string
-      href: string
-      internal: boolean
-    } => ({ key: 'terms', href: routesPath.terms, internal: true }),
-    (): {
-      key: string
-      href: string
-      internal: boolean
-    } => ({ key: 'data-policy', href: routesPath.dataPolicy, internal: true }),
-    (): {
-      key: string
-      href: string
-      internal: boolean
-    } => ({ key: 'cookie', href: routesPath.cookiePolicy, internal: true }),
-    (): {
-      key: string
-      href: string
-      internal: boolean
-    } => ({ key: 'imprint', href: routesPath.imprint, internal: true }),
-  ],
-  features: [
-    { value: 'vs Google Analytics', href: SWETRIX_VS_GOOGLE, internal: false },
-    { value: 'vs Cloudflare Analytics', href: SWETRIX_VS_CLOUDFLARE, internal: false },
-    { value: 'vs Simple Analytics', href: SWETRIX_VS_SIMPLE_ANALYTICS, internal: false },
+  products,
+  resources: [
+    { key: 'docs', href: DOCS_URL, internal: false },
+    { key: 'pricing', href: `${routesPath.main}#pricing`, internal: true },
     { key: 'tools', href: routesPath.tools, internal: true },
     { key: 'utm', href: routesPath.utm_generator, internal: true },
     { key: 'ctr', href: routesPath.ctr_calculator, internal: true },
     { key: 'roi', href: routesPath.roi_calculator, internal: true },
   ],
-  social: [
-    {
-      name: 'GitHub',
-      href: GITHUB_URL,
-      icon: (props: React.SVGProps<SVGSVGElement>) => <SiGithub {...props} />,
-    },
-    {
-      name: 'Twitter',
-      href: TWITTER_URL,
-      icon: (props: React.SVGProps<SVGSVGElement>) => <SiX {...props} />,
-    },
-    {
-      name: 'Discord',
-      href: DISCORD_URL,
-      icon: (props: React.SVGProps<SVGSVGElement>) => <SiDiscord {...props} />,
-    },
-    {
-      name: 'LinkedIn',
-      href: LINKEDIN_URL,
-      icon: (props: React.SVGProps<SVGSVGElement>) => <LinkedIn {...props} />,
-    },
+  company: [
+    { key: 'about', href: routesPath.about, internal: true },
+    { key: 'open', href: routesPath.open, internal: true },
+    { key: 'status', href: STATUSPAGE_URL, internal: false },
+    { key: 'blog', href: routesPath.blog, internal: true },
+    { key: 'contact', href: routesPath.contact, internal: true },
+  ],
+  community: [
+    { name: 'GitHub', href: GITHUB_URL },
+    { name: 'Discord', href: DISCORD_URL },
+    { name: 'X (Twitter)', href: TWITTER_URL },
+    { name: 'LinkedIn', href: LINKEDIN_URL },
+  ],
+  comparisons: [{ name: 'Plausible', href: '/comparison/plausible' }],
+  legal: [
+    { key: 'privacy', href: routesPath.privacy, internal: true },
+    { key: 'terms', href: routesPath.terms, internal: true },
+    { key: 'cookie', href: routesPath.cookiePolicy, internal: true },
+    { key: 'data-policy', href: routesPath.dataPolicy, internal: true },
+    { key: 'imprint', href: routesPath.imprint, internal: true },
   ],
 }
 
 const communityEditionNavigation = {
-  company: [
-    { key: 'cloudEdition', href: 'https://swetrix.com', internal: false },
+  products,
+  resources: [
+    { key: 'docs', href: DOCS_URL, internal: false },
     { key: 'pricing', href: `https://swetrix.com/#pricing`, internal: false },
-    { key: 'blog', href: `https://swetrix.com${routesPath.blog}`, internal: false },
-    { key: 'supportUs', href: DONATE_URL, internal: false },
-  ],
-  legal: [
-    (): {
-      key: string
-      href: string
-      internal: boolean
-    } => ({ key: 'docs', href: DOCS_URL, internal: false }),
-    (): {
-      key: string
-      href: string
-      internal: boolean
-    } => ({ key: 'contact', href: `https://swetrix.com${routesPath.contact}`, internal: false }),
-    (): {
-      key: string
-      href: string
-      internal: boolean
-    } => ({ key: 'imprint', href: `https://swetrix.com${routesPath.imprint}`, internal: false }),
-  ],
-  features: [
     { key: 'tools', href: `https://swetrix.com${routesPath.tools}`, internal: false },
     { key: 'utm', href: `https://swetrix.com${routesPath.utm_generator}`, internal: false },
     { key: 'ctr', href: `https://swetrix.com${routesPath.ctr_calculator}`, internal: false },
     { key: 'roi', href: `https://swetrix.com${routesPath.roi_calculator}`, internal: false },
   ],
-  social: [
-    {
-      name: 'GitHub',
-      href: GITHUB_URL,
-      icon: (props: React.SVGProps<SVGSVGElement>) => <SiGithub {...props} />,
-    },
-    {
-      name: 'Twitter',
-      href: TWITTER_URL,
-      icon: (props: React.SVGProps<SVGSVGElement>) => <SiX {...props} />,
-    },
-    {
-      name: 'Discord',
-      href: DISCORD_URL,
-      icon: (props: React.SVGProps<SVGSVGElement>) => <SiDiscord {...props} />,
-    },
-    {
-      name: 'LinkedIn',
-      href: LINKEDIN_URL,
-      icon: (props: React.SVGProps<SVGSVGElement>) => <LinkedIn {...props} />,
-    },
+  company: [
+    { key: 'cloudEdition', href: 'https://swetrix.com', internal: false },
+    { key: 'blog', href: `https://swetrix.com${routesPath.blog}`, internal: false },
+    { key: 'supportUs', href: DONATE_URL, internal: false },
+  ],
+  community: [
+    { name: 'GitHub', href: GITHUB_URL },
+    { name: 'Discord', href: DISCORD_URL },
+    { name: 'X', href: TWITTER_URL },
+    { name: 'LinkedIn', href: LINKEDIN_URL },
+  ],
+  comparisons: [{ name: 'Plausible', href: 'https://swetrix.com/blog/swetrix-vs-plausible' }],
+  legal: [
+    { key: 'contact', href: `https://swetrix.com${routesPath.contact}`, internal: false },
+    { key: 'imprint', href: `https://swetrix.com${routesPath.imprint}`, internal: false },
   ],
 }
 
@@ -259,14 +181,34 @@ interface FooterProps {
   showDBIPMessage?: boolean
 }
 
+const FooterLink = ({ href, internal, children }: { href: string; internal: boolean; children: React.ReactNode }) => {
+  if (internal) {
+    return (
+      <Link to={href} className='underline-animate text-sm text-white transition-colors'>
+        {children}
+      </Link>
+    )
+  }
+
+  return (
+    <a
+      href={href}
+      className='underline-animate text-sm text-white transition-colors'
+      target='_blank'
+      rel='noopener noreferrer'
+    >
+      {children}
+    </a>
+  )
+}
+
 const Footer = ({ showDBIPMessage }: FooterProps) => {
-  const { isAuthenticated } = useAuth()
   const { t } = useTranslation('common')
   const year = new Date().getFullYear()
 
   return (
     <footer
-      className='relative overflow-hidden border-t border-white/10 bg-slate-900 pb-20'
+      className='relative overflow-hidden border-t border-white/10 bg-slate-900 pt-16 pb-8'
       aria-labelledby='footer-heading'
     >
       <h2 id='footer-heading' className='sr-only'>
@@ -274,172 +216,152 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
       </h2>
       <div className='absolute top-full left-1/2 mt-10 h-[20rem] w-[36rem] -translate-x-1/2 bg-[#C8F2F8]/50 mix-blend-plus-lighter blur-[256px]' />
       <div className='absolute top-full left-1/2 size-96 -translate-x-1/2 bg-[#C8F2F8]/50 mix-blend-overlay blur-[256px]' />
-      <div className='mx-auto max-w-7xl px-4 pt-8 pb-5 sm:px-6 lg:px-8 lg:pt-12'>
-        <div className='xl:grid xl:grid-cols-2 xl:gap-8'>
-          <div className='space-y-5 xl:col-span-1'>
-            <SwetrixLogo theme='dark' lazy />
-            <p className='text-base text-white'>
-              {isSelfhosted ? (
-                <Trans
-                  t={t}
-                  i18nKey='footer.ceDescription'
-                  components={{
-                    url: (
-                      <a
-                        href='https://swetrix.com'
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='underline-animate text-indigo-400'
-                      />
-                    ),
-                  }}
-                />
-              ) : (
-                t('footer.description')
+
+      <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+        <div className='space-y-11'>
+          <div className='md:flex md:justify-between md:gap-8 lg:gap-10'>
+            <nav className='w-full'>
+              <ul className='-mx-3 flex flex-row flex-wrap gap-y-8 lg:flex-nowrap'>
+                <li className='flex w-1/2 flex-col px-3 lg:w-1/5'>
+                  <ul>
+                    <li className='mb-4 text-sm font-bold text-white uppercase'>{t('footer.products')}</li>
+                    {_map(navigation.products, ({ key, href, internal }) => (
+                      <li key={key} className='mb-2'>
+                        <FooterLink href={href} internal={internal}>
+                          {t(key)}
+                        </FooterLink>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+
+                <li className='flex w-1/2 flex-col px-3 lg:w-1/5'>
+                  <ul>
+                    <li className='mb-4 text-sm font-bold text-white uppercase'>{t('footer.resources')}</li>
+                    {_map(navigation.resources, ({ key, href, internal }) => (
+                      <li key={key} className='mb-2'>
+                        <FooterLink href={href} internal={internal}>
+                          {t(`footer.${key}`)}
+                        </FooterLink>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+
+                <li className='flex w-1/2 flex-col px-3 lg:w-1/5'>
+                  <ul>
+                    <li className='mb-4 text-sm font-bold text-white uppercase'>{t('footer.company')}</li>
+                    {_map(navigation.company, ({ key, href, internal }) => (
+                      <li key={key} className='mb-2'>
+                        <FooterLink href={href} internal={internal}>
+                          {t(`footer.${key}`)}
+                        </FooterLink>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+
+                <li className='flex w-1/2 flex-col px-3 lg:w-1/5'>
+                  <ul>
+                    <li className='mb-4 text-sm font-bold text-white uppercase'>{t('footer.community')}</li>
+                    {_map(navigation.community, ({ name, href }) => (
+                      <li key={name} className='mb-2'>
+                        <FooterLink href={href} internal={false}>
+                          {name}
+                        </FooterLink>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+
+                <li className='flex w-1/2 flex-col px-3 lg:w-1/5'>
+                  <ul>
+                    <li className='mb-4 text-sm font-bold text-white uppercase'>{t('footer.comparisons')}</li>
+                    {_map(navigation.comparisons, ({ name, href }) => (
+                      <li key={name} className='mb-2'>
+                        <FooterLink href={href} internal={!isSelfhosted}>
+                          {name}
+                        </FooterLink>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              </ul>
+            </nav>
+
+            <div className='mt-12 md:mt-0 md:w-fit md:min-w-[280px]'>
+              <SwetrixLogo theme='dark' lazy />
+
+              <p className='mt-4 text-sm text-white'>
+                {isSelfhosted ? (
+                  <Trans
+                    t={t}
+                    i18nKey='footer.ceDescription'
+                    components={{
+                      url: (
+                        <a
+                          href='https://swetrix.com'
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='text-indigo-400 hover:text-indigo-300'
+                        />
+                      ),
+                    }}
+                  />
+                ) : (
+                  t('footer.description')
+                )}
+              </p>
+
+              {isSelfhosted ? null : (
+                <div className='mt-2 flex text-sm text-white'>
+                  <Trans t={t} i18nKey='footer.madeInHostedIn'>
+                    <Flag className='mx-[1ch]' country='GB' size={16} alt='GB' aria-hidden='true' />
+                    <Flag className='mx-[1ch]' country='UA' size={16} alt='UA' aria-hidden='true' />
+                    <Flag className='mx-[1ch]' country='EU' size={16} alt='EU' aria-hidden='true' />
+                  </Trans>
+                </div>
               )}
-            </p>
-            {isSelfhosted ? null : (
-              <div className='flex text-white'>
-                <Trans t={t} i18nKey='footer.madeInHostedIn'>
-                  <Flag className='mx-[1ch]' country='GB' size={18} alt='GB' aria-hidden='true' />
-                  <Flag className='mx-[1ch]' country='UA' size={18} alt='UA' aria-hidden='true' />
-                  <Flag className='mx-[1ch]' country='EU' size={18} alt='EU' aria-hidden='true' />
-                </Trans>
-              </div>
-            )}
-            <div className='flex space-x-4'>
-              {_map(navigation.social, (item) => (
+
+              <div className='mt-8 flex w-full justify-end md:w-auto'>
                 <a
-                  key={item.name}
-                  href={item.href}
-                  title={item.name}
+                  href={GITHUB_URL}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='text-white transition-colors hover:text-gray-400'
-                  aria-label={`${item.name} (opens in a new tab)`}
+                  className='inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
                 >
-                  <span className='sr-only'>{item.name}</span>
-                  <item.icon className='h-6 w-6' aria-hidden='true' />
+                  <SiGithub className='mr-2 h-4 w-4' />
+                  <span>{t('footer.starOnGithub')}</span>
                 </a>
-              ))}
-            </div>
-            <div className='flex flex-col space-y-4 pt-10'>
-              <div className='flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4'>
+              </div>
+
+              <div className='mt-4 flex flex-col justify-end space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4'>
                 <LanguageSelector />
                 <ThemeSelector />
               </div>
-              <p className='text-base text-white'>
-                &copy; {year} {t('footer.copy')}
-              </p>
-              <a
-                href='https://u24.gov.ua/'
-                target='_blank'
-                rel='noreferrer noopener'
-                className='underline-animate block max-w-max items-center border-b-2 border-transparent text-base text-white'
-              >
-                {t('main.ukrSupport')}
-                <SquareArrowOutUpRightIcon className='mb-1 ml-1 inline size-4' strokeWidth={1.5} />
-              </a>
             </div>
           </div>
-          <div className='mt-12 xl:mt-0'>
-            <div className='grid grid-cols-2 gap-8 md:grid-cols-3'>
+
+          <div className='flex flex-col items-start border-t border-white/10 pt-6 lg:pt-8'>
+            <div className='flex w-full flex-col items-center gap-4 text-center text-sm text-white md:flex-row md:justify-between md:text-left'>
               <div>
-                <h3 className='text-sm font-bold tracking-wider text-white uppercase'>{t('footer.features')}</h3>
-                <ul className='mt-4 space-y-4'>
-                  {_map(navigation.features, (data) => {
-                    // @ts-expect-error wrong type
-                    const { value, key, href, internal } = data
-
-                    const displayValue = value || t(`footer.${key}`)
-
-                    return (
-                      <li key={displayValue}>
-                        {internal ? (
-                          <Link to={href} className='underline-animate text-base text-white'>
-                            {displayValue}
-                          </Link>
-                        ) : (
-                          <a
-                            href={href}
-                            className='underline-animate text-base text-white'
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            aria-label={`${displayValue} (opens in a new tab)`}
-                          >
-                            {displayValue}
-                          </a>
-                        )}
-                      </li>
-                    )
-                  })}
-                </ul>
+                © {year} {t('footer.copy')}
+                {showDBIPMessage && isSelfhosted ? (
+                  <>
+                    {' · '}
+                    <a href='https://db-ip.com' target='_blank' rel='noopener noreferrer' className='underline-animate'>
+                      IP Geolocation by DB-IP
+                    </a>
+                  </>
+                ) : null}
               </div>
-              <div>
-                <h3 className='text-sm font-bold tracking-wider text-white uppercase'>{t('footer.company')}</h3>
-                <ul className='mt-4 space-y-4'>
-                  {_map(navigation.company, ({ key, href, internal }) => (
-                    <li key={key}>
-                      {internal ? (
-                        <Link to={href} className='underline-animate text-base text-white'>
-                          {t(`footer.${key}`)}
-                        </Link>
-                      ) : (
-                        <a
-                          href={href}
-                          className='underline-animate text-base text-white'
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          aria-label={`${t(`footer.${key}`)} (opens in a new tab)`}
-                        >
-                          {t(`footer.${key}`)}
-                        </a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className='mt-12 md:mt-0'>
-                <h3 className='text-sm font-bold tracking-wider text-white uppercase'>{t('footer.legal')}</h3>
-                <ul className='mt-4 space-y-4'>
-                  {_map(navigation.legal, (func) => {
-                    const { key, href, internal } = func(isAuthenticated)
 
-                    return (
-                      <li key={key}>
-                        {internal ? (
-                          <Link to={href} className='underline-animate text-base text-white'>
-                            {t(`footer.${key}`)}
-                          </Link>
-                        ) : (
-                          <a
-                            href={href}
-                            className='underline-animate text-base text-white'
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            aria-label={`${t(`footer.${key}`)} (opens in a new tab)`}
-                          >
-                            {t(`footer.${key}`)}
-                          </a>
-                        )}
-                      </li>
-                    )
-                  })}
-
-                  {showDBIPMessage && isSelfhosted ? (
-                    <li>
-                      <a
-                        className='underline-animate text-base text-white'
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        href='https://db-ip.com'
-                        aria-label='IP Geolocation by DB-IP (opens in a new tab)'
-                      >
-                        IP Geolocation by DB-IP
-                      </a>
-                    </li>
-                  ) : null}
-                </ul>
+              <div className='flex flex-wrap items-center justify-center gap-4'>
+                {_map(navigation.legal, ({ key, href, internal }) => (
+                  <FooterLink key={key} href={href} internal={internal}>
+                    {t(`footer.${key}`)}
+                  </FooterLink>
+                ))}
               </div>
             </div>
           </div>

@@ -1524,11 +1524,15 @@
     "desc": "Swetrix helps you to understand your audience and monitor your traffic without compromising your users' privacy."
   },
   "footer": {
-    "description": "Swetrix is a powerful analytics platform that respects user privacy.",
+    "description": "Independent web analytics that respects user privacy",
     "ceDescription": "This is a community edition of Swetrix, running on self-managed infrastructure. We cannot guarantee its performance or reliability. For official managed hosting, check out <url>swetrix.com</url>.",
     "madeInHostedIn": "Made in <0></0> / <1></1>, hosted in <2></2>",
-    "support": "Support",
+    "products": "Products",
+    "resources": "Resources",
     "company": "Company",
+    "community": "Join our community",
+    "comparisons": "Comparisons",
+    "support": "Support",
     "legal": "Support & Legal",
     "copy": "Swetrix Ltd. All rights reserved.",
     "contact": "Contact",
@@ -1554,6 +1558,7 @@
     "about": "About us",
     "features": "Features",
     "imprint": "Legal notice",
-    "cloudEdition": "Cloud edition"
+    "cloudEdition": "Cloud edition",
+    "starOnGithub": "Star us on GitHub"
   }
 }
