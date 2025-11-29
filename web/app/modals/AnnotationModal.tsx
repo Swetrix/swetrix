@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Annotation } from '~/lib/models/Project'
-import Input from '~/ui/Input'
+import Datepicker from '~/ui/Datepicker'
 import Modal from '~/ui/Modal'
 import Textarea from '~/ui/Textarea'
 
@@ -92,19 +92,28 @@ const AnnotationModal = ({
       }
       message={
         <div className='space-y-4'>
-          <Input
-            name='annotation-date-input'
-            label={
-              <>
-                {t('modals.annotation.date')}
-                <span className='text-red-600'>*</span>
-              </>
-            }
-            type='date'
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            disabled={!allowedToManage}
-          />
+          <div>
+            <label className='mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200'>
+              {t('modals.annotation.date')}
+              <span className='text-red-600'>*</span>
+            </label>
+            <Datepicker
+              mode='single'
+              value={date ? [new Date(date + 'T00:00:00')] : []}
+              onChange={(dates) => {
+                if (dates.length > 0 && allowedToManage) {
+                  const d = dates[0]
+                  const year = d.getFullYear()
+                  const month = String(d.getMonth() + 1).padStart(2, '0')
+                  const day = String(d.getDate()).padStart(2, '0')
+                  setDate(`${year}-${month}-${day}`)
+                }
+              }}
+              options={{
+                altInputClass: `w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-100 ${!allowedToManage ? 'cursor-not-allowed opacity-50' : ''}`,
+              }}
+            />
+          </div>
           <div>
             <Textarea
               name='annotation-text-input'
