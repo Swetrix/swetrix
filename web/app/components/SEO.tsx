@@ -1,7 +1,7 @@
 import _startsWith from 'lodash/startsWith'
 import _toUpper from 'lodash/toUpper'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router'
+import { useLocation, useMatches } from 'react-router'
 
 import { getOgImageUrl, MAIN_URL, defaultLanguage } from '~/lib/constants'
 import routes from '~/utils/routes'
@@ -13,9 +13,16 @@ export const SEO = () => {
     i18n: { language },
   } = useTranslation('common')
   const { pathname, search, hash } = useLocation()
+  const matches = useMatches()
   const { title, prefixLessTitle } = getPageMeta(t, undefined, pathname)
 
-  const isBlogPage = _startsWith(pathname, '/blog')
+  // Check if any matched route has blog post data (standalone posts don't start with /blog)
+  const isBlogPostFromLoader = matches.some((match) => {
+    const data = match.data as { html?: string } | null
+    return typeof data?.html === 'string' && data.html.length > 0
+  })
+
+  const isBlogPage = _startsWith(pathname, '/blog') || isBlogPostFromLoader
   const isMainPage = pathname === '/'
   const isErrorsPage = pathname === routes.errorTracking
   const isProjectViewPage = _startsWith(pathname, '/projects/')

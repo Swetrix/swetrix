@@ -4,7 +4,7 @@ import _some from 'lodash/some'
 import _startsWith from 'lodash/startsWith'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation, Outlet } from 'react-router'
+import { useLocation, useMatches, Outlet } from 'react-router'
 import 'dayjs/locale/uk'
 import { Toaster } from 'sonner'
 
@@ -19,17 +19,32 @@ const TITLE_BLACKLIST = ['/projects/', '/captchas/', '/blog']
 
 const App = () => {
   const { pathname } = useLocation()
+  const matches = useMatches()
   const { t } = useTranslation('common')
   const { theme } = useTheme()
+
+  // Check if current route is a standalone blog post or 404 page (handled by $.tsx)
+  // These have their own title handling in SEO.tsx
+  const isBlogPostOrCatchAll = matches.some((match) => {
+    const data = match.data as { slug?: string } | null
+    const id = match.id || ''
+    // Has blog post data (slug field) or is the catch-all route
+    return data?.slug || id === 'routes/$' || id.endsWith('/$')
+  })
 
   useEffect(() => {
     if (_some(TITLE_BLACKLIST, (page) => _startsWith(pathname, page))) {
       return
     }
 
+    // Skip if this is a standalone blog post or catch-all route (404)
+    if (isBlogPostOrCatchAll) {
+      return
+    }
+
     const { title } = getPageMeta(t, undefined, pathname)
     document.title = title
-  }, [t, pathname])
+  }, [t, pathname, isBlogPostOrCatchAll])
 
   const isReferralPage = _startsWith(pathname, '/ref/')
   const isProjectViewPage =
