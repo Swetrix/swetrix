@@ -218,6 +218,7 @@ import {
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
   CHART_MEASURES_MAPPING_PERF,
   getDeviceRowMapper,
+  ANNOTATION_CHART_TEXT_MAX_LENGTH,
 } from './ViewProject.helpers'
 
 const SESSIONS_TAKE = 30
@@ -835,7 +836,10 @@ const ViewProjectContent = () => {
         // Find annotation that matches this text (could be truncated)
         existingAnnotation =
           annotations.find(
-            (a) => a.text === lineText || (a.text.length > 20 && `${a.text.substring(0, 20)}...` === lineText),
+            (a) =>
+              a.text === lineText ||
+              (a.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH &&
+                `${a.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...` === lineText),
           ) || null
         if (existingAnnotation) {
           date = dayjs(existingAnnotation.date).format('YYYY-MM-DD')

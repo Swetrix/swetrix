@@ -58,6 +58,9 @@ import countries from '~/utils/isoCountries'
 
 import { TrafficLogResponse } from './interfaces/traffic'
 
+// Max length of annotation text displayed on chart (truncated with "...")
+export const ANNOTATION_CHART_TEXT_MAX_LENGTH = 25
+
 const { saveAs } = filesaver
 
 const getAvg = (arr: any) => {
@@ -508,7 +511,10 @@ const getSettings = (
   // Convert annotations to grid lines
   const lines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
     value: dayjs(annotation.date).toDate(),
-    text: annotation.text.length > 25 ? `${annotation.text.substring(0, 25)}...` : annotation.text,
+    text:
+      annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
+        ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
+        : annotation.text,
     class: 'annotation-line',
     position: 'start',
   }))
@@ -1019,7 +1025,10 @@ const getSettingsError = (
   // Convert annotations to grid lines
   const annotationLines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
     value: dayjs(annotation.date).toDate(),
-    text: annotation.text.length > 25 ? `${annotation.text.substring(0, 25)}...` : annotation.text,
+    text:
+      annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
+        ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
+        : annotation.text,
     class: 'annotation-line',
     position: 'start',
   }))
@@ -1352,7 +1361,10 @@ const getSettingsPerf = (
   // Convert annotations to grid lines
   const annotationLines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
     value: dayjs(annotation.date).toDate(),
-    text: annotation.text.length > 25 ? `${annotation.text.substring(0, 25)}...` : annotation.text,
+    text:
+      annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
+        ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
+        : annotation.text,
     class: 'annotation-line',
     position: 'start',
   }))
