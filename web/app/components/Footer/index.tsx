@@ -60,10 +60,13 @@ const productionNavigation = {
     { name: 'LinkedIn', href: LINKEDIN_URL },
   ],
   comparisons: [
+    { name: 'Google Analytics', href: '/comparison/google-analytics' },
     { name: 'Plausible', href: '/comparison/plausible' },
     { name: 'Cloudflare Analytics', href: '/comparison/cloudflare-analytics' },
     { name: 'Fathom Analytics', href: '/comparison/fathom-analytics' },
     { name: 'Simple Analytics', href: '/comparison/simple-analytics' },
+    { name: 'Umami', href: '/comparison/umami' },
+    { name: 'Matomo', href: '/comparison/matomo' },
   ],
   legal: [
     { key: 'privacy', href: routesPath.privacy, internal: true },
