@@ -1,7 +1,7 @@
-import { PencilIcon, Trash2Icon, PlusIcon } from 'lucide-react'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
+import { PencilIcon, Trash2Icon, PlusIcon } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -154,23 +154,23 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
             {t('project.settings.annotations.description')}
           </p>
         </div>
-        {allowedToManage && (
+        {allowedToManage ? (
           <Button type='button' onClick={openCreateModal} primary regular>
             <PlusIcon className='mr-1 h-4 w-4' />
             {t('project.settings.annotations.add')}
           </Button>
-        )}
+        ) : null}
       </div>
 
       {_isEmpty(annotations) ? (
         <div className='rounded-lg border border-dashed border-gray-300 p-8 text-center dark:border-slate-700'>
           <p className='text-gray-500 dark:text-gray-400'>{t('project.settings.annotations.empty')}</p>
-          {allowedToManage && (
+          {allowedToManage ? (
             <Button type='button' onClick={openCreateModal} className='mt-4' primary regular>
               <PlusIcon className='mr-1 h-4 w-4' />
               {t('project.settings.annotations.addFirst')}
             </Button>
-          )}
+          ) : null}
         </div>
       ) : (
         <>
@@ -190,14 +190,7 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
                   >
                     {t('project.settings.annotations.text')}
                   </th>
-                  {allowedToManage && (
-                    <th
-                      scope='col'
-                      className='px-4 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400'
-                    >
-                      {t('common.actions')}
-                    </th>
-                  )}
+                  {allowedToManage ? <th /> : null}
                 </tr>
               </thead>
               <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
@@ -209,7 +202,7 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
                     <td className='px-4 py-3 text-sm text-gray-700 dark:text-gray-300'>
                       <span className='line-clamp-2'>{annotation.text}</span>
                     </td>
-                    {allowedToManage && (
+                    {allowedToManage ? (
                       <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
                         <div className='flex items-center justify-end gap-2'>
                           <button
@@ -230,18 +223,18 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
                           </button>
                         </div>
                       </td>
-                    )}
+                    ) : null}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          {totalPages > 1 && (
+          {totalPages > 1 ? (
             <div className='mt-4 flex justify-center'>
               <Pagination page={page} setPage={setPage} pageAmount={totalPages} total={_size(annotations)} />
             </div>
-          )}
+          ) : null}
         </>
       )}
 
