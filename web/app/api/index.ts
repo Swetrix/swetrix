@@ -1118,6 +1118,42 @@ export const deleteFunnel = (id: string, pid: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const getAnnotations = (pid: string, password: string | undefined = '') =>
+  api
+    .get(`project/annotations/${pid}`, {
+      headers: {
+        'x-password': password,
+      },
+    })
+    .then((response): any[] => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const createAnnotation = (pid: string, date: string, text: string) =>
+  api
+    .post('project/annotation', { pid, date, text })
+    .then((response): any => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const updateAnnotation = (id: string, pid: string, date: string, text: string) =>
+  api
+    .patch('project/annotation', { id, pid, date, text })
+    .then((response): any => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const deleteAnnotation = (id: string, pid: string) =>
+  api
+    .delete(`project/annotation/${id}/${pid}`)
+    .then((response): any => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const getSubscribers = (id: string, offset: number, limit: number) =>
   api
     .get(`project/${id}/subscribers?offset=${offset}&limit=${limit}`)

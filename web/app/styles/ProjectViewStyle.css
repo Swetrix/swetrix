@@ -191,3 +191,35 @@ body.dark .bb-ygrid {
     margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse))) !important;
   }
 }
+
+/* Annotation lines */
+.bb-xgrid-line.annotation-line {
+  pointer-events: all;
+  cursor: pointer;
+}
+
+.bb-xgrid-line.annotation-line line {
+  stroke: var(--color-slate-500);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  pointer-events: stroke;
+}
+
+.bb-xgrid-line.annotation-line text {
+  font-size: 10px;
+  font-weight: 600;
+  fill: var(--color-gray-700);
+  dominant-baseline: middle;
+  text-anchor: start;
+  paint-order: stroke fill;
+  stroke: white;
+  stroke-width: 3px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: all;
+}
+
+body.dark .bb-xgrid-line.annotation-line text {
+  fill: var(--color-gray-300);
+  stroke: var(--color-slate-900);
+}

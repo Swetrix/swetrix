@@ -16,6 +16,7 @@ interface DatePickerProps {
   options?: { altInputClass?: string }
   maxRange?: number
   className?: string
+  mode?: 'single' | 'range'
 }
 
 type DatePickerHandle = {
@@ -66,17 +67,18 @@ const getDaysMatrix = (anchor: Date) => {
   return days
 }
 
-const formatRangeLabel = (locale: string, value?: Date[]) => {
+const formatRangeLabel = (locale: string, value?: Date[], mode: 'single' | 'range' = 'range') => {
   if (!value || value.length < 1) return ''
   const formatter = new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'short', day: '2-digit' })
-  if (value.length === 1 || !value[1]) return formatter.format(value[0])
+  if (mode === 'single' || value.length === 1 || !value[1]) return formatter.format(value[0])
   return `${formatter.format(value[0])} — ${formatter.format(value[1])}`
 }
 
 const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(function DatePickerInner(
-  { onChange, value = [], maxDateMonths = MAX_MONTHS_IN_PAST, options, maxRange = 0, className },
+  { onChange, value = [], maxDateMonths = MAX_MONTHS_IN_PAST, options, maxRange = 0, className, mode = 'range' },
   ref,
 ) {
+  const isSingleMode = mode === 'single'
   const { i18n } = useTranslation('common')
   const locale = i18n.language
 
@@ -109,10 +111,6 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(function DatePi
   }, [value])
 
   const weekFormatter = useMemo(() => new Intl.DateTimeFormat(locale, { weekday: 'short' }), [locale])
-
-  const _monthLabel = useMemo(() => {
-    return `${new Intl.DateTimeFormat(locale, { month: 'long' }).format(anchorMonth)} ${anchorMonth.getFullYear()}`
-  }, [anchorMonth, locale])
 
   const weekdays = useMemo(() => {
     const base = new Date(2021, 7, 1) // Sunday
@@ -189,6 +187,17 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(function DatePi
 
   const onDayClick = (d: Date) => {
     const sd = startOfDay(d)
+
+    // Single mode: immediately select and close
+    if (isSingleMode) {
+      setStart(sd)
+      setEnd(null)
+      onChange?.([sd])
+      setOpen(false)
+      return
+    }
+
+    // Range mode logic
     if (!start || (start && end)) {
       setStart(sd)
       setEnd(null)
@@ -216,6 +225,8 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(function DatePi
   }
 
   const inRange = (d: Date) => {
+    // No range highlighting in single mode
+    if (isSingleMode) return false
     if (!start) return false
     const sd = startOfDay(d)
     const [lo, hi] = end
@@ -228,8 +239,8 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(function DatePi
   }
 
   const label = useMemo(
-    () => formatRangeLabel(locale, start && end ? [start, end] : start ? [start] : []),
-    [locale, start, end],
+    () => formatRangeLabel(locale, start && end ? [start, end] : start ? [start] : [], mode),
+    [locale, start, end, mode],
   )
 
   return (
@@ -240,7 +251,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(function DatePi
           readOnly
           onClick={() => setOpen(true)}
           value={label || ''}
-          placeholder='Select a date range...'
+          placeholder={isSingleMode ? 'Select a date...' : 'Select a date range...'}
           className={options.altInputClass}
         />
       ) : null}

@@ -78,6 +78,10 @@ import {
   deleteProjectView,
   getFunnels,
   getGSCKeywords,
+  getAnnotations,
+  createAnnotation,
+  updateAnnotation,
+  deleteAnnotation,
 } from '~/api'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
@@ -125,7 +129,9 @@ import {
   SwetrixErrorDetails,
   SessionDetails as SessionDetailsModel,
   Session,
+  Annotation,
 } from '~/lib/models/Project'
+import AnnotationModal from '~/modals/AnnotationModal'
 import NewFunnel from '~/modals/NewFunnel'
 import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
 import { useAuth } from '~/providers/AuthProvider'
@@ -155,6 +161,7 @@ import ProjectAlertsView from '../Alerts/View'
 
 import AddAViewModal from './components/AddAViewModal'
 import CCRow from './components/CCRow'
+import { ChartContextMenu } from './components/ChartContextMenu'
 import { ChartManagerProvider } from './components/ChartManager'
 import CustomEventsSubmenu from './components/CustomEventsSubmenu'
 import CustomMetrics from './components/CustomMetrics'
@@ -215,6 +222,158 @@ import {
 
 const SESSIONS_TAKE = 30
 const ERRORS_TAKE = 30
+
+/**
+ * Pixel distance threshold for snapping to nearby annotations when clicking on the chart.
+ * If a click is within this many pixels of an annotation line, that annotation will be selected.
+ */
+const ANNOTATION_CLICK_THRESHOLD_PX = 30
+
+/** Chart metrics derived from SVG/DOM layout */
+interface ChartMetrics {
+  /** X coordinate where the chart plotting area begins (left edge of x-axis) */
+  chartAreaStart: number
+  /** Width of the chart plotting area */
+  chartAreaWidth: number
+}
+
+/**
+ * Traverses up the DOM tree from a target element to find an annotation line element.
+ * @param target - The element where the click/event originated
+ * @param boundary - The boundary element to stop traversal (usually event.currentTarget)
+ * @returns The annotation line element if found, null otherwise
+ */
+const findAnnotationLineElement = (target: Element, boundary: Element): Element | null => {
+  let element: Element | null = target
+
+  while (element && element !== boundary) {
+    if (element.classList?.contains('annotation-line')) {
+      return element
+    }
+    element = element.parentElement
+  }
+
+  return null
+}
+
+/**
+ * Extracts the annotation ID from an annotation line element's class list.
+ * Annotation elements have classes in the format "annotation-line annotation-id-{uuid}".
+ * @param element - The annotation line DOM element
+ * @returns The annotation ID if found, null otherwise
+ */
+const getAnnotationIdFromElement = (element: Element): string | null => {
+  const classes = element.classList
+  for (const className of classes) {
+    if (className.startsWith('annotation-id-')) {
+      return className.replace('annotation-id-', '')
+    }
+  }
+  return null
+}
+
+/**
+ * Calculates the chart area metrics by examining the SVG's x-axis domain path.
+ * Falls back to sensible defaults if the DOM elements cannot be queried.
+ *
+ * @param svg - The SVG element containing the chart
+ * @param chartContainer - The billboard.js chart container element
+ * @returns Chart metrics with start position and width of the plotting area
+ *
+ * Fallback rationale:
+ * - chartAreaStart defaults to 50px (typical left margin for y-axis labels)
+ * - chartAreaWidth defaults to svgWidth - 70px (accounts for left margin + right padding)
+ */
+const calculateChartMetrics = (svg: SVGSVGElement, chartContainer: HTMLElement): ChartMetrics => {
+  const svgRect = svg.getBoundingClientRect()
+
+  // Default fallbacks based on typical billboard.js chart layout
+  let chartAreaStart = 50
+  let chartAreaWidth = svgRect.width - 70
+
+  // Try to get exact boundaries from the x-axis domain path (the axis line)
+  const xAxisPath = chartContainer.querySelector('.bb-axis-x path.domain') as SVGPathElement | null
+  if (xAxisPath) {
+    const pathBBox = xAxisPath.getBBox()
+    chartAreaStart = pathBBox.x
+    chartAreaWidth = pathBBox.width
+  }
+
+  return { chartAreaStart, chartAreaWidth }
+}
+
+/**
+ * Calculates the date corresponding to a click position on the chart.
+ *
+ * @param clientX - The X coordinate of the click event (event.clientX)
+ * @param svgRect - The bounding rectangle of the SVG element
+ * @param xAxisData - Array of date strings representing x-axis values
+ * @param chartMetrics - The computed chart area metrics
+ * @returns The date string in YYYY-MM-DD format for the clicked position
+ */
+const calculateDateFromPosition = (
+  clientX: number,
+  svgRect: DOMRect,
+  xAxisData: string[],
+  chartMetrics: ChartMetrics,
+): string => {
+  const clickX = clientX - svgRect.left
+  const { chartAreaStart, chartAreaWidth } = chartMetrics
+
+  // Calculate relative position within the chart area (clamped to [0, 1])
+  const relativeX = Math.max(0, clickX - chartAreaStart)
+  const percentage = Math.min(1, relativeX / chartAreaWidth)
+
+  // Map percentage to index in xAxisData
+  const index = Math.round(percentage * (xAxisData.length - 1))
+  const clampedIndex = Math.max(0, Math.min(xAxisData.length - 1, index))
+
+  return dayjs(xAxisData[clampedIndex]).format('YYYY-MM-DD')
+}
+
+/**
+ * Finds the closest annotation to a click position within the pixel threshold.
+ *
+ * @param clickX - The X coordinate of the click relative to the SVG's left edge
+ * @param annotations - Array of all annotations
+ * @param xAxisData - Array of date strings representing x-axis values
+ * @param chartMetrics - The computed chart area metrics
+ * @param pixelThreshold - Maximum distance in pixels to consider an annotation as "close"
+ * @returns The closest annotation if within threshold, null otherwise
+ */
+const findClosestAnnotation = (
+  clickX: number,
+  annotations: Annotation[],
+  xAxisData: string[],
+  chartMetrics: ChartMetrics,
+  pixelThreshold: number,
+): Annotation | null => {
+  const { chartAreaStart, chartAreaWidth } = chartMetrics
+
+  let closestAnnotation: Annotation | null = null
+  let closestDistance = Infinity
+
+  for (const annotation of annotations) {
+    const annotationDate = dayjs(annotation.date).format('YYYY-MM-DD')
+
+    // Find the index of this annotation's date in xAxisData
+    const annotationIndex = xAxisData.findIndex((xDate) => dayjs(xDate).format('YYYY-MM-DD') === annotationDate)
+
+    if (annotationIndex !== -1) {
+      // Calculate the x position of this annotation on the chart
+      const annotationPercentage = annotationIndex / (xAxisData.length - 1)
+      const annotationX = chartAreaStart + annotationPercentage * chartAreaWidth
+      const distance = Math.abs(clickX - annotationX)
+
+      if (distance < pixelThreshold && distance < closestDistance) {
+        closestDistance = distance
+        closestAnnotation = annotation
+      }
+    }
+  }
+
+  return closestAnnotation
+}
 
 interface ViewProjectContextType {
   // States
@@ -561,6 +720,29 @@ const ViewProjectContent = () => {
   const [projectViewDeleting, setProjectViewDeleting] = useState(false)
   const [projectViewToUpdate, setProjectViewToUpdate] = useState<ProjectView | undefined>()
 
+  // Annotations state
+  const [annotations, setAnnotations] = useState<Annotation[]>([])
+  const [annotationsLoading, setAnnotationsLoading] = useState(false)
+  const [isAnnotationModalOpen, setIsAnnotationModalOpen] = useState(false)
+  const [annotationToEdit, setAnnotationToEdit] = useState<Annotation | undefined>()
+  const [annotationModalDate, setAnnotationModalDate] = useState<string | undefined>()
+  const [annotationActionLoading, setAnnotationActionLoading] = useState(false)
+
+  // Chart context menu state
+  const [contextMenu, setContextMenu] = useState<{
+    isOpen: boolean
+    x: number
+    y: number
+    date: string | null
+    annotation: Annotation | null
+  }>({
+    isOpen: false,
+    x: 0,
+    y: 0,
+    date: null,
+    annotation: null,
+  })
+
   // Reset sessions and errors when filters change so lists reload with correct pagination
   useEffect(() => {
     sessionsRequestIdRef.current += 1
@@ -688,6 +870,162 @@ const ViewProjectContent = () => {
 
     toast.success(t('apiNotifications.funnelDeleted'))
     setFunnelActionLoading(false)
+  }
+
+  // Annotation functions
+  const loadAnnotations = async () => {
+    if (annotationsLoading) {
+      return
+    }
+
+    setAnnotationsLoading(true)
+
+    try {
+      const data = await getAnnotations(id, projectPassword)
+      setAnnotations(data || [])
+    } catch (reason: any) {
+      console.error('[ERROR] (loadAnnotations)', reason)
+    }
+
+    setAnnotationsLoading(false)
+  }
+
+  const onAnnotationCreate = async (date: string, text: string) => {
+    if (annotationActionLoading) {
+      return
+    }
+
+    setAnnotationActionLoading(true)
+
+    try {
+      await createAnnotation(id, date, text)
+      await loadAnnotations()
+      toast.success(t('apiNotifications.annotationCreated'))
+    } catch (reason: any) {
+      console.error('[ERROR] (onAnnotationCreate)', reason)
+      toast.error(reason)
+    }
+
+    setAnnotationActionLoading(false)
+  }
+
+  const onAnnotationUpdate = async (date: string, text: string) => {
+    if (annotationActionLoading || !annotationToEdit) {
+      return
+    }
+
+    setAnnotationActionLoading(true)
+
+    try {
+      await updateAnnotation(annotationToEdit.id, id, date, text)
+      await loadAnnotations()
+      toast.success(t('apiNotifications.annotationUpdated'))
+    } catch (reason: any) {
+      console.error('[ERROR] (onAnnotationUpdate)', reason)
+      toast.error(reason)
+    }
+
+    setAnnotationActionLoading(false)
+  }
+
+  const onAnnotationDelete = async (annotation?: Annotation) => {
+    const targetAnnotation = annotation || annotationToEdit
+
+    if (annotationActionLoading || !targetAnnotation) {
+      return
+    }
+
+    setAnnotationActionLoading(true)
+
+    try {
+      await deleteAnnotation(targetAnnotation.id, id)
+      await loadAnnotations()
+      toast.success(t('apiNotifications.annotationDeleted'))
+    } catch (reason: any) {
+      console.error('[ERROR] (onAnnotationDelete)', reason)
+      toast.error(reason)
+    }
+
+    setAnnotationActionLoading(false)
+    setAnnotationToEdit(undefined)
+  }
+
+  const openAnnotationModal = (date?: string, annotation?: Annotation) => {
+    setAnnotationModalDate(date)
+    setAnnotationToEdit(annotation)
+    setIsAnnotationModalOpen(true)
+  }
+
+  const closeAnnotationModal = () => {
+    setIsAnnotationModalOpen(false)
+    setAnnotationToEdit(undefined)
+    setAnnotationModalDate(undefined)
+  }
+
+  const handleChartContextMenu = (event: React.MouseEvent, xAxisData: string[] | undefined) => {
+    event.preventDefault()
+
+    let existingAnnotation: Annotation | null = null
+    let date: string | null = null
+
+    // Check if user clicked directly on an annotation line
+    const annotationLineElement = findAnnotationLineElement(event.target as Element, event.currentTarget as Element)
+
+    if (annotationLineElement) {
+      // User clicked on an annotation line - find it by ID from the element's class
+      const annotationId = getAnnotationIdFromElement(annotationLineElement)
+      if (annotationId) {
+        existingAnnotation = annotations.find((a) => a.id === annotationId) || null
+        if (existingAnnotation) {
+          date = dayjs(existingAnnotation.date).format('YYYY-MM-DD')
+        }
+      }
+    }
+
+    // If not clicking on an annotation line, calculate date from click position
+    if (!existingAnnotation && xAxisData && xAxisData.length > 0) {
+      const chartContainer = (event.currentTarget as HTMLElement).querySelector('.bb') as HTMLElement
+      const svg = chartContainer?.querySelector('svg') as SVGSVGElement | null
+
+      if (svg) {
+        const svgRect = svg.getBoundingClientRect()
+        const chartMetrics = calculateChartMetrics(svg, chartContainer)
+        const clickX = event.clientX - svgRect.left
+
+        date = calculateDateFromPosition(event.clientX, svgRect, xAxisData, chartMetrics)
+
+        // Check for exact date match first
+        existingAnnotation = annotations.find((a) => dayjs(a.date).format('YYYY-MM-DD') === date) || null
+
+        // If no exact match, try to find the closest annotation within threshold
+        if (!existingAnnotation && annotations.length > 0) {
+          const closestAnnotation = findClosestAnnotation(
+            clickX,
+            annotations,
+            xAxisData,
+            chartMetrics,
+            ANNOTATION_CLICK_THRESHOLD_PX,
+          )
+
+          if (closestAnnotation) {
+            existingAnnotation = closestAnnotation
+            date = dayjs(closestAnnotation.date).format('YYYY-MM-DD')
+          }
+        }
+      }
+    }
+
+    setContextMenu({
+      isOpen: true,
+      x: event.clientX,
+      y: event.clientY,
+      date,
+      annotation: existingAnnotation,
+    })
+  }
+
+  const closeContextMenu = () => {
+    setContextMenu((prev) => ({ ...prev, isOpen: false }))
   }
 
   const [panelsActiveTabs, setPanelsActiveTabs] = useState<{
@@ -2100,6 +2438,16 @@ const ViewProjectContent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, activeTab, customMetrics, filters, authLoading, project, isActiveCompare, dateRange, period, timeBucket])
 
+  // Load annotations when project loads
+  useEffect(() => {
+    if (authLoading || !project) {
+      return
+    }
+
+    loadAnnotations()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, project])
+
   useEffect(() => {
     if (activeTab !== PROJECT_TABS.traffic || authLoading || !project) {
       return
@@ -3374,14 +3722,20 @@ const ViewProjectContent = () => {
                         </div>
                         {activeError?.details ? <ErrorDetails details={activeError.details} /> : null}
                         {activeError?.chart ? (
-                          <ErrorChart
-                            chart={activeError?.chart}
-                            timeBucket={activeError?.timeBucket}
-                            timeFormat={timeFormat}
-                            rotateXAxis={rotateXAxis}
-                            chartType={chartType}
-                            dataNames={dataNames}
-                          />
+                          <div
+                            onContextMenu={(e) => handleChartContextMenu(e, activeError?.chart?.x)}
+                            className='relative'
+                          >
+                            <ErrorChart
+                              chart={activeError?.chart}
+                              timeBucket={activeError?.timeBucket}
+                              timeFormat={timeFormat}
+                              rotateXAxis={rotateXAxis}
+                              chartType={chartType}
+                              dataNames={dataNames}
+                              annotations={annotations}
+                            />
+                          </div>
                         ) : null}
                         <Filters tnMapping={tnMapping} />
                         <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
@@ -3695,21 +4049,24 @@ const ViewProjectContent = () => {
                             </div>
                           ) : null}
                           {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData) ? (
-                            <TrafficChart
-                              chartData={chartData}
-                              timeBucket={timeBucket}
-                              activeChartMetrics={activeChartMetrics}
-                              applyRegions={!_includes(noRegionPeriods, activePeriod?.period)}
-                              timeFormat={timeFormat}
-                              rotateXAxis={rotateXAxis}
-                              chartType={chartType}
-                              customEventsChartData={customEventsChartData}
-                              dataChartCompare={dataChartCompare}
-                              onZoom={onMainChartZoom}
-                              enableZoom={shouldEnableZoom}
-                              dataNames={dataNames}
-                              className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible'
-                            />
+                            <div onContextMenu={(e) => handleChartContextMenu(e, chartData.x)} className='relative'>
+                              <TrafficChart
+                                chartData={chartData}
+                                timeBucket={timeBucket}
+                                activeChartMetrics={activeChartMetrics}
+                                applyRegions={!_includes(noRegionPeriods, activePeriod?.period)}
+                                timeFormat={timeFormat}
+                                rotateXAxis={rotateXAxis}
+                                chartType={chartType}
+                                customEventsChartData={customEventsChartData}
+                                dataChartCompare={dataChartCompare}
+                                onZoom={onMainChartZoom}
+                                enableZoom={shouldEnableZoom}
+                                dataNames={dataNames}
+                                className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible'
+                                annotations={annotations}
+                              />
+                            </div>
                           ) : null}
                         </div>
                         {!isPanelsDataEmpty ? <Filters tnMapping={tnMapping} /> : null}
@@ -4098,19 +4455,25 @@ const ViewProjectContent = () => {
                             />
                           ) : null}
                           {!checkIfAllMetricsAreDisabled && !_isEmpty(chartDataPerf) ? (
-                            <PerformanceChart
-                              chart={chartDataPerf}
-                              timeBucket={timeBucket}
-                              activeChartMetrics={activeChartMetricsPerf}
-                              rotateXAxis={rotateXAxis}
-                              chartType={chartType}
-                              timeFormat={timeFormat}
-                              compareChart={dataChartPerfCompare}
-                              onZoom={onMainChartZoom}
-                              enableZoom={shouldEnableZoom}
-                              dataNames={dataNamesPerf}
-                              className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible'
-                            />
+                            <div
+                              onContextMenu={(e) => handleChartContextMenu(e, chartDataPerf?.x)}
+                              className='relative'
+                            >
+                              <PerformanceChart
+                                chart={chartDataPerf}
+                                timeBucket={timeBucket}
+                                activeChartMetrics={activeChartMetricsPerf}
+                                rotateXAxis={rotateXAxis}
+                                chartType={chartType}
+                                timeFormat={timeFormat}
+                                compareChart={dataChartPerfCompare}
+                                onZoom={onMainChartZoom}
+                                enableZoom={shouldEnableZoom}
+                                dataNames={dataNamesPerf}
+                                className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible'
+                                annotations={annotations}
+                              />
+                            </div>
                           ) : null}
                         </div>
                         {!isPanelsDataEmptyPerf ? <Filters tnMapping={tnMapping} /> : null}
@@ -4457,6 +4820,39 @@ const ViewProjectContent = () => {
               }}
               defaultView={projectViewToUpdate}
               tnMapping={tnMapping}
+            />
+            <AnnotationModal
+              isOpened={isAnnotationModalOpen}
+              onClose={closeAnnotationModal}
+              onSubmit={annotationToEdit ? onAnnotationUpdate : onAnnotationCreate}
+              onDelete={annotationToEdit ? onAnnotationDelete : undefined}
+              loading={annotationActionLoading}
+              annotation={annotationToEdit}
+              defaultDate={annotationModalDate}
+              allowedToManage={allowedToManage}
+            />
+            <ChartContextMenu
+              isOpen={contextMenu.isOpen}
+              x={contextMenu.x}
+              y={contextMenu.y}
+              onClose={closeContextMenu}
+              onAddAnnotation={() => {
+                openAnnotationModal(contextMenu.date || undefined)
+              }}
+              onEditAnnotation={
+                contextMenu.annotation
+                  ? () => openAnnotationModal(contextMenu.annotation?.date, contextMenu.annotation!)
+                  : undefined
+              }
+              onDeleteAnnotation={
+                contextMenu.annotation
+                  ? () => {
+                      onAnnotationDelete(contextMenu.annotation!)
+                    }
+                  : undefined
+              }
+              existingAnnotation={contextMenu.annotation}
+              allowedToManage={allowedToManage}
             />
             {!isEmbedded ? <Footer showDBIPMessage /> : null}
           </>

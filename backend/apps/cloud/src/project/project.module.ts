@@ -9,7 +9,13 @@ import { UserModule } from '../user/user.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { MailerModule } from '../mailer/mailer.module'
 import { AppLoggerModule } from '../logger/logger.module'
-import { Project, ProjectSubscriber, Funnel, ProjectShare } from './entity'
+import {
+  Project,
+  ProjectSubscriber,
+  Funnel,
+  ProjectShare,
+  Annotation,
+} from './entity'
 import { ProjectsViewsRepository } from './repositories/projects-views.repository'
 import { ProjectViewEntity } from './entity/project-view.entity'
 import { ProjectViewCustomEventEntity } from './entity/project-view-custom-event.entity'
@@ -23,6 +29,7 @@ import { ProjectExtraService } from './project-extra.service'
       ProjectShare,
       ProjectSubscriber,
       Funnel,
+      Annotation,
       ProjectViewEntity,
       ProjectViewCustomEventEntity,
     ]),

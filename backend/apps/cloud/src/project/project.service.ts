@@ -64,7 +64,7 @@ import {
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { IUsageInfoRedis } from '../user/interfaces'
-import { ProjectSubscriber, Funnel } from './entity'
+import { ProjectSubscriber, Funnel, Annotation } from './entity'
 import { AddSubscriberType } from './types'
 import {
   CreateProjectDTO,
@@ -73,6 +73,8 @@ import {
   UpdateSubscriberBodyDto,
   FunnelCreateDTO,
   FunnelUpdateDTO,
+  AnnotationCreateDTO,
+  AnnotationUpdateDTO,
 } from './dto'
 import { ReportFrequency } from './enums'
 import { nFormatter } from '../common/utils'
@@ -288,6 +290,8 @@ export class ProjectService {
     private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
     @InjectRepository(Funnel)
     private readonly funnelRepository: Repository<Funnel>,
+    @InjectRepository(Annotation)
+    private readonly annotationRepository: Repository<Annotation>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
     private readonly userService: UserService,
@@ -1247,6 +1251,43 @@ export class ProjectService {
 
   async deleteFunnel(id: string) {
     return this.funnelRepository.delete({ id })
+  }
+
+  async createAnnotation(projectId: string, data: AnnotationCreateDTO) {
+    const annotation = await this.annotationRepository.save({
+      date: data.date,
+      text: data.text,
+      project: { id: projectId },
+    })
+    return annotation
+  }
+
+  async getAnnotations(projectId: string) {
+    return this.annotationRepository.find({
+      where: { project: { id: projectId } },
+      order: { date: 'ASC' },
+    })
+  }
+
+  async getAnnotation(annotationId: string, projectId: string) {
+    return this.annotationRepository.findOne({
+      where: { id: annotationId, project: { id: projectId } },
+    })
+  }
+
+  async updateAnnotation(data: AnnotationUpdateDTO) {
+    const updateData: Partial<Annotation> = {}
+    if (data.date !== undefined) {
+      updateData.date = new Date(data.date)
+    }
+    if (data.text !== undefined) {
+      updateData.text = data.text
+    }
+    return this.annotationRepository.update({ id: data.id }, updateData)
+  }
+
+  async deleteAnnotation(id: string) {
+    return this.annotationRepository.delete({ id })
   }
 
   async updateSubscriber(

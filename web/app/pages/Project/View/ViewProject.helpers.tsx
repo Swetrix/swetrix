@@ -52,11 +52,14 @@ import {
   OS_LOGO_MAP_DARK,
 } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
-import { AnalyticsFunnel } from '~/lib/models/Project'
+import { AnalyticsFunnel, Annotation } from '~/lib/models/Project'
 import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
 import { TrafficLogResponse } from './interfaces/traffic'
+
+// Max length of annotation text displayed on chart (truncated with "...")
+const ANNOTATION_CHART_TEXT_MAX_LENGTH = 25
 
 const { saveAs } = filesaver
 
@@ -501,9 +504,21 @@ const getSettings = (
   compareChart?: TrafficLogResponse['chart'] & { [key: string]: number[] },
   onZoom?: (domain: [Date, Date] | null) => void,
   enableZoom?: boolean,
+  annotations?: Annotation[],
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
-  const lines: GridLineOptions[] = []
+
+  // Convert annotations to grid lines
+  // Each annotation gets a unique class identifier for DOM-based lookup
+  const lines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
+    value: dayjs(annotation.date).toDate(),
+    text:
+      annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
+        ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
+        : annotation.text,
+    class: `annotation-line annotation-id-${annotation.id}`,
+    position: 'start',
+  }))
   const modifiedChart = { ...chart }
   let regions
   const customEventsToArray = customEvents
@@ -1004,8 +1019,21 @@ const getSettingsError = (
   timeFormat: string,
   rotateXAxis: boolean,
   chartType: string,
+  annotations?: Annotation[],
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
+
+  // Convert annotations to grid lines
+  // Each annotation gets a unique class identifier for DOM-based lookup
+  const annotationLines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
+    value: dayjs(annotation.date).toDate(),
+    text:
+      annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
+        ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
+        : annotation.text,
+    class: `annotation-line annotation-id-${annotation.id}`,
+    position: 'start',
+  }))
 
   const columns = getColumns(chart, { occurrences: true })
 
@@ -1048,6 +1076,9 @@ const getSettingsError = (
       },
     },
     grid: {
+      x: {
+        lines: annotationLines,
+      },
       y: {
         show: true,
       },
@@ -1325,8 +1356,21 @@ const getSettingsPerf = (
   compareChart?: Record<string, string[]>,
   onZoom?: (domain: [Date, Date] | null) => void,
   enableZoom?: boolean,
+  annotations?: Annotation[],
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
+
+  // Convert annotations to grid lines
+  // Each annotation gets a unique class identifier for DOM-based lookup
+  const annotationLines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
+    value: dayjs(annotation.date).toDate(),
+    text:
+      annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
+        ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
+        : annotation.text,
+    class: `annotation-line annotation-id-${annotation.id}`,
+    position: 'start',
+  }))
 
   return {
     data: {
@@ -1406,6 +1450,9 @@ const getSettingsPerf = (
       ],
     },
     grid: {
+      x: {
+        lines: annotationLines,
+      },
       y: {
         show: true,
       },

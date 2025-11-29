@@ -60,6 +60,8 @@ import {
   FunnelCreateDTO,
   FunnelUpdateDTO,
   TransferProjectBodyDto,
+  AnnotationCreateDTO,
+  AnnotationUpdateDTO,
 } from './dto'
 import { AppLoggerService } from '../logger/logger.service'
 import { isValidPID } from '../common/constants'
@@ -90,6 +92,11 @@ import {
   deleteProjectShareClickhouse,
   deleteProjectSharesByProjectClickhouse,
   ClickhouseProjectShare,
+  getAnnotationsClickhouse,
+  getAnnotationClickhouse,
+  createAnnotationClickhouse,
+  updateAnnotationClickhouse,
+  deleteAnnotationClickhouse,
 } from '../common/utils'
 import { Funnel } from './entity/funnel.entity'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -644,6 +651,132 @@ export class ProjectController {
     return this.projectService.formatFunnelsFromClickhouse(
       await getFunnelsClickhouse(pid),
     )
+  }
+
+  @Post('/annotation')
+  @ApiResponse({ status: 201 })
+  @Auth(true)
+  async createAnnotation(
+    @Body() annotationDTO: AnnotationCreateDTO,
+    @CurrentUserId() userId: string,
+  ): Promise<any> {
+    this.logger.log({ annotationDTO, userId }, 'POST /project/annotation')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await this.projectService.getFullProject(annotationDTO.pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, userId)
+
+    const annotation = {
+      id: randomUUID(),
+      date: annotationDTO.date,
+      text: annotationDTO.text,
+      projectId: annotationDTO.pid,
+    }
+
+    await createAnnotationClickhouse(annotation)
+
+    return annotation
+  }
+
+  @Patch('/annotation')
+  @ApiResponse({ status: 200 })
+  @Auth(true)
+  async updateAnnotation(
+    @Body() annotationDTO: AnnotationUpdateDTO,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ annotationDTO, userId }, 'PATCH /project/annotation')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await this.projectService.getFullProject(annotationDTO.pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, userId)
+
+    const oldAnnotation = await getAnnotationClickhouse(
+      annotationDTO.pid,
+      annotationDTO.id,
+    )
+
+    if (!oldAnnotation) {
+      throw new NotFoundException('Annotation not found.')
+    }
+
+    await updateAnnotationClickhouse({
+      id: annotationDTO.id,
+      date: annotationDTO.date,
+      text: annotationDTO.text,
+    })
+  }
+
+  @Delete('/annotation/:id/:pid')
+  @ApiResponse({ status: 200 })
+  @Auth(true)
+  async deleteAnnotation(
+    @Param('id') id: string,
+    @Param('pid') pid: string,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ id, userId }, 'DELETE /project/annotation')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, userId)
+
+    const oldAnnotation = await getAnnotationClickhouse(pid, id)
+
+    if (!oldAnnotation) {
+      throw new NotFoundException('Annotation not found.')
+    }
+
+    await deleteAnnotationClickhouse(id)
+  }
+
+  @Get('/annotations/:pid')
+  @ApiResponse({ status: 200 })
+  @Auth(true)
+  async getAnnotations(
+    @Param('pid') pid: string,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    this.logger.log({ pid, userId }, 'GET /project/annotations')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToView(project, userId, headers['x-password'])
+
+    return getAnnotationsClickhouse(pid)
   }
 
   @Get('password/:projectId')

@@ -44,6 +44,9 @@
     "funnelCreated": "The funnel has been created",
     "funnelUpdated": "The funnel has been updated",
     "funnelDeleted": "The funnel has been deleted",
+    "annotationCreated": "The annotation has been created",
+    "annotationUpdated": "The annotation has been updated",
+    "annotationDeleted": "The annotation has been deleted",
     "errorCode": "Error code: {{error}}",
     "updateErrorStatusFailed": "Error occured while updating error status",
     "errorStatusUpdated": "Error status has been updated",
@@ -908,6 +911,10 @@
     "support": "Contact support"
   },
   "project": {
+    "addAnnotation": "Add annotation",
+    "editAnnotation": "Edit annotation",
+    "deleteAnnotation": "Delete annotation",
+    "annotationsViewOnly": "Only project managers can add annotations",
     "impressions": "Impressions",
     "position": "Position",
     "ctr": "CTR",
@@ -1153,8 +1160,20 @@
         "shields": "Shields",
         "emails": "Emails",
         "people": "People",
+        "annotations": "Annotations",
         "danger": "Danger zone",
         "integrations": "Integrations"
+      },
+      "annotations": {
+        "title": "Annotations",
+        "description": "Mark important events on your charts to remember why traffic patterns changed.",
+        "add": "Add annotation",
+        "addFirst": "Add your first annotation",
+        "empty": "No annotations yet. Add annotations to mark important events on your charts.",
+        "date": "Date",
+        "text": "Note",
+        "deleteTitle": "Delete annotation",
+        "deleteConfirm": "Are you sure you want to delete this annotation? This action cannot be undone."
       },
       "botsProtectionLevel": {
         "title": "Bots protection level",
@@ -1330,6 +1349,13 @@
       "name": "Funnel name",
       "steps": "Funnel steps",
       "addStep": "Add one more step"
+    },
+    "annotation": {
+      "addTitle": "Add annotation",
+      "editTitle": "Edit annotation",
+      "date": "Date",
+      "text": "Annotation",
+      "warning": "Caution: Don't include sensitive information. All users with access to this property can see annotation content."
     },
     "shortcuts": {
       "title": "Keyboard shortcuts",

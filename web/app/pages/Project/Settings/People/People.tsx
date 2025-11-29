@@ -63,16 +63,14 @@ const TableUserRow = ({ data, onRemove, language, authedUserEmail, reloadProject
   }
 
   return (
-    <tr className='dark:bg-slate-800'>
-      <td className='py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white'>
-        {user?.email || 'N/A'}
-      </td>
-      <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white'>
+    <tr className='bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/50'>
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>{user?.email || 'N/A'}</td>
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         {language === 'en'
           ? dayjs(created).locale(language).format('MMMM D, YYYY')
           : dayjs(created).locale(language).format('D MMMM, YYYY')}
       </td>
-      <td className='relative py-4 pr-2 text-right text-sm font-medium whitespace-nowrap'>
+      <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
         {confirmed ? (
           <div>
             <button
@@ -285,47 +283,41 @@ const People = ({ project, reloadProject }: PeopleProps) => {
         {_isEmpty(share) ? (
           <NoPeople />
         ) : (
-          <div className='mt-3 flex flex-col'>
-            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
-              <div className='inline-block min-w-full py-2 md:px-6 lg:px-8'>
-                <div className='ring-1 ring-black/10 md:rounded-lg'>
-                  <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
-                    <thead>
-                      <tr className='dark:bg-slate-800'>
-                        <th
-                          scope='col'
-                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
-                        >
-                          {t('auth.common.email')}
-                        </th>
-                        <th
-                          scope='col'
-                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
-                        >
-                          {t('profileSettings.sharedTable.joinedOn')}
-                        </th>
-                        <th scope='col' />
-                      </tr>
-                    </thead>
-                    <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                      {_map(share, (data) => (
-                        <TableUserRow
-                          data={data}
-                          key={data.id}
-                          onRemove={() => {
-                            setMemberToRemove(data)
-                            setShowDeleteModal(true)
-                          }}
-                          language={language}
-                          authedUserEmail={currentUser?.email}
-                          reloadProject={reloadProject}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+          <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
+            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
+              <thead className='bg-gray-50 dark:bg-slate-800'>
+                <tr>
+                  <th
+                    scope='col'
+                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                  >
+                    {t('auth.common.email')}
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                  >
+                    {t('profileSettings.sharedTable.joinedOn')}
+                  </th>
+                  <th scope='col' />
+                </tr>
+              </thead>
+              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+                {_map(share, (data) => (
+                  <TableUserRow
+                    data={data}
+                    key={data.id}
+                    onRemove={() => {
+                      setMemberToRemove(data)
+                      setShowDeleteModal(true)
+                    }}
+                    language={language}
+                    authedUserEmail={currentUser?.email}
+                    reloadProject={reloadProject}
+                  />
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

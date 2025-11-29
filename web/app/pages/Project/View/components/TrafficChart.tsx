@@ -1,6 +1,8 @@
 import { ChartOptions } from 'billboard.js'
 import React, { useMemo } from 'react'
 
+import { Annotation } from '~/lib/models/Project'
+
 import { getSettings } from '../ViewProject.helpers'
 
 import { MainChart } from './MainChart'
@@ -19,6 +21,7 @@ interface TrafficChartProps {
   enableZoom?: boolean
   dataNames: Record<string, string>
   className?: string
+  annotations?: Annotation[]
 }
 
 export const TrafficChart = ({
@@ -35,6 +38,7 @@ export const TrafficChart = ({
   enableZoom,
   dataNames,
   className,
+  annotations,
 }: TrafficChartProps) => {
   const options: ChartOptions = useMemo(() => {
     return getSettings(
@@ -49,6 +53,7 @@ export const TrafficChart = ({
       dataChartCompare,
       onZoom,
       enableZoom,
+      annotations,
     )
   }, [
     chartData,
@@ -62,6 +67,7 @@ export const TrafficChart = ({
     dataChartCompare,
     onZoom,
     enableZoom,
+    annotations,
   ])
 
   const deps = useMemo(
@@ -77,6 +83,7 @@ export const TrafficChart = ({
       dataChartCompare,
       onZoom,
       enableZoom,
+      annotations,
     ],
     [
       chartData,
@@ -90,6 +97,7 @@ export const TrafficChart = ({
       dataChartCompare,
       onZoom,
       enableZoom,
+      annotations,
     ],
   )
 

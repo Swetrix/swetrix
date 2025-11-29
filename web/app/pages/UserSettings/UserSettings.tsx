@@ -386,43 +386,37 @@ const UserSettings = () => {
       </h3>
       <div>
         {!_isEmpty(user?.sharedProjects) ? (
-          <div className='mt-3 flex flex-col'>
-            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
-              <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                <div className='overflow-hidden ring-1 ring-black/10 md:rounded-lg'>
-                  <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
-                    <thead>
-                      <tr className='dark:bg-slate-800'>
-                        <th
-                          scope='col'
-                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
-                        >
-                          {t('profileSettings.sharedTable.project')}
-                        </th>
-                        <th
-                          scope='col'
-                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
-                        >
-                          {t('profileSettings.sharedTable.role')}
-                        </th>
-                        <th
-                          scope='col'
-                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
-                        >
-                          {t('profileSettings.sharedTable.joinedOn')}
-                        </th>
-                        <th scope='col' className='relative py-3.5 pr-4 pl-3 sm:pr-6' />
-                      </tr>
-                    </thead>
-                    <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                      {_map(user?.sharedProjects, (item) => (
-                        <ProjectList key={item.id} item={item} />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+          <div className='mt-3 overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
+            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
+              <thead className='bg-gray-50 dark:bg-slate-800'>
+                <tr>
+                  <th
+                    scope='col'
+                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                  >
+                    {t('profileSettings.sharedTable.project')}
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                  >
+                    {t('profileSettings.sharedTable.role')}
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                  >
+                    {t('profileSettings.sharedTable.joinedOn')}
+                  </th>
+                  <th scope='col' />
+                </tr>
+              </thead>
+              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+                {_map(user?.sharedProjects, (item) => (
+                  <ProjectList key={item.id} item={item} />
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : (
           <NoSharedProjects />
@@ -619,43 +613,37 @@ const UserSettings = () => {
                           </h3>
                           <div>
                             {!_isEmpty(user?.organisationMemberships) ? (
-                              <div className='mt-3 flex flex-col'>
-                                <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
-                                  <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                                    <div className='overflow-hidden ring-1 ring-black/10 md:rounded-lg'>
-                                      <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
-                                        <thead>
-                                          <tr className='dark:bg-slate-800'>
-                                            <th
-                                              scope='col'
-                                              className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
-                                            >
-                                              {t('profileSettings.organisationsTable.organisation')}
-                                            </th>
-                                            <th
-                                              scope='col'
-                                              className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
-                                            >
-                                              {t('profileSettings.organisationsTable.role')}
-                                            </th>
-                                            <th
-                                              scope='col'
-                                              className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
-                                            >
-                                              {t('profileSettings.organisationsTable.joinedOn')}
-                                            </th>
-                                            <th scope='col' className='relative py-3.5 pr-4 pl-3 sm:pr-6' />
-                                          </tr>
-                                        </thead>
-                                        <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                                          {_map(user?.organisationMemberships, (membership) => (
-                                            <Organisations key={membership.id} membership={membership} />
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                </div>
+                              <div className='mt-3 overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
+                                <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
+                                  <thead className='bg-gray-50 dark:bg-slate-800'>
+                                    <tr>
+                                      <th
+                                        scope='col'
+                                        className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                      >
+                                        {t('profileSettings.organisationsTable.organisation')}
+                                      </th>
+                                      <th
+                                        scope='col'
+                                        className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                      >
+                                        {t('profileSettings.organisationsTable.role')}
+                                      </th>
+                                      <th
+                                        scope='col'
+                                        className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                      >
+                                        {t('profileSettings.organisationsTable.joinedOn')}
+                                      </th>
+                                      <th scope='col' />
+                                    </tr>
+                                  </thead>
+                                  <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+                                    {_map(user?.organisationMemberships, (membership) => (
+                                      <Organisations key={membership.id} membership={membership} />
+                                    ))}
+                                  </tbody>
+                                </table>
                               </div>
                             ) : (
                               <NoOrganisations />

@@ -102,6 +102,8 @@ import {
   ShareUpdateDTO,
   FunnelCreateDTO,
   FunnelUpdateDTO,
+  AnnotationCreateDTO,
+  AnnotationUpdateDTO,
 } from './dto'
 import { ProjectsViewsRepository } from './repositories/projects-views.repository'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -580,6 +582,146 @@ export class ProjectController {
     this.projectService.allowedToView(project, userId, headers['x-password'])
 
     return this.projectService.getFunnels(project.id)
+  }
+
+  @Post('/annotation')
+  @ApiResponse({ status: 201 })
+  @Auth(true)
+  async createAnnotation(
+    @Body() annotationDTO: AnnotationCreateDTO,
+    @CurrentUserId() userId: string,
+  ): Promise<any> {
+    this.logger.log({ annotationDTO, userId }, 'POST /project/annotation')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const user = await this.userService.findOne({
+      where: { id: userId },
+      relations: ['projects'],
+    })
+
+    if (!user.isActive) {
+      throw new ForbiddenException('Please, verify your email address first')
+    }
+
+    const project = await this.projectService.getFullProject(
+      annotationDTO.pid,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId)
+
+    return this.projectService.createAnnotation(project.id, annotationDTO)
+  }
+
+  @Patch('/annotation')
+  @ApiResponse({ status: 200 })
+  @Auth(true)
+  async updateAnnotation(
+    @Body() annotationDTO: AnnotationUpdateDTO,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ annotationDTO, userId }, 'PATCH /project/annotation')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const user = await this.userService.findOne({
+      where: { id: userId },
+      relations: ['projects'],
+    })
+
+    if (!user.isActive) {
+      throw new ForbiddenException('Please, verify your email address first')
+    }
+
+    const project = await this.projectService.getFullProject(
+      annotationDTO.pid,
+      userId,
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId)
+
+    const oldAnnotation = await this.projectService.getAnnotation(
+      annotationDTO.id,
+      project.id,
+    )
+
+    if (!oldAnnotation) {
+      throw new NotFoundException('Annotation not found.')
+    }
+
+    await this.projectService.updateAnnotation(annotationDTO)
+  }
+
+  @Delete('/annotation/:id/:pid')
+  @ApiResponse({ status: 200 })
+  @Auth(true)
+  async deleteAnnotation(
+    @Param('id') id: string,
+    @Param('pid') pid: string,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ id, userId }, 'DELETE /project/annotation')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await this.projectService.getFullProject(pid, userId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToManage(project, userId)
+
+    const oldAnnotation = await this.projectService.getAnnotation(
+      id,
+      project.id,
+    )
+
+    if (!oldAnnotation) {
+      throw new NotFoundException('Annotation not found.')
+    }
+
+    await this.projectService.deleteAnnotation(id)
+  }
+
+  @Get('/annotations/:pid')
+  @ApiResponse({ status: 200 })
+  @Auth(true)
+  async getAnnotations(
+    @Param('pid') pid: string,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    this.logger.log({ pid, userId }, 'GET /project/annotations')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await this.projectService.getFullProject(pid, userId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToView(project, userId, headers['x-password'])
+
+    return this.projectService.getAnnotations(project.id)
   }
 
   @ApiBearerAuth()

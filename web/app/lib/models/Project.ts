@@ -58,6 +58,13 @@ export interface Funnel {
   created: string
 }
 
+export interface Annotation {
+  id: string
+  date: string
+  text: string
+  created: string
+}
+
 export interface SwetrixError {
   eid: string
   name: string

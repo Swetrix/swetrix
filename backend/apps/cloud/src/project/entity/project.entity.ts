@@ -14,6 +14,7 @@ import { ProjectShare } from './project-share.entity'
 import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'
 import { ProjectSubscriber } from './project-subscriber.entity'
 import { Funnel } from './funnel.entity'
+import { Annotation } from './annotation.entity'
 import { CAPTCHA_SECRET_KEY_LENGTH } from '../../common/constants'
 import { ProjectViewEntity } from './project-view.entity'
 import { Organisation } from '../../organisation/entity/organisation.entity'
@@ -115,6 +116,10 @@ export class Project {
   @ApiProperty({ type: () => Funnel })
   @OneToMany(() => Funnel, funnel => funnel.project)
   funnels: Funnel[]
+
+  @ApiProperty({ type: () => Annotation })
+  @OneToMany(() => Annotation, annotation => annotation.project)
+  annotations: Annotation[]
 
   @Column('varchar', {
     default: null,

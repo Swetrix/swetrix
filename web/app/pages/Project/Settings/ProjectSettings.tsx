@@ -20,6 +20,7 @@ import {
   TriangleAlertIcon,
   ChevronLeftIcon,
   PuzzleIcon,
+  StickyNoteIcon,
 } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -64,6 +65,7 @@ import routes from '~/utils/routes'
 import CCRow from '../View/components/CCRow'
 import { getFormatDate } from '../View/ViewProject.helpers'
 
+import Annotations from './Annotations'
 import Emails from './Emails'
 import People from './People'
 import AccessSettings from './tabs/AccessSettings'
@@ -313,7 +315,7 @@ const ProjectSettings = () => {
   const [error, setError] = useState<string | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
-  type SettingsTab = 'general' | 'shields' | 'access' | 'integrations' | 'emails' | 'people' | 'danger'
+  type SettingsTab = 'general' | 'shields' | 'access' | 'integrations' | 'emails' | 'people' | 'annotations' | 'danger'
 
   const tabs = useMemo(
     () =>
@@ -329,6 +331,7 @@ const ProjectSettings = () => {
         },
         { id: 'emails', label: t('project.settings.tabs.emails'), icon: MailIcon, visible: !isSelfhosted },
         { id: 'people', label: t('project.settings.tabs.people'), icon: UserRoundIcon, visible: true },
+        { id: 'annotations', label: t('project.settings.tabs.annotations'), icon: StickyNoteIcon, visible: true },
         {
           id: 'danger',
           label: t('project.settings.tabs.danger'),
@@ -813,6 +816,9 @@ const ProjectSettings = () => {
 
             {activeTab === 'emails' && !isSelfhosted ? <Emails projectId={id} /> : null}
             {activeTab === 'people' ? <People project={project} reloadProject={reloadProject} /> : null}
+            {activeTab === 'annotations' ? (
+              <Annotations projectId={id} allowedToManage={project?.role === 'owner' || project?.role === 'admin'} />
+            ) : null}
 
             {activeTab === 'integrations' ? (
               <div>
