@@ -7,6 +7,7 @@ import Datepicker from '~/ui/Datepicker'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
 import Textarea from '~/ui/Textarea'
+import { cn } from '~/utils/generic'
 
 const MAX_ANNOTATION_LENGTH = 120
 
@@ -130,7 +131,12 @@ const AnnotationModal = ({
                 }
               }}
               options={{
-                altInputClass: `w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-100 ${!allowedToManage ? 'cursor-not-allowed opacity-50' : ''}`,
+                altInputClass: cn(
+                  'w-full rounded-md border-0 ring-1 ring-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:ring-indigo-500 dark:ring-slate-800/50 dark:bg-slate-800 dark:text-gray-100',
+                  {
+                    'cursor-not-allowed opacity-50': !allowedToManage,
+                  },
+                ),
               }}
             />
           </div>
