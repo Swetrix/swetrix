@@ -1027,7 +1027,7 @@ const updateAnnotationClickhouse = async (annotation: {
 }
 
 const deleteAnnotationClickhouse = async (id: string) => {
-  const query = `ALTER TABLE annotation DELETE WHERE id = {id:String}`
+  const query = `ALTER TABLE annotation DELETE WHERE id = {id:FixedString(36)}`
 
   await clickhouse.command({
     query,
