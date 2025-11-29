@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Annotation } from '~/lib/models/Project'
 import Datepicker from '~/ui/Datepicker'
+import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
 import Textarea from '~/ui/Textarea'
 
@@ -75,20 +76,39 @@ const AnnotationModal = ({
     <Modal
       isLoading={loading}
       onClose={_onClose}
-      onSubmit={_onSubmit}
-      submitText={isEditMode ? t('common.save') : t('common.add')}
-      closeText={t('common.cancel')}
       customButtons={
-        isEditMode && onDelete && allowedToManage ? (
-          <button
-            type='button'
-            onClick={_onDelete}
-            disabled={loading}
-            className='mt-3 inline-flex w-full justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-base font-medium text-red-700 transition-colors hover:bg-red-50 sm:mt-0 sm:w-auto sm:text-sm dark:border-red-600 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-900/20'
-          >
-            {t('common.delete')}
-          </button>
-        ) : null
+        <div className='flex w-full flex-col-reverse gap-2 sm:flex-row sm:justify-between'>
+          {isEditMode && onDelete && allowedToManage ? (
+            <button
+              type='button'
+              onClick={_onDelete}
+              disabled={loading}
+              className='inline-flex w-full justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-base font-medium text-red-700 transition-colors hover:bg-red-50 sm:w-auto sm:text-sm dark:border-red-600 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-900/20'
+            >
+              {t('common.delete')}
+            </button>
+          ) : (
+            <div />
+          )}
+          <div className='flex flex-col-reverse gap-2 sm:flex-row'>
+            <button
+              type='button'
+              onClick={_onClose}
+              className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto sm:text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-700'
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              type='button'
+              onClick={_onSubmit}
+              disabled={!date || !text.trim() || !allowedToManage || loading}
+              className='inline-flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-base font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto sm:text-sm'
+            >
+              {loading ? <Spin alwaysLight /> : null}
+              {t('common.save')}
+            </button>
+          </div>
+        </div>
       }
       message={
         <div className='space-y-4'>
@@ -139,7 +159,6 @@ const AnnotationModal = ({
       }
       title={isEditMode ? t('modals.annotation.editTitle') : t('modals.annotation.addTitle')}
       isOpened={isOpened}
-      submitDisabled={!date || !text.trim() || !allowedToManage}
       overflowVisible
     />
   )
