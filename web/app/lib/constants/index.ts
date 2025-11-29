@@ -349,11 +349,6 @@ export const ERROR_TRACKING_DOCS_URL = 'https://docs.swetrix.com/error-tracking'
 export const CAPTCHA_URL = 'https://captcha.swetrix.com'
 export const DOCS_REFERRAL_PROGRAM_URL = `${DOCS_URL}/affiliate/about`
 
-// Swetrix vs ...
-export const SWETRIX_VS_GOOGLE = 'https://swetrix.com/blog/vs-google-analytics/'
-export const SWETRIX_VS_CLOUDFLARE = 'https://swetrix.com/blog/vs-cloudflare-analytics/'
-export const SWETRIX_VS_SIMPLE_ANALYTICS = 'https://swetrix.com/blog/vs-simple-analytics/'
-
 // Referral program
 export const REFERRAL_COOKIE = 'affiliate'
 export const REFERRAL_COOKIE_DAYS = 30

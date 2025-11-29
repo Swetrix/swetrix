@@ -59,7 +59,7 @@ import countries from '~/utils/isoCountries'
 import { TrafficLogResponse } from './interfaces/traffic'
 
 // Max length of annotation text displayed on chart (truncated with "...")
-export const ANNOTATION_CHART_TEXT_MAX_LENGTH = 25
+const ANNOTATION_CHART_TEXT_MAX_LENGTH = 25
 
 const { saveAs } = filesaver
 
