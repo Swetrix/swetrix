@@ -59,7 +59,12 @@ const productionNavigation = {
     { name: 'X (Twitter)', href: TWITTER_URL },
     { name: 'LinkedIn', href: LINKEDIN_URL },
   ],
-  comparisons: [{ name: 'Plausible', href: '/comparison/plausible' }],
+  comparisons: [
+    { name: 'Plausible', href: '/comparison/plausible' },
+    { name: 'Cloudflare Analytics', href: '/comparison/cloudflare-analytics' },
+    { name: 'Fathom Analytics', href: '/comparison/fathom-analytics' },
+    { name: 'Simple Analytics', href: '/comparison/simple-analytics' },
+  ],
   legal: [
     { key: 'privacy', href: routesPath.privacy, internal: true },
     { key: 'terms', href: routesPath.terms, internal: true },
