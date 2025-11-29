@@ -199,16 +199,16 @@ body.dark .bb-ygrid {
 }
 
 .bb-xgrid-line.annotation-line line {
-  stroke: var(--color-purple-500);
-  stroke-width: 2;
-  stroke-dasharray: 4 2;
+  stroke: var(--color-slate-500);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
   pointer-events: stroke;
 }
 
 .bb-xgrid-line.annotation-line text {
   font-size: 10px;
   font-weight: 600;
-  fill: var(--color-purple-700);
+  fill: var(--color-gray-700);
   dominant-baseline: middle;
   text-anchor: start;
   paint-order: stroke fill;
@@ -219,11 +219,7 @@ body.dark .bb-ygrid {
   pointer-events: all;
 }
 
-body.dark .bb-xgrid-line.annotation-line line {
-  stroke: var(--color-purple-400);
-}
-
 body.dark .bb-xgrid-line.annotation-line text {
-  fill: var(--color-purple-300);
+  fill: var(--color-gray-300);
   stroke: var(--color-slate-900);
 }

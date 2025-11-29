@@ -508,7 +508,7 @@ const getSettings = (
   // Convert annotations to grid lines
   const lines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
     value: dayjs(annotation.date).toDate(),
-    text: annotation.text.length > 20 ? `${annotation.text.substring(0, 20)}...` : annotation.text,
+    text: annotation.text.length > 25 ? `${annotation.text.substring(0, 25)}...` : annotation.text,
     class: 'annotation-line',
     position: 'start',
   }))
@@ -1019,7 +1019,7 @@ const getSettingsError = (
   // Convert annotations to grid lines
   const annotationLines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
     value: dayjs(annotation.date).toDate(),
-    text: annotation.text.length > 20 ? `${annotation.text.substring(0, 20)}...` : annotation.text,
+    text: annotation.text.length > 25 ? `${annotation.text.substring(0, 25)}...` : annotation.text,
     class: 'annotation-line',
     position: 'start',
   }))
@@ -1352,7 +1352,7 @@ const getSettingsPerf = (
   // Convert annotations to grid lines
   const annotationLines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
     value: dayjs(annotation.date).toDate(),
-    text: annotation.text.length > 20 ? `${annotation.text.substring(0, 20)}...` : annotation.text,
+    text: annotation.text.length > 25 ? `${annotation.text.substring(0, 25)}...` : annotation.text,
     class: 'annotation-line',
     position: 'start',
   }))
