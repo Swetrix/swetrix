@@ -168,16 +168,14 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
   }
 
   return (
-    <tr className='dark:bg-slate-800'>
-      <td className='py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white'>
-        {email}
-      </td>
-      <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white'>
+    <tr className='bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/50'>
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>{email}</td>
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         {language === 'en'
           ? dayjs(addedAt).locale(language).format('MMMM D, YYYY')
           : dayjs(addedAt).locale(language).format('D MMMM, YYYY')}
       </td>
-      <td className='relative py-4 pr-2 text-right text-sm font-medium whitespace-nowrap'>
+      <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
         {isConfirmed ? (
           <div>
             <button
@@ -403,50 +401,48 @@ const Emails = ({ projectId }: { projectId: string }) => {
         </Button>
       </div>
       <div>
-        <div className='mt-3 flex flex-col'>
-          <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
-            <div className='inline-block min-w-full py-2 md:px-6 lg:px-8'>
-              {!loading && !_isEmpty(emails) ? (
-                <div className='ring-1 ring-black/10 md:rounded-lg'>
-                  <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
-                    <thead>
-                      <tr className='dark:bg-slate-800'>
-                        <th
-                          scope='col'
-                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
-                        >
-                          {t('auth.common.email')}
-                        </th>
-                        <th
-                          scope='col'
-                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
-                        >
-                          {t('auth.common.addedOn')}
-                        </th>
-                        <th scope='col' />
-                      </tr>
-                    </thead>
-                    <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                      {_map(emails, (email) => (
-                        <EmailList
-                          data={email}
-                          key={email.id}
-                          onRemove={() => {
-                            setEmailToRemove(email)
-                            setShowDeleteModal(true)
-                          }}
-                          setEmails={setEmails}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : null}
-              {_isEmpty(emails) ? <NoSubscribers /> : null}
-              {loading ? <Loader /> : null}
-            </div>
+        {loading ? (
+          <div className='flex justify-center py-8'>
+            <Loader />
           </div>
-        </div>
+        ) : _isEmpty(emails) ? (
+          <NoSubscribers />
+        ) : (
+          <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
+            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
+              <thead className='bg-gray-50 dark:bg-slate-800'>
+                <tr>
+                  <th
+                    scope='col'
+                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                  >
+                    {t('auth.common.email')}
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                  >
+                    {t('auth.common.addedOn')}
+                  </th>
+                  <th scope='col' />
+                </tr>
+              </thead>
+              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+                {_map(emails, (email) => (
+                  <EmailList
+                    data={email}
+                    key={email.id}
+                    onRemove={() => {
+                      setEmailToRemove(email)
+                      setShowDeleteModal(true)
+                    }}
+                    setEmails={setEmails}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
       <Modal
         onClose={closeModal}

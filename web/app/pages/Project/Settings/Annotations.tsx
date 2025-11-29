@@ -182,13 +182,13 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
                 <tr>
                   <th
                     scope='col'
-                    className='px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400'
+                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
                   >
                     {t('project.settings.annotations.date')}
                   </th>
                   <th
                     scope='col'
-                    className='px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400'
+                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
                   >
                     {t('project.settings.annotations.text')}
                   </th>

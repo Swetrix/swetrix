@@ -65,20 +65,18 @@ const Organisations = ({ membership }: OrganisationsProps) => {
   }
 
   return (
-    <tr className='dark:bg-slate-800'>
-      <td className='py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white'>
-        {organisation.name}
-      </td>
-      <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white'>
+    <tr className='bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/50'>
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>{organisation.name}</td>
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         {t(`organisations.role.${role}.name`)}
       </td>
-      <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white'>
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         {language === 'en'
           ? dayjs(created).locale(language).format('MMMM D, YYYY')
           : dayjs(created).locale(language).format('D MMMM, YYYY')}
       </td>
       <td
-        className={cx('relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6', {
+        className={cx('px-4 py-3 text-right text-sm whitespace-nowrap', {
           hidden: role === 'owner',
         })}
       >
