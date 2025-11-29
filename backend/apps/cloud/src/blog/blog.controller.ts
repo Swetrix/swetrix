@@ -33,7 +33,7 @@ export class BlogController {
 
   @Get('/:category/:slug')
   @ApiResponse({ status: 200 })
-  async getCategoryAlug(
+  async getCategorySlug(
     @Param('category') category: string,
     @Param('slug') slug: string,
   ): Promise<any> {

@@ -36,20 +36,27 @@ export const sitemap: SitemapFunction = async () => {
     let date: string
 
     if (_isString(file)) {
-      // Standalone post - just the filename
+      // Standalone post in root - just the filename (e.g., "2025-05-31-data-policy")
       handle = getSlugFromFilename(file)
       date = getDateFromFilename(file)
     } else {
-      // Array format: ["blog", ...] or ["blog", "category", ...]
       const _file = _last(file) as string
+      const firstElement = file[0]
 
-      if (file.length === 2) {
-        // ["blog", "filename"] - blog post in root
-        handle = `blog/${getSlugFromFilename(_file)}`
+      if (firstElement === 'blog') {
+        // Blog posts: ["blog", "filename"] or ["blog", "category", "filename"]
+        if (file.length === 2) {
+          // ["blog", "filename"] - blog post in root
+          handle = `blog/${getSlugFromFilename(_file)}`
+        } else {
+          // ["blog", "category", "filename"] - blog post in subdirectory
+          const category = file[1]
+          handle = `blog/${category}/${getSlugFromFilename(_file)}`
+        }
       } else {
-        // ["blog", "category", "filename"] - blog post in subdirectory
-        const category = file[1]
-        handle = `blog/${category}/${getSlugFromFilename(_file)}`
+        // Standalone post in category folder: ["category", "filename"]
+        // e.g., ["comparison", "2025-11-26-plausible"] -> /comparison/plausible
+        handle = `${firstElement}/${getSlugFromFilename(_file)}`
       }
 
       date = getDateFromFilename(_file)
