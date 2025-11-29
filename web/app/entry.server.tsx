@@ -67,6 +67,8 @@ export default async function handleRequest(
           const stream = createReadableStreamFromReadable(body)
 
           responseHeaders.set('Content-Type', 'text/html')
+          // Prevent HTML from being cached so users always get fresh chunk references after deployments
+          responseHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate')
 
           resolve(
             new Response(stream, {
