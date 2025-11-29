@@ -48,6 +48,8 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
       // Sort by date descending (newest first)
       const sorted = result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       setAnnotations(sorted)
+      const totalPages = Math.max(1, Math.ceil(sorted.length / ANNOTATIONS_PER_PAGE))
+      setPage((prev) => Math.min(prev, totalPages))
     } catch (reason: any) {
       console.error('[ERROR] Failed to load annotations:', reason)
       toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
