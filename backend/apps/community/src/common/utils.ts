@@ -30,7 +30,7 @@ import { clickhouse } from './integrations/clickhouse'
 import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { ProjectViewEntity } from '../project/entity/project-view.entity'
 
-import { ClickhouseFunnel } from './types'
+import { ClickhouseFunnel, ClickhouseAnnotation } from './types'
 
 dayjs.extend(utc)
 
@@ -224,14 +224,23 @@ const updateFunnelClickhouse = async (funnel: any) => {
     {},
   )
   const columns = _keys(filtered)
-  const values = _values(filtered)
-  const query = `ALTER table funnel UPDATE ${_join(
-    _map(columns, (col, id) => `${col}='${values[id]}'`),
-    ', ',
-  )} WHERE id='${funnel.id}'`
+
+  if (_isEmpty(columns)) {
+    return
+  }
+
+  const params: Record<string, string> = { id: funnel.id }
+
+  const assignments = _map(columns, col => {
+    params[col] = filtered[col]
+    return `${col}={${col}:String}`
+  }).join(', ')
+
+  const query = `ALTER TABLE funnel UPDATE ${assignments} WHERE id={id:String}`
 
   await clickhouse.command({
     query,
+    query_params: params,
   })
 }
 
@@ -360,14 +369,20 @@ const updateProjectClickhouse = async (
     return
   }
 
-  const values = _values(filtered)
-  const query = `ALTER table project UPDATE ${_join(
-    _map(columns, (col, id) => `${col}='${values[id]}'`),
-    ', ',
-  )} WHERE id='${project.id}'`
+  const INT8_COLUMNS = ['active', 'public', 'isPasswordProtected']
+  const params: Record<string, any> = { id: project.id }
+
+  const assignments = _map(columns, col => {
+    params[col] = filtered[col]
+    const type = INT8_COLUMNS.includes(col) ? 'Int8' : 'String'
+    return `${col}={${col}:${type}}`
+  }).join(', ')
+
+  const query = `ALTER TABLE project UPDATE ${assignments} WHERE id={id:FixedString(12)}`
 
   await clickhouse.command({
     query,
+    query_params: params,
   })
 }
 
@@ -899,6 +914,126 @@ const updateProjectViewClickhouse = async (viewId: string, view: any) => {
 
 const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
 
+// Annotation functions
+const ALLOWED_ANNOTATION_KEYS = ['date', 'text']
+
+const getAnnotationsClickhouse = async (
+  projectId: string,
+): Promise<ClickhouseAnnotation[]> => {
+  const queryParams = {
+    projectId,
+  }
+
+  const query =
+    'SELECT * FROM annotation WHERE projectId = {projectId:FixedString(12)} ORDER BY date ASC'
+
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: queryParams,
+    })
+    .then(resultSet => resultSet.json<ClickhouseAnnotation>())
+
+  return data
+}
+
+const getAnnotationClickhouse = async (
+  projectId: string,
+  annotationId: string,
+): Promise<ClickhouseAnnotation | null> => {
+  const queryParams = {
+    projectId,
+    annotationId,
+  }
+
+  const query = `
+    SELECT
+      *
+    FROM annotation
+    WHERE
+      projectId = {projectId:FixedString(12)}
+      AND id = {annotationId:String}`
+
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: queryParams,
+    })
+    .then(resultSet => resultSet.json<ClickhouseAnnotation>())
+
+  if (_isEmpty(data)) {
+    return null
+  }
+
+  return _head(data)
+}
+
+const createAnnotationClickhouse = async (
+  annotation: Partial<ClickhouseAnnotation>,
+) => {
+  const { id, date, text, projectId } = annotation
+
+  await clickhouse.insert({
+    table: 'annotation',
+    format: 'JSONEachRow',
+    values: [
+      {
+        id,
+        date,
+        text,
+        projectId,
+        created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+      },
+    ],
+  })
+}
+
+const updateAnnotationClickhouse = async (annotation: {
+  id: string
+  date?: string
+  text?: string
+}) => {
+  const filtered = _reduce(
+    _filter(_keys(annotation), key => ALLOWED_ANNOTATION_KEYS.includes(key)),
+    (obj, key) => {
+      obj[key] = annotation[key]
+      return obj
+    },
+    {},
+  )
+  const columns = _keys(filtered)
+
+  if (_isEmpty(columns)) {
+    return
+  }
+
+  const params: Record<string, string> = { id: annotation.id }
+
+  const assignments = _map(columns, col => {
+    params[col] = filtered[col]
+    const type = col === 'date' ? 'Date' : 'String'
+    return `${col}={${col}:${type}}`
+  }).join(', ')
+
+  const query = `ALTER TABLE annotation UPDATE ${assignments} WHERE id={id:FixedString(36)}`
+
+  await clickhouse.command({
+    query,
+    query_params: params,
+  })
+}
+
+const deleteAnnotationClickhouse = async (id: string) => {
+  const query = `ALTER TABLE annotation DELETE WHERE id = {id:String}`
+
+  await clickhouse.command({
+    query,
+    query_params: {
+      id,
+    },
+  })
+}
+
 export const isPrimaryNode = () => {
   return process.env.IS_PRIMARY_NODE === 'true'
 }
@@ -1057,4 +1192,10 @@ export {
   deleteProjectSharesByProjectClickhouse,
   deleteProjectSharesByUserIdClickhouse,
   deleteProjectsByUserIdClickhouse,
+  // annotations
+  getAnnotationsClickhouse,
+  getAnnotationClickhouse,
+  createAnnotationClickhouse,
+  updateAnnotationClickhouse,
+  deleteAnnotationClickhouse,
 }

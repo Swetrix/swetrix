@@ -31,3 +31,11 @@ export interface ClickhouseFunnel {
   projectId: string
   created: string
 }
+
+export interface ClickhouseAnnotation {
+  id: string
+  date: string
+  text: string
+  projectId: string
+  created: string
+}
