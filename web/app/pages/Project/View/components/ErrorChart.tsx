@@ -1,6 +1,8 @@
 import { ChartOptions } from 'billboard.js'
 import React, { useMemo } from 'react'
 
+import { Annotation } from '~/lib/models/Project'
+
 import { getSettingsError } from '../ViewProject.helpers'
 
 import { MainChart } from './MainChart'
@@ -16,6 +18,7 @@ interface ErrorChartProps {
   chartType: string
   dataNames: any
   className?: string
+  annotations?: Annotation[]
 }
 
 export const ErrorChart = ({
@@ -26,14 +29,15 @@ export const ErrorChart = ({
   chartType,
   dataNames,
   className,
+  annotations,
 }: ErrorChartProps) => {
   const options: ChartOptions = useMemo(() => {
-    return getSettingsError(chart, timeBucket as string, timeFormat, rotateXAxis, chartType)
-  }, [chart, timeBucket, timeFormat, rotateXAxis, chartType])
+    return getSettingsError(chart, timeBucket as string, timeFormat, rotateXAxis, chartType, annotations)
+  }, [chart, timeBucket, timeFormat, rotateXAxis, chartType, annotations])
 
   const deps = useMemo(
-    () => [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames],
-    [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames],
+    () => [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames, annotations],
+    [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames, annotations],
   )
 
   return (

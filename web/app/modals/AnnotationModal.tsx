@@ -1,0 +1,139 @@
+import { InfoIcon } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { Annotation } from '~/lib/models/Project'
+import Input from '~/ui/Input'
+import Modal from '~/ui/Modal'
+import Textarea from '~/ui/Textarea'
+
+const MAX_ANNOTATION_LENGTH = 120
+
+interface AnnotationModalProps {
+  onClose: () => void
+  onSubmit: (date: string, text: string) => Promise<void>
+  onDelete?: () => Promise<void>
+  isOpened: boolean
+  loading: boolean
+  annotation?: Annotation
+  defaultDate?: string
+  allowedToManage?: boolean
+}
+
+const AnnotationModal = ({
+  onClose,
+  onSubmit,
+  onDelete,
+  isOpened,
+  annotation,
+  loading,
+  defaultDate,
+  allowedToManage = true,
+}: AnnotationModalProps) => {
+  const { t } = useTranslation('common')
+  const [date, setDate] = useState(annotation?.date || defaultDate || '')
+  const [text, setText] = useState(annotation?.text || '')
+
+  useEffect(() => {
+    if (!isOpened) {
+      return
+    }
+
+    setDate(annotation?.date || defaultDate || '')
+    setText(annotation?.text || '')
+  }, [isOpened, annotation, defaultDate])
+
+  const _onClose = () => {
+    setTimeout(() => {
+      setDate('')
+      setText('')
+    }, 300)
+    onClose()
+  }
+
+  const _onSubmit = async () => {
+    if (!date || !text.trim() || !allowedToManage) {
+      return
+    }
+
+    await onSubmit(date, text.trim())
+    _onClose()
+  }
+
+  const _onDelete = async () => {
+    if (!onDelete || !allowedToManage) {
+      return
+    }
+
+    await onDelete()
+    _onClose()
+  }
+
+  const isEditMode = !!annotation
+
+  return (
+    <Modal
+      isLoading={loading}
+      onClose={_onClose}
+      onSubmit={_onSubmit}
+      submitText={isEditMode ? t('common.save') : t('common.add')}
+      closeText={t('common.cancel')}
+      customButtons={
+        isEditMode && onDelete && allowedToManage ? (
+          <button
+            type='button'
+            onClick={_onDelete}
+            disabled={loading}
+            className='mt-3 inline-flex w-full justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-base font-medium text-red-700 transition-colors hover:bg-red-50 sm:mt-0 sm:w-auto sm:text-sm dark:border-red-600 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-900/20'
+          >
+            {t('common.delete')}
+          </button>
+        ) : null
+      }
+      message={
+        <div className='space-y-4'>
+          <Input
+            name='annotation-date-input'
+            label={
+              <>
+                {t('modals.annotation.date')}
+                <span className='text-red-600'>*</span>
+              </>
+            }
+            type='date'
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            disabled={!allowedToManage}
+          />
+          <div>
+            <Textarea
+              name='annotation-text-input'
+              label={t('modals.annotation.text')}
+              value={text}
+              onChange={(e) => {
+                if (e.target.value.length <= MAX_ANNOTATION_LENGTH) {
+                  setText(e.target.value)
+                }
+              }}
+              disabled={!allowedToManage}
+              rows={3}
+            />
+            <p className='mt-1 text-right text-xs text-gray-500 dark:text-gray-400'>
+              {text.length}/{MAX_ANNOTATION_LENGTH}
+            </p>
+          </div>
+          <div className='flex items-start gap-2 rounded-md bg-blue-50 p-3 dark:bg-blue-900/20'>
+            <InfoIcon className='mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400' />
+            <p className='text-xs text-blue-700 dark:text-blue-300'>{t('modals.annotation.warning')}</p>
+          </div>
+        </div>
+      }
+      title={isEditMode ? t('modals.annotation.editTitle') : t('modals.annotation.addTitle')}
+      isOpened={isOpened}
+      submitDisabled={!date || !text.trim() || !allowedToManage}
+      overflowVisible
+    />
+  )
+}
+
+export default AnnotationModal
