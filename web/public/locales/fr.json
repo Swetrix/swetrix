@@ -44,6 +44,9 @@
     "funnelCreated": "L'entonnoir a été créé",
     "funnelUpdated": "L'entonnoir a été mis à jour",
     "funnelDeleted": "L'entonnoir a été supprimé",
+    "annotationCreated": "L'annotation a été créée",
+    "annotationUpdated": "L'annotation a été mise à jour",
+    "annotationDeleted": "L'annotation a été supprimée",
     "errorCode": "Code d'erreur: {{error}}",
     "updateErrorStatusFailed": "Une erreur s'est produite lors de la mise à jour du statut d'erreur",
     "errorStatusUpdated": "Le statut d'erreur a été mis à jour",
@@ -908,6 +911,10 @@
     "support": "Contacter le service client"
   },
   "project": {
+    "addAnnotation": "Ajouter une annotation",
+    "editAnnotation": "Modifier l'annotation",
+    "deleteAnnotation": "Supprimer l'annotation",
+    "annotationsViewOnly": "Seuls les chefs de projet peuvent ajouter des annotations",
     "impressions": "Impressions",
     "position": "Position",
     "ctr": "CTR (taux de clics)",
@@ -1153,8 +1160,20 @@
         "shields": "Boucliers",
         "emails": "E-mails",
         "people": "Personnes",
+        "annotations": "Annotations",
         "danger": "Zone de danger",
         "integrations": "Intégrations"
+      },
+      "annotations": {
+        "title": "Annotations",
+        "description": "Marquez les événements importants sur vos graphiques pour vous souvenir pourquoi les tendances du trafic ont changé.",
+        "add": "Ajouter une annotation",
+        "addFirst": "Ajoutez votre première annotation",
+        "empty": "Aucune annotation pour le moment. Ajoutez des annotations pour marquer les événements importants sur vos graphiques.",
+        "date": "Date",
+        "text": "Note",
+        "deleteTitle": "Supprimer l'annotation",
+        "deleteConfirm": "Voulez-vous vraiment supprimer cette annotation ? Cette action ne peut pas être annulée."
       },
       "botsProtectionLevel": {
         "title": "Niveau de protection contre les bots",
@@ -1330,6 +1349,13 @@
       "name": "Nom de l'entonnoir",
       "steps": "Étapes de l'entonnoir",
       "addStep": "Ajouter une étape supplémentaire"
+    },
+    "annotation": {
+      "addTitle": "Ajouter une annotation",
+      "editTitle": "Modifier l'annotation",
+      "date": "Date",
+      "text": "Annotation",
+      "warning": "N'incluez pas d'informations sensibles. Tous les utilisateurs ayant accès à cette propriété peuvent voir le contenu de l'annotation."
     },
     "shortcuts": {
       "title": "Raccourcis clavier",

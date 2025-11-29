@@ -44,6 +44,9 @@
     "funnelCreated": "Lejek został utworzony",
     "funnelUpdated": "Lejek został zaktualizowany",
     "funnelDeleted": "Lejek został usunięty",
+    "annotationCreated": "Adnotacja została utworzona",
+    "annotationUpdated": "Adnotacja została zaktualizowana",
+    "annotationDeleted": "Adnotacja została usunięta",
     "errorCode": "Kod błędu: {{error}}",
     "updateErrorStatusFailed": "Wystąpił błąd podczas aktualizacji statusu błędu",
     "errorStatusUpdated": "Stan błędu został zaktualizowany",
@@ -908,6 +911,10 @@
     "support": "Skontaktuj się z obsługą"
   },
   "project": {
+    "addAnnotation": "Dodaj adnotację",
+    "editAnnotation": "Edytuj adnotację",
+    "deleteAnnotation": "Usuń adnotację",
+    "annotationsViewOnly": "Tylko menedżerowie projektu mogą dodawać adnotacje",
     "impressions": "Wyświetlenia",
     "position": "Pozycja",
     "ctr": "CTR (współczynnik klikalności)",
@@ -1153,8 +1160,20 @@
         "shields": "Tarcze",
         "emails": "E-maile",
         "people": "Osoby",
+        "annotations": "Adnotacje",
         "danger": "Strefa zagrożenia",
         "integrations": "Integracje"
+      },
+      "annotations": {
+        "title": "Adnotacje",
+        "description": "Oznaczaj ważne zdarzenia na wykresach, aby pamiętać, dlaczego wzorce ruchu się zmieniły.",
+        "add": "Dodaj adnotację",
+        "addFirst": "Dodaj swoją pierwszą adnotację",
+        "empty": "Na razie brak adnotacji. Dodawaj adnotacje, aby oznaczać ważne zdarzenia na wykresach.",
+        "date": "Data",
+        "text": "Notatka",
+        "deleteTitle": "Usuń adnotację",
+        "deleteConfirm": "Czy na pewno chcesz usunąć tę adnotację? Tej operacji nie można cofnąć."
       },
       "botsProtectionLevel": {
         "title": "Poziom ochrony przed botami",
@@ -1330,6 +1349,13 @@
       "name": "Nazwa lejka",
       "steps": "Etapy lejka",
       "addStep": "Dodaj jeszcze jeden krok"
+    },
+    "annotation": {
+      "addTitle": "Dodaj adnotację",
+      "editTitle": "Edytuj adnotację",
+      "date": "Data",
+      "text": "Adnotacja",
+      "warning": "Uwaga: Nie zamieszczaj poufnych informacji. Wszyscy użytkownicy z dostępem do tego zasobu mogą zobaczyć treść adnotacji."
     },
     "shortcuts": {
       "title": "Skróty klawiaturowe",

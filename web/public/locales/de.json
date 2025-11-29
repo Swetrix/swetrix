@@ -44,6 +44,9 @@
     "funnelCreated": "Der Trichter wurde erstellt",
     "funnelUpdated": "Der Trichter wurde aktualisiert",
     "funnelDeleted": "Der Trichter wurde gelöscht",
+    "annotationCreated": "Die Anmerkung wurde erstellt",
+    "annotationUpdated": "Die Anmerkung wurde aktualisiert",
+    "annotationDeleted": "Die Anmerkung wurde gelöscht",
     "errorCode": "Fehlercode: {{error}}",
     "updateErrorStatusFailed": "Fehler beim Aktualisieren des Fehlerstatus",
     "errorStatusUpdated": "Fehlerstatus wurde aktualisiert",
@@ -908,6 +911,10 @@
     "support": "Support kontaktieren"
   },
   "project": {
+    "addAnnotation": "Anmerkung hinzufügen",
+    "editAnnotation": "Anmerkung bearbeiten",
+    "deleteAnnotation": "Anmerkung löschen",
+    "annotationsViewOnly": "Nur Projektmanager können Anmerkungen hinzufügen",
     "impressions": "Impressionen",
     "position": "Position",
     "ctr": "CTR (Klickrate)",
@@ -1153,8 +1160,20 @@
         "shields": "Schilde",
         "emails": "E-Mails",
         "people": "Personen",
+        "annotations": "Anmerkungen",
         "danger": "Gefahrenzone",
         "integrations": "Integrationen"
+      },
+      "annotations": {
+        "title": "Anmerkungen",
+        "description": "Markieren Sie wichtige Ereignisse in Ihren Diagrammen, um sich daran zu erinnern, warum sich die Besuchsmuster geändert haben.",
+        "add": "Anmerkung hinzufügen",
+        "addFirst": "Fügen Sie Ihre erste Anmerkung hinzu",
+        "empty": "Noch keine Anmerkungen. Fügen Sie Anmerkungen hinzu, um wichtige Ereignisse in Ihren Diagrammen zu markieren.",
+        "date": "Datum",
+        "text": "Notiz",
+        "deleteTitle": "Anmerkung löschen",
+        "deleteConfirm": "Möchten Sie diese Anmerkung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden."
       },
       "botsProtectionLevel": {
         "title": "Bot-Schutz Level",
@@ -1330,6 +1349,13 @@
       "name": "Trichtername",
       "steps": "Trichterschritte",
       "addStep": "Noch einen Schritt hinzufügen"
+    },
+    "annotation": {
+      "addTitle": "Anmerkung",
+      "editTitle": "Anmerkung bearbeiten",
+      "date": "Datum",
+      "text": "Anmerkung",
+      "warning": "Achtung: Geben Sie keine vertraulichen Informationen an. Alle Nutzer mit Zugriff auf diese Property können den Inhalt der Anmerkung sehen."
     },
     "shortcuts": {
       "title": "Tastaturkurzbefehle",
