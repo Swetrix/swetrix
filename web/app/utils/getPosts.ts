@@ -82,6 +82,87 @@ const CROSS_ICON_SVG = `<span class="inline-flex items-center justify-center siz
 // Inline Swetrix logo that inherits font size
 const SWETRIX_LOGO_HTML = `<span class="inline-flex items-center gap-[0.15em] select-none whitespace-nowrap align-baseline"><img class="h-[0.9em] w-auto dark:hidden" src="/assets/logo/blue.png" alt="" /><img class="h-[0.9em] w-auto hidden dark:inline" src="/assets/logo/white.png" alt="" /><span class="font-bold text-indigo-950 dark:text-white">Swetrix</span></span>`
 
+// GitHub-style alert configurations
+const ALERT_CONFIGS = {
+  NOTE: {
+    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 16 16"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>`,
+    bgClass: 'bg-blue-50 dark:bg-blue-950/50',
+    borderClass: 'border-blue-400 dark:border-blue-500',
+    iconClass: 'text-blue-500 dark:text-blue-400',
+    titleClass: 'text-blue-800 dark:text-blue-200',
+    contentClass: 'text-blue-700 dark:text-blue-300',
+    title: 'Note',
+  },
+  TIP: {
+    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"/></svg>`,
+    bgClass: 'bg-emerald-50 dark:bg-emerald-950/50',
+    borderClass: 'border-emerald-400 dark:border-emerald-500',
+    iconClass: 'text-emerald-500 dark:text-emerald-400',
+    titleClass: 'text-emerald-800 dark:text-emerald-200',
+    contentClass: 'text-emerald-700 dark:text-emerald-300',
+    title: 'Tip',
+  },
+  IMPORTANT: {
+    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 16 16"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>`,
+    bgClass: 'bg-purple-50 dark:bg-purple-950/50',
+    borderClass: 'border-purple-400 dark:border-purple-500',
+    iconClass: 'text-purple-500 dark:text-purple-400',
+    titleClass: 'text-purple-800 dark:text-purple-200',
+    contentClass: 'text-purple-700 dark:text-purple-300',
+    title: 'Important',
+  },
+  WARNING: {
+    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 16 16"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>`,
+    bgClass: 'bg-amber-50 dark:bg-amber-950/50',
+    borderClass: 'border-amber-400 dark:border-amber-500',
+    iconClass: 'text-amber-500 dark:text-amber-400',
+    titleClass: 'text-amber-800 dark:text-amber-200',
+    contentClass: 'text-amber-700 dark:text-amber-300',
+    title: 'Warning',
+  },
+  CAUTION: {
+    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 16 16"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>`,
+    bgClass: 'bg-red-50 dark:bg-red-950/50',
+    borderClass: 'border-red-400 dark:border-red-500',
+    iconClass: 'text-red-500 dark:text-red-400',
+    titleClass: 'text-red-800 dark:text-red-200',
+    contentClass: 'text-red-700 dark:text-red-300',
+    title: 'Caution',
+  },
+} as const
+
+type AlertType = keyof typeof ALERT_CONFIGS
+
+// Custom blockquote rendering for GitHub-style alerts
+renderer.blockquote = ({ text }: Tokens.Blockquote) => {
+  // Check for alert syntax: [!NOTE], [!TIP], [!IMPORTANT], [!WARNING], [!CAUTION]
+  // The text may be raw markdown or partially rendered, check for both formats
+  const alertMatch = text.match(/^\s*(?:<p>)?\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:<br\s*\/?>|\n)?(?:<\/p>)?\s*/i)
+
+  if (alertMatch) {
+    const alertType = alertMatch[1].toUpperCase() as AlertType
+    const config = ALERT_CONFIGS[alertType]
+    const rawContent = text.replace(alertMatch[0], '').trim()
+
+    // Process content through marked to render markdown (links, bold, italic, etc.)
+    const content = marked(rawContent, { renderer }) as string
+
+    return `<div class="not-prose my-6 rounded-lg border-l-4 ${config.borderClass} ${config.bgClass} p-4">
+      <div class="flex items-start gap-3">
+        <span class="${config.iconClass} flex-shrink-0 mt-0.5">${config.icon}</span>
+        <div class="min-w-0 flex-1">
+          <p class="font-semibold ${config.titleClass} mb-1">${config.title}</p>
+          <div class="${config.contentClass} [&>p]:my-0 [&>p:not(:last-child)]:mb-2 [&_a]:underline [&_a]:font-medium">${content}</div>
+        </div>
+      </div>
+    </div>`
+  }
+
+  // Default blockquote rendering - also process through marked for consistency
+  const renderedText = marked(text, { renderer }) as string
+  return `<blockquote>${renderedText}</blockquote>`
+}
+
 // Function to replace emoji with styled icons
 function replaceEmojiWithIcons(html: string): string {
   return html.replace(/✅/g, CHECK_ICON_SVG).replace(/❌/g, CROSS_ICON_SVG)
