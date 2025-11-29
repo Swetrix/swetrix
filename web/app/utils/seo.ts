@@ -9,7 +9,7 @@ export const getTitle = (title: string) => [
     content: `${title} ${TITLE_SUFFIX}`,
   },
   {
-    property: 'twitter:title',
+    name: 'twitter:title',
     content: `${title} ${TITLE_SUFFIX}`,
   },
 ]
@@ -20,11 +20,11 @@ export const getDescription = (description: string) => [
     content: description,
   },
   {
-    property: 'twitter:description',
+    name: 'twitter:description',
     content: description,
   },
   {
-    property: 'description',
+    name: 'description',
     content: description,
   },
 ]
@@ -35,7 +35,7 @@ export const getPreviewImage = (imageUrl: string) => [
     content: imageUrl,
   },
   {
-    property: 'twitter:image',
+    name: 'twitter:image',
     content: imageUrl,
   },
 ]
