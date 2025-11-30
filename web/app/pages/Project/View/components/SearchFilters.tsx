@@ -41,7 +41,7 @@ import { useState, useEffect, useCallback, useRef, useMemo, Fragment, ReactNode 
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
 
-import { getFilters, getErrorsFilters } from '~/api'
+import { getFilters, getErrorsFilters, getVersionFilters } from '~/api'
 import {
   FILTERS_PANELS_ORDER,
   ERRORS_FILTERS_PANELS_ORDER,
@@ -531,36 +531,15 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
       try {
         let result: string[]
 
-        // For browser/OS versions, fetch both parent and version data to create combined entries
+        // For browser/OS versions, fetch valid combinations from the backend
         if (column === 'brv') {
-          // Fetch both browser names and versions
-          const [browsers, versions] = await Promise.all([
-            type === 'errors' ? getErrorsFilters(id, 'br', projectPassword) : getFilters(id, 'br', projectPassword),
-            type === 'errors' ? getErrorsFilters(id, 'brv', projectPassword) : getFilters(id, 'brv', projectPassword),
-          ])
-          // Create combined entries: "Chrome|||120.5" format
-          // We'll show all combinations since we don't know which versions belong to which browser
-          const combined: string[] = []
-          browsers.forEach((browser) => {
-            versions.forEach((version) => {
-              combined.push(createVersionValue(browser, version))
-            })
-          })
-          result = combined
+          const dataType = type === 'errors' ? 'errors' : 'traffic'
+          const pairs = await getVersionFilters(id, dataType, 'br', projectPassword)
+          result = pairs.map((p) => createVersionValue(p.name, p.version))
         } else if (column === 'osv') {
-          // Fetch both OS names and versions
-          const [osList, versions] = await Promise.all([
-            type === 'errors' ? getErrorsFilters(id, 'os', projectPassword) : getFilters(id, 'os', projectPassword),
-            type === 'errors' ? getErrorsFilters(id, 'osv', projectPassword) : getFilters(id, 'osv', projectPassword),
-          ])
-          // Create combined entries
-          const combined: string[] = []
-          osList.forEach((os) => {
-            versions.forEach((version) => {
-              combined.push(createVersionValue(os, version))
-            })
-          })
-          result = combined
+          const dataType = type === 'errors' ? 'errors' : 'traffic'
+          const pairs = await getVersionFilters(id, dataType, 'os', projectPassword)
+          result = pairs.map((p) => createVersionValue(p.name, p.version))
         } else {
           if (type === 'errors') {
             result = await getErrorsFilters(id, column, projectPassword)

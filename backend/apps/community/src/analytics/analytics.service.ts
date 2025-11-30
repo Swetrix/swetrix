@@ -487,6 +487,34 @@ export class AnalyticsService {
     return _map(data, type)
   }
 
+  async getVersionFilters(
+    pid: string,
+    type: 'traffic' | 'errors',
+    column: 'br' | 'os',
+  ): Promise<Array<{ name: string; version: string }>> {
+    const safeTable = type === 'errors' ? 'errors' : 'analytics'
+    const safeVersionCol = column === 'br' ? 'brv' : 'osv'
+
+    const query = `
+      SELECT ${column}, ${safeVersionCol} 
+      FROM ${safeTable} 
+      WHERE pid={pid:FixedString(12)} AND ${column} IS NOT NULL AND ${safeVersionCol} IS NOT NULL 
+      GROUP BY ${column}, ${safeVersionCol}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid },
+      })
+      .then(resultSet => resultSet.json<Record<string, string>[]>())
+
+    return data.map(row => ({
+      name: row[column],
+      version: row[safeVersionCol],
+    }))
+  }
+
   getDataTypeColumns(dataType: DataType): string[] {
     if (dataType === DataType.ANALYTICS) {
       return TRAFFIC_COLUMNS

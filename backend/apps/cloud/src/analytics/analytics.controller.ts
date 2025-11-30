@@ -65,6 +65,7 @@ import {
 } from '../common/utils'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
+import { GetVersionFiltersDto } from './dto/get-version-filters.dto'
 import {
   IFunnel,
   IGetFunnel,
@@ -523,6 +524,26 @@ export class AnalyticsController {
     await this.analyticsService.checkBillingAccess(pid)
 
     return this.analyticsService.getErrorsFilters(pid, type)
+  }
+
+  @Get('filters/versions')
+  @Auth(true, true)
+  async getVersionFilters(
+    @Query() data: GetVersionFiltersDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, type, column } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    return this.analyticsService.getVersionFilters(pid, type, column)
   }
 
   @Get('chart')
