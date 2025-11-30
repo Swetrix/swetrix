@@ -40,7 +40,7 @@ const productionNavigation = {
   products,
   resources: [
     { key: 'docs', href: DOCS_URL, internal: false },
-    { key: 'pricing', href: `${routesPath.main}#pricing`, internal: true },
+    { key: 'pricing', href: routesPath.pricing, internal: true },
     { key: 'tools', href: routesPath.tools, internal: true },
     { key: 'utm', href: routesPath.utm_generator, internal: true },
     { key: 'ctr', href: routesPath.ctr_calculator, internal: true },
@@ -81,7 +81,7 @@ const communityEditionNavigation = {
   products,
   resources: [
     { key: 'docs', href: DOCS_URL, internal: false },
-    { key: 'pricing', href: `https://swetrix.com/#pricing`, internal: false },
+    { key: 'pricing', href: `https://swetrix.com/pricing`, internal: false },
     { key: 'tools', href: `https://swetrix.com${routesPath.tools}`, internal: false },
     { key: 'utm', href: `https://swetrix.com${routesPath.utm_generator}`, internal: false },
     { key: 'ctr', href: `https://swetrix.com${routesPath.ctr_calculator}`, internal: false },
