@@ -222,6 +222,13 @@ const ValueInput = ({
       if (column === 'cc') {
         return countries.getName(item, language) || item
       }
+      // Handle combined version values (e.g., "Chrome|||120.5" -> "Chrome 120.5")
+      if (column === 'brv' || column === 'osv') {
+        const parsed = parseVersionValue(item)
+        if (parsed) {
+          return `${parsed.parent} ${parsed.version}`
+        }
+      }
       return item || t('common.notSet')
     },
     [column, language, t],
@@ -242,6 +249,19 @@ const ValueInput = ({
         return <GlobeIcon className='size-4 shrink-0' strokeWidth={1.5} />
       }
 
+      // For browser versions, show browser icon
+      if (column === 'brv') {
+        const parsed = parseVersionValue(item)
+        if (parsed) {
+          // @ts-expect-error - dynamic key access
+          const logoUrl = BROWSER_LOGO_MAP[parsed.parent]
+          if (logoUrl) {
+            return <img src={logoUrl} className='size-4 shrink-0' alt='' />
+          }
+        }
+        return <GlobeIcon className='size-4 shrink-0' strokeWidth={1.5} />
+      }
+
       if (column === 'os') {
         // @ts-expect-error - dynamic key access
         const logoPathLight = OS_LOGO_MAP[item]
@@ -252,6 +272,24 @@ const ValueInput = ({
 
         if (logoPath) {
           return <img src={`/${logoPath}`} className='size-4 shrink-0 dark:fill-gray-50' alt='' />
+        }
+        return <GlobeIcon className='size-4 shrink-0' strokeWidth={1.5} />
+      }
+
+      // For OS versions, show OS icon
+      if (column === 'osv') {
+        const parsed = parseVersionValue(item)
+        if (parsed) {
+          // @ts-expect-error - dynamic key access
+          const logoPathLight = OS_LOGO_MAP[parsed.parent]
+          // @ts-expect-error - dynamic key access
+          const logoPathDark = OS_LOGO_MAP_DARK[parsed.parent]
+          let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
+          logoPath ||= logoPathLight
+
+          if (logoPath) {
+            return <img src={`/${logoPath}`} className='size-4 shrink-0 dark:fill-gray-50' alt='' />
+          }
         }
         return <GlobeIcon className='size-4 shrink-0' strokeWidth={1.5} />
       }
@@ -448,6 +486,19 @@ const ValueInput = ({
   )
 }
 
+// Special separator for combined version values (e.g., "Chrome|||120.5")
+const VERSION_SEPARATOR = '|||'
+
+// Helper to create combined version value
+const createVersionValue = (parent: string, version: string) => `${parent}${VERSION_SEPARATOR}${version}`
+
+// Helper to parse combined version value
+const parseVersionValue = (value: string): { parent: string; version: string } | null => {
+  if (!value.includes(VERSION_SEPARATOR)) return null
+  const [parent, version] = value.split(VERSION_SEPARATOR)
+  return { parent, version }
+}
+
 interface SearchFiltersProps {
   showModal: boolean
   setShowModal: (show: boolean) => void
@@ -479,10 +530,43 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
       setLoadingColumns((prev) => new Set(prev).add(column))
       try {
         let result: string[]
-        if (type === 'errors') {
-          result = await getErrorsFilters(id, column, projectPassword)
+
+        // For browser/OS versions, fetch both parent and version data to create combined entries
+        if (column === 'brv') {
+          // Fetch both browser names and versions
+          const [browsers, versions] = await Promise.all([
+            type === 'errors' ? getErrorsFilters(id, 'br', projectPassword) : getFilters(id, 'br', projectPassword),
+            type === 'errors' ? getErrorsFilters(id, 'brv', projectPassword) : getFilters(id, 'brv', projectPassword),
+          ])
+          // Create combined entries: "Chrome|||120.5" format
+          // We'll show all combinations since we don't know which versions belong to which browser
+          const combined: string[] = []
+          browsers.forEach((browser) => {
+            versions.forEach((version) => {
+              combined.push(createVersionValue(browser, version))
+            })
+          })
+          result = combined
+        } else if (column === 'osv') {
+          // Fetch both OS names and versions
+          const [osList, versions] = await Promise.all([
+            type === 'errors' ? getErrorsFilters(id, 'os', projectPassword) : getFilters(id, 'os', projectPassword),
+            type === 'errors' ? getErrorsFilters(id, 'osv', projectPassword) : getFilters(id, 'osv', projectPassword),
+          ])
+          // Create combined entries
+          const combined: string[] = []
+          osList.forEach((os) => {
+            versions.forEach((version) => {
+              combined.push(createVersionValue(os, version))
+            })
+          })
+          result = combined
         } else {
-          result = await getFilters(id, column, projectPassword)
+          if (type === 'errors') {
+            result = await getErrorsFilters(id, column, projectPassword)
+          } else {
+            result = await getFilters(id, column, projectPassword)
+          }
         }
         setFilterValuesCache((prev) => ({ ...prev, [column]: result }))
       } catch (error) {
@@ -566,12 +650,71 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
 
   const onSubmit = () => {
     // Convert filter rows to FilterType format
-    const validFilters = filterRows
-      .filter((row) => row.column && row.value)
-      .map((row) => {
-        const { isExclusive, isContains } = operatorToFilter(row.operator)
-        let processedValue = row.value
+    const validFilters: FilterType[] = []
 
+    filterRows
+      .filter((row) => row.column && row.value)
+      .forEach((row) => {
+        const { isExclusive, isContains } = operatorToFilter(row.operator)
+
+        // Handle browser version - creates two filters (br + brv)
+        if (row.column === 'brv') {
+          const parsed = parseVersionValue(row.value)
+          if (parsed) {
+            validFilters.push({
+              column: 'br',
+              filter: parsed.parent,
+              isExclusive,
+              isContains,
+            })
+            validFilters.push({
+              column: 'brv',
+              filter: parsed.version,
+              isExclusive,
+              isContains,
+            })
+          } else {
+            // Fallback: just use the value as-is for the version
+            validFilters.push({
+              column: 'brv',
+              filter: row.value,
+              isExclusive,
+              isContains,
+            })
+          }
+          return
+        }
+
+        // Handle OS version - creates two filters (os + osv)
+        if (row.column === 'osv') {
+          const parsed = parseVersionValue(row.value)
+          if (parsed) {
+            validFilters.push({
+              column: 'os',
+              filter: parsed.parent,
+              isExclusive,
+              isContains,
+            })
+            validFilters.push({
+              column: 'osv',
+              filter: parsed.version,
+              isExclusive,
+              isContains,
+            })
+          } else {
+            // Fallback: just use the value as-is for the version
+            validFilters.push({
+              column: 'osv',
+              filter: row.value,
+              isExclusive,
+              isContains,
+            })
+          }
+          return
+        }
+
+        // Handle country codes
+        let processedValue = row.value
         if (row.column === 'cc') {
           const alpha2 = countries.getAlpha2Code(row.value, language)
           if (alpha2) {
@@ -579,12 +722,12 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
           }
         }
 
-        return {
+        validFilters.push({
           column: row.column,
           filter: processedValue,
           isExclusive,
           isContains,
-        }
+        })
       })
 
     const newUrlParams = getFiltersUrlParams(filters, validFilters, true, searchParams)
