@@ -28,6 +28,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     public Int8,
     isPasswordProtected Int8,
     botsProtectionLevel String DEFAULT 'basic',
+    saltRotation String DEFAULT 'daily',
     passwordHash Nullable(String),
     adminId Nullable(String),
     created DateTime

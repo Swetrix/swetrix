@@ -10,17 +10,29 @@ import _now from 'lodash/now'
 import { redis, REDIS_SESSION_SALT_KEY } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { AppLoggerService } from '../logger/logger.service'
+import { SaltService } from '../analytics/salt.service'
 
 dayjs.extend(utc)
 
 @Injectable()
 export class TaskManagerService {
-  constructor(private readonly logger: AppLoggerService) {}
+  constructor(
+    private readonly logger: AppLoggerService,
+    private readonly saltService: SaltService,
+  ) {}
 
+  // Legacy global salt rotation (kept for backward compatibility with older clients)
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async generateSessionSalt() {
     const salt = await bcrypt.genSalt(10)
     await redis.set(REDIS_SESSION_SALT_KEY, salt, 'EX', 87000)
+  }
+
+  // Ensure global salts exist for all rotation periods (daily/weekly/monthly)
+  // Salts auto-expire via Redis TTL, this just ensures they're regenerated if missing
+  @Cron(CronExpression.EVERY_HOUR)
+  async regenerateGlobalSalts() {
+    await this.saltService.regenerateExpiredSalts()
   }
 
   @Cron(CronExpression.EVERY_MINUTE)

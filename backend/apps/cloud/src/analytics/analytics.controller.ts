@@ -1060,13 +1060,12 @@ export class AnalyticsController {
     )
     await this.analyticsService.checkBillingAccess(pid)
 
-    const keys = await redis.keys(`sd:*:${pid}`)
-    if (_isEmpty(keys)) {
-      return []
-    }
+    const thirtyMinutesAgo = dayjs
+      .utc()
+      .subtract(30, 'minute')
+      .format('YYYY-MM-DD HH:mm:ss')
 
-    const psids = _map(keys, key => key.split(':')[1])
-
+    // Query ClickHouse for active sessions in the last 30 minutes
     const query = `
       SELECT DISTINCT ON (psid)
         any(dv) AS dv,
@@ -1084,8 +1083,9 @@ export class AnalyticsController {
           cc
         FROM analytics
         WHERE
-          psid IN ({ psids: Array(String) })
-          AND pid = ({ pid: FixedString(12) })
+          pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
         UNION ALL
         SELECT
           psid,
@@ -1095,8 +1095,9 @@ export class AnalyticsController {
           cc
         FROM customEV
         WHERE
-          psid IN ({ psids: Array(String) })
-          AND pid = ({ pid: FixedString(12) })
+          pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
       )
       GROUP BY psid
     `
@@ -1105,8 +1106,8 @@ export class AnalyticsController {
       .query({
         query,
         query_params: {
-          psids,
           pid,
+          since: thirtyMinutesAgo,
         },
       })
       .then(resultSet => resultSet.json())

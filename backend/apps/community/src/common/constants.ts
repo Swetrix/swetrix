@@ -51,7 +51,7 @@ const isValidPID = (pid: string) => PID_REGEX.test(pid)
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
 
-const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
+const REDIS_SESSION_SALT_KEY = 'log_salt' // legacy key, kept for backward compatibility
 const REDIS_OIDC_SESSION_KEY = 'oidc:session'
 
 // 3600 sec -> 1 hour

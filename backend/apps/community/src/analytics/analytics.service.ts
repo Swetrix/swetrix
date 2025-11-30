@@ -41,7 +41,6 @@ import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import {
   redis,
   UNIQUE_SESSION_LIFE_TIME,
-  REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
   ERROR_COLUMNS,
@@ -50,6 +49,7 @@ import {
   ALL_COLUMNS,
   TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
+import { SaltService } from './salt.service'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { getDomainsForRefName } from './utils/referrers.map'
 import {
@@ -330,7 +330,10 @@ const isValidOrigin = (origins: string[], origin: string) => {
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(
+    private readonly projectService: ProjectService,
+    private readonly saltService: SaltService,
+  ) {}
 
   async checkProjectAccess(
     pid: string,
@@ -709,9 +712,9 @@ export class AnalyticsService {
     userAgent: string,
     ip: string,
   ): Promise<string> {
-    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+    const salt = await this.saltService.getSaltForProject(pid)
 
-    return `ses_${hash(`${userAgent}${ip}${pid}${salt || ''}`)}`
+    return `ses_${hash(`${userAgent}${ip}${pid}${salt}`)}`
   }
 
   async isSessionDurationOpen(sdKey: string): Promise<[string, boolean]> {
@@ -3364,8 +3367,42 @@ export class AnalyticsService {
   }
 
   async getOnlineUserCount(pid: string): Promise<number> {
-    // @ts-expect-error
-    return redis.countKeysByPattern(`sd:*:${pid}`)
+    const thirtyMinutesAgo = dayjs
+      .utc()
+      .subtract(30, 'minute')
+      .format('YYYY-MM-DD HH:mm:ss')
+
+    const query = `
+      SELECT uniqExact(psid) as count
+      FROM (
+        SELECT psid FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
+        UNION ALL
+        SELECT psid FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
+      )
+    `
+
+    try {
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: {
+            pid,
+            since: thirtyMinutesAgo,
+          },
+        })
+        .then(resultSet => resultSet.json<{ count: string }>())
+
+      return Number(data[0]?.count || 0)
+    } catch (error) {
+      console.error(`[ERROR](getOnlineUserCount): ${error}`)
+      return 0
+    }
   }
 
   async groupCustomEVByTimeBucket(

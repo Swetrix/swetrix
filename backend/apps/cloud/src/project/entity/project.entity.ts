@@ -24,6 +24,12 @@ export enum BotsProtectionLevel {
   BASIC = 'basic',
 }
 
+export enum SaltRotation {
+  DAILY = 'daily', // Default - current behavior, for DAU tracking
+  WEEKLY = 'weekly', // For WAU (Weekly Active Users) tracking
+  MONTHLY = 'monthly', // For MAU (Monthly Active Users) tracking
+}
+
 // In case of modifying some properties here add them to the GDPR data export email template
 @Entity()
 export class Project {
@@ -85,6 +91,14 @@ export class Project {
     default: BotsProtectionLevel.BASIC,
   })
   botsProtectionLevel: BotsProtectionLevel
+
+  @ApiProperty()
+  @Column({
+    type: 'enum',
+    enum: SaltRotation,
+    default: SaltRotation.DAILY,
+  })
+  saltRotation: SaltRotation
 
   @ApiProperty({ type: () => User })
   @ManyToOne(() => User, user => user.projects)

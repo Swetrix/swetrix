@@ -30,6 +30,7 @@ import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
+import { SaltService } from '../analytics/salt.service'
 import { PayoutsService } from '../payouts/payouts.service'
 import { PayoutStatus } from '../payouts/entities/payouts.entity'
 import {
@@ -296,6 +297,7 @@ export class TaskManagerService {
     private readonly configService: ConfigService,
     private readonly discordService: DiscordService,
     private readonly slackService: SlackService,
+    private readonly saltService: SaltService,
   ) {}
 
   generateUnsubscribeUrl(
@@ -688,10 +690,18 @@ export class TaskManagerService {
     )
   }
 
+  // Legacy global salt rotation (kept for backward compatibility with older clients)
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async generateSessionSalt() {
     const salt = await bcrypt.genSalt(10)
     await redis.set(REDIS_SESSION_SALT_KEY, salt, 'EX', 87000)
+  }
+
+  // Ensure global salts exist for all rotation periods (daily/weekly/monthly)
+  // Salts auto-expire via Redis TTL, this just ensures they're regenerated if missing
+  @Cron(CronExpression.EVERY_HOUR)
+  async regenerateGlobalSalts() {
+    await this.saltService.regenerateExpiredSalts()
   }
 
   // EVERY SUNDAY AT 2:30 AM

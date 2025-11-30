@@ -120,6 +120,7 @@ const ALLOWED_KEYS = [
   'isPasswordProtected',
   'passwordHash',
   'botsProtectionLevel',
+  'saltRotation',
 ]
 
 const CLICKHOUSE_PROJECT_UPDATABLE_KEYS = [...ALLOWED_KEYS, 'adminId']

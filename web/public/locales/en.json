@@ -1182,6 +1182,15 @@
           "basic": "Basic: we detect bots based on their user agent (Googlebot, Bingbot, curl, etc.)"
         }
       },
+      "saltRotation": {
+        "title": "Unique visitor tracking period",
+        "hint": "Controls how long a visitor is recognized as the same unique visitor. Daily is best for DAU (Daily Active Users), weekly for WAU, and monthly for MAU (Monthly Active Users) tracking.",
+        "options": {
+          "daily": "Daily (default): visitors reset at midnight UTC",
+          "weekly": "Weekly: visitors reset on Monday at midnight UTC",
+          "monthly": "Monthly: visitors reset on the 1st of each month"
+        }
+      },
       "verify": "Please, verify your email address first",
       "updated": "The project's settings were updated",
       "created": "The project has been created",
