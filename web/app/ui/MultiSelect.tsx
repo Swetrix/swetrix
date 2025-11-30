@@ -14,7 +14,7 @@ interface MultiSelectProps {
   keyExtractor?: (item: any) => string
   label: any[]
   hint?: string
-  placholder?: string
+  placeholder?: string
   searchPlaseholder?: string
   onSearch?: (search: string) => void
   itemExtractor?: (item: any) => string
@@ -28,7 +28,7 @@ const MultiSelect = ({
   keyExtractor,
   label,
   hint,
-  placholder = 'Select...',
+  placeholder = 'Select...',
   className,
   itemExtractor,
   onSearch,
@@ -92,7 +92,7 @@ const MultiSelect = ({
           ref={inputRef}
           type='text'
           className='w-full cursor-text rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-sm transition-colors placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-gray-700 dark:bg-slate-800 dark:text-gray-50 dark:placeholder:text-gray-500'
-          placeholder={placholder}
+          placeholder={placeholder}
           value={searchValue}
           onChange={handleInputChange}
           onFocus={handleFocus}

@@ -241,7 +241,7 @@ const ModalMessage = ({
                     setSearchList(filterList)
                   }
                 }}
-                placholder={t('project.settings.reseted.filtersPlaceholder')}
+                placeholder={t('project.settings.reseted.filtersPlaceholder')}
                 onSelect={(item: string) =>
                   setActiveFilter((oldItems: string[]) => {
                     if (_includes(oldItems, item)) {
