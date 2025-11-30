@@ -7,4 +7,3 @@ CREATE TABLE `annotation` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`projectId`) REFERENCES `project` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-

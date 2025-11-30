@@ -44,7 +44,7 @@ export class ProjectDTO {
   ipBlacklist: string[] | null
 
   @ApiProperty({
-    example: 'UA,RU,BY',
+    example: 'RU,BY,KP',
     required: false,
     description:
       'Array of blocked country codes (ISO 3166-1 alpha-2). Traffic from these countries will not be tracked.',

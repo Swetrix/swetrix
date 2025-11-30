@@ -942,6 +942,15 @@ export class ProjectController {
       project.ipBlacklist = []
     }
 
+    if (projectDTO.countryBlacklist) {
+      project.countryBlacklist = _map(
+        projectDTO.countryBlacklist,
+        _trim,
+      ) as string[]
+    } else {
+      project.countryBlacklist = []
+    }
+
     if (projectDTO.botsProtectionLevel) {
       project.botsProtectionLevel = projectDTO.botsProtectionLevel
     }
