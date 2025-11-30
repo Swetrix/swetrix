@@ -2,7 +2,7 @@
 const { queriesRunner, dbName } = require('./setup')
 
 const queries = [
-  `ALTER TABLE ${dbName}.project ADD COLUMN countryBlacklist String DEFAULT '' AFTER ipBlacklist;`,
+  `ALTER TABLE ${dbName}.project ADD COLUMN countryBlacklist Nullable(String) DEFAULT NULL AFTER ipBlacklist;`,
 ]
 
 queriesRunner(queries)
