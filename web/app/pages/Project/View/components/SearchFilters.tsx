@@ -923,7 +923,7 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
 
                   return (
                     <span
-                      key={`${column}-${filter}`}
+                      key={`${column}-${filter}-${isExclusive}-${isContains}`}
                       className='inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-slate-700 dark:text-gray-300'
                     >
                       <span className='text-gray-500 dark:text-gray-400'>
