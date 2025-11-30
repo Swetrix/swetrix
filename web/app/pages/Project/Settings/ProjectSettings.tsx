@@ -224,7 +224,6 @@ const ModalMessage = ({
                 }}
                 keyExtractor={(item) => item}
                 label={activeFilter}
-                searchPlaseholder={t('project.search')}
                 onSearch={(search: string) => {
                   if (search.length > 0) {
                     if (filterType === 'cc') {
@@ -241,7 +240,7 @@ const ModalMessage = ({
                     setSearchList(filterList)
                   }
                 }}
-                placholder={t('project.settings.reseted.filtersPlaceholder')}
+                placeholder={t('project.settings.reseted.filtersPlaceholder')}
                 onSelect={(item: string) =>
                   setActiveFilter((oldItems: string[]) => {
                     if (_includes(oldItems, item)) {
@@ -269,6 +268,7 @@ const ModalMessage = ({
 interface Form extends Partial<Project> {
   origins: string | null
   ipBlacklist: string | null
+  countryBlacklist: string[]
 }
 
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
@@ -289,6 +289,7 @@ const ProjectSettings = () => {
     isPasswordProtected: false,
     origins: null,
     ipBlacklist: null,
+    countryBlacklist: [],
     botsProtectionLevel: 'basic',
     gscPropertyUri: null,
   })
@@ -417,6 +418,7 @@ const ProjectSettings = () => {
         ...result,
         ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
         origins: _isString(result.origins) ? result.origins : _join(result.origins, ', '),
+        countryBlacklist: result.countryBlacklist || [],
       })
     } catch (reason: any) {
       setError(reason)
@@ -478,6 +480,7 @@ const ProjectSettings = () => {
                 }
               }),
           ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist, ','),
+          countryBlacklist: _isEmpty(data.countryBlacklist) ? null : data.countryBlacklist,
         }
         await updateProject(id, formalisedData as Partial<Project>)
         toast.success(t('project.settings.updated'))
@@ -791,6 +794,13 @@ const ProjectSettings = () => {
                         ...prevForm,
                         // cast to maintain allowed literal types
                         botsProtectionLevel: name as any,
+                      }))
+                    }
+                    countryBlacklist={form.countryBlacklist || []}
+                    setCountryBlacklist={(countries) =>
+                      setForm((prevForm) => ({
+                        ...prevForm,
+                        countryBlacklist: countries,
                       }))
                     }
                   />

@@ -47,6 +47,10 @@ export class Project {
   ipBlacklist: string[]
 
   @ApiProperty()
+  @Column('simple-array', { nullable: true, default: null })
+  countryBlacklist: string[]
+
+  @ApiProperty()
   @Column({
     default: true,
   })

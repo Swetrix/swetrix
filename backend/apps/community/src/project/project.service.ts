@@ -380,6 +380,12 @@ export class ProjectService {
         : _join(updProject.ipBlacklist, ',')
     }
 
+    if (!_isNull(updProject.countryBlacklist)) {
+      updProject.countryBlacklist = _isString(updProject.countryBlacklist)
+        ? updProject.countryBlacklist
+        : _join(updProject.countryBlacklist, ',')
+    }
+
     return updProject
   }
 
@@ -396,6 +402,10 @@ export class ProjectService {
     updProject.ipBlacklist = _isNull(updProject.ipBlacklist)
       ? []
       : _split(updProject.ipBlacklist, ',')
+
+    updProject.countryBlacklist = _isNull(updProject.countryBlacklist)
+      ? []
+      : _split(updProject.countryBlacklist, ',')
 
     return updProject
   }
@@ -544,6 +554,27 @@ export class ProjectService {
     })
   }
 
+  validateCountryBlacklist(projectDTO: ProjectDTO | UpdateProjectDto) {
+    if (!projectDTO.countryBlacklist) {
+      return
+    }
+
+    if (_size(projectDTO.countryBlacklist) > 250)
+      throw new UnprocessableEntityException(
+        'The list of blocked countries cannot exceed 250 entries.',
+      )
+
+    const countryCodeRegex = /^[A-Z]{2}$/
+    _map(projectDTO.countryBlacklist, code => {
+      const trimmedCode = _trim(code).toUpperCase()
+      if (!countryCodeRegex.test(trimmedCode)) {
+        throw new ConflictException(
+          `Country code "${code}" is not a valid ISO 3166-1 alpha-2 code`,
+        )
+      }
+    })
+  }
+
   validateProject(
     projectDTO: ProjectDTO | UpdateProjectDto,
     creatingProject = false,
@@ -562,5 +593,6 @@ export class ProjectService {
 
     this.validateOrigins(projectDTO)
     this.validateIPBlacklist(projectDTO)
+    this.validateCountryBlacklist(projectDTO)
   }
 }

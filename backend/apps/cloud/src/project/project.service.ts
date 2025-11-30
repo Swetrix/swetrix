@@ -318,6 +318,7 @@ export class ProjectService {
           'project.active',
           'project.public',
           'project.ipBlacklist',
+          'project.countryBlacklist',
           'project.botsProtectionLevel',
           'project.captchaSecretKey',
           'project.isCaptchaEnabled',
@@ -787,6 +788,29 @@ export class ProjectService {
     })
   }
 
+  validateCountryBlacklist(
+    projectDTO: ProjectDTO | UpdateProjectDto | CreateProjectDTO,
+  ) {
+    if (!projectDTO.countryBlacklist) {
+      return
+    }
+
+    if (_size(projectDTO.countryBlacklist) > 250)
+      throw new UnprocessableEntityException(
+        'The list of blocked countries cannot exceed 250 entries.',
+      )
+
+    const countryCodeRegex = /^[A-Z]{2}$/
+    _map(projectDTO.countryBlacklist, code => {
+      const trimmedCode = _trim(code).toUpperCase()
+      if (!countryCodeRegex.test(trimmedCode)) {
+        throw new ConflictException(
+          `Country code "${code}" is not a valid ISO 3166-1 alpha-2 code`,
+        )
+      }
+    })
+  }
+
   validateProject(
     projectDTO: ProjectDTO | UpdateProjectDto | CreateProjectDTO,
     creatingProject = false,
@@ -806,6 +830,7 @@ export class ProjectService {
 
     this.validateOrigins(projectDTO)
     this.validateIPBlacklist(projectDTO)
+    this.validateCountryBlacklist(projectDTO)
   }
 
   // Returns amount of existing events starting from month

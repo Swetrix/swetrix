@@ -882,7 +882,7 @@ export class AnalyticsController {
       return BOT_RESPONSE
     }
 
-    await this.analyticsService.validate(eventsDTO, origin, ip)
+    const project = await this.analyticsService.validate(eventsDTO, origin, ip)
 
     if (eventsDTO.unique) {
       const [unique] = await this.analyticsService.generateAndStoreSessionId(
@@ -898,13 +898,15 @@ export class AnalyticsController {
       }
     }
 
-    const { deviceType, browserName, browserVersion, osName, osVersion } =
-      await this.analyticsService.getRequestInformation(headers)
-
     const { city, region, regionCode, country } = getGeoDetails(
       ip,
       eventsDTO.tz,
     )
+
+    this.analyticsService.checkCountryBlacklist(project, country)
+
+    const { deviceType, browserName, browserVersion, osName, osVersion } =
+      await this.analyticsService.getRequestInformation(headers)
 
     const [, psid] = await this.analyticsService.generateAndStoreSessionId(
       eventsDTO.pid,
@@ -1002,7 +1004,7 @@ export class AnalyticsController {
       return BOT_RESPONSE
     }
 
-    await this.analyticsService.validate(logDTO, origin, ip)
+    const project = await this.analyticsService.validate(logDTO, origin, ip)
 
     const [unique, psid] =
       await this.analyticsService.generateAndStoreSessionId(
@@ -1020,6 +1022,8 @@ export class AnalyticsController {
     }
 
     const { city, region, regionCode, country } = getGeoDetails(ip, logDTO.tz)
+
+    this.analyticsService.checkCountryBlacklist(project, country)
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1134,7 +1138,7 @@ export class AnalyticsController {
 
     const logDTO: PageviewsDto = { pid }
 
-    await this.analyticsService.validate(logDTO, origin, ip)
+    const project = await this.analyticsService.validate(logDTO, origin, ip)
 
     const [, psid] = await this.analyticsService.generateAndStoreSessionId(
       logDTO.pid,
@@ -1144,10 +1148,12 @@ export class AnalyticsController {
 
     await this.analyticsService.processInteractionSD(psid, logDTO.pid)
 
+    const { city, region, regionCode, country } = getGeoDetails(ip, null)
+
+    this.analyticsService.checkCountryBlacklist(project, country)
+
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
-
-    const { city, region, regionCode, country } = getGeoDetails(ip, null)
 
     const transformed = trafficTransformer(
       psid,
@@ -1432,7 +1438,7 @@ export class AnalyticsController {
       return BOT_RESPONSE
     }
 
-    await this.analyticsService.validate(errorDTO, origin, ip)
+    const project = await this.analyticsService.validate(errorDTO, origin, ip)
 
     const [, psid] = await this.analyticsService.generateAndStoreSessionId(
       errorDTO.pid,
@@ -1443,6 +1449,8 @@ export class AnalyticsController {
     await this.analyticsService.processInteractionSD(psid, errorDTO.pid)
 
     const { city, region, regionCode, country } = getGeoDetails(ip, errorDTO.tz)
+
+    this.analyticsService.checkCountryBlacklist(project, country)
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
