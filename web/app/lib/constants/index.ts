@@ -385,7 +385,6 @@ export type ThemeType = 'dark' | 'light'
 export const SUPPORTED_THEMES = ['light', 'dark']
 
 export const CONTACT_EMAIL = 'contact@swetrix.com'
-export const SECURITY_EMAIL = 'security@swetrix.com'
 
 export const LIVE_VISITORS_UPDATE_INTERVAL = 40000
 
