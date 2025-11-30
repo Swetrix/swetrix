@@ -396,7 +396,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
           <div className='mt-2'>
             {_map(activeFilters, ({ filter, column, isExclusive, isContains }) => (
               <Filter
-                key={`${column}-${filter}`}
+                key={`${column}-${filter}-${isExclusive}-${isContains}`}
                 onRemoveFilter={(e) => {
                   e.preventDefault()
 

@@ -250,8 +250,28 @@ export const PERIOD_PAIRS_COMPARE = {
 export const TRAFFIC_PANELS_ORDER = ['location', 'pg', 'devices', 'traffic-sources']
 export const PERFORMANCE_PANELS_ORDER = ['location', 'pg', 'devices']
 export const ERROR_PANELS_ORDER = ['location', 'pg', 'devices']
-export const FILTERS_PANELS_ORDER = ['cc', 'pg', 'entryPage', 'exitPage', 'br', 'os', 'ref', 'lc', 'dv']
-export const ERRORS_FILTERS_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'lc', 'dv']
+export const FILTERS_PANELS_ORDER = [
+  'pg',
+  'entryPage',
+  'exitPage',
+  'host',
+  'cc',
+  'rg',
+  'ct',
+  'lc',
+  'dv',
+  'br',
+  'brv',
+  'os',
+  'osv',
+  'ref',
+  'so',
+  'me',
+  'ca',
+  'te',
+  'co',
+]
+export const ERRORS_FILTERS_PANELS_ORDER = ['cc', 'rg', 'ct', 'pg', 'br', 'brv', 'os', 'osv', 'lc', 'dv']
 
 // the maximum amount of months user can go back when picking a date in flat picker (project view)
 export const MAX_MONTHS_IN_PAST = 24
@@ -445,7 +465,7 @@ export const paddleLanguageMapping = {
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
-export const I18N_CACHE_BREAKER = 25
+export const I18N_CACHE_BREAKER = 26
 
 export const roles: Role[] = ['admin', 'viewer']
 

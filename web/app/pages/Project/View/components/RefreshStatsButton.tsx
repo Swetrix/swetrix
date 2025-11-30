@@ -73,7 +73,7 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
       title={t('project.refreshStats')}
       onClick={handleManualRefresh}
       className={cn(
-        'group relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+        'group relative rounded-md border border-transparent p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
         {
           'cursor-not-allowed opacity-50': authLoading,
         },

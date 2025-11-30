@@ -41,6 +41,7 @@ import { PageviewsDto } from './dto/pageviews.dto'
 import { EventsDto } from './dto/events.dto'
 import { GetDataDto, ChartRenderMode } from './dto/getData.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
+import { GetVersionFiltersDto } from './dto/get-version-filters.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDto } from './dto/getUserFlow.dto'
@@ -1399,6 +1400,24 @@ export class AnalyticsController {
     )
 
     return this.analyticsService.getErrorsFilters(pid, type)
+  }
+
+  @Get('filters/versions')
+  @Auth(true, true)
+  async getVersionFilters(
+    @Query() data: GetVersionFiltersDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, type, column } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    return this.analyticsService.getVersionFilters(pid, type, column)
   }
 
   @Post('error')
