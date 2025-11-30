@@ -3,7 +3,6 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 import { IsNull, LessThan, In, Not, Between, MoreThan, Like } from 'typeorm'
 import { ConfigService } from '@nestjs/config'
 import Paypal from '@paypal/payouts-sdk'
-import bcrypt from 'bcrypt'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import _isEmpty from 'lodash/isEmpty'
@@ -45,7 +44,6 @@ import {
 } from '../user/entities/user.entity'
 import {
   redis,
-  REDIS_SESSION_SALT_KEY,
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   JWT_REFRESH_TOKEN_LIFETIME,
@@ -688,13 +686,6 @@ export class TaskManagerService {
     await this.projectService.deleteMultipleShare(
       `confirmed=0 AND created<"${minDate}"`,
     )
-  }
-
-  // Legacy global salt rotation (kept for backward compatibility with older clients)
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async generateSessionSalt() {
-    const salt = await bcrypt.genSalt(10)
-    await redis.set(REDIS_SESSION_SALT_KEY, salt, 'EX', 87000)
   }
 
   // Ensure global salts exist for all rotation periods (daily/weekly/monthly)
