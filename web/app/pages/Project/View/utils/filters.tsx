@@ -34,6 +34,8 @@ const validFilters = [
   'so',
   'me',
   'ca',
+  'te',
+  'co',
   'ev',
   'tag:key',
   'tag:value',

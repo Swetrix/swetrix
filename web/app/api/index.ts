@@ -1431,6 +1431,18 @@ export const getErrorsFilters = (pid: string, type: string, password = '') =>
       throw error
     })
 
+export const getVersionFilters = (pid: string, type: 'traffic' | 'errors', column: 'br' | 'os', password = '') =>
+  api
+    .get(`log/filters/versions?pid=${pid}&type=${type}&column=${column}`, {
+      headers: {
+        'x-password': password,
+      },
+    })
+    .then((response): Array<{ name: string; version: string }> => response.data)
+    .catch((error) => {
+      throw error
+    })
+
 export const resetFilters = (pid: string, type: string, filters: string[]) =>
   api
     .delete(`project/reset-filters/${pid}?type=${type}&filters=${JSON.stringify(filters)}`)
