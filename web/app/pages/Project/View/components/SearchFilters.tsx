@@ -293,6 +293,8 @@ const ValueInput = ({
     const newValue = e.target.value
     setInputValue(newValue)
     setIsOpen(true)
+    // Keep parent state in sync so submit/validation use what the user sees
+    onChange(newValue)
   }
 
   const handleSelectItem = (item: string) => {
