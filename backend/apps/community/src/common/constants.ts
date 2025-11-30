@@ -14,11 +14,6 @@ const redis = new Redis(
   },
 )
 
-redis.defineCommand('countKeysByPattern', {
-  numberOfKeys: 0,
-  lua: "return #redis.call('keys', ARGV[1])",
-})
-
 export const JWT_ACCESS_TOKEN_SECRET = deriveKey('access-token')
 export const JWT_REFRESH_TOKEN_SECRET = deriveKey('refresh-token')
 
