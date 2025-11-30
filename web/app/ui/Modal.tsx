@@ -25,7 +25,7 @@ interface ModalProps {
   submitText?: string
   submitDisabled?: boolean
   submitType?: 'regular' | 'danger'
-  size?: 'regular' | 'large'
+  size?: 'regular' | 'medium' | 'large'
   customButtons?: React.ReactNode
   isLoading?: boolean
   overflowVisible?: boolean
@@ -66,6 +66,7 @@ const Modal = ({
               'transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:ease-out data-leave:duration-200 data-leave:ease-in',
               {
                 'w-[90vw] md:w-full md:max-w-lg': size === 'regular',
+                'w-[90vw] max-w-2xl md:w-full': size === 'medium',
                 'w-[90vw] max-w-5xl md:w-full': size === 'large',
                 'overflow-visible': overflowVisible,
                 'overflow-hidden': !overflowVisible,
