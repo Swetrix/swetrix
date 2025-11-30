@@ -64,6 +64,7 @@ interface ClickhouseProjectShareWithProject {
   projectName: string
   projectOrigins: string
   projectIpBlacklist: string
+  projectCountryBlacklist: string
   projectActive: number
   projectPublic: number
   projectIsPasswordProtected: number
@@ -526,6 +527,7 @@ const findProjectSharesByUserClickhouse = async (
             p.name AS projectName,
             p.origins AS projectOrigins,
             p.ipBlacklist AS projectIpBlacklist,
+            p.countryBlacklist AS projectCountryBlacklist,
             p.active AS projectActive,
             p.public AS projectPublic,
             p.isPasswordProtected AS projectIsPasswordProtected,

@@ -167,6 +167,7 @@ export class ProjectController {
           name: row.projectName,
           origins: row.projectOrigins,
           ipBlacklist: row.projectIpBlacklist,
+          countryBlacklist: row.projectCountryBlacklist,
           active: row.projectActive,
           public: row.projectPublic,
           isPasswordProtected: row.projectIsPasswordProtected,

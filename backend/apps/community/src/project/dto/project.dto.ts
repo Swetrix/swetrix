@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEnum, IsNotEmpty, IsOptional, Length } from 'class-validator'
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  Length,
+  IsArray,
+} from 'class-validator'
 import { BotsProtectionLevel } from '../entity'
 
 export class ProjectDTO {
@@ -44,11 +50,13 @@ export class ProjectDTO {
   ipBlacklist: string[] | null
 
   @ApiProperty({
-    example: 'RU,BY,KP',
+    example: ['RU', 'BY', 'KP'],
     required: false,
     description:
       'Array of blocked country codes (ISO 3166-1 alpha-2). Traffic from these countries will not be tracked.',
   })
+  @IsOptional()
+  @IsArray()
   countryBlacklist: string[] | null
 
   @ApiProperty({
