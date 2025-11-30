@@ -15,7 +15,6 @@ interface MultiSelectProps {
   label: any[]
   hint?: string
   placeholder?: string
-  searchPlaseholder?: string
   onSearch?: (search: string) => void
   itemExtractor?: (item: any) => string
 }

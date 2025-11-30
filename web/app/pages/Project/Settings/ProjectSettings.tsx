@@ -224,7 +224,6 @@ const ModalMessage = ({
                 }}
                 keyExtractor={(item) => item}
                 label={activeFilter}
-                searchPlaseholder={t('project.search')}
                 onSearch={(search: string) => {
                   if (search.length > 0) {
                     if (filterType === 'cc') {

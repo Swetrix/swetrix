@@ -121,7 +121,6 @@ const Shields = ({
           itemExtractor={renderCountryOption as any}
           keyExtractor={(cc) => cc}
           label={countryBlacklist}
-          searchPlaseholder={t('project.settings.searchCountries')}
           onSearch={handleCountrySearch}
           placeholder={t('project.settings.selectCountry')}
           onSelect={handleCountrySelect}
