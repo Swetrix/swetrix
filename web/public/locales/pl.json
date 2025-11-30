@@ -1,6 +1,6 @@
 {
   "apiNotifications": {
-    "somethingWentWrong": "Coś poszło nie tak, spróbuj ponownie",
+    "somethingWentWrong": "Coś poszło nie tak, spróbuj ponownieКраїни для виключення",
     "emailRegistered": "Użytkownik z tym adresem e-mail już istnieje",
     "leakedPassword": "Podane hasło wyciekło, użyj innego",
     "rateLimitHit": "Zbyt wiele żądań, spróbuj ponownie później",
@@ -1247,6 +1247,10 @@
       "errorNoRole": "Wybierz rolę.",
       "ipBlacklist": "Dodaj adresy IP do czarnej listy",
       "ipBlacklistHint": "Lista adresów IP, z których nie będzie zbierana analityka na tym projekcie.\nTa funkcjonalność jest przydatna, jeśli chcesz na przykład zignorować analitykę z Twojego IP.\nPrzykład: 172.126.10.16, 192.168.0.1/32, ::1",
+      "countryBlacklist": "Kraje do wykluczenia",
+      "countryBlacklistHint": "Ruch z tych krajów nie będzie śledzony. Przydatne, jeśli chcesz wykluczyć określone regiony z analityki.",
+      "searchCountries": "Szukaj krajów...",
+      "selectCountry": "Wybierz kraj do wykluczenia...",
       "transfer": "Projekt przeniesienia",
       "transferTo": "Projekt przeniesienia",
       "transferHint": "Możesz przenieść projekt '{{name}}' do innego użytkownika.\nUżytkownik ten stanie się właścicielem projektu i będzie mógł zarządzać jego ustawieniami, dodawać/usuwać członków oraz zapraszać nowych użytkowników.\nZostaniesz przypisany do projektu jako administrator. Jednak nowy właściciel będzie mógł usunąć Cię z projektu.",
