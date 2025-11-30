@@ -200,16 +200,11 @@ const ValueInput = ({
   theme,
 }: ValueInputProps) => {
   const { t } = useTranslation('common')
-  const [inputValue, setInputValue] = useState(value)
+  const [inputValue, setInputValue] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-
-  // Sync input value with prop value
-  useEffect(() => {
-    setInputValue(value)
-  }, [value])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -274,13 +269,18 @@ const ValueInput = ({
     [column, theme],
   )
 
+  // Get icon for the currently selected value (for display in input)
+  const selectedIcon = value ? getIconForItem(value) : null
+  const displayValue = value ? getLabelForItem(value) : ''
+
   const filteredItems = useMemo(() => {
-    if (_isEmpty(inputValue)) return items
+    // When dropdown is closed or input is empty, show all items
+    if (!isOpen || _isEmpty(inputValue)) return items
     return items.filter((item) => {
       const labelValue = getLabelForItem(item)
       return _includes(_toLower(labelValue), _toLower(inputValue))
     })
-  }, [items, inputValue, getLabelForItem])
+  }, [items, inputValue, isOpen, getLabelForItem])
 
   const virtualizer = useVirtualizer({
     count: filteredItems.length,
@@ -292,15 +292,20 @@ const ValueInput = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
     setInputValue(newValue)
-    setIsOpen(true)
-    // Keep parent state in sync so submit/validation use what the user sees
-    onChange(newValue)
   }
 
   const handleSelectItem = (item: string) => {
-    setInputValue(getLabelForItem(item))
+    setInputValue('')
     onChange(item)
     setIsOpen(false)
+  }
+
+  const handleFocus = () => {
+    // When focusing, initialize input with the display value so user can edit it
+    if (value) {
+      setInputValue(displayValue)
+    }
+    setIsOpen(true)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -322,31 +327,39 @@ const ValueInput = ({
           const matchingItem = items.find((item) => _toLower(getLabelForItem(item)) === _toLower(inputValue.trim()))
           onChange(matchingItem || inputValue.trim())
         }
+        setInputValue('')
         setIsOpen(false)
       }
     } else if (e.key === 'Escape') {
+      setInputValue('')
       setIsOpen(false)
     }
   }
 
-  const displayValue = value ? getLabelForItem(value) : ''
+  // Determine if we should show the icon in the input (when closed and value is selected)
+  const showIconInInput = !isOpen && value && selectedIcon
 
   return (
     <div ref={containerRef} className='relative flex-1'>
       <div className='relative'>
+        {showIconInInput ? (
+          <span className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5'>{selectedIcon}</span>
+        ) : null}
         <input
           ref={inputRef}
           type='text'
           className={cx(
-            'w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-sm transition-colors placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-gray-700 dark:bg-slate-800 dark:text-gray-50 dark:placeholder:text-gray-500',
+            'w-full rounded-md border border-gray-300 bg-white py-2 pr-8 text-sm transition-colors placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-gray-700 dark:bg-slate-800 dark:text-gray-50 dark:placeholder:text-gray-500',
             {
               'cursor-not-allowed opacity-60': disabled,
+              'pl-8': showIconInInput,
+              'pl-3': !showIconInInput,
             },
           )}
           placeholder={placeholder}
-          value={isOpen ? inputValue : displayValue || inputValue}
+          value={isOpen ? inputValue : displayValue}
           onChange={handleInputChange}
-          onFocus={() => setIsOpen(true)}
+          onFocus={handleFocus}
           onKeyDown={handleKeyDown}
           disabled={disabled}
         />
