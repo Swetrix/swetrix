@@ -1157,10 +1157,6 @@ export class AnalyticsService {
     return { exists, psid }
   }
 
-  /**
-   * Checks if the session is unique and returns the session psid.
-   * The psid is derived deterministically from inputs - no storage needed.
-   */
   async generateAndStoreSessionId(
     pid: string,
     userAgent: string,
