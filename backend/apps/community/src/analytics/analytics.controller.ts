@@ -89,6 +89,8 @@ const DEFAULT_MEASURE = 'median'
 // https://github.com/Swetrix/swetrix/issues/371
 const BOT_RESPONSE = { message: 'Bot traffic detected, opinion rejected :D' }
 
+const ONLINE_VISITORS_WINDOW_MINUTES = 5 // minutes
+
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
 const isPerformanceValid = (perf: any) => {
@@ -813,7 +815,7 @@ export class AnalyticsController {
 
     const thirtyMinutesAgo = dayjs
       .utc()
-      .subtract(30, 'minute')
+      .subtract(ONLINE_VISITORS_WINDOW_MINUTES, 'minute')
       .format('YYYY-MM-DD HH:mm:ss')
 
     // Query ClickHouse for active sessions in the last 30 minutes
