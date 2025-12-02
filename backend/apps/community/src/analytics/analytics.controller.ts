@@ -47,7 +47,6 @@ import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDto } from './dto/getUserFlow.dto'
 import { GetFunnelsDto } from './dto/getFunnels.dto'
 import { AppLoggerService } from '../logger/logger.service'
-import { redis, UNIQUE_SESSION_LIFE_TIME } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
   checkRateLimit,
@@ -976,8 +975,11 @@ export class AnalyticsController {
 
     await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
 
-    const { exists, psid, sessionHash } =
-      await this.analyticsService.getSessionId(pid, userAgent, ip)
+    const { exists, psid } = await this.analyticsService.getSessionId(
+      pid,
+      userAgent,
+      ip,
+    )
 
     if (!exists) {
       throw new ForbiddenException(
@@ -985,7 +987,7 @@ export class AnalyticsController {
       )
     }
 
-    await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
+    await this.analyticsService.extendSessionTTL(psid)
 
     await this.analyticsService.processInteractionSD(psid, pid)
 

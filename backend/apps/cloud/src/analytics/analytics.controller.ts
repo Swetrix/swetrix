@@ -55,7 +55,6 @@ import {
   REDIS_TRIALS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
-  UNIQUE_SESSION_LIFE_TIME,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
@@ -1343,8 +1342,11 @@ export class AnalyticsController {
 
     await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
 
-    const { exists, psid, sessionHash } =
-      await this.analyticsService.getSessionId(pid, userAgent, ip)
+    const { exists, psid } = await this.analyticsService.getSessionId(
+      pid,
+      userAgent,
+      ip,
+    )
 
     if (!exists) {
       throw new ForbiddenException(
@@ -1352,7 +1354,7 @@ export class AnalyticsController {
       )
     }
 
-    await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
+    await this.analyticsService.extendSessionTTL(psid)
 
     await this.analyticsService.processInteractionSD(psid, pid)
 

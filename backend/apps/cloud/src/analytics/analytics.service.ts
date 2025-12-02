@@ -728,16 +728,6 @@ export class AnalyticsService {
     }
   }
 
-  async getSessionHash(
-    pid: string,
-    userAgent: string,
-    ip: string,
-  ): Promise<string> {
-    const salt = await this.saltService.getSaltForProject(pid)
-
-    return `ses_${hash(`${userAgent}${ip}${pid}${salt}`)}`
-  }
-
   async isSessionDurationOpen(sdKey: string): Promise<[string, boolean]> {
     const sd = await redis.get(sdKey)
     return [sd, Boolean(sd)]
@@ -1125,43 +1115,58 @@ export class AnalyticsService {
     ]
   }
 
-  generateUInt64(): string {
-    return crypto.randomBytes(8).readBigUInt64BE(0).toString()
+  derivePsidFromInputs(
+    pid: string,
+    userAgent: string,
+    ip: string,
+    salt: string,
+  ): string {
+    const combined = `${userAgent}${ip}${pid}${salt}`
+    return crypto
+      .createHash('sha256')
+      .update(combined)
+      .digest()
+      .readBigUInt64BE(0)
+      .toString()
+  }
+
+  getSessionKey(psid: string): string {
+    return `ses:${psid}`
   }
 
   async getSessionId(
     pid: string,
     userAgent: string,
     ip: string,
-  ): Promise<{ exists: boolean; psid: string; sessionHash: string }> {
-    const sessionHash = await this.getSessionHash(pid, userAgent, ip)
+  ): Promise<{ exists: boolean; psid: string }> {
+    const salt = await this.saltService.getSaltForProject(pid)
+    const psid = this.derivePsidFromInputs(pid, userAgent, ip, salt)
+    const sessionKey = this.getSessionKey(psid)
 
-    let psid = await redis.get(sessionHash)
-    const exists = Boolean(psid)
+    const exists = Boolean(await redis.exists(sessionKey))
 
-    if (!exists) {
-      psid = this.generateUInt64()
-    }
-
-    return { exists, psid, sessionHash }
+    return { exists, psid }
   }
 
   /**
-   * Checks if the session is unique and returns the session psid (or creates a new one)
+   * Checks if the session is unique and returns the session psid.
+   * The psid is derived deterministically from inputs - no storage needed.
    */
   async generateAndStoreSessionId(
     pid: string,
     userAgent: string,
     ip: string,
   ): Promise<[boolean, string]> {
-    const { exists, psid, sessionHash } = await this.getSessionId(
-      pid,
-      userAgent,
-      ip,
-    )
+    const { exists, psid } = await this.getSessionId(pid, userAgent, ip)
+    const sessionKey = this.getSessionKey(psid)
 
-    await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
+    await redis.set(sessionKey, '1', 'EX', UNIQUE_SESSION_LIFE_TIME)
     return [!exists, psid]
+  }
+
+  async extendSessionTTL(psid: string): Promise<void> {
+    const sessionKey = this.getSessionKey(psid)
+    await redis.set(sessionKey, '1', 'EX', UNIQUE_SESSION_LIFE_TIME)
   }
 
   formatFunnel(data: IFunnelCHResponse[], pages: string[]): IFunnel[] {
