@@ -8,6 +8,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.analytics
   (
     psid Nullable(UInt64),
+    profileId Nullable(String),
     pid FixedString(12),
     host Nullable(String),
     pg Nullable(String),
@@ -38,20 +39,11 @@ const CLICKHOUSE_INIT_QUERIES = [
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
 
-  // Session duration table
-  `CREATE TABLE IF NOT EXISTS ${dbName}.session_durations
-  (
-    psid UInt64,
-    pid FixedString(12),
-    duration UInt32
-  )
-  ENGINE = MergeTree()
-  ORDER BY (pid, psid);`,
-
   // Custom events table
   `CREATE TABLE IF NOT EXISTS ${dbName}.customEV
   (
     psid Nullable(UInt64),
+    profileId Nullable(String),
     pid FixedString(12),
     host Nullable(String),
     ev String,
@@ -114,6 +106,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.errors
   (
     psid Nullable(UInt64),
+    profileId Nullable(String),
     eid FixedString(32),
     pid FixedString(12),
     host Nullable(String),
@@ -154,6 +147,21 @@ const CLICKHOUSE_INIT_QUERIES = [
   )
   ENGINE = ReplacingMergeTree()
   PRIMARY KEY (eid, pid);`,
+
+  // Sessions table with ReplacingMergeTree for tracking session state
+  `CREATE TABLE IF NOT EXISTS ${dbName}.sessions
+  (
+    psid UInt64,
+    pid FixedString(12),
+    profileId Nullable(String),
+    firstSeen DateTime('UTC'),
+    lastSeen DateTime('UTC'),
+    pageviews UInt32 DEFAULT 1,
+    events UInt32 DEFAULT 0
+  )
+  ENGINE = ReplacingMergeTree(lastSeen)
+  ORDER BY (pid, psid)
+  PARTITION BY toYYYYMM(firstSeen);`,
 
   // The CAPTCHA data table
   `CREATE TABLE IF NOT EXISTS ${dbName}.captcha

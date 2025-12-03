@@ -1273,12 +1273,7 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const {
-      pid,
-      psid,
-      timezone = DEFAULT_TIMEZONE,
-      //
-    } = data
+    const { pid, psid, timezone = DEFAULT_TIMEZONE } = data
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1620,7 +1615,6 @@ export class AnalyticsController {
       from,
       to,
       timeBucket,
-      //
     } = data
 
     await this.analyticsService.checkProjectAccess(

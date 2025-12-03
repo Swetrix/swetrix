@@ -1385,8 +1385,8 @@ export class AnalyticsService {
                 ${filtersQuery}
             ),
             duration_avg AS (
-              SELECT avg(duration) as sdur
-              FROM session_durations
+              SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+              FROM sessions FINAL
               WHERE pid = {pid:FixedString(12)}
             )
             SELECT
@@ -1467,8 +1467,8 @@ export class AnalyticsService {
               ${filtersQuery}
           ),
           duration_avg AS (
-            SELECT avg(duration) as sdur
-            FROM session_durations
+            SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+            FROM sessions FINAL
             WHERE pid = {pid:FixedString(12)}
             AND psid IN (
               SELECT DISTINCT psid
@@ -1497,8 +1497,8 @@ export class AnalyticsService {
               ${filtersQuery}
           ),
           duration_avg AS (
-            SELECT avg(duration) as sdur
-            FROM session_durations
+            SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+            FROM sessions FINAL
             WHERE pid = {pid:FixedString(12)}
             AND psid IN (
               SELECT DISTINCT psid
@@ -2199,7 +2199,7 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        avgOrNull(session_durations.duration) as sdur,
+        avgOrNull(sessions_data.duration) as sdur,
         count() as pageviews,
         count(DISTINCT psid) as uniques
       FROM (
@@ -2216,12 +2216,12 @@ export class AnalyticsService {
         SELECT
           pid,
           psid,
-          duration
-        FROM session_durations
+          dateDiff('second', firstSeen, lastSeen) as duration
+        FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
-      ) as session_durations
-      ON subquery.pid = session_durations.pid
-      AND subquery.psid = session_durations.psid
+      ) as sessions_data
+      ON subquery.pid = sessions_data.pid
+      AND subquery.psid = sessions_data.psid
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
     `
@@ -3601,8 +3601,8 @@ export class AnalyticsService {
 
     const querySessionDuration = `
       SELECT
-        avg(duration) as duration
-      FROM session_durations
+        avg(dateDiff('second', firstSeen, lastSeen)) as duration
+      FROM sessions FINAL
       WHERE
         pid = {pid:FixedString(12)}
         AND CAST(psid, 'String') = {psid:String}
@@ -3803,8 +3803,8 @@ export class AnalyticsService {
         SELECT 
           CAST(psid, 'String') AS psidCasted, 
           pid, 
-          avg(duration) as avg_duration
-        FROM session_durations 
+          avg(dateDiff('second', firstSeen, lastSeen)) as avg_duration
+        FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
         GROUP BY psidCasted, pid
       )

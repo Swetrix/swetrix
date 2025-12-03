@@ -9,7 +9,6 @@ import _isEmpty from 'lodash/isEmpty'
 import _isNull from 'lodash/isNull'
 import _size from 'lodash/size'
 import _map from 'lodash/map'
-import _now from 'lodash/now'
 import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _toNumber from 'lodash/toNumber'
@@ -43,7 +42,6 @@ import {
   ReportFrequency as UserReportFrequency,
 } from '../user/entities/user.entity'
 import {
-  redis,
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   JWT_REFRESH_TOKEN_LIFETIME,
@@ -688,8 +686,6 @@ export class TaskManagerService {
     )
   }
 
-  // Ensure global salts exist for all rotation periods (daily/weekly/monthly)
-  // Salts auto-expire via Redis TTL, this just ensures they're regenerated if missing
   @Cron(CronExpression.EVERY_HOUR)
   async regenerateGlobalSalts() {
     await this.saltService.regenerateExpiredSalts()
@@ -729,49 +725,6 @@ export class TaskManagerService {
   @Cron('0 03 * * 0')
   async handleWeeklyReports() {
     await this.handleSubscriberReports(ReportFrequency.WEEKLY)
-  }
-
-  @Cron(CronExpression.EVERY_MINUTE)
-  async processSessionDuration() {
-    const keys = await redis.keys('sd:*')
-    const keysToDelete = []
-    const toSave = []
-    const now = _now()
-
-    const promises = _map(keys, async key => {
-      const [start, last] = (await redis.get(key)).split(':')
-      const duration = now - Number(last)
-
-      // storing to the DB if last interaction was more than 1 minute ago
-      if (duration > 60000) {
-        const [, psid, pid] = key.split(':')
-        toSave.push({
-          psid,
-          pid,
-          duration: Math.max(
-            0,
-            Math.floor((Number(last) - Number(start)) / 1000),
-          ), // convert to seconds, ensure non-negative
-        })
-        keysToDelete.push(key)
-      }
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](processSessionDuration) Error occured: ${reason}`,
-      )
-    })
-
-    if (_size(toSave) > 0) {
-      await redis.del(...keysToDelete)
-
-      await clickhouse.insert({
-        table: 'session_durations',
-        values: toSave,
-        format: 'JSONEachRow',
-      })
-    }
   }
 
   @Cron(CronExpression.EVERY_30_MINUTES)
