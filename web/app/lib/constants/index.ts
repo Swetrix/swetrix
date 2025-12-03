@@ -472,6 +472,7 @@ export const roles: Role[] = ['admin', 'viewer']
 const SELFHOSTED_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
+  users: 'users',
   funnels: 'funnels',
   sessions: 'sessions',
   errors: 'errors',
@@ -480,6 +481,7 @@ const SELFHOSTED_PROJECT_TABS = {
 const PRODUCTION_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
+  users: 'users',
   funnels: 'funnels',
   sessions: 'sessions',
   errors: 'errors',

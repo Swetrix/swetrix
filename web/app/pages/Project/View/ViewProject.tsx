@@ -24,6 +24,7 @@ import {
   GaugeIcon,
   Trash2Icon,
   UsersIcon,
+  UserIcon,
   BellRingIcon,
   ChartNoAxesColumnIcon,
   FilterIcon,
@@ -82,6 +83,9 @@ import {
   createAnnotation,
   updateAnnotation,
   deleteAnnotation,
+  getProfiles,
+  getProfile,
+  getProfileSessions,
 } from '~/api'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
@@ -130,6 +134,8 @@ import {
   SessionDetails as SessionDetailsModel,
   Session,
   Annotation,
+  Profile,
+  ProfileDetails,
 } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
 import NewFunnel from '~/modals/NewFunnel'
@@ -187,6 +193,8 @@ import SearchFilters, { getFiltersUrlParams } from './components/SearchFilters'
 import { SessionChart } from './components/SessionChart'
 import { SessionDetails } from './components/SessionDetails'
 import { Sessions } from './components/Sessions'
+import { Users, UsersFilter } from './components/Users'
+import { UserDetails } from './components/UserDetails'
 import TBPeriodSelector from './components/TBPeriodSelector'
 import { TrafficChart } from './components/TrafficChart'
 import UserFlow from './components/UserFlow'
@@ -678,6 +686,26 @@ const ViewProjectContent = () => {
   const [sessionChartInstance, _setSessionChartInstance] = useState<any>(null)
   const sessionsRequestIdRef = useRef(0)
   const skipNextSessionsAutoLoadRef = useRef(false)
+
+  // profiles / users
+  const [profilesSkip, setProfilesSkip] = useState(0)
+  const [canLoadMoreProfiles, setCanLoadMoreProfiles] = useState(false)
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [profilesLoading, setProfilesLoading] = useState<boolean | null>(null)
+  const [activeProfile, setActiveProfile] = useState<ProfileDetails | null>(null)
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [profileSessions, setProfileSessions] = useState<Session[]>([])
+  const [profileSessionsLoading, setProfileSessionsLoading] = useState<boolean | null>(null)
+  const [profileSessionsSkip, setProfileSessionsSkip] = useState(0)
+  const [canLoadMoreProfileSessions, setCanLoadMoreProfileSessions] = useState(false)
+  const [profileTypeFilter, setProfileTypeFilter] = useState<'all' | 'anonymous' | 'identified'>('all')
+  const [profileSearch, setProfileSearch] = useState('')
+  const activeProfileId = useMemo(() => {
+    return searchParams.get('profileId')
+  }, [searchParams])
+  const prevActiveProfileIdRef = useRef<string | null>(activeProfileId)
+  const profilesRequestIdRef = useRef(0)
+  const skipNextProfilesAutoLoadRef = useRef(false)
 
   // errors
   const [errorsSkip, setErrorsSkip] = useState(0)
@@ -1442,6 +1470,11 @@ const ViewProjectContent = () => {
         icon: GaugeIcon,
       },
       {
+        id: PROJECT_TABS.users,
+        label: t('dashboard.users'),
+        icon: UserIcon,
+      },
+      {
         id: PROJECT_TABS.sessions,
         label: t('dashboard.sessions'),
         icon: UsersIcon,
@@ -2063,6 +2096,187 @@ const ViewProjectContent = () => {
     }
   }
 
+  const loadProfiles = async (forcedSkip?: number) => {
+    if (profilesLoading) {
+      return
+    }
+
+    const requestId = profilesRequestIdRef.current
+    setProfilesLoading(true)
+
+    try {
+      const skip = typeof forcedSkip === 'number' ? forcedSkip : profilesSkip
+      let dataProfiles: { profiles: Profile[] }
+      let from
+      let to
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+      }
+
+      if (period === 'custom' && dateRange) {
+        dataProfiles = await getProfiles(
+          id,
+          '',
+          filters,
+          from,
+          to,
+          SESSIONS_TAKE,
+          skip,
+          timezone,
+          profileSearch,
+          profileTypeFilter,
+          projectPassword,
+        )
+      } else {
+        dataProfiles = await getProfiles(
+          id,
+          period,
+          filters,
+          '',
+          '',
+          SESSIONS_TAKE,
+          skip,
+          timezone,
+          profileSearch,
+          profileTypeFilter,
+          projectPassword,
+        )
+      }
+
+      if (requestId === profilesRequestIdRef.current) {
+        setProfiles((prev) => [...prev, ...(dataProfiles?.profiles || [])])
+        setProfilesSkip((prev) => {
+          if (typeof forcedSkip === 'number') {
+            return SESSIONS_TAKE + forcedSkip
+          }
+          return SESSIONS_TAKE + prev
+        })
+
+        if (dataProfiles?.profiles?.length < SESSIONS_TAKE) {
+          setCanLoadMoreProfiles(false)
+        } else {
+          setCanLoadMoreProfiles(true)
+        }
+      }
+    } catch (reason) {
+      console.error('[ERROR](loadProfiles) Loading profiles data failed:', reason)
+    } finally {
+      if (requestId === profilesRequestIdRef.current) {
+        setProfilesLoading(false)
+      }
+    }
+  }
+
+  const loadProfile = async (profileId: string) => {
+    setProfileLoading(true)
+    setProfileSessions([])
+    setProfileSessionsSkip(0)
+    setCanLoadMoreProfileSessions(false)
+
+    try {
+      let from
+      let to
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+      }
+
+      const data = await getProfile(
+        id,
+        profileId,
+        period === 'custom' ? '' : period,
+        from || '',
+        to || '',
+        timezone,
+        projectPassword,
+      )
+      setActiveProfile(data)
+      // Load initial sessions for the profile
+      loadProfileSessionsData(profileId, 0)
+    } catch (reason) {
+      console.error('[ERROR](loadProfile) Loading profile data failed:', reason)
+      setActiveProfile(null)
+    } finally {
+      setProfileLoading(false)
+    }
+  }
+
+  const loadProfileSessionsData = async (profileId: string, forcedSkip?: number) => {
+    if (profileSessionsLoading) {
+      return
+    }
+
+    setProfileSessionsLoading(true)
+
+    try {
+      const skip = typeof forcedSkip === 'number' ? forcedSkip : profileSessionsSkip
+      let dataSessions: { sessions: Session[] }
+      let from
+      let to
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+      }
+
+      if (period === 'custom' && dateRange) {
+        dataSessions = await getProfileSessions(
+          id,
+          profileId,
+          '',
+          filters,
+          from,
+          to,
+          SESSIONS_TAKE,
+          skip,
+          timezone,
+          projectPassword,
+        )
+      } else {
+        dataSessions = await getProfileSessions(
+          id,
+          profileId,
+          period,
+          filters,
+          '',
+          '',
+          SESSIONS_TAKE,
+          skip,
+          timezone,
+          projectPassword,
+        )
+      }
+
+      setProfileSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
+      setProfileSessionsSkip((prev) => {
+        if (typeof forcedSkip === 'number') {
+          return SESSIONS_TAKE + forcedSkip
+        }
+        return SESSIONS_TAKE + prev
+      })
+
+      if (dataSessions?.sessions?.length < SESSIONS_TAKE) {
+        setCanLoadMoreProfileSessions(false)
+      } else {
+        setCanLoadMoreProfileSessions(true)
+      }
+    } catch (reason) {
+      console.error('[ERROR](loadProfileSessions) Loading profile sessions failed:', reason)
+    } finally {
+      setProfileSessionsLoading(false)
+    }
+  }
+
+  const resetProfiles = () => {
+    profilesRequestIdRef.current += 1
+    setProfilesSkip(0)
+    setProfiles([])
+    setCanLoadMoreProfiles(false)
+  }
+
   const loadErrors = async (forcedSkip?: number, override?: boolean) => {
     if (errorsLoading) {
       return
@@ -2542,6 +2756,58 @@ const ViewProjectContent = () => {
     loadSessions()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, dateRange, filters, id, period, projectPassword, timezone, authLoading, project, activePSID])
+
+  // Load profiles list when users tab is active
+  useEffect(() => {
+    if (authLoading || activeTab !== PROJECT_TABS.users || !project || activeProfileId) {
+      return
+    }
+
+    if (skipNextProfilesAutoLoadRef.current) {
+      skipNextProfilesAutoLoadRef.current = false
+      return
+    }
+
+    loadProfiles()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeTab,
+    dateRange,
+    filters,
+    id,
+    period,
+    projectPassword,
+    timezone,
+    authLoading,
+    project,
+    activeProfileId,
+    profileTypeFilter,
+    profileSearch,
+  ])
+
+  // Load single profile when profileId is set
+  useEffect(() => {
+    if (authLoading || !activeProfileId || !project) {
+      return
+    }
+
+    loadProfile(activeProfileId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProfileId, authLoading, project])
+
+  // Reset profiles when navigating away from profile detail
+  useEffect(() => {
+    const prevProfileId = prevActiveProfileIdRef.current
+    prevActiveProfileIdRef.current = activeProfileId
+
+    if (prevProfileId && !activeProfileId) {
+      // We just closed a profile detail, reset to first page
+      resetProfiles()
+      skipNextProfilesAutoLoadRef.current = true
+      loadProfiles(0)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProfileId])
 
   useEffect(() => {
     if (authLoading || activeTab !== PROJECT_TABS.errors || authLoading || !project || activeEID) {
@@ -3597,6 +3863,81 @@ const ViewProjectContent = () => {
                           </Link>
                         )}
                       </div>
+                    ) : null}
+                    {activeTab === PROJECT_TABS.users && !activeProfileId ? (
+                      <>
+                        <UsersFilter
+                          profileType={profileTypeFilter}
+                          onProfileTypeChange={(type) => {
+                            setProfileTypeFilter(type)
+                            resetProfiles()
+                          }}
+                          search={profileSearch}
+                          onSearchChange={(search) => {
+                            setProfileSearch(search)
+                            resetProfiles()
+                          }}
+                        />
+                        {(profilesLoading === null || profilesLoading) && _isEmpty(profiles) ? <Loader /> : null}
+                        {typeof profilesLoading === 'boolean' && !profilesLoading && _isEmpty(profiles) ? (
+                          <NoEvents filters={filters} />
+                        ) : null}
+                        <Users profiles={profiles} timeFormat={timeFormat} />
+                        {canLoadMoreProfiles ? (
+                          <button
+                            type='button'
+                            title={t('project.loadMore')}
+                            onClick={() => loadProfiles()}
+                            className={cx(
+                              'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                              {
+                                'cursor-not-allowed opacity-50': profilesLoading || profilesLoading === null,
+                                hidden: profilesLoading && _isEmpty(profiles),
+                              },
+                            )}
+                          >
+                            <DownloadIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
+                            {t('project.loadMore')}
+                          </button>
+                        ) : null}
+                      </>
+                    ) : null}
+                    {activeTab === PROJECT_TABS.users && activeProfileId ? (
+                      <>
+                        <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
+                          <Link
+                            to={{
+                              search: (() => {
+                                const params = new URLSearchParams(searchParams)
+                                params.delete('profileId')
+                                return params.toString()
+                              })(),
+                            }}
+                            className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+                          >
+                            <ChevronLeftIcon className='mr-1 size-3' />
+                            {t('project.backToUsers')}
+                          </Link>
+                          <RefreshStatsButton onRefresh={() => loadProfile(activeProfileId)} />
+                        </div>
+                        {profileLoading ? (
+                          <Loader />
+                        ) : (
+                          <UserDetails
+                            details={activeProfile}
+                            sessions={profileSessions}
+                            sessionsLoading={profileSessionsLoading}
+                            timeFormat={timeFormat}
+                            chartType={chartType}
+                            onLoadMoreSessions={() => {
+                              if (activeProfileId) {
+                                loadProfileSessionsData(activeProfileId)
+                              }
+                            }}
+                            canLoadMoreSessions={canLoadMoreProfileSessions}
+                          />
+                        )}
+                      </>
                     ) : null}
                     {activeTab === PROJECT_TABS.sessions && !activePSID ? (
                       <>

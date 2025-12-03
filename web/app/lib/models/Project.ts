@@ -119,6 +119,38 @@ export interface SessionDetails {
   isLive?: boolean
 }
 
+export interface Profile {
+  profileId: string
+  isIdentified: boolean
+  sessionsCount: number
+  pageviewsCount: number
+  eventsCount: number
+  firstSeen: string
+  lastSeen: string
+  cc: string | null
+  os: string | null
+  br: string | null
+  dv: string | null
+}
+
+export interface ProfileDetails extends Profile {
+  avgDuration: number
+  rg: string | null
+  ct: string | null
+  lc: string | null
+  osv: string | null
+  brv: string | null
+  topPages: { page: string; count: number }[]
+  activityCalendar: { date: string; count: number }[]
+  chart?: {
+    x: string[]
+    pageviews: number[]
+    customEvents: number[]
+    errors: number[]
+  }
+  timeBucket?: string
+}
+
 export interface AnalyticsFunnel {
   value: string
   events: number

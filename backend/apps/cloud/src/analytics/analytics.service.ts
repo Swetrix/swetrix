@@ -4287,6 +4287,454 @@ export class AnalyticsService {
     return data
   }
 
+  async getProfilesList(
+    pid: string,
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+    search?: string,
+    profileType: 'all' | 'anonymous' | 'identified' = 'all',
+  ): Promise<object[]> {
+    let profileTypeFilter = ''
+    if (profileType === 'anonymous') {
+      profileTypeFilter = `AND profileId LIKE '${AnalyticsService.PROFILE_PREFIX_ANON}%'`
+    } else if (profileType === 'identified') {
+      profileTypeFilter = `AND profileId LIKE '${AnalyticsService.PROFILE_PREFIX_USER}%'`
+    }
+
+    let searchFilter = ''
+    if (search) {
+      searchFilter = `AND profileId LIKE '%${search}%'`
+    }
+
+    const query = `
+      WITH profile_sessions AS (
+        SELECT
+          profileId,
+          count() AS sessionsCount,
+          sum(pageviews) AS pageviewsCount,
+          sum(events) AS eventsCount,
+          min(firstSeen) AS firstSeen,
+          max(lastSeen) AS lastSeen
+        FROM sessions FINAL
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+          ${profileTypeFilter}
+          ${searchFilter}
+        GROUP BY profileId
+      ),
+      profile_details AS (
+        SELECT
+          profileId,
+          any(cc) AS cc,
+          any(os) AS os,
+          any(br) AS br,
+          any(dv) AS dv
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+          ${profileTypeFilter}
+          ${searchFilter}
+          ${filtersQuery}
+        GROUP BY profileId
+      )
+      SELECT
+        ps.profileId,
+        ps.sessionsCount,
+        ps.pageviewsCount,
+        ps.eventsCount,
+        ps.firstSeen,
+        ps.lastSeen,
+        pd.cc,
+        pd.os,
+        pd.br,
+        pd.dv
+      FROM profile_sessions ps
+      LEFT JOIN profile_details pd ON ps.profileId = pd.profileId
+      ORDER BY ps.lastSeen DESC
+      LIMIT ${take}
+      OFFSET ${skip}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, ...paramsData.params },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data.map((profile: any) => ({
+      ...profile,
+      isIdentified: this.isUserSuppliedProfile(profile.profileId),
+    }))
+  }
+
+  async getProfileDetails(
+    pid: string,
+    profileId: string,
+    _safeTimezone: string,
+  ): Promise<any> {
+    // Query sessions for session count and duration
+    const querySessionStats = `
+      SELECT
+        count() AS sessionsCount,
+        min(sessions.firstSeen) AS firstSeen,
+        max(sessions.lastSeen) AS lastSeen,
+        avg(dateDiff('second', sessions.firstSeen, sessions.lastSeen)) AS avgDuration
+      FROM sessions FINAL
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+    `
+
+    // Query analytics for accurate pageview count
+    const queryPageviews = `
+      SELECT count() AS pageviewsCount
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+    `
+
+    // Query customEV for accurate events count
+    const queryEvents = `
+      SELECT count() AS eventsCount
+      FROM customEV
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+    `
+
+    // Query for device/location details
+    const queryDetails = `
+      SELECT
+        any(cc) AS cc,
+        any(rg) AS rg,
+        any(ct) AS ct,
+        any(os) AS os,
+        any(osv) AS osv,
+        any(br) AS br,
+        any(brv) AS brv,
+        any(dv) AS dv,
+        any(lc) AS lc
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+    `
+
+    const params = { pid, profileId }
+
+    const [sessionStatsResult, pageviewsResult, eventsResult, detailsResult] =
+      await Promise.all([
+        clickhouse
+          .query({ query: querySessionStats, query_params: params })
+          .then(resultSet => resultSet.json()),
+        clickhouse
+          .query({ query: queryPageviews, query_params: params })
+          .then(resultSet => resultSet.json()),
+        clickhouse
+          .query({ query: queryEvents, query_params: params })
+          .then(resultSet => resultSet.json()),
+        clickhouse
+          .query({ query: queryDetails, query_params: params })
+          .then(resultSet => resultSet.json()),
+      ])
+
+    const sessionStats = (sessionStatsResult.data[0] || {}) as Record<
+      string,
+      any
+    >
+    const pageviews = (pageviewsResult.data[0] || {}) as Record<string, any>
+    const events = (eventsResult.data[0] || {}) as Record<string, any>
+    const details = (detailsResult.data[0] || {}) as Record<string, any>
+
+    return {
+      profileId,
+      isIdentified: this.isUserSuppliedProfile(profileId),
+      sessionsCount: sessionStats.sessionsCount || 0,
+      pageviewsCount: pageviews.pageviewsCount || 0,
+      eventsCount: events.eventsCount || 0,
+      firstSeen: sessionStats.firstSeen,
+      lastSeen: sessionStats.lastSeen,
+      avgDuration: sessionStats.avgDuration || 0,
+      ...details,
+    }
+  }
+
+  async getProfileTopPages(
+    pid: string,
+    profileId: string,
+    limit = 10,
+  ): Promise<{ page: string; count: number }[]> {
+    const query = `
+      SELECT
+        pg AS page,
+        count() AS count
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+      GROUP BY pg
+      ORDER BY count DESC
+      LIMIT ${limit}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, profileId },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data as { page: string; count: number }[]
+  }
+
+  async getProfileActivityCalendar(
+    pid: string,
+    profileId: string,
+    months = 4,
+  ): Promise<{ date: string; count: number }[]> {
+    const startDate = dayjs
+      .utc()
+      .subtract(months, 'month')
+      .startOf('day')
+      .format('YYYY-MM-DD')
+
+    const query = `
+      SELECT
+        toDate(created) AS date,
+        count() AS count
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND created >= {startDate:Date}
+      GROUP BY date
+      ORDER BY date ASC
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, profileId, startDate },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data as { date: string; count: number }[]
+  }
+
+  async getProfileChartData(
+    pid: string,
+    profileId: string,
+    timeBucket: string,
+    from: string,
+    to: string,
+    safeTimezone: string,
+  ): Promise<{
+    x: string[]
+    pageviews: number[]
+    customEvents: number[]
+    errors: number[]
+  }> {
+    const timeBucketFunc =
+      timeBucketConversion[timeBucket] || timeBucketConversion.day
+
+    const queryPageviews = `
+      SELECT
+        ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) AS time,
+        count() AS count
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND created BETWEEN {from:String} AND {to:String}
+      GROUP BY time
+      ORDER BY time ASC
+    `
+
+    const queryEvents = `
+      SELECT
+        ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) AS time,
+        count() AS count
+      FROM customEV
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND created BETWEEN {from:String} AND {to:String}
+      GROUP BY time
+      ORDER BY time ASC
+    `
+
+    const queryErrors = `
+      SELECT
+        ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) AS time,
+        count() AS count
+      FROM errors
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND created BETWEEN {from:String} AND {to:String}
+      GROUP BY time
+      ORDER BY time ASC
+    `
+
+    const params = { pid, profileId, from, to }
+
+    const [pageviewsResult, eventsResult, errorsResult] = await Promise.all([
+      clickhouse
+        .query({ query: queryPageviews, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryEvents, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryErrors, query_params: params })
+        .then(resultSet => resultSet.json()),
+    ])
+
+    // Merge all timestamps and create aligned data
+    const allTimes = new Set<string>()
+    const pageviewsMap = new Map<string, number>()
+    const eventsMap = new Map<string, number>()
+    const errorsMap = new Map<string, number>()
+
+    for (const row of pageviewsResult.data as {
+      time: string
+      count: number
+    }[]) {
+      allTimes.add(row.time)
+      pageviewsMap.set(row.time, Number(row.count))
+    }
+
+    for (const row of eventsResult.data as {
+      time: string
+      count: number
+    }[]) {
+      allTimes.add(row.time)
+      eventsMap.set(row.time, Number(row.count))
+    }
+
+    for (const row of errorsResult.data as {
+      time: string
+      count: number
+    }[]) {
+      allTimes.add(row.time)
+      errorsMap.set(row.time, Number(row.count))
+    }
+
+    const sortedTimes = Array.from(allTimes).sort()
+
+    return {
+      x: sortedTimes,
+      pageviews: sortedTimes.map(t => pageviewsMap.get(t) || 0),
+      customEvents: sortedTimes.map(t => eventsMap.get(t) || 0),
+      errors: sortedTimes.map(t => errorsMap.get(t) || 0),
+    }
+  }
+
+  async getProfileSessionsList(
+    pid: string,
+    profileId: string,
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+  ): Promise<object[]> {
+    const query = `
+      WITH profile_sessions AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          profileId,
+          any(cc) AS cc,
+          any(os) AS os,
+          any(br) AS br,
+          min(toTimeZone(created, '${safeTimezone}')) AS sessionStart,
+          max(toTimeZone(created, '${safeTimezone}')) AS lastActivity
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+        GROUP BY psidCasted, pid, profileId
+      ),
+      pageview_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      event_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      error_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM errors
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      session_duration_agg AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          avg(dateDiff('second', firstSeen, lastSeen)) as avg_duration
+        FROM sessions FINAL
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+        GROUP BY psidCasted, pid
+      )
+      SELECT
+        ps.psidCasted AS psid,
+        ps.cc,
+        ps.os,
+        ps.br,
+        COALESCE(pc.count, 0) AS pageviews,
+        COALESCE(ec.count, 0) AS customEvents,
+        COALESCE(errc.count, 0) AS errors,
+        ps.sessionStart,
+        ps.lastActivity,
+        if(dateDiff('second', ps.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        sda.avg_duration AS sdur
+      FROM profile_sessions ps
+      LEFT JOIN pageview_counts pc ON ps.psidCasted = pc.psidCasted AND ps.pid = pc.pid
+      LEFT JOIN event_counts ec ON ps.psidCasted = ec.psidCasted AND ps.pid = ec.pid
+      LEFT JOIN error_counts errc ON ps.psidCasted = errc.psidCasted AND ps.pid = errc.pid
+      LEFT JOIN session_duration_agg sda ON ps.psidCasted = sda.psidCasted AND ps.pid = sda.pid
+      WHERE ps.psidCasted IS NOT NULL
+      ORDER BY ps.sessionStart DESC
+      LIMIT ${take}
+      OFFSET ${skip}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, profileId, ...paramsData.params },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data as object[]
+  }
+
   async getErrorsList(
     options: string,
     filtersQuery: string,
