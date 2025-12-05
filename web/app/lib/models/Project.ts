@@ -3,6 +3,7 @@ import { Organisation, Role } from './Organisation'
 interface OverallPeriodStats {
   all: number
   unique?: number
+  users?: number
   bounceRate?: number
   sdur?: number
 }
@@ -12,6 +13,7 @@ export interface OverallObject {
   previous: OverallPeriodStats
   change: number
   uniqueChange?: number
+  usersChange?: number
   bounceRateChange?: number
   sdurChange?: number
   customEVFilterApplied?: boolean

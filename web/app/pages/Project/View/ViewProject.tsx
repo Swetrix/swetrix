@@ -1282,7 +1282,7 @@ const ViewProjectContent = () => {
     return [
       {
         id: CHART_METRICS_MAPPING.unique,
-        label: t('dashboard.unique'),
+        label: t('dashboard.sessions'),
         active: activeChartMetrics[CHART_METRICS_MAPPING.unique],
       },
       {
@@ -1415,7 +1415,7 @@ const ViewProjectContent = () => {
 
   const dataNames = useMemo(
     () => ({
-      unique: t('project.unique'),
+      unique: t('dashboard.sessions'),
       total: t('project.total'),
       pageviews: t('project.pageviews'),
       customEvents: t('project.customEvents'),

@@ -181,12 +181,14 @@ export const MetricCards = memo(({ overall, overallCompare, activePeriodCompare 
   const { t } = useTranslation('common')
 
   let uniqueChange = overall.uniqueChange
+  let usersChange = overall.usersChange
   let allChange = overall.change
   let bounceRateChange = overall.bounceRateChange
   let sdurChange = overall.sdurChange
 
   if (!_isEmpty(overallCompare) && activePeriodCompare !== 'previous') {
     uniqueChange = (overall.current?.unique as number) - (overallCompare?.current?.unique as number)
+    usersChange = (overall.current?.users as number) - (overallCompare?.current?.users as number)
     allChange = (overall.current?.all as number) - (overallCompare?.current?.all as number)
     bounceRateChange = ((overall.current?.bounceRate as number) - (overallCompare.current?.bounceRate as number)) * -1
     sdurChange = (overall.current?.sdur as number) - (overallCompare?.current?.sdur as number)
@@ -208,7 +210,15 @@ export const MetricCards = memo(({ overall, overallCompare, activePeriodCompare 
   return (
     <>
       <MetricCard
-        label={t('dashboard.unique')}
+        label={t('dashboard.users')}
+        value={overall.current?.users}
+        change={usersChange}
+        type='percent'
+        goodChangeDirection='down'
+        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`}
+      />
+      <MetricCard
+        label={t('dashboard.sessions')}
         value={overall.current?.unique}
         change={uniqueChange}
         type='percent'

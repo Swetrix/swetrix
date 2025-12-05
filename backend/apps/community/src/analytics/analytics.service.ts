@@ -1521,7 +1521,8 @@ export class AnalyticsService {
             WITH analytics_counts AS (
               SELECT
                 count(*) AS all,
-                count(DISTINCT psid) AS unique
+                count(DISTINCT psid) AS unique,
+                count(DISTINCT profileId) AS users
               FROM analytics
               WHERE
                 pid = {pid:FixedString(12)}
@@ -1569,17 +1570,20 @@ export class AnalyticsService {
             current: {
               all: data[0].all,
               unique: data[0].unique,
+              users: data[0].users,
               bounceRate,
               sdur: data[0].sdur,
             },
             previous: {
               all: 0,
               unique: 0,
+              users: 0,
               bounceRate: 0,
               sdur: 0,
             },
             change: data[0].all,
             uniqueChange: data[0].unique,
+            usersChange: data[0].users,
             bounceRateChange: bounceRate,
             sdurChange: data[0].sdur,
             customEVFilterApplied,
@@ -1602,7 +1606,8 @@ export class AnalyticsService {
             SELECT
               1 AS sortOrder,
               count(*) AS all,
-              count(DISTINCT psid) AS unique
+              count(DISTINCT psid) AS unique,
+              count(DISTINCT profileId) AS users
             FROM analytics
             WHERE
               pid = {pid:FixedString(12)}
@@ -1632,7 +1637,8 @@ export class AnalyticsService {
             SELECT
               2 AS sortOrder,
               count(*) AS all,
-              count(DISTINCT psid) AS unique
+              count(DISTINCT psid) AS unique,
+              count(DISTINCT profileId) AS users
             FROM analytics
             WHERE
               pid = {pid:FixedString(12)}
@@ -1717,17 +1723,20 @@ export class AnalyticsService {
           current: {
             all: currentPeriod.all,
             unique: currentPeriod.unique,
+            users: currentPeriod.users,
             sdur: currentPeriod.sdur || 0,
             bounceRate,
           },
           previous: {
             all: previousPeriod.all,
             unique: previousPeriod.unique,
+            users: previousPeriod.users,
             sdur: previousPeriod.sdur || 0,
             bounceRate: prevBounceRate,
           },
           change: currentPeriod.all - previousPeriod.all,
           uniqueChange: currentPeriod.unique - previousPeriod.unique,
+          usersChange: currentPeriod.users - previousPeriod.users,
           bounceRateChange: (bounceRate - prevBounceRate) * -1,
           sdurChange: currentPeriod.sdur - previousPeriod.sdur,
           customEVFilterApplied,

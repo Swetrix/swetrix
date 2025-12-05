@@ -19,6 +19,7 @@ export interface TrafficCHResponse {
 export interface BirdseyeCHResponse {
   all: number
   unique: number
+  users: number
   sdur: number
 }
 
@@ -134,6 +135,7 @@ export interface IGetFunnel {
 interface IOverallPeriodStats {
   all: number
   unique: number
+  users: number
   bounceRate: number
   sdur: number
 }
@@ -169,6 +171,7 @@ interface IOverallObject {
   previous: IOverallPeriodStats
   change: number
   uniqueChange?: number
+  usersChange?: number
   bounceRateChange?: number
   sdurChange?: number
 }
