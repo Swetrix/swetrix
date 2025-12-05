@@ -475,7 +475,7 @@ const AnalyticsLivePreview = () => {
       <div className='mb-3 flex items-center justify-between'>
         <div className='flex gap-3'>
           {[
-            { l: t('dashboard.unique'), v: 471 },
+            { l: t('dashboard.sessions'), v: 471 },
             { l: t('dashboard.pageviews'), v: 994 },
             { l: t('dashboard.bounceRate'), v: '28.5%' },
           ].map((k) => (
