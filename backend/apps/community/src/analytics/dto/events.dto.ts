@@ -88,6 +88,14 @@ export class EventsDto {
   pid: string
 
   @ApiProperty({
+    example: 'user_12345',
+    description:
+      'Optional profile ID for long-term user tracking. If not provided, one will be auto-generated.',
+  })
+  @IsOptional()
+  profileId?: string
+
+  @ApiProperty({
     example: 'user-subscribed',
     description: 'Event name',
     maxLength: 64,

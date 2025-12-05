@@ -916,10 +916,23 @@ export class AnalyticsController {
       ip,
     )
 
-    await this.analyticsService.recordSession(psid, eventsDTO.pid, false)
+    const profileId = await this.analyticsService.generateProfileId(
+      eventsDTO.pid,
+      userAgent,
+      ip,
+      eventsDTO.profileId,
+    )
+
+    await this.analyticsService.recordSession(
+      psid,
+      eventsDTO.pid,
+      profileId,
+      false,
+    )
 
     const transformed = customEventTransformer(
       psid,
+      profileId,
       eventsDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
       eventsDTO.ev,
@@ -991,8 +1004,15 @@ export class AnalyticsController {
       )
     }
 
+    const profileId = await this.analyticsService.generateProfileId(
+      pid,
+      userAgent,
+      ip,
+      logDTO.profileId,
+    )
+
     await this.analyticsService.extendSessionTTL(psid)
-    await this.analyticsService.updateSessionActivity(psid, pid)
+    await this.analyticsService.updateSessionActivity(psid, pid, profileId)
 
     return {}
   }
@@ -1019,7 +1039,14 @@ export class AnalyticsController {
         ip,
       )
 
-    await this.analyticsService.recordSession(psid, logDTO.pid, true)
+    const profileId = await this.analyticsService.generateProfileId(
+      logDTO.pid,
+      userAgent,
+      ip,
+      logDTO.profileId,
+    )
+
+    await this.analyticsService.recordSession(psid, logDTO.pid, profileId, true)
 
     if (unique && logDTO.unique) {
       throw new ForbiddenException(
@@ -1036,6 +1063,7 @@ export class AnalyticsController {
 
     const transformed = trafficTransformer(
       psid,
+      profileId,
       logDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
       logDTO.pg,
@@ -1152,7 +1180,15 @@ export class AnalyticsController {
       ip,
     )
 
-    await this.analyticsService.recordSession(psid, logDTO.pid, true)
+    // For noscript requests, we generate an anonymous profile ID since
+    // user-supplied profileId is not available without JavaScript
+    const profileId = await this.analyticsService.generateProfileId(
+      logDTO.pid,
+      userAgent,
+      ip,
+    )
+
+    await this.analyticsService.recordSession(psid, logDTO.pid, profileId, true)
 
     const { city, region, regionCode, country } = getGeoDetails(ip, null)
 
@@ -1163,6 +1199,7 @@ export class AnalyticsController {
 
     const transformed = trafficTransformer(
       psid,
+      profileId,
       logDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
       null,
@@ -1447,7 +1484,19 @@ export class AnalyticsController {
       ip,
     )
 
-    await this.analyticsService.recordSession(psid, errorDTO.pid, false)
+    const profileId = await this.analyticsService.generateProfileId(
+      errorDTO.pid,
+      userAgent,
+      ip,
+      errorDTO.profileId,
+    )
+
+    await this.analyticsService.recordSession(
+      psid,
+      errorDTO.pid,
+      profileId,
+      false,
+    )
 
     const { city, region, regionCode, country } = getGeoDetails(ip, errorDTO.tz)
 
@@ -1461,6 +1510,7 @@ export class AnalyticsController {
 
     const transformed = errorEventTransformer(
       psid,
+      profileId,
       this.analyticsService.getErrorID(errorDTO),
       errorDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),

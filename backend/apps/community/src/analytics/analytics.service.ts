@@ -33,6 +33,7 @@ import {
   InternalServerErrorException,
   UnprocessableEntityException,
   PreconditionFailedException,
+  Logger,
 } from '@nestjs/common'
 import { isbot } from 'isbot'
 
@@ -327,6 +328,11 @@ const isValidOrigin = (origins: string[], origin: string) => {
 
 @Injectable()
 export class AnalyticsService {
+  private readonly logger = new Logger(AnalyticsService.name)
+
+  static readonly PROFILE_PREFIX_ANON = 'anon_'
+  static readonly PROFILE_PREFIX_USER = 'usr_'
+
   constructor(
     private readonly projectService: ProjectService,
     private readonly saltService: SaltService,
@@ -1191,9 +1197,44 @@ export class AnalyticsService {
     await redis.set(sessionKey, '1', 'EX', UNIQUE_SESSION_LIFE_TIME)
   }
 
+  private hashToNumericString(value: string): string {
+    return crypto
+      .createHash('sha256')
+      .update(value)
+      .digest()
+      .readBigUInt64BE(0)
+      .toString()
+  }
+
+  async generateProfileId(
+    pid: string,
+    userAgent: string,
+    ip: string,
+    userSupplied?: string,
+  ): Promise<string> {
+    if (userSupplied) {
+      const cleanId = userSupplied
+        .replace(AnalyticsService.PROFILE_PREFIX_ANON, '')
+        .replace(AnalyticsService.PROFILE_PREFIX_USER, '')
+      const hash = this.hashToNumericString(`${cleanId}${pid}`)
+      return `${AnalyticsService.PROFILE_PREFIX_USER}${hash}`
+    }
+
+    const salt = await this.saltService.getSaltForProfile()
+    const combined = `${userAgent}${ip}${pid}${salt}`
+    const hash = this.hashToNumericString(combined)
+
+    return `${AnalyticsService.PROFILE_PREFIX_ANON}${hash}`
+  }
+
+  isUserSuppliedProfile(profileId: string): boolean {
+    return profileId.startsWith(AnalyticsService.PROFILE_PREFIX_USER)
+  }
+
   async recordSession(
     psid: string,
     pid: string,
+    profileId: string,
     isPageview: boolean = true,
   ): Promise<void> {
     const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
@@ -1206,7 +1247,7 @@ export class AnalyticsService {
           {
             psid,
             pid,
-            profileId: '',
+            profileId,
             firstSeen: now,
             lastSeen: now,
             pageviews: isPageview ? 1 : 0,
@@ -1216,11 +1257,16 @@ export class AnalyticsService {
         clickhouse_settings: { async_insert: 1 },
       })
     } catch (error) {
-      console.error('Failed to record session:', error)
+      this.logger.error('Failed to record session:', error)
+      throw error
     }
   }
 
-  async updateSessionActivity(psid: string, pid: string): Promise<void> {
+  async updateSessionActivity(
+    psid: string,
+    pid: string,
+    profileId: string,
+  ): Promise<void> {
     const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
 
     try {
@@ -1231,7 +1277,7 @@ export class AnalyticsService {
           {
             psid,
             pid,
-            profileId: '',
+            profileId,
             firstSeen: now,
             lastSeen: now,
             pageviews: 0,
@@ -1241,7 +1287,8 @@ export class AnalyticsService {
         clickhouse_settings: { async_insert: 1 },
       })
     } catch (error) {
-      console.error('Failed to update session activity:', error)
+      this.logger.error('Failed to update session activity:', error)
+      throw error
     }
   }
 

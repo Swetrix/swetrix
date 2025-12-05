@@ -28,6 +28,14 @@ export class PageviewsDto {
   @Matches(PID_REGEX, { message: 'The provided Project ID (pid) is incorrect' })
   pid: string
 
+  @ApiProperty({
+    example: 'user_12345',
+    description:
+      'Optional profile ID for long-term user tracking. If not provided, one will be auto-generated.',
+  })
+  @IsOptional()
+  profileId?: string
+
   // Tracking metrics
   @ApiProperty({
     example: 'Europe/Kiev',
