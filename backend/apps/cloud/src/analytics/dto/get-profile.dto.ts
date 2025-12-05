@@ -1,6 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsNotEmpty, IsOptional, Matches } from 'class-validator'
+import { IsNotEmpty, IsOptional, Matches, IsInt, Min } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 import { PID_REGEX } from '../../common/constants'
 import { ValidatePeriod } from '../decorators/validate-period.decorator'
@@ -60,10 +60,14 @@ export class GetProfileSessionsDto extends PickType(GetDataDto, [
   @ApiProperty({ required: false, default: 30 })
   @IsOptional()
   @Type(() => Number)
+  @IsInt()
+  @Min(0)
   take?: number
 
   @ApiProperty({ required: false, default: 0 })
   @IsOptional()
   @Type(() => Number)
+  @IsInt()
+  @Min(0)
   skip?: number
 }
