@@ -20,13 +20,6 @@ export class GetProfilesDto extends PickType(GetDataDto, [
 
   @ApiProperty({
     required: false,
-    description: 'Search by profileId or display name',
-  })
-  @IsOptional()
-  search?: string
-
-  @ApiProperty({
-    required: false,
     description: 'Filter by profile type',
     enum: ['all', 'anonymous', 'identified'],
     default: 'all',

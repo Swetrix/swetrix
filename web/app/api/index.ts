@@ -675,7 +675,6 @@ export const getProfiles = (
   take = 30,
   skip = 0,
   timezone = '',
-  search = '',
   profileType: 'all' | 'anonymous' | 'identified' = 'all',
   password: string | undefined = '',
 ) =>
@@ -683,7 +682,7 @@ export const getProfiles = (
     .get(
       `log/profiles?pid=${pid}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(
         filters,
-      )}&from=${from}&to=${to}&timezone=${timezone}&search=${search}&profileType=${profileType}`,
+      )}&from=${from}&to=${to}&timezone=${timezone}&profileType=${profileType}`,
       {
         headers: {
           'x-password': password,

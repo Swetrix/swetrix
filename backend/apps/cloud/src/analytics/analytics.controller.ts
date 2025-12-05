@@ -1873,7 +1873,6 @@ export class AnalyticsController {
       to,
       filters,
       timezone = DEFAULT_TIMEZONE,
-      search,
       profileType = 'all',
     } = data
 
@@ -1938,7 +1937,6 @@ export class AnalyticsController {
       safeTimezone,
       take,
       skip,
-      search,
       profileType,
     )
 

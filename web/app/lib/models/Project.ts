@@ -125,6 +125,7 @@ export interface Profile {
   sessionsCount: number
   pageviewsCount: number
   eventsCount: number
+  errorsCount: number
   firstSeen: string
   lastSeen: string
   cc: string | null

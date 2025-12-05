@@ -4294,7 +4294,6 @@ export class AnalyticsService {
     safeTimezone: string,
     take = 30,
     skip = 0,
-    search?: string,
     profileType: 'all' | 'anonymous' | 'identified' = 'all',
   ): Promise<object[]> {
     let profileTypeFilter = ''
@@ -4304,31 +4303,14 @@ export class AnalyticsService {
       profileTypeFilter = `AND profileId LIKE '${AnalyticsService.PROFILE_PREFIX_USER}%'`
     }
 
-    let searchFilter = ''
-    if (search) {
-      searchFilter = `AND profileId LIKE '%${search}%'`
-    }
-
     const query = `
-      WITH profile_sessions AS (
+      WITH profile_analytics AS (
         SELECT
           profileId,
-          count() AS sessionsCount,
-          sum(pageviews) AS pageviewsCount,
-          sum(events) AS eventsCount,
-          min(firstSeen) AS firstSeen,
-          max(lastSeen) AS lastSeen
-        FROM sessions FINAL
-        WHERE pid = {pid:FixedString(12)}
-          AND profileId IS NOT NULL
-          AND profileId != ''
-          ${profileTypeFilter}
-          ${searchFilter}
-        GROUP BY profileId
-      ),
-      profile_details AS (
-        SELECT
-          profileId,
+          count() AS pageviewsCount,
+          countDistinct(psid) AS sessionsCount,
+          min(created) AS firstSeen,
+          max(created) AS lastSeen,
           any(cc) AS cc,
           any(os) AS os,
           any(br) AS br,
@@ -4338,24 +4320,47 @@ export class AnalyticsService {
           AND profileId IS NOT NULL
           AND profileId != ''
           ${profileTypeFilter}
-          ${searchFilter}
           ${filtersQuery}
+        GROUP BY profileId
+      ),
+      profile_events AS (
+        SELECT
+          profileId,
+          count() AS eventsCount
+        FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+          ${profileTypeFilter}
+        GROUP BY profileId
+      ),
+      profile_errors AS (
+        SELECT
+          profileId,
+          count() AS errorsCount
+        FROM errors
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+          ${profileTypeFilter}
         GROUP BY profileId
       )
       SELECT
-        ps.profileId,
-        ps.sessionsCount,
-        ps.pageviewsCount,
-        ps.eventsCount,
-        ps.firstSeen,
-        ps.lastSeen,
-        pd.cc,
-        pd.os,
-        pd.br,
-        pd.dv
-      FROM profile_sessions ps
-      LEFT JOIN profile_details pd ON ps.profileId = pd.profileId
-      ORDER BY ps.lastSeen DESC
+        pa.profileId AS profileId,
+        pa.sessionsCount AS sessionsCount,
+        pa.pageviewsCount AS pageviewsCount,
+        COALESCE(pe.eventsCount, 0) AS eventsCount,
+        COALESCE(perr.errorsCount, 0) AS errorsCount,
+        pa.firstSeen AS firstSeen,
+        pa.lastSeen AS lastSeen,
+        pa.cc AS cc,
+        pa.os AS os,
+        pa.br AS br,
+        pa.dv AS dv
+      FROM profile_analytics AS pa
+      LEFT JOIN profile_events AS pe ON pa.profileId = pe.profileId
+      LEFT JOIN profile_errors AS perr ON pa.profileId = perr.profileId
+      ORDER BY pa.lastSeen DESC
       LIMIT ${take}
       OFFSET ${skip}
     `
@@ -4367,10 +4372,12 @@ export class AnalyticsService {
       })
       .then(resultSet => resultSet.json())
 
-    return data.map((profile: any) => ({
-      ...profile,
-      isIdentified: this.isUserSuppliedProfile(profile.profileId),
-    }))
+    return data
+      .filter((profile: any) => profile.profileId)
+      .map((profile: any) => ({
+        ...profile,
+        isIdentified: this.isUserSuppliedProfile(profile.profileId),
+      }))
   }
 
   async getProfileDetails(
@@ -4378,16 +4385,32 @@ export class AnalyticsService {
     profileId: string,
     _safeTimezone: string,
   ): Promise<any> {
-    // Query sessions for session count and duration
-    const querySessionStats = `
+    // Query session count from sessions table
+    const querySessionCount = `
       SELECT
         count() AS sessionsCount,
         min(sessions.firstSeen) AS firstSeen,
-        max(sessions.lastSeen) AS lastSeen,
-        avg(dateDiff('second', sessions.firstSeen, sessions.lastSeen)) AS avgDuration
+        max(sessions.lastSeen) AS lastSeen
       FROM sessions FINAL
       WHERE pid = {pid:FixedString(12)}
         AND profileId = {profileId:String}
+    `
+
+    // Query avg duration from analytics table (more accurate than sessions table)
+    const queryAvgDuration = `
+      SELECT
+        avg(session_duration) AS avgDuration
+      FROM (
+        SELECT
+          psid,
+          dateDiff('second', min(created), max(created)) AS session_duration
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+        GROUP BY psid
+        HAVING session_duration > 0
+      )
     `
 
     // Query analytics for accurate pageview count
@@ -4425,26 +4448,35 @@ export class AnalyticsService {
 
     const params = { pid, profileId }
 
-    const [sessionStatsResult, pageviewsResult, eventsResult, detailsResult] =
-      await Promise.all([
-        clickhouse
-          .query({ query: querySessionStats, query_params: params })
-          .then(resultSet => resultSet.json()),
-        clickhouse
-          .query({ query: queryPageviews, query_params: params })
-          .then(resultSet => resultSet.json()),
-        clickhouse
-          .query({ query: queryEvents, query_params: params })
-          .then(resultSet => resultSet.json()),
-        clickhouse
-          .query({ query: queryDetails, query_params: params })
-          .then(resultSet => resultSet.json()),
-      ])
+    const [
+      sessionCountResult,
+      avgDurationResult,
+      pageviewsResult,
+      eventsResult,
+      detailsResult,
+    ] = await Promise.all([
+      clickhouse
+        .query({ query: querySessionCount, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryAvgDuration, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryPageviews, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryEvents, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryDetails, query_params: params })
+        .then(resultSet => resultSet.json()),
+    ])
 
-    const sessionStats = (sessionStatsResult.data[0] || {}) as Record<
+    const sessionCount = (sessionCountResult.data[0] || {}) as Record<
       string,
       any
     >
+    const avgDuration = (avgDurationResult.data[0] || {}) as Record<string, any>
     const pageviews = (pageviewsResult.data[0] || {}) as Record<string, any>
     const events = (eventsResult.data[0] || {}) as Record<string, any>
     const details = (detailsResult.data[0] || {}) as Record<string, any>
@@ -4452,12 +4484,12 @@ export class AnalyticsService {
     return {
       profileId,
       isIdentified: this.isUserSuppliedProfile(profileId),
-      sessionsCount: sessionStats.sessionsCount || 0,
+      sessionsCount: sessionCount.sessionsCount || 0,
       pageviewsCount: pageviews.pageviewsCount || 0,
       eventsCount: events.eventsCount || 0,
-      firstSeen: sessionStats.firstSeen,
-      lastSeen: sessionStats.lastSeen,
-      avgDuration: sessionStats.avgDuration || 0,
+      firstSeen: sessionCount.firstSeen,
+      lastSeen: sessionCount.lastSeen,
+      avgDuration: avgDuration.avgDuration || 0,
       ...details,
     }
   }

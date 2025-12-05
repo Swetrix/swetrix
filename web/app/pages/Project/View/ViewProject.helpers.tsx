@@ -1666,7 +1666,7 @@ const getFormatDate = (date: Date) => {
 const SHORTCUTS_TABS_MAP = {
   T: PROJECT_TABS.traffic,
   P: PROJECT_TABS.performance,
-  U: PROJECT_TABS.users,
+  U: PROJECT_TABS.profiles,
   F: PROJECT_TABS.funnels,
   S: PROJECT_TABS.sessions,
   A: PROJECT_TABS.alerts,

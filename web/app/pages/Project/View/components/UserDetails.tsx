@@ -1,9 +1,6 @@
-import cx from 'clsx'
 import dayjs from 'dayjs'
 import _capitalize from 'lodash/capitalize'
 import _isEmpty from 'lodash/isEmpty'
-import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 import {
   EyeIcon,
   SparklesIcon,
@@ -15,190 +12,20 @@ import {
   TabletIcon,
   GlobeIcon,
 } from 'lucide-react'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
+import { BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants'
 import { ProfileDetails as ProfileDetailsType, Session } from '~/lib/models/Project'
-import { getLocaleDisplayName, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+import { useTheme } from '~/providers/ThemeProvider'
+import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
+import { cn, getLocaleDisplayName, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
 
 import CCRow from './CCRow'
-import { Sessions } from './Sessions'
 import { SessionChart } from './SessionChart'
-
-// Generate display names for anonymous users
-const ADJECTIVES = [
-  'Amber',
-  'Azure',
-  'Beige',
-  'Black',
-  'Blue',
-  'Bronze',
-  'Brown',
-  'Coral',
-  'Crimson',
-  'Cyan',
-  'Emerald',
-  'Fuchsia',
-  'Gold',
-  'Gray',
-  'Green',
-  'Indigo',
-  'Ivory',
-  'Jade',
-  'Lavender',
-  'Lime',
-  'Magenta',
-  'Maroon',
-  'Mint',
-  'Navy',
-  'Olive',
-  'Orange',
-  'Peach',
-  'Pink',
-  'Plum',
-  'Purple',
-  'Red',
-  'Rose',
-  'Ruby',
-  'Salmon',
-  'Sapphire',
-  'Scarlet',
-  'Silver',
-  'Slate',
-  'Teal',
-  'Turquoise',
-  'Violet',
-  'White',
-  'Yellow',
-]
-
-const NOUNS = [
-  'Albatross',
-  'Ant',
-  'Badger',
-  'Bear',
-  'Beaver',
-  'Bison',
-  'Butterfly',
-  'Camel',
-  'Cardinal',
-  'Cat',
-  'Cheetah',
-  'Cobra',
-  'Condor',
-  'Coyote',
-  'Crane',
-  'Crow',
-  'Deer',
-  'Dolphin',
-  'Dove',
-  'Dragon',
-  'Eagle',
-  'Elephant',
-  'Elk',
-  'Falcon',
-  'Ferret',
-  'Finch',
-  'Flamingo',
-  'Fox',
-  'Frog',
-  'Gazelle',
-  'Giraffe',
-  'Goat',
-  'Goose',
-  'Gorilla',
-  'Hamster',
-  'Hare',
-  'Hawk',
-  'Hedgehog',
-  'Heron',
-  'Hippo',
-  'Horse',
-  'Hummingbird',
-  'Hyena',
-  'Iguana',
-  'Jaguar',
-  'Jay',
-  'Kangaroo',
-  'Koala',
-  'Lemur',
-  'Leopard',
-  'Lion',
-  'Llama',
-  'Lobster',
-  'Lynx',
-  'Macaw',
-  'Meerkat',
-  'Mongoose',
-  'Moose',
-  'Moth',
-  'Mouse',
-  'Narwhal',
-  'Newt',
-  'Octopus',
-  'Orca',
-  'Ostrich',
-  'Otter',
-  'Owl',
-  'Panda',
-  'Panther',
-  'Parrot',
-  'Peacock',
-  'Pelican',
-  'Penguin',
-  'Phoenix',
-  'Pig',
-  'Pigeon',
-  'Piranha',
-  'Pony',
-  'Porcupine',
-  'Puma',
-  'Quail',
-  'Rabbit',
-  'Raccoon',
-  'Raven',
-  'Rhino',
-  'Robin',
-  'Salamander',
-  'Salmon',
-  'Seal',
-  'Shark',
-  'Sheep',
-  'Sloth',
-  'Snail',
-  'Snake',
-  'Sparrow',
-  'Spider',
-  'Squirrel',
-  'Stork',
-  'Swan',
-  'Tiger',
-  'Toucan',
-  'Trout',
-  'Turtle',
-  'Viper',
-  'Vulture',
-  'Walrus',
-  'Weasel',
-  'Whale',
-  'Wolf',
-  'Wombat',
-  'Woodpecker',
-  'Yak',
-  'Zebra',
-]
-
-const generateDisplayName = (profileId: string): string => {
-  let hash = 0
-  for (let i = 0; i < profileId.length; i++) {
-    const char = profileId.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash = hash & hash
-  }
-  hash = Math.abs(hash)
-  const adjIndex = hash % ADJECTIVES.length
-  const nounIndex = Math.floor(hash / ADJECTIVES.length) % NOUNS.length
-  return `${ADJECTIVES[adjIndex]} ${NOUNS[nounIndex]}`
-}
+import { Sessions } from './Sessions'
 
 interface UserDetailsProps {
   details: ProfileDetailsType | null
@@ -292,7 +119,7 @@ const ActivityCalendar = ({ data }: { data: { date: string; count: number }[] })
             {week.map((day, dayIdx) => (
               <div
                 key={dayIdx}
-                className={cx('h-2 w-2 rounded-[2px]', getColor(day.count))}
+                className={cn('h-2 w-2 rounded-[2px]', getColor(day.count))}
                 title={`${day.date}: ${day.count} ${t('dashboard.pageviews').toLowerCase()}`}
               />
             ))}
@@ -306,7 +133,7 @@ const ActivityCalendar = ({ data }: { data: { date: string; count: number }[] })
 // Stat Item Component
 const StatItem = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) => (
   <div>
-    <div className='mb-0.5 flex items-center gap-1.5 text-[10px] font-medium tracking-wide text-gray-400 uppercase'>
+    <div className='mb-0.5 flex items-center gap-1.5 text-[10px] font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400'>
       {icon}
       {label}
     </div>
@@ -317,7 +144,7 @@ const StatItem = ({ icon, label, value }: { icon: React.ReactNode; label: string
 // Info Row Component for Location & Device
 const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <div className='flex items-center justify-between border-b border-gray-100 py-2 last:border-0 dark:border-slate-700/50'>
-    <span className='text-sm text-gray-500 dark:text-gray-400'>{label}</span>
+    <span className='text-sm text-gray-600 dark:text-gray-400'>{label}</span>
     <span className='flex items-center gap-1.5 text-sm font-medium text-gray-900 dark:text-white'>{value}</span>
   </div>
 )
@@ -330,10 +157,30 @@ const DeviceIcon = ({ device }: { device: string | null }) => {
   return <MonitorIcon className='h-4 w-4' />
 }
 
-// Browser Icon Component (simplified - using globe as fallback)
+// Browser Icon Component
 const BrowserIcon = ({ browser }: { browser: string | null }) => {
-  // Could add specific browser icons here
-  return <GlobeIcon className='h-4 w-4' />
+  if (!browser) return <GlobeIcon className='h-4 w-4' />
+
+  const logoUrl = BROWSER_LOGO_MAP[browser as keyof typeof BROWSER_LOGO_MAP]
+
+  if (!logoUrl) return <GlobeIcon className='h-4 w-4' />
+
+  return <img src={logoUrl} className='h-4 w-4' alt='' />
+}
+
+// OS Icon Component
+const OSIcon = ({ os, theme }: { os: string | null; theme: string }) => {
+  if (!os) return <GlobeIcon className='h-4 w-4' />
+
+  const logoPathLight = OS_LOGO_MAP[os as keyof typeof OS_LOGO_MAP]
+  const logoPathDark = OS_LOGO_MAP_DARK[os as keyof typeof OS_LOGO_MAP_DARK]
+
+  let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
+  logoPath ||= logoPathLight
+
+  if (!logoPath) return <GlobeIcon className='h-4 w-4' />
+
+  return <img src={`/${logoPath}`} className='h-4 w-4' alt='' />
 }
 
 export const UserDetails = ({
@@ -349,23 +196,11 @@ export const UserDetails = ({
     t,
     i18n: { language },
   } = useTranslation('common')
+  const { theme } = useTheme()
 
   const displayName = useMemo(() => {
     if (!details) return ''
-    if (details.isIdentified) {
-      const userId = details.profileId.replace('usr_', '')
-      return userId.length <= 20 ? userId : `${userId.substring(0, 17)}...`
-    }
-    return generateDisplayName(details.profileId)
-  }, [details])
-
-  const avatarColor = useMemo(() => {
-    if (!details) return 'hsl(0, 0%, 50%)'
-    let hash = 0
-    for (let i = 0; i < details.profileId.length; i++) {
-      hash = details.profileId.charCodeAt(i) + ((hash << 5) - hash)
-    }
-    return `hsl(${Math.abs(hash) % 360}, 55%, 50%)`
+    return getProfileDisplayName(details.profileId, details.isIdentified)
   }, [details])
 
   const formatDate = (date: string | undefined) => {
@@ -390,15 +225,10 @@ export const UserDetails = ({
     <div className='space-y-6'>
       {/* Header */}
       <div className='flex items-center gap-4'>
-        <div
-          className='flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl'
-          style={{ backgroundColor: avatarColor }}
-        >
-          <span className='text-white'>:)</span>
-        </div>
+        <ProfileAvatar profileId={details.profileId} size={56} className='shrink-0' />
         <div>
           <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>{displayName}</h2>
-          <code className='text-sm text-gray-400'>{details.profileId.substring(0, 12)}</code>
+          <code className='text-sm text-gray-400'>{details.profileId}</code>
         </div>
       </div>
 
@@ -444,7 +274,7 @@ export const UserDetails = ({
 
           {/* Location & Device Card */}
           <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
-            <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400'>
+            <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
               {t('project.locationAndDevice')}
             </h3>
             <div>
@@ -452,7 +282,7 @@ export const UserDetails = ({
                 label={t('project.mapping.cc')}
                 value={details.cc ? <CCRow size={16} cc={details.cc} language={language} /> : '-'}
               />
-              {details.rg && <InfoRow label={t('project.mapping.rg')} value={details.rg} />}
+              {details.rg ? <InfoRow label={t('project.mapping.rg')} value={details.rg} /> : null}
               <InfoRow
                 label={t('project.mapping.lc')}
                 value={details.lc ? getLocaleDisplayName(details.lc, language) : '-'}
@@ -486,25 +316,37 @@ export const UserDetails = ({
               />
               <InfoRow
                 label={t('project.mapping.os')}
-                value={details.os ? `${details.os}${details.osv ? ` v${details.osv}` : ''}` : '-'}
+                value={
+                  details.os ? (
+                    <>
+                      <OSIcon os={details.os} theme={theme} />
+                      {details.os}
+                      {details.osv ? ` v${details.osv}` : ''}
+                    </>
+                  ) : (
+                    '-'
+                  )
+                }
               />
             </div>
           </div>
 
           {/* Activity Calendar Card */}
           <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
-            <h3 className='mb-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400'>
+            <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
               {t('project.activityCalendar')}
             </h3>
             <ActivityCalendar data={details.activityCalendar || []} />
           </div>
         </div>
 
-        {/* Right Column - Chart */}
-        <div className='flex-1'>
-          {details.chart && !_isEmpty(details.chart.x) && (
-            <div className='h-full rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
-              <h3 className='mb-4 text-base font-semibold text-gray-900 dark:text-white'>{t('dashboard.pageviews')}</h3>
+        {/* Right Column - Chart & Sessions */}
+        <div className='flex-1 space-y-4'>
+          {details.chart && !_isEmpty(details.chart.x) ? (
+            <div className='max-h-max rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+              <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
+                {t('dashboard.pageviews')}
+              </h3>
               <SessionChart
                 chart={details.chart}
                 timeBucket={details.timeBucket}
@@ -515,37 +357,36 @@ export const UserDetails = ({
                 className='h-[300px] [&_svg]:overflow-visible!'
               />
             </div>
-          )}
-        </div>
-      </div>
+          ) : null}
 
-      {/* Sessions - Full Width */}
-      <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
-        <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400'>
-          {t('project.userSessions')}
-        </h3>
-        {sessionsLoading && sessions.length === 0 ? (
-          <Loader />
-        ) : sessions.length === 0 ? (
-          <p className='py-4 text-center text-sm text-gray-400'>{t('project.noSessions')}</p>
-        ) : (
-          <>
-            <Sessions sessions={sessions} timeFormat={timeFormat} />
-            {canLoadMoreSessions && (
-              <button
-                type='button'
-                onClick={onLoadMoreSessions}
-                disabled={!!sessionsLoading}
-                className={cx(
-                  'mt-4 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-slate-600 dark:bg-slate-700 dark:text-gray-200 dark:hover:bg-slate-600',
-                  sessionsLoading && 'cursor-not-allowed opacity-50',
-                )}
-              >
-                {t('project.loadMore')}
-              </button>
+          {/* Sessions */}
+          <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+            <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
+              {t('project.userSessions')}
+            </h3>
+            {sessionsLoading && sessions.length === 0 ? (
+              <Loader />
+            ) : sessions.length === 0 ? (
+              <p className='py-4 text-center text-sm text-gray-400'>{t('project.noSessions')}</p>
+            ) : (
+              <>
+                <Sessions sessions={sessions} timeFormat={timeFormat} />
+                {canLoadMoreSessions ? (
+                  <Button
+                    onClick={onLoadMoreSessions}
+                    disabled={!!sessionsLoading}
+                    loading={!!sessionsLoading}
+                    className='mt-4 w-full'
+                    primary
+                    regular
+                  >
+                    {t('project.loadMore')}
+                  </Button>
+                ) : null}
+              </>
             )}
-          </>
-        )}
+          </div>
+        </div>
       </div>
     </div>
   )

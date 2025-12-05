@@ -826,7 +826,7 @@
     "cumulativeMode": "Cumulative mode",
     "traffic": "Traffic",
     "performance": "Performance",
-    "users": "Users",
+    "profiles": "Profiles",
     "funnels": "Funnels",
     "sessions": "Sessions",
     "xOccurrences": "{{x}} occurrences",

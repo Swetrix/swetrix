@@ -193,11 +193,11 @@ import SearchFilters, { getFiltersUrlParams } from './components/SearchFilters'
 import { SessionChart } from './components/SessionChart'
 import { SessionDetails } from './components/SessionDetails'
 import { Sessions } from './components/Sessions'
-import { Users, UsersFilter } from './components/Users'
-import { UserDetails } from './components/UserDetails'
 import TBPeriodSelector from './components/TBPeriodSelector'
 import { TrafficChart } from './components/TrafficChart'
+import { UserDetails } from './components/UserDetails'
 import UserFlow from './components/UserFlow'
+import { Users, UsersFilter } from './components/Users'
 import WaitingForAnError from './components/WaitingForAnError'
 import WaitingForAnEvent from './components/WaitingForAnEvent'
 import {
@@ -699,7 +699,6 @@ const ViewProjectContent = () => {
   const [profileSessionsSkip, setProfileSessionsSkip] = useState(0)
   const [canLoadMoreProfileSessions, setCanLoadMoreProfileSessions] = useState(false)
   const [profileTypeFilter, setProfileTypeFilter] = useState<'all' | 'anonymous' | 'identified'>('all')
-  const [profileSearch, setProfileSearch] = useState('')
   const activeProfileId = useMemo(() => {
     return searchParams.get('profileId')
   }, [searchParams])
@@ -1470,8 +1469,8 @@ const ViewProjectContent = () => {
         icon: GaugeIcon,
       },
       {
-        id: PROJECT_TABS.users,
-        label: t('dashboard.users'),
+        id: PROJECT_TABS.profiles,
+        label: t('dashboard.profiles'),
         icon: UserIcon,
       },
       {
@@ -2125,7 +2124,6 @@ const ViewProjectContent = () => {
           SESSIONS_TAKE,
           skip,
           timezone,
-          profileSearch,
           profileTypeFilter,
           projectPassword,
         )
@@ -2139,7 +2137,6 @@ const ViewProjectContent = () => {
           SESSIONS_TAKE,
           skip,
           timezone,
-          profileSearch,
           profileTypeFilter,
           projectPassword,
         )
@@ -2638,11 +2635,22 @@ const ViewProjectContent = () => {
           return
         }
 
+        if (activeTab === PROJECT_TABS.profiles) {
+          if (activeProfileId) {
+            await loadProfile(activeProfileId)
+            return
+          }
+
+          resetProfiles()
+          loadProfiles(0)
+          return
+        }
+
         loadAnalytics()
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [authLoading, dataLoading, activeTab, activePSID, activeEID],
+    [authLoading, dataLoading, activeTab, activePSID, activeEID, activeProfileId],
   )
 
   useEffect(() => {
@@ -2759,7 +2767,7 @@ const ViewProjectContent = () => {
 
   // Load profiles list when users tab is active
   useEffect(() => {
-    if (authLoading || activeTab !== PROJECT_TABS.users || !project || activeProfileId) {
+    if (authLoading || activeTab !== PROJECT_TABS.profiles || !project || activeProfileId) {
       return
     }
 
@@ -2782,7 +2790,6 @@ const ViewProjectContent = () => {
     project,
     activeProfileId,
     profileTypeFilter,
-    profileSearch,
   ])
 
   // Load single profile when profileId is set
@@ -3864,17 +3871,12 @@ const ViewProjectContent = () => {
                         )}
                       </div>
                     ) : null}
-                    {activeTab === PROJECT_TABS.users && !activeProfileId ? (
+                    {activeTab === PROJECT_TABS.profiles && !activeProfileId ? (
                       <>
                         <UsersFilter
                           profileType={profileTypeFilter}
                           onProfileTypeChange={(type) => {
                             setProfileTypeFilter(type)
-                            resetProfiles()
-                          }}
-                          search={profileSearch}
-                          onSearchChange={(search) => {
-                            setProfileSearch(search)
                             resetProfiles()
                           }}
                         />
@@ -3902,7 +3904,7 @@ const ViewProjectContent = () => {
                         ) : null}
                       </>
                     ) : null}
-                    {activeTab === PROJECT_TABS.users && activeProfileId ? (
+                    {activeTab === PROJECT_TABS.profiles && activeProfileId ? (
                       <>
                         <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
                           <Link

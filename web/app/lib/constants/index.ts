@@ -481,7 +481,7 @@ const SELFHOSTED_PROJECT_TABS = {
 const PRODUCTION_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
-  users: 'users',
+  profiles: 'profiles',
   funnels: 'funnels',
   sessions: 'sessions',
   errors: 'errors',
