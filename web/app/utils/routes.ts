@@ -1,6 +1,7 @@
 const routes = Object.freeze({
   signin: '/login',
   signup: '/signup',
+  pricing: '/pricing',
   performance: '/performance',
   errorTracking: '/error-tracking',
   onboarding: '/onboarding',
