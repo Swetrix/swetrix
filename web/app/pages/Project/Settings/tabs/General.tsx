@@ -2,13 +2,11 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import Input from '~/ui/Input'
-import Select from '~/ui/Select'
 
 interface GeneralProps {
   form: {
     name?: string
     id?: string
-    saltRotation?: string
   }
   errors: {
     name?: string
@@ -16,19 +14,9 @@ interface GeneralProps {
   beenSubmitted: boolean
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
   sharableLink: string
-  saltRotationOptions: readonly { name: string; title: string }[]
-  setSaltRotation: (name: string) => void
 }
 
-const General = ({
-  form,
-  errors,
-  beenSubmitted,
-  handleInput,
-  sharableLink,
-  saltRotationOptions,
-  setSaltRotation,
-}: GeneralProps) => {
+const General = ({ form, errors, beenSubmitted, handleInput, sharableLink }: GeneralProps) => {
   const { t } = useTranslation('common')
 
   return (
@@ -62,20 +50,6 @@ const General = ({
         error={null}
         disabled
       />
-      <div className='mt-4'>
-        <Select
-          id='saltRotation'
-          label={t('project.settings.saltRotation.title')}
-          hint={t('project.settings.saltRotation.hint')}
-          // @ts-expect-error
-          items={saltRotationOptions}
-          title={saltRotationOptions.find((predicate) => predicate.name === form.saltRotation)?.title || ''}
-          labelExtractor={(item: any) => item.title}
-          onSelect={(item) => setSaltRotation(item.name)}
-          capitalise
-          selectedItem={saltRotationOptions.find((predicate) => predicate.name === form.saltRotation)}
-        />
-      </div>
     </>
   )
 }

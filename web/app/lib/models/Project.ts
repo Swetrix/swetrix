@@ -189,7 +189,6 @@ export interface Project {
   isDataExists: boolean
   isErrorDataExists: boolean
   botsProtectionLevel: 'off' | 'basic'
-  saltRotation: 'daily' | 'weekly' | 'monthly'
   role?: Role
   gscPropertyUri?: string | null
 }

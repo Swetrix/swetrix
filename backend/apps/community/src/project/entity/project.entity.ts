@@ -3,12 +3,6 @@ export enum BotsProtectionLevel {
   BASIC = 'basic',
 }
 
-export enum SaltRotation {
-  DAILY = 'daily', // Default - current behavior, for DAU tracking
-  WEEKLY = 'weekly', // For WAU (Weekly Active Users) tracking
-  MONTHLY = 'monthly', // For MAU (Monthly Active Users) tracking
-}
-
 export class Project {
   id: string
   name: string
@@ -19,7 +13,6 @@ export class Project {
   public: boolean
   isPasswordProtected: boolean
   botsProtectionLevel: BotsProtectionLevel
-  saltRotation: SaltRotation
   passwordHash?: string
   created: Date
   adminId: string | null

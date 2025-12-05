@@ -291,7 +291,6 @@ const ProjectSettings = () => {
     ipBlacklist: null,
     countryBlacklist: [],
     botsProtectionLevel: 'basic',
-    saltRotation: 'daily',
     gscPropertyUri: null,
   })
   const [validated, setValidated] = useState(false)
@@ -374,23 +373,6 @@ const ProjectSettings = () => {
       {
         name: 'basic',
         title: t('project.settings.botsProtectionLevel.levels.basic'),
-      },
-    ] as const
-  }, [t])
-
-  const saltRotationOptions = useMemo(() => {
-    return [
-      {
-        name: 'daily',
-        title: t('project.settings.saltRotation.options.daily'),
-      },
-      {
-        name: 'weekly',
-        title: t('project.settings.saltRotation.options.weekly'),
-      },
-      {
-        name: 'monthly',
-        title: t('project.settings.saltRotation.options.monthly'),
       },
     ] as const
   }, [t])
@@ -797,13 +779,6 @@ const ProjectSettings = () => {
                     beenSubmitted={beenSubmitted}
                     handleInput={handleInput}
                     sharableLink={sharableLink}
-                    saltRotationOptions={saltRotationOptions}
-                    setSaltRotation={(name) =>
-                      setForm((prevForm) => ({
-                        ...prevForm,
-                        saltRotation: name as any,
-                      }))
-                    }
                   />
                 ) : null}
 
