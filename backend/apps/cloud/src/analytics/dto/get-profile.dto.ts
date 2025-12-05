@@ -1,6 +1,15 @@
 import { ApiProperty, PickType } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength, IsInt, Min, Max } from 'class-validator'
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  IsInt,
+  Min,
+  Max,
+} from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 import { PID_REGEX } from '../../common/constants'
 import { ValidatePeriod } from '../decorators/validate-period.decorator'
