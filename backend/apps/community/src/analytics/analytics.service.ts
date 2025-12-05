@@ -1159,11 +1159,31 @@ export class AnalyticsService {
     userAgent: string,
     ip: string,
   ): Promise<[boolean, string]> {
-    const { exists, psid } = await this.getSessionId(pid, userAgent, ip)
+    const salt = await this.saltService.getSaltForProject(pid)
+    const psid = this.derivePsidFromInputs(pid, userAgent, ip, salt)
     const sessionKey = this.getSessionKey(psid)
 
-    await redis.set(sessionKey, '1', 'EX', UNIQUE_SESSION_LIFE_TIME)
-    return [!exists, psid]
+    // Use SET with NX (only set if not exists) for atomic "new session" detection
+    // This prevents race conditions where multiple workers could both see the key
+    // doesn't exist and both think they're creating a "new session"
+    const result = await redis.set(
+      sessionKey,
+      '1',
+      'EX',
+      UNIQUE_SESSION_LIFE_TIME,
+      'NX',
+    )
+
+    // If SET NX succeeded (returned 'OK'), this is a new session
+    // If it returned null, the session already existed
+    const isNew = result === 'OK'
+
+    if (!isNew) {
+      // Session already exists, extend TTL
+      await this.extendSessionTTL(psid)
+    }
+
+    return [isNew, psid]
   }
 
   async extendSessionTTL(psid: string): Promise<void> {
