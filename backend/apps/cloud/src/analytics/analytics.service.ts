@@ -3972,18 +3972,12 @@ export class AnalyticsService {
     })
   }
 
-  getSafeNumber(value: any, defaultValue: number): number {
-    if (typeof value === 'undefined') {
+  getSafeNumber(value: number | undefined, defaultValue: number): number {
+    if (typeof value === 'undefined' || Number.isNaN(value)) {
       return defaultValue
     }
 
-    const parsed = parseInt(value, 10)
-
-    if (Number.isNaN(parsed)) {
-      return defaultValue
-    }
-
-    return parsed
+    return value
   }
 
   processPageflow(pages: IPageflow[]) {

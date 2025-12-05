@@ -1,4 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger'
+import { Type } from 'class-transformer'
 import { IsOptional, IsIn } from 'class-validator'
 import { GetDataDto } from './getData.dto'
 
@@ -12,10 +13,12 @@ export class GetProfilesDto extends PickType(GetDataDto, [
 ] as const) {
   @ApiProperty({ required: false, default: 30 })
   @IsOptional()
+  @Type(() => Number)
   take?: number
 
   @ApiProperty({ required: false, default: 0 })
   @IsOptional()
+  @Type(() => Number)
   skip?: number
 
   @ApiProperty({
