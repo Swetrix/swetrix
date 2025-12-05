@@ -20,6 +20,7 @@ import { useAuth } from '~/providers/AuthProvider'
 import { Badge, BadgeProps } from '~/ui/Badge'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
+import { Text } from '~/ui/Text'
 import { nFormatter, calculateRelativePercentage } from '~/utils/generic'
 import routes from '~/utils/routes'
 
@@ -47,14 +48,18 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
 
   return (
     <div>
-      <p className='text-sm text-gray-500 dark:text-gray-300'>{t(labelTKey)}</p>
+      <Text as='p' size='sm' colour='muted'>
+        {t(labelTKey)}
+      </Text>
 
       <div className='flex font-bold'>
         {total === null ? (
           <Spin className='mt-2 !ml-0' />
         ) : (
           <>
-            <p className='text-xl text-gray-700 dark:text-gray-100'>{_isNumber(total) ? nFormatter(total) : total}</p>
+            <Text as='p' weight='bold' size='xl' colour='secondary'>
+              {_isNumber(total) ? nFormatter(total) : total}
+            </Text>
             {_isNumber(percChange) ? (
               <p
                 className={cx('flex items-start text-xs', {
@@ -221,7 +226,9 @@ export const ProjectCard = ({
     >
       <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
         <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
-          <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
+          <Text as='p' size='lg' weight='semibold' truncate>
+            {name}
+          </Text>
 
           {project.isAccessConfirmed && role !== 'viewer' ? (
             <Link

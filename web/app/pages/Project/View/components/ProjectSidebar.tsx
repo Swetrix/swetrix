@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, LinkProps } from 'react-router'
 
 import { PROJECT_TABS } from '~/lib/constants'
+import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import routes from '~/utils/routes'
 
@@ -233,7 +234,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         <Tooltip
           text={projectName}
           tooltipNode={
-            <p className='max-w-full truncate text-sm font-medium text-gray-900 dark:text-gray-50'>{projectName}</p>
+            <Text as='p' size='sm' weight='medium' truncate className='max-w-full'>
+              {projectName}
+            </Text>
           }
         />
       </div>

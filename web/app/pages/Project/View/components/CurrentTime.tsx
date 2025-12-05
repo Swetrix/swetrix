@@ -7,6 +7,7 @@ import { useSearchParams } from 'react-router'
 
 import { DEFAULT_TIMEZONE } from '~/lib/constants'
 import { useAuth } from '~/providers/AuthProvider'
+import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 
 import { useViewProjectContext } from '../ViewProject'
@@ -27,16 +28,16 @@ const CurrentTime = () => {
       <Tooltip
         text={
           <div className='flex flex-col'>
-            <span className='font-semibold'>{t('project.timezoneX', { timezone })}</span>
+            <Text weight='semibold'>{t('project.timezoneX', { timezone })}</Text>
             {isEmbedded ? null : (
-              <span className='text-xs text-gray-300 dark:text-gray-400'>
+              <Text size='xs' colour='muted'>
                 {isAuthenticated ? t('project.changeInSettings') : t('project.signInToChange')}
-              </span>
+              </Text>
             )}
           </div>
         }
         tooltipNode={
-          <span className='text-sm text-gray-700 dark:text-gray-50'>
+          <Text size='sm' colour='secondary'>
             <Trans
               i18nKey='project.currentTimeX'
               values={{
@@ -58,7 +59,7 @@ const CurrentTime = () => {
                 ),
               }}
             />
-          </span>
+          </Text>
         }
       />
     </div>

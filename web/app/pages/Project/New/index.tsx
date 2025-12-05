@@ -15,6 +15,7 @@ import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Select from '~/ui/Select'
+import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 import routes from '~/utils/routes'
 
@@ -141,7 +142,9 @@ const NewProject = () => {
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 dark:bg-slate-900'>
       <form className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('project.settings.create')}</h2>
+        <Text as='h2' size='3xl' weight='bold' className='mt-2'>
+          {t('project.settings.create')}
+        </Text>
         <Input
           name='name'
           label={t('project.settings.name')}
@@ -177,7 +180,9 @@ const NewProject = () => {
           </div>
         ) : null}
 
-        <p className='mt-1 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>{t('project.settings.createHint')}</p>
+        <Text as='p' size='sm' colour='muted' className='mt-1 mb-4 italic'>
+          {t('project.settings.createHint')}
+        </Text>
 
         <div>
           <Button

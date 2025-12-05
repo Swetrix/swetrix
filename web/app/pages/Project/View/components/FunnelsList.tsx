@@ -7,6 +7,7 @@ import { Link, useSearchParams } from 'react-router'
 
 import { Funnel } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
+import { Text } from '~/ui/Text'
 
 interface FunnelsListProps {
   funnels?: any[]
@@ -47,7 +48,9 @@ const FunnelCard = ({ funnel, openFunnelSettings, deleteFunnel, loading, allowed
     >
       <div className='px-4 py-4'>
         <div className='flex items-center justify-between'>
-          <p className='truncate text-base font-semibold text-slate-900 dark:text-gray-50'>{funnel.name}</p>
+          <Text as='p' size='base' weight='semibold' truncate>
+            {funnel.name}
+          </Text>
           <div className='flex items-center gap-1'>
             <button
               type='button'
@@ -104,9 +107,9 @@ const AddFunnel = ({ openFunnelSettings }: AddFunnelProps) => {
           className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
           strokeWidth={1}
         />
-        <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
+        <Text as='span' size='sm' weight='semibold' className='mt-2 block group-hover:dark:text-gray-400'>
           {t('dashboard.newFunnel')}
-        </span>
+        </Text>
       </div>
     </li>
   )

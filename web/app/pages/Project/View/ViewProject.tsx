@@ -149,6 +149,7 @@ import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import Select from '~/ui/Select'
+import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 import { periodToCompareDate } from '~/utils/compareConvertDate'
 import {
@@ -3445,10 +3446,10 @@ const ViewProjectContent = () => {
                       <>
                         <div className='relative top-0 z-20 mb-2 flex flex-col items-center justify-between bg-gray-50/50 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
                           <div className='flex flex-wrap items-center justify-center gap-2'>
-                            <h2 className='text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
+                            <Text as='h2' size='xl' weight='bold' className='break-words break-all'>
                               {/* If tab is funnels - then display a funnel name, otherwise a project name */}
                               {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : project.name}
-                            </h2>
+                            </Text>
                             {activeTab !== PROJECT_TABS.funnels ? <LiveVisitorsDropdown /> : null}
                           </div>
                           <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
@@ -3512,7 +3513,7 @@ const ViewProjectContent = () => {
                                       }
 
                                       if (item.id === 'no-views') {
-                                        return <span className='text-gray-600 dark:text-gray-200'>{item.name}</span>
+                                        return <Text colour='secondary'>{item.name}</Text>
                                       }
 
                                       return (

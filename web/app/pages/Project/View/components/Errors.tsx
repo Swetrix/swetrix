@@ -9,6 +9,7 @@ import { ClientOnly } from 'remix-utils/client-only'
 import { SwetrixError } from '~/lib/models/Project'
 import { Badge } from '~/ui/Badge'
 import Loader from '~/ui/Loader'
+import { Text } from '~/ui/Text'
 import { getRelativeDateIfPossible } from '~/utils/date'
 
 interface ErrorsProps {
@@ -70,17 +71,23 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
       <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'>
         <div className='flex min-w-0 gap-x-4'>
           <div className='min-w-0 flex-auto'>
-            <p className='flex items-center gap-x-2 leading-6 font-semibold text-gray-900 dark:text-gray-50'>
-              <span className='pb-0.5 text-sm font-bold'>{error.name}</span>
+            <p className='flex items-center gap-x-2 leading-6 font-semibold'>
+              <Text size='sm' weight='bold' className='pb-0.5'>
+                {error.name}
+              </Text>
               {error.filename ? (
                 <>
                   <Separator className='self-center' />
-                  <span className='mx-1 text-xs font-normal break-all text-gray-500'>{error.filename}</span>
+                  <Text size='xs' weight='normal' colour='muted' className='mx-1 break-all'>
+                    {error.filename}
+                  </Text>
                 </>
               ) : null}
             </p>
             {error.message ? (
-              <p className='mt-1 flex text-sm leading-5 text-gray-500 dark:text-gray-300'>{error.message}</p>
+              <Text as='p' size='sm' colour='muted' className='mt-1 flex leading-5'>
+                {error.message}
+              </Text>
             ) : null}
             <p className='mt-1 flex items-center gap-x-2 text-sm leading-5 text-gray-500 dark:text-gray-300'>
               <Badge className='mr-2 sm:hidden' label={status.label} colour={status.colour} />
@@ -96,11 +103,11 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
         </div>
         <div className='flex shrink-0 items-center gap-x-4'>
           <div className='hidden sm:flex sm:flex-col sm:items-end'>
-            <p className='text-sm leading-6 text-gray-900 dark:text-gray-50'>
+            <Text as='p' size='sm' className='leading-6'>
               {t('dashboard.xOccurrences', {
                 x: error.count,
               })}
-            </p>
+            </Text>
             <Badge label={status.label} colour={status.colour} />
           </div>
           <ChevronRightIcon className='h-5 w-5 flex-none text-gray-400' aria-hidden='true' />

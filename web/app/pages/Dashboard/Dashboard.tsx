@@ -21,6 +21,7 @@ import { FeatureFlag } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
+import { Text } from '~/ui/Text'
 import { setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
 
@@ -330,7 +331,7 @@ const Dashboard = () => {
           <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
             <div className={cx('flex flex-wrap justify-between gap-2', showTabs ? 'mb-2' : 'mb-4')}>
               <div className='flex items-end justify-between'>
-                <h2 className='mt-2 flex items-baseline gap-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+                <Text as='h2' size='3xl' weight='bold' className='mt-2 flex items-baseline gap-2'>
                   <span>{t('titles.dashboard')}</span>
                   {isSearchActive ? (
                     <button
@@ -365,7 +366,7 @@ const Dashboard = () => {
                       />
                     </button>
                   )}
-                </h2>
+                </Text>
                 {isSearchActive ? (
                   <div className='hidden w-full max-w-md items-center px-2 pb-1 sm:ml-2 sm:flex'>
                     <label htmlFor='project-search' className='sr-only'>
