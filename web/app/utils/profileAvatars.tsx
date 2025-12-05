@@ -169,7 +169,7 @@ const AVATAR_COLORS = ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90']
 /**
  * Generate a deterministic display name from profileId
  */
-export const generateDisplayName = (profileId: string): string => {
+const generateDisplayName = (profileId: string): string => {
   let hash = 0
   for (let i = 0; i < profileId.length; i++) {
     const char = profileId.charCodeAt(i)
