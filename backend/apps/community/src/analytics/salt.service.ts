@@ -1,31 +1,31 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 
 import { redis } from '../common/constants'
+import { Salt } from './entities/salt.entity'
 
 dayjs.extend(utc)
 
 const REDIS_SALT_DAILY = 'salt:daily'
 const REDIS_SALT_MONTHLY = 'salt:monthly'
+const REDIS_CACHE_TTL = 600 // 10 minutes in seconds
 
 export type SaltRotationType = 'daily' | 'monthly'
 
-const getTTLUntilEndOfPeriod = (rotation: SaltRotationType): number => {
+const getEndOfPeriod = (rotation: SaltRotationType): dayjs.Dayjs => {
   const now = dayjs.utc()
-  let endOfPeriod: dayjs.Dayjs
 
   switch (rotation) {
     case 'monthly':
-      endOfPeriod = now.endOf('month')
-      break
+      return now.endOf('month')
     case 'daily':
     default:
-      endOfPeriod = now.endOf('day')
+      return now.endOf('day')
   }
-
-  return Math.max(1, endOfPeriod.diff(now, 'second'))
 }
 
 const getRedisKeyForRotation = (rotation: SaltRotationType): string => {
@@ -35,6 +35,11 @@ const getRedisKeyForRotation = (rotation: SaltRotationType): string => {
 @Injectable()
 export class SaltService {
   private readonly logger = new Logger(SaltService.name)
+
+  constructor(
+    @InjectRepository(Salt)
+    private saltRepository: Repository<Salt>,
+  ) {}
 
   private async generateSalt(): Promise<string> {
     return bcrypt.genSalt(10)
@@ -56,32 +61,71 @@ export class SaltService {
   async getGlobalSalt(rotation: SaltRotationType = 'daily'): Promise<string> {
     const redisKey = getRedisKeyForRotation(rotation)
 
-    const existingSalt = await redis.get(redisKey)
-    if (existingSalt) {
-      return existingSalt
+    // Check Redis cache first
+    const cachedSalt = await redis.get(redisKey)
+    if (cachedSalt) {
+      return cachedSalt
     }
 
-    const salt = await this.generateSalt()
-    const ttl = getTTLUntilEndOfPeriod(rotation)
-    await redis.set(redisKey, salt, 'EX', ttl)
+    // Check MySQL
+    const now = dayjs.utc().toDate()
+    const existingSalt = await this.saltRepository.findOne({
+      where: { rotation },
+    })
 
-    this.logger.log(`Generated new ${rotation} salt with TTL ${ttl}s`)
+    if (existingSalt && existingSalt.expiresAt > now) {
+      // Cache in Redis with 10-minute TTL
+      await redis.set(redisKey, existingSalt.salt, 'EX', REDIS_CACHE_TTL)
+      return existingSalt.salt
+    }
+
+    // Generate new salt
+    const salt = await this.generateSalt()
+    const expiresAt = getEndOfPeriod(rotation).toDate()
+
+    // Save to MySQL (upsert)
+    await this.saltRepository.save({
+      rotation,
+      salt,
+      expiresAt,
+    })
+
+    // Cache in Redis with 10-minute TTL
+    await redis.set(redisKey, salt, 'EX', REDIS_CACHE_TTL)
+
+    this.logger.log(
+      `Generated new ${rotation} salt, expires at ${expiresAt.toISOString()}`,
+    )
 
     return salt
   }
 
   async regenerateExpiredSalts(): Promise<void> {
     const rotations: SaltRotationType[] = ['daily', 'monthly']
+    const now = dayjs.utc().toDate()
 
     for (const rotation of rotations) {
-      const redisKey = getRedisKeyForRotation(rotation)
-      const exists = await redis.exists(redisKey)
+      const existingSalt = await this.saltRepository.findOne({
+        where: { rotation },
+      })
 
-      if (!exists) {
+      if (!existingSalt || existingSalt.expiresAt <= now) {
         const salt = await this.generateSalt()
-        const ttl = getTTLUntilEndOfPeriod(rotation)
-        await redis.set(redisKey, salt, 'EX', ttl)
-        this.logger.log(`Regenerated ${rotation} salt with TTL ${ttl}s`)
+        const expiresAt = getEndOfPeriod(rotation).toDate()
+
+        await this.saltRepository.save({
+          rotation,
+          salt,
+          expiresAt,
+        })
+
+        // Cache in Redis with 10-minute TTL
+        const redisKey = getRedisKeyForRotation(rotation)
+        await redis.set(redisKey, salt, 'EX', REDIS_CACHE_TTL)
+
+        this.logger.log(
+          `Regenerated ${rotation} salt, expires at ${expiresAt.toISOString()}`,
+        )
       }
     }
   }

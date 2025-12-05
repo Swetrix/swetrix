@@ -17,7 +17,6 @@ import _isArray from 'lodash/isArray'
 import _startsWith from 'lodash/startsWith'
 import _reduce from 'lodash/reduce'
 import _keys from 'lodash/keys'
-import _now from 'lodash/now'
 import _values from 'lodash/values'
 import _round from 'lodash/round'
 import _filter from 'lodash/filter'
@@ -103,8 +102,6 @@ dayjs.extend(isSameOrBefore)
 
 // 2 minutes
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
-
-const getSessionDurationKey = (psid: string, pid: string) => `sd:${psid}:${pid}`
 
 const SOFTWARE_WITH_PATCH_VERSION = ['GameVault']
 
@@ -735,26 +732,6 @@ export class AnalyticsService {
     }
   }
 
-  async isSessionDurationOpen(sdKey: string): Promise<[string, boolean]> {
-    const sd = await redis.get(sdKey)
-    return [sd, Boolean(sd)]
-  }
-
-  // Processes interaction for session duration
-  async processInteractionSD(psid: string, pid: string): Promise<void> {
-    const sdKey = getSessionDurationKey(psid, pid)
-    const [sd, isOpened] = await this.isSessionDurationOpen(sdKey)
-    const now = _now()
-
-    // the value is START_UNIX_TIMESTAMP:LAST_INTERACTION_UNIX_TIMESTAMP
-    if (isOpened) {
-      const [start] = _split(sd, ':')
-      await redis.set(sdKey, `${start}:${now}`, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    } else {
-      await redis.set(sdKey, `${now}:${now}`, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    }
-  }
-
   async getPagesArray(
     rawPages?: string,
     funnelId?: string,
@@ -1172,6 +1149,60 @@ export class AnalyticsService {
   async extendSessionTTL(psid: string): Promise<void> {
     const sessionKey = this.getSessionKey(psid)
     await redis.set(sessionKey, '1', 'EX', UNIQUE_SESSION_LIFE_TIME)
+  }
+
+  async recordSession(
+    psid: string,
+    pid: string,
+    isPageview: boolean = true,
+  ): Promise<void> {
+    const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+    try {
+      await clickhouse.insert({
+        table: 'sessions',
+        format: 'JSONEachRow',
+        values: [
+          {
+            psid,
+            pid,
+            profileId: '',
+            firstSeen: now,
+            lastSeen: now,
+            pageviews: isPageview ? 1 : 0,
+            events: isPageview ? 0 : 1,
+          },
+        ],
+        clickhouse_settings: { async_insert: 1 },
+      })
+    } catch (error) {
+      console.error('Failed to record session:', error)
+    }
+  }
+
+  async updateSessionActivity(psid: string, pid: string): Promise<void> {
+    const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+    try {
+      await clickhouse.insert({
+        table: 'sessions',
+        format: 'JSONEachRow',
+        values: [
+          {
+            psid,
+            pid,
+            profileId: '',
+            firstSeen: now,
+            lastSeen: now,
+            pageviews: 0,
+            events: 0,
+          },
+        ],
+        clickhouse_settings: { async_insert: 1 },
+      })
+    } catch (error) {
+      console.error('Failed to update session activity:', error)
+    }
   }
 
   formatFunnel(data: IFunnelCHResponse[], pages: string[]): IFunnel[] {
