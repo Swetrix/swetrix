@@ -20,6 +20,7 @@ import { ProfileDetails as ProfileDetailsType, Session } from '~/lib/models/Proj
 import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
+import Tooltip from '~/ui/Tooltip'
 import { cn, getLocaleDisplayName, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
 
@@ -91,40 +92,47 @@ const ActivityCalendar = ({ data }: { data: { date: string; count: number }[] })
     return 'bg-emerald-500'
   }
 
-  return (
-    <div className='overflow-x-auto'>
-      <div className='mb-1 flex text-[10px] text-gray-400' style={{ marginLeft: '14px' }}>
-        {monthLabels.map(({ month, weekIndex }, idx) => (
-          <span
-            key={idx}
-            style={{
-              marginLeft:
-                weekIndex === 0 ? 0 : `${(weekIndex - (idx > 0 ? monthLabels[idx - 1].weekIndex : 0)) * 10}px`,
-            }}
-          >
-            {month}
-          </span>
-        ))}
+  const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+
+  const TooltipContent = ({ day }: { day: { date: string; count: number } }) => (
+    <div className='text-center'>
+      <div className='font-medium'>{dayjs(day.date).format('MMM D, YYYY')}</div>
+      <div className='text-gray-300'>
+        {day.count} {t('dashboard.pageviews').toLowerCase()}
       </div>
-      <div className='flex gap-[2px]'>
-        <div className='flex flex-col gap-[2px] pr-1 text-[9px] text-gray-400'>
-          {['', 'M', '', 'W', '', 'F', ''].map((d, i) => (
-            <span key={i} className='h-2 leading-2'>
-              {d}
-            </span>
-          ))}
-        </div>
-        {weeks.map((week, weekIdx) => (
-          <div key={weekIdx} className='flex flex-col gap-[2px]'>
-            {week.map((day, dayIdx) => (
-              <div
-                key={dayIdx}
-                className={cn('h-2 w-2 rounded-[2px]', getColor(day.count))}
-                title={`${day.date}: ${day.count} ${t('dashboard.pageviews').toLowerCase()}`}
-              />
-            ))}
+    </div>
+  )
+
+  return (
+    <div className='w-full'>
+      <div className='mb-1 flex w-full gap-[2px]' style={{ paddingLeft: '18px' }}>
+        {weeks.map((_, weekIdx) => (
+          <div key={weekIdx} className='relative flex-1 text-[10px] text-gray-400'>
+            {monthLabels.find((m) => m.weekIndex === weekIdx)?.month}
           </div>
         ))}
+      </div>
+      <div className='flex w-full gap-[2px]'>
+        <div className='flex shrink-0 flex-col gap-[2px] pr-1 text-[9px] text-gray-400'>
+          {dayLabels.map((d, i) => (
+            <div key={i} className='flex h-3 w-3 items-center justify-end'>
+              {i % 2 === 1 ? d : ''}
+            </div>
+          ))}
+        </div>
+        <div className='flex flex-1 gap-[2px]'>
+          {weeks.map((week, weekIdx) => (
+            <div key={weekIdx} className='flex flex-1 flex-col gap-[2px]'>
+              {week.map((day, dayIdx) => (
+                <Tooltip
+                  key={dayIdx}
+                  text={<TooltipContent day={day} />}
+                  tooltipNode={<div className={cn('h-3 w-full rounded-[2px]', getColor(day.count))} />}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
