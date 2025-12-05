@@ -128,6 +128,7 @@ const ActivityCalendar = ({ data }: { data: { date: string; count: number }[] })
                   key={dayIdx}
                   text={<TooltipContent day={day} />}
                   tooltipNode={<div className={cn('h-3 w-full rounded-[2px]', getColor(day.count))} />}
+                  delay={0}
                 />
               ))}
             </div>
