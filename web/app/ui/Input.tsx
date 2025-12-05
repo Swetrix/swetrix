@@ -42,7 +42,7 @@ const Input = ({
         {
           'text-red-900 placeholder-red-300 ring-red-600': isError,
           'ring-gray-300 dark:ring-slate-800/50': !isError,
-          'cursor-text': disabled,
+          'cursor-not-allowed bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400': disabled,
           'pr-10': isPassword,
         },
         classes?.input,
