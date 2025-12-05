@@ -1,6 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsOptional, IsIn, IsInt, Min } from 'class-validator'
+import { IsOptional, IsIn, IsInt, Min, Max } from 'class-validator'
 import { GetDataDto } from './getData.dto'
 
 export class GetProfilesDto extends PickType(GetDataDto, [
@@ -16,6 +16,7 @@ export class GetProfilesDto extends PickType(GetDataDto, [
   @Type(() => Number)
   @IsInt()
   @Min(0)
+  @Max(150)
   take?: number
 
   @ApiProperty({ required: false, default: 0 })

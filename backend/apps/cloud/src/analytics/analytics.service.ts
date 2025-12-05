@@ -4569,13 +4569,13 @@ export class AnalyticsService {
         AND profileId = {profileId:String}
       GROUP BY pg
       ORDER BY count DESC
-      LIMIT ${limit}
+      LIMIT {limit:UInt32}
     `
 
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { pid, profileId },
+        query_params: { pid, profileId, limit: Number(limit) },
       })
       .then(resultSet => resultSet.json())
 

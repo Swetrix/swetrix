@@ -36,9 +36,11 @@ export class ErrorDto {
     example: 'user_12345',
     description:
       'Optional profile ID for long-term user tracking. If not provided, one will be auto-generated.',
+    maxLength: 256,
   })
   @IsOptional()
   @IsString()
+  @MaxLength(256)
   profileId?: string
 
   // Tracking metrics
