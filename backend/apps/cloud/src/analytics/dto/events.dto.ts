@@ -6,6 +6,8 @@ import {
   IsNotEmpty,
   IsOptional,
   IsObject,
+  IsString,
+  MaxLength,
   ValidatorConstraint,
   ValidatorConstraintInterface,
   Validate,
@@ -86,6 +88,17 @@ export class EventsDto {
   @IsNotEmpty()
   @Matches(PID_REGEX, { message: 'The provided Project ID (pid) is incorrect' })
   pid: string
+
+  @ApiProperty({
+    example: 'user_12345',
+    description:
+      'Optional profile ID for long-term user tracking. If not provided, one will be auto-generated.',
+    maxLength: 256,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  profileId?: string
 
   @ApiProperty({
     example: 'user-subscribed',

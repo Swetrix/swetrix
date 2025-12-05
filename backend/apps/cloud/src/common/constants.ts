@@ -17,11 +17,6 @@ const redis = new Redis(
   },
 )
 
-redis.defineCommand('countKeysByPattern', {
-  numberOfKeys: 0,
-  lua: "return #redis.call('keys', ARGV[1])",
-})
-
 export const JWT_ACCESS_TOKEN_SECRET = deriveKey('access-token')
 export const JWT_REFRESH_TOKEN_SECRET = deriveKey('refresh-token')
 
@@ -50,7 +45,6 @@ const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
 const getRedisUserUsageInfoKey = (uid: string) => `user_ui_${uid}`
 const getRedisCaptchaKey = (token: string) => `captcha_${hash(token)}`
 
-const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_TRIALS_COUNT_KEY = 'stats:trials_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
@@ -180,7 +174,6 @@ export {
   UNIQUE_SESSION_LIFE_TIME,
   getRedisUserCountKey,
   redisProjectCountCacheTimeout,
-  REDIS_SESSION_SALT_KEY,
   REDIS_USERS_COUNT_KEY,
   REDIS_TRIALS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,

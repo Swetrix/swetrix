@@ -17,7 +17,6 @@ import _last from 'lodash/last'
 import _replace from 'lodash/replace'
 import _some from 'lodash/some'
 import _find from 'lodash/find'
-import _now from 'lodash/now'
 import _isString from 'lodash/isString'
 import _values from 'lodash/values'
 import _round from 'lodash/round'
@@ -43,7 +42,6 @@ import { DEFAULT_TIMEZONE, PlanCode } from '../user/entities/user.entity'
 import {
   redis,
   UNIQUE_SESSION_LIFE_TIME,
-  REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
   ALL_COLUMNS,
   CAPTCHA_COLUMNS,
@@ -57,6 +55,7 @@ import {
   TRAFFIC_METAKEY_COLUMNS,
   REDIS_TRIALS_COUNT_KEY,
 } from '../common/constants'
+import { SaltService } from './salt.service'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { getDomainsForRefName } from './utils/referrers.map'
 import {
@@ -113,8 +112,6 @@ dayjs.extend(isSameOrBefore)
 
 // 2 minutes
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
-
-const getSessionDurationKey = (psid: string, pid: string) => `sd:${psid}:${pid}`
 
 const SOFTWARE_WITH_PATCH_VERSION = ['GameVault']
 
@@ -348,6 +345,7 @@ export class AnalyticsService {
   constructor(
     private readonly projectService: ProjectService,
     private readonly userService: UserService,
+    private readonly saltService: SaltService,
   ) {}
 
   async checkProjectAccess(
@@ -747,36 +745,6 @@ export class AnalyticsService {
     }
   }
 
-  async getSessionHash(
-    pid: string,
-    userAgent: string,
-    ip: string,
-  ): Promise<string> {
-    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-
-    return `ses_${hash(`${userAgent}${ip}${pid}${salt || ''}`)}`
-  }
-
-  async isSessionDurationOpen(sdKey: string): Promise<[string, boolean]> {
-    const sd = await redis.get(sdKey)
-    return [sd, Boolean(sd)]
-  }
-
-  // Processes interaction for session duration
-  async processInteractionSD(psid: string, pid: string): Promise<void> {
-    const sdKey = getSessionDurationKey(psid, pid)
-    const [sd, isOpened] = await this.isSessionDurationOpen(sdKey)
-    const now = _now()
-
-    // the value is START_UNIX_TIMESTAMP:LAST_INTERACTION_UNIX_TIMESTAMP
-    if (isOpened) {
-      const [start] = _split(sd, ':')
-      await redis.set(sdKey, `${start}:${now}`, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    } else {
-      await redis.set(sdKey, `${now}:${now}`, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    }
-  }
-
   async getPagesArray(
     rawPages?: string,
     funnelId?: string,
@@ -1144,43 +1112,255 @@ export class AnalyticsService {
     ]
   }
 
-  generateUInt64(): string {
-    return crypto.randomBytes(8).readBigUInt64BE(0).toString()
+  derivePsidFromInputs(
+    pid: string,
+    userAgent: string,
+    ip: string,
+    salt: string,
+  ): string {
+    const combined = `${userAgent}${ip}${pid}${salt}`
+    return crypto
+      .createHash('sha256')
+      .update(combined)
+      .digest()
+      .readBigUInt64BE(0)
+      .toString()
+  }
+
+  getSessionKey(psid: string): string {
+    return `ses:${psid}`
   }
 
   async getSessionId(
     pid: string,
     userAgent: string,
     ip: string,
-  ): Promise<{ exists: boolean; psid: string; sessionHash: string }> {
-    const sessionHash = await this.getSessionHash(pid, userAgent, ip)
+  ): Promise<{ exists: boolean; psid: string }> {
+    const salt = await this.saltService.getSaltForSession()
+    const psid = this.derivePsidFromInputs(pid, userAgent, ip, salt)
+    const sessionKey = this.getSessionKey(psid)
 
-    let psid = await redis.get(sessionHash)
-    const exists = Boolean(psid)
+    const exists = Boolean(await redis.exists(sessionKey))
 
-    if (!exists) {
-      psid = this.generateUInt64()
-    }
-
-    return { exists, psid, sessionHash }
+    return { exists, psid }
   }
 
-  /**
-   * Checks if the session is unique and returns the session psid (or creates a new one)
-   */
   async generateAndStoreSessionId(
     pid: string,
     userAgent: string,
     ip: string,
   ): Promise<[boolean, string]> {
-    const { exists, psid, sessionHash } = await this.getSessionId(
-      pid,
-      userAgent,
-      ip,
+    const salt = await this.saltService.getSaltForSession()
+    const psid = this.derivePsidFromInputs(pid, userAgent, ip, salt)
+    const sessionKey = this.getSessionKey(psid)
+
+    // Use SET with NX (only set if not exists) for atomic "new session" detection
+    // This prevents race conditions where multiple workers could both see the key
+    // doesn't exist and both think they're creating a "new session"
+    const result = await redis.set(
+      sessionKey,
+      '1',
+      'EX',
+      UNIQUE_SESSION_LIFE_TIME,
+      'NX',
     )
 
-    await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    return [!exists, psid]
+    // If SET NX succeeded (returned 'OK'), this is a new session
+    // If it returned null, the session already existed
+    const isNew = result === 'OK'
+
+    if (!isNew) {
+      // Session already exists, extend TTL
+      await this.extendSessionTTL(psid)
+    }
+
+    return [isNew, psid]
+  }
+
+  async extendSessionTTL(psid: string): Promise<void> {
+    const sessionKey = this.getSessionKey(psid)
+    await redis.set(sessionKey, '1', 'EX', UNIQUE_SESSION_LIFE_TIME)
+  }
+
+  static readonly PROFILE_PREFIX_ANON = 'anon_'
+  static readonly PROFILE_PREFIX_USER = 'usr_'
+
+  private hashToNumericString(value: string): string {
+    return crypto
+      .createHash('sha256')
+      .update(value)
+      .digest()
+      .readBigUInt64BE(0)
+      .toString()
+  }
+
+  async generateProfileId(
+    pid: string,
+    userAgent: string,
+    ip: string,
+    userSupplied?: string,
+  ): Promise<string> {
+    if (userSupplied) {
+      const cleanId = userSupplied
+        .replace(AnalyticsService.PROFILE_PREFIX_ANON, '')
+        .replace(AnalyticsService.PROFILE_PREFIX_USER, '')
+      const hash = this.hashToNumericString(`${cleanId}${pid}`)
+      return `${AnalyticsService.PROFILE_PREFIX_USER}${hash}`
+    }
+
+    const salt = await this.saltService.getSaltForProfile()
+    const combined = `${userAgent}${ip}${pid}${salt}`
+    const hash = this.hashToNumericString(combined)
+
+    return `${AnalyticsService.PROFILE_PREFIX_ANON}${hash}`
+  }
+
+  isUserSuppliedProfile(profileId: string): boolean {
+    return profileId.startsWith(AnalyticsService.PROFILE_PREFIX_USER)
+  }
+
+  async recordSession(
+    psid: string,
+    pid: string,
+    profileId: string,
+    isPageview: boolean = true,
+  ): Promise<void> {
+    const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+    try {
+      await clickhouse.insert({
+        table: 'sessions',
+        format: 'JSONEachRow',
+        values: [
+          {
+            psid,
+            pid,
+            profileId,
+            firstSeen: now,
+            lastSeen: now,
+            pageviews: isPageview ? 1 : 0,
+            events: isPageview ? 0 : 1,
+          },
+        ],
+        clickhouse_settings: { async_insert: 1 },
+      })
+    } catch (error) {
+      console.error('Failed to record session:', error)
+    }
+  }
+
+  async updateSessionActivity(
+    psid: string,
+    pid: string,
+    profileId: string,
+  ): Promise<void> {
+    const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+    try {
+      // Read current session data to preserve pageviews/events counts
+      // TODO: Potentially slow because every write request reads from the database - consider caching or other optimisation
+      const query = `
+        SELECT firstSeen, pageviews, events
+        FROM sessions FINAL
+        WHERE psid = {psid:UInt64}
+          AND pid = {pid:FixedString(12)}
+        LIMIT 1
+      `
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { psid, pid },
+        })
+        .then(resultSet =>
+          resultSet.json<{
+            firstSeen: string
+            pageviews: number
+            events: number
+          }>(),
+        )
+
+      const existingSession = data[0]
+
+      await clickhouse.insert({
+        table: 'sessions',
+        format: 'JSONEachRow',
+        values: [
+          {
+            psid,
+            pid,
+            profileId,
+            firstSeen: existingSession?.firstSeen ?? now,
+            lastSeen: now,
+            pageviews: existingSession?.pageviews ?? 0,
+            events: existingSession?.events ?? 0,
+          },
+        ],
+        clickhouse_settings: { async_insert: 1 },
+      })
+    } catch (error) {
+      console.error('Failed to update session activity:', error)
+    }
+  }
+
+  async checkSessionExistsInClickHouse(
+    psid: string,
+    pid: string,
+  ): Promise<boolean> {
+    const cutoff = dayjs
+      .utc()
+      .subtract(UNIQUE_SESSION_LIFE_TIME, 'second')
+      .format('YYYY-MM-DD HH:mm:ss')
+
+    try {
+      const query = `
+        SELECT 1
+        FROM sessions FINAL
+        WHERE psid = {psid:UInt64}
+          AND pid = {pid:FixedString(12)}
+          AND lastSeen >= {cutoff:DateTime}
+        LIMIT 1
+      `
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { psid, pid, cutoff },
+        })
+        .then(resultSet => resultSet.json())
+
+      return data.length > 0
+    } catch (error) {
+      console.error('Failed to check session existence:', error)
+      return false
+    }
+  }
+
+  async getSessionDurationFromClickHouse(
+    psid: string,
+    pid: string,
+  ): Promise<number | null> {
+    try {
+      const query = `
+        SELECT dateDiff('second', firstSeen, lastSeen) as duration
+        FROM sessions FINAL
+        WHERE psid = {psid:UInt64}
+          AND pid = {pid:FixedString(12)}
+        LIMIT 1
+      `
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { psid, pid },
+        })
+        .then(resultSet => resultSet.json<{ duration: number }>())
+
+      return data[0]?.duration ?? null
+    } catch (error) {
+      console.error('Failed to get session duration:', error)
+      return null
+    }
   }
 
   formatFunnel(data: IFunnelCHResponse[], pages: string[]): IFunnel[] {
@@ -1544,8 +1724,8 @@ export class AnalyticsService {
                 ${filtersQuery}
             ),
             duration_avg AS (
-              SELECT avg(duration) as sdur
-              FROM session_durations
+              SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+              FROM sessions FINAL
               WHERE pid = {pid:FixedString(12)}
             )
             SELECT
@@ -1626,8 +1806,8 @@ export class AnalyticsService {
               ${filtersQuery}
           ),
           duration_avg AS (
-            SELECT avg(duration) as sdur
-            FROM session_durations
+            SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+            FROM sessions FINAL
             WHERE pid = {pid:FixedString(12)}
             AND psid IN (
               SELECT DISTINCT psid
@@ -1656,8 +1836,8 @@ export class AnalyticsService {
               ${filtersQuery}
           ),
           duration_avg AS (
-            SELECT avg(duration) as sdur
-            FROM session_durations
+            SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+            FROM sessions FINAL
             WHERE pid = {pid:FixedString(12)}
             AND psid IN (
               SELECT DISTINCT psid
@@ -2419,7 +2599,7 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        avgOrNull(session_durations.duration) as sdur,
+        avgOrNull(sessions_data.duration) as sdur,
         count() as pageviews,
         count(DISTINCT psid) as uniques
       FROM (
@@ -2436,12 +2616,12 @@ export class AnalyticsService {
         SELECT
           pid,
           psid,
-          duration
-        FROM session_durations
+          dateDiff('second', firstSeen, lastSeen) as duration
+        FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
-      ) as session_durations
-      ON subquery.pid = session_durations.pid
-      AND subquery.psid = session_durations.psid
+      ) as sessions_data
+      ON subquery.pid = sessions_data.pid
+      AND subquery.psid = sessions_data.psid
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
     `
@@ -3727,8 +3907,44 @@ export class AnalyticsService {
   }
 
   async getOnlineUserCount(pid: string): Promise<number> {
-    // @ts-expect-error
-    return redis.countKeysByPattern(`sd:*:${pid}`)
+    const ONLINE_VISITORS_WINDOW_MINUTES = 5
+
+    const since = dayjs
+      .utc()
+      .subtract(ONLINE_VISITORS_WINDOW_MINUTES, 'minute')
+      .format('YYYY-MM-DD HH:mm:ss')
+
+    const query = `
+      SELECT uniqExact(psid) as count
+      FROM (
+        SELECT psid FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
+        UNION ALL
+        SELECT psid FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
+      )
+    `
+
+    try {
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: {
+            pid,
+            since,
+          },
+        })
+        .then(resultSet => resultSet.json<{ count: string }>())
+
+      return Number(data[0]?.count || 0)
+    } catch (error) {
+      console.error(`[ERROR](getOnlineUserCount): ${error}`)
+      return 0
+    }
   }
 
   async groupCustomEVByTimeBucket(
@@ -3781,18 +3997,12 @@ export class AnalyticsService {
     })
   }
 
-  getSafeNumber(value: any, defaultValue: number): number {
-    if (typeof value === 'undefined') {
+  getSafeNumber(value: number | undefined, defaultValue: number): number {
+    if (typeof value === 'undefined' || Number.isNaN(value)) {
       return defaultValue
     }
 
-    const parsed = parseInt(value, 10)
-
-    if (Number.isNaN(parsed)) {
-      return defaultValue
-    }
-
-    return parsed
+    return value
   }
 
   processPageflow(pages: IPageflow[]) {
@@ -3898,8 +4108,8 @@ export class AnalyticsService {
 
     const querySessionDuration = `
       SELECT
-        avg(duration) as duration
-      FROM session_durations
+        avg(dateDiff('second', firstSeen, lastSeen)) as duration
+      FROM sessions FINAL
       WHERE
         pid = {pid:FixedString(12)}
         AND CAST(psid, 'String') = {psid:String}
@@ -4100,8 +4310,8 @@ export class AnalyticsService {
         SELECT 
           CAST(psid, 'String') AS psidCasted, 
           pid, 
-          avg(duration) as avg_duration
-        FROM session_durations 
+          avg(dateDiff('second', firstSeen, lastSeen)) as avg_duration
+        FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
         GROUP BY psidCasted, pid
       )
@@ -4136,6 +4346,486 @@ export class AnalyticsService {
       .then(resultSet => resultSet.json())
 
     return data
+  }
+
+  async getProfilesList(
+    pid: string,
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+    profileType: 'all' | 'anonymous' | 'identified' = 'all',
+  ): Promise<object[]> {
+    let profileTypeFilter = ''
+    if (profileType === 'anonymous') {
+      profileTypeFilter = `AND profileId LIKE '${AnalyticsService.PROFILE_PREFIX_ANON}%'`
+    } else if (profileType === 'identified') {
+      profileTypeFilter = `AND profileId LIKE '${AnalyticsService.PROFILE_PREFIX_USER}%'`
+    }
+
+    const query = `
+      WITH profile_analytics AS (
+        SELECT
+          profileId,
+          count() AS pageviewsCount,
+          countDistinct(psid) AS sessionsCount,
+          min(created) AS firstSeen,
+          max(created) AS lastSeen,
+          any(cc) AS cc,
+          any(os) AS os,
+          any(br) AS br,
+          any(dv) AS dv
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+          ${profileTypeFilter}
+          ${filtersQuery}
+        GROUP BY profileId
+      ),
+      profile_events AS (
+        SELECT
+          profileId,
+          count() AS eventsCount
+        FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+          ${profileTypeFilter}
+        GROUP BY profileId
+      ),
+      profile_errors AS (
+        SELECT
+          profileId,
+          count() AS errorsCount
+        FROM errors
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+          ${profileTypeFilter}
+        GROUP BY profileId
+      )
+      SELECT
+        pa.profileId AS profileId,
+        pa.sessionsCount AS sessionsCount,
+        pa.pageviewsCount AS pageviewsCount,
+        COALESCE(pe.eventsCount, 0) AS eventsCount,
+        COALESCE(perr.errorsCount, 0) AS errorsCount,
+        pa.firstSeen AS firstSeen,
+        pa.lastSeen AS lastSeen,
+        pa.cc AS cc,
+        pa.os AS os,
+        pa.br AS br,
+        pa.dv AS dv
+      FROM profile_analytics AS pa
+      LEFT JOIN profile_events AS pe ON pa.profileId = pe.profileId
+      LEFT JOIN profile_errors AS perr ON pa.profileId = perr.profileId
+      ORDER BY pa.lastSeen DESC
+      LIMIT ${take}
+      OFFSET ${skip}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, ...paramsData.params },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data
+      .filter((profile: any) => profile.profileId)
+      .map((profile: any) => ({
+        ...profile,
+        isIdentified: this.isUserSuppliedProfile(profile.profileId),
+      }))
+  }
+
+  async getProfileDetails(
+    pid: string,
+    profileId: string,
+    _safeTimezone: string,
+  ): Promise<any> {
+    // Query session count from sessions table
+    const querySessionCount = `
+      SELECT
+        count() AS sessionsCount,
+        min(sessions.firstSeen) AS firstSeen,
+        max(sessions.lastSeen) AS lastSeen
+      FROM sessions FINAL
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+    `
+
+    // Query avg duration from analytics table (more accurate than sessions table)
+    const queryAvgDuration = `
+      SELECT
+        avg(session_duration) AS avgDuration
+      FROM (
+        SELECT
+          psid,
+          dateDiff('second', min(created), max(created)) AS session_duration
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+        GROUP BY psid
+        HAVING session_duration > 0
+      )
+    `
+
+    // Query analytics for accurate pageview count
+    const queryPageviews = `
+      SELECT count() AS pageviewsCount
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+    `
+
+    // Query customEV for accurate events count
+    const queryEvents = `
+      SELECT count() AS eventsCount
+      FROM customEV
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+    `
+
+    // Query for device/location details
+    const queryDetails = `
+      SELECT
+        any(cc) AS cc,
+        any(rg) AS rg,
+        any(ct) AS ct,
+        any(os) AS os,
+        any(osv) AS osv,
+        any(br) AS br,
+        any(brv) AS brv,
+        any(dv) AS dv,
+        any(lc) AS lc
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+    `
+
+    const params = { pid, profileId }
+
+    const [
+      sessionCountResult,
+      avgDurationResult,
+      pageviewsResult,
+      eventsResult,
+      detailsResult,
+    ] = await Promise.all([
+      clickhouse
+        .query({ query: querySessionCount, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryAvgDuration, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryPageviews, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryEvents, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryDetails, query_params: params })
+        .then(resultSet => resultSet.json()),
+    ])
+
+    const sessionCount = (sessionCountResult.data[0] || {}) as Record<
+      string,
+      any
+    >
+    const avgDuration = (avgDurationResult.data[0] || {}) as Record<string, any>
+    const pageviews = (pageviewsResult.data[0] || {}) as Record<string, any>
+    const events = (eventsResult.data[0] || {}) as Record<string, any>
+    const details = (detailsResult.data[0] || {}) as Record<string, any>
+
+    return {
+      profileId,
+      isIdentified: this.isUserSuppliedProfile(profileId),
+      sessionsCount: sessionCount.sessionsCount || 0,
+      pageviewsCount: pageviews.pageviewsCount || 0,
+      eventsCount: events.eventsCount || 0,
+      firstSeen: sessionCount.firstSeen,
+      lastSeen: sessionCount.lastSeen,
+      avgDuration: avgDuration.avgDuration || 0,
+      ...details,
+    }
+  }
+
+  async getProfileTopPages(
+    pid: string,
+    profileId: string,
+    limit = 10,
+  ): Promise<{ page: string; count: number }[]> {
+    const query = `
+      SELECT
+        pg AS page,
+        count() AS count
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+      GROUP BY pg
+      ORDER BY count DESC
+      LIMIT {limit:UInt32}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, profileId, limit: Number(limit) },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data as { page: string; count: number }[]
+  }
+
+  async getProfileActivityCalendar(
+    pid: string,
+    profileId: string,
+    months = 4,
+  ): Promise<{ date: string; count: number }[]> {
+    const startDate = dayjs
+      .utc()
+      .subtract(months, 'month')
+      .startOf('day')
+      .format('YYYY-MM-DD')
+
+    const query = `
+      SELECT
+        toDate(created) AS date,
+        count() AS count
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND created >= {startDate:Date}
+      GROUP BY date
+      ORDER BY date ASC
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, profileId, startDate },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data as { date: string; count: number }[]
+  }
+
+  async getProfileChartData(
+    pid: string,
+    profileId: string,
+    timeBucket: string,
+    from: string,
+    to: string,
+    safeTimezone: string,
+  ): Promise<{
+    x: string[]
+    pageviews: number[]
+    customEvents: number[]
+    errors: number[]
+  }> {
+    const timeBucketFunc =
+      timeBucketConversion[timeBucket] || timeBucketConversion.day
+
+    const queryPageviews = `
+      SELECT
+        ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) AS time,
+        count() AS count
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND created BETWEEN {from:String} AND {to:String}
+      GROUP BY time
+      ORDER BY time ASC
+    `
+
+    const queryEvents = `
+      SELECT
+        ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) AS time,
+        count() AS count
+      FROM customEV
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND created BETWEEN {from:String} AND {to:String}
+      GROUP BY time
+      ORDER BY time ASC
+    `
+
+    const queryErrors = `
+      SELECT
+        ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) AS time,
+        count() AS count
+      FROM errors
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND created BETWEEN {from:String} AND {to:String}
+      GROUP BY time
+      ORDER BY time ASC
+    `
+
+    const params = { pid, profileId, from, to }
+
+    const [pageviewsResult, eventsResult, errorsResult] = await Promise.all([
+      clickhouse
+        .query({ query: queryPageviews, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryEvents, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryErrors, query_params: params })
+        .then(resultSet => resultSet.json()),
+    ])
+
+    // Merge all timestamps and create aligned data
+    const allTimes = new Set<string>()
+    const pageviewsMap = new Map<string, number>()
+    const eventsMap = new Map<string, number>()
+    const errorsMap = new Map<string, number>()
+
+    for (const row of pageviewsResult.data as {
+      time: string
+      count: number
+    }[]) {
+      allTimes.add(row.time)
+      pageviewsMap.set(row.time, Number(row.count))
+    }
+
+    for (const row of eventsResult.data as {
+      time: string
+      count: number
+    }[]) {
+      allTimes.add(row.time)
+      eventsMap.set(row.time, Number(row.count))
+    }
+
+    for (const row of errorsResult.data as {
+      time: string
+      count: number
+    }[]) {
+      allTimes.add(row.time)
+      errorsMap.set(row.time, Number(row.count))
+    }
+
+    const sortedTimes = Array.from(allTimes).sort()
+
+    return {
+      x: sortedTimes,
+      pageviews: sortedTimes.map(t => pageviewsMap.get(t) || 0),
+      customEvents: sortedTimes.map(t => eventsMap.get(t) || 0),
+      errors: sortedTimes.map(t => errorsMap.get(t) || 0),
+    }
+  }
+
+  async getProfileSessionsList(
+    pid: string,
+    profileId: string,
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+  ): Promise<object[]> {
+    const query = `
+      WITH profile_sessions AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          profileId,
+          any(cc) AS cc,
+          any(os) AS os,
+          any(br) AS br,
+          min(toTimeZone(created, '${safeTimezone}')) AS sessionStart,
+          max(toTimeZone(created, '${safeTimezone}')) AS lastActivity
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+        GROUP BY psidCasted, pid, profileId
+      ),
+      pageview_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      event_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      error_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM errors
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      session_duration_agg AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          avg(dateDiff('second', firstSeen, lastSeen)) as avg_duration
+        FROM sessions FINAL
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+        GROUP BY psidCasted, pid
+      )
+      SELECT
+        ps.psidCasted AS psid,
+        ps.cc,
+        ps.os,
+        ps.br,
+        COALESCE(pc.count, 0) AS pageviews,
+        COALESCE(ec.count, 0) AS customEvents,
+        COALESCE(errc.count, 0) AS errors,
+        ps.sessionStart,
+        ps.lastActivity,
+        if(dateDiff('second', ps.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        sda.avg_duration AS sdur
+      FROM profile_sessions ps
+      LEFT JOIN pageview_counts pc ON ps.psidCasted = pc.psidCasted AND ps.pid = pc.pid
+      LEFT JOIN event_counts ec ON ps.psidCasted = ec.psidCasted AND ps.pid = ec.pid
+      LEFT JOIN error_counts errc ON ps.psidCasted = errc.psidCasted AND ps.pid = errc.pid
+      LEFT JOIN session_duration_agg sda ON ps.psidCasted = sda.psidCasted AND ps.pid = sda.pid
+      WHERE ps.psidCasted IS NOT NULL
+      ORDER BY ps.sessionStart DESC
+      LIMIT ${take}
+      OFFSET ${skip}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, profileId, ...paramsData.params },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data as object[]
   }
 
   async getErrorsList(

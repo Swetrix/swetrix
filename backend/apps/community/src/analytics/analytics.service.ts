@@ -17,7 +17,6 @@ import _isArray from 'lodash/isArray'
 import _startsWith from 'lodash/startsWith'
 import _reduce from 'lodash/reduce'
 import _keys from 'lodash/keys'
-import _now from 'lodash/now'
 import _values from 'lodash/values'
 import _round from 'lodash/round'
 import _filter from 'lodash/filter'
@@ -34,6 +33,7 @@ import {
   InternalServerErrorException,
   UnprocessableEntityException,
   PreconditionFailedException,
+  Logger,
 } from '@nestjs/common'
 import { isbot } from 'isbot'
 
@@ -41,7 +41,6 @@ import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import {
   redis,
   UNIQUE_SESSION_LIFE_TIME,
-  REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
   ERROR_COLUMNS,
@@ -50,6 +49,7 @@ import {
   ALL_COLUMNS,
   TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
+import { SaltService } from './salt.service'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { getDomainsForRefName } from './utils/referrers.map'
 import {
@@ -103,8 +103,6 @@ dayjs.extend(isSameOrBefore)
 
 // 2 minutes
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
-
-const getSessionDurationKey = (psid: string, pid: string) => `sd:${psid}:${pid}`
 
 const SOFTWARE_WITH_PATCH_VERSION = ['GameVault']
 
@@ -330,7 +328,15 @@ const isValidOrigin = (origins: string[], origin: string) => {
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly projectService: ProjectService) {}
+  private readonly logger = new Logger(AnalyticsService.name)
+
+  static readonly PROFILE_PREFIX_ANON = 'anon_'
+  static readonly PROFILE_PREFIX_USER = 'usr_'
+
+  constructor(
+    private readonly projectService: ProjectService,
+    private readonly saltService: SaltService,
+  ) {}
 
   async checkProjectAccess(
     pid: string,
@@ -752,36 +758,6 @@ export class AnalyticsService {
     }
   }
 
-  async getSessionHash(
-    pid: string,
-    userAgent: string,
-    ip: string,
-  ): Promise<string> {
-    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-
-    return `ses_${hash(`${userAgent}${ip}${pid}${salt || ''}`)}`
-  }
-
-  async isSessionDurationOpen(sdKey: string): Promise<[string, boolean]> {
-    const sd = await redis.get(sdKey)
-    return [sd, Boolean(sd)]
-  }
-
-  // Processes interaction for session duration
-  async processInteractionSD(psid: string, pid: string): Promise<void> {
-    const sdKey = getSessionDurationKey(psid, pid)
-    const [sd, isOpened] = await this.isSessionDurationOpen(sdKey)
-    const now = _now()
-
-    // the value is START_UNIX_TIMESTAMP:LAST_INTERACTION_UNIX_TIMESTAMP
-    if (isOpened) {
-      const [start] = _split(sd, ':')
-      await redis.set(sdKey, `${start}:${now}`, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    } else {
-      await redis.set(sdKey, `${now}:${now}`, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    }
-  }
-
   async getPagesArray(
     rawPages?: string,
     funnelId?: string,
@@ -1151,43 +1127,194 @@ export class AnalyticsService {
     ]
   }
 
-  generateUInt64(): string {
-    return crypto.randomBytes(8).readBigUInt64BE(0).toString()
+  derivePsidFromInputs(
+    pid: string,
+    userAgent: string,
+    ip: string,
+    salt: string,
+  ): string {
+    const combined = `${userAgent}${ip}${pid}${salt}`
+    return crypto
+      .createHash('sha256')
+      .update(combined)
+      .digest()
+      .readBigUInt64BE(0)
+      .toString()
+  }
+
+  getSessionKey(psid: string): string {
+    return `ses:${psid}`
   }
 
   async getSessionId(
     pid: string,
     userAgent: string,
     ip: string,
-  ): Promise<{ exists: boolean; psid: string; sessionHash: string }> {
-    const sessionHash = await this.getSessionHash(pid, userAgent, ip)
+  ): Promise<{ exists: boolean; psid: string }> {
+    const salt = await this.saltService.getSaltForProject(pid)
+    const psid = this.derivePsidFromInputs(pid, userAgent, ip, salt)
+    const sessionKey = this.getSessionKey(psid)
 
-    let psid = await redis.get(sessionHash)
-    const exists = Boolean(psid)
+    const exists = Boolean(await redis.exists(sessionKey))
 
-    if (!exists) {
-      psid = this.generateUInt64()
-    }
-
-    return { exists, psid, sessionHash }
+    return { exists, psid }
   }
 
-  /**
-   * Checks if the session is unique and returns the session psid (or creates a new one)
-   */
   async generateAndStoreSessionId(
     pid: string,
     userAgent: string,
     ip: string,
   ): Promise<[boolean, string]> {
-    const { exists, psid, sessionHash } = await this.getSessionId(
-      pid,
-      userAgent,
-      ip,
+    const salt = await this.saltService.getSaltForProject(pid)
+    const psid = this.derivePsidFromInputs(pid, userAgent, ip, salt)
+    const sessionKey = this.getSessionKey(psid)
+
+    // Use SET with NX (only set if not exists) for atomic "new session" detection
+    // This prevents race conditions where multiple workers could both see the key
+    // doesn't exist and both think they're creating a "new session"
+    const result = await redis.set(
+      sessionKey,
+      '1',
+      'EX',
+      UNIQUE_SESSION_LIFE_TIME,
+      'NX',
     )
 
-    await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    return [!exists, psid]
+    // If SET NX succeeded (returned 'OK'), this is a new session
+    // If it returned null, the session already existed
+    const isNew = result === 'OK'
+
+    if (!isNew) {
+      // Session already exists, extend TTL
+      await this.extendSessionTTL(psid)
+    }
+
+    return [isNew, psid]
+  }
+
+  async extendSessionTTL(psid: string): Promise<void> {
+    const sessionKey = this.getSessionKey(psid)
+    await redis.set(sessionKey, '1', 'EX', UNIQUE_SESSION_LIFE_TIME)
+  }
+
+  private hashToNumericString(value: string): string {
+    return crypto
+      .createHash('sha256')
+      .update(value)
+      .digest()
+      .readBigUInt64BE(0)
+      .toString()
+  }
+
+  async generateProfileId(
+    pid: string,
+    userAgent: string,
+    ip: string,
+    userSupplied?: string,
+  ): Promise<string> {
+    if (userSupplied) {
+      const cleanId = userSupplied
+        .replace(AnalyticsService.PROFILE_PREFIX_ANON, '')
+        .replace(AnalyticsService.PROFILE_PREFIX_USER, '')
+      const hash = this.hashToNumericString(`${cleanId}${pid}`)
+      return `${AnalyticsService.PROFILE_PREFIX_USER}${hash}`
+    }
+
+    const salt = await this.saltService.getSaltForProfile()
+    const combined = `${userAgent}${ip}${pid}${salt}`
+    const hash = this.hashToNumericString(combined)
+
+    return `${AnalyticsService.PROFILE_PREFIX_ANON}${hash}`
+  }
+
+  isUserSuppliedProfile(profileId: string): boolean {
+    return profileId.startsWith(AnalyticsService.PROFILE_PREFIX_USER)
+  }
+
+  async recordSession(
+    psid: string,
+    pid: string,
+    profileId: string,
+    isPageview: boolean = true,
+  ): Promise<void> {
+    const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+    try {
+      await clickhouse.insert({
+        table: 'sessions',
+        format: 'JSONEachRow',
+        values: [
+          {
+            psid,
+            pid,
+            profileId,
+            firstSeen: now,
+            lastSeen: now,
+            pageviews: isPageview ? 1 : 0,
+            events: isPageview ? 0 : 1,
+          },
+        ],
+        clickhouse_settings: { async_insert: 1 },
+      })
+    } catch (error) {
+      this.logger.error('Failed to record session:', error)
+      throw error
+    }
+  }
+
+  async updateSessionActivity(
+    psid: string,
+    pid: string,
+    profileId: string,
+  ): Promise<void> {
+    const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+    try {
+      // Read current session data to preserve pageviews/events counts
+      // TODO: Potentially slow because every write request reads from the database - consider caching or other optimisation
+      const query = `
+        SELECT firstSeen, pageviews, events
+        FROM sessions FINAL
+        WHERE psid = {psid:UInt64}
+          AND pid = {pid:FixedString(12)}
+        LIMIT 1
+      `
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { psid, pid },
+        })
+        .then(resultSet =>
+          resultSet.json<{
+            firstSeen: string
+            pageviews: number
+            events: number
+          }>(),
+        )
+
+      const existingSession = data[0]
+
+      await clickhouse.insert({
+        table: 'sessions',
+        format: 'JSONEachRow',
+        values: [
+          {
+            psid,
+            pid,
+            profileId,
+            firstSeen: existingSession?.firstSeen ?? now,
+            lastSeen: now,
+            pageviews: existingSession?.pageviews ?? 0,
+            events: existingSession?.events ?? 0,
+          },
+        ],
+        clickhouse_settings: { async_insert: 1 },
+      })
+    } catch (error) {
+      this.logger.error('Failed to update session activity:', error)
+      throw error
+    }
   }
 
   formatFunnel(data: IFunnelCHResponse[], pages: string[]): IFunnel[] {
@@ -1401,8 +1528,8 @@ export class AnalyticsService {
                 ${filtersQuery}
             ),
             duration_avg AS (
-              SELECT avg(duration) as sdur
-              FROM session_durations
+              SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+              FROM sessions FINAL
               WHERE pid = {pid:FixedString(12)}
             )
             SELECT
@@ -1483,8 +1610,8 @@ export class AnalyticsService {
               ${filtersQuery}
           ),
           duration_avg AS (
-            SELECT avg(duration) as sdur
-            FROM session_durations
+            SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+            FROM sessions FINAL
             WHERE pid = {pid:FixedString(12)}
             AND psid IN (
               SELECT DISTINCT psid
@@ -1513,8 +1640,8 @@ export class AnalyticsService {
               ${filtersQuery}
           ),
           duration_avg AS (
-            SELECT avg(duration) as sdur
-            FROM session_durations
+            SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+            FROM sessions FINAL
             WHERE pid = {pid:FixedString(12)}
             AND psid IN (
               SELECT DISTINCT psid
@@ -2215,7 +2342,7 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        avgOrNull(session_durations.duration) as sdur,
+        avgOrNull(sessions_data.duration) as sdur,
         count() as pageviews,
         count(DISTINCT psid) as uniques
       FROM (
@@ -2232,12 +2359,12 @@ export class AnalyticsService {
         SELECT
           pid,
           psid,
-          duration
-        FROM session_durations
+          dateDiff('second', firstSeen, lastSeen) as duration
+        FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
-      ) as session_durations
-      ON subquery.pid = session_durations.pid
-      AND subquery.psid = session_durations.psid
+      ) as sessions_data
+      ON subquery.pid = sessions_data.pid
+      AND subquery.psid = sessions_data.psid
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
     `
@@ -3412,8 +3539,44 @@ export class AnalyticsService {
   }
 
   async getOnlineUserCount(pid: string): Promise<number> {
-    // @ts-expect-error
-    return redis.countKeysByPattern(`sd:*:${pid}`)
+    const ONLINE_VISITORS_WINDOW_MINUTES = 5
+
+    const since = dayjs
+      .utc()
+      .subtract(ONLINE_VISITORS_WINDOW_MINUTES, 'minute')
+      .format('YYYY-MM-DD HH:mm:ss')
+
+    const query = `
+      SELECT uniqExact(psid) as count
+      FROM (
+        SELECT psid FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
+        UNION ALL
+        SELECT psid FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
+      )
+    `
+
+    try {
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: {
+            pid,
+            since,
+          },
+        })
+        .then(resultSet => resultSet.json<{ count: string }>())
+
+      return Number(data[0]?.count || 0)
+    } catch (error) {
+      console.error(`[ERROR](getOnlineUserCount): ${error}`)
+      return 0
+    }
   }
 
   async groupCustomEVByTimeBucket(
@@ -3466,18 +3629,12 @@ export class AnalyticsService {
     })
   }
 
-  getSafeNumber(value: any, defaultValue: number): number {
-    if (typeof value === 'undefined') {
+  getSafeNumber(value: number | undefined, defaultValue: number): number {
+    if (typeof value === 'undefined' || Number.isNaN(value)) {
       return defaultValue
     }
 
-    const parsed = parseInt(value, 10)
-
-    if (Number.isNaN(parsed)) {
-      return defaultValue
-    }
-
-    return parsed
+    return value
   }
 
   processPageflow(pages: IPageflow[]) {
@@ -3583,8 +3740,8 @@ export class AnalyticsService {
 
     const querySessionDuration = `
       SELECT
-        avg(duration) as duration
-      FROM session_durations
+        avg(dateDiff('second', firstSeen, lastSeen)) as duration
+      FROM sessions FINAL
       WHERE
         pid = {pid:FixedString(12)}
         AND CAST(psid, 'String') = {psid:String}
@@ -3785,8 +3942,8 @@ export class AnalyticsService {
         SELECT 
           CAST(psid, 'String') AS psidCasted, 
           pid, 
-          avg(duration) as avg_duration
-        FROM session_durations 
+          avg(dateDiff('second', firstSeen, lastSeen)) as avg_duration
+        FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
         GROUP BY psidCasted, pid
       )
