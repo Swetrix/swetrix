@@ -27,19 +27,26 @@ const queries = [
   PARTITION BY toYYYYMM(firstSeen);`,
 
   // Migrate data from old session_durations table to new sessions table
-  // We compute firstSeen as (lastSeen - duration) and set lastSeen to now()
+  // Join with analytics to get actual timestamps - use MAX(created) as lastSeen
+  // Compute firstSeen by subtracting duration from lastSeen
   // profileId is null for historical data (will be populated on new events)
   `INSERT INTO ${dbName}.sessions (psid, pid, profileId, firstSeen, lastSeen, pageviews, events)
   SELECT 
-    psid,
-    pid,
+    sd.psid,
+    sd.pid,
     NULL as profileId,
-    subtractSeconds(now(), duration) as firstSeen,
-    now() as lastSeen,
+    subtractSeconds(COALESCE(a.last_seen, now()), sd.duration) as firstSeen,
+    COALESCE(a.last_seen, now()) as lastSeen,
     1 as pageviews,
     0 as events
-  FROM ${dbName}.session_durations
-  WHERE (pid, psid) NOT IN (SELECT pid, psid FROM ${dbName}.sessions);`,
+  FROM ${dbName}.session_durations sd
+  LEFT JOIN (
+    SELECT pid, psid, MAX(created) as last_seen
+    FROM ${dbName}.analytics
+    WHERE psid IS NOT NULL
+    GROUP BY pid, psid
+  ) a ON sd.pid = a.pid AND sd.psid = a.psid
+  WHERE (sd.pid, sd.psid) NOT IN (SELECT pid, psid FROM ${dbName}.sessions);`,
 
   // Drop the old session_durations table (commented out for safety - run manually after verifying migration)
   // `DROP TABLE IF EXISTS ${dbName}.session_durations;`,
