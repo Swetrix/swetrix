@@ -3447,9 +3447,11 @@ export class AnalyticsService {
   }
 
   async getOnlineUserCount(pid: string): Promise<number> {
-    const thirtyMinutesAgo = dayjs
+    const ONLINE_VISITORS_WINDOW_MINUTES = 5
+
+    const since = dayjs
       .utc()
-      .subtract(30, 'minute')
+      .subtract(ONLINE_VISITORS_WINDOW_MINUTES, 'minute')
       .format('YYYY-MM-DD HH:mm:ss')
 
     const query = `
@@ -3473,7 +3475,7 @@ export class AnalyticsService {
           query,
           query_params: {
             pid,
-            since: thirtyMinutesAgo,
+            since,
           },
         })
         .then(resultSet => resultSet.json<{ count: string }>())

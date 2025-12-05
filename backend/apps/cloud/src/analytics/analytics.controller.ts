@@ -1084,12 +1084,12 @@ export class AnalyticsController {
     )
     await this.analyticsService.checkBillingAccess(pid)
 
-    const thirtyMinutesAgo = dayjs
+    const since = dayjs
       .utc()
       .subtract(ONLINE_VISITORS_WINDOW_MINUTES, 'minute')
       .format('YYYY-MM-DD HH:mm:ss')
 
-    // Query ClickHouse for active sessions in the last 30 minutes
+    // Query ClickHouse for active sessions in the last 5 minutes
     const query = `
       SELECT DISTINCT ON (psid)
         any(dv) AS dv,
@@ -1131,7 +1131,7 @@ export class AnalyticsController {
         query,
         query_params: {
           pid,
-          since: thirtyMinutesAgo,
+          since,
         },
       })
       .then(resultSet => resultSet.json())
