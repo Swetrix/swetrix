@@ -1026,7 +1026,6 @@
     "locationAndDevice": "Location & Device",
     "userSessions": "Sessions",
     "noSessions": "No sessions found for this user.",
-    "noData": "No data available",
     "unknown": "Unknown",
     "backToErrors": "Back to errors list",
     "occurrences": "Occurrences",
