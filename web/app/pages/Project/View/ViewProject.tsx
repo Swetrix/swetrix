@@ -2776,7 +2776,9 @@ const ViewProjectContent = () => {
       return
     }
 
-    loadProfiles()
+    // Reset pagination and load the first page whenever the query context changes
+    resetProfiles()
+    loadProfiles(0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeTab,
