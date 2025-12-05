@@ -14,6 +14,7 @@ export class Project {
   name: string
   origins: string[]
   ipBlacklist: string[]
+  countryBlacklist: string[]
   active: boolean
   public: boolean
   isPasswordProtected: boolean

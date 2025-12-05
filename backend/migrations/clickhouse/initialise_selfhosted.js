@@ -24,6 +24,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     name String,
     origins Nullable(String),
     ipBlacklist Nullable(String),
+    countryBlacklist Nullable(String),
     active Int8,
     public Int8,
     isPasswordProtected Int8,

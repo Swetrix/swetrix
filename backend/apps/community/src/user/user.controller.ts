@@ -100,6 +100,9 @@ export class UserController {
       ipBlacklist: row.projectIpBlacklist
         ? String(row.projectIpBlacklist).split(',')
         : [],
+      countryBlacklist: row.projectCountryBlacklist
+        ? String(row.projectCountryBlacklist).split(',')
+        : [],
       active: Boolean(row.projectActive),
       public: Boolean(row.projectPublic),
       isPasswordProtected: Boolean(row.projectIsPasswordProtected),

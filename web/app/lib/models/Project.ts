@@ -166,6 +166,7 @@ export interface Project {
   name: string
   origins: string[] | string | null
   ipBlacklist: string[] | null | string
+  countryBlacklist: string[] | null
   active: boolean
   public: boolean
   isAnalyticsProject: boolean

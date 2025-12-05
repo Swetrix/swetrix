@@ -395,11 +395,31 @@ export class AnalyticsService {
     }
   }
 
+  checkCountryBlacklist(project: Project, country: string | null): void {
+    if (!country) {
+      return
+    }
+
+    const countryBlacklist = _filter(
+      project.countryBlacklist,
+      Boolean,
+    ) as string[]
+
+    if (
+      !_isEmpty(countryBlacklist) &&
+      _includes(countryBlacklist, _toUpper(country))
+    ) {
+      throw new BadRequestException(
+        'Incoming analytics is disabled for this country',
+      )
+    }
+  }
+
   async validate(
     logDTO: PageviewsDto | EventsDto | ErrorDto,
     origin: string,
     ip?: string,
-  ): Promise<string | null> {
+  ): Promise<Project> {
     if (_isEmpty(logDTO)) {
       throw new BadRequestException('The request cannot be empty')
     }
@@ -437,14 +457,14 @@ export class AnalyticsService {
 
     this.checkOrigin(project, origin)
 
-    return null
+    return project
   }
 
   async validateHeartbeat(
     logDTO: PageviewsDto,
     origin: string,
     ip?: string,
-  ): Promise<string | null> {
+  ): Promise<Project> {
     if (_isEmpty(logDTO)) {
       throw new BadRequestException('The request cannot be empty')
     }
@@ -463,7 +483,7 @@ export class AnalyticsService {
 
     this.checkOrigin(project, origin)
 
-    return null
+    return project
   }
 
   async getErrorsFilters(pid: string, type: string): Promise<Array<string>> {

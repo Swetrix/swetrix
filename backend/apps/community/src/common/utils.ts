@@ -64,6 +64,7 @@ interface ClickhouseProjectShareWithProject {
   projectName: string
   projectOrigins: string
   projectIpBlacklist: string
+  projectCountryBlacklist: string
   projectActive: number
   projectPublic: number
   projectIsPasswordProtected: number
@@ -115,6 +116,7 @@ const ALLOWED_KEYS = [
   'name',
   'origins',
   'ipBlacklist',
+  'countryBlacklist',
   'active',
   'public',
   'isPasswordProtected',
@@ -443,6 +445,7 @@ const createProjectClickhouse = async (project: Partial<Project>) => {
         name,
         origins: '',
         ipBlacklist: '',
+        countryBlacklist: '',
         active: 1,
         public: 0,
         isPasswordProtected: 0,
@@ -525,6 +528,7 @@ const findProjectSharesByUserClickhouse = async (
             p.name AS projectName,
             p.origins AS projectOrigins,
             p.ipBlacklist AS projectIpBlacklist,
+            p.countryBlacklist AS projectCountryBlacklist,
             p.active AS projectActive,
             p.public AS projectPublic,
             p.isPasswordProtected AS projectIsPasswordProtected,

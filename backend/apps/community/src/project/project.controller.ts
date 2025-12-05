@@ -167,6 +167,7 @@ export class ProjectController {
           name: row.projectName,
           origins: row.projectOrigins,
           ipBlacklist: row.projectIpBlacklist,
+          countryBlacklist: row.projectCountryBlacklist,
           active: row.projectActive,
           public: row.projectPublic,
           isPasswordProtected: row.projectIsPasswordProtected,
@@ -940,6 +941,15 @@ export class ProjectController {
       project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim) as string[]
     } else {
       project.ipBlacklist = []
+    }
+
+    if (projectDTO.countryBlacklist) {
+      project.countryBlacklist = _map(
+        projectDTO.countryBlacklist,
+        _trim,
+      ) as string[]
+    } else {
+      project.countryBlacklist = []
     }
 
     if (projectDTO.botsProtectionLevel) {

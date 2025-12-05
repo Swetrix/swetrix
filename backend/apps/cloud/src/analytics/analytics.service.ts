@@ -428,6 +428,26 @@ export class AnalyticsService {
     }
   }
 
+  checkCountryBlacklist(project: Project, country: string | null): void {
+    if (!country) {
+      return
+    }
+
+    const countryBlacklist = _filter(
+      project.countryBlacklist,
+      Boolean,
+    ) as string[]
+
+    if (
+      !_isEmpty(countryBlacklist) &&
+      _includes(countryBlacklist, _toUpper(country))
+    ) {
+      throw new BadRequestException(
+        'Incoming analytics is disabled for this country',
+      )
+    }
+  }
+
   checkIfAccountSuspended(project: Project) {
     if (project.admin?.isAccountBillingSuspended) {
       throw new HttpException(
@@ -441,7 +461,7 @@ export class AnalyticsService {
     logDTO: PageviewsDto | EventsDto | ErrorDto,
     origin: string,
     ip?: string,
-  ): Promise<string | null> {
+  ): Promise<Project> {
     const { pid } = logDTO
 
     // 'tz' does not need validation as it's based on getCountryForTimezone detection
@@ -477,14 +497,14 @@ export class AnalyticsService {
 
     this.checkOrigin(project, origin)
 
-    return null
+    return project
   }
 
   async validateHeartbeat(
     logDTO: PageviewsDto,
     origin: string,
     ip?: string,
-  ): Promise<string | null> {
+  ): Promise<Project> {
     const { pid } = logDTO
 
     const project = await this.projectService.getRedisProject(pid)
@@ -501,7 +521,7 @@ export class AnalyticsService {
 
     this.checkOrigin(project, origin)
 
-    return null
+    return project
   }
 
   getDataTypeColumns(dataType: DataType): string[] {
