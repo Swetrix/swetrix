@@ -8,6 +8,10 @@ const WORKER_URL = isDevelopment ? './pow-worker.js' : 'https://cap.swetrix.com/
 const MSG_IDENTIFIER = 'swetrix-captcha'
 const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
 
+// Main-thread fallback limits (same as worker)
+const MAX_ITERATIONS = 100_000_000 // 100 million attempts
+const TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
+
 const ENDPOINTS = {
   GENERATE: '/generate',
   VERIFY: '/verify',
@@ -188,17 +192,32 @@ const solveChallenge = async (challenge: PowChallenge): Promise<void> => {
       return
     }
 
-    powWorker.onmessage = async (event: MessageEvent<PowResult | PowProgress>) => {
+    powWorker.onmessage = async (
+      event: MessageEvent<
+        PowResult | PowProgress | { type: 'timeout'; reason: string } | { type: 'error'; message?: string }
+      >,
+    ) => {
       const data = event.data
 
       if (data.type === 'progress') {
-        updateProgress(data.attempts, data.hashRate)
+        updateProgress((data as PowProgress).attempts, (data as PowProgress).hashRate)
+        return
+      }
+
+      if (data.type === 'timeout') {
+        // Worker timed out or hit max iterations
+        console.error('PoW worker timeout:', (data as { type: 'timeout'; reason: string }).reason)
+        sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
+        activateAction(ACTION.failure)
+        powWorker?.terminate()
+        powWorker = null
+        resolve()
         return
       }
 
       if (data.type === 'result') {
         // Worker found the solution
-        const token = await verifySolution(challenge.challenge, data.nonce, data.solution)
+        const token = await verifySolution(challenge.challenge, (data as PowResult).nonce, (data as PowResult).solution)
 
         if (token) {
           sendMessageToLoader(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
@@ -209,7 +228,28 @@ const solveChallenge = async (challenge: PowChallenge): Promise<void> => {
         powWorker?.terminate()
         powWorker = null
         resolve()
+        return
       }
+
+      // Handle error message from worker
+      if (data.type === 'error') {
+        const errorData = data as { type: 'error'; message?: string }
+        console.error('PoW worker error message:', errorData.message || 'Unknown error')
+        sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
+        activateAction(ACTION.failure)
+        powWorker?.terminate()
+        powWorker = null
+        resolve()
+        return
+      }
+
+      // Fallback for unexpected message types
+      console.warn('PoW worker received unexpected message type:', (data as { type?: unknown }).type, 'Raw data:', data)
+      sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
+      activateAction(ACTION.failure)
+      powWorker?.terminate()
+      powWorker = null
+      resolve()
     }
 
     powWorker.onerror = (error) => {
@@ -250,7 +290,16 @@ const solveInMainThread = async (challenge: PowChallenge): Promise<void> => {
     return true
   }
 
-  while (true) {
+  while (nonce < MAX_ITERATIONS) {
+    // Check overall timeout
+    const elapsedMs = Date.now() - startTime
+    if (elapsedMs >= TIMEOUT_MS) {
+      console.error(`PoW main-thread timeout: ${TIMEOUT_MS}ms elapsed after ${nonce} attempts`)
+      sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
+      activateAction(ACTION.failure)
+      return
+    }
+
     const input = `${challengeStr}:${nonce}`
     const hash = await sha256(input)
 
@@ -277,6 +326,11 @@ const solveInMainThread = async (challenge: PowChallenge): Promise<void> => {
       await new Promise((r) => setTimeout(r, 0))
     }
   }
+
+  // Max iterations reached without finding solution
+  console.error(`PoW main-thread max iterations reached: ${MAX_ITERATIONS} attempts`)
+  sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
+  activateAction(ACTION.failure)
 }
 
 document.addEventListener('DOMContentLoaded', () => {
