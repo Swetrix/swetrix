@@ -3444,12 +3444,13 @@ const ViewProjectContent = () => {
                     (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
                     (activeFunnel || activeTab !== PROJECT_TABS.funnels) ? (
                       <>
-                        <div className='relative top-0 z-20 mb-2 flex flex-col items-center justify-between bg-gray-50/50 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
+                        <div className='relative top-0 z-20 -mt-2 flex flex-col items-center justify-between bg-gray-50/50 py-2 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
                           <div className='flex flex-wrap items-center justify-center gap-2'>
-                            <Text as='h2' size='xl' weight='bold' className='break-words break-all'>
-                              {/* If tab is funnels - then display a funnel name, otherwise a project name */}
-                              {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : project.name}
-                            </Text>
+                            {activeTab === PROJECT_TABS.funnels ? (
+                              <Text as='h2' size='xl' weight='bold' className='break-words break-all'>
+                                {activeFunnel?.name}
+                              </Text>
+                            ) : null}
                             {activeTab !== PROJECT_TABS.funnels ? <LiveVisitorsDropdown /> : null}
                           </div>
                           <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>

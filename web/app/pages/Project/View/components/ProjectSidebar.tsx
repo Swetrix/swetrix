@@ -23,8 +23,6 @@ const ICON_COLORS: Record<string, string> = {
   sessions: 'text-violet-500',
   funnels: 'text-pink-500',
   errors: 'text-red-500',
-  // Revenue Analytics (placeholder)
-  revenue: 'text-green-500',
   // Settings
   settings: 'text-gray-500',
 }
@@ -33,7 +31,6 @@ const ICON_COLORS: Record<string, string> = {
 const GROUP_ICON_COLORS: Record<string, string> = {
   webAnalytics: 'text-emerald-500',
   productAnalytics: 'text-blue-500',
-  revenueAnalytics: 'text-green-500',
 }
 
 interface Tab {
@@ -210,31 +207,17 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       })
     }
 
-    // Revenue Analytics group (placeholder for future)
-    // const revenueAnalyticsTabs = tabs.filter((tab) =>
-    //   ['revenue'].includes(tab.id),
-    // )
-    // if (revenueAnalyticsTabs.length > 0) {
-    //   groups.push({
-    //     id: 'revenueAnalytics',
-    //     label: t('dashboard.revenueAnalytics'),
-    //     icon: DollarSignIcon,
-    //     tabs: revenueAnalyticsTabs,
-    //     defaultExpanded: true,
-    //   })
-    // }
-
     return groups
   }, [tabs, t])
 
   return (
     <aside className='flex h-full w-56 shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900'>
       {/* Project name at the top */}
-      <div className='sticky top-0 z-10 border-b border-gray-200 bg-white px-3 py-3 dark:border-slate-800 dark:bg-slate-900'>
+      <div className='sticky top-0 z-10 flex items-center border-b border-gray-200 bg-white px-4 py-2 dark:border-slate-800 dark:bg-slate-900'>
         <Tooltip
           text={projectName}
           tooltipNode={
-            <Text as='p' size='sm' weight='medium' truncate className='max-w-full'>
+            <Text as='h2' size='lg' weight='semibold' truncate className='max-w-full'>
               {projectName}
             </Text>
           }
