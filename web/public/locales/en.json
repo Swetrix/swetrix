@@ -962,7 +962,7 @@
     "createTitle": "Create new goal",
     "editTitle": "Edit goal",
     "deleteConfirmTitle": "Delete this goal?",
-    "deleteConfirmMessage": "This action is irreversible. The goal and all its data will be deleted from our servers.",
+    "deleteConfirmMessage": "This action is irreversible. The goal and all its data will be permanently deleted.",
     "name": "Goal name",
     "namePlaceholder": "e.g., Sign up completed",
     "type": "Goal type",
