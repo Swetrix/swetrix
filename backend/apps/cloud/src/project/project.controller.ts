@@ -331,28 +331,7 @@ export class ProjectController {
       )
     }
 
-    if (projectDTO.isCaptcha) {
-      if (
-        _size(
-          _filter(
-            user.projects,
-            (project: Project) => project.isCaptchaProject,
-          ),
-        ) >= maxProjects
-      ) {
-        throw new HttpException(
-          `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
-          HttpStatus.PAYMENT_REQUIRED,
-        )
-      }
-    } else if (
-      _size(
-        _filter(
-          user.projects,
-          (project: Project) => project.isAnalyticsProject,
-        ),
-      ) >= maxProjects
-    ) {
+    if (_size(user.projects) >= maxProjects) {
       throw new ForbiddenException(
         `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
       )
@@ -377,15 +356,6 @@ export class ProjectController {
           id: user.id,
         },
       } as Project
-
-      if (projectDTO.isCaptcha) {
-        project.isCaptchaProject = true
-        project.isAnalyticsProject = false
-        project.isCaptchaEnabled = true
-        project.captchaSecretKey = generateRandomString(
-          CAPTCHA_SECRET_KEY_LENGTH,
-        )
-      }
 
       if (projectDTO.organisationId) {
         project.organisation = {
@@ -1789,7 +1759,6 @@ export class ProjectController {
       }
     }
 
-    // @ts-expect-error
     await this.projectService.update({ id }, _omit(project, ['share', 'admin']))
 
     await deleteProjectRedis(id)
@@ -1874,12 +1843,16 @@ export class ProjectController {
 
     this.projectService.allowedToView(project, userId, headers['x-password'])
 
-    const [isDataExists, isErrorDataExists] = await Promise.all([
-      !_isEmpty(
-        await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
-      ),
-      !_isEmpty(await this.projectService.getPIDsWhereErrorsDataExists([id])),
-    ])
+    const [isDataExists, isErrorDataExists, isCaptchaDataExists] =
+      await Promise.all([
+        !_isEmpty(
+          await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
+        ),
+        !_isEmpty(await this.projectService.getPIDsWhereErrorsDataExists([id])),
+        !_isEmpty(
+          await this.projectService.getPIDsWhereCaptchaDataExists([id]),
+        ),
+      ])
 
     let role
     let isAccessConfirmed = true
@@ -1917,6 +1890,7 @@ export class ProjectController {
       isLocked: !!project.admin?.dashboardBlockReason,
       isDataExists,
       isErrorDataExists,
+      isCaptchaDataExists,
       organisationId: project.organisation?.id,
       role,
     }

@@ -70,7 +70,7 @@ export class CaptchaService {
     private readonly projectService: ProjectService,
   ) {}
 
-  // checks if captcha is enabled for pid
+  // checks if captcha is enabled for pid (by checking if captchaSecretKey exists)
   async _isCaptchaEnabledForPID(pid: string) {
     const project = await this.projectService.getRedisProject(pid)
 
@@ -78,7 +78,7 @@ export class CaptchaService {
       return false
     }
 
-    return project.isCaptchaEnabled
+    return !!project.captchaSecretKey
   }
 
   // validates pid, checks if captcha is enabled and throws an error otherwise

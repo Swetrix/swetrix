@@ -1801,6 +1801,145 @@ export const getDeviceRowMapper = (activeTab: string, theme: string, t: typeof i
   return undefined
 }
 
+const getSettingsCaptcha = (
+  chart: { x: string[]; results: number[] },
+  timeBucket: string,
+  timeFormat: string,
+  rotateXAxis: boolean,
+  chartType: string,
+): ChartOptions => {
+  const xAxisSize = _size(chart.x)
+
+  // Build columns directly since getColumns doesn't handle 'results'
+  const columns: any[] = [
+    ['x', ..._map(chart.x, (el) => dayjs(el).toDate())],
+    ['results', ...chart.results],
+  ]
+
+  const allYValues: number[] = []
+  if (chart.results) {
+    allYValues.push(...chart.results.filter((n: any) => n !== undefined && n !== null))
+  }
+
+  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+
+  let regionStart
+
+  if (xAxisSize > 1) {
+    regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
+  } else {
+    regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
+  }
+
+  return {
+    data: {
+      x: 'x',
+      columns,
+      types: {
+        results: chartType === chartTypes.line ? area() : bar(),
+      },
+      colors: {
+        results: '#16a34a',
+      },
+      regions: {
+        results: [
+          {
+            // @ts-expect-error
+            start: regionStart,
+            style: {
+              dasharray: '6 2',
+            },
+          },
+        ],
+      },
+    },
+    grid: {
+      y: {
+        show: true,
+      },
+    },
+    transition: {
+      duration: 200,
+    },
+    resize: {
+      auto: true,
+      timer: false,
+    },
+    axis: {
+      x: {
+        clipPath: false,
+        tick: {
+          fit: true,
+          rotate: rotateXAxis ? 45 : 0,
+          format:
+            // @ts-expect-error
+            timeFormat === TimeFormat['24-hour']
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+        },
+        localtime: timeFormat === TimeFormat['24-hour'],
+        type: 'timeseries',
+      },
+      y: {
+        tick: {
+          format: (d: number) => nFormatter(d, 1),
+          values: optimalTicks,
+        },
+        show: true,
+        inner: true,
+      },
+    },
+    tooltip: {
+      contents: (item: any, _: any, __: any, color: any) => {
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+          <li class='font-semibold'>${
+            timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
+          }</li>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          ${_map(
+            item,
+            (el: { id: string; index: number; name: string; value: string; x: Date }) => `
+            <li class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <span>${el.name}</span>
+              </div>
+              <span class='pl-4'>${el.value}</span>
+            </li>
+            `,
+          ).join('')}`
+      },
+    },
+    point:
+      chartType === chartTypes.bar
+        ? {}
+        : {
+            focus: {
+              only: xAxisSize > 1,
+            },
+            pattern: ['circle'],
+            r: 2,
+          },
+    legend: {
+      item: {
+        tile: {
+          type: 'circle',
+          width: 10,
+          r: 3,
+        },
+      },
+    },
+    area: {
+      linearGradient: true,
+    },
+    bar: {
+      linearGradient: true,
+    },
+  }
+}
+
 export {
   getFormatDate,
   panelIconMapping,
@@ -1819,4 +1958,5 @@ export {
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
   CHART_MEASURES_MAPPING_PERF,
   getSettingsError,
+  getSettingsCaptcha,
 }

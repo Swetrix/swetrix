@@ -130,10 +130,6 @@ export const ProjectCard = ({
       list.push({ colour: 'yellow', label: t('common.pending') })
     }
 
-    if (project.isCaptchaProject) {
-      list.push({ colour: 'indigo', label: t('dashboard.captcha') })
-    }
-
     if (isTransferring) {
       list.push({ colour: 'indigo', label: t('common.transferring') })
     }
@@ -149,18 +145,7 @@ export const ProjectCard = ({
     }
 
     return list
-  }, [
-    t,
-    active,
-    isTransferring,
-    isPublic,
-    organisation,
-    share,
-    project.isAccessConfirmed,
-    project.role,
-    project.isCaptchaProject,
-    shareId,
-  ])
+  }, [t, active, isTransferring, isPublic, organisation, share, project.isAccessConfirmed, project.role, shareId])
 
   const onAccept = async () => {
     try {
@@ -215,7 +200,7 @@ export const ProjectCard = ({
   return (
     <Link
       to={{
-        pathname: _replace(project.isCaptchaProject ? routes.captcha : routes.project, ':id', id),
+        pathname: _replace(routes.project, ':id', id),
         search: searchParams,
       }}
       onClick={onElementClick}
@@ -252,7 +237,7 @@ export const ProjectCard = ({
       <div className={cx('flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4')}>
         {isHostnameNavigationEnabled ? (
           <MiniCard
-            labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
+            labelTKey='dashboard.pageviews'
             // @ts-expect-error
             total={project?.trafficStats?.visits}
             percChange={
@@ -264,7 +249,7 @@ export const ProjectCard = ({
           />
         ) : (
           <MiniCard
-            labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
+            labelTKey='dashboard.pageviews'
             total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
             percChange={
               live === 'N/A'
@@ -273,7 +258,7 @@ export const ProjectCard = ({
             }
           />
         )}
-        {project.isAnalyticsProject ? <MiniCard labelTKey='dashboard.liveVisitors' total={live} /> : null}
+        <MiniCard labelTKey='dashboard.liveVisitors' total={live} />
       </div>
       {project.role !== 'owner' && !project.isAccessConfirmed ? (
         <Modal

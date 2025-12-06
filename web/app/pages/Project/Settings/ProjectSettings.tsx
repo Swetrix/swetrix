@@ -21,6 +21,7 @@ import {
   ChevronLeftIcon,
   PuzzleIcon,
   StickyNoteIcon,
+  ShieldCheckIcon,
 } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -42,6 +43,7 @@ import {
   getGSCProperties,
   setGSCProperty,
   disconnectGSC,
+  reGenerateCaptchaSecretKey,
 } from '~/api'
 import { withAuthentication, auth } from '~/hoc/protected'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
@@ -316,7 +318,16 @@ const ProjectSettings = () => {
   const [error, setError] = useState<string | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
-  type SettingsTab = 'general' | 'shields' | 'access' | 'integrations' | 'emails' | 'people' | 'annotations' | 'danger'
+  type SettingsTab =
+    | 'general'
+    | 'shields'
+    | 'access'
+    | 'captcha'
+    | 'integrations'
+    | 'emails'
+    | 'people'
+    | 'annotations'
+    | 'danger'
 
   const tabs = useMemo(
     () =>
@@ -324,6 +335,12 @@ const ProjectSettings = () => {
         { id: 'general', label: t('project.settings.tabs.general'), icon: Settings2Icon, visible: true },
         { id: 'access', label: t('project.settings.tabs.access'), icon: LockIcon, visible: true },
         { id: 'shields', label: t('project.settings.tabs.shields'), icon: ShieldIcon, visible: true },
+        {
+          id: 'captcha',
+          label: t('project.settings.tabs.captcha'),
+          icon: ShieldCheckIcon,
+          visible: !isSelfhosted,
+        },
         {
           id: 'integrations',
           label: t('project.settings.tabs.integrations'),
@@ -359,6 +376,10 @@ const ProjectSettings = () => {
   const [gscConnected, setGscConnected] = useState<boolean | null>(null)
   const [gscProperties, setGscProperties] = useState<{ siteUrl: string; permissionLevel?: string }[]>([])
   const [gscEmail, setGscEmail] = useState<string | null>(null)
+
+  // CAPTCHA state
+  const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(null)
+  const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
@@ -414,6 +435,7 @@ const ProjectSettings = () => {
     try {
       const result = await getProject(projectId)
       setProject(result)
+      setCaptchaSecretKey(result.captchaSecretKey)
       setForm({
         ...result,
         ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
@@ -960,6 +982,62 @@ const ProjectSettings = () => {
               </div>
             ) : null}
 
+            {activeTab === 'captcha' ? (
+              <div>
+                <div className='rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
+                  <h3 className='mb-2 text-lg font-medium text-gray-900 dark:text-gray-50'>
+                    {t('project.settings.captcha.title')}
+                  </h3>
+                  <p className='mb-4 text-sm text-gray-600 dark:text-gray-300'>
+                    {t('project.settings.captcha.description')}
+                  </p>
+
+                  {captchaSecretKey ? (
+                    <>
+                      <Input
+                        label={t('project.settings.captcha.secretKey')}
+                        name='captchaSecretKey'
+                        className='mt-4 lg:w-1/2'
+                        value={captchaSecretKey}
+                        disabled
+                      />
+                      <div className='mt-4 flex gap-2'>
+                        <Button type='button' onClick={() => setShowRegenerateSecret(true)} danger regular>
+                          {t('project.settings.captcha.regenerateKey')}
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className='mb-4 text-sm text-gray-600 dark:text-gray-300'>
+                        {t('project.settings.captcha.noKeyGenerated')}
+                      </p>
+                      <Button
+                        type='button'
+                        onClick={async () => {
+                          try {
+                            const newKey = await reGenerateCaptchaSecretKey(id)
+                            setCaptchaSecretKey(newKey)
+                            toast.success(t('project.settings.captcha.keyGenerated'))
+                          } catch (reason: any) {
+                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+                          }
+                        }}
+                        primary
+                        regular
+                      >
+                        {t('project.settings.captcha.generateKey')}
+                      </Button>
+                    </>
+                  )}
+
+                  <hr className='-mx-4 mt-6 mb-4 border-gray-200 dark:border-slate-800' />
+
+                  <p className='text-sm text-gray-600 dark:text-gray-300'>{t('project.settings.captcha.learnMore')}</p>
+                </div>
+              </div>
+            ) : null}
+
             {activeTab === 'danger' ? (
               <DangerZone
                 setShowTransfer={setShowTransfer}
@@ -1062,6 +1140,26 @@ const ProjectSettings = () => {
         }
         isOpened={showTransfer}
         onSubmit={onTransfer}
+      />
+      <Modal
+        onClose={() => setShowRegenerateSecret(false)}
+        onSubmit={async () => {
+          try {
+            const newKey = await reGenerateCaptchaSecretKey(id)
+            setCaptchaSecretKey(newKey)
+            setShowRegenerateSecret(false)
+            toast.success(t('project.settings.captcha.keyRegenerated'))
+          } catch (reason: any) {
+            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+          }
+        }}
+        submitText={t('project.settings.captcha.regenerateKey')}
+        closeText={t('common.cancel')}
+        title={t('project.settings.captcha.regenerateKeyTitle')}
+        message={t('project.settings.captcha.regenerateKeyWarning')}
+        submitType='danger'
+        type='error'
+        isOpened={showRegenerateSecret}
       />
     </div>
   )

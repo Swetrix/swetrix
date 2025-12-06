@@ -46,14 +46,6 @@ const PATHS_REPLACEMENT_MAP = [
     replacement: '/share/[token]',
   },
   {
-    regex: /^\/captchas\/(?!new$)[^/]+$/i,
-    replacement: '/captchas/[id]',
-  },
-  {
-    regex: /^\/captchas\/settings/i,
-    replacement: '/captchas/settings/[id]',
-  },
-  {
     regex: /^\/ref/i,
     replacement: '/ref/[id]',
   },

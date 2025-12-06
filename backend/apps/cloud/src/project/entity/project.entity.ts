@@ -65,19 +65,11 @@ export class Project {
   @Column('boolean', { default: false })
   isTransferring: boolean
 
-  // Swetrix CAPTCHA related stuff
   @ApiProperty()
   @Column('boolean', { default: true })
   isAnalyticsProject: boolean
 
-  @ApiProperty()
-  @Column('boolean', { default: false })
-  isCaptchaProject: boolean
-
-  @ApiProperty()
-  @Column('boolean', { default: false })
-  isCaptchaEnabled: boolean
-
+  // CAPTCHA secret key - if set, CAPTCHA is enabled for this project
   @ApiProperty()
   @Column('varchar', { default: null, length: CAPTCHA_SECRET_KEY_LENGTH })
   captchaSecretKey: string

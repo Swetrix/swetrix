@@ -172,8 +172,6 @@ export interface Project {
   active: boolean
   public: boolean
   isAnalyticsProject: boolean
-  isCaptchaProject: boolean
-  isCaptchaEnabled: boolean
   captchaSecretKey: string | null
   created: string
   share?: ShareOwnerProject[]
@@ -190,14 +188,10 @@ export interface Project {
   isLocked: boolean
   isDataExists: boolean
   isErrorDataExists: boolean
+  isCaptchaDataExists: boolean
   botsProtectionLevel: 'off' | 'basic'
   role?: Role
   gscPropertyUri?: string | null
-}
-
-export interface CaptchaProject extends Project {
-  isCaptchaProject: true
-  isCaptchaEnabled: true
 }
 
 export interface Extension {

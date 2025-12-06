@@ -367,10 +367,7 @@ const Dashboard = () => {
     }
 
     const updateAllOverallStats = async () => {
-      await Promise.all([
-        updateOverallStats(projects.filter((p) => p.isAnalyticsProject).map((p) => p.id)),
-        updateOverallStatsCaptcha(projects.filter((p) => p.isCaptchaProject).map((p) => p.id)),
-      ])
+      await updateOverallStats(projects.map((p) => p.id))
     }
 
     updateLiveVisitors()

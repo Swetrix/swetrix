@@ -321,7 +321,6 @@ export class ProjectService {
           'project.countryBlacklist',
           'project.botsProtectionLevel',
           'project.captchaSecretKey',
-          'project.isCaptchaEnabled',
           'project.passwordHash',
           'project.isPasswordProtected',
           'admin.id',
@@ -1168,6 +1167,55 @@ export class ProjectService {
       (
         SELECT DISTINCT pid
         FROM errors
+        WHERE pid IN (${pids})
+      );
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then(resultSet => resultSet.json<{ pid: string }>())
+
+    return _map(data, ({ pid }) => pid)
+  }
+
+  async getPIDsWhereCaptchaDataExists(projectIds: string[]): Promise<string[]> {
+    if (_isEmpty(projectIds)) {
+      return []
+    }
+
+    const params = _reduce(
+      projectIds,
+      (acc, curr, index) => ({
+        ...acc,
+        [`pid_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const pids = _join(
+      _map(params, (val, key) => `{${key}:FixedString(12)}`),
+      ',',
+    )
+
+    const query = `
+      SELECT
+        pid,
+        CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM captcha
+            WHERE pid IN (${pids})
+          )
+          THEN 1
+          ELSE 0
+        END AS exists
+      FROM
+      (
+        SELECT DISTINCT pid
+        FROM captcha
         WHERE pid IN (${pids})
       );
     `

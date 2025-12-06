@@ -485,6 +485,7 @@ const PRODUCTION_PROJECT_TABS = {
   sessions: 'sessions',
   errors: 'errors',
   alerts: 'alerts',
+  captcha: 'captcha',
 } as const
 
 export const PROJECT_TABS = (

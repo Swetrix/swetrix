@@ -111,6 +111,7 @@
     "error": "Error",
     "close": "Close",
     "cancel": "Cancel",
+    "captcha": "CAPTCHA",
     "gotIt": "Got it",
     "settings": "Settings",
     "openMenu": "Open menu",
@@ -960,6 +961,7 @@
     "support": "Contact support"
   },
   "project": {
+    "captchaCompletions": "CAPTCHA completions",
     "addAnnotation": "Add annotation",
     "editAnnotation": "Edit annotation",
     "deleteAnnotation": "Delete annotation",
@@ -1229,11 +1231,25 @@
         "general": "General",
         "access": "Access",
         "shields": "Shields",
+        "captcha": "CAPTCHA",
         "emails": "Emails",
         "people": "People",
         "annotations": "Annotations",
         "danger": "Danger zone",
         "integrations": "Integrations"
+      },
+      "captcha": {
+        "title": "CAPTCHA Integration",
+        "description": "Enable CAPTCHA protection for your forms and actions. Generate a secret key to integrate Swetrix CAPTCHA with your application.",
+        "secretKey": "Secret key",
+        "generateKey": "Generate secret key",
+        "regenerateKey": "Regenerate secret key",
+        "keyGenerated": "Secret key has been generated",
+        "keyRegenerated": "Secret key has been regenerated",
+        "regenerateKeyTitle": "Regenerate secret key?",
+        "regenerateKeyWarning": "Are you sure you want to regenerate the secret key? This will invalidate the current key and all applications using it will need to be updated.",
+        "noKeyGenerated": "No secret key has been generated yet. Generate one to enable CAPTCHA for this project.",
+        "learnMore": "Use this secret key in your backend to verify CAPTCHA tokens. Learn more in our documentation."
       },
       "annotations": {
         "title": "Annotations",

@@ -1,6 +1,13 @@
 import cx from 'clsx'
 import _map from 'lodash/map'
-import { ChevronDownIcon, ChevronRightIcon, GlobeIcon, BarChart3Icon, SettingsIcon } from 'lucide-react'
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  GlobeIcon,
+  BarChart3Icon,
+  SettingsIcon,
+  ShieldCheckIcon,
+} from 'lucide-react'
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps } from 'react-router'
@@ -22,6 +29,8 @@ const ICON_COLORS: Record<string, string> = {
   sessions: 'text-indigo-500',
   errors: 'text-red-500',
   funnels: 'text-teal-500',
+  // CAPTCHA
+  captcha: 'text-emerald-500',
   // Settings
   settings: 'text-gray-500',
 }
@@ -30,6 +39,7 @@ const ICON_COLORS: Record<string, string> = {
 const GROUP_ICON_COLORS: Record<string, string> = {
   webAnalytics: 'text-blue-500',
   productAnalytics: 'text-green-500',
+  captcha: 'text-emerald-500',
 }
 
 interface Tab {
@@ -205,6 +215,18 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       })
     }
 
+    // CAPTCHA group
+    const captchaTabs = tabs.filter((tab) => tab.id === PROJECT_TABS.captcha)
+    if (captchaTabs.length > 0) {
+      groups.push({
+        id: 'captcha',
+        label: t('common.captcha'),
+        icon: ShieldCheckIcon,
+        tabs: captchaTabs,
+        defaultExpanded: false,
+      })
+    }
+
     return groups
   }, [tabs, t])
 
@@ -213,6 +235,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       {/* Project name at the top */}
       <div className='sticky top-0 z-10 flex items-center border-b border-gray-200 bg-white px-4 py-2 dark:border-slate-800 dark:bg-slate-900'>
         <Tooltip
+          className='max-w-full'
           text={projectName}
           tooltipNode={
             <Text as='h2' size='lg' weight='semibold' truncate className='max-w-full'>
