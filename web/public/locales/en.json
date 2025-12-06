@@ -459,8 +459,6 @@
     "startAXDayFreeTrial": "Start a {{amount}}-day free trial",
     "metric": "Metric",
     "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
-    "peopleLoveSwetrix": "People 🥰 Swetrix",
-    "whyPeopleLoveSwetrix": "Swetrix is an ethical and powerful service. Hundreds of people have already made the switch from Google Analytics and other alternatives.",
     "coreFeatures": "Only the features you need",
     "heroBenefits": {
       "trial": "Free trial {{days}} days",
