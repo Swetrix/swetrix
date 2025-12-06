@@ -13,10 +13,11 @@
   /* Colors */
   --color-gray-750: oklch(23.11% 0.0357 262.54); /* Converting #141d2e to OKLCH */
 
-  /* Minimum Heights */
+  /* Heights */
+  --header-height: 60px;
   --min-height-page: calc(100vh - 74px);
   --min-height-min-footer: calc(100vh - 157px);
-  --min-height-including-header: calc(100vh - 60px); /* 60px - header height */
+  --min-height-including-header: calc(100vh - var(--header-height));
 
   --default-transition-duration: 250ms;
 }
