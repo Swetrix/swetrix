@@ -819,6 +819,7 @@
     "delete": "Delete organisation"
   },
   "dashboard": {
+    "security": "Security",
     "gridView": "Grid view",
     "listView": "List view",
     "sortAlphaAsc": "A to Z",

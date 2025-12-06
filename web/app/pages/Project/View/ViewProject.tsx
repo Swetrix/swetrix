@@ -38,8 +38,8 @@ import {
   EyeIcon,
   PercentIcon,
   KeyboardIcon,
-  ShieldCheckIcon,
   TargetIcon,
+  PuzzleIcon,
 } from 'lucide-react'
 import React, {
   useState,
@@ -1531,7 +1531,7 @@ const ViewProjectContent = () => {
       {
         id: PROJECT_TABS.captcha,
         label: t('common.captcha'),
-        icon: ShieldCheckIcon,
+        icon: PuzzleIcon,
       },
       ...adminTabs,
     ].filter((x) => !!x)
@@ -3285,7 +3285,7 @@ const ViewProjectContent = () => {
         {!isEmbedded ? <Header /> : null}
         <div
           className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
-            'min-h-min-footer': !isEmbedded,
+            'min-h-including-header': !isEmbedded,
             'min-h-[100vh]': isEmbedded,
           })}
         >
@@ -3302,12 +3302,12 @@ const ViewProjectContent = () => {
         {!isEmbedded ? <Header /> : null}
         <div
           className={cx('flex bg-gray-50 dark:bg-slate-900', {
-            'min-h-min-footer': !isEmbedded,
+            'min-h-including-header': !isEmbedded,
             'min-h-[100vh]': isEmbedded,
           })}
         >
           {/* Desktop Sidebar */}
-          <div className='sticky top-0 hidden h-dvh md:block'>
+          <div className='h-including-header sticky top-0 hidden md:block'>
             <ProjectSidebar
               tabs={tabs}
               activeTab={activeTab}
@@ -3320,7 +3320,7 @@ const ViewProjectContent = () => {
             />
           </div>
           {/* Main Content */}
-          <div className='flex-1 px-4 py-3 sm:px-6 lg:px-8'>
+          <div className='flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8'>
             <MobileTabSelector />
             <LockedDashboard />
           </div>
@@ -3341,12 +3341,12 @@ const ViewProjectContent = () => {
         {!isEmbedded ? <Header /> : null}
         <div
           className={cx('flex bg-gray-50 dark:bg-slate-900', {
-            'min-h-min-footer': !isEmbedded,
+            'min-h-including-header': !isEmbedded,
             'min-h-[100vh]': isEmbedded,
           })}
         >
           {/* Desktop Sidebar */}
-          <div className='sticky top-0 hidden h-dvh md:block'>
+          <div className='h-including-header sticky top-0 hidden md:block'>
             <ProjectSidebar
               tabs={tabs}
               activeTab={activeTab}
@@ -3359,7 +3359,7 @@ const ViewProjectContent = () => {
             />
           </div>
           {/* Main Content */}
-          <div className='flex-1 px-4 py-3 sm:px-6 lg:px-8'>
+          <div className='flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8'>
             <MobileTabSelector />
             <WaitingForAnEvent />
           </div>
@@ -3379,12 +3379,12 @@ const ViewProjectContent = () => {
         {!isEmbedded ? <Header /> : null}
         <div
           className={cx('flex bg-gray-50 dark:bg-slate-900', {
-            'min-h-min-footer': !isEmbedded,
+            'min-h-including-header': !isEmbedded,
             'min-h-[100vh]': isEmbedded,
           })}
         >
           {/* Desktop Sidebar */}
-          <div className='sticky top-0 hidden h-dvh md:block'>
+          <div className='h-including-header sticky top-0 hidden md:block'>
             <ProjectSidebar
               tabs={tabs}
               activeTab={activeTab}
@@ -3397,7 +3397,7 @@ const ViewProjectContent = () => {
             />
           </div>
           {/* Main Content */}
-          <div className='flex-1 px-4 py-3 sm:px-6 lg:px-8'>
+          <div className='flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8'>
             <MobileTabSelector />
             <WaitingForAnError />
           </div>
@@ -3448,7 +3448,7 @@ const ViewProjectContent = () => {
               })}
             >
               {/* Desktop Sidebar */}
-              <div className='sticky top-0 hidden h-dvh md:block'>
+              <div className='h-including-header sticky top-0 hidden md:block'>
                 <ProjectSidebar
                   tabs={tabs}
                   activeTab={activeTab}
@@ -3462,8 +3462,8 @@ const ViewProjectContent = () => {
               </div>
               {/* Main Content */}
               <div
-                className={cx('flex-1 px-4 py-3 sm:px-6 lg:px-8', {
-                  'min-h-min-footer': !isEmbedded,
+                className={cx('flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8', {
+                  'min-h-including-header': !isEmbedded,
                   'min-h-[100vh]': isEmbedded,
                 })}
                 ref={dashboardRef}
