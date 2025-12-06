@@ -40,7 +40,3 @@ validateToken(
 
 # License
 This library is licenced under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-# Donate
-You can support the project by donating us at https://ko-fi.com/andriir \
-We can only run our services by once again asking for your financial support!
