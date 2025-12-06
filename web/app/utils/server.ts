@@ -120,7 +120,6 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
       }
       break
 
-    case routes.new_project:
     case routes.new_captcha:
       result = {
         title: t('project.settings.create'),

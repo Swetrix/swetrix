@@ -13,7 +13,6 @@ const routes = Object.freeze({
   user_settings: '/user-settings',
   verify: '/verify/:id',
   change_email: '/change-email/:id',
-  new_project: '/projects/new',
   new_captcha: '/captchas/new',
   project_settings: '/projects/settings/:id',
   captcha_settings: '/captchas/settings/:id',

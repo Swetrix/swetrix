@@ -1,12 +1,16 @@
 import { useTranslation } from 'react-i18next'
 
+import { Text } from '~/ui/Text'
+
 const NoSharedProjects = () => {
   const { t } = useTranslation('common')
 
   return (
     <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-      <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-        <h2 className='mb-4 text-center text-2xl leading-snug'>{t('profileSettings.noSharedProjects')}</h2>
+      <div className='mx-auto w-full max-w-7xl'>
+        <Text as='h2' size='2xl' className='mb-4 text-center leading-snug'>
+          {t('profileSettings.noSharedProjects')}
+        </Text>
       </div>
     </div>
   )

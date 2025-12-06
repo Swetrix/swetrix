@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
 import { Badge } from '~/ui/Badge'
 import OutsideClickHandler from '~/ui/OutsideClickHandler'
+import { Text } from '~/ui/Text'
 import { nFormatter, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 
 interface MetricCardProps {
@@ -72,19 +73,21 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   classes,
 }) => (
   <div className={cx('flex flex-col', classes?.container)}>
-    <div className={cx('text-4xl font-bold whitespace-nowrap text-slate-900 dark:text-gray-50', classes?.value)}>
+    <Text size='4xl' weight='bold' className={cx('whitespace-nowrap', classes?.value)}>
       {valueMapper ? valueMapper(value, 'main') : value}
-    </div>
+    </Text>
     <div
       className={cx(
-        'flex items-center text-sm font-bold whitespace-nowrap',
+        'flex items-center whitespace-nowrap',
         {
           'space-x-2': _isNumber(change),
         },
         classes?.label,
       )}
     >
-      <span className='text-slate-900 dark:text-gray-50'>{label}</span>
+      <Text size='sm' weight='bold'>
+        {label}
+      </Text>
       <ChangeBadge change={change} type={type} goodChangeDirection={goodChangeDirection} valueMapper={valueMapper} />
     </div>
   </div>
@@ -115,26 +118,25 @@ export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: 
 
   return (
     <div className={cx('flex flex-col', classes?.container)}>
-      <div className={cx('text-4xl font-bold whitespace-nowrap text-slate-900 dark:text-gray-50', classes?.value)}>
+      <Text size='4xl' weight='bold' className={cx('whitespace-nowrap', classes?.value)}>
         {valueMapper ? valueMapper(values[selected], selected) : values[selected].value}
-      </div>
-      <div className='relative flex items-center text-sm font-bold whitespace-nowrap'>
+      </Text>
+      <div className='relative flex items-center whitespace-nowrap'>
         <OutsideClickHandler onOutsideClick={() => setShow(false)}>
-          <span
-            className={cx('cursor-pointer text-slate-900 dark:text-gray-50', classes?.label)}
-            onClick={() => setShow(!show)}
-          >
-            {values[selected].label}{' '}
-            <ChevronDownIcon
-              className={cx(
-                'inline h-4 w-4 transform transition-transform duration-200',
-                show ? 'rotate-180' : 'rotate-0',
-              )}
-            />
+          <span className={cx('cursor-pointer', classes?.label)} onClick={() => setShow(!show)}>
+            <Text size='sm' weight='bold'>
+              {values[selected].label}{' '}
+              <ChevronDownIcon
+                className={cx(
+                  'inline h-4 w-4 transform transition-transform duration-200',
+                  show ? 'rotate-180' : 'rotate-0',
+                )}
+              />
+            </Text>
           </span>
           <div
             className={cx(
-              'absolute top-4 z-10 mt-2 min-w-[250px] origin-top transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white break-words whitespace-normal text-gray-900 shadow-lg transition-all duration-200 ease-out dark:border-slate-700/50 dark:bg-slate-900',
+              'absolute top-4 z-10 mt-2 min-w-[250px] origin-top transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white whitespace-normal shadow-lg transition-all duration-200 ease-out dark:border-slate-700/50 dark:bg-slate-900',
               show
                 ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
                 : 'pointer-events-none -translate-y-1 scale-95 opacity-0',
@@ -142,7 +144,9 @@ export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: 
           >
             <div className='flex w-full flex-col'>
               <div className='flex items-center justify-between border-b border-black/10 bg-white p-2 dark:border-slate-700/50 dark:bg-slate-900'>
-                <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>{selectLabel}</p>
+                <Text as='p' size='sm' weight='semibold'>
+                  {selectLabel}
+                </Text>
                 <button
                   className='-m-1 rounded-md p-1 hover:bg-gray-200 dark:hover:bg-slate-700'
                   type='button'
@@ -157,9 +161,11 @@ export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: 
                     type='button'
                     key={label}
                     onClick={() => _onSelect(index)}
-                    className='w-full rounded-md p-2 text-left text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                    className='w-full rounded-md p-2 text-left hover:bg-gray-200 dark:hover:bg-slate-700'
                   >
-                    {label}
+                    <Text size='sm' colour='secondary'>
+                      {label}
+                    </Text>
                   </button>
                 ))}
               </div>

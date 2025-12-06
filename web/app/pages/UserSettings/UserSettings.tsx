@@ -38,6 +38,7 @@ import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
 import Textarea from '~/ui/Textarea'
 import TimezonePicker from '~/ui/TimezonePicker'
+import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 import { getCookie, setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
@@ -381,9 +382,9 @@ const UserSettings = () => {
   const SharedProjects = () => (
     <>
       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+      <Text as='h3' size='lg' weight='bold' className='mt-2 flex items-center'>
         {t('profileSettings.shared')}
-      </h3>
+      </Text>
       <div>
         {!_isEmpty(user?.sharedProjects) ? (
           <div className='mt-3 overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
@@ -428,7 +429,9 @@ const UserSettings = () => {
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 dark:bg-slate-900'>
       <form className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.profileSettings')}</h2>
+        <Text as='h2' size='3xl' weight='bold' className='mt-2'>
+          {t('titles.profileSettings')}
+        </Text>
         <hr className='mt-5 border-gray-200 dark:border-gray-600' />
         <div className='mt-6 flex flex-col gap-6 md:flex-row'>
           <div className='md:hidden'>

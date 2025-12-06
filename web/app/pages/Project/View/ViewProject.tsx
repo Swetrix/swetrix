@@ -149,6 +149,7 @@ import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import Select from '~/ui/Select'
+import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 import { periodToCompareDate } from '~/utils/compareConvertDate'
 import {
@@ -187,6 +188,7 @@ import NoEvents from './components/NoEvents'
 import NoSessionDetails from './components/NoSessionDetails'
 import { Pageflow } from './components/Pageflow'
 import { PerformanceChart } from './components/PerformanceChart'
+import ProjectSidebar from './components/ProjectSidebar'
 import { RefreshStatsButton } from './components/RefreshStatsButton'
 import RefRow from './components/RefRow'
 import SearchFilters, { getFiltersUrlParams } from './components/SearchFilters'
@@ -3225,80 +3227,25 @@ const ViewProjectContent = () => {
     updatePeriod(pair)
   })
 
-  const TabSelector = () => (
-    <div className='mb-[1px]'>
-      <div className='sm:hidden'>
-        <Select
-          items={tabs}
-          keyExtractor={(item) => item.id}
-          labelExtractor={(item) => item.label}
-          onSelect={(item) => {
-            if (item.id === 'settings') {
-              openSettingsHandler()
-              return
-            }
+  // Mobile tab selector dropdown
+  const MobileTabSelector = () => (
+    <div className='mb-4 md:hidden'>
+      <Select
+        items={tabs}
+        keyExtractor={(item) => item.id}
+        labelExtractor={(item) => item.label}
+        onSelect={(item) => {
+          if (item.id === 'settings') {
+            openSettingsHandler()
+            return
+          }
 
-            setDashboardTab(item?.id)
-          }}
-          title={activeTabLabel}
-          capitalise
-          selectedItem={tabs.find((tab) => tab.id === activeTab)}
-        />
-      </div>
-      <div className='hidden sm:block'>
-        <nav className='-mb-px flex space-x-4 overflow-x-auto' aria-label='Tabs'>
-          {_map(tabs, (tab) => {
-            const isCurrent = tab.id === activeTab
-
-            const handleClick = (e: React.MouseEvent) => {
-              if (tab.id === 'settings') {
-                return
-              }
-
-              e.preventDefault()
-              setDashboardTab(tab.id)
-            }
-
-            const newSearchParams = new URLSearchParams(searchParams.toString())
-            newSearchParams.set('tab', tab.id)
-            const tabUrl: LinkProps['to'] =
-              tab.id === 'settings'
-                ? _replace(routes.project_settings, ':id', id)
-                : { search: newSearchParams.toString() }
-
-            return (
-              <Link
-                key={tab.id}
-                to={tabUrl}
-                onClick={handleClick}
-                className={cx(
-                  'text-md group inline-flex cursor-pointer items-center border-b-2 px-1 py-2 font-bold whitespace-nowrap transition-colors',
-                  {
-                    'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': isCurrent,
-                    'border-transparent text-gray-500 dark:text-gray-400': !isCurrent,
-                    'cursor-wait': dataLoading && tab.id !== 'settings',
-                    'hover:border-gray-300 hover:text-gray-700 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                      !isCurrent && !dataLoading,
-                  },
-                )}
-                aria-current={isCurrent ? 'page' : undefined}
-              >
-                <tab.icon
-                  className={cx(
-                    isCurrent
-                      ? 'text-slate-900 dark:text-gray-50'
-                      : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
-                    'mr-2 -ml-0.5 h-5 w-5',
-                  )}
-                  aria-hidden='true'
-                  strokeWidth={1.5}
-                />
-                <span>{tab.label}</span>
-              </Link>
-            )
-          })}
-        </nav>
-      </div>
+          setDashboardTab(item?.id)
+        }}
+        title={activeTabLabel}
+        capitalise
+        selectedItem={tabs.find((tab) => tab.id === activeTab)}
+      />
     </div>
   )
 
@@ -3324,19 +3271,29 @@ const ViewProjectContent = () => {
       <>
         {!isEmbedded ? <Header /> : null}
         <div
-          className={cx(
-            'mx-auto flex w-full max-w-7xl flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900',
-            {
-              'min-h-min-footer': !isEmbedded,
-              'min-h-[100vh]': isEmbedded,
-            },
-          )}
+          className={cx('flex bg-gray-50 dark:bg-slate-900', {
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
+          })}
         >
-          <TabSelector />
-          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
-            {project.name}
-          </h2>
-          <LockedDashboard />
+          {/* Desktop Sidebar */}
+          <div className='sticky top-0 hidden h-dvh md:block'>
+            <ProjectSidebar
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={setDashboardTab}
+              projectId={id}
+              projectName={project.name}
+              dataLoading={dataLoading}
+              searchParams={searchParams}
+              allowedToManage={allowedToManage}
+            />
+          </div>
+          {/* Main Content */}
+          <div className='flex-1 px-4 py-3 sm:px-6 lg:px-8'>
+            <MobileTabSelector />
+            <LockedDashboard />
+          </div>
         </div>
         {!isEmbedded ? <Footer /> : null}
       </>
@@ -3348,19 +3305,29 @@ const ViewProjectContent = () => {
       <>
         {!isEmbedded ? <Header /> : null}
         <div
-          className={cx(
-            'mx-auto flex w-full max-w-7xl flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900',
-            {
-              'min-h-min-footer': !isEmbedded,
-              'min-h-[100vh]': isEmbedded,
-            },
-          )}
+          className={cx('flex bg-gray-50 dark:bg-slate-900', {
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
+          })}
         >
-          <TabSelector />
-          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
-            {project.name}
-          </h2>
-          <WaitingForAnEvent />
+          {/* Desktop Sidebar */}
+          <div className='sticky top-0 hidden h-dvh md:block'>
+            <ProjectSidebar
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={setDashboardTab}
+              projectId={id}
+              projectName={project.name}
+              dataLoading={dataLoading}
+              searchParams={searchParams}
+              allowedToManage={allowedToManage}
+            />
+          </div>
+          {/* Main Content */}
+          <div className='flex-1 px-4 py-3 sm:px-6 lg:px-8'>
+            <MobileTabSelector />
+            <WaitingForAnEvent />
+          </div>
         </div>
         {!isEmbedded ? <Footer /> : null}
       </>
@@ -3376,19 +3343,29 @@ const ViewProjectContent = () => {
       <>
         {!isEmbedded ? <Header /> : null}
         <div
-          className={cx(
-            'mx-auto flex w-full max-w-7xl flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900',
-            {
-              'min-h-min-footer': !isEmbedded,
-              'min-h-[100vh]': isEmbedded,
-            },
-          )}
+          className={cx('flex bg-gray-50 dark:bg-slate-900', {
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
+          })}
         >
-          <TabSelector />
-          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
-            {project.name}
-          </h2>
-          <WaitingForAnError />
+          {/* Desktop Sidebar */}
+          <div className='sticky top-0 hidden h-dvh md:block'>
+            <ProjectSidebar
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={setDashboardTab}
+              projectId={id}
+              projectName={project.name}
+              dataLoading={dataLoading}
+              searchParams={searchParams}
+              allowedToManage={allowedToManage}
+            />
+          </div>
+          {/* Main Content */}
+          <div className='flex-1 px-4 py-3 sm:px-6 lg:px-8'>
+            <MobileTabSelector />
+            <WaitingForAnError />
+          </div>
         </div>
         {!isEmbedded ? <Footer /> : null}
       </>
@@ -3429,18 +3406,32 @@ const ViewProjectContent = () => {
             <EventsRunningOutBanner />
             <div
               ref={ref}
-              className={cx('bg-gray-50 dark:bg-slate-900', {
+              className={cx('flex bg-gray-50 dark:bg-slate-900', {
                 'min-h-[100vh]': analyticsLoading && isEmbedded,
               })}
             >
+              {/* Desktop Sidebar */}
+              <div className='sticky top-0 hidden h-dvh md:block'>
+                <ProjectSidebar
+                  tabs={tabs}
+                  activeTab={activeTab}
+                  onTabChange={setDashboardTab}
+                  projectId={id}
+                  projectName={project.name}
+                  dataLoading={dataLoading}
+                  searchParams={searchParams}
+                  allowedToManage={allowedToManage}
+                />
+              </div>
+              {/* Main Content */}
               <div
-                className={cx('mx-auto flex w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8', {
+                className={cx('flex-1 px-4 py-3 sm:px-6 lg:px-8', {
                   'min-h-min-footer': !isEmbedded,
                   'min-h-[100vh]': isEmbedded,
                 })}
                 ref={dashboardRef}
               >
-                <TabSelector />
+                <MobileTabSelector />
                 <AnimatePresence mode='wait'>
                   <motion.div
                     key={activeTab}
@@ -3453,12 +3444,13 @@ const ViewProjectContent = () => {
                     (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
                     (activeFunnel || activeTab !== PROJECT_TABS.funnels) ? (
                       <>
-                        <div className='relative top-0 z-20 flex flex-col items-center justify-between bg-gray-50/50 py-2 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
+                        <div className='relative top-0 z-20 -mt-2 flex flex-col items-center justify-between bg-gray-50/50 py-2 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
                           <div className='flex flex-wrap items-center justify-center gap-2'>
-                            <h2 className='text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
-                              {/* If tab is funnels - then display a funnel name, otherwise a project name */}
-                              {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : project.name}
-                            </h2>
+                            {activeTab === PROJECT_TABS.funnels ? (
+                              <Text as='h2' size='xl' weight='bold' className='break-words break-all'>
+                                {activeFunnel?.name}
+                              </Text>
+                            ) : null}
                             {activeTab !== PROJECT_TABS.funnels ? <LiveVisitorsDropdown /> : null}
                           </div>
                           <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
@@ -3522,7 +3514,7 @@ const ViewProjectContent = () => {
                                       }
 
                                       if (item.id === 'no-views') {
-                                        return <span className='text-gray-600 dark:text-gray-200'>{item.name}</span>
+                                        return <Text colour='secondary'>{item.name}</Text>
                                       }
 
                                       return (
