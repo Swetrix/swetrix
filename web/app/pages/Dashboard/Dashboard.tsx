@@ -10,7 +10,7 @@ import { Link, useLoaderData, useNavigate, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha, createProject } from '~/api'
+import { getProjects, getLiveVisitors, getOverallStats, createProject } from '~/api'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import { withAuthentication, auth } from '~/hoc/protected'
@@ -355,22 +355,8 @@ const Dashboard = () => {
       }
     }
 
-    const updateOverallStatsCaptcha = async (projectIds: string[]) => {
-      if (!projectIds.length) return
-
-      try {
-        const stats = await getOverallStatsCaptcha(projectIds, activePeriod)
-        setOverallStats((prev) => ({ ...prev, ...stats }))
-      } catch (reason) {
-        console.error('Failed to fetch overall stats:', reason)
-      }
-    }
-
     const updateAllOverallStats = async () => {
-      await Promise.all([
-        updateOverallStats(projects.filter((p) => p.isAnalyticsProject).map((p) => p.id)),
-        updateOverallStatsCaptcha(projects.filter((p) => p.isCaptchaProject).map((p) => p.id)),
-      ])
+      await updateOverallStats(projects.map((p) => p.id))
     }
 
     updateLiveVisitors()

@@ -31,15 +31,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { changeLanguage } from '~/i18n'
-import {
-  whitelist,
-  languages,
-  languageFlag,
-  isSelfhosted,
-  DOCS_URL,
-  CAPTCHA_URL,
-  isDisableMarketingPages,
-} from '~/lib/constants'
+import { whitelist, languages, languageFlag, isSelfhosted, DOCS_URL, isDisableMarketingPages } from '~/lib/constants'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
@@ -80,7 +72,7 @@ const getSolutions = (t: typeof i18nextT) => [
   {
     name: t('header.solutions.captcha.title'),
     description: t('header.solutions.captcha.desc'),
-    link: CAPTCHA_URL,
+    link: routes.captchaLanding,
     icon: PuzzleIcon,
   },
 ]

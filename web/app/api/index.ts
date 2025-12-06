@@ -407,7 +407,7 @@ export const getProject = (pid: string, password?: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const createProject = (data: { name: string; organisationId?: string; isCaptcha?: boolean }) =>
+export const createProject = (data: { name: string; organisationId?: string }) =>
   api
     .post('/project', data)
     .then((response): Project => response.data)

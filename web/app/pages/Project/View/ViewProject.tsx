@@ -38,6 +38,7 @@ import {
   EyeIcon,
   PercentIcon,
   KeyboardIcon,
+  ShieldCheckIcon,
 } from 'lucide-react'
 import React, {
   useState,
@@ -176,6 +177,7 @@ import { ErrorChart } from './components/ErrorChart'
 import { ErrorDetails } from './components/ErrorDetails'
 import { Errors } from './components/Errors'
 import Filters from './components/Filters'
+const CaptchaView = lazy(() => import('./components/CaptchaView'))
 import { FunnelChart } from './components/FunnelChart'
 import FunnelsList from './components/FunnelsList'
 const InteractiveMap = lazy(() => import('./components/InteractiveMap'))
@@ -400,6 +402,7 @@ interface ViewProjectContextType {
   activeTab: keyof typeof PROJECT_TABS
   filters: Filter[]
   customPanelTabs: CustomTab[]
+  captchaRefreshTrigger: number
 
   // Functions
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
@@ -423,6 +426,7 @@ const defaultViewProjectContext: ViewProjectContextType = {
   activeTab: PROJECT_TABS.traffic,
   filters: [],
   customPanelTabs: [],
+  captchaRefreshTrigger: 0,
   updatePeriod: () => {},
   updateTimebucket: (_newTimebucket) => {},
   refCalendar: { current: null } as any,
@@ -533,6 +537,7 @@ const ViewProjectContent = () => {
   // prevY2NeededRef removed - no longer needed with new chart management
   const [dataLoading, setDataLoading] = useState(false)
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false)
+  const [captchaRefreshTrigger, setCaptchaRefreshTrigger] = useState(0)
   const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
@@ -1512,6 +1517,11 @@ const ViewProjectContent = () => {
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
         icon: BellRingIcon,
+      },
+      {
+        id: PROJECT_TABS.captcha,
+        label: t('common.captcha'),
+        icon: ShieldCheckIcon,
       },
       ...adminTabs,
     ].filter((x) => !!x)
@@ -2648,6 +2658,11 @@ const ViewProjectContent = () => {
           return
         }
 
+        if (activeTab === PROJECT_TABS.captcha) {
+          setCaptchaRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
         loadAnalytics()
       }
     },
@@ -3300,7 +3315,12 @@ const ViewProjectContent = () => {
     )
   }
 
-  if (!project.isDataExists && activeTab !== PROJECT_TABS.errors && !analyticsLoading) {
+  if (
+    !project.isDataExists &&
+    activeTab !== PROJECT_TABS.errors &&
+    !(activeTab === PROJECT_TABS.captcha && project.isCaptchaDataExists) &&
+    !analyticsLoading
+  ) {
     return (
       <>
         {!isEmbedded ? <Header /> : null}
@@ -3391,6 +3411,7 @@ const ViewProjectContent = () => {
             activeTab,
             filters,
             customPanelTabs,
+            captchaRefreshTrigger,
 
             // Functions
             updatePeriod,
@@ -4274,6 +4295,7 @@ const ViewProjectContent = () => {
                     {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && isAuthenticated ? (
                       <ProjectAlertsView />
                     ) : null}
+                    {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
                     {analyticsLoading &&
                     (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) ? (
                       <Loader />

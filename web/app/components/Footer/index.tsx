@@ -15,7 +15,6 @@ import {
   TWITTER_URL,
   DOCS_URL,
   DISCORD_URL,
-  CAPTCHA_URL,
   whitelist,
   languages,
   languageFlag,
@@ -33,7 +32,7 @@ const products = [
   { key: 'header.solutions.analytics.title', href: routesPath.main, internal: true },
   { key: 'header.solutions.performance.title', href: routesPath.performance, internal: true },
   { key: 'header.solutions.errors.title', href: routesPath.errorTracking, internal: true },
-  { key: 'header.solutions.captcha.title', href: CAPTCHA_URL, internal: false },
+  { key: 'header.solutions.captcha.title', href: routesPath.captchaLanding, internal: true },
 ]
 
 const productionNavigation = {

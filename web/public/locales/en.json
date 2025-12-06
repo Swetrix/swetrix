@@ -111,6 +111,7 @@
     "error": "Error",
     "close": "Close",
     "cancel": "Cancel",
+    "captcha": "CAPTCHA",
     "gotIt": "Got it",
     "settings": "Settings",
     "openMenu": "Open menu",
@@ -211,6 +212,51 @@
     "track": {
       "title": "Track all errors with one tool",
       "desc": "With Swetrix, you can track exactly what kind of errors your users are experiencing and when. We also give you insight into which browsers, operating systems, devices and more, making it even easier to resolve issues."
+    }
+  },
+  "captchaPage": {
+    "slogan": "Protect your website from bots with <span>privacy-focused</span> CAPTCHA",
+    "description": "Swetrix CAPTCHA is an open source and easy to use captcha solution. It's simple to integrate and provides exceptional bot protection while respecting user privacy.",
+    "whySwetrix": "Why choose Swetrix CAPTCHA?",
+    "whySwetrixDesc": "Unlike other CAPTCHA providers, we put privacy first. No tracking, no cookies, just effective bot protection.",
+    "features": {
+      "privacy": {
+        "title": "Privacy-focused",
+        "desc": "Swetrix CAPTCHA stays feature-rich and easy to use while remaining privacy-focused. The captcha challenges are carried out absolutely anonymously and the analytics data cannot be pinpointed to a specific user."
+      },
+      "opensource": {
+        "title": "Open-source",
+        "desc": "Our source code is available to anyone on GitHub so anyone can analyse and review it at any time. If you'd like to run CAPTCHA on your own server, you're welcome to do so."
+      },
+      "customisable": {
+        "title": "Customisable",
+        "desc": "You can customise the CAPTCHA to your liking - you can change the theming colours and adjust settings to match your website's design."
+      },
+      "easy": {
+        "title": "Easy to use",
+        "desc": "Integrate the CAPTCHA into your website in just a few minutes. You can use our pre-built code snippets, it's already included in Swetrix Analytics plans."
+      }
+    },
+    "howItWorks": {
+      "title": "Simple integration, powerful protection",
+      "desc": "Get started with Swetrix CAPTCHA in three easy steps",
+      "step1": {
+        "title": "Create a project",
+        "desc": "Sign up for Swetrix and create a new CAPTCHA project from your dashboard"
+      },
+      "step2": {
+        "title": "Add the widget",
+        "desc": "Copy the code snippet and add it to your forms - it takes just a few lines of code"
+      },
+      "step3": {
+        "title": "Verify on server",
+        "desc": "Use our API to verify the CAPTCHA response on your server and filter out bots"
+      },
+      "readDocs": "Read the documentation"
+    },
+    "preview": {
+      "notRobot": "I'm not a robot",
+      "privacyFirst": "Privacy-first verification"
     }
   },
   "marketers": {
@@ -414,8 +460,6 @@
     "startAXDayFreeTrial": "Start a {{amount}}-day free trial",
     "metric": "Metric",
     "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
-    "peopleLoveSwetrix": "People 🥰 Swetrix",
-    "whyPeopleLoveSwetrix": "Swetrix is an ethical and powerful service. Hundreds of people have already made the switch from Google Analytics and other alternatives.",
     "coreFeatures": "Only the features you need",
     "heroBenefits": {
       "trial": "Free trial {{days}} days",
@@ -917,6 +961,7 @@
     "support": "Contact support"
   },
   "project": {
+    "captchaCompletions": "CAPTCHA completions",
     "addAnnotation": "Add annotation",
     "editAnnotation": "Edit annotation",
     "deleteAnnotation": "Delete annotation",
@@ -1186,11 +1231,34 @@
         "general": "General",
         "access": "Access",
         "shields": "Shields",
+        "captcha": "CAPTCHA",
         "emails": "Emails",
         "people": "People",
         "annotations": "Annotations",
         "danger": "Danger zone",
         "integrations": "Integrations"
+      },
+      "captcha": {
+        "title": "CAPTCHA Integration",
+        "description": "Enable CAPTCHA protection for your forms and actions. Generate a secret key to integrate Swetrix CAPTCHA with your application.",
+        "secretKey": "Secret key",
+        "generateKey": "Generate secret key",
+        "regenerateKey": "Regenerate secret key",
+        "keyGenerated": "Secret key has been generated",
+        "keyRegenerated": "Secret key has been regenerated",
+        "regenerateKeyTitle": "Regenerate secret key?",
+        "regenerateKeyWarning": "Are you sure you want to regenerate the secret key? This will invalidate the current key and all applications using it will need to be updated.",
+        "noKeyGenerated": "No secret key has been generated yet. Generate one to enable CAPTCHA for this project.",
+        "learnMore": "Use this secret key in your backend to verify CAPTCHA tokens. Learn more in our documentation.",
+        "difficulty": "CAPTCHA difficulty",
+        "difficultyHint": "Higher difficulty levels provide better bot protection but may be more challenging for users to solve.",
+        "difficultyLevels": {
+          "veryEasy": "Very easy",
+          "easy": "Easy",
+          "medium": "Medium",
+          "hard": "Hard",
+          "veryHard": "Very hard"
+        }
       },
       "annotations": {
         "title": "Annotations",

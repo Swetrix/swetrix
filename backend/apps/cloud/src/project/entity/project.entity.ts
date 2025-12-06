@@ -65,22 +65,20 @@ export class Project {
   @Column('boolean', { default: false })
   isTransferring: boolean
 
-  // Swetrix CAPTCHA related stuff
   @ApiProperty()
   @Column('boolean', { default: true })
   isAnalyticsProject: boolean
 
-  @ApiProperty()
-  @Column('boolean', { default: false })
-  isCaptchaProject: boolean
-
-  @ApiProperty()
-  @Column('boolean', { default: false })
-  isCaptchaEnabled: boolean
-
+  // CAPTCHA secret key - if set, CAPTCHA is enabled for this project
   @ApiProperty()
   @Column('varchar', { default: null, length: CAPTCHA_SECRET_KEY_LENGTH })
   captchaSecretKey: string
+
+  // CAPTCHA PoW difficulty (number of leading zeros required in hash)
+  // Default is 4 (~65k iterations, ~1-2 seconds on average devices)
+  @ApiProperty()
+  @Column('tinyint', { default: 4, unsigned: true })
+  captchaDifficulty: number
 
   @ApiProperty()
   @Column({
