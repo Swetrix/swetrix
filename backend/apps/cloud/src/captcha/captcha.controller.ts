@@ -18,7 +18,7 @@ import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { VerifyDto } from './dtos/manual.dto'
 import { ValidateDto } from './dtos/validate.dto'
-import { GenerateDto, DEFAULT_THEME } from './dtos/generate.dto'
+import { GenerateDto } from './dtos/generate.dto'
 
 dayjs.extend(utc)
 
@@ -39,11 +39,11 @@ export class CaptchaController {
   async generateCaptcha(@Body() generateDTO: GenerateDto): Promise<any> {
     this.logger.log({ generateDTO }, 'POST /captcha/generate')
 
-    const { theme = DEFAULT_THEME, pid } = generateDTO
+    const { pid } = generateDTO
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
-    return this.captchaService.generateCaptcha(theme)
+    return this.captchaService.generateChallenge(pid)
   }
 
   @Post('/verify')
@@ -55,10 +55,9 @@ export class CaptchaController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    this.logger.log({ manualDTO: verifyDto }, 'POST /captcha/verify')
-    // todo: add origin checks
+    this.logger.log({ verifyDto }, 'POST /captcha/verify')
 
-    const { code, hash, pid } = verifyDto
+    const { challenge, nonce, solution, pid } = verifyDto
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
@@ -66,24 +65,36 @@ export class CaptchaController {
 
     // For dummy (test) PIDs
     if (pid === DUMMY_PIDS.ALWAYS_PASS) {
-      const dummyToken = this.captchaService.generateDummyToken()
+      const dummyToken = await this.captchaService.generateDummyToken()
       return {
         success: true,
         token: dummyToken,
         timestamp,
-        hash,
+        challenge,
         pid,
       }
     }
 
-    if (
-      pid === DUMMY_PIDS.ALWAYS_FAIL ||
-      !this.captchaService.verifyCaptcha(code, hash)
-    ) {
-      throw new ForbiddenException('Incorrect captcha')
+    if (pid === DUMMY_PIDS.ALWAYS_FAIL) {
+      throw new ForbiddenException('PoW verification failed')
     }
 
-    const token = await this.captchaService.generateToken(pid, hash, timestamp)
+    // Verify the PoW solution
+    const isValid = await this.captchaService.verifyPoW(
+      challenge,
+      nonce,
+      solution,
+    )
+
+    if (!isValid) {
+      throw new ForbiddenException('PoW verification failed')
+    }
+
+    const token = await this.captchaService.generateToken(
+      pid,
+      challenge,
+      timestamp,
+    )
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
@@ -99,7 +110,7 @@ export class CaptchaController {
       success: true,
       token,
       timestamp,
-      hash,
+      challenge,
       pid,
     }
   }
