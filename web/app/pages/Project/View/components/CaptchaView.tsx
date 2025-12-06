@@ -1,29 +1,21 @@
 import { GlobeAltIcon } from '@heroicons/react/24/outline'
-import billboard from 'billboard.js'
-import cx from 'clsx'
-import _filter from 'lodash/filter'
-import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
-import { CompassIcon, MapPinIcon, MonitorCog, TabletSmartphoneIcon, RotateCw } from 'lucide-react'
+import { CompassIcon, MapPinIcon, MonitorCog, TabletSmartphoneIcon } from 'lucide-react'
 import { useState, useEffect, useMemo, useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
 import { getCaptchaData } from '~/api'
 import useSize from '~/hooks/useSize'
-import {
-  captchaTbPeriodPairs,
-  TimeFormat,
-  chartTypes,
-  BROWSER_LOGO_MAP,
-  OS_LOGO_MAP,
-  OS_LOGO_MAP_DARK,
-} from '~/lib/constants'
+import { chartTypes, BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
 import Loader from '~/ui/Loader'
 
+import { Filter } from '../interfaces/traffic'
+import { Panel } from '../Panels'
+import { parseFilters } from '../utils/filters'
 import { ViewProjectContext } from '../ViewProject'
 import { deviceIconMapping } from '../ViewProject.helpers'
 
@@ -31,14 +23,11 @@ import { CaptchaChart } from './CaptchaChart'
 import CCRow from './CCRow'
 import Filters from './Filters'
 import NoEvents from './NoEvents'
-import { Panel } from '../Panels'
-import { Filter } from '../interfaces/traffic'
-import { parseFilters } from '../utils/filters'
 
 const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
 
 const iconClassName = 'w-6 h-6'
-const panelIconMapping: Record<string, JSX.Element> = {
+const panelIconMapping: Record<string, React.ReactNode> = {
   cc: <MapPinIcon className={iconClassName} strokeWidth={1.5} />,
   dv: <TabletSmartphoneIcon className={iconClassName} strokeWidth={1.5} />,
   br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
