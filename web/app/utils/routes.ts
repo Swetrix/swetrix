@@ -3,6 +3,7 @@ const routes = Object.freeze({
   signup: '/signup',
   performance: '/performance',
   errorTracking: '/error-tracking',
+  captchaLanding: '/captcha',
   onboarding: '/onboarding',
   reset_password: '/recovery',
   new_password_form: '/password-reset/:id',
