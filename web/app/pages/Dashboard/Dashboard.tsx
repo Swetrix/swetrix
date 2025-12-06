@@ -1,5 +1,6 @@
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
+import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import { StretchHorizontalIcon, LayoutGridIcon, SearchIcon, XIcon, FolderPlusIcon, CircleXIcon } from 'lucide-react'
@@ -7,8 +8,9 @@ import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLoaderData, useNavigate, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
+import { toast } from 'sonner'
 
-import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha } from '~/api'
+import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha, createProject } from '~/api'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import { withAuthentication, auth } from '~/hoc/protected'
@@ -19,9 +21,12 @@ import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL, tbPeriodPairs } from '~/li
 import { Overall, Project } from '~/lib/models/Project'
 import { FeatureFlag } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
+import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
+import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
+import { trackCustom } from '~/utils/analytics'
 import { setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
 
@@ -38,6 +43,9 @@ const DASHBOARD_VIEW = {
   GRID: 'grid',
   LIST: 'list',
 } as const
+
+const MAX_PROJECT_NAME_LENGTH = 50
+const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 const Dashboard = () => {
   const { viewMode: defaultViewMode } = useLoaderData<any>()
@@ -100,6 +108,27 @@ const Dashboard = () => {
     return sortParam && Object.values(SORT_OPTIONS).includes(sortParam as any) ? sortParam : SORT_OPTIONS.ALPHA_ASC
   })
 
+  // New project modal state
+  const [newProjectModalOpen, setNewProjectModalOpen] = useState(false)
+  const [newProjectName, setNewProjectName] = useState('')
+  const [newProjectOrganisationId, setNewProjectOrganisationId] = useState<string | undefined>(undefined)
+  const [isNewProjectLoading, setIsNewProjectLoading] = useState(false)
+  const [newProjectError, setNewProjectError] = useState<string | null>(null)
+  const [newProjectBeenSubmitted, setNewProjectBeenSubmitted] = useState(false)
+
+  const organisations = useMemo(
+    () => [
+      {
+        id: undefined as string | undefined,
+        name: t('common.notSet'),
+      },
+      ...(user?.organisationMemberships || [])
+        .filter((om) => om.confirmed && (om.role === 'admin' || om.role === 'owner'))
+        .map((om) => om.organisation),
+    ],
+    [user?.organisationMemberships, t],
+  )
+
   const pageAmount = Math.ceil(paginationTotal / pageSize)
 
   // This search represents what's inside the search input
@@ -157,13 +186,75 @@ const Dashboard = () => {
 
   const _viewMode = isAboveLgBreakpoint ? viewMode : 'grid'
 
-  const onNewProject = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (user?.isActive || isSelfhosted) {
+  const onNewProject = () => {
+    if (!user?.isActive && !isSelfhosted) {
+      setShowActivateEmailModal(true)
       return
     }
 
-    e.preventDefault()
-    setShowActivateEmailModal(true)
+    setNewProjectModalOpen(true)
+  }
+
+  const validateProjectName = () => {
+    const errors: { name?: string } = {}
+
+    if (_isEmpty(newProjectName)) {
+      errors.name = t('project.settings.noNameError')
+    }
+
+    if (_size(newProjectName) > MAX_PROJECT_NAME_LENGTH) {
+      errors.name = t('project.settings.pxCharsError', { amount: MAX_PROJECT_NAME_LENGTH })
+    }
+
+    return { errors, valid: _isEmpty(_keys(errors)) }
+  }
+
+  const onCreateProject = async () => {
+    if (isNewProjectLoading) {
+      return
+    }
+
+    setNewProjectBeenSubmitted(true)
+    const { errors, valid } = validateProjectName()
+
+    if (!valid) {
+      setNewProjectError(errors.name || null)
+      return
+    }
+
+    setIsNewProjectLoading(true)
+
+    try {
+      await createProject({
+        name: newProjectName || DEFAULT_PROJECT_NAME,
+        organisationId: newProjectOrganisationId,
+      })
+      trackCustom('PROJECT_CREATED', {
+        from: 'dashboard-modal',
+      })
+
+      await refetchProjects()
+
+      toast.success(t('project.settings.created'))
+      closeNewProjectModal()
+    } catch (reason: any) {
+      setNewProjectError(reason)
+      toast.error(reason)
+    } finally {
+      setIsNewProjectLoading(false)
+    }
+  }
+
+  const closeNewProjectModal = () => {
+    if (isNewProjectLoading) {
+      return
+    }
+
+    setNewProjectModalOpen(false)
+    setNewProjectError(null)
+    setNewProjectName('')
+    setNewProjectOrganisationId(undefined)
+    setNewProjectBeenSubmitted(false)
   }
 
   const refetchProjects = async () => {
@@ -432,14 +523,14 @@ const Dashboard = () => {
                     </button>
                   ) : null}
                 </div>
-                <Link
-                  to={routes.new_project}
+                <button
+                  type='button'
                   onClick={onNewProject}
                   className='ml-3 inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 p-2 text-center text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
                 >
                   <FolderPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                   {t('dashboard.newProject')}
-                </Link>
+                </button>
               </div>
             </div>
             {isSearchActive ? (
@@ -547,6 +638,50 @@ const Dashboard = () => {
         type='info'
         message={t('dashboard.verifyEmailDesc')}
         isOpened={showActivateEmailModal}
+      />
+      <Modal
+        isLoading={isNewProjectLoading}
+        onClose={closeNewProjectModal}
+        onSubmit={onCreateProject}
+        submitText={t('common.continue')}
+        overflowVisible
+        message={
+          <div>
+            <Input
+              name='project-name-input'
+              label={t('project.settings.name')}
+              value={newProjectName}
+              placeholder='My awesome website'
+              onChange={(e) => setNewProjectName(e.target.value)}
+              error={newProjectBeenSubmitted ? newProjectError : null}
+            />
+            {organisations.length > 1 ? (
+              <div className='mt-4'>
+                <Select
+                  items={organisations}
+                  keyExtractor={(item) => item.id || 'not-set'}
+                  labelExtractor={(item) => {
+                    if (item.id === undefined) {
+                      return <span className='italic'>{t('common.notSet')}</span>
+                    }
+
+                    return item.name
+                  }}
+                  onSelect={(item) => {
+                    setNewProjectOrganisationId(item.id)
+                  }}
+                  label={t('project.settings.organisation')}
+                  title={organisations.find((org) => org.id === newProjectOrganisationId)?.name}
+                  selectedItem={organisations.find((org) => org.id === newProjectOrganisationId)}
+                />
+              </div>
+            ) : null}
+            <p className='mt-2 text-sm text-gray-500 italic dark:text-gray-300'>{t('project.settings.createHint')}</p>
+          </div>
+        }
+        title={t('project.settings.create')}
+        isOpened={newProjectModalOpen}
+        submitDisabled={!newProjectName}
       />
     </>
   )

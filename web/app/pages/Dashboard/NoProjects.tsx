@@ -2,15 +2,13 @@ import { FolderPlusIcon } from '@heroicons/react/24/outline'
 import { FolderInputIcon } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 
 import { Text } from '~/ui/Text'
-import routes from '~/utils/routes'
 
 import { DASHBOARD_TABS } from './Tabs'
 
 interface NoProjectsProps {
-  onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void
+  onClick: () => void
   activeTab: (typeof DASHBOARD_TABS)[number]['id']
   search: string
 }
@@ -42,14 +40,14 @@ export const NoProjects = ({ onClick, activeTab, search }: NoProjectsProps) => {
         {t('dashboard.createProject')}
       </Text>
       <div className='mt-6'>
-        <Link
-          to={routes.new_project}
+        <button
+          type='button'
           onClick={onClick}
           className='inline-flex items-center justify-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
         >
           <FolderPlusIcon className='mr-2 h-5 w-5' />
           {t('dashboard.newProject')}
-        </Link>
+        </button>
       </div>
     </div>
   )
