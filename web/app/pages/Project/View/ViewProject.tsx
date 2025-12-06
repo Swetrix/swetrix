@@ -1577,17 +1577,9 @@ const ViewProjectContent = () => {
     })
   }
 
-  const resetErrors = () => {
-    errorsRequestIdRef.current += 1
-    setErrorsSkip(0)
-    setErrors([])
-    setErrorsLoading(null)
-    setCanLoadMoreErrors(false)
-  }
-
   const switchActiveErrorFilter = _debounce((pairID: string) => {
     setErrorOptions((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
-    resetErrors()
+    setErrorsSkip(0)
   }, 0)
 
   const updateStatusInErrors = (status: 'active' | 'resolved') => {
@@ -2037,8 +2029,8 @@ const ViewProjectContent = () => {
       // Coming back from a session detail to the list: reset pagination and reload first page
       if (prevActivePSIDRef.current) {
         skipNextSessionsAutoLoadRef.current = true
-        resetSessions()
-        loadSessions(0)
+        setSessionsSkip(0)
+        loadSessions(0, true)
       }
       prevActivePSIDRef.current = null
       return
@@ -2055,7 +2047,7 @@ const ViewProjectContent = () => {
       // Coming back from an error detail to the list: reset pagination and reload first page
       if (prevActiveEIDRef.current) {
         skipNextErrorsAutoLoadRef.current = true
-        resetErrors()
+        setErrorsSkip(0)
         loadErrors(0, true)
       }
       prevActiveEIDRef.current = null
@@ -2067,7 +2059,7 @@ const ViewProjectContent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, dateRange, timeBucket, activeEID, filters])
 
-  const loadSessions = async (forcedSkip?: number) => {
+  const loadSessions = async (forcedSkip?: number, override?: boolean) => {
     if (sessionsLoading) {
       return
     }
@@ -2093,7 +2085,11 @@ const ViewProjectContent = () => {
       }
 
       if (requestId === sessionsRequestIdRef.current) {
-        setSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
+        if (override) {
+          setSessions(dataSessions?.sessions || [])
+        } else {
+          setSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
+        }
         setSessionsSkip((prev) => {
           if (typeof forcedSkip === 'number') {
             return SESSIONS_TAKE + forcedSkip
@@ -2117,7 +2113,7 @@ const ViewProjectContent = () => {
     }
   }
 
-  const loadProfiles = async (forcedSkip?: number) => {
+  const loadProfiles = async (forcedSkip?: number, override?: boolean) => {
     if (profilesLoading) {
       return
     }
@@ -2165,7 +2161,11 @@ const ViewProjectContent = () => {
       }
 
       if (requestId === profilesRequestIdRef.current) {
-        setProfiles((prev) => [...prev, ...(dataProfiles?.profiles || [])])
+        if (override) {
+          setProfiles(dataProfiles?.profiles || [])
+        } else {
+          setProfiles((prev) => [...prev, ...(dataProfiles?.profiles || [])])
+        }
         setProfilesSkip((prev) => {
           if (typeof forcedSkip === 'number') {
             return SESSIONS_TAKE + forcedSkip
@@ -2287,13 +2287,6 @@ const ViewProjectContent = () => {
     } finally {
       setProfileSessionsLoading(false)
     }
-  }
-
-  const resetProfiles = () => {
-    profilesRequestIdRef.current += 1
-    setProfilesSkip(0)
-    setProfiles([])
-    setCanLoadMoreProfiles(false)
   }
 
   const loadErrors = async (forcedSkip?: number, override?: boolean) => {
@@ -2641,8 +2634,8 @@ const ViewProjectContent = () => {
             return
           }
 
-          resetSessions()
-          loadSessions(0)
+          setSessionsSkip(0)
+          loadSessions(0, true)
           return
         }
 
@@ -2652,8 +2645,8 @@ const ViewProjectContent = () => {
             return
           }
 
-          resetErrors()
-          loadErrors(0)
+          setErrorsSkip(0)
+          loadErrors(0, true)
           return
         }
 
@@ -2663,8 +2656,8 @@ const ViewProjectContent = () => {
             return
           }
 
-          resetProfiles()
-          loadProfiles(0)
+          setProfilesSkip(0)
+          loadProfiles(0, true)
           return
         }
 
@@ -2809,8 +2802,8 @@ const ViewProjectContent = () => {
     }
 
     // Reset pagination and load the first page whenever the query context changes
-    resetProfiles()
-    loadProfiles(0)
+    setProfilesSkip(0)
+    loadProfiles(0, true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeTab,
@@ -2843,9 +2836,9 @@ const ViewProjectContent = () => {
 
     if (prevProfileId && !activeProfileId) {
       // We just closed a profile detail, reset to first page
-      resetProfiles()
+      setProfilesSkip(0)
       skipNextProfilesAutoLoadRef.current = true
-      loadProfiles(0)
+      loadProfiles(0, true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProfileId])
@@ -3016,14 +3009,6 @@ const ViewProjectContent = () => {
     }
   }, [dataLoading])
 
-  const resetSessions = () => {
-    sessionsRequestIdRef.current += 1
-    setSessionsSkip(0)
-    setSessions([])
-    setSessionsLoading(null)
-    setCanLoadMoreSessions(false)
-  }
-
   // We can assume period provided is never custom, as it's handled separately in the Datepicker callback function
   const updatePeriod = ({ period: newPeriod }: { period: Period }) => {
     if (period === newPeriod) {
@@ -3035,8 +3020,8 @@ const ViewProjectContent = () => {
     newSearchParams.delete('to')
     newSearchParams.set('period', newPeriod)
 
-    resetSessions()
-    resetErrors()
+    setSessionsSkip(0)
+    setErrorsSkip(0)
 
     updatePreferences({
       period: newPeriod,
@@ -3438,7 +3423,12 @@ const ViewProjectContent = () => {
           }}
         >
           <>
-            {dataLoading && !isAutoRefreshing ? <LoadingBar /> : null}
+            {(dataLoading && !isAutoRefreshing) ||
+            (sessionsLoading && !_isEmpty(sessions)) ||
+            (errorsLoading && !_isEmpty(errors)) ||
+            (profilesLoading && !_isEmpty(profiles)) ? (
+              <LoadingBar />
+            ) : null}
             {!isEmbedded ? <Header /> : null}
             <EventsRunningOutBanner />
             <div
@@ -3908,7 +3898,7 @@ const ViewProjectContent = () => {
                           profileType={profileTypeFilter}
                           onProfileTypeChange={(type) => {
                             setProfileTypeFilter(type)
-                            resetProfiles()
+                            setProfilesSkip(0)
                           }}
                         />
                         {(profilesLoading === null || profilesLoading) && _isEmpty(profiles) ? <Loader /> : null}

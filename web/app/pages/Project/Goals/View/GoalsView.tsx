@@ -10,7 +10,7 @@ import {
   FileTextIcon,
   MousePointerClickIcon,
 } from 'lucide-react'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
@@ -26,7 +26,9 @@ import {
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import Button from '~/ui/Button'
+import Spin from '~/ui/icons/Spin'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import ProgressRing from '~/ui/ProgressRing'
@@ -77,9 +79,11 @@ const GoalRow = ({ goal, stats, statsLoading, onDelete, onEdit, onClick }: GoalR
               </Text>
             ) : null}
             {/* Mobile stats */}
-            <div className='mt-2 flex items-center gap-x-3 text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
+            <div className='mt-2 flex h-9 items-center gap-x-3 text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
               {statsLoading ? (
-                <Loader />
+                <div className='flex size-9 items-center justify-center'>
+                  <Spin className='m-0 size-5' />
+                </div>
               ) : stats ? (
                 <>
                   <span>
@@ -101,9 +105,11 @@ const GoalRow = ({ goal, stats, statsLoading, onDelete, onEdit, onClick }: GoalR
           </div>
         </div>
         <div className='flex shrink-0 items-center gap-x-4'>
-          <div className='hidden sm:flex sm:items-center sm:gap-x-3'>
+          <div className='hidden h-11 sm:flex sm:items-center sm:gap-x-3'>
             {statsLoading ? (
-              <Loader />
+              <div className='flex size-11 items-center justify-center'>
+                <Spin className='m-0 size-5' />
+              </div>
             ) : stats ? (
               <>
                 <p className='text-sm leading-6'>
@@ -182,6 +188,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   const { t } = useTranslation()
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
+  const isLoadingRef = useRef(false) // Use ref to avoid stale closure issues in loadGoals
   const [total, setTotal] = useState(0)
   const [goals, setGoals] = useState<Goal[]>([])
   const [goalStats, setGoalStats] = useState<Record<string, GoalStats | null>>({})
@@ -205,9 +212,10 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   }, [goals, filterQuery])
 
   const loadGoals = async (take: number, skip: number) => {
-    if (isLoading) {
+    if (isLoadingRef.current) {
       return
     }
+    isLoadingRef.current = true
     setIsLoading(true)
 
     try {
@@ -217,6 +225,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
     } catch (reason: any) {
       setError(reason)
     } finally {
+      isLoadingRef.current = false
       setIsLoading(false)
     }
   }
@@ -322,7 +331,8 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
     )
   }
 
-  if (isLoading || isLoading === null) {
+  // Show Loader only on initial load (no existing data)
+  if ((isLoading || isLoading === null) && _isEmpty(goals)) {
     return (
       <div className='mt-4'>
         <Loader />
@@ -332,6 +342,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
 
   return (
     <div className='mt-4'>
+      {isLoading && !_isEmpty(goals) ? <LoadingBar /> : null}
       {_isEmpty(goals) ? (
         <div className='mt-5 rounded-xl bg-gray-700 p-5'>
           <div className='flex items-center text-gray-50'>

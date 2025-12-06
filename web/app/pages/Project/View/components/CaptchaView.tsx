@@ -12,6 +12,7 @@ import useSize from '~/hooks/useSize'
 import { chartTypes, BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 
 import { Filter } from '../interfaces/traffic'
 import { Panel } from '../Panels'
@@ -168,26 +169,23 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
     return { search: newSearchParams.toString() }
   }
 
-  if (analyticsLoading) {
+  // Check if we have existing data
+  const hasExistingData = chartData !== null || !_isEmpty(panelsData.types)
+
+  // Show Loader only on initial load (no existing data)
+  if (analyticsLoading && !hasExistingData) {
     return <Loader />
   }
 
-  if (isPanelsDataEmpty) {
+  if (isPanelsDataEmpty && !dataLoading) {
     return <NoEvents filters={filters} />
   }
 
   return (
     <div ref={ref}>
+      {dataLoading && hasExistingData ? <LoadingBar /> : null}
       <div className='mt-5'>
         <Filters tnMapping={tnMapping} />
-        {dataLoading ? (
-          <div className='static mt-4 !bg-transparent' id='loader'>
-            <div className='loader-head dark:!bg-slate-800'>
-              <div className='first dark:!bg-slate-600' />
-              <div className='second dark:!bg-slate-600' />
-            </div>
-          </div>
-        ) : null}
         {chartData ? (
           <div className='mt-4'>
             <CaptchaChart
