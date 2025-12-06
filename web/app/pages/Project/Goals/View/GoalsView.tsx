@@ -1,18 +1,8 @@
-import { XCircleIcon } from '@heroicons/react/24/outline'
-import cx from 'clsx'
+import { ChevronRightIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import {
-  TargetIcon,
-  Trash2Icon,
-  Settings2Icon,
-  PlusIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
-  FileTextIcon,
-  ZapIcon,
-} from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { TargetIcon, Trash2Icon, PencilIcon, PlusIcon, SearchIcon, FileTextIcon, ZapIcon } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
@@ -41,7 +31,7 @@ const GOAL_TYPE_BADGE_COLOURS: Record<Goal['type'], BadgeProps['colour']> = {
   custom_event: 'green',
 }
 
-interface GoalCardProps {
+interface GoalRowProps {
   goal: Goal
   stats: GoalStats | null
   statsLoading: boolean
@@ -50,104 +40,116 @@ interface GoalCardProps {
   onClick: (id: string) => void
 }
 
-const GoalCard = ({ goal, stats, statsLoading, onDelete, onEdit, onClick }: GoalCardProps) => {
+const Separator = () => (
+  <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
+    <circle cx={1} cy={1} r={1} />
+  </svg>
+)
+
+const GoalRow = ({ goal, stats, statsLoading, onDelete, onEdit, onClick }: GoalRowProps) => {
   const { t } = useTranslation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const typeLabel = goal.type === 'pageview' ? t('goals.typePageview') : t('goals.typeCustomEvent')
 
+  const patternDisplay = useMemo(() => {
+    if (!goal.value) return null
+    const matchPrefix =
+      goal.matchType === 'exact' ? '= ' : goal.matchType === 'contains' ? '~ ' : goal.matchType === 'regex' ? '⁓ ' : ''
+    return `${matchPrefix}${goal.value}`
+  }, [goal.value, goal.matchType])
+
   return (
     <>
       <li
         onClick={() => onClick(goal.id)}
-        className='min-h-[140px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'
+        className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'
       >
-        <div className='px-4 py-4'>
-          <div className='flex items-start justify-between'>
-            <div className='min-w-0 flex-1'>
-              <div className='mb-2 flex items-center gap-2'>
-                {goal.type === 'pageview' ? (
-                  <FileTextIcon className='h-5 w-5 text-indigo-500' strokeWidth={1.5} />
-                ) : (
-                  <ZapIcon className='h-5 w-5 text-green-500' strokeWidth={1.5} />
-                )}
-                <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{goal.name}</p>
-              </div>
-              <Badge colour={GOAL_TYPE_BADGE_COLOURS[goal.type]} label={typeLabel} />
-              {goal.value && (
-                <p className='mt-2 truncate text-sm text-gray-600 dark:text-gray-400'>
-                  {goal.matchType === 'exact' && '= '}
-                  {goal.matchType === 'contains' && '~ '}
-                  {goal.matchType === 'regex' && '⁓ '}
-                  {goal.value}
-                </p>
+        <div className='flex min-w-0 gap-x-4'>
+          <div className='min-w-0 flex-auto'>
+            <p className='flex items-center gap-x-2 text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+              {goal.type === 'pageview' ? (
+                <FileTextIcon className='size-4 text-indigo-500' strokeWidth={1.5} />
+              ) : (
+                <ZapIcon className='size-4 text-green-500' strokeWidth={1.5} />
               )}
-            </div>
-            <div className='ml-2 flex items-center gap-1'>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onEdit(goal.id)
-                }}
-                aria-label={t('common.settings')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
-              >
-                <Settings2Icon className='size-5' strokeWidth={1.5} />
-              </button>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowDeleteModal(true)
-                }}
-                aria-label={t('common.delete')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
-              >
-                <Trash2Icon className='size-5' strokeWidth={1.5} />
-              </button>
-            </div>
-          </div>
-
-          {/* Stats section */}
-          <div className='mt-4 grid grid-cols-2 gap-4'>
-            {statsLoading ? (
-              <div className='col-span-2 flex justify-center py-2'>
+              <span>{goal.name}</span>
+              <Badge colour={GOAL_TYPE_BADGE_COLOURS[goal.type]} label={typeLabel} />
+            </p>
+            {patternDisplay && (
+              <p className='mt-1 flex flex-wrap items-center gap-x-2 text-xs leading-5 text-gray-500 dark:text-gray-300'>
+                <code className='rounded bg-gray-200/80 px-1.5 py-0.5 font-mono text-xs text-gray-600 dark:bg-slate-700 dark:text-gray-300'>
+                  {patternDisplay}
+                </code>
+              </p>
+            )}
+            {/* Mobile stats */}
+            <p className='mt-2 flex items-center gap-x-3 text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
+              {statsLoading ? (
                 <Loader size='sm' />
-              </div>
+              ) : stats ? (
+                <>
+                  <span>
+                    <span className='font-semibold text-gray-900 dark:text-gray-50'>
+                      {stats.conversions.toLocaleString()}
+                    </span>{' '}
+                    {t('goals.conversions').toLowerCase()}
+                  </span>
+                  <Separator />
+                  <span>
+                    <span className='font-semibold text-gray-900 dark:text-gray-50'>{stats.conversionRate}%</span>{' '}
+                    {t('goals.conversionRate').toLowerCase()}
+                  </span>
+                </>
+              ) : (
+                <span>{t('goals.noData')}</span>
+              )}
+            </p>
+          </div>
+        </div>
+        <div className='flex shrink-0 items-center gap-x-4'>
+          <div className='hidden sm:flex sm:flex-col sm:items-end'>
+            {statsLoading ? (
+              <Loader size='sm' />
             ) : stats ? (
               <>
-                <div>
-                  <p className='text-xs text-gray-500 dark:text-gray-400'>{t('goals.conversions')}</p>
-                  <p className='text-xl font-bold text-slate-900 dark:text-gray-50'>
-                    {stats.conversions.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className='text-xs text-gray-500 dark:text-gray-400'>{t('goals.conversionRate')}</p>
-                  <div className='flex items-center gap-2'>
-                    <p className='text-xl font-bold text-slate-900 dark:text-gray-50'>{stats.conversionRate}%</p>
-                    {stats.trend !== 0 && (
-                      <span
-                        className={cx('flex items-center text-sm', {
-                          'text-green-500': stats.trend > 0,
-                          'text-red-500': stats.trend < 0,
-                        })}
-                      >
-                        {stats.trend > 0 ? (
-                          <TrendingUpIcon className='mr-0.5 h-4 w-4' />
-                        ) : (
-                          <TrendingDownIcon className='mr-0.5 h-4 w-4' />
-                        )}
-                        {Math.abs(stats.trend)}%
-                      </span>
-                    )}
-                  </div>
-                </div>
+                <p className='text-sm leading-6 text-gray-900 dark:text-gray-50'>
+                  <span className='font-semibold'>{stats.conversions.toLocaleString()}</span>{' '}
+                  <span className='text-gray-500 dark:text-gray-400'>{t('goals.conversions').toLowerCase()}</span>
+                </p>
+                <p className='mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400'>
+                  <span className='font-medium text-gray-700 dark:text-gray-300'>{stats.conversionRate}%</span>{' '}
+                  {t('goals.conversionRate').toLowerCase()}
+                </p>
               </>
             ) : (
-              <p className='col-span-2 text-sm text-gray-500 dark:text-gray-400'>{t('goals.noData')}</p>
+              <p className='text-sm text-gray-500 dark:text-gray-400'>{t('goals.noData')}</p>
             )}
           </div>
+          {/* Action buttons */}
+          <div className='flex items-center gap-x-1'>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit(goal.id)
+              }}
+              aria-label={t('common.edit')}
+              className='rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-slate-700 dark:hover:text-gray-300'
+            >
+              <PencilIcon className='size-4' strokeWidth={1.5} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowDeleteModal(true)
+              }}
+              aria-label={t('common.delete')}
+              className='rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:text-gray-500 dark:hover:bg-red-900/30 dark:hover:text-red-400'
+            >
+              <Trash2Icon className='size-4' strokeWidth={1.5} />
+            </button>
+          </div>
+          <ChevronRightIcon className='h-5 w-5 flex-none text-gray-400' aria-hidden='true' />
         </div>
       </li>
       <Modal
@@ -165,31 +167,6 @@ const GoalCard = ({ goal, stats, statsLoading, onDelete, onEdit, onClick }: Goal
         isOpened={showDeleteModal}
       />
     </>
-  )
-}
-
-interface AddGoalProps {
-  onClick: () => void
-}
-
-const AddGoal = ({ onClick }: AddGoalProps) => {
-  const { t } = useTranslation()
-
-  return (
-    <li
-      onClick={onClick}
-      className='group flex h-auto min-h-[140px] cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 transition-colors hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
-    >
-      <div>
-        <PlusIcon
-          className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
-          strokeWidth={1}
-        />
-        <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
-          {t('goals.add')}
-        </span>
-      </div>
-    </li>
   )
 }
 
@@ -212,12 +189,21 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   const [statsLoading, setStatsLoading] = useState<Record<string, boolean>>({})
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
+  const [filterQuery, setFilterQuery] = useState('')
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingGoalId, setEditingGoalId] = useState<string | null>(null)
 
   const pageAmount = Math.ceil(total / DEFAULT_GOALS_TAKE)
+
+  const filteredGoals = useMemo(() => {
+    if (!filterQuery.trim()) return goals
+    const query = filterQuery.toLowerCase()
+    return goals.filter(
+      (goal) => goal.name.toLowerCase().includes(query) || (goal.value && goal.value.toLowerCase().includes(query)),
+    )
+  }, [goals, filterQuery])
 
   const loadGoals = async (take: number, skip: number) => {
     if (isLoading) {
@@ -365,9 +351,28 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
         </div>
       ) : (
         <>
-          <ul className='mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3'>
-            {_map(goals, (goal) => (
-              <GoalCard
+          {/* Header with filter and add button */}
+          <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='relative'>
+              <SearchIcon className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400' strokeWidth={1.5} />
+              <input
+                type='text'
+                placeholder={t('goals.filterGoals')}
+                value={filterQuery}
+                onChange={(e) => setFilterQuery(e.target.value)}
+                className='w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
+              />
+            </div>
+            <Button onClick={handleNewGoal} primary regular>
+              <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
+              {t('goals.addGoal')}
+            </Button>
+          </div>
+
+          {/* Goals list */}
+          <ul className='mt-4'>
+            {_map(filteredGoals, (goal) => (
+              <GoalRow
                 key={goal.id}
                 goal={goal}
                 stats={goalStats[goal.id] || null}
@@ -377,11 +382,14 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
                 onClick={handleEditGoal}
               />
             ))}
-            <AddGoal onClick={handleNewGoal} />
           </ul>
+
+          {filteredGoals.length === 0 && filterQuery && (
+            <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>{t('goals.noGoalsMatchFilter')}</p>
+          )}
         </>
       )}
-      {pageAmount > 1 ? (
+      {pageAmount > 1 && !filterQuery ? (
         <Pagination
           className='mt-4'
           page={page}
