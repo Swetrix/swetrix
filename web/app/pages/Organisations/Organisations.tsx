@@ -21,6 +21,7 @@ import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
+import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 import { AddOrganisation } from './AddOrganisation'
@@ -180,7 +181,7 @@ const Organisations = () => {
           <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
             <div className='mb-6 flex flex-wrap justify-between gap-2'>
               <div className='flex items-end justify-between'>
-                <h2 className='mt-2 flex items-baseline gap-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+                <Text as='h2' size='3xl' weight='bold' className='mt-2 flex items-baseline gap-2'>
                   <span>{t('titles.organisations')}</span>
                   {isSearchActive ? (
                     <button
@@ -215,7 +216,7 @@ const Organisations = () => {
                       />
                     </button>
                   )}
-                </h2>
+                </Text>
                 {isSearchActive ? (
                   <div className='hidden w-full max-w-md items-center px-2 pb-1 sm:ml-2 sm:flex'>
                     <label htmlFor='organisation-search' className='sr-only'>
@@ -340,9 +341,9 @@ const Organisations = () => {
               onChange={(e) => setNewOrganisationName(e.target.value)}
             />
             {newOrganisationError ? (
-              <p className='mt-2 text-sm font-medium text-red-500'>
+              <Text as='p' size='sm' weight='medium' colour='error' className='mt-2'>
                 {t('apiNotifications.errorOccured', { error: newOrganisationError })}
-              </p>
+              </Text>
             ) : null}
           </div>
         }

@@ -24,6 +24,7 @@ import {
   GaugeIcon,
   Trash2Icon,
   UsersIcon,
+  UserIcon,
   BellRingIcon,
   ChartNoAxesColumnIcon,
   FilterIcon,
@@ -37,6 +38,7 @@ import {
   EyeIcon,
   PercentIcon,
   KeyboardIcon,
+  ShieldCheckIcon,
 } from 'lucide-react'
 import React, {
   useState,
@@ -82,6 +84,9 @@ import {
   createAnnotation,
   updateAnnotation,
   deleteAnnotation,
+  getProfiles,
+  getProfile,
+  getProfileSessions,
 } from '~/api'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
@@ -130,6 +135,8 @@ import {
   SessionDetails as SessionDetailsModel,
   Session,
   Annotation,
+  Profile,
+  ProfileDetails,
 } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
 import NewFunnel from '~/modals/NewFunnel'
@@ -143,6 +150,7 @@ import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import Select from '~/ui/Select'
+import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 import { periodToCompareDate } from '~/utils/compareConvertDate'
 import {
@@ -169,6 +177,7 @@ import { ErrorChart } from './components/ErrorChart'
 import { ErrorDetails } from './components/ErrorDetails'
 import { Errors } from './components/Errors'
 import Filters from './components/Filters'
+const CaptchaView = lazy(() => import('./components/CaptchaView'))
 import { FunnelChart } from './components/FunnelChart'
 import FunnelsList from './components/FunnelsList'
 const InteractiveMap = lazy(() => import('./components/InteractiveMap'))
@@ -181,6 +190,7 @@ import NoEvents from './components/NoEvents'
 import NoSessionDetails from './components/NoSessionDetails'
 import { Pageflow } from './components/Pageflow'
 import { PerformanceChart } from './components/PerformanceChart'
+import ProjectSidebar from './components/ProjectSidebar'
 import { RefreshStatsButton } from './components/RefreshStatsButton'
 import RefRow from './components/RefRow'
 import SearchFilters, { getFiltersUrlParams } from './components/SearchFilters'
@@ -189,7 +199,9 @@ import { SessionDetails } from './components/SessionDetails'
 import { Sessions } from './components/Sessions'
 import TBPeriodSelector from './components/TBPeriodSelector'
 import { TrafficChart } from './components/TrafficChart'
+import { UserDetails } from './components/UserDetails'
 import UserFlow from './components/UserFlow'
+import { Users, UsersFilter } from './components/Users'
 import WaitingForAnError from './components/WaitingForAnError'
 import WaitingForAnEvent from './components/WaitingForAnEvent'
 import {
@@ -390,6 +402,7 @@ interface ViewProjectContextType {
   activeTab: keyof typeof PROJECT_TABS
   filters: Filter[]
   customPanelTabs: CustomTab[]
+  captchaRefreshTrigger: number
 
   // Functions
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
@@ -413,6 +426,7 @@ const defaultViewProjectContext: ViewProjectContextType = {
   activeTab: PROJECT_TABS.traffic,
   filters: [],
   customPanelTabs: [],
+  captchaRefreshTrigger: 0,
   updatePeriod: () => {},
   updateTimebucket: (_newTimebucket) => {},
   refCalendar: { current: null } as any,
@@ -523,6 +537,7 @@ const ViewProjectContent = () => {
   // prevY2NeededRef removed - no longer needed with new chart management
   const [dataLoading, setDataLoading] = useState(false)
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false)
+  const [captchaRefreshTrigger, setCaptchaRefreshTrigger] = useState(0)
   const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
@@ -678,6 +693,25 @@ const ViewProjectContent = () => {
   const [sessionChartInstance, _setSessionChartInstance] = useState<any>(null)
   const sessionsRequestIdRef = useRef(0)
   const skipNextSessionsAutoLoadRef = useRef(false)
+
+  // profiles / users
+  const [profilesSkip, setProfilesSkip] = useState(0)
+  const [canLoadMoreProfiles, setCanLoadMoreProfiles] = useState(false)
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [profilesLoading, setProfilesLoading] = useState<boolean | null>(null)
+  const [activeProfile, setActiveProfile] = useState<ProfileDetails | null>(null)
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [profileSessions, setProfileSessions] = useState<Session[]>([])
+  const [profileSessionsLoading, setProfileSessionsLoading] = useState<boolean | null>(null)
+  const [profileSessionsSkip, setProfileSessionsSkip] = useState(0)
+  const [canLoadMoreProfileSessions, setCanLoadMoreProfileSessions] = useState(false)
+  const [profileTypeFilter, setProfileTypeFilter] = useState<'all' | 'anonymous' | 'identified'>('all')
+  const activeProfileId = useMemo(() => {
+    return searchParams.get('profileId')
+  }, [searchParams])
+  const prevActiveProfileIdRef = useRef<string | null>(activeProfileId)
+  const profilesRequestIdRef = useRef(0)
+  const skipNextProfilesAutoLoadRef = useRef(false)
 
   // errors
   const [errorsSkip, setErrorsSkip] = useState(0)
@@ -1255,7 +1289,7 @@ const ViewProjectContent = () => {
     return [
       {
         id: CHART_METRICS_MAPPING.unique,
-        label: t('dashboard.unique'),
+        label: t('dashboard.sessions'),
         active: activeChartMetrics[CHART_METRICS_MAPPING.unique],
       },
       {
@@ -1388,7 +1422,7 @@ const ViewProjectContent = () => {
 
   const dataNames = useMemo(
     () => ({
-      unique: t('project.unique'),
+      unique: t('dashboard.sessions'),
       total: t('project.total'),
       pageviews: t('project.pageviews'),
       customEvents: t('project.customEvents'),
@@ -1442,6 +1476,11 @@ const ViewProjectContent = () => {
         icon: GaugeIcon,
       },
       {
+        id: PROJECT_TABS.profiles,
+        label: t('dashboard.profiles'),
+        icon: UserIcon,
+      },
+      {
         id: PROJECT_TABS.sessions,
         label: t('dashboard.sessions'),
         icon: UsersIcon,
@@ -1478,6 +1517,11 @@ const ViewProjectContent = () => {
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
         icon: BellRingIcon,
+      },
+      {
+        id: PROJECT_TABS.captcha,
+        label: t('common.captcha'),
+        icon: ShieldCheckIcon,
       },
       ...adminTabs,
     ].filter((x) => !!x)
@@ -2063,6 +2107,185 @@ const ViewProjectContent = () => {
     }
   }
 
+  const loadProfiles = async (forcedSkip?: number) => {
+    if (profilesLoading) {
+      return
+    }
+
+    const requestId = profilesRequestIdRef.current
+    setProfilesLoading(true)
+
+    try {
+      const skip = typeof forcedSkip === 'number' ? forcedSkip : profilesSkip
+      let dataProfiles: { profiles: Profile[] }
+      let from
+      let to
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+      }
+
+      if (period === 'custom' && dateRange) {
+        dataProfiles = await getProfiles(
+          id,
+          '',
+          filters,
+          from,
+          to,
+          SESSIONS_TAKE,
+          skip,
+          timezone,
+          profileTypeFilter,
+          projectPassword,
+        )
+      } else {
+        dataProfiles = await getProfiles(
+          id,
+          period,
+          filters,
+          '',
+          '',
+          SESSIONS_TAKE,
+          skip,
+          timezone,
+          profileTypeFilter,
+          projectPassword,
+        )
+      }
+
+      if (requestId === profilesRequestIdRef.current) {
+        setProfiles((prev) => [...prev, ...(dataProfiles?.profiles || [])])
+        setProfilesSkip((prev) => {
+          if (typeof forcedSkip === 'number') {
+            return SESSIONS_TAKE + forcedSkip
+          }
+          return SESSIONS_TAKE + prev
+        })
+
+        if (dataProfiles?.profiles?.length < SESSIONS_TAKE) {
+          setCanLoadMoreProfiles(false)
+        } else {
+          setCanLoadMoreProfiles(true)
+        }
+      }
+    } catch (reason) {
+      console.error('[ERROR](loadProfiles) Loading profiles data failed:', reason)
+    } finally {
+      if (requestId === profilesRequestIdRef.current) {
+        setProfilesLoading(false)
+      }
+    }
+  }
+
+  const loadProfile = async (profileId: string) => {
+    setProfileLoading(true)
+    setProfileSessions([])
+    setProfileSessionsSkip(0)
+    setCanLoadMoreProfileSessions(false)
+
+    try {
+      let from
+      let to
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+      }
+
+      const data = await getProfile(
+        id,
+        profileId,
+        period === 'custom' ? '' : period,
+        from || '',
+        to || '',
+        timezone,
+        projectPassword,
+      )
+      setActiveProfile(data)
+      // Load initial sessions for the profile
+      loadProfileSessionsData(profileId, 0)
+    } catch (reason) {
+      console.error('[ERROR](loadProfile) Loading profile data failed:', reason)
+      setActiveProfile(null)
+    } finally {
+      setProfileLoading(false)
+    }
+  }
+
+  const loadProfileSessionsData = async (profileId: string, forcedSkip?: number) => {
+    if (profileSessionsLoading) {
+      return
+    }
+
+    setProfileSessionsLoading(true)
+
+    try {
+      const skip = typeof forcedSkip === 'number' ? forcedSkip : profileSessionsSkip
+      let dataSessions: { sessions: Session[] }
+      let from
+      let to
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+      }
+
+      if (period === 'custom' && dateRange) {
+        dataSessions = await getProfileSessions(
+          id,
+          profileId,
+          '',
+          filters,
+          from,
+          to,
+          SESSIONS_TAKE,
+          skip,
+          timezone,
+          projectPassword,
+        )
+      } else {
+        dataSessions = await getProfileSessions(
+          id,
+          profileId,
+          period,
+          filters,
+          '',
+          '',
+          SESSIONS_TAKE,
+          skip,
+          timezone,
+          projectPassword,
+        )
+      }
+
+      setProfileSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
+      setProfileSessionsSkip((prev) => {
+        if (typeof forcedSkip === 'number') {
+          return SESSIONS_TAKE + forcedSkip
+        }
+        return SESSIONS_TAKE + prev
+      })
+
+      if (dataSessions?.sessions?.length < SESSIONS_TAKE) {
+        setCanLoadMoreProfileSessions(false)
+      } else {
+        setCanLoadMoreProfileSessions(true)
+      }
+    } catch (reason) {
+      console.error('[ERROR](loadProfileSessions) Loading profile sessions failed:', reason)
+    } finally {
+      setProfileSessionsLoading(false)
+    }
+  }
+
+  const resetProfiles = () => {
+    profilesRequestIdRef.current += 1
+    setProfilesSkip(0)
+    setProfiles([])
+    setCanLoadMoreProfiles(false)
+  }
+
   const loadErrors = async (forcedSkip?: number, override?: boolean) => {
     if (errorsLoading) {
       return
@@ -2424,11 +2647,27 @@ const ViewProjectContent = () => {
           return
         }
 
+        if (activeTab === PROJECT_TABS.profiles) {
+          if (activeProfileId) {
+            await loadProfile(activeProfileId)
+            return
+          }
+
+          resetProfiles()
+          loadProfiles(0)
+          return
+        }
+
+        if (activeTab === PROJECT_TABS.captcha) {
+          setCaptchaRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
         loadAnalytics()
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [authLoading, dataLoading, activeTab, activePSID, activeEID],
+    [authLoading, dataLoading, activeTab, activePSID, activeEID, activeProfileId],
   )
 
   useEffect(() => {
@@ -2542,6 +2781,59 @@ const ViewProjectContent = () => {
     loadSessions()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, dateRange, filters, id, period, projectPassword, timezone, authLoading, project, activePSID])
+
+  // Load profiles list when users tab is active
+  useEffect(() => {
+    if (authLoading || activeTab !== PROJECT_TABS.profiles || !project || activeProfileId) {
+      return
+    }
+
+    if (skipNextProfilesAutoLoadRef.current) {
+      skipNextProfilesAutoLoadRef.current = false
+      return
+    }
+
+    // Reset pagination and load the first page whenever the query context changes
+    resetProfiles()
+    loadProfiles(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeTab,
+    dateRange,
+    filters,
+    id,
+    period,
+    projectPassword,
+    timezone,
+    authLoading,
+    project,
+    activeProfileId,
+    profileTypeFilter,
+  ])
+
+  // Load single profile when profileId is set
+  useEffect(() => {
+    if (authLoading || !activeProfileId || !project) {
+      return
+    }
+
+    loadProfile(activeProfileId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProfileId, authLoading, project])
+
+  // Reset profiles when navigating away from profile detail
+  useEffect(() => {
+    const prevProfileId = prevActiveProfileIdRef.current
+    prevActiveProfileIdRef.current = activeProfileId
+
+    if (prevProfileId && !activeProfileId) {
+      // We just closed a profile detail, reset to first page
+      resetProfiles()
+      skipNextProfilesAutoLoadRef.current = true
+      loadProfiles(0)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProfileId])
 
   useEffect(() => {
     if (authLoading || activeTab !== PROJECT_TABS.errors || authLoading || !project || activeEID) {
@@ -2950,80 +3242,25 @@ const ViewProjectContent = () => {
     updatePeriod(pair)
   })
 
-  const TabSelector = () => (
-    <div className='mb-[1px]'>
-      <div className='sm:hidden'>
-        <Select
-          items={tabs}
-          keyExtractor={(item) => item.id}
-          labelExtractor={(item) => item.label}
-          onSelect={(item) => {
-            if (item.id === 'settings') {
-              openSettingsHandler()
-              return
-            }
+  // Mobile tab selector dropdown
+  const MobileTabSelector = () => (
+    <div className='mb-4 md:hidden'>
+      <Select
+        items={tabs}
+        keyExtractor={(item) => item.id}
+        labelExtractor={(item) => item.label}
+        onSelect={(item) => {
+          if (item.id === 'settings') {
+            openSettingsHandler()
+            return
+          }
 
-            setDashboardTab(item?.id)
-          }}
-          title={activeTabLabel}
-          capitalise
-          selectedItem={tabs.find((tab) => tab.id === activeTab)}
-        />
-      </div>
-      <div className='hidden sm:block'>
-        <nav className='-mb-px flex space-x-4 overflow-x-auto' aria-label='Tabs'>
-          {_map(tabs, (tab) => {
-            const isCurrent = tab.id === activeTab
-
-            const handleClick = (e: React.MouseEvent) => {
-              if (tab.id === 'settings') {
-                return
-              }
-
-              e.preventDefault()
-              setDashboardTab(tab.id)
-            }
-
-            const newSearchParams = new URLSearchParams(searchParams.toString())
-            newSearchParams.set('tab', tab.id)
-            const tabUrl: LinkProps['to'] =
-              tab.id === 'settings'
-                ? _replace(routes.project_settings, ':id', id)
-                : { search: newSearchParams.toString() }
-
-            return (
-              <Link
-                key={tab.id}
-                to={tabUrl}
-                onClick={handleClick}
-                className={cx(
-                  'text-md group inline-flex cursor-pointer items-center border-b-2 px-1 py-2 font-bold whitespace-nowrap transition-colors',
-                  {
-                    'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': isCurrent,
-                    'border-transparent text-gray-500 dark:text-gray-400': !isCurrent,
-                    'cursor-wait': dataLoading && tab.id !== 'settings',
-                    'hover:border-gray-300 hover:text-gray-700 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                      !isCurrent && !dataLoading,
-                  },
-                )}
-                aria-current={isCurrent ? 'page' : undefined}
-              >
-                <tab.icon
-                  className={cx(
-                    isCurrent
-                      ? 'text-slate-900 dark:text-gray-50'
-                      : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
-                    'mr-2 -ml-0.5 h-5 w-5',
-                  )}
-                  aria-hidden='true'
-                  strokeWidth={1.5}
-                />
-                <span>{tab.label}</span>
-              </Link>
-            )
-          })}
-        </nav>
-      </div>
+          setDashboardTab(item?.id)
+        }}
+        title={activeTabLabel}
+        capitalise
+        selectedItem={tabs.find((tab) => tab.id === activeTab)}
+      />
     </div>
   )
 
@@ -3049,43 +3286,68 @@ const ViewProjectContent = () => {
       <>
         {!isEmbedded ? <Header /> : null}
         <div
-          className={cx(
-            'mx-auto flex w-full max-w-7xl flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900',
-            {
-              'min-h-min-footer': !isEmbedded,
-              'min-h-[100vh]': isEmbedded,
-            },
-          )}
+          className={cx('flex bg-gray-50 dark:bg-slate-900', {
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
+          })}
         >
-          <TabSelector />
-          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
-            {project.name}
-          </h2>
-          <LockedDashboard />
+          {/* Desktop Sidebar */}
+          <div className='sticky top-0 hidden h-dvh md:block'>
+            <ProjectSidebar
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={setDashboardTab}
+              projectId={id}
+              projectName={project.name}
+              dataLoading={dataLoading}
+              searchParams={searchParams}
+              allowedToManage={allowedToManage}
+            />
+          </div>
+          {/* Main Content */}
+          <div className='flex-1 px-4 py-3 sm:px-6 lg:px-8'>
+            <MobileTabSelector />
+            <LockedDashboard />
+          </div>
         </div>
         {!isEmbedded ? <Footer /> : null}
       </>
     )
   }
 
-  if (!project.isDataExists && activeTab !== PROJECT_TABS.errors && !analyticsLoading) {
+  if (
+    !project.isDataExists &&
+    activeTab !== PROJECT_TABS.errors &&
+    !(activeTab === PROJECT_TABS.captcha && project.isCaptchaDataExists) &&
+    !analyticsLoading
+  ) {
     return (
       <>
         {!isEmbedded ? <Header /> : null}
         <div
-          className={cx(
-            'mx-auto flex w-full max-w-7xl flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900',
-            {
-              'min-h-min-footer': !isEmbedded,
-              'min-h-[100vh]': isEmbedded,
-            },
-          )}
+          className={cx('flex bg-gray-50 dark:bg-slate-900', {
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
+          })}
         >
-          <TabSelector />
-          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
-            {project.name}
-          </h2>
-          <WaitingForAnEvent />
+          {/* Desktop Sidebar */}
+          <div className='sticky top-0 hidden h-dvh md:block'>
+            <ProjectSidebar
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={setDashboardTab}
+              projectId={id}
+              projectName={project.name}
+              dataLoading={dataLoading}
+              searchParams={searchParams}
+              allowedToManage={allowedToManage}
+            />
+          </div>
+          {/* Main Content */}
+          <div className='flex-1 px-4 py-3 sm:px-6 lg:px-8'>
+            <MobileTabSelector />
+            <WaitingForAnEvent />
+          </div>
         </div>
         {!isEmbedded ? <Footer /> : null}
       </>
@@ -3101,19 +3363,29 @@ const ViewProjectContent = () => {
       <>
         {!isEmbedded ? <Header /> : null}
         <div
-          className={cx(
-            'mx-auto flex w-full max-w-7xl flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900',
-            {
-              'min-h-min-footer': !isEmbedded,
-              'min-h-[100vh]': isEmbedded,
-            },
-          )}
+          className={cx('flex bg-gray-50 dark:bg-slate-900', {
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
+          })}
         >
-          <TabSelector />
-          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
-            {project.name}
-          </h2>
-          <WaitingForAnError />
+          {/* Desktop Sidebar */}
+          <div className='sticky top-0 hidden h-dvh md:block'>
+            <ProjectSidebar
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={setDashboardTab}
+              projectId={id}
+              projectName={project.name}
+              dataLoading={dataLoading}
+              searchParams={searchParams}
+              allowedToManage={allowedToManage}
+            />
+          </div>
+          {/* Main Content */}
+          <div className='flex-1 px-4 py-3 sm:px-6 lg:px-8'>
+            <MobileTabSelector />
+            <WaitingForAnError />
+          </div>
         </div>
         {!isEmbedded ? <Footer /> : null}
       </>
@@ -3139,6 +3411,7 @@ const ViewProjectContent = () => {
             activeTab,
             filters,
             customPanelTabs,
+            captchaRefreshTrigger,
 
             // Functions
             updatePeriod,
@@ -3154,18 +3427,32 @@ const ViewProjectContent = () => {
             <EventsRunningOutBanner />
             <div
               ref={ref}
-              className={cx('bg-gray-50 dark:bg-slate-900', {
+              className={cx('flex bg-gray-50 dark:bg-slate-900', {
                 'min-h-[100vh]': analyticsLoading && isEmbedded,
               })}
             >
+              {/* Desktop Sidebar */}
+              <div className='sticky top-0 hidden h-dvh md:block'>
+                <ProjectSidebar
+                  tabs={tabs}
+                  activeTab={activeTab}
+                  onTabChange={setDashboardTab}
+                  projectId={id}
+                  projectName={project.name}
+                  dataLoading={dataLoading}
+                  searchParams={searchParams}
+                  allowedToManage={allowedToManage}
+                />
+              </div>
+              {/* Main Content */}
               <div
-                className={cx('mx-auto flex w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8', {
+                className={cx('flex-1 px-4 py-3 sm:px-6 lg:px-8', {
                   'min-h-min-footer': !isEmbedded,
                   'min-h-[100vh]': isEmbedded,
                 })}
                 ref={dashboardRef}
               >
-                <TabSelector />
+                <MobileTabSelector />
                 <AnimatePresence mode='wait'>
                   <motion.div
                     key={activeTab}
@@ -3178,12 +3465,13 @@ const ViewProjectContent = () => {
                     (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
                     (activeFunnel || activeTab !== PROJECT_TABS.funnels) ? (
                       <>
-                        <div className='relative top-0 z-20 flex flex-col items-center justify-between bg-gray-50/50 py-2 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
+                        <div className='relative top-0 z-20 -mt-2 flex flex-col items-center justify-between bg-gray-50/50 py-2 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
                           <div className='flex flex-wrap items-center justify-center gap-2'>
-                            <h2 className='text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
-                              {/* If tab is funnels - then display a funnel name, otherwise a project name */}
-                              {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : project.name}
-                            </h2>
+                            {activeTab === PROJECT_TABS.funnels ? (
+                              <Text as='h2' size='xl' weight='bold' className='break-words break-all'>
+                                {activeFunnel?.name}
+                              </Text>
+                            ) : null}
                             {activeTab !== PROJECT_TABS.funnels ? <LiveVisitorsDropdown /> : null}
                           </div>
                           <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
@@ -3247,7 +3535,7 @@ const ViewProjectContent = () => {
                                       }
 
                                       if (item.id === 'no-views') {
-                                        return <span className='text-gray-600 dark:text-gray-200'>{item.name}</span>
+                                        return <Text colour='secondary'>{item.name}</Text>
                                       }
 
                                       return (
@@ -3598,6 +3886,76 @@ const ViewProjectContent = () => {
                         )}
                       </div>
                     ) : null}
+                    {activeTab === PROJECT_TABS.profiles && !activeProfileId ? (
+                      <>
+                        <UsersFilter
+                          profileType={profileTypeFilter}
+                          onProfileTypeChange={(type) => {
+                            setProfileTypeFilter(type)
+                            resetProfiles()
+                          }}
+                        />
+                        {(profilesLoading === null || profilesLoading) && _isEmpty(profiles) ? <Loader /> : null}
+                        {typeof profilesLoading === 'boolean' && !profilesLoading && _isEmpty(profiles) ? (
+                          <NoEvents filters={filters} />
+                        ) : null}
+                        <Users profiles={profiles} timeFormat={timeFormat} />
+                        {canLoadMoreProfiles ? (
+                          <button
+                            type='button'
+                            title={t('project.loadMore')}
+                            onClick={() => loadProfiles()}
+                            className={cx(
+                              'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                              {
+                                'cursor-not-allowed opacity-50': profilesLoading || profilesLoading === null,
+                                hidden: profilesLoading && _isEmpty(profiles),
+                              },
+                            )}
+                          >
+                            <DownloadIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
+                            {t('project.loadMore')}
+                          </button>
+                        ) : null}
+                      </>
+                    ) : null}
+                    {activeTab === PROJECT_TABS.profiles && activeProfileId ? (
+                      <>
+                        <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
+                          <Link
+                            to={{
+                              search: (() => {
+                                const params = new URLSearchParams(searchParams)
+                                params.delete('profileId')
+                                return params.toString()
+                              })(),
+                            }}
+                            className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+                          >
+                            <ChevronLeftIcon className='mr-1 size-3' />
+                            {t('project.backToUsers')}
+                          </Link>
+                          <RefreshStatsButton onRefresh={() => loadProfile(activeProfileId)} />
+                        </div>
+                        {profileLoading ? (
+                          <Loader />
+                        ) : (
+                          <UserDetails
+                            details={activeProfile}
+                            sessions={profileSessions}
+                            sessionsLoading={profileSessionsLoading}
+                            timeFormat={timeFormat}
+                            chartType={chartType}
+                            onLoadMoreSessions={() => {
+                              if (activeProfileId) {
+                                loadProfileSessionsData(activeProfileId)
+                              }
+                            }}
+                            canLoadMoreSessions={canLoadMoreProfileSessions}
+                          />
+                        )}
+                      </>
+                    ) : null}
                     {activeTab === PROJECT_TABS.sessions && !activePSID ? (
                       <>
                         {!_isEmpty(sessions) ? <Filters tnMapping={tnMapping} /> : null}
@@ -3937,6 +4295,7 @@ const ViewProjectContent = () => {
                     {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && isAuthenticated ? (
                       <ProjectAlertsView />
                     ) : null}
+                    {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
                     {analyticsLoading &&
                     (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) ? (
                       <Loader />

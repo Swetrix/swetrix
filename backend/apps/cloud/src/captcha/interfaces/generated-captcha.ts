@@ -1,4 +1,4 @@
-export interface GeneratedCaptcha {
-  data: string
-  hash: string
+export interface GeneratedChallenge {
+  challenge: string
+  difficulty: number
 }

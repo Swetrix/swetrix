@@ -14,11 +14,6 @@ const redis = new Redis(
   },
 )
 
-redis.defineCommand('countKeysByPattern', {
-  numberOfKeys: 0,
-  lua: "return #redis.call('keys', ARGV[1])",
-})
-
 export const JWT_ACCESS_TOKEN_SECRET = deriveKey('access-token')
 export const JWT_REFRESH_TOKEN_SECRET = deriveKey('refresh-token')
 
@@ -51,7 +46,6 @@ const isValidPID = (pid: string) => PID_REGEX.test(pid)
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
 
-const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_OIDC_SESSION_KEY = 'oidc:session'
 
 // 3600 sec -> 1 hour
@@ -114,7 +108,6 @@ export {
   redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
   TRAFFIC_METAKEY_COLUMNS,
-  REDIS_SESSION_SALT_KEY,
   IP_REGEX,
   ORIGINS_REGEX,
   isDevelopment,

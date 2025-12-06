@@ -1,0 +1,201 @@
+import { ChevronRightIcon } from '@heroicons/react/24/outline'
+import cx from 'clsx'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import _map from 'lodash/map'
+import { BugIcon, FileTextIcon, MousePointerClickIcon, UsersIcon, CalendarIcon } from 'lucide-react'
+import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useLocation } from 'react-router'
+import { ClientOnly } from 'remix-utils/client-only'
+
+import { Profile as ProfileType } from '~/lib/models/Project'
+import { Badge } from '~/ui/Badge'
+import Loader from '~/ui/Loader'
+import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
+
+import CCRow from './CCRow'
+
+dayjs.extend(relativeTime)
+
+interface UsersProps {
+  profiles: ProfileType[]
+  timeFormat: '12-hour' | '24-hour'
+}
+
+interface UserRowProps {
+  profile: ProfileType
+  timeFormat: '12-hour' | '24-hour'
+}
+
+const Separator = () => (
+  <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
+    <circle cx={1} cy={1} r={1} />
+  </svg>
+)
+
+const UserRow = ({ profile, timeFormat }: UserRowProps) => {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
+  const location = useLocation()
+
+  const displayName = useMemo(() => {
+    return getProfileDisplayName(profile.profileId, profile.isIdentified)
+  }, [profile.profileId, profile.isIdentified])
+
+  const lastSeenText = useMemo(() => {
+    return dayjs(profile.lastSeen)
+      .toDate()
+      .toLocaleDateString(language, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+      })
+  }, [profile.lastSeen, language, timeFormat])
+
+  const params = new URLSearchParams(location.search)
+  params.set('profileId', profile.profileId)
+
+  return (
+    <Link to={{ search: params.toString() }}>
+      <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'>
+        <div className='flex min-w-0 gap-x-4'>
+          {/* Avatar */}
+          <ProfileAvatar profileId={profile.profileId} size={40} className='shrink-0' />
+
+          <div className='min-w-0 flex-auto'>
+            <p className='flex items-center text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+              <span className='truncate'>{displayName}</span>
+              {profile.isIdentified ? <Badge label={t('project.identified')} colour='indigo' className='ml-2' /> : null}
+            </p>
+            <p className='mt-1 flex flex-wrap items-center gap-x-2 text-xs leading-5 text-gray-500 dark:text-gray-300'>
+              <span className='flex'>
+                {profile.cc ? <CCRow size={18} cc={profile.cc} language={language} /> : t('project.unknownCountry')}
+              </span>
+              <Separator />
+              {profile.os || t('project.unknown')}
+              <Separator />
+              {profile.br || t('project.unknown')}
+            </p>
+            <p className='mt-2 flex text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
+              <span className='mr-2 flex items-center' title={t('project.sessions')}>
+                <UsersIcon className='mr-1 size-4' strokeWidth={1.5} /> {profile.sessionsCount}
+              </span>
+              <span className='mr-2 flex items-center' title={t('dashboard.pageviews')}>
+                <FileTextIcon className='mr-1 size-4' strokeWidth={1.5} /> {profile.pageviewsCount}
+              </span>
+              {profile.eventsCount > 0 ? (
+                <span className='mr-2 flex items-center' title={t('dashboard.events')}>
+                  <MousePointerClickIcon className='mr-1 size-4' strokeWidth={1.5} /> {profile.eventsCount}
+                </span>
+              ) : null}
+              {profile.errorsCount > 0 ? (
+                <span className='flex items-center text-red-400' title={t('dashboard.errors')}>
+                  <BugIcon className='mr-1 size-4' strokeWidth={1.5} /> {profile.errorsCount}
+                </span>
+              ) : null}
+            </p>
+          </div>
+        </div>
+        <div className='flex shrink-0 items-center gap-x-4'>
+          <div className='hidden sm:flex sm:flex-col sm:items-end'>
+            <div className='flex items-center gap-x-3 text-sm leading-6 text-gray-900 dark:text-gray-50'>
+              <span className='flex items-center' title={t('project.xSessions', { x: profile.sessionsCount })}>
+                <UsersIcon className='mr-1 size-5' strokeWidth={1.5} /> {profile.sessionsCount}
+              </span>
+              <span className='flex items-center' title={t('dashboard.xPageviews', { x: profile.pageviewsCount })}>
+                <FileTextIcon className='mr-1 size-5' strokeWidth={1.5} /> {profile.pageviewsCount}
+              </span>
+              {profile.eventsCount > 0 ? (
+                <span className='flex items-center' title={t('dashboard.xCustomEvents', { x: profile.eventsCount })}>
+                  <MousePointerClickIcon className='mr-1 size-5' strokeWidth={1.5} /> {profile.eventsCount}
+                </span>
+              ) : null}
+              {profile.errorsCount > 0 ? (
+                <span
+                  className='flex items-center text-red-500'
+                  title={t('dashboard.xErrors', { x: profile.errorsCount })}
+                >
+                  <BugIcon className='mr-1 size-5' strokeWidth={1.5} /> {profile.errorsCount}
+                </span>
+              ) : null}
+            </div>
+            <p className='mt-1 flex items-center text-xs leading-5 text-gray-500 dark:text-gray-400'>
+              <CalendarIcon className='mr-1 size-3' strokeWidth={1.5} />
+              {lastSeenText}
+            </p>
+          </div>
+          <ChevronRightIcon className='h-5 w-5 flex-none text-gray-400' aria-hidden='true' />
+        </div>
+      </li>
+    </Link>
+  )
+}
+
+interface UsersFilterProps {
+  profileType: 'all' | 'anonymous' | 'identified'
+  onProfileTypeChange: (type: 'all' | 'anonymous' | 'identified') => void
+}
+
+export const UsersFilter: React.FC<UsersFilterProps> = ({ profileType, onProfileTypeChange }) => {
+  const { t } = useTranslation('common')
+
+  const filterButtonClass = (isActive: boolean) =>
+    cx(
+      'rounded-md px-3 py-1.5 text-sm font-medium transition-colors border',
+      isActive
+        ? 'border-slate-900 bg-slate-900 text-gray-50 dark:border-slate-700 dark:bg-slate-800'
+        : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-white dark:border-slate-700/50 dark:bg-slate-800/50 dark:text-gray-300 dark:hover:border-slate-600 dark:hover:bg-slate-700',
+    )
+
+  return (
+    <div className='mb-4 flex items-center gap-2'>
+      <button
+        type='button'
+        onClick={() => onProfileTypeChange('all')}
+        className={filterButtonClass(profileType === 'all')}
+      >
+        {t('project.allUsers')}
+      </button>
+      <button
+        type='button'
+        onClick={() => onProfileTypeChange('anonymous')}
+        className={filterButtonClass(profileType === 'anonymous')}
+      >
+        {t('project.anonymous')}
+      </button>
+      <button
+        type='button'
+        onClick={() => onProfileTypeChange('identified')}
+        className={filterButtonClass(profileType === 'identified')}
+      >
+        {t('project.identified')}
+      </button>
+    </div>
+  )
+}
+
+export const Users: React.FC<UsersProps> = ({ profiles, timeFormat }) => {
+  return (
+    <ClientOnly
+      fallback={
+        <div className='bg-gray-50 dark:bg-slate-900'>
+          <Loader />
+        </div>
+      }
+    >
+      {() => (
+        <ul className='mt-4'>
+          {_map(profiles, (profile) => (
+            <UserRow key={profile.profileId} profile={profile} timeFormat={timeFormat} />
+          ))}
+        </ul>
+      )}
+    </ClientOnly>
+  )
+}

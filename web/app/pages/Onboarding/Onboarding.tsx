@@ -24,7 +24,7 @@ import { trackCustom } from '~/utils/analytics'
 import { logout } from '~/utils/auth'
 import routes from '~/utils/routes'
 
-import { MAX_PROJECT_NAME_LENGTH } from '../Project/New'
+const MAX_PROJECT_NAME_LENGTH = 50
 
 const getOnboardingSteps = (t: TFunction) => [
   {

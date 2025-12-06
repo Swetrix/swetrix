@@ -32,6 +32,7 @@ import Dropdown from '~/ui/Dropdown'
 import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
+import { Text } from '~/ui/Text'
 import { trackError } from '~/utils/analytics'
 import { nFormatter, getLocaleDisplayName } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
@@ -90,14 +91,18 @@ class ExtensionErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className='text-sm text-red-500'>
-          <p>Something went wrong. Please try again later.</p>
+        <div>
+          <Text as='p' size='sm' colour='error'>
+            Something went wrong. Please try again later.
+          </Text>
           <br />
-          <p>
+          <Text as='p' size='sm' colour='error'>
             <span>Extension ID: </span>
             <span>{this.props?.extensionID || 'unknown'}</span>
-          </p>
-          <p>If the problem persists, please contact support.</p>
+          </Text>
+          <Text as='p' size='sm' colour='error'>
+            If the problem persists, please contact support.
+          </Text>
         </div>
       )
     }
@@ -171,10 +176,10 @@ const PanelContainer = ({
       )}
     >
       <div className='mb-2 flex items-center justify-between gap-4'>
-        <h3 className='flex items-center text-lg leading-6 font-semibold whitespace-nowrap text-gray-900 dark:text-gray-50'>
+        <Text as='h3' size='lg' weight='semibold' className='flex items-center leading-6 whitespace-nowrap'>
           {icon ? <span className='mr-1'>{icon}</span> : null}
           {name}
-        </h3>
+        </Text>
         <div className='scrollbar-thin flex items-center gap-2.5 overflow-x-auto'>
           {panelTabs && onTabChange ? (
             <>
@@ -432,7 +437,11 @@ const KVTableContainer = ({ data, uniques, displayKeyAsHeader, onClick }: KVTabl
   }, [data, uniques])
 
   if (_isEmpty(data)) {
-    return <p className='mb-2 text-gray-600 dark:text-gray-200'>{t('project.noData')}</p>
+    return (
+      <Text as='p' size='base' colour='secondary' className='mb-2'>
+        {t('project.noData')}
+      </Text>
+    )
   }
 
   return _map(processed, (value, key) => {
@@ -743,21 +752,25 @@ const Metadata = ({
 
   const renderTabContent = () => {
     if (_isEmpty(eventsData)) {
-      return <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+      return (
+        <Text as='p' size='base' colour='secondary' className='mt-1'>
+          {t('project.noParamData')}
+        </Text>
+      )
     }
 
     return (
       <>
         <div className='mb-1 flex items-center justify-between px-1 py-1'>
-          <span className='w-4/6 text-sm font-medium text-gray-600 dark:text-gray-400'>
+          <Text size='sm' weight='medium' colour='muted' className='w-4/6'>
             {activeTabId === 'props' ? t('project.property') : t('project.event')}
-          </span>
-          <span className='w-1/6 text-right text-sm font-medium text-gray-600 dark:text-gray-400'>
+          </Text>
+          <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
             {t('project.quantity')}
-          </span>
-          <span className='w-1/6 text-right text-sm font-medium text-gray-600 dark:text-gray-400'>
+          </Text>
+          <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
             {t('project.conversion')}
-          </span>
+          </Text>
         </div>
 
         <div className='space-y-0.5'>
@@ -789,7 +802,9 @@ const Metadata = ({
                   />
 
                   <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
-                    <span className='flex items-center truncate text-sm text-gray-900 dark:text-gray-100'>{ev}</span>
+                    <Text size='sm' truncate>
+                      {ev}
+                    </Text>
                     <FilterIcon
                       className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
                       strokeWidth={1.5}
@@ -797,10 +812,14 @@ const Metadata = ({
                     <div className='ml-2 h-4 w-4 group-hover:hidden' />
                   </div>
                   <div className='relative z-10 w-1/6 text-right'>
-                    <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>{eventsData[ev]}</span>
+                    <Text size='sm' weight='medium'>
+                      {eventsData[ev]}
+                    </Text>
                   </div>
                   <div className='relative z-10 w-1/6 text-right'>
-                    <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>{perc}%</span>
+                    <Text size='sm' weight='medium'>
+                      {perc}%
+                    </Text>
                   </div>
                 </div>
               )

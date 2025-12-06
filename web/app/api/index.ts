@@ -19,6 +19,8 @@ import {
   SwetrixErrorDetails,
   SessionDetails,
   Session,
+  Profile,
+  ProfileDetails,
 } from '~/lib/models/Project'
 import { Stats } from '~/lib/models/Stats'
 import { Subscriber } from '~/lib/models/Subscriber'
@@ -405,7 +407,7 @@ export const getProject = (pid: string, password?: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const createProject = (data: { name: string; organisationId?: string; isCaptcha?: boolean }) =>
+export const createProject = (data: { name: string; organisationId?: string }) =>
   api
     .post('/project', data)
     .then((response): Project => response.data)
@@ -664,6 +666,85 @@ export const getSession = (pid: string, psid: string, timezone = '', password: s
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const getProfiles = (
+  pid: string,
+  period = '3d',
+  filters: any[] = [],
+  from = '',
+  to = '',
+  take = 30,
+  skip = 0,
+  timezone = '',
+  profileType: 'all' | 'anonymous' | 'identified' = 'all',
+  password: string | undefined = '',
+) =>
+  api
+    .get(
+      `log/profiles?pid=${pid}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&from=${from}&to=${to}&timezone=${timezone}&profileType=${profileType}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response): { profiles: Profile[]; take: number; skip: number; appliedFilters: Filter[] } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getProfile = (
+  pid: string,
+  profileId: string,
+  period = '7d',
+  from = '',
+  to = '',
+  timezone = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(
+      `log/profile?pid=${pid}&profileId=${encodeURIComponent(profileId)}&period=${period}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response): ProfileDetails & { chart: any; timeBucket: string } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getProfileSessions = (
+  pid: string,
+  profileId: string,
+  period = '3d',
+  filters: any[] = [],
+  from = '',
+  to = '',
+  take = 30,
+  skip = 0,
+  timezone = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(
+      `log/profile/sessions?pid=${pid}&profileId=${encodeURIComponent(profileId)}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response): { sessions: Session[]; take: number; skip: number; appliedFilters: Filter[] } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const getError = (
   pid: string,
   eid: string,
@@ -829,25 +910,6 @@ export const getPerformanceOverallStats = (
           'x-password': password,
         },
       },
-    )
-    .then((response): Overall => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getOverallStatsCaptcha = (
-  pids: string[],
-  period: string,
-  from = '',
-  to = '',
-  timezone = 'Etc/GMT',
-  filters: any = '',
-) =>
-  api
-    .get(
-      `log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(
-        ',',
-      )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
     )
     .then((response): Overall => response.data)
     .catch((error) => {

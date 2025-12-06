@@ -20,6 +20,7 @@ import { useAuth } from '~/providers/AuthProvider'
 import { Badge, BadgeProps } from '~/ui/Badge'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
+import { Text } from '~/ui/Text'
 import { nFormatter, calculateRelativePercentage } from '~/utils/generic'
 import routes from '~/utils/routes'
 
@@ -47,14 +48,18 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
 
   return (
     <div>
-      <p className='text-sm text-gray-500 dark:text-gray-300'>{t(labelTKey)}</p>
+      <Text as='p' size='sm' colour='muted'>
+        {t(labelTKey)}
+      </Text>
 
       <div className='flex font-bold'>
         {total === null ? (
           <Spin className='mt-2 !ml-0' />
         ) : (
           <>
-            <p className='text-xl text-gray-700 dark:text-gray-100'>{_isNumber(total) ? nFormatter(total) : total}</p>
+            <Text as='p' weight='bold' size='xl' colour='secondary'>
+              {_isNumber(total) ? nFormatter(total) : total}
+            </Text>
             {_isNumber(percChange) ? (
               <p
                 className={cx('flex items-start text-xs', {
@@ -125,10 +130,6 @@ export const ProjectCard = ({
       list.push({ colour: 'yellow', label: t('common.pending') })
     }
 
-    if (project.isCaptchaProject) {
-      list.push({ colour: 'indigo', label: t('dashboard.captcha') })
-    }
-
     if (isTransferring) {
       list.push({ colour: 'indigo', label: t('common.transferring') })
     }
@@ -144,18 +145,7 @@ export const ProjectCard = ({
     }
 
     return list
-  }, [
-    t,
-    active,
-    isTransferring,
-    isPublic,
-    organisation,
-    share,
-    project.isAccessConfirmed,
-    project.role,
-    project.isCaptchaProject,
-    shareId,
-  ])
+  }, [t, active, isTransferring, isPublic, organisation, share, project.isAccessConfirmed, project.role, shareId])
 
   const onAccept = async () => {
     try {
@@ -210,7 +200,7 @@ export const ProjectCard = ({
   return (
     <Link
       to={{
-        pathname: _replace(project.isCaptchaProject ? routes.captcha : routes.project, ':id', id),
+        pathname: _replace(routes.project, ':id', id),
         search: searchParams,
       }}
       onClick={onElementClick}
@@ -221,7 +211,9 @@ export const ProjectCard = ({
     >
       <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
         <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
-          <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
+          <Text as='p' size='lg' weight='semibold' truncate>
+            {name}
+          </Text>
 
           {project.isAccessConfirmed && role !== 'viewer' ? (
             <Link
@@ -245,7 +237,7 @@ export const ProjectCard = ({
       <div className={cx('flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4')}>
         {isHostnameNavigationEnabled ? (
           <MiniCard
-            labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
+            labelTKey='dashboard.pageviews'
             // @ts-expect-error
             total={project?.trafficStats?.visits}
             percChange={
@@ -257,7 +249,7 @@ export const ProjectCard = ({
           />
         ) : (
           <MiniCard
-            labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
+            labelTKey='dashboard.pageviews'
             total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
             percChange={
               live === 'N/A'
@@ -266,7 +258,7 @@ export const ProjectCard = ({
             }
           />
         )}
-        {project.isAnalyticsProject ? <MiniCard labelTKey='dashboard.liveVisitors' total={live} /> : null}
+        <MiniCard labelTKey='dashboard.liveVisitors' total={live} />
       </div>
       {project.role !== 'owner' && !project.isAccessConfirmed ? (
         <Modal
