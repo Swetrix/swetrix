@@ -20,6 +20,7 @@ import { WebhookModule } from './webhook/webhook.module'
 import { PingModule } from './ping/ping.module'
 import { MarketplaceModule } from './marketplace/marketplace.module'
 import { AlertModule } from './alert/alert.module'
+import { GoalModule } from './goal/goal.module'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
 import { CaptchaModule } from './captcha/captcha.module'
@@ -77,6 +78,7 @@ const modules = [
   PingModule,
   MarketplaceModule,
   AlertModule,
+  GoalModule,
   AuthModule,
   CaptchaModule,
   OgImageModule,
