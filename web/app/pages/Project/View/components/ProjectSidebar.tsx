@@ -12,25 +12,24 @@ import routes from '~/utils/routes'
 
 type ProjectTabKey = keyof typeof PROJECT_TABS | 'settings'
 
-// Icon color classes for each tab - similar to Posthog's colorful sidebar
 const ICON_COLORS: Record<string, string> = {
   // Web Analytics
-  traffic: 'text-emerald-500',
-  performance: 'text-orange-500',
-  alerts: 'text-yellow-500',
+  traffic: 'text-blue-500',
+  performance: 'text-amber-500',
+  alerts: 'text-cyan-500',
   // Product Analytics
-  profiles: 'text-blue-500',
-  sessions: 'text-violet-500',
-  funnels: 'text-pink-500',
+  profiles: 'text-indigo-500',
+  sessions: 'text-indigo-500',
   errors: 'text-red-500',
+  funnels: 'text-teal-500',
   // Settings
   settings: 'text-gray-500',
 }
 
 // Group icon colors
 const GROUP_ICON_COLORS: Record<string, string> = {
-  webAnalytics: 'text-emerald-500',
-  productAnalytics: 'text-blue-500',
+  webAnalytics: 'text-blue-500',
+  productAnalytics: 'text-green-500',
 }
 
 interface Tab {
@@ -72,7 +71,6 @@ const CollapsibleGroup: React.FC<{
     return group.tabs.some((tab) => tab.id === activeTab)
   }, [group.tabs, activeTab])
 
-  // Auto-expand if a tab in this group is active
   React.useEffect(() => {
     if (hasActiveTab && !isExpanded) {
       setIsExpanded(true)
@@ -88,9 +86,9 @@ const CollapsibleGroup: React.FC<{
         type='button'
         onClick={() => setIsExpanded(!isExpanded)}
         className={cx(
-          'group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold tracking-wide uppercase transition-colors',
+          'group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs font-semibold tracking-wide uppercase transition-colors hover:bg-gray-100 dark:hover:bg-slate-800/50',
           {
-            'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800/50': !hasActiveTab,
+            'text-gray-700 dark:text-gray-300': !hasActiveTab,
             'text-gray-900 dark:text-gray-100': hasActiveTab,
           },
         )}
