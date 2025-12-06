@@ -12,7 +12,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 
 import { AppLoggerService } from '../logger/logger.service'
-import { getIPFromHeaders } from '../common/utils'
+import { getIPFromHeaders, checkRateLimit } from '../common/utils'
 import { CaptchaService, DUMMY_PIDS } from './captcha.service'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
@@ -21,6 +21,13 @@ import { ValidateDto } from './dtos/validate.dto'
 import { GenerateDto } from './dtos/generate.dto'
 
 dayjs.extend(utc)
+
+// Rate limit: 30 requests per IP per minute for challenge generation
+const CAPTCHA_GENERATE_RL_REQUESTS_IP = 30
+const CAPTCHA_GENERATE_RL_TIMEOUT = 60 // 1 minute
+
+// Rate limit: 100 requests per project per minute for challenge generation
+const CAPTCHA_GENERATE_RL_REQUESTS_PID = 100
 
 @Controller({
   version: '1',
@@ -36,10 +43,29 @@ export class CaptchaController {
   @HttpCode(200)
   @UseGuards(BotDetectionGuard)
   @BotDetection()
-  async generateCaptcha(@Body() generateDTO: GenerateDto): Promise<any> {
+  async generateCaptcha(
+    @Body() generateDTO: GenerateDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<any> {
     this.logger.log({ generateDTO }, 'POST /captcha/generate')
 
     const { pid } = generateDTO
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    // Rate limit by IP and PID to prevent abuse
+    await checkRateLimit(
+      ip,
+      'captcha-generate',
+      CAPTCHA_GENERATE_RL_REQUESTS_IP,
+      CAPTCHA_GENERATE_RL_TIMEOUT,
+    )
+    await checkRateLimit(
+      pid,
+      'captcha-generate',
+      CAPTCHA_GENERATE_RL_REQUESTS_PID,
+      CAPTCHA_GENERATE_RL_TIMEOUT,
+    )
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 

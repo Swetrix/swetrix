@@ -294,6 +294,16 @@ export class CaptchaService {
       difficulty = parseInt(storedData, 10)
     }
 
+    // Validate difficulty to prevent bypass via NaN or invalid values
+    if (
+      typeof difficulty !== 'number' ||
+      !Number.isFinite(difficulty) ||
+      difficulty < 1 ||
+      difficulty > 6
+    ) {
+      throw new BadRequestException('Invalid challenge difficulty')
+    }
+
     // If the challenge was bound to a specific project, verify it matches
     if (storedPid !== undefined && storedPid !== pid) {
       throw new BadRequestException(
