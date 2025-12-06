@@ -237,9 +237,18 @@ const Dashboard = () => {
 
       toast.success(t('project.settings.created'))
       closeNewProjectModal()
-    } catch (reason: any) {
-      setNewProjectError(reason)
-      toast.error(reason)
+    } catch (reason: unknown) {
+      console.error('[ERROR] Error while creating project:', reason)
+
+      const normalizedMessage =
+        typeof reason === 'string'
+          ? reason
+          : (reason as any)?.response?.data?.message ||
+            (reason as any)?.message ||
+            t('apiNotifications.somethingWentWrong')
+
+      setNewProjectError(normalizedMessage)
+      toast.error(normalizedMessage)
     } finally {
       setIsNewProjectLoading(false)
     }
