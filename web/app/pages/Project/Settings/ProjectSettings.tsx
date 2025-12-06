@@ -999,11 +999,17 @@ const ProjectSettings = () => {
                     <>
                       <Input
                         label={t('project.settings.captcha.secretKey')}
+                        hint={t('project.settings.captcha.learnMore')}
                         name='captchaSecretKey'
                         className='mt-4 lg:w-1/2'
                         value={captchaSecretKey}
                         disabled
                       />
+                      <div className='mt-4 flex gap-2'>
+                        <Button type='button' onClick={() => setShowRegenerateSecret(true)} danger regular>
+                          {t('project.settings.captcha.regenerateKey')}
+                        </Button>
+                      </div>
 
                       <div className='mt-6'>
                         <Select
@@ -1045,7 +1051,9 @@ const ProjectSettings = () => {
                               await updateProject(id, { captchaDifficulty })
                               toast.success(t('project.settings.updated'))
                             } catch (reason: any) {
-                              toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+                              toast.error(
+                                typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'),
+                              )
                             } finally {
                               setIsSavingDifficulty(false)
                             }
@@ -1054,12 +1062,6 @@ const ProjectSettings = () => {
                           regular
                         >
                           {t('common.save')}
-                        </Button>
-                      </div>
-
-                      <div className='mt-4 flex gap-2'>
-                        <Button type='button' onClick={() => setShowRegenerateSecret(true)} danger regular>
-                          {t('project.settings.captcha.regenerateKey')}
                         </Button>
                       </div>
                     </>
@@ -1086,10 +1088,6 @@ const ProjectSettings = () => {
                       </Button>
                     </>
                   )}
-
-                  <hr className='-mx-4 mt-6 mb-4 border-gray-200 dark:border-slate-800' />
-
-                  <p className='text-sm text-gray-600 dark:text-gray-300'>{t('project.settings.captcha.learnMore')}</p>
                 </div>
               </div>
             ) : null}

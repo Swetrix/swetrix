@@ -1249,7 +1249,16 @@
         "regenerateKeyTitle": "Regenerate secret key?",
         "regenerateKeyWarning": "Are you sure you want to regenerate the secret key? This will invalidate the current key and all applications using it will need to be updated.",
         "noKeyGenerated": "No secret key has been generated yet. Generate one to enable CAPTCHA for this project.",
-        "learnMore": "Use this secret key in your backend to verify CAPTCHA tokens. Learn more in our documentation."
+        "learnMore": "Use this secret key in your backend to verify CAPTCHA tokens. Learn more in our documentation.",
+        "difficulty": "CAPTCHA difficulty",
+        "difficultyHint": "Higher difficulty levels provide better bot protection but may be more challenging for users to solve.",
+        "difficultyLevels": {
+          "veryEasy": "Very easy",
+          "easy": "Easy",
+          "medium": "Medium",
+          "hard": "Hard",
+          "veryHard": "Very hard"
+        }
       },
       "annotations": {
         "title": "Annotations",
