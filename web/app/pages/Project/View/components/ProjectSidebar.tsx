@@ -29,6 +29,7 @@ const ICON_COLORS: Record<string, string> = {
   sessions: 'text-indigo-500',
   errors: 'text-red-500',
   funnels: 'text-teal-500',
+  goals: 'text-purple-500',
   // CAPTCHA
   captcha: 'text-emerald-500',
   // Settings
@@ -203,7 +204,13 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
 
     // Product Analytics group
     const productAnalyticsTabs = tabs.filter((tab) =>
-      [PROJECT_TABS.profiles, PROJECT_TABS.sessions, PROJECT_TABS.funnels, PROJECT_TABS.errors].includes(tab.id as any),
+      [
+        PROJECT_TABS.profiles,
+        PROJECT_TABS.sessions,
+        PROJECT_TABS.funnels,
+        PROJECT_TABS.errors,
+        PROJECT_TABS.goals,
+      ].includes(tab.id as any),
     )
     if (productAnalyticsTabs.length > 0) {
       groups.push({

@@ -1026,6 +1026,7 @@ const ProjectSettings = () => {
                           ]}
                           keyExtractor={(item) => String(item.value)}
                           labelExtractor={(item) => item.label}
+                          selectedItem={{ value: captchaDifficulty, label: '' }}
                           onSelect={(item: { value: number; label: string }) => {
                             setCaptchaDifficulty(item.value)
                           }}

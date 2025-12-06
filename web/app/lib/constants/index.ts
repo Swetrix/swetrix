@@ -404,6 +404,7 @@ const SELFHOSTED_PROJECT_TABS = {
   funnels: 'funnels',
   sessions: 'sessions',
   errors: 'errors',
+  goals: 'goals',
 } as const
 
 const PRODUCTION_PROJECT_TABS = {
@@ -413,6 +414,7 @@ const PRODUCTION_PROJECT_TABS = {
   funnels: 'funnels',
   sessions: 'sessions',
   errors: 'errors',
+  goals: 'goals',
   alerts: 'alerts',
   captcha: 'captcha',
 } as const

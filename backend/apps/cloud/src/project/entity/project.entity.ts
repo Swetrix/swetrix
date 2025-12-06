@@ -9,6 +9,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger'
 
 import { Alert } from '../../alert/entity/alert.entity'
+import { Goal } from '../../goal/entity/goal.entity'
 import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
 import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'
@@ -122,6 +123,10 @@ export class Project {
   @ApiProperty({ type: () => Annotation })
   @OneToMany(() => Annotation, annotation => annotation.project)
   annotations: Annotation[]
+
+  @ApiProperty({ type: () => Goal })
+  @OneToMany(() => Goal, goal => goal.project)
+  goals: Goal[]
 
   @Column('varchar', {
     default: null,

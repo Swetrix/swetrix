@@ -39,6 +39,7 @@ import {
   PercentIcon,
   KeyboardIcon,
   ShieldCheckIcon,
+  TargetIcon,
 } from 'lucide-react'
 import React, {
   useState,
@@ -166,6 +167,7 @@ import routes from '~/utils/routes'
 
 import { useCurrentProject, useProjectPassword } from '../../../providers/CurrentProjectProvider'
 import ProjectAlertsView from '../Alerts/View'
+import GoalsView from '../Goals/View'
 
 import AddAViewModal from './components/AddAViewModal'
 import CCRow from './components/CCRow'
@@ -403,6 +405,7 @@ interface ViewProjectContextType {
   filters: Filter[]
   customPanelTabs: CustomTab[]
   captchaRefreshTrigger: number
+  goalsRefreshTrigger: number
 
   // Functions
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
@@ -427,6 +430,7 @@ const defaultViewProjectContext: ViewProjectContextType = {
   filters: [],
   customPanelTabs: [],
   captchaRefreshTrigger: 0,
+  goalsRefreshTrigger: 0,
   updatePeriod: () => {},
   updateTimebucket: (_newTimebucket) => {},
   refCalendar: { current: null } as any,
@@ -538,6 +542,7 @@ const ViewProjectContent = () => {
   const [dataLoading, setDataLoading] = useState(false)
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false)
   const [captchaRefreshTrigger, setCaptchaRefreshTrigger] = useState(0)
+  const [goalsRefreshTrigger, setGoalsRefreshTrigger] = useState(0)
   const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
@@ -1494,6 +1499,11 @@ const ViewProjectContent = () => {
         id: PROJECT_TABS.funnels,
         label: t('dashboard.funnels'),
         icon: FilterIcon,
+      },
+      {
+        id: PROJECT_TABS.goals,
+        label: t('dashboard.goals'),
+        icon: TargetIcon,
       },
     ]
 
@@ -2663,6 +2673,11 @@ const ViewProjectContent = () => {
           return
         }
 
+        if (activeTab === PROJECT_TABS.goals) {
+          setGoalsRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
         loadAnalytics()
       }
     },
@@ -3412,6 +3427,7 @@ const ViewProjectContent = () => {
             filters,
             customPanelTabs,
             captchaRefreshTrigger,
+            goalsRefreshTrigger,
 
             // Functions
             updatePeriod,
@@ -4294,6 +4310,14 @@ const ViewProjectContent = () => {
                     ) : null}
                     {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && isAuthenticated ? (
                       <ProjectAlertsView />
+                    ) : null}
+                    {activeTab === PROJECT_TABS.goals ? (
+                      <GoalsView
+                        period={period}
+                        from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                        to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                        timezone={timezone}
+                      />
                     ) : null}
                     {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
                     {analyticsLoading &&
