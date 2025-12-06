@@ -1,6 +1,12 @@
 import { XCircleIcon } from '@heroicons/react/24/outline'
+import type { ChartOptions } from 'billboard.js'
+import { area, bar } from 'billboard.js'
+import cx from 'clsx'
+import * as d3 from 'd3'
+import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
+import _size from 'lodash/size'
 import {
   TargetIcon,
   Trash2Icon,
@@ -9,6 +15,7 @@ import {
   SearchIcon,
   FileTextIcon,
   MousePointerClickIcon,
+  ChevronDownIcon,
 } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -19,12 +26,23 @@ import {
   deleteGoal as deleteGoalApi,
   getProjectGoals,
   getGoalStats,
+  getGoalChart,
   DEFAULT_GOALS_TAKE,
   type Goal,
   type GoalStats,
+  type GoalChartData,
 } from '~/api'
+import {
+  TimeFormat,
+  tbsFormatMapper,
+  tbsFormatMapper24h,
+  tbsFormatMapperTooltip,
+  tbsFormatMapperTooltip24h,
+  chartTypes,
+} from '~/lib/constants'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import BillboardChart from '~/ui/BillboardChart'
 import Button from '~/ui/Button'
 import Spin from '~/ui/icons/Spin'
 import Loader from '~/ui/Loader'
@@ -33,20 +51,204 @@ import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import ProgressRing from '~/ui/ProgressRing'
 import { Text } from '~/ui/Text'
+import { nFormatter } from '~/utils/generic'
 import routes from '~/utils/routes'
 
 import GoalSettingsModal from './GoalSettingsModal'
+
+// Calculate optimal Y axis ticks
+const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
+  const min = Math.min(...data.filter((n) => n !== undefined && n !== null))
+  const max = Math.max(...data.filter((n) => n !== undefined && n !== null))
+
+  if (min === max) {
+    return max === 0 ? [0, 1] : [0, max * 1.2]
+  }
+
+  const upperBound = Math.ceil(max * 1.2)
+  const roughStep = upperBound / (targetCount - 1)
+
+  let niceStep: number
+  if (roughStep <= 1) niceStep = 1
+  else if (roughStep <= 2) niceStep = 2
+  else if (roughStep <= 5) niceStep = 5
+  else if (roughStep <= 10) niceStep = 10
+  else if (roughStep <= 20) niceStep = 20
+  else if (roughStep <= 25) niceStep = 25
+  else if (roughStep <= 50) niceStep = 50
+  else {
+    const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)))
+    const normalized = roughStep / magnitude
+    if (normalized <= 2) niceStep = 2 * magnitude
+    else if (normalized <= 5) niceStep = 5 * magnitude
+    else niceStep = 10 * magnitude
+  }
+
+  const ticks: number[] = []
+  for (let i = 0; i <= upperBound; i += niceStep) {
+    ticks.push(i)
+  }
+
+  if (ticks[ticks.length - 1] < max) {
+    ticks.push(ticks[ticks.length - 1] + niceStep)
+  }
+
+  return ticks
+}
+
+// Chart settings for goal chart
+const getGoalChartSettings = (
+  chartData: GoalChartData,
+  timeBucket: string,
+  timeFormat: string,
+  chartType: string,
+  dataNames: Record<string, string>,
+): ChartOptions => {
+  const xAxisSize = _size(chartData.x)
+
+  const columns: any[] = [
+    ['x', ..._map(chartData.x, (el) => dayjs(el).toDate())],
+    ['conversions', ...chartData.conversions],
+    ['sessions', ...chartData.uniqueSessions],
+  ]
+
+  // Calculate optimal Y axis ticks
+  const allYValues: number[] = [...chartData.conversions, ...chartData.uniqueSessions].filter(
+    (n) => n !== undefined && n !== null,
+  )
+
+  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+
+  return {
+    data: {
+      x: 'x',
+      columns,
+      types: {
+        conversions: chartType === chartTypes.line ? area() : bar(),
+        sessions: chartType === chartTypes.line ? area() : bar(),
+      },
+      colors: {
+        conversions: '#16a34a', // green-600
+        sessions: '#2563EB', // blue-600
+      },
+      names: dataNames,
+    },
+    grid: {
+      y: {
+        show: true,
+      },
+    },
+    transition: {
+      duration: 200,
+    },
+    resize: {
+      auto: true,
+      timer: false,
+    },
+    axis: {
+      x: {
+        clipPath: false,
+        tick: {
+          fit: true,
+          rotate: 0,
+          format:
+            // @ts-expect-error
+            timeFormat === TimeFormat['24-hour']
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+        },
+        localtime: timeFormat === TimeFormat['24-hour'],
+        type: 'timeseries',
+      },
+      y: {
+        tick: {
+          format: (d: number) => nFormatter(d, 1),
+          values: optimalTicks,
+        },
+        show: true,
+        inner: true,
+      },
+    },
+    tooltip: {
+      contents: (item: any, _: any, __: any, color: any) => {
+        if (!item || _isEmpty(item) || !item[0]) {
+          return ''
+        }
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+          <li class='font-semibold'>${
+            timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
+          }</li>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          ${_map(item, (el: { id: string; name: string; value: string }) => {
+            return `
+            <li class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <span>${el.name}</span>
+              </div>
+              <span class='pl-4'>${el.value}</span>
+            </li>
+            `
+          }).join('')}</ul>`
+      },
+    },
+    point:
+      chartType === chartTypes.bar
+        ? {}
+        : {
+            focus: {
+              only: xAxisSize > 1,
+            },
+            pattern: ['circle'],
+            r: 2,
+          },
+    legend: {
+      item: {
+        tile: {
+          type: 'circle',
+          width: 10,
+          r: 3,
+        },
+      },
+    },
+    area: {
+      linearGradient: true,
+    },
+    bar: {
+      linearGradient: true,
+    },
+  }
+}
 
 interface GoalRowProps {
   goal: Goal
   stats: GoalStats | null
   statsLoading: boolean
+  isExpanded: boolean
+  chartData: GoalChartData | null
+  chartLoading: boolean
+  timeBucket: string
+  timeFormat: string
   onDelete: (id: string) => void
   onEdit: (id: string) => void
-  onClick: (id: string) => void
+  onToggleExpand: (id: string) => void
 }
 
-const GoalRow = ({ goal, stats, statsLoading, onDelete, onEdit, onClick }: GoalRowProps) => {
+const GoalRow = ({
+  goal,
+  stats,
+  statsLoading,
+  isExpanded,
+  chartData,
+  chartLoading,
+  timeBucket,
+  timeFormat,
+  onDelete,
+  onEdit,
+  onToggleExpand,
+}: GoalRowProps) => {
   const { t } = useTranslation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
@@ -57,105 +259,141 @@ const GoalRow = ({ goal, stats, statsLoading, onDelete, onEdit, onClick }: GoalR
     return `${matchPrefix}${goal.value}`
   }, [goal.value, goal.matchType])
 
+  const chartOptions = useMemo(() => {
+    if (!chartData || !chartData.x || chartData.x.length === 0) return null
+    return getGoalChartSettings(chartData, timeBucket, timeFormat, chartTypes.line, {
+      conversions: t('goals.conversions'),
+      sessions: t('project.sessions'),
+    })
+  }, [chartData, timeBucket, timeFormat, t])
+
   return (
     <>
-      <li
-        onClick={() => onClick(goal.id)}
-        className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'
-      >
-        <div className='flex min-w-0 gap-x-4'>
-          <div className='min-w-0 flex-auto'>
-            <Text as='p' weight='semibold' truncate className='flex items-center gap-x-1.5'>
-              {goal.type === 'pageview' ? (
-                <FileTextIcon className='size-4 text-blue-500' strokeWidth={1.5} />
-              ) : (
-                <MousePointerClickIcon className='size-4 text-amber-500' strokeWidth={1.5} />
-              )}
-              <span>{goal.name}</span>
-            </Text>
-            {patternDisplay ? (
-              <Text className='mt-1 max-w-max' as='p' size='xs' colour='secondary' code>
-                {patternDisplay}
+      <li className='relative mb-3 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/25 dark:bg-slate-800/70'>
+        {/* Main row - clickable to expand */}
+        <div
+          onClick={() => onToggleExpand(goal.id)}
+          className='flex cursor-pointer justify-between gap-x-6 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:hover:bg-slate-700/60'
+        >
+          <div className='flex min-w-0 gap-x-4'>
+            <div className='min-w-0 flex-auto'>
+              <Text as='p' weight='semibold' truncate className='flex items-center gap-x-1.5'>
+                {goal.type === 'pageview' ? (
+                  <FileTextIcon className='size-4 text-blue-500' strokeWidth={1.5} />
+                ) : (
+                  <MousePointerClickIcon className='size-4 text-amber-500' strokeWidth={1.5} />
+                )}
+                <span>{goal.name}</span>
               </Text>
-            ) : null}
-            {/* Mobile stats */}
-            <div className='mt-2 flex h-9 items-center gap-x-3 text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
+              {patternDisplay ? (
+                <Text className='mt-1 max-w-max' as='p' size='xs' colour='secondary' code>
+                  {patternDisplay}
+                </Text>
+              ) : null}
+              {/* Mobile stats */}
+              <div className='mt-2 flex h-9 items-center gap-x-3 text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
+                {statsLoading ? (
+                  <div className='flex size-9 items-center justify-center'>
+                    <Spin className='m-0 size-5' />
+                  </div>
+                ) : stats ? (
+                  <>
+                    <span>
+                      <Text as='span' size='xs' weight='semibold'>
+                        {stats.conversions.toLocaleString()}
+                      </Text>{' '}
+                      <Text as='span' size='xs' colour='secondary'>
+                        {t('goals.conversions').toLowerCase()}
+                      </Text>
+                    </span>
+                    <ProgressRing value={stats.conversionRate} size={36} strokeWidth={3} />
+                  </>
+                ) : (
+                  <Text as='p' size='xs' colour='muted'>
+                    {t('goals.noData')}
+                  </Text>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className='flex shrink-0 items-center gap-x-4'>
+            <div className='hidden h-11 sm:flex sm:items-center sm:gap-x-3'>
               {statsLoading ? (
-                <div className='flex size-9 items-center justify-center'>
+                <div className='flex size-11 items-center justify-center'>
                   <Spin className='m-0 size-5' />
                 </div>
               ) : stats ? (
                 <>
-                  <span>
-                    <Text as='span' size='xs' weight='semibold'>
+                  <p className='text-sm leading-6'>
+                    <Text as='span' size='sm' weight='semibold'>
                       {stats.conversions.toLocaleString()}
                     </Text>{' '}
-                    <Text as='span' size='xs' colour='secondary'>
+                    <Text as='span' size='sm' colour='secondary'>
                       {t('goals.conversions').toLowerCase()}
                     </Text>
-                  </span>
-                  <ProgressRing value={stats.conversionRate} size={36} strokeWidth={3} />
+                  </p>
+                  <ProgressRing value={stats.conversionRate} size={44} strokeWidth={3.5} />
                 </>
               ) : (
-                <Text as='p' size='xs' colour='muted'>
+                <Text as='p' size='sm' colour='muted'>
                   {t('goals.noData')}
                 </Text>
               )}
             </div>
+            {/* Action buttons */}
+            <div className='flex items-center gap-1'>
+              <button
+                type='button'
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onEdit(goal.id)
+                }}
+                aria-label={t('common.edit')}
+                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+              >
+                <PencilIcon className='size-4' strokeWidth={1.5} />
+              </button>
+              <button
+                type='button'
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setShowDeleteModal(true)
+                }}
+                aria-label={t('common.delete')}
+                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+              >
+                <Trash2Icon className='size-4' strokeWidth={1.5} />
+              </button>
+              <ChevronDownIcon
+                className={cx('size-5 text-gray-500 transition-transform dark:text-gray-400', {
+                  'rotate-180': isExpanded,
+                })}
+                strokeWidth={1.5}
+              />
+            </div>
           </div>
         </div>
-        <div className='flex shrink-0 items-center gap-x-4'>
-          <div className='hidden h-11 sm:flex sm:items-center sm:gap-x-3'>
-            {statsLoading ? (
-              <div className='flex size-11 items-center justify-center'>
-                <Spin className='m-0 size-5' />
+
+        {/* Expanded chart section */}
+        {isExpanded ? (
+          <div className='border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-slate-700'>
+            {chartLoading ? (
+              <div className='flex h-[200px] items-center justify-center'>
+                <Spin className='size-8' />
               </div>
-            ) : stats ? (
-              <>
-                <p className='text-sm leading-6'>
-                  <Text as='span' size='sm' weight='semibold'>
-                    {stats.conversions.toLocaleString()}
-                  </Text>{' '}
-                  <Text as='span' size='sm' colour='secondary'>
-                    {t('goals.conversions').toLowerCase()}
-                  </Text>
-                </p>
-                <ProgressRing value={stats.conversionRate} size={44} strokeWidth={3.5} />
-              </>
+            ) : chartData && chartData.x && chartData.x.length > 0 && chartOptions ? (
+              <BillboardChart options={chartOptions} className='h-[200px]' />
             ) : (
-              <Text as='p' size='sm' colour='muted'>
-                {t('goals.noData')}
-              </Text>
+              <div className='flex h-[200px] items-center justify-center'>
+                <Text as='p' colour='muted'>
+                  {t('goals.noChartData')}
+                </Text>
+              </div>
             )}
           </div>
-          {/* Action buttons */}
-          <div className='flex items-center gap-1'>
-            <button
-              type='button'
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                onEdit(goal.id)
-              }}
-              aria-label={t('common.edit')}
-              className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
-            >
-              <PencilIcon className='size-4' strokeWidth={1.5} />
-            </button>
-            <button
-              type='button'
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                setShowDeleteModal(true)
-              }}
-              aria-label={t('common.delete')}
-              className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
-            >
-              <Trash2Icon className='size-4' strokeWidth={1.5} />
-            </button>
-          </div>
-        </div>
+        ) : null}
       </li>
       <Modal
         onClose={() => setShowDeleteModal(false)}
@@ -184,7 +422,7 @@ interface GoalsViewProps {
 
 const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => {
   const { id } = useCurrentProject()
-  const { goalsRefreshTrigger } = useViewProjectContext()
+  const { goalsRefreshTrigger, timeBucket, timeFormat } = useViewProjectContext()
   const { t } = useTranslation()
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
@@ -196,6 +434,11 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const [filterQuery, setFilterQuery] = useState('')
+
+  // Expanded goal state
+  const [expandedGoalId, setExpandedGoalId] = useState<string | null>(null)
+  const [goalChartData, setGoalChartData] = useState<Record<string, GoalChartData | null>>({})
+  const [chartLoading, setChartLoading] = useState<Record<string, boolean>>({})
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -243,6 +486,36 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
     }
   }
 
+  const loadGoalChartData = async (goalId: string, showLoading = true) => {
+    if (showLoading) {
+      setChartLoading((prev) => ({ ...prev, [goalId]: true }))
+    }
+    try {
+      const result = await getGoalChart(goalId, period, from, to, timeBucket, timezone)
+      setGoalChartData((prev) => ({ ...prev, [goalId]: result.chart }))
+    } catch (err) {
+      console.error('Failed to load goal chart:', err)
+      setGoalChartData((prev) => ({ ...prev, [goalId]: null }))
+    } finally {
+      if (showLoading) {
+        setChartLoading((prev) => ({ ...prev, [goalId]: false }))
+      }
+    }
+  }
+
+  const handleToggleExpand = (goalId: string) => {
+    if (expandedGoalId === goalId) {
+      // Collapse if already expanded
+      setExpandedGoalId(null)
+    } else {
+      // Expand and load chart data if not already loaded
+      setExpandedGoalId(goalId)
+      if (!goalChartData[goalId] && !chartLoading[goalId]) {
+        loadGoalChartData(goalId)
+      }
+    }
+  }
+
   useEffect(() => {
     loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -256,10 +529,30 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goals, period, from, to, timezone])
 
+  // Reload chart data when period changes for expanded goal
+  useEffect(() => {
+    if (expandedGoalId && goalChartData[expandedGoalId]) {
+      // Silently refresh if we already have data, otherwise show loading
+      const hasExistingData = !!goalChartData[expandedGoalId]
+      loadGoalChartData(expandedGoalId, !hasExistingData)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period, from, to, timezone, timeBucket])
+
   // Refresh goals data when refresh button is clicked
   useEffect(() => {
     if (goalsRefreshTrigger > 0) {
       loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE)
+      // Clear cached chart data for non-expanded goals, silently refresh expanded goal
+      if (expandedGoalId) {
+        // Keep only the expanded goal's data while we fetch fresh data
+        setGoalChartData((prev) => ({ [expandedGoalId]: prev[expandedGoalId] }))
+        // Silently fetch new data without showing loading indicator
+        loadGoalChartData(expandedGoalId, false)
+      } else {
+        // No expanded goal, just clear all cached data
+        setGoalChartData({})
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goalsRefreshTrigger])
@@ -387,9 +680,14 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
                 goal={goal}
                 stats={goalStats[goal.id] || null}
                 statsLoading={statsLoading[goal.id] || false}
+                isExpanded={expandedGoalId === goal.id}
+                chartData={goalChartData[goal.id] || null}
+                chartLoading={chartLoading[goal.id] || false}
+                timeBucket={timeBucket}
+                timeFormat={timeFormat}
                 onDelete={handleDeleteGoal}
                 onEdit={handleEditGoal}
-                onClick={handleEditGoal}
+                onToggleExpand={handleToggleExpand}
               />
             ))}
           </ul>

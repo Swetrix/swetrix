@@ -484,6 +484,80 @@ export class GoalController {
     }
   }
 
+  private getGroupSubquery(
+    timeBucket: string,
+  ): [selector: string, groupBy: string] {
+    if (timeBucket === 'minute') {
+      return [
+        'toYear(tz_created) as year, toMonth(tz_created) as month, toDayOfMonth(tz_created) as day, toHour(tz_created) as hour, toMinute(tz_created) as minute',
+        'year, month, day, hour, minute',
+      ]
+    }
+
+    if (timeBucket === 'hour') {
+      return [
+        'toYear(tz_created) as year, toMonth(tz_created) as month, toDayOfMonth(tz_created) as day, toHour(tz_created) as hour',
+        'year, month, day, hour',
+      ]
+    }
+
+    if (timeBucket === 'day') {
+      return [
+        'toYear(tz_created) as year, toMonth(tz_created) as month, toDayOfMonth(tz_created) as day',
+        'year, month, day',
+      ]
+    }
+
+    if (timeBucket === 'month') {
+      return [
+        'toYear(tz_created) as year, toMonth(tz_created) as month',
+        'year, month',
+      ]
+    }
+
+    // year
+    return ['toYear(tz_created) as year', 'year']
+  }
+
+  private generateDateString(row: { [key: string]: number }): string {
+    const { year, month, day, hour, minute } = row
+
+    let dateString = `${year}`
+
+    if (typeof month === 'number') {
+      if (month < 10) {
+        dateString += `-0${month}`
+      } else {
+        dateString += `-${month}`
+      }
+    }
+
+    if (typeof day === 'number') {
+      if (day < 10) {
+        dateString += `-0${day}`
+      } else {
+        dateString += `-${day}`
+      }
+    }
+
+    if (typeof hour === 'number') {
+      const strMinute =
+        typeof minute === 'number'
+          ? minute < 10
+            ? `0${minute}`
+            : minute
+          : '00'
+
+      if (hour < 10) {
+        dateString += ` 0${hour}:${strMinute}:00`
+      } else {
+        dateString += ` ${hour}:${strMinute}:00`
+      }
+    }
+
+    return dateString
+  }
+
   @ApiBearerAuth()
   @Get('/:id/chart')
   @Auth()
@@ -522,8 +596,17 @@ export class GoalController {
       safeTimezone,
     )
 
+    // Generate complete X axis with all time buckets
+    const { xShifted } = this.analyticsService.generateXAxis(
+      resolvedTimeBucket as any,
+      groupFromUTC,
+      groupToUTC,
+      safeTimezone,
+    )
+
     const table = goal.type === GoalType.CUSTOM_EVENT ? 'customEV' : 'analytics'
     const timeBucketFunc = timeBucketConversion[timeBucket] || 'toStartOfDay'
+    const [selector, groupBy] = this.getGroupSubquery(resolvedTimeBucket)
 
     const { condition: matchCondition, params: matchParams } =
       this.buildGoalMatchCondition(goal, table)
@@ -532,17 +615,21 @@ export class GoalController {
 
     const chartQuery = `
       SELECT
-        ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as time,
+        ${selector},
         count(*) as conversions,
         uniqExact(psid) as uniqueSessions
-      FROM ${table}
-      WHERE
-        pid = {pid:FixedString(12)}
-        AND ${matchCondition}
-        ${metaCondition}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-      GROUP BY time
-      ORDER BY time
+      FROM (
+        SELECT *,
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+        FROM ${table}
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND ${matchCondition}
+          ${metaCondition}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
     `
 
     const queryParams = {
@@ -557,13 +644,38 @@ export class GoalController {
       .query({ query: chartQuery, query_params: queryParams })
       .then(resultSet =>
         resultSet.json<{
-          time: string
+          year: number
+          month?: number
+          day?: number
+          hour?: number
+          minute?: number
           conversions: number
           uniqueSessions: number
         }>(),
       )
 
-    return { chart: data }
+    // Initialize arrays with zeros for all time buckets
+    const conversions = Array(xShifted.length).fill(0)
+    const uniqueSessions = Array(xShifted.length).fill(0)
+
+    // Fill in actual data at the correct indices
+    for (const row of data) {
+      const dateString = this.generateDateString(row)
+      const index = xShifted.indexOf(dateString)
+
+      if (index !== -1) {
+        conversions[index] = row.conversions
+        uniqueSessions[index] = row.uniqueSessions
+      }
+    }
+
+    return {
+      chart: {
+        x: xShifted,
+        conversions,
+        uniqueSessions,
+      },
+    }
   }
 
   @ApiBearerAuth()

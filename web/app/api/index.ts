@@ -1156,9 +1156,9 @@ export interface GoalStats {
 }
 
 export interface GoalChartData {
-  time: string
-  conversions: number
-  uniqueSessions: number
+  x: string[]
+  conversions: number[]
+  uniqueSessions: number[]
 }
 
 export interface GoalSession {
@@ -1251,7 +1251,7 @@ export const getGoalChart = (
     .get(`/goal/${goalId}/chart`, {
       params: { period, from, to, timeBucket, timezone },
     })
-    .then((response): { chart: GoalChartData[] } => response.data)
+    .then((response): { chart: GoalChartData } => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

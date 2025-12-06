@@ -995,7 +995,8 @@
     "browser": "Browser",
     "conversionsCount": "Conversions",
     "configuration": "Configuration",
-    "noData": "No conversion data yet"
+    "noData": "No conversion data yet",
+    "noChartData": "No chart data available for the selected period"
   },
   "error": {
     "status": {
