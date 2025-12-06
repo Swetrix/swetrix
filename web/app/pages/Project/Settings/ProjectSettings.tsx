@@ -379,7 +379,9 @@ const ProjectSettings = () => {
 
   // CAPTCHA state
   const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(null)
+  const [captchaDifficulty, setCaptchaDifficulty] = useState<number>(4)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
+  const [isSavingDifficulty, setIsSavingDifficulty] = useState(false)
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
@@ -436,6 +438,7 @@ const ProjectSettings = () => {
       const result = await getProject(projectId)
       setProject(result)
       setCaptchaSecretKey(result.captchaSecretKey)
+      setCaptchaDifficulty(result.captchaDifficulty || 4)
       setForm({
         ...result,
         ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
@@ -1001,6 +1004,59 @@ const ProjectSettings = () => {
                         value={captchaSecretKey}
                         disabled
                       />
+
+                      <div className='mt-6'>
+                        <Select
+                          label={t('project.settings.captcha.difficulty')}
+                          hint={t('project.settings.captcha.difficultyHint')}
+                          className='lg:w-1/2'
+                          hintClassName='lg:w-2/3'
+                          items={[
+                            { value: 2, label: t('project.settings.captcha.difficultyLevels.veryEasy') },
+                            { value: 3, label: t('project.settings.captcha.difficultyLevels.easy') },
+                            { value: 4, label: t('project.settings.captcha.difficultyLevels.medium') },
+                            { value: 5, label: t('project.settings.captcha.difficultyLevels.hard') },
+                            { value: 6, label: t('project.settings.captcha.difficultyLevels.veryHard') },
+                          ]}
+                          keyExtractor={(item) => String(item.value)}
+                          labelExtractor={(item) => item.label}
+                          onSelect={(item: { value: number; label: string }) => {
+                            setCaptchaDifficulty(item.value)
+                          }}
+                          title={
+                            captchaDifficulty === 2
+                              ? t('project.settings.captcha.difficultyLevels.veryEasy')
+                              : captchaDifficulty === 3
+                                ? t('project.settings.captcha.difficultyLevels.easy')
+                                : captchaDifficulty === 4
+                                  ? t('project.settings.captcha.difficultyLevels.medium')
+                                  : captchaDifficulty === 5
+                                    ? t('project.settings.captcha.difficultyLevels.hard')
+                                    : t('project.settings.captcha.difficultyLevels.veryHard')
+                          }
+                        />
+                        <Button
+                          type='button'
+                          className='mt-4'
+                          loading={isSavingDifficulty}
+                          onClick={async () => {
+                            setIsSavingDifficulty(true)
+                            try {
+                              await updateProject(id, { captchaDifficulty })
+                              toast.success(t('project.settings.updated'))
+                            } catch (reason: any) {
+                              toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+                            } finally {
+                              setIsSavingDifficulty(false)
+                            }
+                          }}
+                          primary
+                          regular
+                        >
+                          {t('common.save')}
+                        </Button>
+                      </div>
+
                       <div className='mt-4 flex gap-2'>
                         <Button type='button' onClick={() => setShowRegenerateSecret(true)} danger regular>
                           {t('project.settings.captcha.regenerateKey')}

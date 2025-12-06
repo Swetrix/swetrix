@@ -173,6 +173,7 @@ export interface Project {
   public: boolean
   isAnalyticsProject: boolean
   captchaSecretKey: string | null
+  captchaDifficulty: number
   created: string
   share?: ShareOwnerProject[]
   overall: OverallObject

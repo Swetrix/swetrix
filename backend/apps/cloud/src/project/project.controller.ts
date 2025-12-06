@@ -1743,6 +1743,10 @@ export class ProjectController {
       project.botsProtectionLevel = projectDTO.botsProtectionLevel
     }
 
+    if (projectDTO.captchaDifficulty !== undefined) {
+      project.captchaDifficulty = projectDTO.captchaDifficulty
+    }
+
     if (projectDTO.name) {
       project.name = _trim(projectDTO.name)
     }

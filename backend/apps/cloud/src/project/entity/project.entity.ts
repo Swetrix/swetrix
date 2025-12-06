@@ -74,6 +74,12 @@ export class Project {
   @Column('varchar', { default: null, length: CAPTCHA_SECRET_KEY_LENGTH })
   captchaSecretKey: string
 
+  // CAPTCHA PoW difficulty (number of leading zeros required in hash)
+  // Default is 4 (~65k iterations, ~1-2 seconds on average devices)
+  @ApiProperty()
+  @Column('tinyint', { default: 4, unsigned: true })
+  captchaDifficulty: number
+
   @ApiProperty()
   @Column({
     type: 'enum',
