@@ -139,76 +139,6 @@ export const tbPeriodPairs = (
   },
 ]
 
-export const captchaTbPeriodPairs = (
-  t: typeof i18nextT,
-  tbs?: TimeBucket[] | null,
-  dates?: Date[] | null,
-  language?: string,
-): TBPeriodPairsProps[] => [
-  {
-    label: t('project.thisHour'),
-    period: '1h',
-    tbs: ['minute'],
-  },
-  {
-    label: t('project.today'),
-    period: 'today',
-    tbs: ['hour'],
-  },
-  {
-    label: t('project.yesterday'),
-    period: 'yesterday',
-    tbs: ['hour'],
-  },
-  {
-    label: t('project.last24h'),
-    period: '1d',
-    countDays: 1,
-    tbs: ['hour'],
-  },
-  {
-    label: t('project.lastXDays', { amount: 7 }),
-    period: '7d',
-    tbs: ['hour', 'day'],
-    countDays: 7,
-  },
-  {
-    label: t('project.lastXWeeks', { amount: 4 }),
-    period: '4w',
-    tbs: ['day'],
-    countDays: 28,
-  },
-  {
-    label: t('project.lastXMonths', { amount: 3 }),
-    period: '3M',
-    tbs: ['month'],
-    countDays: 90,
-  },
-  {
-    label: t('project.lastXMonths', { amount: 12 }),
-    period: '12M',
-    tbs: ['month'],
-    countDays: 365,
-  },
-  {
-    label: t('project.lastXMonths', { amount: 24 }),
-    period: '24M',
-    tbs: ['month'],
-  },
-  {
-    label: t('project.all'),
-    period: 'all',
-    tbs: ['month', 'year'],
-  },
-  {
-    label: dates ? getCustomLabel(dates, t, language) : t('project.custom'),
-    dropdownLabel: t('project.custom'),
-    isCustomDate: true,
-    period: 'custom',
-    tbs: tbs || ['month'],
-  },
-]
-
 export const FILTERS_PERIOD_PAIRS = ['1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
 
 // TODO: add 'custom' later after an issue with it is resolved
@@ -366,7 +296,6 @@ export const MARKETPLACE_URL = 'https://marketplace.swetrix.com'
 export const DOCS_URL = 'https://docs.swetrix.com'
 export const INTEGRATIONS_URL = 'https://docs.swetrix.com/integrations'
 export const ERROR_TRACKING_DOCS_URL = 'https://docs.swetrix.com/error-tracking'
-export const CAPTCHA_URL = 'https://captcha.swetrix.com'
 export const DOCS_REFERRAL_PROGRAM_URL = `${DOCS_URL}/affiliate/about`
 
 // Referral program

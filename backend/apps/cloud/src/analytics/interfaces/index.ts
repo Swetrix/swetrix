@@ -140,16 +140,6 @@ interface IOverallPeriodStats {
   sdur: number
 }
 
-interface ICaptchaObject {
-  current: {
-    all: number
-  }
-  previous: {
-    all: number
-  }
-  change: number
-}
-
 interface IPerformanceObject {
   current: {
     frontend: number
@@ -178,10 +168,6 @@ interface IOverallObject {
 
 export interface IOverall {
   [key: string]: IOverallObject
-}
-
-export interface IOverallCaptcha {
-  [key: string]: ICaptchaObject
 }
 
 export interface IOverallPerformance {

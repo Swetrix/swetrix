@@ -916,25 +916,6 @@ export const getPerformanceOverallStats = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getOverallStatsCaptcha = (
-  pids: string[],
-  period: string,
-  from = '',
-  to = '',
-  timezone = 'Etc/GMT',
-  filters: any = '',
-) =>
-  api
-    .get(
-      `log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(
-        ',',
-      )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
-    )
-    .then((response): Overall => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getLiveVisitors = (pids: string[], password?: string): Promise<LiveStats> =>
   api
     .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`, {

@@ -7,7 +7,7 @@ type TextSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
 type TextWeight = 'light' | 'normal' | 'medium' | 'semibold' | 'bold'
 type TextColour = 'primary' | 'secondary' | 'muted' | 'success' | 'warning' | 'error' | 'inherit'
 
-export interface TextProps {
+interface TextProps {
   children: React.ReactNode
   as?: TextElement
   size?: TextSize

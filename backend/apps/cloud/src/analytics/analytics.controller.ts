@@ -894,57 +894,6 @@ export class AnalyticsController {
     )
   }
 
-  @Get('captcha/birdseye')
-  @Auth(true, true)
-  // returns overall short statistics per CAPTCHA project
-  async getCaptchaOverallStats(
-    @Query() data: GetOverallStatsDto,
-    @CurrentUserId() uid: string,
-  ) {
-    const {
-      pids,
-      pid,
-      period,
-      from,
-      to,
-      timezone = DEFAULT_TIMEZONE,
-      filters,
-    } = data
-    const pidsArray = getPIDsArray(pids, pid)
-
-    const validPids = []
-
-    const validationPromises = _map(pidsArray, async currentPID => {
-      await this.analyticsService.checkProjectAccess(currentPID, uid)
-
-      await this.analyticsService.checkBillingAccess(currentPID)
-
-      validPids.push(currentPID)
-    })
-
-    try {
-      await Promise.allSettled(validationPromises)
-    } catch {
-      //
-    }
-
-    if (_isEmpty(validPids)) {
-      throw new HttpException(
-        'The data could not be loaded for the selected projects. It is possible that the projects are not accessible to you or the account owner has been suspended.',
-        HttpStatus.PAYMENT_REQUIRED,
-      )
-    }
-
-    return this.analyticsService.getCaptchaSummary(
-      validPids,
-      period,
-      from,
-      to,
-      timezone,
-      filters,
-    )
-  }
-
   @Get('performance/birdseye')
   @Auth(true, true)
   async getPerformanceOverallStats(
