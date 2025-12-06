@@ -21,10 +21,7 @@ const DUMMY_PIDS = ['AP00000000000', 'FAIL000000000']
 
 const isValidPID = (pid: string) => DUMMY_PIDS.includes(pid) || PID_REGEX.test(pid)
 
-const FRAME_HEIGHT_MAPPING = {
-  default: '66px',
-  manual: '200px',
-}
+const FRAME_HEIGHT = '66px'
 
 const getFrameID = (cid: string) => `${cid}-frame`
 
@@ -130,32 +127,6 @@ const postMessageCallback = (pmEvent: MessageEvent) => {
 
       break
     }
-
-    case 'manualStarted': {
-      const frame = document.getElementById(getFrameID(cid))
-
-      if (!frame) {
-        log(LOG_ACTIONS.error, '[PM -> manualStarted] Frame does not exist.')
-        return
-      }
-
-      frame.style.height = FRAME_HEIGHT_MAPPING.manual
-
-      break
-    }
-
-    case 'manualFinished': {
-      const frame = document.getElementById(getFrameID(cid))
-
-      if (!frame) {
-        log(LOG_ACTIONS.error, '[PM -> manualFinished] Frame does not exist.')
-        return
-      }
-
-      frame.style.height = FRAME_HEIGHT_MAPPING.default
-
-      break
-    }
   }
 }
 
@@ -168,7 +139,7 @@ const generateCaptchaFrame = (params: any) => {
     theme === 'dark'
       ? appendParamsToURL(DARK_CAPTCHA_IFRAME_URL, params)
       : appendParamsToURL(LIGHT_CAPTCHA_IFRAME_URL, params)
-  captchaFrame.style.height = FRAME_HEIGHT_MAPPING.default
+  captchaFrame.style.height = FRAME_HEIGHT
   captchaFrame.title = 'Swetrix Captcha'
   captchaFrame.style.border = 'none'
   captchaFrame.style.width = '302px'

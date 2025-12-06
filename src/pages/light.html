@@ -67,8 +67,19 @@
     }
 
     #status {
-      font-size: 16px;
+      font-size: 14px;
       color: #0f0f0f;
+    }
+
+    #status-computing {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #pow-progress {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 2px;
     }
 
     .hidden {
@@ -142,46 +153,6 @@
       border-top-color: #fff;
       animation: spin 2s infinite linear;
     }
-
-    #manual-challenge {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: row;
-      border: 1px solid #e9e9e9;
-      border-top: none;
-      height: 130px;
-      width: 280px;
-      padding-left: 10px;
-      padding-right: 10px;
-      gap: 10px;
-    }
-
-    #input-n-captcha {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-      flex: 5;
-    }
-
-    #input-n-captcha > input {
-      width: 100%;
-    }
-
-    #manual-submit-btn {
-      background-color: #fff;
-      border: 1px solid #e9e9e9;
-      padding-left: 5px;
-      padding-right: 5px;
-      border-radius: 3px;
-      height: 75px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      flex: 1;
-    }
   </style>
   <script>
     window.__SWETRIX_CAPTCHA_THEME = 'light'
@@ -216,6 +187,10 @@
       <div id="status">
         <span id="status-default">I am human</span>
         <span id="status-failure" class="hidden">Failure, please retry</span>
+        <span id="status-computing" class="hidden">
+          <span>Verifying...</span>
+          <span id="pow-progress"></span>
+        </span>
       </div>
     </div>
     <div id="branding">
@@ -227,15 +202,6 @@
         <span class="separator"></span>
         <a href="https://swetrix.com/terms" target="_blank" rel="noopener noreferrer">Terms</a>
       </div>
-    </div>
-  </div>
-  <div id="manual-challenge" class="hidden">
-    <div id="input-n-captcha">
-      <div id="svg-captcha"></div>
-      <input aria-label="Enter the code from image" type="text" id="svg-captcha-input" autocomplete="off" />
-    </div>
-    <div id="manual-submit-btn">
-      Submit
     </div>
   </div>
 </body>

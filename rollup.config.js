@@ -8,6 +8,7 @@ import pkg from './package.json'
 
 const CAPTCHA_PATH = 'src/captcha.ts'
 const CAPTCHA_LOADER_PATH = 'src/captcha-loader.ts'
+const POW_WORKER_PATH = 'src/pow-worker.ts'
 
 export default [
   {
@@ -46,6 +47,20 @@ export default [
     plugins: [
       typescript(),
       sourceMaps(),
+      uglify(),
+    ],
+  },
+  {
+    input: POW_WORKER_PATH,
+    output: [
+      {
+        file: 'dist/pow-worker.js',
+        format: 'iife',
+        name: 'powWorker',
+      },
+    ],
+    plugins: [
+      typescript(),
       uglify(),
     ],
   },

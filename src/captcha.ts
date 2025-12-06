@@ -1,12 +1,12 @@
+export {}
+
 // @ts-ignore
 const isDevelopment = window.__SWETRIX_CAPTCHA_DEV || false
 
 const API_URL = isDevelopment ? 'http://localhost:5005/v1/captcha' : 'https://api.swetrix.com/v1/captcha'
+const WORKER_URL = isDevelopment ? './pow-worker.js' : 'https://cap.swetrix.com/pow-worker.js'
 const MSG_IDENTIFIER = 'swetrix-captcha'
-const DEFAULT_THEME = 'light'
 const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
-let TOKEN = ''
-let HASH = ''
 
 const ENDPOINTS = {
   GENERATE: '/generate',
@@ -17,8 +17,6 @@ enum IFRAME_MESSAGE_TYPES {
   SUCCESS = 'success',
   FAILURE = 'failure',
   TOKEN_EXPIRED = 'tokenExpired',
-  MANUAL_STARTED = 'manualStarted',
-  MANUAL_FINISHED = 'manualFinished',
 }
 
 enum ACTION {
@@ -28,7 +26,25 @@ enum ACTION {
   loading = 'loading',
 }
 
+interface PowChallenge {
+  challenge: string
+  difficulty: number
+}
+
+interface PowResult {
+  type: 'result'
+  nonce: number
+  solution: string
+}
+
+interface PowProgress {
+  type: 'progress'
+  attempts: number
+  hashRate: number
+}
+
 let activeAction: ACTION = ACTION.checkbox
+let powWorker: Worker | null = null
 
 const sendMessageToLoader = (event: IFRAME_MESSAGE_TYPES, data = {}) => {
   window.parent.postMessage(
@@ -52,6 +68,7 @@ const activateAction = (action: ACTION) => {
 
   const statusDefault = document.querySelector('#status-default')
   const statusFailure = document.querySelector('#status-failure')
+  const statusComputing = document.querySelector('#status-computing')
 
   const actions = {
     checkbox: document.querySelector('#checkbox'),
@@ -67,16 +84,27 @@ const activateAction = (action: ACTION) => {
   actions.loading?.classList.add('hidden')
 
   // Change the status text
+  statusDefault?.classList.add('hidden')
+  statusFailure?.classList.add('hidden')
+  statusComputing?.classList.add('hidden')
+
   if (action === 'failure') {
-    statusDefault?.classList.add('hidden')
     statusFailure?.classList.remove('hidden')
+  } else if (action === 'loading') {
+    statusComputing?.classList.remove('hidden')
   } else {
     statusDefault?.classList.remove('hidden')
-    statusFailure?.classList.add('hidden')
   }
 
   // Remove hidden class from the provided action
   actions[action]?.classList.remove('hidden')
+}
+
+const updateProgress = (attempts: number, hashRate: number) => {
+  const progressEl = document.querySelector('#pow-progress')
+  if (progressEl) {
+    progressEl.textContent = `${(attempts / 1000).toFixed(0)}k hashes (${hashRate}/s)`
+  }
 }
 
 const setLifetimeTimeout = () => {
@@ -86,41 +114,7 @@ const setLifetimeTimeout = () => {
   }, CAPTCHA_TOKEN_LIFETIME * 1000)
 }
 
-const enableManualChallenge = (svg: string) => {
-  const manualChallenge = document.querySelector('#manual-challenge')
-  const svgCaptcha = document.querySelector('#svg-captcha')
-
-  if (!svgCaptcha) {
-    return
-  }
-
-  if (!svg) {
-    const error = document.createElement('p')
-    error.innerText = 'Error loading captcha'
-    error.style.color = '#d6292a'
-    svgCaptcha?.appendChild(error)
-  } else {
-    svgCaptcha.innerHTML = svg
-  }
-
-  sendMessageToLoader(IFRAME_MESSAGE_TYPES.MANUAL_STARTED)
-  manualChallenge?.classList.remove('hidden')
-}
-
-const disableManualChallenge = () => {
-  const manualChallenge = document.querySelector('#manual-challenge')
-  const svgCaptcha = document.querySelector('#svg-captcha')
-
-  if (!svgCaptcha) {
-    return
-  }
-
-  sendMessageToLoader(IFRAME_MESSAGE_TYPES.MANUAL_FINISHED)
-  svgCaptcha.innerHTML = ''
-  manualChallenge?.classList.add('hidden')
-}
-
-const generateCaptcha = async () => {
+const generateChallenge = async (): Promise<PowChallenge | null> => {
   try {
     const response = await fetch(`${API_URL}${ENDPOINTS.GENERATE}`, {
       method: 'POST',
@@ -129,100 +123,168 @@ const generateCaptcha = async () => {
       },
       body: JSON.stringify({
         // @ts-ignore
-        theme: window.__SWETRIX_CAPTCHA_THEME || DEFAULT_THEME,
+        pid: window.__SWETRIX_PROJECT_ID,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to generate challenge')
+    }
+
+    return await response.json()
+  } catch (e) {
+    sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
+    activateAction(ACTION.failure)
+    return null
+  }
+}
+
+const verifySolution = async (challenge: string, nonce: number, solution: string): Promise<string | null> => {
+  try {
+    const response = await fetch(`${API_URL}${ENDPOINTS.VERIFY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        challenge,
+        nonce,
+        solution,
         // @ts-ignore
         pid: window.__SWETRIX_PROJECT_ID,
       }),
     })
 
     if (!response.ok) {
-      throw ''
+      throw new Error('Verification failed')
     }
 
     const data = await response.json()
-    return data
+
+    if (!data.success) {
+      throw new Error('Verification failed')
+    }
+
+    return data.token
   } catch (e) {
     sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
     activateAction(ACTION.failure)
-    return {}
+    return null
+  }
+}
+
+const solveChallenge = async (challenge: PowChallenge): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    // Terminate any existing worker
+    if (powWorker) {
+      powWorker.terminate()
+    }
+
+    try {
+      powWorker = new Worker(WORKER_URL)
+    } catch (e) {
+      // Fallback: solve in main thread if worker fails
+      solveInMainThread(challenge).then(resolve).catch(reject)
+      return
+    }
+
+    powWorker.onmessage = async (event: MessageEvent<PowResult | PowProgress>) => {
+      const data = event.data
+
+      if (data.type === 'progress') {
+        updateProgress(data.attempts, data.hashRate)
+        return
+      }
+
+      if (data.type === 'result') {
+        // Worker found the solution
+        const token = await verifySolution(challenge.challenge, data.nonce, data.solution)
+
+        if (token) {
+          sendMessageToLoader(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
+          setLifetimeTimeout()
+          activateAction(ACTION.completed)
+        }
+
+        powWorker?.terminate()
+        powWorker = null
+        resolve()
+      }
+    }
+
+    powWorker.onerror = (error) => {
+      console.error('PoW worker error:', error)
+      powWorker?.terminate()
+      powWorker = null
+
+      // Fallback to main thread
+      solveInMainThread(challenge).then(resolve).catch(reject)
+    }
+
+    // Start the worker
+    powWorker.postMessage({
+      challenge: challenge.challenge,
+      difficulty: challenge.difficulty,
+    })
+  })
+}
+
+// Fallback solution for environments where workers don't work
+const solveInMainThread = async (challenge: PowChallenge): Promise<void> => {
+  const { challenge: challengeStr, difficulty } = challenge
+  let nonce = 0
+  const startTime = Date.now()
+
+  const sha256 = async (message: string): Promise<string> => {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(message)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+  }
+
+  const hasValidPrefix = (hash: string, diff: number): boolean => {
+    for (let i = 0; i < diff; i++) {
+      if (hash[i] !== '0') return false
+    }
+    return true
+  }
+
+  while (true) {
+    const input = `${challengeStr}:${nonce}`
+    const hash = await sha256(input)
+
+    if (hasValidPrefix(hash, difficulty)) {
+      const token = await verifySolution(challengeStr, nonce, hash)
+
+      if (token) {
+        sendMessageToLoader(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
+        setLifetimeTimeout()
+        activateAction(ACTION.completed)
+      }
+      return
+    }
+
+    nonce++
+
+    // Update progress every 10k iterations
+    if (nonce % 10000 === 0) {
+      const elapsed = (Date.now() - startTime) / 1000
+      const hashRate = Math.round(nonce / elapsed)
+      updateProgress(nonce, hashRate)
+
+      // Yield to the main thread to prevent blocking
+      await new Promise((r) => setTimeout(r, 0))
+    }
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const captchaComponent = document.querySelector('#swetrix-captcha')
   const branding = document.querySelector('#branding')
-  const svgCaptchaInput = document.querySelector('#svg-captcha-input')
-  const manualSubmitBtn = document.querySelector('#manual-submit-btn')
 
   branding?.addEventListener('click', (e: Event) => {
     e.stopPropagation()
-  })
-
-  manualSubmitBtn?.addEventListener('click', async (e: Event) => {
-    e.stopPropagation()
-
-    if (!svgCaptchaInput) {
-      return
-    }
-
-    // @ts-ignore
-    const code = svgCaptchaInput.value
-
-    if (!code) {
-      return
-    }
-
-    let response
-
-    try {
-      response = await fetch(`${API_URL}${ENDPOINTS.VERIFY}`, {
-        method: 'POST',
-        body: JSON.stringify({
-          hash: HASH,
-          code,
-          // @ts-ignore
-          pid: window.__SWETRIX_PROJECT_ID,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-    } catch (e) {
-      disableManualChallenge()
-      sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
-      activateAction(ACTION.failure)
-      // @ts-ignore
-      svgCaptchaInput.value = ''
-      return
-    }
-
-    if (!response.ok) {
-      disableManualChallenge()
-      sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
-      activateAction(ACTION.failure)
-      // @ts-ignore
-      svgCaptchaInput.value = ''
-      return
-    }
-
-    const { success, token } = await response.json()
-
-    if (!success) {
-      disableManualChallenge()
-      sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
-      activateAction(ACTION.failure)
-      // @ts-ignore
-      svgCaptchaInput.value = ''
-      return
-    }
-
-    // @ts-ignore
-    svgCaptchaInput.value = ''
-
-    sendMessageToLoader(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
-    setLifetimeTimeout()
-    activateAction(ACTION.completed)
-    disableManualChallenge()
   })
 
   captchaComponent?.addEventListener('click', async () => {
@@ -237,9 +299,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     activateAction(ACTION.loading)
 
-    const { data, hash } = await generateCaptcha()
+    const challenge = await generateChallenge()
 
-    HASH = hash
-    enableManualChallenge(data)
+    if (!challenge) {
+      return
+    }
+
+    await solveChallenge(challenge)
   })
 })
