@@ -210,7 +210,19 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
                       label={type === 'pageview' ? t('goals.pagePath') : t('goals.eventName')}
                       value={value}
                       onChange={(e) => setValue(e.target.value)}
-                      placeholder={type === 'pageview' ? '/pricing' : 'signup_completed'}
+                      placeholder={
+                        type === 'pageview'
+                          ? matchType === 'exact'
+                            ? '/pricing'
+                            : matchType === 'contains'
+                              ? 'pricing'
+                              : '^/blog/.*'
+                          : matchType === 'exact'
+                            ? 'signup_completed'
+                            : matchType === 'contains'
+                              ? 'signup'
+                              : 'signup_.*'
+                      }
                     />
 
                     {/* Metadata filters */}
@@ -245,9 +257,13 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
                                 placeholder={t('goals.filterValue')}
                                 className='flex-1'
                               />
-                              <Button type='button' onClick={() => removeMetadataFilter(index)} noBorder small>
+                              <button
+                                type='button'
+                                onClick={() => removeMetadataFilter(index)}
+                                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                              >
                                 <Trash2Icon className='h-4 w-4' />
-                              </Button>
+                              </button>
                             </div>
                           ))}
                         </div>

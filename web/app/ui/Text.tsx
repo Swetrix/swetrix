@@ -14,6 +14,7 @@ interface TextProps {
   weight?: TextWeight
   colour?: TextColour
   truncate?: boolean
+  code?: boolean
   className?: string
   [key: string]: unknown
 }
@@ -54,11 +55,19 @@ export const Text = ({
   weight = 'normal',
   colour = 'primary',
   truncate,
+  code,
   className,
   ...props
 }: TextProps) => (
   <Component
-    className={cn(sizeClasses[size], weightClasses[weight], colourClasses[colour], { truncate }, className)}
+    className={cn(
+      sizeClasses[size],
+      weightClasses[weight],
+      colourClasses[colour],
+      { truncate },
+      code && 'rounded bg-gray-200/80 px-1.5 py-0.5 font-mono dark:bg-slate-700',
+      className,
+    )}
     {...props}
   >
     {children}

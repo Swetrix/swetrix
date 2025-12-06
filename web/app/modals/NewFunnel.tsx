@@ -128,7 +128,7 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
               {steps.length > MIN_FUNNEL_STEPS && allowedToManage ? (
                 <button
                   type='button'
-                  className='rounded-md p-2 text-gray-800 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+                  className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
                   onClick={() => {
                     const newSteps = [...steps]
                     newSteps.splice(index, 1)

@@ -1,7 +1,15 @@
-import { ChevronRightIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { XCircleIcon } from '@heroicons/react/24/outline'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import { TargetIcon, Trash2Icon, PencilIcon, PlusIcon, SearchIcon, FileTextIcon, ZapIcon } from 'lucide-react'
+import {
+  TargetIcon,
+  Trash2Icon,
+  PencilIcon,
+  PlusIcon,
+  SearchIcon,
+  FileTextIcon,
+  MousePointerClickIcon,
+} from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -17,19 +25,15 @@ import {
 } from '~/api'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
-import { Badge, type BadgeProps } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
+import ProgressRing from '~/ui/ProgressRing'
+import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 import GoalSettingsModal from './GoalSettingsModal'
-
-const GOAL_TYPE_BADGE_COLOURS: Record<Goal['type'], BadgeProps['colour']> = {
-  pageview: 'indigo',
-  custom_event: 'green',
-}
 
 interface GoalRowProps {
   goal: Goal
@@ -40,17 +44,9 @@ interface GoalRowProps {
   onClick: (id: string) => void
 }
 
-const Separator = () => (
-  <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
-    <circle cx={1} cy={1} r={1} />
-  </svg>
-)
-
 const GoalRow = ({ goal, stats, statsLoading, onDelete, onEdit, onClick }: GoalRowProps) => {
   const { t } = useTranslation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-
-  const typeLabel = goal.type === 'pageview' ? t('goals.typePageview') : t('goals.typeCustomEvent')
 
   const patternDisplay = useMemo(() => {
     if (!goal.value) return null
@@ -67,89 +63,92 @@ const GoalRow = ({ goal, stats, statsLoading, onDelete, onEdit, onClick }: GoalR
       >
         <div className='flex min-w-0 gap-x-4'>
           <div className='min-w-0 flex-auto'>
-            <p className='flex items-center gap-x-2 text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+            <Text as='p' weight='semibold' truncate className='flex items-center gap-x-1.5'>
               {goal.type === 'pageview' ? (
-                <FileTextIcon className='size-4 text-indigo-500' strokeWidth={1.5} />
+                <FileTextIcon className='size-4 text-blue-500' strokeWidth={1.5} />
               ) : (
-                <ZapIcon className='size-4 text-green-500' strokeWidth={1.5} />
+                <MousePointerClickIcon className='size-4 text-amber-500' strokeWidth={1.5} />
               )}
               <span>{goal.name}</span>
-              <Badge colour={GOAL_TYPE_BADGE_COLOURS[goal.type]} label={typeLabel} />
-            </p>
-            {patternDisplay && (
-              <p className='mt-1 flex flex-wrap items-center gap-x-2 text-xs leading-5 text-gray-500 dark:text-gray-300'>
-                <code className='rounded bg-gray-200/80 px-1.5 py-0.5 font-mono text-xs text-gray-600 dark:bg-slate-700 dark:text-gray-300'>
-                  {patternDisplay}
-                </code>
-              </p>
-            )}
+            </Text>
+            {patternDisplay ? (
+              <Text className='mt-1 max-w-max' as='p' size='xs' colour='secondary' code>
+                {patternDisplay}
+              </Text>
+            ) : null}
             {/* Mobile stats */}
-            <p className='mt-2 flex items-center gap-x-3 text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
+            <div className='mt-2 flex items-center gap-x-3 text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
               {statsLoading ? (
-                <Loader size='sm' />
+                <Loader />
               ) : stats ? (
                 <>
                   <span>
-                    <span className='font-semibold text-gray-900 dark:text-gray-50'>
+                    <Text as='span' size='xs' weight='semibold'>
                       {stats.conversions.toLocaleString()}
-                    </span>{' '}
-                    {t('goals.conversions').toLowerCase()}
+                    </Text>{' '}
+                    <Text as='span' size='xs' colour='secondary'>
+                      {t('goals.conversions').toLowerCase()}
+                    </Text>
                   </span>
-                  <Separator />
-                  <span>
-                    <span className='font-semibold text-gray-900 dark:text-gray-50'>{stats.conversionRate}%</span>{' '}
-                    {t('goals.conversionRate').toLowerCase()}
-                  </span>
+                  <ProgressRing value={stats.conversionRate} size={36} strokeWidth={3} />
                 </>
               ) : (
-                <span>{t('goals.noData')}</span>
+                <Text as='p' size='xs' colour='muted'>
+                  {t('goals.noData')}
+                </Text>
               )}
-            </p>
+            </div>
           </div>
         </div>
         <div className='flex shrink-0 items-center gap-x-4'>
-          <div className='hidden sm:flex sm:flex-col sm:items-end'>
+          <div className='hidden sm:flex sm:items-center sm:gap-x-3'>
             {statsLoading ? (
-              <Loader size='sm' />
+              <Loader />
             ) : stats ? (
               <>
-                <p className='text-sm leading-6 text-gray-900 dark:text-gray-50'>
-                  <span className='font-semibold'>{stats.conversions.toLocaleString()}</span>{' '}
-                  <span className='text-gray-500 dark:text-gray-400'>{t('goals.conversions').toLowerCase()}</span>
+                <p className='text-sm leading-6'>
+                  <Text as='span' size='sm' weight='semibold'>
+                    {stats.conversions.toLocaleString()}
+                  </Text>{' '}
+                  <Text as='span' size='sm' colour='secondary'>
+                    {t('goals.conversions').toLowerCase()}
+                  </Text>
                 </p>
-                <p className='mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400'>
-                  <span className='font-medium text-gray-700 dark:text-gray-300'>{stats.conversionRate}%</span>{' '}
-                  {t('goals.conversionRate').toLowerCase()}
-                </p>
+                <ProgressRing value={stats.conversionRate} size={44} strokeWidth={3.5} />
               </>
             ) : (
-              <p className='text-sm text-gray-500 dark:text-gray-400'>{t('goals.noData')}</p>
+              <Text as='p' size='sm' colour='muted'>
+                {t('goals.noData')}
+              </Text>
             )}
           </div>
           {/* Action buttons */}
-          <div className='flex items-center gap-x-1'>
+          <div className='flex items-center gap-1'>
             <button
+              type='button'
               onClick={(e) => {
+                e.preventDefault()
                 e.stopPropagation()
                 onEdit(goal.id)
               }}
               aria-label={t('common.edit')}
-              className='rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-slate-700 dark:hover:text-gray-300'
+              className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
             >
               <PencilIcon className='size-4' strokeWidth={1.5} />
             </button>
             <button
+              type='button'
               onClick={(e) => {
+                e.preventDefault()
                 e.stopPropagation()
                 setShowDeleteModal(true)
               }}
               aria-label={t('common.delete')}
-              className='rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-100 hover:text-red-600 dark:text-gray-500 dark:hover:bg-red-900/30 dark:hover:text-red-400'
+              className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
             >
               <Trash2Icon className='size-4' strokeWidth={1.5} />
             </button>
           </div>
-          <ChevronRightIcon className='h-5 w-5 flex-none text-gray-400' aria-hidden='true' />
         </div>
       </li>
       <Modal
@@ -384,9 +383,9 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
             ))}
           </ul>
 
-          {filteredGoals.length === 0 && filterQuery && (
+          {filteredGoals.length === 0 && filterQuery ? (
             <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>{t('goals.noGoalsMatchFilter')}</p>
-          )}
+          ) : null}
         </>
       )}
       {pageAmount > 1 && !filterQuery ? (
