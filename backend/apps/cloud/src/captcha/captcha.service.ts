@@ -245,8 +245,10 @@ export class CaptchaService {
     const challenge = crypto.randomBytes(32).toString('hex')
 
     // Store challenge in Redis with TTL to prevent replay attacks
+    // Include pid to prevent cross-project difficulty bypass
     const cacheKey = getChallengeCacheKey(challenge)
-    await redis.set(cacheKey, difficulty.toString(), 'EX', CHALLENGE_TTL)
+    const challengeData = JSON.stringify({ pid, difficulty })
+    await redis.set(cacheKey, challengeData, 'EX', CHALLENGE_TTL)
 
     return {
       challenge,
@@ -259,16 +261,45 @@ export class CaptchaService {
     challenge: string,
     nonce: number,
     solution: string,
+    pid: string,
   ): Promise<boolean> {
     // Check if challenge exists and hasn't been used
     const cacheKey = getChallengeCacheKey(challenge)
-    const storedDifficulty = await redis.get(cacheKey)
+    const storedData = await redis.get(cacheKey)
 
-    if (!storedDifficulty) {
+    if (!storedData) {
       throw new BadRequestException('Invalid or expired challenge')
     }
 
-    const difficulty = parseInt(storedDifficulty, 10)
+    let difficulty: number
+    let storedPid: string | undefined
+
+    // Parse stored data - support both old string format (difficulty only)
+    // and new JSON format (pid + difficulty) for backward compatibility
+    try {
+      const parsed = JSON.parse(storedData)
+      if (
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        'difficulty' in parsed
+      ) {
+        difficulty = parsed.difficulty
+        storedPid = parsed.pid
+      } else {
+        // Fallback: treat as raw difficulty number
+        difficulty = parseInt(storedData, 10)
+      }
+    } catch {
+      // Old format: just the difficulty as a string
+      difficulty = parseInt(storedData, 10)
+    }
+
+    // If the challenge was bound to a specific project, verify it matches
+    if (storedPid !== undefined && storedPid !== pid) {
+      throw new BadRequestException(
+        'Challenge was issued for a different project',
+      )
+    }
 
     // Compute the expected hash
     const input = `${challenge}:${nonce}`

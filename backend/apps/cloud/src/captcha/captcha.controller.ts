@@ -84,6 +84,7 @@ export class CaptchaController {
       challenge,
       nonce,
       solution,
+      pid,
     )
 
     if (!isValid) {
