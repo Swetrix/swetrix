@@ -101,6 +101,30 @@ const AVAILABLE_TOOLS = [
   { id: 'getFunnelData', label: 'Funnel data', icon: GitBranchIcon },
 ]
 
+// Tools tooltip content
+const ToolsTooltip = () => (
+  <div className='space-y-1.5 py-1'>
+    {_map(AVAILABLE_TOOLS, (tool) => (
+      <div key={tool.id} className='flex items-center gap-2 text-gray-200'>
+        <tool.icon className='h-3.5 w-3.5 text-green-400' />
+        <span>{tool.label}</span>
+      </div>
+    ))}
+  </div>
+)
+
+// Compact tools indicator with tooltip
+const ToolsIndicator = () => (
+  <Tooltip
+    text={<ToolsTooltip />}
+    tooltipNode={
+      <span className='flex cursor-help items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-300'>
+        Tools: {AVAILABLE_TOOLS.length}
+      </span>
+    }
+  />
+)
+
 // AI Capabilities tooltip content
 const AICapabilitiesTooltip = () => (
   <div className='max-w-sm space-y-3 py-1 text-left'>
@@ -598,20 +622,14 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                       />
                       <div className='flex items-center justify-between border-t border-gray-100 px-3 py-2 dark:border-slate-800'>
                         {/* Tools indicator */}
-                        <div className='flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+                        <div className='flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400'>
                           <Tooltip
                             text={<AICapabilitiesTooltip />}
                             tooltipNode={
                               <InfoIcon className='h-4 w-4 cursor-help text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300' />
                             }
                           />
-                          <span className='font-medium'>Tools:</span>
-                          {_map(AVAILABLE_TOOLS, (tool) => (
-                            <span key={tool.id} className='flex items-center gap-1'>
-                              <tool.icon className='h-3 w-3' />
-                              <span>{tool.label}</span>
-                            </span>
-                          ))}
+                          <ToolsIndicator />
                         </div>
                         {/* Submit button */}
                         <button
@@ -691,20 +709,14 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 />
                 <div className='flex items-center justify-between border-t border-gray-100 px-3 py-2 dark:border-slate-800'>
                   {/* Tools indicator */}
-                  <div className='flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+                  <div className='flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400'>
                     <Tooltip
                       text={<AICapabilitiesTooltip />}
                       tooltipNode={
                         <InfoIcon className='h-4 w-4 cursor-help text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300' />
                       }
                     />
-                    <span className='font-medium'>Tools:</span>
-                    {_map(AVAILABLE_TOOLS, (tool) => (
-                      <span key={tool.id} className='flex items-center gap-1'>
-                        <tool.icon className='h-3 w-3' />
-                        <span>{tool.label}</span>
-                      </span>
-                    ))}
+                    <ToolsIndicator />
                   </div>
                   {/* Action buttons */}
                   <div className='flex items-center gap-2'>
