@@ -260,8 +260,7 @@ const GoalRow = ({
 
   const patternDisplay = useMemo(() => {
     if (!goal.value) return null
-    const matchPrefix =
-      goal.matchType === 'exact' ? '= ' : goal.matchType === 'contains' ? '~ ' : goal.matchType === 'regex' ? '⁓ ' : ''
+    const matchPrefix = goal.matchType === 'exact' ? '= ' : goal.matchType === 'contains' ? '~ ' : ''
     return `${matchPrefix}${goal.value}`
   }, [goal.value, goal.matchType])
 

@@ -1,5 +1,5 @@
 export type GoalType = 'pageview' | 'custom_event'
-export type GoalMatchType = 'exact' | 'contains' | 'regex'
+export type GoalMatchType = 'exact' | 'contains'
 
 export interface MetadataFilter {
   key: string
@@ -50,5 +50,4 @@ export const GOAL_TYPE_LABELS: Record<GoalType, string> = {
 export const GOAL_MATCH_TYPE_LABELS: Record<GoalMatchType, string> = {
   exact: 'Exact match',
   contains: 'Contains',
-  regex: 'Regex',
 }

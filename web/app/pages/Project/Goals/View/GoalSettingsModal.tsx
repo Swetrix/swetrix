@@ -20,7 +20,6 @@ const GOAL_TYPES = [
 const GOAL_MATCH_TYPES = [
   { value: 'exact', label: 'Exact match' },
   { value: 'contains', label: 'Contains' },
-  { value: 'regex', label: 'Regular expression' },
 ]
 
 interface GoalSettingsModalProps {
@@ -41,7 +40,7 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
   // Form state
   const [name, setName] = useState('')
   const [type, setType] = useState<'pageview' | 'custom_event'>('pageview')
-  const [matchType, setMatchType] = useState<'exact' | 'contains' | 'regex'>('exact')
+  const [matchType, setMatchType] = useState<'exact' | 'contains'>('exact')
   const [value, setValue] = useState('')
   const [metadataFilters, setMetadataFilters] = useState<{ key: string; value: string }[]>([])
 
@@ -197,7 +196,7 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
                       </label>
                       <Select
                         items={GOAL_MATCH_TYPES}
-                        onSelect={(item) => setMatchType(item.value as 'exact' | 'contains' | 'regex')}
+                        onSelect={(item) => setMatchType(item.value as 'exact' | 'contains')}
                         title={GOAL_MATCH_TYPES.find((t) => t.value === matchType)?.label || ''}
                         labelExtractor={(item) => item.label}
                         keyExtractor={(item) => item.value}
@@ -214,14 +213,10 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
                         type === 'pageview'
                           ? matchType === 'exact'
                             ? '/pricing'
-                            : matchType === 'contains'
-                              ? 'pricing'
-                              : '^/blog/.*'
+                            : 'pricing'
                           : matchType === 'exact'
                             ? 'signup_completed'
-                            : matchType === 'contains'
-                              ? 'signup'
-                              : 'signup_.*'
+                            : 'signup'
                       }
                     />
 

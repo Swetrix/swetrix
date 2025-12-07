@@ -241,38 +241,26 @@ export class GoalController {
       if (goal.matchType === GoalMatchType.EXACT) {
         params.goalValue = goal.value || ''
         return { condition: `ev = {goalValue:String}`, params }
-      } else if (goal.matchType === GoalMatchType.CONTAINS) {
+      } else {
+        // Contains match
         params.goalValue = goal.value || ''
         return {
           condition: `ev ILIKE concat('%', {goalValue:String}, '%')`,
           params,
         }
-      } else {
-        // Regex match
-        if (!goal.value) {
-          return { condition: '0', params }
-        }
-        params.goalValue = goal.value
-        return { condition: `match(ev, {goalValue:String})`, params }
       }
     } else {
       // For pageview goals, match the page path
       if (goal.matchType === GoalMatchType.EXACT) {
         params.goalValue = goal.value || ''
         return { condition: `pg = {goalValue:String}`, params }
-      } else if (goal.matchType === GoalMatchType.CONTAINS) {
+      } else {
+        // Contains match
         params.goalValue = goal.value || ''
         return {
           condition: `pg ILIKE concat('%', {goalValue:String}, '%')`,
           params,
         }
-      } else {
-        // Regex match
-        if (!goal.value) {
-          return { condition: '0', params }
-        }
-        params.goalValue = goal.value
-        return { condition: `match(pg, {goalValue:String})`, params }
       }
     }
   }

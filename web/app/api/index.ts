@@ -1139,7 +1139,7 @@ export interface Goal {
   id: string
   name: string
   type: 'pageview' | 'custom_event'
-  matchType: 'exact' | 'contains' | 'regex'
+  matchType: 'exact' | 'contains'
   value: string | null
   metadataFilters: { key: string; value: string }[] | null
   active: boolean
@@ -1200,7 +1200,7 @@ export type CreateGoal = {
   pid: string
   name: string
   type: 'pageview' | 'custom_event'
-  matchType: 'exact' | 'contains' | 'regex'
+  matchType: 'exact' | 'contains'
   value?: string
   metadataFilters?: { key: string; value: string }[]
 }
