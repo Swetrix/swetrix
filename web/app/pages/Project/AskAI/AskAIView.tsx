@@ -23,6 +23,7 @@ import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { askAI } from '~/api'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
+import Tooltip from '~/ui/Tooltip'
 
 import AIChart from './AIChart'
 
@@ -99,6 +100,74 @@ const AVAILABLE_TOOLS = [
   { id: 'getGoalStats', label: 'Goal stats', icon: TargetIcon },
   { id: 'getFunnelData', label: 'Funnel data', icon: GitBranchIcon },
 ]
+
+// AI Capabilities tooltip content
+const AICapabilitiesTooltip = () => (
+  <div className='max-w-sm space-y-3 py-1 text-left'>
+    <div>
+      <p className='mb-1.5 font-semibold text-white'>Swetrix AI can:</p>
+      <ul className='space-y-1 text-gray-300'>
+        <li className='flex items-start gap-1.5'>
+          <BarChart3Icon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+          <span>
+            <strong className='text-white'>Query analytics</strong> including pageviews, visitors, and sessions
+          </span>
+        </li>
+        <li className='flex items-start gap-1.5'>
+          <TargetIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+          <span>
+            <strong className='text-white'>Goal statistics</strong> with conversion rates
+          </span>
+        </li>
+        <li className='flex items-start gap-1.5'>
+          <GitBranchIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+          <span>
+            <strong className='text-white'>Funnel analysis</strong> showing step-by-step conversions
+          </span>
+        </li>
+        <li className='flex items-start gap-1.5'>
+          <BarChart3Icon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+          <span>
+            <strong className='text-white'>Performance metrics</strong> like page load times and TTFB
+          </span>
+        </li>
+        <li className='flex items-start gap-1.5'>
+          <AlertCircleIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+          <span>
+            <strong className='text-white'>Error tracking</strong> data and top errors
+          </span>
+        </li>
+        <li className='flex items-start gap-1.5'>
+          <InfoIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+          <span>
+            Analyze <strong className='text-white'>traffic patterns</strong> (top pages, countries, browsers, referrers)
+          </span>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <p className='mb-1.5 font-semibold text-white'>Swetrix AI can&apos;t:</p>
+      <ul className='space-y-1 text-gray-300'>
+        <li className='flex items-start gap-1.5'>
+          <span className='mt-0.5 h-3.5 w-3.5 shrink-0 text-center text-red-400'>×</span>
+          <span>Browse the web</span>
+        </li>
+        <li className='flex items-start gap-1.5'>
+          <span className='mt-0.5 h-3.5 w-3.5 shrink-0 text-center text-red-400'>×</span>
+          <span>See data outside this Swetrix project</span>
+        </li>
+        <li className='flex items-start gap-1.5'>
+          <span className='mt-0.5 h-3.5 w-3.5 shrink-0 text-center text-red-400'>×</span>
+          <span>Guarantee correctness</span>
+        </li>
+        <li className='flex items-start gap-1.5'>
+          <span className='mt-0.5 h-3.5 w-3.5 shrink-0 text-center text-red-400'>×</span>
+          <span>Modify analytics or project settings</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+)
 
 const ThinkingIndicator = () => {
   return (
@@ -530,6 +599,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                       <div className='flex items-center justify-between border-t border-gray-100 px-3 py-2 dark:border-slate-800'>
                         {/* Tools indicator */}
                         <div className='flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+                          <Tooltip
+                            text={<AICapabilitiesTooltip />}
+                            tooltipNode={
+                              <InfoIcon className='h-4 w-4 cursor-help text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300' />
+                            }
+                          />
                           <span className='font-medium'>Tools:</span>
                           {_map(AVAILABLE_TOOLS, (tool) => (
                             <span key={tool.id} className='flex items-center gap-1'>
@@ -617,6 +692,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 <div className='flex items-center justify-between border-t border-gray-100 px-3 py-2 dark:border-slate-800'>
                   {/* Tools indicator */}
                   <div className='flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+                    <Tooltip
+                      text={<AICapabilitiesTooltip />}
+                      tooltipNode={
+                        <InfoIcon className='h-4 w-4 cursor-help text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300' />
+                      }
+                    />
                     <span className='font-medium'>Tools:</span>
                     {_map(AVAILABLE_TOOLS, (tool) => (
                       <span key={tool.id} className='flex items-center gap-1'>
