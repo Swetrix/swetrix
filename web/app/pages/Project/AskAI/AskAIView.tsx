@@ -14,15 +14,30 @@ import {
   GitBranchIcon,
   InfoIcon,
   CheckIcon,
+  MessageSquareIcon,
+  PlusIcon,
+  TrashIcon,
 } from 'lucide-react'
 import { marked } from 'marked'
-import React, { useState, useRef, useEffect, useMemo } from 'react'
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router'
 import sanitizeHtml from 'sanitize-html'
+import { toast } from 'sonner'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
-import { askAI } from '~/api'
+import {
+  askAI,
+  getRecentAIChats,
+  getAllAIChats,
+  getAIChat,
+  createAIChat,
+  updateAIChat,
+  deleteAIChat,
+  AIChatSummary,
+} from '~/api'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
+import Modal from '~/ui/Modal'
 import Tooltip from '~/ui/Tooltip'
 
 import AIChart from './AIChart'
@@ -394,6 +409,7 @@ const QUICK_ACTIONS = [
 
 const AskAIView = ({ projectId }: AskAIViewProps) => {
   const { t } = useTranslation('common')
+  const [searchParams, setSearchParams] = useSearchParams()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -402,6 +418,16 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Chat history state
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null)
+  const [recentChats, setRecentChats] = useState<AIChatSummary[]>([])
+  const [allChats, setAllChats] = useState<AIChatSummary[]>([])
+  const [allChatsTotal, setAllChatsTotal] = useState(0)
+  const [isLoadingChats, setIsLoadingChats] = useState(false)
+  const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false)
+  const [chatToDelete, setChatToDelete] = useState<string | null>(null)
+  const hasInitializedRef = useRef(false)
 
   // Stick to bottom hook for chat auto-scroll
   const { scrollRef, contentRef, isAtBottom, scrollToBottom } = useStickToBottom({
@@ -415,6 +441,147 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const streamingToolCallsRef = useRef<Array<{ toolName: string; args: unknown }>>([])
 
   const generateMessageId = () => `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
+  // Load recent chats
+  const loadRecentChats = useCallback(async () => {
+    try {
+      const chats = await getRecentAIChats(projectId, 3)
+      setRecentChats(chats)
+    } catch (err) {
+      console.error('Failed to load recent chats:', err)
+    }
+  }, [projectId])
+
+  // Load all chats for modal
+  const loadAllChats = useCallback(
+    async (skip: number = 0) => {
+      setIsLoadingChats(true)
+      try {
+        const result = await getAllAIChats(projectId, skip, 20)
+        if (skip === 0) {
+          setAllChats(result.chats)
+        } else {
+          setAllChats((prev) => [...prev, ...result.chats])
+        }
+        setAllChatsTotal(result.total)
+      } catch (err) {
+        console.error('Failed to load all chats:', err)
+      } finally {
+        setIsLoadingChats(false)
+      }
+    },
+    [projectId],
+  )
+
+  // Load a specific chat
+  const loadChat = useCallback(
+    async (chatId: string) => {
+      try {
+        const chat = await getAIChat(projectId, chatId)
+        setMessages(
+          chat.messages.map((m) => ({
+            id: generateMessageId(),
+            role: m.role,
+            content: m.content,
+          })),
+        )
+        setCurrentChatId(chatId)
+      } catch (err) {
+        console.error('Failed to load chat:', err)
+        // If chat not found, clear the param and start fresh
+        const newParams = new URLSearchParams(searchParams)
+        newParams.delete('chat')
+        setSearchParams(newParams)
+      }
+    },
+    [projectId, searchParams, setSearchParams],
+  )
+
+  // Save or update chat
+  const saveChat = useCallback(
+    async (messagesToSave: Message[]) => {
+      const apiMessages = messagesToSave
+        .filter((m) => m.content.trim().length > 0)
+        .map((m) => ({
+          role: m.role,
+          content: m.content,
+        }))
+
+      if (apiMessages.length === 0) return
+
+      try {
+        if (currentChatId) {
+          await updateAIChat(projectId, currentChatId, { messages: apiMessages })
+        } else {
+          const chat = await createAIChat(projectId, apiMessages)
+          setCurrentChatId(chat.id)
+          const newParams = new URLSearchParams(searchParams)
+          newParams.set('chat', chat.id)
+          setSearchParams(newParams, { replace: true })
+        }
+        // Refresh recent chats
+        loadRecentChats()
+      } catch (err) {
+        console.error('Failed to save chat:', err)
+      }
+    },
+    [projectId, currentChatId, searchParams, setSearchParams, loadRecentChats],
+  )
+
+  // Initialize: load chat from URL or load recent chats
+  useEffect(() => {
+    if (hasInitializedRef.current) return
+    hasInitializedRef.current = true
+
+    const chatId = searchParams.get('chat')
+    if (chatId) {
+      loadChat(chatId)
+    }
+    loadRecentChats()
+  }, [searchParams, loadChat, loadRecentChats])
+
+  // Start a new chat
+  const handleNewChat = () => {
+    setMessages([])
+    setCurrentChatId(null)
+    setStreamingMessage(null)
+    setError(null)
+    const newParams = new URLSearchParams(searchParams)
+    newParams.delete('chat')
+    setSearchParams(newParams)
+  }
+
+  // Open a chat from history
+  const handleOpenChat = (chatId: string) => {
+    setIsViewAllModalOpen(false)
+    loadChat(chatId)
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('chat', chatId)
+    setSearchParams(newParams)
+  }
+
+  // Delete a chat
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      await deleteAIChat(projectId, chatId)
+      toast.success(t('askAi.chatDeleted'))
+
+      // If we're deleting the current chat, start fresh
+      if (chatId === currentChatId) {
+        handleNewChat()
+      }
+
+      // Refresh lists
+      loadRecentChats()
+      if (isViewAllModalOpen) {
+        loadAllChats(0)
+      }
+    } catch (err) {
+      console.error('Failed to delete chat:', err)
+    } finally {
+      setChatToDelete(null)
+    }
+  }
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -492,16 +659,19 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
           onComplete: () => {
             const finalContent = streamingContentRef.current
             if (finalContent.trim() || streamingToolCallsRef.current.length > 0) {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  id: generateMessageId(),
-                  role: 'assistant',
-                  content: finalContent,
-                  reasoning: streamingReasoningRef.current,
-                  toolCalls: streamingToolCallsRef.current,
-                },
-              ])
+              const assistantMessage: Message = {
+                id: generateMessageId(),
+                role: 'assistant',
+                content: finalContent,
+                reasoning: streamingReasoningRef.current,
+                toolCalls: streamingToolCallsRef.current,
+              }
+              setMessages((prev) => {
+                const updatedMessages = [...prev, assistantMessage]
+                // Save chat after completion
+                saveChat(updatedMessages)
+                return updatedMessages
+              })
             }
             setStreamingMessage(null)
             setIsLoading(false)
@@ -532,16 +702,18 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       setIsWaitingForResponse(false)
       const finalContent = streamingContentRef.current
       if (finalContent.trim()) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: generateMessageId(),
-            role: 'assistant',
-            content: finalContent,
-            reasoning: streamingReasoningRef.current,
-            toolCalls: streamingToolCallsRef.current,
-          },
-        ])
+        const assistantMessage: Message = {
+          id: generateMessageId(),
+          role: 'assistant',
+          content: finalContent,
+          reasoning: streamingReasoningRef.current,
+          toolCalls: streamingToolCallsRef.current,
+        }
+        setMessages((prev) => {
+          const updatedMessages = [...prev, assistantMessage]
+          saveChat(updatedMessages)
+          return updatedMessages
+        })
       }
       setStreamingMessage(null)
     }
@@ -571,6 +743,22 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const suggestions = useMemo(() => [t('askAi.suggestion1'), t('askAi.suggestion2'), t('askAi.suggestion3')], [t])
 
   const isEmpty = _isEmpty(messages) && !streamingMessage
+
+  // Format relative time
+  const formatRelativeTime = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m`
+    if (diffHours < 24) return `${diffHours}h`
+    if (diffDays < 7) return `${diffDays}d`
+    return date.toLocaleDateString()
+  }
 
   return (
     <div className='flex h-[calc(100vh-200px)] min-h-[600px] flex-col bg-gray-50 dark:bg-slate-900'>
@@ -668,6 +856,45 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     ))}
                   </div>
                 </div>
+
+                {/* Recent Chats Section */}
+                {!_isEmpty(recentChats) ? (
+                  <div className='mt-12 w-full max-w-2xl'>
+                    <div className='flex items-center justify-between'>
+                      <h3 className='text-sm font-medium text-gray-700 dark:text-gray-300'>{t('askAi.recentChats')}</h3>
+                      <button
+                        type='button'
+                        onClick={() => {
+                          setIsViewAllModalOpen(true)
+                          loadAllChats(0)
+                        }}
+                        className='text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+                      >
+                        {t('askAi.viewAll')}
+                      </button>
+                    </div>
+                    <div className='mt-3 space-y-2'>
+                      {_map(recentChats, (chat) => (
+                        <button
+                          key={chat.id}
+                          type='button'
+                          onClick={() => handleOpenChat(chat.id)}
+                          className='flex w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 text-left transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700'
+                        >
+                          <div className='flex items-center gap-3 overflow-hidden'>
+                            <MessageSquareIcon className='h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500' />
+                            <span className='truncate text-sm text-gray-900 dark:text-white'>
+                              {chat.name || t('askAi.newChat')}
+                            </span>
+                          </div>
+                          <span className='ml-2 shrink-0 text-xs text-gray-500 dark:text-gray-400'>
+                            {formatRelativeTime(chat.updated)}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : (
               <div className='mx-auto max-w-3xl space-y-6 px-4 py-6'>
@@ -746,6 +973,97 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
           </div>
         </div>
       ) : null}
+
+      {/* New Chat Button (floating) */}
+      {!isEmpty ? (
+        <button
+          type='button'
+          onClick={handleNewChat}
+          className='fixed right-6 bottom-32 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600'
+          aria-label={t('askAi.newChat')}
+        >
+          <PlusIcon className='h-5 w-5' />
+        </button>
+      ) : null}
+
+      {/* View All Chats Modal */}
+      <Modal
+        isOpened={isViewAllModalOpen}
+        onClose={() => setIsViewAllModalOpen(false)}
+        title={t('askAi.allChats')}
+        size='medium'
+        message={
+          <div className='mt-2 max-h-96 overflow-y-auto'>
+            {_isEmpty(allChats) && !isLoadingChats ? (
+              <p className='py-8 text-center text-gray-500 dark:text-gray-400'>{t('askAi.noChats')}</p>
+            ) : (
+              <div className='space-y-2'>
+                {_map(allChats, (chat) => (
+                  <div
+                    key={chat.id}
+                    className='flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700'
+                  >
+                    <button
+                      type='button'
+                      onClick={() => handleOpenChat(chat.id)}
+                      className='flex flex-1 items-center gap-3 overflow-hidden text-left'
+                    >
+                      <MessageSquareIcon className='h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500' />
+                      <div className='overflow-hidden'>
+                        <span className='block truncate text-sm text-gray-900 dark:text-white'>
+                          {chat.name || t('askAi.newChat')}
+                        </span>
+                        <span className='text-xs text-gray-500 dark:text-gray-400'>
+                          {formatRelativeTime(chat.updated)}
+                        </span>
+                      </div>
+                    </button>
+                    <button
+                      type='button'
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setChatToDelete(chat.id)
+                      }}
+                      className='ml-2 rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-red-500 dark:hover:bg-slate-600 dark:hover:text-red-400'
+                      aria-label={t('askAi.deleteChat')}
+                    >
+                      <TrashIcon className='h-4 w-4' />
+                    </button>
+                  </div>
+                ))}
+                {allChats.length < allChatsTotal ? (
+                  <button
+                    type='button'
+                    onClick={() => loadAllChats(allChats.length)}
+                    disabled={isLoadingChats}
+                    className='flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300 dark:hover:bg-slate-700'
+                  >
+                    {isLoadingChats ? <Loader2Icon className='h-4 w-4 animate-spin' /> : null}
+                    Load more
+                  </button>
+                ) : null}
+              </div>
+            )}
+            {isLoadingChats && _isEmpty(allChats) ? (
+              <div className='flex items-center justify-center py-8'>
+                <Loader2Icon className='h-6 w-6 animate-spin text-gray-400' />
+              </div>
+            ) : null}
+          </div>
+        }
+      />
+
+      {/* Delete Chat Confirmation Modal */}
+      <Modal
+        isOpened={!!chatToDelete}
+        onClose={() => setChatToDelete(null)}
+        onSubmit={() => chatToDelete && handleDeleteChat(chatToDelete)}
+        title={t('askAi.deleteChat')}
+        message={t('askAi.deleteChatConfirm')}
+        submitText={t('common.delete')}
+        closeText={t('common.cancel')}
+        submitType='danger'
+      />
     </div>
   )
 }

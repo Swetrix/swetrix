@@ -1,8 +1,11 @@
 import {
   Controller,
   Post,
+  Get,
+  Delete,
   Body,
   Param,
+  Query,
   Res,
   NotFoundException,
   ForbiddenException,
@@ -15,6 +18,7 @@ import {
   ApiBearerAuth,
   ApiResponse,
   ApiOperation,
+  ApiQuery,
 } from '@nestjs/swagger'
 import _isEmpty from 'lodash/isEmpty'
 
@@ -23,13 +27,15 @@ import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
 import { AiService } from './ai.service'
-import { ChatDto } from './dto/chat.dto'
+import { AiChatService } from './ai-chat.service'
+import { ChatDto, CreateChatDto, UpdateChatDto } from './dto/chat.dto'
 
 @ApiTags('AI')
 @Controller(['ai', 'v1/ai'])
 export class AiController {
   constructor(
     private readonly aiService: AiService,
+    private readonly aiChatService: AiChatService,
     private readonly projectService: ProjectService,
     private readonly logger: AppLoggerService,
   ) {}
@@ -214,5 +220,228 @@ export class AiController {
       )
       res.end()
     }
+  }
+
+  @ApiBearerAuth()
+  @Get(':pid/chats')
+  @Auth()
+  @ApiOperation({ summary: 'Get recent AI chats for a project' })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiResponse({ status: 200, description: 'List of recent chats' })
+  async getRecentChats(
+    @Param('pid') pid: string,
+    @Query('limit') limit: string,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ uid, pid }, 'GET /ai/:pid/chats')
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, uid)
+
+    const chats = await this.aiChatService.findRecentByProject(
+      pid,
+      uid,
+      limit ? parseInt(limit, 10) : 5,
+    )
+
+    return chats.map(chat => ({
+      id: chat.id,
+      name: chat.name,
+      created: chat.created,
+      updated: chat.updated,
+    }))
+  }
+
+  @ApiBearerAuth()
+  @Get(':pid/chats/all')
+  @Auth()
+  @ApiOperation({ summary: 'Get all AI chats for a project (paginated)' })
+  @ApiQuery({ name: 'skip', required: false, type: Number })
+  @ApiQuery({ name: 'take', required: false, type: Number })
+  @ApiResponse({ status: 200, description: 'Paginated list of chats' })
+  async getAllChats(
+    @Param('pid') pid: string,
+    @Query('skip') skip: string,
+    @Query('take') take: string,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ uid, pid }, 'GET /ai/:pid/chats/all')
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, uid)
+
+    const result = await this.aiChatService.findAllByProject(
+      pid,
+      uid,
+      skip ? parseInt(skip, 10) : 0,
+      take ? parseInt(take, 10) : 20,
+    )
+
+    return {
+      chats: result.chats.map(chat => ({
+        id: chat.id,
+        name: chat.name,
+        created: chat.created,
+        updated: chat.updated,
+      })),
+      total: result.total,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Get(':pid/chats/:chatId')
+  @Auth()
+  @ApiOperation({ summary: 'Get a specific AI chat' })
+  @ApiResponse({ status: 200, description: 'Chat details with messages' })
+  async getChat(
+    @Param('pid') pid: string,
+    @Param('chatId') chatId: string,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ uid, pid, chatId }, 'GET /ai/:pid/chats/:chatId')
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, uid)
+
+    const chat = await this.aiChatService.verifyAccess(chatId, pid, uid)
+
+    if (!chat) {
+      throw new NotFoundException('Chat not found')
+    }
+
+    return {
+      id: chat.id,
+      name: chat.name,
+      messages: chat.messages,
+      created: chat.created,
+      updated: chat.updated,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Post(':pid/chats')
+  @Auth()
+  @ApiOperation({ summary: 'Create a new AI chat' })
+  @ApiResponse({ status: 201, description: 'Chat created' })
+  async createChat(
+    @Param('pid') pid: string,
+    @Body() createChatDto: CreateChatDto,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ uid, pid }, 'POST /ai/:pid/chats')
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, uid)
+
+    const chat = await this.aiChatService.create({
+      projectId: pid,
+      userId: uid,
+      messages: createChatDto.messages,
+      name: createChatDto.name,
+    })
+
+    return {
+      id: chat.id,
+      name: chat.name,
+      messages: chat.messages,
+      created: chat.created,
+      updated: chat.updated,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Post(':pid/chats/:chatId')
+  @Auth()
+  @ApiOperation({ summary: 'Update an AI chat' })
+  @ApiResponse({ status: 200, description: 'Chat updated' })
+  async updateChat(
+    @Param('pid') pid: string,
+    @Param('chatId') chatId: string,
+    @Body() updateChatDto: UpdateChatDto,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ uid, pid, chatId }, 'POST /ai/:pid/chats/:chatId')
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, uid)
+
+    const existingChat = await this.aiChatService.verifyAccess(chatId, pid, uid)
+
+    if (!existingChat) {
+      throw new NotFoundException('Chat not found')
+    }
+
+    const chat = await this.aiChatService.update(chatId, {
+      messages: updateChatDto.messages,
+      name: updateChatDto.name,
+    })
+
+    if (!chat) {
+      throw new NotFoundException('Chat not found')
+    }
+
+    return {
+      id: chat.id,
+      name: chat.name,
+      messages: chat.messages,
+      created: chat.created,
+      updated: chat.updated,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Delete(':pid/chats/:chatId')
+  @Auth()
+  @ApiOperation({ summary: 'Delete an AI chat' })
+  @ApiResponse({ status: 200, description: 'Chat deleted' })
+  async deleteChat(
+    @Param('pid') pid: string,
+    @Param('chatId') chatId: string,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ uid, pid, chatId }, 'DELETE /ai/:pid/chats/:chatId')
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, uid)
+
+    const existingChat = await this.aiChatService.verifyAccess(chatId, pid, uid)
+
+    if (!existingChat) {
+      throw new NotFoundException('Chat not found')
+    }
+
+    await this.aiChatService.delete(chatId)
+
+    return { success: true }
   }
 }

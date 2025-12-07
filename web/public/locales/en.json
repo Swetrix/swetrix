@@ -1751,6 +1751,14 @@
     "suggestion2": "How is my traffic trending?",
     "suggestion3": "Where are my visitors from?",
     "error": "Sorry, something went wrong. Please try again.",
-    "disclaimer": "AI responses may not always be accurate. Verify important data."
+    "disclaimer": "AI responses may not always be accurate. Verify important data.",
+    "recentChats": "Recent chats",
+    "viewAll": "View all",
+    "allChats": "All chats",
+    "noChats": "No chat history yet",
+    "newChat": "New conversation",
+    "deleteChat": "Delete chat",
+    "deleteChatConfirm": "Are you sure you want to delete this chat?",
+    "chatDeleted": "Chat deleted"
   }
 }

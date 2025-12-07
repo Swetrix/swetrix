@@ -43,4 +43,52 @@ export class ChatDto {
   @IsOptional()
   @IsString()
   timezone?: string
+
+  @ApiProperty({
+    required: false,
+    description: 'Chat ID to continue an existing conversation',
+  })
+  @IsOptional()
+  @IsString()
+  chatId?: string
+}
+
+export class CreateChatDto {
+  @ApiProperty({
+    type: [ChatMessageDto],
+    description: 'Array of chat messages',
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ChatMessageDto)
+  messages: ChatMessageDto[]
+
+  @ApiProperty({
+    required: false,
+    description: 'Custom name for the chat',
+  })
+  @IsOptional()
+  @IsString()
+  name?: string
+}
+
+export class UpdateChatDto {
+  @ApiProperty({
+    type: [ChatMessageDto],
+    required: false,
+    description: 'Array of chat messages',
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ChatMessageDto)
+  messages?: ChatMessageDto[]
+
+  @ApiProperty({
+    required: false,
+    description: 'Custom name for the chat',
+  })
+  @IsOptional()
+  @IsString()
+  name?: string
 }

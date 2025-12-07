@@ -1904,3 +1904,93 @@ export const askAI = async (
     callbacks.onError(error as Error)
   }
 }
+
+// AI Chat History API
+export interface AIChatSummary {
+  id: string
+  name: string | null
+  created: string
+  updated: string
+}
+
+export interface AIChat extends AIChatSummary {
+  messages: AIChatMessage[]
+}
+
+export const getRecentAIChats = async (pid: string, limit: number = 5): Promise<AIChatSummary[]> => {
+  return api
+    .get(`ai/${pid}/chats`, {
+      params: { limit },
+      headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' },
+    })
+    .then((response): AIChatSummary[] => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const getAllAIChats = async (
+  pid: string,
+  skip: number = 0,
+  take: number = 20,
+): Promise<{ chats: AIChatSummary[]; total: number }> => {
+  return api
+    .get(`ai/${pid}/chats/all`, {
+      params: { skip, take },
+      headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' },
+    })
+    .then((response): { chats: AIChatSummary[]; total: number } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const getAIChat = async (pid: string, chatId: string): Promise<AIChat> => {
+  return api
+    .get(`ai/${pid}/chats/${chatId}`, {
+      headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' },
+    })
+    .then((response): AIChat => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const createAIChat = async (pid: string, messages: AIChatMessage[], name?: string): Promise<AIChat> => {
+  return api
+    .post(
+      `ai/${pid}/chats`,
+      { messages, name },
+      { headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' } },
+    )
+    .then((response): AIChat => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const updateAIChat = async (
+  pid: string,
+  chatId: string,
+  data: { messages?: AIChatMessage[]; name?: string },
+): Promise<AIChat> => {
+  return api
+    .post(`ai/${pid}/chats/${chatId}`, data, {
+      headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' },
+    })
+    .then((response): AIChat => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const deleteAIChat = async (pid: string, chatId: string): Promise<{ success: boolean }> => {
+  return api
+    .delete(`ai/${pid}/chats/${chatId}`, {
+      headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' },
+    })
+    .then((response): { success: boolean } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
