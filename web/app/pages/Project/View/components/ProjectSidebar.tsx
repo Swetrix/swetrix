@@ -13,6 +13,8 @@ import routes from '~/utils/routes'
 type ProjectTabKey = keyof typeof PROJECT_TABS | 'settings'
 
 const ICON_COLORS: Record<string, string> = {
+  // Ask AI
+  askAi: 'text-violet-500',
   // Web Analytics
   traffic: 'text-blue-500',
   performance: 'text-amber-500',
@@ -156,6 +158,11 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
 }) => {
   const { t } = useTranslation('common')
 
+  // Find Ask AI tab (standalone, not in a group)
+  const askAiTab = useMemo(() => {
+    return tabs.find((tab) => tab.id === PROJECT_TABS.askAi)
+  }, [tabs])
+
   // Group tabs by category
   const tabGroups = useMemo<TabGroup[]>(() => {
     const groups: TabGroup[] = []
@@ -217,6 +224,46 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
 
       {/* Tabs area */}
       <div className='flex-1 px-2 py-3'>
+        {/* Ask AI - standalone tab above groups */}
+        {askAiTab && (
+          <div className='mb-3'>
+            {(() => {
+              const isCurrent = askAiTab.id === activeTab
+              const TabIcon = askAiTab.icon
+              const iconColorClass = ICON_COLORS[askAiTab.id] || 'text-gray-500'
+
+              const handleClick = (e: React.MouseEvent) => {
+                e.preventDefault()
+                if (!dataLoading) {
+                  onTabChange(askAiTab.id as keyof typeof PROJECT_TABS)
+                }
+              }
+
+              const newSearchParams = new URLSearchParams(searchParams.toString())
+              newSearchParams.set('tab', askAiTab.id)
+
+              return (
+                <Link
+                  to={{ search: newSearchParams.toString() }}
+                  onClick={handleClick}
+                  className={cx('group flex items-center gap-2 rounded-md px-2.5 py-2 transition-colors', {
+                    'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
+                      isCurrent,
+                    'hover:bg-gray-50 dark:hover:bg-slate-800/50': !isCurrent,
+                    'cursor-wait': dataLoading,
+                  })}
+                  aria-current={isCurrent ? 'page' : undefined}
+                >
+                  <TabIcon className={cx('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
+                  <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
+                    {askAiTab.label}
+                  </Text>
+                </Link>
+              )
+            })()}
+          </div>
+        )}
+
         {_map(tabGroups, (group) => (
           <CollapsibleGroup
             key={group.id}

@@ -40,6 +40,7 @@ import {
   KeyboardIcon,
   TargetIcon,
   PuzzleIcon,
+  SparklesIcon,
 } from 'lucide-react'
 import React, {
   useState,
@@ -167,6 +168,7 @@ import routes from '~/utils/routes'
 
 import { useCurrentProject, useProjectPassword } from '../../../providers/CurrentProjectProvider'
 import ProjectAlertsView from '../Alerts/View'
+import AskAIView from '../AskAI'
 import GoalsView from '../Goals/View'
 
 import AddAViewModal from './components/AddAViewModal'
@@ -1504,6 +1506,11 @@ const ViewProjectContent = () => {
         id: PROJECT_TABS.goals,
         label: t('dashboard.goals'),
         icon: TargetIcon,
+      },
+      {
+        id: PROJECT_TABS.askAi,
+        label: t('dashboard.askAi'),
+        icon: SparklesIcon,
       },
     ]
 
@@ -4309,6 +4316,7 @@ const ViewProjectContent = () => {
                         timezone={timezone}
                       />
                     ) : null}
+                    {activeTab === PROJECT_TABS.askAi ? <AskAIView projectId={id} /> : null}
                     {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
                     {analyticsLoading &&
                     (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) ? (

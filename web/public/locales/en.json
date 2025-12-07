@@ -884,6 +884,7 @@
     "alertsDesc": "Automated alerts is a powerful tool that notifies you when some events occur on your website.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram, Slack or Discord.",
     "goals": "Goals",
     "goalsDesc": "Conversion goals help you track important user actions on your website.\nDefine pageview goals or custom event goals to measure how many visitors complete specific actions.",
+    "askAi": "Ask AI",
     "webAnalytics": "Web analytics",
     "productAnalytics": "Product analytics",
     "revenueAnalytics": "Revenue analytics",
@@ -1737,5 +1738,17 @@
     "imprint": "Legal notice",
     "cloudEdition": "Cloud edition",
     "starOnGithub": "Star us on GitHub"
+  },
+  "askAi": {
+    "title": "Ask AI",
+    "subtitle": "Ask questions about your analytics data",
+    "welcomeTitle": "How can I help you?",
+    "welcomeDescription": "Ask me anything about your website analytics, traffic patterns, visitor behavior, or performance metrics.",
+    "placeholder": "Ask anything about your analytics...",
+    "suggestion1": "What are my top pages this week?",
+    "suggestion2": "How is my traffic trending compared to last month?",
+    "suggestion3": "Which countries are my visitors from?",
+    "error": "Sorry, something went wrong. Please try again.",
+    "disclaimer": "AI responses may not always be accurate. Verify important data."
   }
 }
