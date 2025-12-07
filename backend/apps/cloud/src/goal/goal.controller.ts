@@ -207,7 +207,7 @@ export class GoalController {
         pid: goalDto.pid,
       }
     } catch (reason) {
-      console.error('Error while creating goal', reason)
+      this.logger.error({ reason }, 'Error while creating goal')
       throw new BadRequestException('Error occurred while creating goal')
     }
   }
@@ -300,7 +300,10 @@ export class GoalController {
         }
       } else {
         // Regex match
-        params.goalValue = goal.value || ''
+        if (!goal.value) {
+          return { condition: '0', params }
+        }
+        params.goalValue = goal.value
         return { condition: `match(ev, {goalValue:String})`, params }
       }
     } else {
@@ -316,7 +319,10 @@ export class GoalController {
         }
       } else {
         // Regex match
-        params.goalValue = goal.value || ''
+        if (!goal.value) {
+          return { condition: '0', params }
+        }
+        params.goalValue = goal.value
         return { condition: `match(pg, {goalValue:String})`, params }
       }
     }
@@ -567,7 +573,7 @@ export class GoalController {
     @Query('period') period: string,
     @Query('from') from?: string,
     @Query('to') to?: string,
-    @Query('timeBucket') timeBucket: string = 'day',
+    @Query('timeBucket') timeBucket?: string,
     @Query('timezone') timezone?: string,
   ) {
     this.logger.log(
@@ -605,7 +611,8 @@ export class GoalController {
     )
 
     const table = goal.type === GoalType.CUSTOM_EVENT ? 'customEV' : 'analytics'
-    const timeBucketFunc = timeBucketConversion[timeBucket] || 'toStartOfDay'
+    const timeBucketFunc =
+      timeBucketConversion[resolvedTimeBucket] || 'toStartOfDay'
     const [selector, groupBy] = this.getGroupSubquery(resolvedTimeBucket)
 
     const { condition: matchCondition, params: matchParams } =
@@ -620,7 +627,7 @@ export class GoalController {
         uniqExact(psid) as uniqueSessions
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM ${table}
         WHERE
           pid = {pid:FixedString(12)}
@@ -636,6 +643,7 @@ export class GoalController {
       pid: goal.project.id,
       groupFrom: groupFromUTC,
       groupTo: groupToUTC,
+      timezone: safeTimezone,
       ...matchParams,
       ...metaParams,
     }

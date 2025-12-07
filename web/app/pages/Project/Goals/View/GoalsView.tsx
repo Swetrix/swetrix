@@ -58,8 +58,14 @@ import GoalSettingsModal from './GoalSettingsModal'
 
 // Calculate optimal Y axis ticks
 const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
-  const min = Math.min(...data.filter((n) => n !== undefined && n !== null))
-  const max = Math.max(...data.filter((n) => n !== undefined && n !== null))
+  const validData = data.filter((n) => n !== undefined && n !== null && Number.isFinite(n))
+
+  if (validData.length === 0) {
+    return [0, 1]
+  }
+
+  const min = Math.min(...validData)
+  const max = Math.max(...validData)
 
   if (min === max) {
     return max === 0 ? [0, 1] : [0, max * 1.2]
@@ -466,7 +472,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
       setGoals(result.results)
       setTotal(result.total)
     } catch (reason: any) {
-      setError(reason)
+      setError(reason?.message || reason?.toString() || 'Unknown error')
     } finally {
       isLoadingRef.current = false
       setIsLoading(false)
