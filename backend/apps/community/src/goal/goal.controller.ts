@@ -29,12 +29,7 @@ import {
 import { Auth } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { Goal, GoalType, GoalMatchType } from './entity/goal.entity'
-import {
-  CreateGoalDto,
-  UpdateGoalDto,
-  GoalDto,
-  GoalStatsDto,
-} from './dto/goal.dto'
+import { CreateGoalDto, UpdateGoalDto } from './dto/goal.dto'
 import { GoalService } from './goal.service'
 import { clickhouse } from '../common/integrations/clickhouse'
 
@@ -617,107 +612,6 @@ export class GoalController {
         conversions,
         uniqueSessions,
       },
-    }
-  }
-
-  @Get('/:id/sessions')
-  @Auth()
-  async getGoalSessions(
-    @CurrentUserId() userId: string,
-    @Param('id') id: string,
-    @Query('period') period: string,
-    @Query('from') from?: string,
-    @Query('to') to?: string,
-    @Query('take', new ParseIntPipe({ optional: true })) take: number = 30,
-    @Query('skip', new ParseIntPipe({ optional: true })) skip: number = 0,
-    @Query('timezone') timezone?: string,
-  ) {
-    this.logger.log(
-      { userId, id, period, from, to, take, skip },
-      'GET /goal/:id/sessions',
-    )
-
-    const goal = await this.goalService.findOne(id)
-
-    if (_isEmpty(goal)) {
-      throw new NotFoundException('Goal not found')
-    }
-
-    const project = await this.projectService.getFullProject(goal.projectId)
-    this.projectService.allowedToView(project, userId)
-
-    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const timeBucket = getLowestPossibleTimeBucket(period, from, to)
-
-    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      timeBucket,
-      period,
-      safeTimezone,
-    )
-
-    const table = goal.type === GoalType.CUSTOM_EVENT ? 'customEV' : 'analytics'
-
-    const { condition: matchCondition, params: matchParams } =
-      this.buildGoalMatchCondition(goal, table)
-    const { condition: metaCondition, params: metaParams } =
-      this.buildMetadataCondition(goal)
-
-    const sessionsQuery = `
-      SELECT
-        DISTINCT psid,
-        any(cc) as country,
-        any(br) as browser,
-        any(os) as os,
-        any(dv) as device,
-        min(created) as firstConversion,
-        count(*) as conversionCount
-      FROM ${table}
-      WHERE
-        pid = {pid:FixedString(12)}
-        AND ${matchCondition}
-        ${metaCondition}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-        AND psid IS NOT NULL
-      GROUP BY psid
-      ORDER BY firstConversion DESC
-      LIMIT {take:UInt32} OFFSET {skip:UInt32}
-    `
-
-    const countQuery = `
-      SELECT count(DISTINCT psid) as total
-      FROM ${table}
-      WHERE
-        pid = {pid:FixedString(12)}
-        AND ${matchCondition}
-        ${metaCondition}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-        AND psid IS NOT NULL
-    `
-
-    const queryParams = {
-      pid: goal.projectId,
-      groupFrom: groupFromUTC,
-      groupTo: groupToUTC,
-      take,
-      skip,
-      ...matchParams,
-      ...metaParams,
-    }
-
-    const [sessionsResult, countResult] = await Promise.all([
-      clickhouse
-        .query({ query: sessionsQuery, query_params: queryParams })
-        .then(resultSet => resultSet.json<any>()),
-      clickhouse
-        .query({ query: countQuery, query_params: queryParams })
-        .then(resultSet => resultSet.json<{ total: number }>()),
-    ])
-
-    return {
-      sessions: sessionsResult.data,
-      total: countResult.data[0]?.total || 0,
     }
   }
 }

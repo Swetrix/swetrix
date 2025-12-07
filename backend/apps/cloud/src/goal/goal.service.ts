@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Goal } from './entity/goal.entity'
-import { CreateGoalDto, UpdateGoalDto } from './dto/goal.dto'
 
 @Injectable()
 export class GoalService {

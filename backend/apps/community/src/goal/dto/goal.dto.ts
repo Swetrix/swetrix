@@ -86,23 +86,3 @@ export class UpdateGoalDto {
   @IsOptional()
   active?: boolean
 }
-
-export class GoalDto {
-  id: string
-  name: string
-  type: GoalType
-  matchType: GoalMatchType
-  value: string | null
-  metadataFilters: MetadataFilterDto[] | null
-  active: boolean
-  pid: string
-  created: string
-}
-
-export class GoalStatsDto {
-  conversions: number
-  uniqueSessions: number
-  conversionRate: number
-  previousConversions: number
-  trend: number
-}

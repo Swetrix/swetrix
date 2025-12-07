@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { randomUUID } from 'crypto'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -16,7 +16,7 @@ import {
   GoalMatchType,
   MetadataFilter,
 } from './entity/goal.entity'
-import { Pagination } from '../common/pagination'
+import { Pagination } from '../common/pagination/pagination'
 import { PaginationOptionsInterface } from '../common/pagination/pagination.results.interface'
 
 dayjs.extend(utc)

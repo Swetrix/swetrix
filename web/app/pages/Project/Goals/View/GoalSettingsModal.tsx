@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
-import { getGoal, createGoal, updateGoal, type CreateGoal, type Goal } from '~/api'
+import { getGoal, createGoal, updateGoal, type CreateGoal } from '~/api'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'

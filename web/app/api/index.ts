@@ -1161,16 +1161,6 @@ export interface GoalChartData {
   uniqueSessions: number[]
 }
 
-export interface GoalSession {
-  psid: string
-  country: string | null
-  browser: string | null
-  os: string | null
-  device: string | null
-  firstConversion: string
-  conversionCount: number
-}
-
 export const DEFAULT_GOALS_TAKE = 20
 
 export const getProjectGoals = (projectId: string, take: number = DEFAULT_GOALS_TAKE, skip = 0) =>
@@ -1252,31 +1242,6 @@ export const getGoalChart = (
       params: { period, from, to, timeBucket, timezone },
     })
     .then((response): { chart: GoalChartData } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getGoalSessions = (
-  goalId: string,
-  period: string,
-  from: string = '',
-  to: string = '',
-  take: number = 30,
-  skip: number = 0,
-  timezone?: string,
-) =>
-  api
-    .get(`/goal/${goalId}/sessions`, {
-      params: { period, from, to, take, skip, timezone },
-    })
-    .then(
-      (
-        response,
-      ): {
-        sessions: GoalSession[]
-        total: number
-      } => response.data,
-    )
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
