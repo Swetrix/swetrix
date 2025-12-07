@@ -20,6 +20,77 @@ import { TimeBucketType } from '../analytics/dto/getData.dto'
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
+/**
+ * Custom fetch wrapper that fixes malformed tool_calls in streaming responses.
+ * Some OpenAI-compatible providers (like OpenRouter with certain models) return
+ * empty strings for the 'type' field in tool_calls instead of 'function'.
+ */
+const patchedFetch: typeof fetch = async (input, init) => {
+  const response = await fetch(input, init)
+
+  // Only patch streaming responses
+  if (
+    !response.body ||
+    !response.headers.get('content-type')?.includes('text/event-stream')
+  ) {
+    return response
+  }
+
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  const encoder = new TextEncoder()
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) {
+          controller.close()
+          break
+        }
+
+        const chunk = decoder.decode(value, { stream: true })
+        const lines = chunk.split('\n')
+        const patchedLines = lines.map(line => {
+          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+            try {
+              const jsonStr = line.slice(6)
+              const data = JSON.parse(jsonStr)
+
+              // Fix empty 'type' field in tool_calls
+              if (data.choices) {
+                for (const choice of data.choices) {
+                  if (choice.delta?.tool_calls) {
+                    for (const toolCall of choice.delta.tool_calls) {
+                      if (toolCall.type === '') {
+                        toolCall.type = 'function'
+                      }
+                    }
+                  }
+                }
+              }
+
+              return `data: ${JSON.stringify(data)}`
+            } catch {
+              // If JSON parsing fails, return the original line
+              return line
+            }
+          }
+          return line
+        })
+
+        controller.enqueue(encoder.encode(patchedLines.join('\n')))
+      }
+    },
+  })
+
+  return new Response(stream, {
+    headers: response.headers,
+    status: response.status,
+    statusText: response.statusText,
+  })
+}
+
 @Injectable()
 export class AiService {
   private openrouter: ReturnType<typeof createOpenAI>
@@ -33,6 +104,7 @@ export class AiService {
     this.openrouter = createOpenAI({
       baseURL: OPENROUTER_BASE_URL,
       apiKey: process.env.OPENROUTER_API_KEY,
+      fetch: patchedFetch,
     })
   }
 
@@ -59,21 +131,11 @@ export class AiService {
     )
 
     const result = streamText({
-      model: this.openrouter('openai/gpt-oss-120b'),
+      model: this.openrouter('anthropic/claude-haiku-4.5'),
       system: systemPrompt,
       messages,
       tools: this.buildTools(project, timezone),
       maxSteps: 10,
-      providerOptions: {
-        openrouter: {
-          reasoning: {
-            effort: 'medium',
-          },
-          provider: {
-            order: ['Google'],
-          },
-        },
-      },
     })
 
     return result
