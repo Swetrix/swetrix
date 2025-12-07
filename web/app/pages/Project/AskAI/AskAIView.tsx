@@ -119,13 +119,20 @@ const ThinkingIndicator = () => {
 
 const ThoughtProcess = ({
   reasoning,
+  isStreaming,
+  hasContent,
   isExpanded,
   onToggle,
 }: {
   reasoning?: string
+  isStreaming?: boolean
+  hasContent?: boolean
   isExpanded: boolean
   onToggle: () => void
 }) => {
+  // Show thinking indicator while streaming and collecting reasoning (before content appears)
+  const isActivelyThinking = isStreaming && reasoning && !hasContent
+
   if (!reasoning) return null
 
   return (
@@ -133,13 +140,25 @@ const ThoughtProcess = ({
       <button
         type='button'
         onClick={onToggle}
-        className='flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+        className='flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
       >
-        <Loader2Icon className='h-3.5 w-3.5' />
-        <span>Thought</span>
-        {isExpanded ? <ChevronDownIcon className='h-3.5 w-3.5' /> : <ChevronRightIcon className='h-3.5 w-3.5' />}
+        {isActivelyThinking ? (
+          <>
+            <Loader2Icon className='h-3.5 w-3.5 animate-spin' />
+            <span>Thinking...</span>
+          </>
+        ) : (
+          <>
+            <svg className='h-3.5 w-3.5' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+              <circle cx='12' cy='12' r='10' />
+              <path d='M12 16v-4M12 8h.01' />
+            </svg>
+            <span>Thought</span>
+            {isExpanded ? <ChevronDownIcon className='h-3.5 w-3.5' /> : <ChevronRightIcon className='h-3.5 w-3.5' />}
+          </>
+        )}
       </button>
-      {isExpanded ? (
+      {isExpanded || isActivelyThinking ? (
         <div className='mt-2 border-l-2 border-gray-200 pl-3 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400'>
           <div className='whitespace-pre-wrap'>{reasoning}</div>
         </div>
@@ -209,15 +228,31 @@ const AssistantMessage = ({
   isStreaming?: boolean
   onRegenerate?: () => void
 }) => {
-  const [isThoughtExpanded, setIsThoughtExpanded] = useState(false)
+  // Track if user has manually toggled the thought section
+  const [userToggled, setUserToggled] = useState(false)
+  const [userExpandedState, setUserExpandedState] = useState(false)
+  const hasContent = Boolean(message.content && message.content.trim())
+
+  // Determine if thought should be expanded:
+  // - If user has manually toggled, use their preference
+  // - Otherwise, auto-expand while actively thinking (streaming + reasoning + no content yet)
+  const isActivelyThinking = Boolean(isStreaming && message.reasoning && !hasContent)
+  const isThoughtExpanded = userToggled ? userExpandedState : isActivelyThinking
+
+  const handleToggle = () => {
+    setUserToggled(true)
+    setUserExpandedState(!isThoughtExpanded)
+  }
 
   return (
     <div className='group'>
       {/* Show reasoning/thinking in collapsible section */}
       <ThoughtProcess
         reasoning={message.reasoning}
+        isStreaming={isStreaming}
+        hasContent={hasContent}
         isExpanded={isThoughtExpanded}
-        onToggle={() => setIsThoughtExpanded(!isThoughtExpanded)}
+        onToggle={handleToggle}
       />
       {/* Show tool calls as separate styled messages */}
       {message.toolCalls && message.toolCalls.length > 0 ? (
