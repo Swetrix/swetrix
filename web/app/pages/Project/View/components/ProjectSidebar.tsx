@@ -14,7 +14,7 @@ type ProjectTabKey = keyof typeof PROJECT_TABS | 'settings'
 
 const ICON_COLORS: Record<string, string> = {
   // Ask AI
-  askAi: 'text-violet-500',
+  ai: 'text-violet-500',
   // Web Analytics
   traffic: 'text-blue-500',
   performance: 'text-amber-500',
@@ -160,7 +160,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
 
   // Find Ask AI tab (standalone, not in a group)
   const askAiTab = useMemo(() => {
-    return tabs.find((tab) => tab.id === PROJECT_TABS.askAi)
+    return tabs.find((tab) => tab.id === PROJECT_TABS.ai)
   }, [tabs])
 
   // Group tabs by category
@@ -225,7 +225,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       {/* Tabs area */}
       <div className='flex-1 px-2 py-3'>
         {/* Ask AI - standalone tab above groups */}
-        {askAiTab && (
+        {askAiTab ? (
           <div className='mb-3'>
             {(() => {
               const isCurrent = askAiTab.id === activeTab
@@ -262,7 +262,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
               )
             })()}
           </div>
-        )}
+        ) : null}
 
         {_map(tabGroups, (group) => (
           <CollapsibleGroup

@@ -1508,7 +1508,7 @@ const ViewProjectContent = () => {
         icon: TargetIcon,
       },
       {
-        id: PROJECT_TABS.askAi,
+        id: PROJECT_TABS.ai,
         label: t('dashboard.askAi'),
         icon: SparklesIcon,
       },
@@ -3475,6 +3475,7 @@ const ViewProjectContent = () => {
                     transition={{ duration: 0.15 }}
                   >
                     {activeTab !== PROJECT_TABS.alerts &&
+                    activeTab !== PROJECT_TABS.ai &&
                     (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
                     (activeFunnel || activeTab !== PROJECT_TABS.funnels) ? (
                       <>
@@ -4316,7 +4317,7 @@ const ViewProjectContent = () => {
                         timezone={timezone}
                       />
                     ) : null}
-                    {activeTab === PROJECT_TABS.askAi ? <AskAIView projectId={id} /> : null}
+                    {activeTab === PROJECT_TABS.ai ? <AskAIView projectId={id} /> : null}
                     {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
                     {analyticsLoading &&
                     (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) ? (

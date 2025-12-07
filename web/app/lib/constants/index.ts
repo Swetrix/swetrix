@@ -405,7 +405,6 @@ const SELFHOSTED_PROJECT_TABS = {
   sessions: 'sessions',
   errors: 'errors',
   goals: 'goals',
-  askAi: 'askAi',
 } as const
 
 const PRODUCTION_PROJECT_TABS = {
@@ -418,7 +417,7 @@ const PRODUCTION_PROJECT_TABS = {
   goals: 'goals',
   alerts: 'alerts',
   captcha: 'captcha',
-  askAi: 'askAi',
+  ai: 'ai',
 } as const
 
 export const PROJECT_TABS = (
