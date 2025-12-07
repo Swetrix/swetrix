@@ -75,12 +75,14 @@ You have access to tools that can query analytics data for this project. Use the
 - Referrer sources
 
 Guidelines:
-1. Always use tools to fetch real data before answering questions about analytics
-2. When presenting data, be clear and concise
-3. If the user asks for charts or visualizations, include a chart in your response using the special JSON format
-4. Use appropriate time periods based on context (default to last 7 days if not specified)
-5. Round percentages and large numbers for readability
-6. Explain trends and provide actionable insights when relevant
+1. ALWAYS use tools to fetch real data before answering questions about analytics. NEVER make up or hallucinate data.
+2. If a tool call fails or returns an error, tell the user there was an issue fetching the data. Do not invent numbers.
+3. When presenting data, be clear and concise
+4. If the user asks for charts or visualizations, include a chart in your response using the special JSON format
+5. Use appropriate time periods based on context (default to last 7 days if not specified)
+6. Round percentages and large numbers for readability
+7. Explain trends and provide actionable insights when relevant
+8. If no data is available for the requested period, say so clearly instead of making up data
 
 To include a chart in your response, use this exact JSON format on its own line:
 {"type":"chart","chartType":"line","title":"Chart Title","data":{"x":["2024-01-01","2024-01-02"],"pageviews":[100,150],"visitors":[80,120]}}
@@ -96,7 +98,15 @@ The data object should have "x" for x-axis labels and named arrays for each seri
           'Get basic information about the current project including name, settings, and available funnels/goals',
         parameters: z.object({}),
         execute: async () => {
-          return this.getProjectInfo(project)
+          try {
+            return await this.getProjectInfo(project)
+          } catch (error) {
+            this.logger.error(
+              { error, pid: project.id },
+              'Tool getProjectInfo failed',
+            )
+            return { error: 'Failed to fetch project information.' }
+          }
         },
       }),
 
@@ -158,11 +168,19 @@ Available columns for filters:
           if (!params.dataType) {
             return { error: 'dataType is required' }
           }
-          return this.getData(
-            project.id,
-            { ...params, dataType: params.dataType },
-            timezone,
-          )
+          try {
+            return await this.getData(
+              project.id,
+              { ...params, dataType: params.dataType },
+              timezone,
+            )
+          } catch (error) {
+            this.logger.error({ error, pid: project.id }, 'Tool getData failed')
+            return {
+              error:
+                'Failed to fetch data. Please try again or rephrase your question.',
+            }
+          }
         },
       }),
 
@@ -182,7 +200,18 @@ Available columns for filters:
           to: z.string().optional().describe('End date (YYYY-MM-DD format)'),
         }),
         execute: async params => {
-          return this.getGoalStats(project.id, params, timezone)
+          try {
+            return await this.getGoalStats(project.id, params, timezone)
+          } catch (error) {
+            this.logger.error(
+              { error, pid: project.id },
+              'Tool getGoalStats failed',
+            )
+            return {
+              error:
+                'Failed to fetch goal statistics. Please try again or rephrase your question.',
+            }
+          }
         },
       }),
 
@@ -202,11 +231,22 @@ Available columns for filters:
           if (!params.funnelId) {
             return { error: 'funnelId is required' }
           }
-          return this.getFunnelData(
-            project.id,
-            { ...params, funnelId: params.funnelId },
-            timezone,
-          )
+          try {
+            return await this.getFunnelData(
+              project.id,
+              { ...params, funnelId: params.funnelId },
+              timezone,
+            )
+          } catch (error) {
+            this.logger.error(
+              { error, pid: project.id },
+              'Tool getFunnelData failed',
+            )
+            return {
+              error:
+                'Failed to fetch funnel data. Please try again or rephrase your question.',
+            }
+          }
         },
       }),
     }
@@ -337,11 +377,7 @@ Available columns for filters:
     const overallQuery = `
       SELECT
         count(*) as pageviews,
-        uniqExact(psid) as sessions,
-        uniqExact(uid) as visitors,
-        countIf(unique = 1) as uniquePageviews,
-        round(avg(sdur), 2) as avgSessionDuration,
-        round(countIf(unique = 1 AND sdur <= 0) * 100.0 / nullIf(countIf(unique = 1), 0), 2) as bounceRate
+        count(DISTINCT psid) as sessions
       FROM analytics
       WHERE pid = {pid:FixedString(12)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -365,8 +401,7 @@ Available columns for filters:
       SELECT
         ${this.getTimeBucketSelect(timeBucket, timezone)} as date,
         count(*) as pageviews,
-        uniqExact(psid) as sessions,
-        uniqExact(uid) as visitors
+        count(DISTINCT psid) as sessions
       FROM analytics
       WHERE pid = {pid:FixedString(12)}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -492,7 +527,6 @@ Available columns for filters:
         x: _map(chartData, (d: any) => d.date),
         pageviews: _map(chartData, (d: any) => d.pageviews),
         sessions: _map(chartData, (d: any) => d.sessions),
-        visitors: _map(chartData, (d: any) => d.visitors),
       },
       topPages,
       topCountries,

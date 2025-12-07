@@ -117,18 +117,31 @@ export class AiController {
             })}\n\n`,
           )
         } else if (part.type === 'tool-result') {
-          // Send tool result for transparency
+          // Send tool result for transparency (limit result size to avoid huge payloads)
+          const resultPreview =
+            typeof part.result === 'object'
+              ? JSON.stringify(part.result).slice(0, 1000)
+              : String(part.result).slice(0, 1000)
           res.write(
             `data: ${JSON.stringify({
               type: 'tool-result',
               toolName: part.toolName,
-              result: part.result,
+              result: resultPreview,
             })}\n\n`,
           )
         } else if (part.type === 'reasoning') {
           // Stream reasoning/thinking tokens if available
           res.write(
             `data: ${JSON.stringify({ type: 'reasoning', content: part.textDelta })}\n\n`,
+          )
+        } else if (part.type === 'error') {
+          // Handle errors during streaming
+          this.logger.error(
+            { error: part.error, pid, uid },
+            'Error during AI stream',
+          )
+          res.write(
+            `data: ${JSON.stringify({ type: 'error', content: 'An error occurred while processing your request' })}\n\n`,
           )
         }
       }
