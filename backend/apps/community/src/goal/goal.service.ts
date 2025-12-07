@@ -239,6 +239,12 @@ export class GoalService {
       if (col === 'active') {
         return `${col}={${col}:Int8}`
       }
+
+      // Handle nullable string columns
+      if (value === null && (col === 'value' || col === 'metadataFilters')) {
+        return `${col}=NULL`
+      }
+
       return `${col}={${col}:String}`
     }).join(', ')
 

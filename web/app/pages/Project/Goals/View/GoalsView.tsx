@@ -433,6 +433,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const isLoadingRef = useRef(false) // Use ref to avoid stale closure issues in loadGoals
+  const isMountedRef = useRef(true) // Track if component is mounted to prevent memory leaks
   const [total, setTotal] = useState(0)
   const [goals, setGoals] = useState<Goal[]>([])
   const [goalStats, setGoalStats] = useState<Record<string, GoalStats | null>>({})
@@ -449,6 +450,14 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingGoalId, setEditingGoalId] = useState<string | null>(null)
+
+  // Cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   const pageAmount = Math.ceil(total / DEFAULT_GOALS_TAKE)
 
@@ -469,13 +478,19 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
 
     try {
       const result = await getProjectGoals(id, take, skip)
-      setGoals(result.results)
-      setTotal(result.total)
+      if (isMountedRef.current) {
+        setGoals(result.results)
+        setTotal(result.total)
+      }
     } catch (reason: any) {
-      setError(reason?.message || reason?.toString() || 'Unknown error')
+      if (isMountedRef.current) {
+        setError(reason?.message || reason?.toString() || 'Unknown error')
+      }
     } finally {
       isLoadingRef.current = false
-      setIsLoading(false)
+      if (isMountedRef.current) {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -483,27 +498,36 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
     setStatsLoading((prev) => ({ ...prev, [goalId]: true }))
     try {
       const stats = await getGoalStats(goalId, period, from, to, timezone)
-      setGoalStats((prev) => ({ ...prev, [goalId]: stats }))
+      if (isMountedRef.current) {
+        setGoalStats((prev) => ({ ...prev, [goalId]: stats }))
+      }
     } catch (err) {
       console.error('Failed to load goal stats:', err)
-      setGoalStats((prev) => ({ ...prev, [goalId]: null }))
+      if (isMountedRef.current) {
+        setGoalStats((prev) => ({ ...prev, [goalId]: null }))
+      }
     } finally {
-      setStatsLoading((prev) => ({ ...prev, [goalId]: false }))
+      if (isMountedRef.current) {
+        setStatsLoading((prev) => ({ ...prev, [goalId]: false }))
+      }
     }
   }
 
   const loadGoalChartData = async (goalId: string, showLoading = true) => {
-    if (showLoading) {
-      setChartLoading((prev) => ({ ...prev, [goalId]: true }))
-    }
+    setChartLoading((prev) => ({ ...prev, [goalId]: showLoading ? true : prev[goalId] }))
     try {
       const result = await getGoalChart(goalId, period, from, to, timeBucket, timezone)
-      setGoalChartData((prev) => ({ ...prev, [goalId]: result.chart }))
+      if (isMountedRef.current) {
+        setGoalChartData((prev) => ({ ...prev, [goalId]: result.chart }))
+      }
     } catch (err) {
       console.error('Failed to load goal chart:', err)
-      setGoalChartData((prev) => ({ ...prev, [goalId]: null }))
+      if (isMountedRef.current) {
+        setGoalChartData((prev) => ({ ...prev, [goalId]: null }))
+      }
     } finally {
-      if (showLoading) {
+      // Always clear loading state
+      if (isMountedRef.current) {
         setChartLoading((prev) => ({ ...prev, [goalId]: false }))
       }
     }
