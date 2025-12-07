@@ -573,7 +573,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const isEmpty = _isEmpty(messages) && !streamingMessage
 
   return (
-    <div className='flex h-[calc(100vh-200px)] min-h-[600px] flex-col bg-stone-50 dark:bg-slate-950'>
+    <div className='flex h-[calc(100vh-200px)] min-h-[600px] flex-col bg-gray-50 dark:bg-slate-900'>
       {/* Error Banner */}
       {error ? (
         <div className='mx-auto w-full max-w-3xl px-4 pt-4'>
@@ -693,7 +693,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
       {/* Input Area (only shown when chat has messages) */}
       {!isEmpty ? (
-        <div className='border-t border-gray-200 bg-stone-50 px-4 py-4 dark:border-slate-800 dark:bg-slate-950'>
+        <div className='border-t border-gray-200 bg-gray-50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900'>
           <div className='mx-auto max-w-3xl'>
             <div className='rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900'>
               <form onSubmit={handleSubmit} className='relative'>
