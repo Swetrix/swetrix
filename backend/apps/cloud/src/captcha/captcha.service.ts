@@ -23,7 +23,7 @@ import { clickhouse } from '../common/integrations/clickhouse'
 dayjs.extend(utc)
 
 // Default difficulty: number of leading hex zeros required (4 = ~65k iterations avg)
-export const DEFAULT_POW_DIFFICULTY = 4
+const DEFAULT_POW_DIFFICULTY = 4
 
 // Challenge TTL in seconds (5 minutes)
 const CHALLENGE_TTL = 300

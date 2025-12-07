@@ -1134,6 +1134,118 @@ export const deleteAlert = (id: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+// Goals API
+export interface Goal {
+  id: string
+  name: string
+  type: 'pageview' | 'custom_event'
+  matchType: 'exact' | 'contains'
+  value: string | null
+  metadataFilters: { key: string; value: string }[] | null
+  active: boolean
+  pid: string
+  created: string
+}
+
+export interface GoalStats {
+  conversions: number
+  uniqueSessions: number
+  conversionRate: number
+  previousConversions: number
+  trend: number
+}
+
+export interface GoalChartData {
+  x: string[]
+  conversions: number[]
+  uniqueSessions: number[]
+}
+
+export const DEFAULT_GOALS_TAKE = 20
+
+export const getProjectGoals = (projectId: string, take: number = DEFAULT_GOALS_TAKE, skip = 0) =>
+  api
+    .get(`/goal/project/${projectId}?take=${take}&skip=${skip}`)
+    .then(
+      (
+        response,
+      ): {
+        results: Goal[]
+        total: number
+      } => response.data,
+    )
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getGoal = (goalId: string) =>
+  api
+    .get(`/goal/${goalId}`)
+    .then((response): Goal => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export type CreateGoal = {
+  pid: string
+  name: string
+  type: 'pageview' | 'custom_event'
+  matchType: 'exact' | 'contains'
+  value?: string
+  metadataFilters?: { key: string; value: string }[]
+}
+
+export const createGoal = (data: CreateGoal) =>
+  api
+    .post('goal', data)
+    .then((response): Goal => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const updateGoal = (id: string, data: Partial<Goal>) =>
+  api
+    .put(`goal/${id}`, data)
+    .then((response): Goal => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const deleteGoal = (id: string) =>
+  api
+    .delete(`goal/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getGoalStats = (goalId: string, period: string, from: string = '', to: string = '', timezone?: string) =>
+  api
+    .get(`/goal/${goalId}/stats`, {
+      params: { period, from, to, timezone },
+    })
+    .then((response): GoalStats => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getGoalChart = (
+  goalId: string,
+  period: string,
+  from: string = '',
+  to: string = '',
+  timeBucket: string = 'day',
+  timezone?: string,
+) =>
+  api
+    .get(`/goal/${goalId}/chart`, {
+      params: { period, from, to, timeBucket, timezone },
+    })
+    .then((response): { chart: GoalChartData } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const reGenerateCaptchaSecretKey = (pid: string) =>
   api
     .post(`project/secret-gen/${pid}`)

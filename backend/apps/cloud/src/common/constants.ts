@@ -51,9 +51,6 @@ const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
 const REDIS_EVENTS_COUNT_KEY = 'stats:events'
 const REDIS_SSO_UUID = 'sso:uuid'
 
-// Captcha service
-const { CAPTCHA_SALT } = process.env
-
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
 
@@ -183,7 +180,6 @@ export {
   TWO_FACTOR_AUTHENTICATION_APP_NAME,
   IP_REGEX,
   ORIGINS_REGEX,
-  CAPTCHA_SALT,
   EMAIL_ACTION_ENCRYPTION_KEY,
   isDevelopment,
   getRedisCaptchaKey,
