@@ -94,6 +94,11 @@ export class AiController {
         )
       }
 
+      this.logger.log(
+        { pid, uid, messageCount: messages.length },
+        'Starting AI chat stream',
+      )
+
       // Get streaming response from AI
       const result = await this.aiService.chat(
         project,
@@ -102,46 +107,87 @@ export class AiController {
       )
 
       // Stream the full response including tool calls and reasoning
-      for await (const part of result.fullStream) {
-        if (part.type === 'text-delta') {
+      // Wrap in try-catch to handle provider errors gracefully
+      let hasContent = false
+      try {
+        for await (const part of result.fullStream) {
+          if (part.type === 'text-delta') {
+            hasContent = true
+            res.write(
+              `data: ${JSON.stringify({ type: 'text', content: part.textDelta })}\n\n`,
+            )
+            this.logger.debug(
+              { pid, textLength: part.textDelta.length },
+              'AI text delta',
+            )
+          } else if (part.type === 'tool-call') {
+            hasContent = true
+            // Send tool call info for UI feedback
+            res.write(
+              `data: ${JSON.stringify({
+                type: 'tool-call',
+                toolName: part.toolName,
+                args: part.args,
+              })}\n\n`,
+            )
+            this.logger.log(
+              { pid, toolName: part.toolName, args: part.args },
+              'AI tool call',
+            )
+          } else if (part.type === 'tool-result') {
+            // Send tool result for transparency (limit result size to avoid huge payloads)
+            const resultPreview =
+              typeof part.result === 'object'
+                ? JSON.stringify(part.result).slice(0, 1000)
+                : String(part.result).slice(0, 1000)
+            res.write(
+              `data: ${JSON.stringify({
+                type: 'tool-result',
+                toolName: part.toolName,
+                result: resultPreview,
+              })}\n\n`,
+            )
+            this.logger.log(
+              {
+                pid,
+                toolName: part.toolName,
+                resultLength: resultPreview.length,
+              },
+              'AI tool result',
+            )
+          } else if (part.type === 'reasoning') {
+            hasContent = true
+            // Stream reasoning/thinking tokens if available
+            res.write(
+              `data: ${JSON.stringify({ type: 'reasoning', content: part.textDelta })}\n\n`,
+            )
+          } else if (part.type === 'error') {
+            // Handle errors during streaming (emitted by AI SDK)
+            this.logger.error(
+              { error: part.error, pid, uid },
+              'Error event during AI stream',
+            )
+            // Don't end the stream on error events - the provider may continue
+            res.write(
+              `data: ${JSON.stringify({ type: 'error', content: 'A temporary error occurred, continuing...' })}\n\n`,
+            )
+          }
+        }
+      } catch (streamError) {
+        // Handle errors thrown during stream iteration (e.g., malformed provider responses)
+        this.logger.error(
+          { error: streamError, pid, uid },
+          'Exception during AI stream iteration',
+        )
+
+        // If we already have some content, send what we have with an error notice
+        if (hasContent) {
           res.write(
-            `data: ${JSON.stringify({ type: 'text', content: part.textDelta })}\n\n`,
+            `data: ${JSON.stringify({ type: 'error', content: 'The response was interrupted due to a provider error.' })}\n\n`,
           )
-        } else if (part.type === 'tool-call') {
-          // Send tool call info for UI feedback
+        } else {
           res.write(
-            `data: ${JSON.stringify({
-              type: 'tool-call',
-              toolName: part.toolName,
-              args: part.args,
-            })}\n\n`,
-          )
-        } else if (part.type === 'tool-result') {
-          // Send tool result for transparency (limit result size to avoid huge payloads)
-          const resultPreview =
-            typeof part.result === 'object'
-              ? JSON.stringify(part.result).slice(0, 1000)
-              : String(part.result).slice(0, 1000)
-          res.write(
-            `data: ${JSON.stringify({
-              type: 'tool-result',
-              toolName: part.toolName,
-              result: resultPreview,
-            })}\n\n`,
-          )
-        } else if (part.type === 'reasoning') {
-          // Stream reasoning/thinking tokens if available
-          res.write(
-            `data: ${JSON.stringify({ type: 'reasoning', content: part.textDelta })}\n\n`,
-          )
-        } else if (part.type === 'error') {
-          // Handle errors during streaming
-          this.logger.error(
-            { error: part.error, pid, uid },
-            'Error during AI stream',
-          )
-          res.write(
-            `data: ${JSON.stringify({ type: 'error', content: 'An error occurred while processing your request' })}\n\n`,
+            `data: ${JSON.stringify({ type: 'error', content: 'Failed to get a response from the AI provider. Please try again.' })}\n\n`,
           )
         }
       }
@@ -149,6 +195,8 @@ export class AiController {
       // Send done event
       res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`)
       res.end()
+
+      this.logger.log({ pid, uid }, 'AI chat stream completed')
     } catch (error) {
       this.logger.error({ error, pid, uid }, 'Error in AI chat')
 

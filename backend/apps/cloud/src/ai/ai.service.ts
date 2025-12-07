@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { createOpenAI } from '@ai-sdk/openai'
-import { streamText, tool, CoreMessage } from 'ai'
+import { streamText, tool, CoreMessage, StreamTextResult } from 'ai'
 import { z } from 'zod'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -40,8 +40,23 @@ export class AiService {
     project: Project,
     messages: CoreMessage[],
     timezone: string = 'UTC',
-  ) {
+  ): Promise<
+    StreamTextResult<
+      typeof this.buildTools extends (...args: any[]) => infer R ? R : never,
+      never
+    >
+  > {
     const systemPrompt = this.buildSystemPrompt(project, timezone)
+
+    this.logger.log(
+      {
+        pid: project.id,
+        messageCount: messages.length,
+        lastMessage: messages[messages.length - 1]?.content?.slice(0, 100),
+        timezone,
+      },
+      'AI chat request',
+    )
 
     const result = streamText({
       model: this.openrouter('openai/gpt-oss-120b'),
@@ -105,8 +120,20 @@ The data object should have "x" for x-axis labels and named arrays for each seri
           'Get basic information about the current project including name, settings, and available funnels/goals',
         parameters: z.object({}),
         execute: async () => {
+          this.logger.log({ pid: project.id }, 'Tool: getProjectInfo called')
+
           try {
-            return await this.getProjectInfo(project)
+            const result = await this.getProjectInfo(project)
+
+            this.logger.log(
+              {
+                pid: project.id,
+                funnelCount: result.funnels?.length,
+                goalCount: result.goals?.length,
+              },
+              'Tool: getProjectInfo completed',
+            )
+            return result
           } catch (error) {
             this.logger.error(
               { error, pid: project.id },
@@ -175,12 +202,30 @@ Available columns for filters:
           if (!params.dataType) {
             return { error: 'dataType is required' }
           }
+          this.logger.log(
+            {
+              pid: project.id,
+              dataType: params.dataType,
+              period: params.period,
+              filters: params.filters,
+            },
+            'Tool: getData called',
+          )
           try {
-            return await this.getData(
+            const result = await this.getData(
               project.id,
               { ...params, dataType: params.dataType },
               timezone,
             )
+            this.logger.log(
+              {
+                pid: project.id,
+                dataType: params.dataType,
+                hasData: !!result,
+              },
+              'Tool: getData completed',
+            )
+            return result
           } catch (error) {
             this.logger.error({ error, pid: project.id }, 'Tool getData failed')
             return {
@@ -207,8 +252,17 @@ Available columns for filters:
           to: z.string().optional().describe('End date (YYYY-MM-DD format)'),
         }),
         execute: async params => {
+          this.logger.log(
+            { pid: project.id, goalId: params.goalId, period: params.period },
+            'Tool: getGoalStats called',
+          )
           try {
-            return await this.getGoalStats(project.id, params, timezone)
+            const result = await this.getGoalStats(project.id, params, timezone)
+            this.logger.log(
+              { pid: project.id, hasData: !!result && !result.error },
+              'Tool: getGoalStats completed',
+            )
+            return result
           } catch (error) {
             this.logger.error(
               { error, pid: project.id },
@@ -238,12 +292,29 @@ Available columns for filters:
           if (!params.funnelId) {
             return { error: 'funnelId is required' }
           }
+          this.logger.log(
+            {
+              pid: project.id,
+              funnelId: params.funnelId,
+              period: params.period,
+            },
+            'Tool: getFunnelData called',
+          )
           try {
-            return await this.getFunnelData(
+            const result = await this.getFunnelData(
               project.id,
               { ...params, funnelId: params.funnelId },
               timezone,
             )
+            this.logger.log(
+              {
+                pid: project.id,
+                funnelId: params.funnelId,
+                hasData: !!result,
+              },
+              'Tool: getFunnelData completed',
+            )
+            return result
           } catch (error) {
             this.logger.error(
               { error, pid: project.id },
@@ -330,6 +401,19 @@ Available columns for filters:
         timeBucket,
         period,
         safeTimezone,
+      )
+
+      this.logger.log(
+        {
+          pid,
+          dataType,
+          period,
+          from: groupFromUTC,
+          to: groupToUTC,
+          timeBucket,
+          filterCount: filters.length,
+        },
+        'getData: Querying data',
       )
 
       if (dataType === 'analytics') {
