@@ -12,11 +12,13 @@ import {
   ThumbsUpIcon,
   ThumbsDownIcon,
   RotateCcwIcon,
+  ArrowDownIcon,
 } from 'lucide-react'
 import { marked } from 'marked'
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import sanitizeHtml from 'sanitize-html'
+import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { askAI } from '~/api'
 
@@ -305,6 +307,21 @@ const UserMessage = ({ content }: { content: string }) => {
   )
 }
 
+const ScrollToBottomButton = ({ isAtBottom, scrollToBottom }: { isAtBottom: boolean; scrollToBottom: () => void }) => {
+  if (isAtBottom) return null
+
+  return (
+    <button
+      type='button'
+      onClick={scrollToBottom}
+      className='absolute bottom-4 left-1/2 z-10 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg transition-all hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200'
+      aria-label='Scroll to bottom'
+    >
+      <ArrowDownIcon className='h-4 w-4' />
+    </button>
+  )
+}
+
 const AskAIView = ({ projectId }: AskAIViewProps) => {
   const { t } = useTranslation('common')
   const [messages, setMessages] = useState<Message[]>([])
@@ -313,25 +330,19 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
   const [streamingMessage, setStreamingMessage] = useState<Message | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
+
+  // Stick to bottom hook for chat auto-scroll
+  const { scrollRef, contentRef, isAtBottom, scrollToBottom } = useStickToBottom({
+    resize: 'smooth',
+    initial: 'smooth',
+  })
 
   // Refs to track streaming content
   const streamingContentRef = useRef('')
   const streamingReasoningRef = useRef('')
   const streamingToolCallsRef = useRef<Array<{ toolName: string; args: unknown }>>([])
-
-  const scrollToBottom = useCallback(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
-    }
-  }, [])
-
-  // Scroll on new messages
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages, scrollToBottom])
 
   const generateMessageId = () => `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
@@ -501,46 +512,51 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       ) : null}
 
       {/* Messages Area */}
-      <div ref={messagesContainerRef} className='flex-1 overflow-y-auto'>
-        {_isEmpty(messages) && !streamingMessage ? (
-          <div className='flex h-full flex-col items-center justify-center px-4'>
-            <div className='mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-violet-500/10 to-purple-600/10'>
-              <SparklesIcon className='h-8 w-8 text-violet-600 dark:text-violet-400' />
-            </div>
-            <h2 className='mb-2 text-xl font-semibold text-gray-900 dark:text-white'>{t('askAi.welcomeTitle')}</h2>
-            <p className='mb-8 max-w-lg text-center text-gray-500 dark:text-gray-400'>
-              {t('askAi.welcomeDescription')}
-            </p>
-            <div className='flex flex-wrap justify-center gap-2'>
-              {_map(suggestions, (suggestion, idx) => (
-                <button
-                  key={idx}
-                  type='button'
-                  onClick={() => setInput(suggestion)}
-                  className='rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:shadow dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300 dark:hover:border-slate-600'
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className='mx-auto max-w-3xl space-y-6 px-4 py-6'>
-            {_map(messages, (msg) =>
-              msg.role === 'user' ? (
-                <UserMessage key={msg.id} content={msg.content} />
-              ) : (
-                <AssistantMessage key={msg.id} message={msg} />
-              ),
-            )}
-            {isWaitingForResponse ? (
-              <div className='py-2'>
-                <ThinkingIndicator />
+      <div className='relative flex-1 overflow-hidden'>
+        <div ref={scrollRef} className='h-full overflow-y-auto'>
+          <div ref={contentRef}>
+            {_isEmpty(messages) && !streamingMessage ? (
+              <div className='flex h-full min-h-[400px] flex-col items-center justify-center px-4'>
+                <div className='mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-violet-500/10 to-purple-600/10'>
+                  <SparklesIcon className='h-8 w-8 text-violet-600 dark:text-violet-400' />
+                </div>
+                <h2 className='mb-2 text-xl font-semibold text-gray-900 dark:text-white'>{t('askAi.welcomeTitle')}</h2>
+                <p className='mb-8 max-w-lg text-center text-gray-500 dark:text-gray-400'>
+                  {t('askAi.welcomeDescription')}
+                </p>
+                <div className='flex flex-wrap justify-center gap-2'>
+                  {_map(suggestions, (suggestion, idx) => (
+                    <button
+                      key={idx}
+                      type='button'
+                      onClick={() => setInput(suggestion)}
+                      className='rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:shadow dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300 dark:hover:border-slate-600'
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
               </div>
-            ) : null}
-            {streamingMessage ? <AssistantMessage message={streamingMessage} isStreaming /> : null}
+            ) : (
+              <div className='mx-auto max-w-3xl space-y-6 px-4 py-6'>
+                {_map(messages, (msg) =>
+                  msg.role === 'user' ? (
+                    <UserMessage key={msg.id} content={msg.content} />
+                  ) : (
+                    <AssistantMessage key={msg.id} message={msg} />
+                  ),
+                )}
+                {isWaitingForResponse ? (
+                  <div className='py-2'>
+                    <ThinkingIndicator />
+                  </div>
+                ) : null}
+                {streamingMessage ? <AssistantMessage message={streamingMessage} isStreaming /> : null}
+              </div>
+            )}
           </div>
-        )}
+        </div>
+        <ScrollToBottomButton isAtBottom={isAtBottom} scrollToBottom={scrollToBottom} />
       </div>
 
       {/* Input Area */}

@@ -73,7 +73,8 @@
     "spacetime": "^7.11.0",
     "swetrix": "^3.7.2",
     "tailwind-merge": "^3.4.0",
-    "timezone-soft": "^1.5.2"
+    "timezone-soft": "^1.5.2",
+    "use-stick-to-bottom": "^1.1.1"
   },
   "browserslist": {
     "production": [
