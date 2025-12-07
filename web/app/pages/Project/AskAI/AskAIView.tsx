@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import cx from 'clsx'
+import _filter from 'lodash/filter'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
 import {
   SendIcon,
   SparklesIcon,
@@ -13,14 +13,13 @@ import {
   ThumbsDownIcon,
   RotateCcwIcon,
 } from 'lucide-react'
-import _isEmpty from 'lodash/isEmpty'
-import _map from 'lodash/map'
-import _filter from 'lodash/filter'
-import _sample from 'lodash/sample'
 import { marked } from 'marked'
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import sanitizeHtml from 'sanitize-html'
 
 import { askAI } from '~/api'
+
 import AIChart from './AIChart'
 
 interface Message {
@@ -120,18 +119,14 @@ const ThinkingIndicator = () => {
 
 const ThoughtProcess = ({
   reasoning,
-  toolCalls,
   isExpanded,
   onToggle,
 }: {
   reasoning?: string
-  toolCalls?: Array<{ toolName: string; args: unknown }>
   isExpanded: boolean
   onToggle: () => void
 }) => {
-  const hasContent = reasoning || (toolCalls && toolCalls.length > 0)
-
-  if (!hasContent) return null
+  if (!reasoning) return null
 
   return (
     <div className='mb-2'>
@@ -144,20 +139,40 @@ const ThoughtProcess = ({
         <span>Thought</span>
         {isExpanded ? <ChevronDownIcon className='h-3.5 w-3.5' /> : <ChevronRightIcon className='h-3.5 w-3.5' />}
       </button>
-      {isExpanded && (
+      {isExpanded ? (
         <div className='mt-2 border-l-2 border-gray-200 pl-3 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400'>
-          {toolCalls && toolCalls.length > 0 && (
-            <div className='mb-2 space-y-1'>
-              {_map(toolCalls, (call, idx) => (
-                <div key={idx} className='text-xs text-gray-500'>
-                  🔧 {getToolDescription(call.toolName)}
-                </div>
-              ))}
-            </div>
-          )}
-          {reasoning && <div className='whitespace-pre-wrap'>{reasoning}</div>}
+          <div className='whitespace-pre-wrap'>{reasoning}</div>
         </div>
-      )}
+      ) : null}
+    </div>
+  )
+}
+
+const ToolCallMessage = ({ toolName, args }: { toolName: string; args: unknown }) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  return (
+    <div className='my-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/50'>
+      <button
+        type='button'
+        onClick={() => setIsExpanded(!isExpanded)}
+        className='flex w-full items-center gap-2 text-left text-sm text-gray-600 dark:text-gray-400'
+      >
+        <span className='flex h-5 w-5 items-center justify-center rounded bg-indigo-100 text-xs dark:bg-indigo-900/50'>
+          🔧
+        </span>
+        <span className='font-medium'>{getToolDescription(toolName)}</span>
+        {isExpanded ? (
+          <ChevronDownIcon className='ml-auto h-4 w-4' />
+        ) : (
+          <ChevronRightIcon className='ml-auto h-4 w-4' />
+        )}
+      </button>
+      {isExpanded && args ? (
+        <div className='mt-2 overflow-x-auto rounded bg-gray-100 p-2 text-xs dark:bg-slate-900'>
+          <pre className='text-gray-600 dark:text-gray-400'>{JSON.stringify(args, null, 2)}</pre>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -167,20 +182,20 @@ const MessageContent = ({ content, isStreaming }: { content: string; isStreaming
 
   return (
     <>
-      {text && (
+      {text ? (
         <div
           className='prose prose-sm max-w-none dark:prose-invert prose-p:my-2 prose-ol:my-2 prose-ul:my-2 prose-li:my-0.5 prose-table:text-sm'
           dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }}
         />
-      )}
-      {isStreaming && <span className='ml-1 inline-block h-4 w-0.5 animate-pulse bg-gray-400' />}
-      {!_isEmpty(charts) && (
+      ) : null}
+      {isStreaming ? <span className='ml-1 inline-block h-4 w-0.5 animate-pulse bg-gray-400' /> : null}
+      {!_isEmpty(charts) ? (
         <div className='mt-4 space-y-4'>
           {_map(charts, (chart, idx) => (
             <AIChart key={idx} chart={chart} />
           ))}
         </div>
-      )}
+      ) : null}
     </>
   )
 }
@@ -198,14 +213,22 @@ const AssistantMessage = ({
 
   return (
     <div className='group'>
+      {/* Show reasoning/thinking in collapsible section */}
       <ThoughtProcess
         reasoning={message.reasoning}
-        toolCalls={message.toolCalls}
         isExpanded={isThoughtExpanded}
         onToggle={() => setIsThoughtExpanded(!isThoughtExpanded)}
       />
+      {/* Show tool calls as separate styled messages */}
+      {message.toolCalls && message.toolCalls.length > 0 ? (
+        <div className='mb-3'>
+          {_map(message.toolCalls, (call, idx) => (
+            <ToolCallMessage key={idx} toolName={call.toolName} args={call.args} />
+          ))}
+        </div>
+      ) : null}
       <MessageContent content={message.content} isStreaming={isStreaming} />
-      {!isStreaming && message.content && (
+      {!isStreaming && message.content ? (
         <div className='mt-2 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100'>
           <button
             type='button'
@@ -221,7 +244,7 @@ const AssistantMessage = ({
           >
             <ThumbsDownIcon className='h-4 w-4' />
           </button>
-          {onRegenerate && (
+          {onRegenerate ? (
             <button
               type='button'
               onClick={onRegenerate}
@@ -230,9 +253,9 @@ const AssistantMessage = ({
             >
               <RotateCcwIcon className='h-4 w-4' />
             </button>
-          )}
+          ) : null}
         </div>
-      )}
+      ) : null}
     </div>
   )
 }
@@ -428,7 +451,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   return (
     <div className='flex h-[calc(100vh-200px)] min-h-[600px] flex-col'>
       {/* Error Banner */}
-      {error && (
+      {error ? (
         <div className='mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/20'>
           <AlertCircleIcon className='h-5 w-5 shrink-0 text-red-500' />
           <p className='flex-1 text-sm text-red-700 dark:text-red-400'>{error}</p>
@@ -440,7 +463,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             Dismiss
           </button>
         </div>
-      )}
+      ) : null}
 
       {/* Messages Area */}
       <div ref={messagesContainerRef} className='flex-1 overflow-y-auto'>
@@ -475,12 +498,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 <AssistantMessage key={msg.id} message={msg} />
               ),
             )}
-            {isWaitingForResponse && (
+            {isWaitingForResponse ? (
               <div className='py-2'>
                 <ThinkingIndicator />
               </div>
-            )}
-            {streamingMessage && <AssistantMessage message={streamingMessage} isStreaming />}
+            ) : null}
+            {streamingMessage ? <AssistantMessage message={streamingMessage} isStreaming /> : null}
           </div>
         )}
       </div>
