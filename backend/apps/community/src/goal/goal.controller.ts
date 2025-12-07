@@ -1,0 +1,735 @@
+import {
+  Controller,
+  Get,
+  Put,
+  Delete,
+  Query,
+  Param,
+  Body,
+  NotFoundException,
+  Post,
+  BadRequestException,
+  HttpCode,
+  HttpStatus,
+  ParseIntPipe,
+} from '@nestjs/common'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import _omit from 'lodash/omit'
+import _pick from 'lodash/pick'
+import _round from 'lodash/round'
+import dayjs from 'dayjs'
+
+import { ProjectService } from '../project/project.service'
+import { AppLoggerService } from '../logger/logger.service'
+import {
+  AnalyticsService,
+  getLowestPossibleTimeBucket,
+} from '../analytics/analytics.service'
+import { Auth } from '../auth/decorators'
+import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
+import { Goal, GoalType, GoalMatchType } from './entity/goal.entity'
+import {
+  CreateGoalDto,
+  UpdateGoalDto,
+  GoalDto,
+  GoalStatsDto,
+} from './dto/goal.dto'
+import { GoalService } from './goal.service'
+import { clickhouse } from '../common/integrations/clickhouse'
+
+const GOALS_MAXIMUM = 50 // Maximum goals per project
+
+const timeBucketConversion: Record<string, string> = {
+  minute: 'toStartOfMinute',
+  hour: 'toStartOfHour',
+  day: 'toStartOfDay',
+  month: 'toStartOfMonth',
+  year: 'toStartOfYear',
+}
+
+@Controller('goal')
+export class GoalController {
+  constructor(
+    private readonly goalService: GoalService,
+    private readonly projectService: ProjectService,
+    private readonly logger: AppLoggerService,
+    private readonly analyticsService: AnalyticsService,
+  ) {}
+
+  @Get('/:goalId')
+  @Auth()
+  async getGoal(
+    @CurrentUserId() userId: string,
+    @Param('goalId') goalId: string,
+  ) {
+    this.logger.log({ userId, goalId }, 'GET /goal/:goalId')
+
+    const goal = await this.goalService.findOne(goalId)
+
+    if (_isEmpty(goal)) {
+      throw new NotFoundException('Goal not found')
+    }
+
+    const project = await this.projectService.getFullProject(goal.projectId)
+
+    this.projectService.allowedToView(project, userId)
+
+    return {
+      ...goal,
+      pid: goal.projectId,
+    }
+  }
+
+  @Get('/project/:projectId')
+  @Auth()
+  async getProjectGoals(
+    @CurrentUserId() userId: string,
+    @Param('projectId') projectId: string,
+    @Query('take', new ParseIntPipe({ optional: true })) take?: number,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+  ) {
+    this.logger.log(
+      { userId, projectId, take, skip },
+      'GET /goal/project/:projectId',
+    )
+
+    const project = await this.projectService.getFullProject(projectId)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, userId)
+
+    const result = await this.goalService.paginate({ take, skip }, projectId)
+
+    return {
+      ...result,
+      results: _map(result.results, goal => ({
+        ...goal,
+        pid: goal.projectId,
+      })),
+    }
+  }
+
+  @Post('/')
+  @Auth()
+  async createGoal(
+    @Body() goalDto: CreateGoalDto,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ uid, pid: goalDto.pid }, 'POST /goal')
+
+    const project = await this.projectService.getFullProject(goalDto.pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToManage(
+      project,
+      uid,
+      'You are not allowed to add goals to this project',
+    )
+
+    const goalsCount = await this.goalService.count(goalDto.pid)
+
+    if (goalsCount >= GOALS_MAXIMUM) {
+      throw new BadRequestException(
+        `You cannot create more than ${GOALS_MAXIMUM} goals per project.`,
+      )
+    }
+
+    try {
+      const newGoal = await this.goalService.create({
+        name: goalDto.name,
+        type: goalDto.type,
+        matchType: goalDto.matchType,
+        value: goalDto.value || null,
+        metadataFilters: goalDto.metadataFilters || null,
+        projectId: goalDto.pid,
+      })
+
+      return {
+        ...newGoal,
+        pid: goalDto.pid,
+      }
+    } catch (reason) {
+      this.logger.log({ reason }, 'Error while creating goal')
+      throw new BadRequestException('Error occurred while creating goal')
+    }
+  }
+
+  @Put('/:id')
+  @Auth()
+  async updateGoal(
+    @Param('id') id: string,
+    @Body() goalDto: UpdateGoalDto,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ id, uid }, 'PUT /goal/:id')
+
+    const goal = await this.goalService.findOne(id)
+
+    if (_isEmpty(goal)) {
+      throw new NotFoundException()
+    }
+
+    const project = await this.projectService.getFullProject(goal.projectId)
+
+    this.projectService.allowedToManage(
+      project,
+      uid,
+      'You are not allowed to manage this goal',
+    )
+
+    const updatePayload: Partial<Goal> = {
+      ..._pick(goalDto, [
+        'name',
+        'type',
+        'matchType',
+        'value',
+        'metadataFilters',
+        'active',
+      ]),
+    }
+
+    const updatedGoal = await this.goalService.update(id, updatePayload)
+
+    if (!updatedGoal) {
+      throw new NotFoundException('Goal not found after update')
+    }
+
+    return {
+      ...updatedGoal,
+      pid: goal.projectId,
+    }
+  }
+
+  @Delete('/:id')
+  @Auth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteGoal(@Param('id') id: string, @CurrentUserId() uid: string) {
+    this.logger.log({ id, uid }, 'DELETE /goal/:id')
+
+    const goal = await this.goalService.findOne(id)
+
+    if (_isEmpty(goal)) {
+      throw new NotFoundException()
+    }
+
+    const project = await this.projectService.getFullProject(goal.projectId)
+
+    this.projectService.allowedToManage(
+      project,
+      uid,
+      'You are not allowed to manage this goal',
+    )
+
+    await this.goalService.delete(id)
+  }
+
+  private buildGoalMatchCondition(
+    goal: Goal,
+    _table: 'analytics' | 'customEV',
+  ): { condition: string; params: Record<string, string> } {
+    const params: Record<string, string> = {}
+
+    if (goal.type === GoalType.CUSTOM_EVENT) {
+      // For custom events, match the event name
+      if (goal.matchType === GoalMatchType.EXACT) {
+        params.goalValue = goal.value || ''
+        return { condition: `ev = {goalValue:String}`, params }
+      } else if (goal.matchType === GoalMatchType.CONTAINS) {
+        params.goalValue = goal.value || ''
+        return {
+          condition: `ev ILIKE concat('%', {goalValue:String}, '%')`,
+          params,
+        }
+      } else {
+        // Regex match
+        if (!goal.value) {
+          return { condition: '0', params }
+        }
+        params.goalValue = goal.value
+        return { condition: `match(ev, {goalValue:String})`, params }
+      }
+    } else {
+      // For pageview goals, match the page path
+      if (goal.matchType === GoalMatchType.EXACT) {
+        params.goalValue = goal.value || ''
+        return { condition: `pg = {goalValue:String}`, params }
+      } else if (goal.matchType === GoalMatchType.CONTAINS) {
+        params.goalValue = goal.value || ''
+        return {
+          condition: `pg ILIKE concat('%', {goalValue:String}, '%')`,
+          params,
+        }
+      } else {
+        // Regex match
+        if (!goal.value) {
+          return { condition: '0', params }
+        }
+        params.goalValue = goal.value
+        return { condition: `match(pg, {goalValue:String})`, params }
+      }
+    }
+  }
+
+  private buildMetadataCondition(goal: Goal): {
+    condition: string
+    params: Record<string, string>
+  } {
+    if (!goal.metadataFilters || goal.metadataFilters.length === 0) {
+      return { condition: '', params: {} }
+    }
+
+    const conditions: string[] = []
+    const params: Record<string, string> = {}
+
+    goal.metadataFilters.forEach((filter, index) => {
+      const keyParam = `metaKey${index}`
+      const valueParam = `metaValue${index}`
+      params[keyParam] = filter.key
+      params[valueParam] = filter.value
+      conditions.push(
+        `has(meta.key, {${keyParam}:String}) AND meta.value[indexOf(meta.key, {${keyParam}:String})] = {${valueParam}:String}`,
+      )
+    })
+
+    return {
+      condition:
+        conditions.length > 0 ? `AND (${conditions.join(' AND ')})` : '',
+      params,
+    }
+  }
+
+  @Get('/:id/stats')
+  @Auth()
+  async getGoalStats(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+    @Query('period') period: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('timezone') timezone?: string,
+  ) {
+    this.logger.log({ userId, id, period, from, to }, 'GET /goal/:id/stats')
+
+    const goal = await this.goalService.findOne(id)
+
+    if (_isEmpty(goal)) {
+      throw new NotFoundException('Goal not found')
+    }
+
+    const project = await this.projectService.getFullProject(goal.projectId)
+    this.projectService.allowedToView(project, userId)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const timeBucket = getLowestPossibleTimeBucket(period, from, to)
+
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+    )
+
+    const table = goal.type === GoalType.CUSTOM_EVENT ? 'customEV' : 'analytics'
+    const { condition: matchCondition, params: matchParams } =
+      this.buildGoalMatchCondition(goal, table)
+    const { condition: metaCondition, params: metaParams } =
+      this.buildMetadataCondition(goal)
+
+    // Get conversions for current period
+    const conversionsQuery = `
+      SELECT 
+        count(*) as conversions,
+        uniqExact(psid) as uniqueSessions
+      FROM ${table}
+      WHERE 
+        pid = {pid:FixedString(12)}
+        AND ${matchCondition}
+        ${metaCondition}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    const queryParams = {
+      pid: goal.projectId,
+      groupFrom: groupFromUTC,
+      groupTo: groupToUTC,
+      ...matchParams,
+      ...metaParams,
+    }
+
+    const { data: conversionsData } = await clickhouse
+      .query({ query: conversionsQuery, query_params: queryParams })
+      .then(resultSet =>
+        resultSet.json<{ conversions: number; uniqueSessions: number }>(),
+      )
+
+    const conversions = conversionsData[0]?.conversions || 0
+    const uniqueSessions = conversionsData[0]?.uniqueSessions || 0
+
+    // Get total unique sessions for conversion rate
+    const totalSessionsQuery = `
+      SELECT uniqExact(psid) as totalSessions
+      FROM analytics
+      WHERE 
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    const { data: totalData } = await clickhouse
+      .query({
+        query: totalSessionsQuery,
+        query_params: {
+          pid: goal.projectId,
+          groupFrom: groupFromUTC,
+          groupTo: groupToUTC,
+        },
+      })
+      .then(resultSet => resultSet.json<{ totalSessions: number }>())
+
+    const totalSessions = totalData[0]?.totalSessions || 1
+    const conversionRate = _round((uniqueSessions / totalSessions) * 100, 2)
+
+    // Get previous period conversions for trend
+    const periodDays = dayjs(groupToUTC).diff(dayjs(groupFromUTC), 'day') || 1
+    const previousFrom = dayjs(groupFromUTC)
+      .subtract(periodDays, 'day')
+      .format('YYYY-MM-DD HH:mm:ss')
+    const previousTo = groupFromUTC
+
+    const previousQueryParams = {
+      pid: goal.projectId,
+      groupFrom: previousFrom,
+      groupTo: previousTo,
+      ...matchParams,
+      ...metaParams,
+    }
+
+    const { data: previousData } = await clickhouse
+      .query({ query: conversionsQuery, query_params: previousQueryParams })
+      .then(resultSet =>
+        resultSet.json<{ conversions: number; uniqueSessions: number }>(),
+      )
+
+    const previousConversions = previousData[0]?.conversions || 0
+    const trend =
+      previousConversions > 0
+        ? _round(
+            ((conversions - previousConversions) / previousConversions) * 100,
+            2,
+          )
+        : conversions > 0
+          ? 100
+          : 0
+
+    return {
+      conversions,
+      uniqueSessions,
+      conversionRate,
+      previousConversions,
+      trend,
+    }
+  }
+
+  private getGroupSubquery(
+    timeBucket: string,
+  ): [selector: string, groupBy: string] {
+    if (timeBucket === 'minute') {
+      return [
+        'toYear(tz_created) as year, toMonth(tz_created) as month, toDayOfMonth(tz_created) as day, toHour(tz_created) as hour, toMinute(tz_created) as minute',
+        'year, month, day, hour, minute',
+      ]
+    }
+
+    if (timeBucket === 'hour') {
+      return [
+        'toYear(tz_created) as year, toMonth(tz_created) as month, toDayOfMonth(tz_created) as day, toHour(tz_created) as hour',
+        'year, month, day, hour',
+      ]
+    }
+
+    if (timeBucket === 'day') {
+      return [
+        'toYear(tz_created) as year, toMonth(tz_created) as month, toDayOfMonth(tz_created) as day',
+        'year, month, day',
+      ]
+    }
+
+    if (timeBucket === 'month') {
+      return [
+        'toYear(tz_created) as year, toMonth(tz_created) as month',
+        'year, month',
+      ]
+    }
+
+    // year
+    return ['toYear(tz_created) as year', 'year']
+  }
+
+  private generateDateString(row: { [key: string]: number }): string {
+    const { year, month, day, hour, minute } = row
+
+    let dateString = `${year}`
+
+    if (typeof month === 'number') {
+      if (month < 10) {
+        dateString += `-0${month}`
+      } else {
+        dateString += `-${month}`
+      }
+    }
+
+    if (typeof day === 'number') {
+      if (day < 10) {
+        dateString += `-0${day}`
+      } else {
+        dateString += `-${day}`
+      }
+    }
+
+    if (typeof hour === 'number') {
+      const strMinute =
+        typeof minute === 'number'
+          ? minute < 10
+            ? `0${minute}`
+            : minute
+          : '00'
+
+      if (hour < 10) {
+        dateString += ` 0${hour}:${strMinute}:00`
+      } else {
+        dateString += ` ${hour}:${strMinute}:00`
+      }
+    }
+
+    return dateString
+  }
+
+  @Get('/:id/chart')
+  @Auth()
+  async getGoalChart(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+    @Query('period') period: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('timeBucket') timeBucket?: string,
+    @Query('timezone') timezone?: string,
+  ) {
+    this.logger.log(
+      { userId, id, period, from, to, timeBucket },
+      'GET /goal/:id/chart',
+    )
+
+    const goal = await this.goalService.findOne(id)
+
+    if (_isEmpty(goal)) {
+      throw new NotFoundException('Goal not found')
+    }
+
+    const project = await this.projectService.getFullProject(goal.projectId)
+    this.projectService.allowedToView(project, userId)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const resolvedTimeBucket =
+      timeBucket || getLowestPossibleTimeBucket(period, from, to)
+
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      resolvedTimeBucket as any,
+      period,
+      safeTimezone,
+    )
+
+    // Generate complete X axis with all time buckets
+    const { xShifted } = this.analyticsService.generateXAxis(
+      resolvedTimeBucket as any,
+      groupFromUTC,
+      groupToUTC,
+      safeTimezone,
+    )
+
+    const table = goal.type === GoalType.CUSTOM_EVENT ? 'customEV' : 'analytics'
+    const timeBucketFunc =
+      timeBucketConversion[resolvedTimeBucket] || 'toStartOfDay'
+    const [selector, groupBy] = this.getGroupSubquery(resolvedTimeBucket)
+
+    const { condition: matchCondition, params: matchParams } =
+      this.buildGoalMatchCondition(goal, table)
+    const { condition: metaCondition, params: metaParams } =
+      this.buildMetadataCondition(goal)
+
+    const chartQuery = `
+      SELECT
+        ${selector},
+        count(*) as conversions,
+        uniqExact(psid) as uniqueSessions
+      FROM (
+        SELECT *,
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
+        FROM ${table}
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND ${matchCondition}
+          ${metaCondition}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+
+    const queryParams = {
+      pid: goal.projectId,
+      groupFrom: groupFromUTC,
+      groupTo: groupToUTC,
+      timezone: safeTimezone,
+      ...matchParams,
+      ...metaParams,
+    }
+
+    const { data } = await clickhouse
+      .query({ query: chartQuery, query_params: queryParams })
+      .then(resultSet =>
+        resultSet.json<{
+          year: number
+          month?: number
+          day?: number
+          hour?: number
+          minute?: number
+          conversions: number
+          uniqueSessions: number
+        }>(),
+      )
+
+    // Initialize arrays with zeros for all time buckets
+    const conversions = Array(xShifted.length).fill(0)
+    const uniqueSessions = Array(xShifted.length).fill(0)
+
+    // Fill in actual data at the correct indices
+    for (const row of data) {
+      const dateString = this.generateDateString(row)
+      const index = xShifted.indexOf(dateString)
+
+      if (index !== -1) {
+        conversions[index] = row.conversions
+        uniqueSessions[index] = row.uniqueSessions
+      }
+    }
+
+    return {
+      chart: {
+        x: xShifted,
+        conversions,
+        uniqueSessions,
+      },
+    }
+  }
+
+  @Get('/:id/sessions')
+  @Auth()
+  async getGoalSessions(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+    @Query('period') period: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('take', new ParseIntPipe({ optional: true })) take: number = 30,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip: number = 0,
+    @Query('timezone') timezone?: string,
+  ) {
+    this.logger.log(
+      { userId, id, period, from, to, take, skip },
+      'GET /goal/:id/sessions',
+    )
+
+    const goal = await this.goalService.findOne(id)
+
+    if (_isEmpty(goal)) {
+      throw new NotFoundException('Goal not found')
+    }
+
+    const project = await this.projectService.getFullProject(goal.projectId)
+    this.projectService.allowedToView(project, userId)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const timeBucket = getLowestPossibleTimeBucket(period, from, to)
+
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+    )
+
+    const table = goal.type === GoalType.CUSTOM_EVENT ? 'customEV' : 'analytics'
+
+    const { condition: matchCondition, params: matchParams } =
+      this.buildGoalMatchCondition(goal, table)
+    const { condition: metaCondition, params: metaParams } =
+      this.buildMetadataCondition(goal)
+
+    const sessionsQuery = `
+      SELECT
+        DISTINCT psid,
+        any(cc) as country,
+        any(br) as browser,
+        any(os) as os,
+        any(dv) as device,
+        min(created) as firstConversion,
+        count(*) as conversionCount
+      FROM ${table}
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND ${matchCondition}
+        ${metaCondition}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        AND psid IS NOT NULL
+      GROUP BY psid
+      ORDER BY firstConversion DESC
+      LIMIT {take:UInt32} OFFSET {skip:UInt32}
+    `
+
+    const countQuery = `
+      SELECT count(DISTINCT psid) as total
+      FROM ${table}
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND ${matchCondition}
+        ${metaCondition}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        AND psid IS NOT NULL
+    `
+
+    const queryParams = {
+      pid: goal.projectId,
+      groupFrom: groupFromUTC,
+      groupTo: groupToUTC,
+      take,
+      skip,
+      ...matchParams,
+      ...metaParams,
+    }
+
+    const [sessionsResult, countResult] = await Promise.all([
+      clickhouse
+        .query({ query: sessionsQuery, query_params: queryParams })
+        .then(resultSet => resultSet.json<any>()),
+      clickhouse
+        .query({ query: countQuery, query_params: queryParams })
+        .then(resultSet => resultSet.json<{ total: number }>()),
+    ])
+
+    return {
+      sessions: sessionsResult.data,
+      total: countResult.data[0]?.total || 0,
+    }
+  }
+}

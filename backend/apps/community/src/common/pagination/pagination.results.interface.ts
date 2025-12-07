@@ -4,3 +4,8 @@ export interface PaginationResultInterface<PaginationEntity> {
   next?: string
   previous?: string
 }
+
+export interface PaginationOptionsInterface {
+  take?: number
+  skip?: number
+}
