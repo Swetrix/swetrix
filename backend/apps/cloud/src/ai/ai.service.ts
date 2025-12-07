@@ -49,6 +49,13 @@ export class AiService {
       messages,
       tools: this.buildTools(project, timezone),
       maxSteps: 10,
+      providerOptions: {
+        openrouter: {
+          reasoning: {
+            effort: 'medium',
+          },
+        },
+      },
     })
 
     return result
