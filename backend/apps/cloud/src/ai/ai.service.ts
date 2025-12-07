@@ -69,6 +69,9 @@ export class AiService {
           reasoning: {
             effort: 'medium',
           },
+          provider: {
+            order: ['Google'],
+          },
         },
       },
     })
