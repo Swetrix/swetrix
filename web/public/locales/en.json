@@ -1742,12 +1742,14 @@
   "askAi": {
     "title": "Ask AI",
     "subtitle": "Ask questions about your analytics data",
-    "welcomeTitle": "How can I help you?",
+    "welcomeTitle": "How can I help you understand your users?",
+    "welcomeSubtitle": "Get insights from your analytics data.",
     "welcomeDescription": "Ask me anything about your website analytics, traffic patterns, visitor behavior, or performance metrics.",
-    "placeholder": "Ask anything about your analytics...",
+    "placeholder": "Ask away (/ for commands)",
+    "followUpPlaceholder": "Ask follow-up (/ for commands)",
     "suggestion1": "What are my top pages this week?",
-    "suggestion2": "How is my traffic trending compared to last month?",
-    "suggestion3": "Which countries are my visitors from?",
+    "suggestion2": "How is my traffic trending?",
+    "suggestion3": "Where are my visitors from?",
     "error": "Sorry, something went wrong. Please try again.",
     "disclaimer": "AI responses may not always be accurate. Verify important data."
   }

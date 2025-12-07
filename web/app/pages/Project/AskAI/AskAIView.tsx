@@ -3,16 +3,17 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import {
   SendIcon,
-  SparklesIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   Loader2Icon,
   StopCircleIcon,
   AlertCircleIcon,
-  ThumbsUpIcon,
-  ThumbsDownIcon,
-  RotateCcwIcon,
   ArrowDownIcon,
+  BarChart3Icon,
+  TargetIcon,
+  GitBranchIcon,
+  InfoIcon,
+  CheckIcon,
 } from 'lucide-react'
 import { marked } from 'marked'
 import React, { useState, useRef, useEffect, useMemo } from 'react'
@@ -21,6 +22,7 @@ import sanitizeHtml from 'sanitize-html'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
 import { askAI } from '~/api'
+import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 
 import AIChart from './AIChart'
 
@@ -29,7 +31,7 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   reasoning?: string
-  toolCalls?: Array<{ toolName: string; args: unknown }>
+  toolCalls?: Array<{ toolName: string; args: unknown; completed?: boolean }>
 }
 
 interface AskAIViewProps {
@@ -80,41 +82,29 @@ const renderMarkdown = (content: string): string => {
   })
 }
 
-// Thinking messages that rotate
-const THINKING_MESSAGES = [
-  'Thinking...',
-  'Analyzing data...',
-  'Processing...',
-  'Querying analytics...',
-  'Crunching numbers...',
-  'Gathering insights...',
-]
-
 // Tool name to human-readable description
-const getToolDescription = (toolName: string): string => {
-  const descriptions: Record<string, string> = {
-    getProjectInfo: 'Getting project information',
-    getData: 'Querying analytics data',
-    getGoalStats: 'Fetching goal statistics',
-    getFunnelData: 'Loading funnel data',
+const getToolInfo = (toolName: string): { label: string; icon: React.ComponentType<{ className?: string }> } => {
+  const toolMap: Record<string, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
+    getProjectInfo: { label: 'Fetched project info', icon: InfoIcon },
+    getData: { label: 'Queried analytics', icon: BarChart3Icon },
+    getGoalStats: { label: 'Fetched goals', icon: TargetIcon },
+    getFunnelData: { label: 'Loaded funnel', icon: GitBranchIcon },
   }
-  return descriptions[toolName] || `Running ${toolName}`
+  return toolMap[toolName] || { label: toolName, icon: InfoIcon }
 }
 
+// Available tools for display
+const AVAILABLE_TOOLS = [
+  { id: 'getData', label: 'Query data', icon: BarChart3Icon },
+  { id: 'getGoalStats', label: 'Goal stats', icon: TargetIcon },
+  { id: 'getFunnelData', label: 'Funnel data', icon: GitBranchIcon },
+]
+
 const ThinkingIndicator = () => {
-  const [messageIndex, setMessageIndex] = useState(0)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMessageIndex((prev) => (prev + 1) % THINKING_MESSAGES.length)
-    }, 3000)
-    return () => clearInterval(interval)
-  }, [])
-
   return (
     <div className='flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400'>
       <Loader2Icon className='h-4 w-4 animate-spin' />
-      <span>{THINKING_MESSAGES[messageIndex]}</span>
+      <span>Thinking...</span>
     </div>
   )
 }
@@ -138,63 +128,54 @@ const ThoughtProcess = ({
   if (!reasoning) return null
 
   return (
-    <div className='mb-2'>
+    <div className='mb-3'>
       <button
         type='button'
         onClick={onToggle}
-        className='flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+        className='group flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
       >
-        {isActivelyThinking ? (
-          <>
-            <Loader2Icon className='h-3.5 w-3.5 animate-spin' />
-            <span>Thinking...</span>
-          </>
-        ) : (
-          <>
-            <svg className='h-3.5 w-3.5' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+        <span className='flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 dark:border-gray-600'>
+          {isActivelyThinking ? (
+            <Loader2Icon className='h-3 w-3 animate-spin' />
+          ) : (
+            <svg className='h-3 w-3' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5'>
               <circle cx='12' cy='12' r='10' />
               <path d='M12 16v-4M12 8h.01' />
             </svg>
-            <span>Thought</span>
-            {isExpanded ? <ChevronDownIcon className='h-3.5 w-3.5' /> : <ChevronRightIcon className='h-3.5 w-3.5' />}
-          </>
-        )}
+          )}
+        </span>
+        <span className='font-medium'>{isActivelyThinking ? 'Thinking...' : 'Thought'}</span>
+        {!isActivelyThinking ? (
+          isExpanded ? (
+            <ChevronDownIcon className='h-3.5 w-3.5' />
+          ) : (
+            <ChevronRightIcon className='h-3.5 w-3.5' />
+          )
+        ) : null}
       </button>
       {isExpanded || isActivelyThinking ? (
-        <div className='mt-2 border-l-2 border-gray-200 pl-3 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400'>
-          <div className='whitespace-pre-wrap'>{reasoning}</div>
+        <div className='mt-2 ml-6 border-l-2 border-gray-200 pl-3 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400'>
+          <div className='leading-relaxed whitespace-pre-wrap'>{reasoning}</div>
         </div>
       ) : null}
     </div>
   )
 }
 
-const ToolCallMessage = ({ toolName, args }: { toolName: string; args: unknown }) => {
-  const [isExpanded, setIsExpanded] = useState(false)
+// Compact tool call badge (PostHog style)
+const ToolCallBadge = ({ toolName, isLoading = false }: { toolName: string; isLoading?: boolean }) => {
+  const { label, icon: Icon } = getToolInfo(toolName)
 
   return (
-    <div className='my-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/50'>
-      <button
-        type='button'
-        onClick={() => setIsExpanded(!isExpanded)}
-        className='flex w-full items-center gap-2 text-left text-sm text-gray-600 dark:text-gray-400'
-      >
-        <span className='flex h-5 w-5 items-center justify-center rounded bg-indigo-100 text-xs dark:bg-indigo-900/50'>
-          🔧
-        </span>
-        <span className='font-medium'>{getToolDescription(toolName)}</span>
-        {isExpanded ? (
-          <ChevronDownIcon className='ml-auto h-4 w-4' />
-        ) : (
-          <ChevronRightIcon className='ml-auto h-4 w-4' />
-        )}
-      </button>
-      {isExpanded && args ? (
-        <div className='mt-2 overflow-x-auto rounded bg-gray-100 p-2 text-xs dark:bg-slate-900'>
-          <pre className='text-gray-600 dark:text-gray-400'>{JSON.stringify(args, null, 2)}</pre>
-        </div>
-      ) : null}
-    </div>
+    <span className='inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-slate-800 dark:text-gray-300'>
+      <Icon className='h-3.5 w-3.5' />
+      <span>{label}</span>
+      {isLoading ? (
+        <Loader2Icon className='h-3 w-3 animate-spin text-gray-500' />
+      ) : (
+        <CheckIcon className='h-3 w-3 text-green-600 dark:text-green-400' />
+      )}
+    </span>
   )
 }
 
@@ -205,11 +186,11 @@ const MessageContent = ({ content, isStreaming }: { content: string; isStreaming
     <>
       {text ? (
         <div
-          className='prose prose-sm max-w-none dark:prose-invert prose-p:my-2 prose-ol:my-2 prose-ul:my-2 prose-li:my-0.5 prose-table:text-sm'
+          className='prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:my-2 prose-ol:my-2 prose-ul:my-2 prose-li:my-0.5 prose-table:text-sm'
           dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }}
         />
       ) : null}
-      {isStreaming ? <span className='ml-1 inline-block h-4 w-0.5 animate-pulse bg-gray-400' /> : null}
+      {isStreaming && !text ? <span className='ml-1 inline-block h-4 w-0.5 animate-pulse bg-gray-400' /> : null}
       {!_isEmpty(charts) ? (
         <div className='mt-4 space-y-4'>
           {_map(charts, (chart, idx) => (
@@ -221,15 +202,7 @@ const MessageContent = ({ content, isStreaming }: { content: string; isStreaming
   )
 }
 
-const AssistantMessage = ({
-  message,
-  isStreaming,
-  onRegenerate,
-}: {
-  message: Message
-  isStreaming?: boolean
-  onRegenerate?: () => void
-}) => {
+const AssistantMessage = ({ message, isStreaming }: { message: Message; isStreaming?: boolean }) => {
   // Track if user has manually toggled the thought section
   const [userToggled, setUserToggled] = useState(false)
   const [userExpandedState, setUserExpandedState] = useState(false)
@@ -256,43 +229,15 @@ const AssistantMessage = ({
         isExpanded={isThoughtExpanded}
         onToggle={handleToggle}
       />
-      {/* Show tool calls as separate styled messages */}
+      {/* Show tool calls as compact badges (PostHog style) */}
       {message.toolCalls && message.toolCalls.length > 0 ? (
-        <div className='mb-3'>
+        <div className='mb-3 flex flex-wrap gap-2'>
           {_map(message.toolCalls, (call, idx) => (
-            <ToolCallMessage key={idx} toolName={call.toolName} args={call.args} />
+            <ToolCallBadge key={idx} toolName={call.toolName} isLoading={Boolean(isStreaming && !hasContent)} />
           ))}
         </div>
       ) : null}
       <MessageContent content={message.content} isStreaming={isStreaming} />
-      {!isStreaming && message.content ? (
-        <div className='mt-2 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100'>
-          <button
-            type='button'
-            className='rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-300'
-            title='Good response'
-          >
-            <ThumbsUpIcon className='h-4 w-4' />
-          </button>
-          <button
-            type='button'
-            className='rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-300'
-            title='Bad response'
-          >
-            <ThumbsDownIcon className='h-4 w-4' />
-          </button>
-          {onRegenerate ? (
-            <button
-              type='button'
-              onClick={onRegenerate}
-              className='rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-800 dark:hover:text-gray-300'
-              title='Regenerate response'
-            >
-              <RotateCcwIcon className='h-4 w-4' />
-            </button>
-          ) : null}
-        </div>
-      ) : null}
     </div>
   )
 }
@@ -300,12 +245,32 @@ const AssistantMessage = ({
 const UserMessage = ({ content }: { content: string }) => {
   return (
     <div className='flex justify-end'>
-      <div className='max-w-[85%] rounded-2xl bg-indigo-600 px-4 py-2.5 text-white'>
+      <div className='max-w-[85%] rounded-2xl bg-gray-900 px-4 py-2.5 text-white dark:bg-gray-700'>
         <p className='text-sm'>{content}</p>
       </div>
     </div>
   )
 }
+
+// Quick action chip component
+const QuickActionChip = ({
+  label,
+  icon: Icon,
+  onClick,
+}: {
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  onClick: () => void
+}) => (
+  <button
+    type='button'
+    onClick={onClick}
+    className='flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300 dark:hover:border-slate-600 dark:hover:bg-slate-700'
+  >
+    <Icon className='h-4 w-4' />
+    <span>{label}</span>
+  </button>
+)
 
 const ScrollToBottomButton = ({ isAtBottom, scrollToBottom }: { isAtBottom: boolean; scrollToBottom: () => void }) => {
   if (isAtBottom) return null
@@ -321,6 +286,18 @@ const ScrollToBottomButton = ({ isAtBottom, scrollToBottom }: { isAtBottom: bool
     </button>
   )
 }
+
+// Quick actions for empty state
+const QUICK_ACTIONS = [
+  {
+    id: 'traffic',
+    label: 'Traffic overview',
+    icon: BarChart3Icon,
+    prompt: 'Show me traffic overview for the last 7 days',
+  },
+  { id: 'goals', label: 'Goals', icon: TargetIcon, prompt: 'What are my goal conversion rates?' },
+  { id: 'funnels', label: 'Funnels', icon: GitBranchIcon, prompt: 'Show me funnel analysis' },
+]
 
 const AskAIView = ({ projectId }: AskAIViewProps) => {
   const { t } = useTranslation('common')
@@ -484,6 +461,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     }
   }
 
+  const handleQuickAction = (prompt: string) => {
+    setInput(prompt)
+    // Focus the input after setting the prompt
+    inputRef.current?.focus()
+  }
+
   // Auto-resize textarea
   useEffect(() => {
     if (inputRef.current) {
@@ -494,20 +477,24 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
   const suggestions = useMemo(() => [t('askAi.suggestion1'), t('askAi.suggestion2'), t('askAi.suggestion3')], [t])
 
+  const isEmpty = _isEmpty(messages) && !streamingMessage
+
   return (
-    <div className='flex h-[calc(100vh-200px)] min-h-[600px] flex-col'>
+    <div className='flex h-[calc(100vh-200px)] min-h-[600px] flex-col bg-stone-50 dark:bg-slate-950'>
       {/* Error Banner */}
       {error ? (
-        <div className='mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/20'>
-          <AlertCircleIcon className='h-5 w-5 shrink-0 text-red-500' />
-          <p className='flex-1 text-sm text-red-700 dark:text-red-400'>{error}</p>
-          <button
-            type='button'
-            onClick={() => setError(null)}
-            className='text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300'
-          >
-            Dismiss
-          </button>
+        <div className='mx-auto w-full max-w-3xl px-4 pt-4'>
+          <div className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/20'>
+            <AlertCircleIcon className='h-5 w-5 shrink-0 text-red-500' />
+            <p className='flex-1 text-sm text-red-700 dark:text-red-400'>{error}</p>
+            <button
+              type='button'
+              onClick={() => setError(null)}
+              className='text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300'
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       ) : null}
 
@@ -515,26 +502,78 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       <div className='relative flex-1 overflow-hidden'>
         <div ref={scrollRef} className='h-full overflow-y-auto'>
           <div ref={contentRef}>
-            {_isEmpty(messages) && !streamingMessage ? (
-              <div className='flex h-full min-h-[400px] flex-col items-center justify-center px-4'>
-                <div className='mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-violet-500/10 to-purple-600/10'>
-                  <SparklesIcon className='h-8 w-8 text-violet-600 dark:text-violet-400' />
+            {isEmpty ? (
+              <div className='flex h-full min-h-[500px] flex-col items-center justify-center px-4'>
+                {/* Logo */}
+                <div className='mb-6'>
+                  <SwetrixLogo />
                 </div>
-                <h2 className='mb-2 text-xl font-semibold text-gray-900 dark:text-white'>{t('askAi.welcomeTitle')}</h2>
-                <p className='mb-8 max-w-lg text-center text-gray-500 dark:text-gray-400'>
-                  {t('askAi.welcomeDescription')}
-                </p>
-                <div className='flex flex-wrap justify-center gap-2'>
-                  {_map(suggestions, (suggestion, idx) => (
-                    <button
-                      key={idx}
-                      type='button'
-                      onClick={() => setInput(suggestion)}
-                      className='rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:shadow dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300 dark:hover:border-slate-600'
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
+
+                {/* Headline */}
+                <h1 className='mb-2 text-2xl font-semibold text-gray-900 dark:text-white'>{t('askAi.welcomeTitle')}</h1>
+                <p className='mb-10 text-gray-500 dark:text-gray-400'>{t('askAi.welcomeSubtitle')}</p>
+
+                {/* Input Area (centered for empty state) */}
+                <div className='w-full max-w-2xl'>
+                  <div className='rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900'>
+                    <form onSubmit={handleSubmit} className='relative'>
+                      <textarea
+                        ref={inputRef}
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder={t('askAi.placeholder')}
+                        disabled={isLoading}
+                        rows={1}
+                        className='w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400'
+                      />
+                      <div className='flex items-center justify-between border-t border-gray-100 px-3 py-2 dark:border-slate-800'>
+                        {/* Tools indicator */}
+                        <div className='flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+                          <span className='font-medium'>Tools:</span>
+                          {_map(AVAILABLE_TOOLS, (tool) => (
+                            <span key={tool.id} className='flex items-center gap-1'>
+                              <tool.icon className='h-3 w-3' />
+                              <span>{tool.label}</span>
+                            </span>
+                          ))}
+                        </div>
+                        {/* Submit button */}
+                        <button
+                          type='submit'
+                          disabled={!input.trim() || isLoading}
+                          className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-400 dark:hover:bg-slate-700'
+                        >
+                          <SendIcon className='h-3.5 w-3.5' />
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className='mt-8 text-center'>
+                  <p className='mb-3 text-xs font-medium text-gray-500 dark:text-gray-400'>Try Swetrix AI for...</p>
+                  <div className='flex flex-wrap justify-center gap-2'>
+                    {_map(QUICK_ACTIONS, (action) => (
+                      <QuickActionChip
+                        key={action.id}
+                        label={action.label}
+                        icon={action.icon}
+                        onClick={() => handleQuickAction(action.prompt)}
+                      />
+                    ))}
+                    {_map(suggestions, (suggestion, idx) => (
+                      <button
+                        key={idx}
+                        type='button'
+                        onClick={() => handleQuickAction(suggestion)}
+                        className='rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-300 dark:hover:border-slate-600 dark:hover:bg-slate-700'
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             ) : (
@@ -559,43 +598,61 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         <ScrollToBottomButton isAtBottom={isAtBottom} scrollToBottom={scrollToBottom} />
       </div>
 
-      {/* Input Area */}
-      <div className='border-t border-gray-200 bg-white px-4 py-4 dark:border-slate-700 dark:bg-slate-900'>
-        <div className='mx-auto max-w-3xl'>
-          <form onSubmit={handleSubmit} className='relative'>
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={t('askAi.placeholder')}
-              disabled={isLoading}
-              rows={1}
-              className='w-full resize-none rounded-xl border border-gray-300 bg-white py-3 pr-12 pl-4 text-sm text-gray-900 placeholder-gray-500 shadow-sm transition-colors focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
-            />
-            <div className='absolute right-2 bottom-2'>
-              {isLoading ? (
-                <button
-                  type='button'
-                  onClick={handleStop}
-                  className='flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 text-white transition-colors hover:bg-red-700'
-                >
-                  <StopCircleIcon className='h-4 w-4' />
-                </button>
-              ) : (
-                <button
-                  type='submit'
-                  disabled={!input.trim()}
-                  className='flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50'
-                >
-                  <SendIcon className='h-4 w-4' />
-                </button>
-              )}
+      {/* Input Area (only shown when chat has messages) */}
+      {!isEmpty ? (
+        <div className='border-t border-gray-200 bg-stone-50 px-4 py-4 dark:border-slate-800 dark:bg-slate-950'>
+          <div className='mx-auto max-w-3xl'>
+            <div className='rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900'>
+              <form onSubmit={handleSubmit} className='relative'>
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={t('askAi.followUpPlaceholder')}
+                  disabled={isLoading}
+                  rows={1}
+                  className='w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400'
+                />
+                <div className='flex items-center justify-between border-t border-gray-100 px-3 py-2 dark:border-slate-800'>
+                  {/* Tools indicator */}
+                  <div className='flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+                    <span className='font-medium'>Tools:</span>
+                    {_map(AVAILABLE_TOOLS, (tool) => (
+                      <span key={tool.id} className='flex items-center gap-1'>
+                        <tool.icon className='h-3 w-3' />
+                        <span>{tool.label}</span>
+                      </span>
+                    ))}
+                  </div>
+                  {/* Action buttons */}
+                  <div className='flex items-center gap-2'>
+                    {isLoading ? (
+                      <button
+                        type='button'
+                        onClick={handleStop}
+                        className='flex h-7 items-center gap-1.5 rounded-lg bg-red-600 px-2.5 text-xs font-medium text-white transition-colors hover:bg-red-700'
+                      >
+                        <StopCircleIcon className='h-3.5 w-3.5' />
+                        <span>Stop</span>
+                      </button>
+                    ) : (
+                      <button
+                        type='submit'
+                        disabled={!input.trim()}
+                        className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-400 dark:hover:bg-slate-700'
+                      >
+                        <SendIcon className='h-3.5 w-3.5' />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </form>
             </div>
-          </form>
-          <p className='mt-2 text-center text-xs text-gray-400 dark:text-gray-500'>{t('askAi.disclaimer')}</p>
+            <p className='mt-2 text-center text-xs text-gray-400 dark:text-gray-500'>{t('askAi.disclaimer')}</p>
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   )
 }
