@@ -6,8 +6,11 @@ import {
   ValidateNested,
   IsIn,
   IsOptional,
+  IsInt,
+  Min,
+  Max,
 } from 'class-validator'
-import { Type } from 'class-transformer'
+import { Type, Transform } from 'class-transformer'
 
 export class ChatMessageDto {
   @ApiProperty({
@@ -91,4 +94,44 @@ export class UpdateChatDto {
   @IsOptional()
   @IsString()
   name?: string
+}
+
+export class GetRecentChatsQueryDto {
+  @ApiProperty({
+    required: false,
+    description: 'Maximum number of chats to return (1-50)',
+    default: 5,
+  })
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  limit?: number
+}
+
+export class GetAllChatsQueryDto {
+  @ApiProperty({
+    required: false,
+    description: 'Number of chats to skip (0 or greater)',
+    default: 0,
+  })
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(0)
+  @Max(10000)
+  skip?: number
+
+  @ApiProperty({
+    required: false,
+    description: 'Number of chats to return (1-100)',
+    default: 20,
+  })
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  take?: number
 }

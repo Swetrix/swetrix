@@ -7,6 +7,7 @@ import {
   Param,
   Query,
   Res,
+  Headers,
   NotFoundException,
   ForbiddenException,
   HttpException,
@@ -18,7 +19,6 @@ import {
   ApiBearerAuth,
   ApiResponse,
   ApiOperation,
-  ApiQuery,
 } from '@nestjs/swagger'
 import _isEmpty from 'lodash/isEmpty'
 
@@ -26,9 +26,24 @@ import { Auth } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
+import { checkRateLimit, getIPFromHeaders } from '../common/utils'
 import { AiService } from './ai.service'
 import { AiChatService } from './ai-chat.service'
-import { ChatDto, CreateChatDto, UpdateChatDto } from './dto/chat.dto'
+import {
+  ChatDto,
+  CreateChatDto,
+  UpdateChatDto,
+  GetRecentChatsQueryDto,
+  GetAllChatsQueryDto,
+} from './dto/chat.dto'
+
+// Rate limit constants for AI endpoints
+const AI_CHAT_RATE_LIMIT = 30 // requests per hour for authenticated users
+const AI_CHAT_RATE_LIMIT_UNAUTH = 10 // requests per hour for unauthenticated users
+const AI_CHAT_RATE_LIMIT_TIMEOUT = 3600 // 1 hour
+
+const AI_READ_RATE_LIMIT = 100 // requests per hour for read operations
+const AI_READ_RATE_LIMIT_UNAUTH = 30 // requests per hour for unauthenticated users
 
 @ApiTags('AI')
 @Controller(['ai', 'v1/ai'])
@@ -42,16 +57,35 @@ export class AiController {
 
   @ApiBearerAuth()
   @Post(':pid/chat')
-  @Auth()
+  @Auth(false, true) // Allow optional auth for public projects
   @ApiOperation({ summary: 'Chat with AI about project analytics' })
   @ApiResponse({ status: 200, description: 'SSE stream of AI response' })
   async chat(
     @Param('pid') pid: string,
     @Body() chatDto: ChatDto,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
     @Res() res: Response,
   ) {
     this.logger.log({ uid, pid }, 'POST /ai/:pid/chat')
+
+    // Apply rate limiting based on authentication status
+    const ip = getIPFromHeaders(headers)
+    if (uid) {
+      await checkRateLimit(
+        uid,
+        'ai-chat',
+        AI_CHAT_RATE_LIMIT,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    } else {
+      await checkRateLimit(
+        ip,
+        'ai-chat-unauth',
+        AI_CHAT_RATE_LIMIT_UNAUTH,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    }
 
     // Check if OpenRouter API key is configured
     if (!process.env.OPENROUTER_API_KEY) {
@@ -265,16 +299,34 @@ export class AiController {
 
   @ApiBearerAuth()
   @Get(':pid/chats')
-  @Auth()
+  @Auth(false, true) // Allow optional auth for public projects
   @ApiOperation({ summary: 'Get recent AI chats for a project' })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiResponse({ status: 200, description: 'List of recent chats' })
   async getRecentChats(
     @Param('pid') pid: string,
-    @Query('limit') limit: string,
-    @CurrentUserId() uid: string,
+    @Query() query: GetRecentChatsQueryDto,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
   ) {
     this.logger.log({ uid, pid }, 'GET /ai/:pid/chats')
+
+    // Apply rate limiting based on authentication status
+    const ip = getIPFromHeaders(headers)
+    if (uid) {
+      await checkRateLimit(
+        uid,
+        'ai-read',
+        AI_READ_RATE_LIMIT,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    } else {
+      await checkRateLimit(
+        ip,
+        'ai-read-unauth',
+        AI_READ_RATE_LIMIT_UNAUTH,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    }
 
     const project = await this.projectService.getFullProject(pid)
 
@@ -287,7 +339,7 @@ export class AiController {
     const chats = await this.aiChatService.findRecentByProject(
       pid,
       uid,
-      limit ? parseInt(limit, 10) : 5,
+      query.limit ?? 5,
     )
 
     return chats.map(chat => ({
@@ -300,18 +352,34 @@ export class AiController {
 
   @ApiBearerAuth()
   @Get(':pid/chats/all')
-  @Auth()
+  @Auth(false, true) // Allow optional auth for public projects
   @ApiOperation({ summary: 'Get all AI chats for a project (paginated)' })
-  @ApiQuery({ name: 'skip', required: false, type: Number })
-  @ApiQuery({ name: 'take', required: false, type: Number })
   @ApiResponse({ status: 200, description: 'Paginated list of chats' })
   async getAllChats(
     @Param('pid') pid: string,
-    @Query('skip') skip: string,
-    @Query('take') take: string,
-    @CurrentUserId() uid: string,
+    @Query() query: GetAllChatsQueryDto,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
   ) {
     this.logger.log({ uid, pid }, 'GET /ai/:pid/chats/all')
+
+    // Apply rate limiting based on authentication status
+    const ip = getIPFromHeaders(headers)
+    if (uid) {
+      await checkRateLimit(
+        uid,
+        'ai-read',
+        AI_READ_RATE_LIMIT,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    } else {
+      await checkRateLimit(
+        ip,
+        'ai-read-unauth',
+        AI_READ_RATE_LIMIT_UNAUTH,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    }
 
     const project = await this.projectService.getFullProject(pid)
 
@@ -324,8 +392,8 @@ export class AiController {
     const result = await this.aiChatService.findAllByProject(
       pid,
       uid,
-      skip ? parseInt(skip, 10) : 0,
-      take ? parseInt(take, 10) : 20,
+      query.skip ?? 0,
+      query.take ?? 20,
     )
 
     return {
@@ -341,15 +409,34 @@ export class AiController {
 
   @ApiBearerAuth()
   @Get(':pid/chats/:chatId')
-  @Auth()
+  @Auth(false, true) // Allow optional auth for public projects
   @ApiOperation({ summary: 'Get a specific AI chat' })
   @ApiResponse({ status: 200, description: 'Chat details with messages' })
   async getChat(
     @Param('pid') pid: string,
     @Param('chatId') chatId: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
   ) {
     this.logger.log({ uid, pid, chatId }, 'GET /ai/:pid/chats/:chatId')
+
+    // Apply rate limiting based on authentication status
+    const ip = getIPFromHeaders(headers)
+    if (uid) {
+      await checkRateLimit(
+        uid,
+        'ai-read',
+        AI_READ_RATE_LIMIT,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    } else {
+      await checkRateLimit(
+        ip,
+        'ai-read-unauth',
+        AI_READ_RATE_LIMIT_UNAUTH,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    }
 
     const project = await this.projectService.getFullProject(pid)
 
@@ -360,9 +447,17 @@ export class AiController {
     // Check if user is allowed to view the project (includes public projects)
     this.projectService.allowedToView(project, uid)
 
-    // For shared chat links, only verify the chat belongs to the project
-    // Users who can view the project can access any chat in that project
-    const chat = await this.aiChatService.verifyProjectAccess(chatId, pid)
+    let chat
+
+    // For public projects, anyone who can view the project can access any chat
+    // For private projects, users can only access their own chats
+    if (project.public) {
+      // Public project: verify chat belongs to project only
+      chat = await this.aiChatService.verifyProjectAccess(chatId, pid)
+    } else {
+      // Private project: verify user owns the chat
+      chat = await this.aiChatService.verifyAccess(chatId, pid, uid)
+    }
 
     if (!chat) {
       throw new NotFoundException('Chat not found')
@@ -379,15 +474,34 @@ export class AiController {
 
   @ApiBearerAuth()
   @Post(':pid/chats')
-  @Auth()
+  @Auth(false, true) // Allow optional auth for public projects
   @ApiOperation({ summary: 'Create a new AI chat' })
   @ApiResponse({ status: 201, description: 'Chat created' })
   async createChat(
     @Param('pid') pid: string,
     @Body() createChatDto: CreateChatDto,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
   ) {
     this.logger.log({ uid, pid }, 'POST /ai/:pid/chats')
+
+    // Apply rate limiting based on authentication status
+    const ip = getIPFromHeaders(headers)
+    if (uid) {
+      await checkRateLimit(
+        uid,
+        'ai-chat',
+        AI_CHAT_RATE_LIMIT,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    } else {
+      await checkRateLimit(
+        ip,
+        'ai-chat-unauth',
+        AI_CHAT_RATE_LIMIT_UNAUTH,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    }
 
     const project = await this.projectService.getFullProject(pid)
 
@@ -415,16 +529,35 @@ export class AiController {
 
   @ApiBearerAuth()
   @Post(':pid/chats/:chatId')
-  @Auth()
+  @Auth(false, true) // Allow optional auth for public projects
   @ApiOperation({ summary: 'Update an AI chat' })
   @ApiResponse({ status: 200, description: 'Chat updated' })
   async updateChat(
     @Param('pid') pid: string,
     @Param('chatId') chatId: string,
     @Body() updateChatDto: UpdateChatDto,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
   ) {
     this.logger.log({ uid, pid, chatId }, 'POST /ai/:pid/chats/:chatId')
+
+    // Apply rate limiting based on authentication status
+    const ip = getIPFromHeaders(headers)
+    if (uid) {
+      await checkRateLimit(
+        uid,
+        'ai-chat',
+        AI_CHAT_RATE_LIMIT,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    } else {
+      await checkRateLimit(
+        ip,
+        'ai-chat-unauth',
+        AI_CHAT_RATE_LIMIT_UNAUTH,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    }
 
     const project = await this.projectService.getFullProject(pid)
 
@@ -460,15 +593,34 @@ export class AiController {
 
   @ApiBearerAuth()
   @Delete(':pid/chats/:chatId')
-  @Auth()
+  @Auth(false, true) // Allow optional auth for public projects
   @ApiOperation({ summary: 'Delete an AI chat' })
   @ApiResponse({ status: 200, description: 'Chat deleted' })
   async deleteChat(
     @Param('pid') pid: string,
     @Param('chatId') chatId: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() uid: string | null,
+    @Headers() headers: Record<string, string>,
   ) {
     this.logger.log({ uid, pid, chatId }, 'DELETE /ai/:pid/chats/:chatId')
+
+    // Apply rate limiting based on authentication status
+    const ip = getIPFromHeaders(headers)
+    if (uid) {
+      await checkRateLimit(
+        uid,
+        'ai-chat',
+        AI_CHAT_RATE_LIMIT,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    } else {
+      await checkRateLimit(
+        ip,
+        'ai-chat-unauth',
+        AI_CHAT_RATE_LIMIT_UNAUTH,
+        AI_CHAT_RATE_LIMIT_TIMEOUT,
+      )
+    }
 
     const project = await this.projectService.getFullProject(pid)
 

@@ -21,6 +21,7 @@ import { TimeBucketType } from '../analytics/dto/getData.dto'
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
 // Allowed column names for filters to prevent SQL injection
+// Allowed column names for filters to prevent SQL injection
 const ALLOWED_FILTER_COLUMNS = new Set([
   'pg',
   'cc',
@@ -36,6 +37,33 @@ const ALLOWED_FILTER_COLUMNS = new Set([
   'lc',
   'host',
 ])
+
+// Regex pattern to validate timezone strings (only allows safe characters)
+// Valid timezones: UTC, America/New_York, Europe/London, Asia/Tokyo, etc.
+const SAFE_TIMEZONE_PATTERN =
+  /^[A-Za-z_][A-Za-z0-9_+-]*(\/[A-Za-z_][A-Za-z0-9_+-]*)*$/
+
+/**
+ * Validates and sanitizes a timezone string to prevent SQL injection.
+ * Returns 'UTC' if the timezone is invalid or contains suspicious characters.
+ */
+const validateTimezoneForSQL = (timezone: string): string => {
+  if (!timezone || typeof timezone !== 'string') {
+    return 'UTC'
+  }
+
+  // Check against safe pattern
+  if (!SAFE_TIMEZONE_PATTERN.test(timezone)) {
+    return 'UTC'
+  }
+
+  // Additional length check (longest IANA timezone is ~30 chars)
+  if (timezone.length > 50) {
+    return 'UTC'
+  }
+
+  return timezone
+}
 
 /**
  * Custom fetch wrapper that fixes malformed tool_calls in streaming responses.
@@ -1036,12 +1064,15 @@ Available columns for filters:
   }
 
   private getTimeBucketSelect(timeBucket: TimeBucketType, timezone: string) {
+    // Validate timezone to prevent SQL injection
+    const safeTimezone = validateTimezoneForSQL(timezone)
+
     const conversionMap: Record<TimeBucketType, string> = {
-      minute: `formatDateTime(toStartOfMinute(toTimeZone(created, '${timezone}')), '%Y-%m-%d %H:%M:00')`,
-      hour: `formatDateTime(toStartOfHour(toTimeZone(created, '${timezone}')), '%Y-%m-%d %H:00:00')`,
-      day: `formatDateTime(toStartOfDay(toTimeZone(created, '${timezone}')), '%Y-%m-%d')`,
-      month: `formatDateTime(toStartOfMonth(toTimeZone(created, '${timezone}')), '%Y-%m')`,
-      year: `formatDateTime(toStartOfYear(toTimeZone(created, '${timezone}')), '%Y')`,
+      minute: `formatDateTime(toStartOfMinute(toTimeZone(created, '${safeTimezone}')), '%Y-%m-%d %H:%M:00')`,
+      hour: `formatDateTime(toStartOfHour(toTimeZone(created, '${safeTimezone}')), '%Y-%m-%d %H:00:00')`,
+      day: `formatDateTime(toStartOfDay(toTimeZone(created, '${safeTimezone}')), '%Y-%m-%d')`,
+      month: `formatDateTime(toStartOfMonth(toTimeZone(created, '${safeTimezone}')), '%Y-%m')`,
+      year: `formatDateTime(toStartOfYear(toTimeZone(created, '${safeTimezone}')), '%Y')`,
     }
     return conversionMap[timeBucket] || conversionMap.day
   }
