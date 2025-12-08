@@ -20,6 +20,23 @@ import { TimeBucketType } from '../analytics/dto/getData.dto'
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
+// Allowed column names for filters to prevent SQL injection
+const ALLOWED_FILTER_COLUMNS = new Set([
+  'pg',
+  'cc',
+  'rg',
+  'ct',
+  'br',
+  'os',
+  'dv',
+  'ref',
+  'so',
+  'me',
+  'ca',
+  'lc',
+  'host',
+])
+
 /**
  * Custom fetch wrapper that fixes malformed tool_calls in streaming responses.
  * Some OpenAI-compatible providers (like OpenRouter with certain models) return
@@ -1044,6 +1061,11 @@ Available columns for filters:
     const params: Record<string, string> = {}
 
     filters.forEach((f, index) => {
+      // Validate column name against allowlist to prevent SQL injection
+      if (!ALLOWED_FILTER_COLUMNS.has(f.column)) {
+        return // Skip invalid columns
+      }
+
       const paramName = `filter_${index}`
       params[paramName] = f.filter
       const operator = f.isExclusive ? '!=' : '='

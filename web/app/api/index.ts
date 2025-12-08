@@ -1921,7 +1921,6 @@ export const getRecentAIChats = async (pid: string, limit: number = 5): Promise<
   return api
     .get(`ai/${pid}/chats`, {
       params: { limit },
-      headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' },
     })
     .then((response): AIChatSummary[] => response.data)
     .catch((error) => {
@@ -1937,7 +1936,6 @@ export const getAllAIChats = async (
   return api
     .get(`ai/${pid}/chats/all`, {
       params: { skip, take },
-      headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' },
     })
     .then((response): { chats: AIChatSummary[]; total: number } => response.data)
     .catch((error) => {
@@ -1947,9 +1945,7 @@ export const getAllAIChats = async (
 
 export const getAIChat = async (pid: string, chatId: string): Promise<AIChat> => {
   return api
-    .get(`ai/${pid}/chats/${chatId}`, {
-      headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' },
-    })
+    .get(`ai/${pid}/chats/${chatId}`)
     .then((response): AIChat => response.data)
     .catch((error) => {
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
@@ -1975,9 +1971,7 @@ export const updateAIChat = async (
   data: { messages?: AIChatMessage[]; name?: string },
 ): Promise<AIChat> => {
   return api
-    .post(`ai/${pid}/chats/${chatId}`, data, {
-      headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' },
-    })
+    .post(`ai/${pid}/chats/${chatId}`, data)
     .then((response): AIChat => response.data)
     .catch((error) => {
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
@@ -1986,9 +1980,7 @@ export const updateAIChat = async (
 
 export const deleteAIChat = async (pid: string, chatId: string): Promise<{ success: boolean }> => {
   return api
-    .delete(`ai/${pid}/chats/${chatId}`, {
-      headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' },
-    })
+    .delete(`ai/${pid}/chats/${chatId}`)
     .then((response): { success: boolean } => response.data)
     .catch((error) => {
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message

@@ -84,9 +84,10 @@ export class AiChatService {
     if (!chat) return null
 
     if (data.messages) {
+      const previousMessages = chat.messages
       chat.messages = data.messages
       // Update name if not manually set and we have a new first user message
-      if (!chat.name || chat.name === this.generateChatName(chat.messages)) {
+      if (!chat.name || chat.name === this.generateChatName(previousMessages)) {
         chat.name = this.generateChatName(data.messages)
       }
     }

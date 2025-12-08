@@ -1471,7 +1471,7 @@ const ViewProjectContent = () => {
     label: string
     icon: any
   }[] = useMemo(() => {
-    const selfhostedOnly = [
+    const baseTabs = [
       {
         id: PROJECT_TABS.traffic,
         label: t('dashboard.traffic'),
@@ -1507,11 +1507,6 @@ const ViewProjectContent = () => {
         label: t('dashboard.goals'),
         icon: TargetIcon,
       },
-      {
-        id: PROJECT_TABS.ai,
-        label: t('dashboard.askAi'),
-        icon: SparklesIcon,
-      },
     ]
 
     const adminTabs = allowedToManage
@@ -1525,11 +1520,16 @@ const ViewProjectContent = () => {
       : []
 
     if (isSelfhosted) {
-      return [...selfhostedOnly, ...adminTabs]
+      return [...baseTabs, ...adminTabs]
     }
 
     const newTabs = [
-      ...selfhostedOnly,
+      ...baseTabs,
+      {
+        id: PROJECT_TABS.ai,
+        label: t('dashboard.askAi'),
+        icon: SparklesIcon,
+      },
       {
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
