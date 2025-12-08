@@ -1,0 +1,228 @@
+import { Injectable } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
+import * as crypto from 'crypto'
+import { Pagination, PaginationOptionsInterface } from '../common/pagination'
+import {
+  FeatureFlag,
+  FeatureFlagType,
+  TargetingRule,
+} from './entity/feature-flag.entity'
+
+@Injectable()
+export class FeatureFlagService {
+  constructor(
+    @InjectRepository(FeatureFlag)
+    private featureFlagRepository: Repository<FeatureFlag>,
+  ) {}
+
+  async paginate(
+    options: PaginationOptionsInterface,
+    where: FindManyOptions<FeatureFlag>['where'],
+    relations?: Array<string>,
+  ): Promise<Pagination<FeatureFlag>> {
+    const [results, total] = await this.featureFlagRepository.findAndCount({
+      take: options.take || 100,
+      skip: options.skip || 0,
+      where,
+      order: {
+        key: 'ASC',
+      },
+      relations,
+    })
+
+    return new Pagination<FeatureFlag>({
+      results,
+      total,
+    })
+  }
+
+  findOneWithRelations(id: string): Promise<FeatureFlag | null> {
+    return this.featureFlagRepository.findOne({
+      where: { id },
+      relations: ['project', 'project.admin'],
+    })
+  }
+
+  async count(options: FindManyOptions<FeatureFlag> = {}): Promise<number> {
+    return this.featureFlagRepository.count(options)
+  }
+
+  findOne(options: FindOneOptions<FeatureFlag>): Promise<FeatureFlag | null> {
+    return this.featureFlagRepository.findOne(options)
+  }
+
+  find(options: FindManyOptions<FeatureFlag>): Promise<FeatureFlag[]> {
+    return this.featureFlagRepository.find(options)
+  }
+
+  findByProject(projectId: string): Promise<FeatureFlag[]> {
+    return this.featureFlagRepository.find({
+      where: { project: { id: projectId } },
+      order: { key: 'ASC' },
+    })
+  }
+
+  findEnabledByProject(projectId: string): Promise<FeatureFlag[]> {
+    return this.featureFlagRepository.find({
+      where: { project: { id: projectId }, enabled: true },
+      order: { key: 'ASC' },
+    })
+  }
+
+  async create(flagData: Partial<FeatureFlag>): Promise<FeatureFlag> {
+    return this.featureFlagRepository.save(flagData)
+  }
+
+  async update(id: string, flagData: Partial<FeatureFlag>): Promise<any> {
+    return this.featureFlagRepository.update(id, flagData)
+  }
+
+  async delete(id: string): Promise<any> {
+    return this.featureFlagRepository.delete(id)
+  }
+
+  /**
+   * Evaluates all feature flags for a project given visitor attributes
+   */
+  evaluateFlags(
+    flags: FeatureFlag[],
+    visitorId?: string,
+    attributes?: Record<string, string>,
+  ): Record<string, boolean> {
+    const result: Record<string, boolean> = {}
+
+    for (const flag of flags) {
+      result[flag.key] = this.evaluateFlag(flag, visitorId, attributes)
+    }
+
+    return result
+  }
+
+  /**
+   * Evaluates a single feature flag for a visitor
+   */
+  evaluateFlag(
+    flag: FeatureFlag,
+    visitorId?: string,
+    attributes?: Record<string, string>,
+  ): boolean {
+    // If flag is disabled, always return false
+    if (!flag.enabled) {
+      return false
+    }
+
+    // Check targeting rules if any exist
+    if (flag.targetingRules && flag.targetingRules.length > 0) {
+      const matchesTargeting = this.matchesTargetingRules(
+        flag.targetingRules,
+        attributes,
+      )
+      if (!matchesTargeting) {
+        return false
+      }
+    }
+
+    // For boolean flags, return true if enabled and targeting matches
+    if (flag.flagType === FeatureFlagType.BOOLEAN) {
+      return true
+    }
+
+    // For rollout flags, use percentage-based rollout
+    if (flag.flagType === FeatureFlagType.ROLLOUT) {
+      return this.isInRolloutPercentage(
+        flag.key,
+        flag.rolloutPercentage,
+        visitorId,
+      )
+    }
+
+    return false
+  }
+
+  /**
+   * Checks if visitor attributes match the targeting rules
+   * Rules are evaluated as AND (all rules must match)
+   */
+  private matchesTargetingRules(
+    rules: TargetingRule[],
+    attributes?: Record<string, string>,
+  ): boolean {
+    if (!attributes) {
+      // If no attributes provided, we can't match any rules
+      // Return true to be permissive (flag will be shown)
+      return true
+    }
+
+    for (const rule of rules) {
+      const attributeValue = attributes[rule.column]
+
+      // Check if we have the attribute
+      if (attributeValue === undefined) {
+        // If attribute not provided, skip this rule (be permissive)
+        continue
+      }
+
+      const matches = this.matchesRule(attributeValue, rule.filter)
+
+      // If isExclusive (exclude), we want the rule to NOT match
+      // If not isExclusive (include), we want the rule to match
+      if (rule.isExclusive) {
+        // Exclude: if it matches, targeting fails
+        if (matches) {
+          return false
+        }
+      } else {
+        // Include: if it doesn't match, targeting fails
+        if (!matches) {
+          return false
+        }
+      }
+    }
+
+    return true
+  }
+
+  /**
+   * Checks if an attribute value matches a filter value
+   * Supports case-insensitive matching
+   */
+  private matchesRule(attributeValue: string, filterValue: string): boolean {
+    // Case-insensitive exact match
+    return attributeValue.toLowerCase() === filterValue.toLowerCase()
+  }
+
+  /**
+   * Determines if a visitor is within the rollout percentage
+   * Uses consistent hashing based on flag key and visitor ID
+   */
+  private isInRolloutPercentage(
+    flagKey: string,
+    percentage: number,
+    visitorId?: string,
+  ): boolean {
+    if (percentage >= 100) {
+      return true
+    }
+    if (percentage <= 0) {
+      return false
+    }
+
+    // Use visitor ID if provided, otherwise generate random
+    const identifier = visitorId || crypto.randomUUID()
+
+    // Create a consistent hash based on flag key and visitor ID
+    const hash = crypto
+      .createHash('md5')
+      .update(`${flagKey}:${identifier}`)
+      .digest('hex')
+
+    // Convert first 8 hex characters to a number (0 to 2^32-1)
+    const hashValue = parseInt(hash.substring(0, 8), 16)
+
+    // Normalize to 0-100 range
+    const normalizedValue = (hashValue / 0xffffffff) * 100
+
+    return normalizedValue < percentage
+  }
+}

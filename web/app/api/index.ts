@@ -1246,6 +1246,108 @@ export const getGoalChart = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+// Feature Flags API
+export interface TargetingRule {
+  column: string
+  filter: string
+  isExclusive: boolean
+}
+
+export interface ProjectFeatureFlag {
+  id: string
+  key: string
+  description: string | null
+  flagType: 'boolean' | 'rollout'
+  rolloutPercentage: number
+  targetingRules: TargetingRule[] | null
+  enabled: boolean
+  pid: string
+  created: string
+}
+
+export interface FeatureFlagStats {
+  evaluations: number
+  uniqueVisitors: number
+  trueCount: number
+  falseCount: number
+  truePercentage: number
+}
+
+export type CreateFeatureFlag = {
+  pid: string
+  key: string
+  description?: string
+  flagType?: 'boolean' | 'rollout'
+  rolloutPercentage?: number
+  targetingRules?: TargetingRule[]
+  enabled?: boolean
+}
+
+export const DEFAULT_FEATURE_FLAGS_TAKE = 20
+
+export const getProjectFeatureFlags = (projectId: string, take: number = DEFAULT_FEATURE_FLAGS_TAKE, skip = 0) =>
+  api
+    .get(`/feature-flag/project/${projectId}?take=${take}&skip=${skip}`)
+    .then(
+      (
+        response,
+      ): {
+        results: ProjectFeatureFlag[]
+        total: number
+      } => response.data,
+    )
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getFeatureFlag = (flagId: string) =>
+  api
+    .get(`/feature-flag/${flagId}`)
+    .then((response): ProjectFeatureFlag => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const createFeatureFlag = (data: CreateFeatureFlag) =>
+  api
+    .post('feature-flag', data)
+    .then((response): ProjectFeatureFlag => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const updateFeatureFlag = (id: string, data: Partial<ProjectFeatureFlag>) =>
+  api
+    .put(`feature-flag/${id}`, data)
+    .then((response): ProjectFeatureFlag => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const deleteFeatureFlag = (id: string) =>
+  api
+    .delete(`feature-flag/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getFeatureFlagStats = (
+  flagId: string,
+  period: string,
+  from: string = '',
+  to: string = '',
+  timezone?: string,
+) =>
+  api
+    .get(`/feature-flag/${flagId}/stats`, {
+      params: { period, from, to, timezone },
+    })
+    .then((response): FeatureFlagStats => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const reGenerateCaptchaSecretKey = (pid: string) =>
   api
     .post(`project/secret-gen/${pid}`)

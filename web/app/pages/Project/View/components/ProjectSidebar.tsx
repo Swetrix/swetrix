@@ -185,6 +185,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         PROJECT_TABS.funnels,
         PROJECT_TABS.errors,
         PROJECT_TABS.goals,
+        PROJECT_TABS.featureFlags,
       ].includes(tab.id as any),
     )
     if (productAnalyticsTabs.length > 0) {

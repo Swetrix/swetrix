@@ -41,6 +41,7 @@ import {
   TargetIcon,
   PuzzleIcon,
   SparklesIcon,
+  FlagIcon,
 } from 'lucide-react'
 import React, {
   useState,
@@ -169,6 +170,7 @@ import routes from '~/utils/routes'
 import { useCurrentProject, useProjectPassword } from '../../../providers/CurrentProjectProvider'
 import ProjectAlertsView from '../Alerts/View'
 import AskAIView from '../AskAI'
+import FeatureFlagsView from '../FeatureFlags/View'
 import GoalsView from '../Goals/View'
 
 import AddAViewModal from './components/AddAViewModal'
@@ -1506,6 +1508,11 @@ const ViewProjectContent = () => {
         id: PROJECT_TABS.goals,
         label: t('dashboard.goals'),
         icon: TargetIcon,
+      },
+      {
+        id: PROJECT_TABS.featureFlags,
+        label: t('dashboard.featureFlags'),
+        icon: FlagIcon,
       },
     ]
 
@@ -4311,6 +4318,14 @@ const ViewProjectContent = () => {
                     ) : null}
                     {activeTab === PROJECT_TABS.goals ? (
                       <GoalsView
+                        period={period}
+                        from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                        to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                        timezone={timezone}
+                      />
+                    ) : null}
+                    {activeTab === PROJECT_TABS.featureFlags ? (
+                      <FeatureFlagsView
                         period={period}
                         from={dateRange ? getFormatDate(dateRange[0]) : ''}
                         to={dateRange ? getFormatDate(dateRange[1]) : ''}
