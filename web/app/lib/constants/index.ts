@@ -417,6 +417,7 @@ const PRODUCTION_PROJECT_TABS = {
   goals: 'goals',
   alerts: 'alerts',
   captcha: 'captcha',
+  ai: 'ai',
 } as const
 
 export const PROJECT_TABS = (

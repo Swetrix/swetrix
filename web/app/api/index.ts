@@ -1808,3 +1808,181 @@ export const getGSCKeywords = (
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
+
+// AI Chat API with SSE streaming
+interface AIChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+interface AIStreamCallbacks {
+  onText: (chunk: string) => void
+  onToolCall?: (toolName: string, args: unknown) => void
+  onToolResult?: (toolName: string, result: unknown) => void
+  onReasoning?: (chunk: string) => void
+  onComplete: () => void
+  onError: (error: Error) => void
+}
+
+export const askAI = async (
+  pid: string,
+  messages: AIChatMessage[],
+  timezone: string,
+  callbacks: AIStreamCallbacks,
+  signal?: AbortSignal,
+) => {
+  const token = getAccessToken()
+
+  try {
+    const response = await fetch(`${API_URL}ai/${pid}/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+      body: JSON.stringify({ messages, timezone }),
+      signal,
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+    }
+
+    const reader = response.body?.getReader()
+    if (!reader) {
+      throw new Error('No response body')
+    }
+
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+
+      if (done) {
+        callbacks.onComplete()
+        break
+      }
+
+      buffer += decoder.decode(value, { stream: true })
+
+      // Process SSE events
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6)
+          try {
+            const parsed = JSON.parse(data)
+            if (parsed.type === 'text') {
+              callbacks.onText(parsed.content)
+            } else if (parsed.type === 'tool-call') {
+              callbacks.onToolCall?.(parsed.toolName, parsed.args)
+            } else if (parsed.type === 'tool-result') {
+              callbacks.onToolResult?.(parsed.toolName, parsed.result)
+            } else if (parsed.type === 'reasoning') {
+              callbacks.onReasoning?.(parsed.content)
+            } else if (parsed.type === 'error') {
+              callbacks.onError(new Error(parsed.content))
+            } else if (parsed.type === 'done') {
+              callbacks.onComplete()
+              return
+            }
+          } catch {
+            // Ignore parsing errors for incomplete JSON
+          }
+        }
+      }
+    }
+  } catch (error) {
+    if ((error as Error).name === 'AbortError') {
+      callbacks.onComplete()
+      return
+    }
+    callbacks.onError(error as Error)
+  }
+}
+
+// AI Chat History API
+export interface AIChatSummary {
+  id: string
+  name: string | null
+  created: string
+  updated: string
+}
+
+interface AIChat extends AIChatSummary {
+  messages: AIChatMessage[]
+}
+
+export const getRecentAIChats = async (pid: string, limit: number = 5): Promise<AIChatSummary[]> => {
+  return api
+    .get(`ai/${pid}/chats`, {
+      params: { limit },
+    })
+    .then((response): AIChatSummary[] => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const getAllAIChats = async (
+  pid: string,
+  skip: number = 0,
+  take: number = 20,
+): Promise<{ chats: AIChatSummary[]; total: number }> => {
+  return api
+    .get(`ai/${pid}/chats/all`, {
+      params: { skip, take },
+    })
+    .then((response): { chats: AIChatSummary[]; total: number } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const getAIChat = async (pid: string, chatId: string): Promise<AIChat> => {
+  return api
+    .get(`ai/${pid}/chats/${chatId}`)
+    .then((response): AIChat => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const createAIChat = async (pid: string, messages: AIChatMessage[], name?: string): Promise<AIChat> => {
+  return api
+    .post(
+      `ai/${pid}/chats`,
+      { messages, name },
+      { headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' } },
+    )
+    .then((response): AIChat => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const updateAIChat = async (
+  pid: string,
+  chatId: string,
+  data: { messages?: AIChatMessage[]; name?: string },
+): Promise<AIChat> => {
+  return api
+    .post(`ai/${pid}/chats/${chatId}`, data)
+    .then((response): AIChat => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const deleteAIChat = async (pid: string, chatId: string): Promise<{ success: boolean }> => {
+  return api
+    .delete(`ai/${pid}/chats/${chatId}`)
+    .then((response): { success: boolean } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}

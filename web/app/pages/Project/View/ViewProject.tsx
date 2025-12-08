@@ -40,6 +40,7 @@ import {
   KeyboardIcon,
   TargetIcon,
   PuzzleIcon,
+  SparklesIcon,
 } from 'lucide-react'
 import React, {
   useState,
@@ -167,6 +168,7 @@ import routes from '~/utils/routes'
 
 import { useCurrentProject, useProjectPassword } from '../../../providers/CurrentProjectProvider'
 import ProjectAlertsView from '../Alerts/View'
+import AskAIView from '../AskAI'
 import GoalsView from '../Goals/View'
 
 import AddAViewModal from './components/AddAViewModal'
@@ -1469,7 +1471,7 @@ const ViewProjectContent = () => {
     label: string
     icon: any
   }[] = useMemo(() => {
-    const selfhostedOnly = [
+    const baseTabs = [
       {
         id: PROJECT_TABS.traffic,
         label: t('dashboard.traffic'),
@@ -1518,11 +1520,16 @@ const ViewProjectContent = () => {
       : []
 
     if (isSelfhosted) {
-      return [...selfhostedOnly, ...adminTabs]
+      return [...baseTabs, ...adminTabs]
     }
 
     const newTabs = [
-      ...selfhostedOnly,
+      ...baseTabs,
+      {
+        id: PROJECT_TABS.ai,
+        label: t('dashboard.askAi'),
+        icon: SparklesIcon,
+      },
       {
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
@@ -3468,6 +3475,7 @@ const ViewProjectContent = () => {
                     transition={{ duration: 0.15 }}
                   >
                     {activeTab !== PROJECT_TABS.alerts &&
+                    activeTab !== PROJECT_TABS.ai &&
                     (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
                     (activeFunnel || activeTab !== PROJECT_TABS.funnels) ? (
                       <>
@@ -4309,6 +4317,7 @@ const ViewProjectContent = () => {
                         timezone={timezone}
                       />
                     ) : null}
+                    {activeTab === PROJECT_TABS.ai ? <AskAIView projectId={id} /> : null}
                     {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
                     {analyticsLoading &&
                     (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) ? (
