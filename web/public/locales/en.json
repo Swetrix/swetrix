@@ -1744,12 +1744,8 @@
     "subtitle": "Ask questions about your analytics data",
     "welcomeTitle": "How can I help you understand your users?",
     "welcomeSubtitle": "Get insights from your analytics data.",
-    "welcomeDescription": "Ask me anything about your website analytics, traffic patterns, visitor behavior, or performance metrics.",
-    "placeholder": "Ask away (/ for commands)",
-    "followUpPlaceholder": "Ask follow-up (/ for commands)",
-    "suggestion1": "What are my top pages this week?",
-    "suggestion2": "How is my traffic trending?",
-    "suggestion3": "Where are my visitors from?",
+    "placeholder": "Ask anything",
+    "followUpPlaceholder": "Ask a follow-up",
     "error": "Sorry, something went wrong. Please try again.",
     "disclaimer": "AI responses may not always be accurate. Verify important data.",
     "recentChats": "Recent chats",
@@ -1759,6 +1755,8 @@
     "newChat": "New conversation",
     "deleteChat": "Delete chat",
     "deleteChatConfirm": "Are you sure you want to delete this chat?",
-    "chatDeleted": "Chat deleted"
+    "chatDeleted": "Chat deleted",
+    "copyLink": "Copy link to chat",
+    "linkCopied": "Link copied to clipboard"
   }
 }

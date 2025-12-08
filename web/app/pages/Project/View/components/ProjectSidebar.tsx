@@ -79,7 +79,7 @@ const CollapsibleGroup: React.FC<{
       <button
         type='button'
         onClick={() => setIsExpanded(!isExpanded)}
-        className='group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800/50'
+        className='group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800/60'
       >
         <Text as='span' size='xs' colour='secondary' weight='semibold' truncate className='max-w-full'>
           {group.label}
@@ -128,7 +128,7 @@ const CollapsibleGroup: React.FC<{
                 onClick={handleClick}
                 className={cx('group flex items-center gap-1.5 rounded-md px-2.5 py-2 transition-colors', {
                   'bg-gray-100 dark:bg-slate-800': isCurrent,
-                  'hover:bg-gray-50 dark:hover:bg-slate-800/50': !isCurrent,
+                  'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
                   'cursor-wait': dataLoading && tab.id !== 'settings',
                 })}
                 aria-current={isCurrent ? 'page' : undefined}
@@ -249,7 +249,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                   className={cx('group flex items-center gap-2 rounded-md px-2.5 py-2 transition-colors', {
                     'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
                       isCurrent,
-                    'hover:bg-gray-50 dark:hover:bg-slate-800/50': !isCurrent,
+                    'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
                     'cursor-wait': dataLoading,
                   })}
                   aria-current={isCurrent ? 'page' : undefined}
@@ -284,7 +284,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             to={routes.project_settings.replace(':id', projectId)}
             className={cx(
               'group flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors',
-              'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800/50 dark:hover:text-gray-200',
+              'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800/60 dark:hover:text-gray-200',
             )}
           >
             <SettingsIcon

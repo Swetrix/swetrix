@@ -1,5 +1,5 @@
 import type { ChartOptions } from 'billboard.js'
-import { line, area, bar, spline } from 'billboard.js'
+import { line, area, bar, spline, pie, donut } from 'billboard.js'
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
@@ -12,11 +12,13 @@ import BillboardChart from '~/ui/BillboardChart'
 
 interface AIChartData {
   type: 'chart'
-  chartType: 'line' | 'bar' | 'area' | 'spline'
+  chartType: 'line' | 'bar' | 'area' | 'spline' | 'pie' | 'donut'
   title?: string
   data: {
-    x: string[]
-    [key: string]: number[] | string[]
+    x?: string[]
+    labels?: string[]
+    values?: number[]
+    [key: string]: number[] | string[] | undefined
   }
 }
 
@@ -90,20 +92,97 @@ const getChartType = (type: string) => {
       return area()
     case 'spline':
       return spline()
+    case 'pie':
+      return pie()
+    case 'donut':
+      return donut()
     case 'line':
     default:
       return line()
   }
 }
 
+const isPieOrDonutChart = (chartType: string): boolean => {
+  return chartType === 'pie' || chartType === 'donut'
+}
+
 const AIChart: React.FC<AIChartProps> = ({ chart }) => {
   const chartOptions = useMemo<ChartOptions>(() => {
+    const isPieDonut = isPieOrDonutChart(chart.chartType)
+
+    // For pie/donut charts, check for labels and values
+    if (isPieDonut) {
+      if (_isEmpty(chart.data) || _isEmpty(chart.data.labels) || _isEmpty(chart.data.values)) {
+        return {}
+      }
+
+      const labels = chart.data.labels as string[]
+      const values = chart.data.values as number[]
+
+      // Build columns for pie/donut: each column is [label, value]
+      const columns: any[] = labels.map((label, idx) => [label, values[idx] || 0])
+
+      const colors: Record<string, string> = {}
+      labels.forEach((label, idx) => {
+        colors[label] = CHART_COLORS[idx % CHART_COLORS.length]
+      })
+
+      return {
+        data: {
+          columns,
+          type: getChartType(chart.chartType),
+          colors,
+        },
+        donut:
+          chart.chartType === 'donut'
+            ? {
+                title: '',
+                label: {
+                  format: (_value: number, ratio: number) => `${(ratio * 100).toFixed(1)}%`,
+                },
+              }
+            : undefined,
+        pie:
+          chart.chartType === 'pie'
+            ? {
+                label: {
+                  format: (_value: number, ratio: number) => `${(ratio * 100).toFixed(1)}%`,
+                },
+              }
+            : undefined,
+        transition: {
+          duration: 200,
+        },
+        resize: {
+          auto: true,
+        },
+        legend: {
+          show: true,
+          position: 'right',
+        },
+        tooltip: {
+          format: {
+            value: (value: number, ratio: number) => {
+              const percentage = (ratio * 100).toFixed(1)
+              if (value >= 1000000) return `${(value / 1000000).toFixed(2)}M (${percentage}%)`
+              if (value >= 1000) return `${(value / 1000).toFixed(2)}K (${percentage}%)`
+              return `${value.toLocaleString()} (${percentage}%)`
+            },
+          },
+        },
+        padding: {
+          right: 20,
+        },
+      }
+    }
+
+    // For time-series charts (line, bar, area, spline)
     if (_isEmpty(chart.data) || _isEmpty(chart.data.x)) {
       return {}
     }
 
-    const xData = chart.data.x
-    const seriesKeys = _filter(_keys(chart.data), (key) => key !== 'x')
+    const xData = chart.data.x as string[]
+    const seriesKeys = _filter(_keys(chart.data), (key) => key !== 'x' && key !== 'labels' && key !== 'values')
 
     // Build columns
     const columns: any[] = [['x', ..._map(xData, (el) => (dayjs(el).isValid() ? dayjs(el).toDate() : el))]]
@@ -112,7 +191,7 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
     const colors: Record<string, string> = {}
 
     seriesKeys.forEach((key, idx) => {
-      columns.push([key, ...chart.data[key]])
+      columns.push([key, ...chart.data[key]!])
       types[key] = getChartType(chart.chartType)
       colors[key] = CHART_COLORS[idx % CHART_COLORS.length]
     })
@@ -226,14 +305,23 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
     }
   }, [chart])
 
-  if (_isEmpty(chart.data) || _isEmpty(chart.data.x)) {
-    return null
+  const isPieDonut = isPieOrDonutChart(chart.chartType)
+
+  // Validate data based on chart type
+  if (isPieDonut) {
+    if (_isEmpty(chart.data) || _isEmpty(chart.data.labels) || _isEmpty(chart.data.values)) {
+      return null
+    }
+  } else {
+    if (_isEmpty(chart.data) || _isEmpty(chart.data.x)) {
+      return null
+    }
   }
 
   return (
     <div className='rounded-lg border border-gray-200 bg-white p-3 dark:border-slate-600 dark:bg-slate-800'>
       {chart.title && <h4 className='mb-2 text-sm font-medium text-gray-700 dark:text-gray-300'>{chart.title}</h4>}
-      <div className='h-[200px] w-full'>
+      <div className={isPieDonut ? 'h-[280px] w-full' : 'h-[200px] w-full'}>
         <BillboardChart options={chartOptions} className='h-full w-full' />
       </div>
     </div>
