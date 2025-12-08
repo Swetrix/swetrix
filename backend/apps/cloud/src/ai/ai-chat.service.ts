@@ -131,4 +131,20 @@ export class AiChatService {
 
     return queryBuilder.getOne()
   }
+
+  /**
+   * Verify that a chat belongs to a project (without checking user ownership).
+   * Used for shared chat links where anyone who can view the project can access the chat.
+   */
+  async verifyProjectAccess(
+    chatId: string,
+    projectId: string,
+  ): Promise<AiChat | null> {
+    return this.aiChatRepository.findOne({
+      where: {
+        id: chatId,
+        project: { id: projectId },
+      },
+    })
+  }
 }

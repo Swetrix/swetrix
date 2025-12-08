@@ -1810,12 +1810,12 @@ export const getGSCKeywords = (
     })
 
 // AI Chat API with SSE streaming
-export interface AIChatMessage {
+interface AIChatMessage {
   role: 'user' | 'assistant'
   content: string
 }
 
-export interface AIStreamCallbacks {
+interface AIStreamCallbacks {
   onText: (chunk: string) => void
   onToolCall?: (toolName: string, args: unknown) => void
   onToolResult?: (toolName: string, result: unknown) => void
@@ -1913,7 +1913,7 @@ export interface AIChatSummary {
   updated: string
 }
 
-export interface AIChat extends AIChatSummary {
+interface AIChat extends AIChatSummary {
   messages: AIChatMessage[]
 }
 

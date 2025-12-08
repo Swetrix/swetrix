@@ -115,10 +115,19 @@ export class AiController {
       // Stream the full response including tool calls and reasoning
       // Wrap in try-catch to handle provider errors gracefully
       let hasContent = false
+      let toolCallCount = 0
+      let toolResultCount = 0
+      let textDeltaCount = 0
       try {
         for await (const part of result.fullStream) {
+          this.logger.debug(
+            { pid, partType: part.type },
+            'AI stream part received',
+          )
+
           if (part.type === 'text-delta') {
             hasContent = true
+            textDeltaCount++
             res.write(
               `data: ${JSON.stringify({ type: 'text', content: part.textDelta })}\n\n`,
             )
@@ -128,6 +137,7 @@ export class AiController {
             )
           } else if (part.type === 'tool-call') {
             hasContent = true
+            toolCallCount++
             // Send tool call info for UI feedback
             res.write(
               `data: ${JSON.stringify({
@@ -141,6 +151,7 @@ export class AiController {
               'AI tool call',
             )
           } else if (part.type === 'tool-result') {
+            toolResultCount++
             // Send tool result for transparency (limit result size to avoid huge payloads)
             const resultPreview =
               typeof part.result === 'object'
@@ -177,8 +188,38 @@ export class AiController {
             res.write(
               `data: ${JSON.stringify({ type: 'error', content: 'A temporary error occurred, continuing...' })}\n\n`,
             )
+          } else if (part.type === 'finish') {
+            this.logger.log(
+              {
+                pid,
+                finishReason: (part as any).finishReason,
+                usage: (part as any).usage,
+              },
+              'AI stream finish event',
+            )
+          } else if (part.type === 'step-finish') {
+            this.logger.log(
+              {
+                pid,
+                stepType: (part as any).stepType,
+                finishReason: (part as any).finishReason,
+                isContinued: (part as any).isContinued,
+              },
+              'AI stream step-finish event',
+            )
           }
         }
+
+        this.logger.log(
+          {
+            pid,
+            toolCallCount,
+            toolResultCount,
+            textDeltaCount,
+            hasContent,
+          },
+          'AI stream completed - summary',
+        )
       } catch (streamError) {
         // Handle errors thrown during stream iteration (e.g., malformed provider responses)
         this.logger.error(
@@ -316,9 +357,12 @@ export class AiController {
       throw new NotFoundException('Project not found')
     }
 
+    // Check if user is allowed to view the project (includes public projects)
     this.projectService.allowedToView(project, uid)
 
-    const chat = await this.aiChatService.verifyAccess(chatId, pid, uid)
+    // For shared chat links, only verify the chat belongs to the project
+    // Users who can view the project can access any chat in that project
+    const chat = await this.aiChatService.verifyProjectAccess(chatId, pid)
 
     if (!chat) {
       throw new NotFoundException('Chat not found')

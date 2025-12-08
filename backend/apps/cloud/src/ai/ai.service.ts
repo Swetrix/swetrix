@@ -170,12 +170,20 @@ Guidelines:
 6. Round percentages and large numbers for readability
 7. Explain trends and provide actionable insights when relevant
 8. If no data is available for the requested period, say so clearly instead of making up data
+9. If user asks technical questions, like how to set up a tracking script, or use the platform, refer them to the documentation at https://docs.swetrix.com/
 
 To include a chart in your response, use this exact JSON format on its own line:
+
+For time-series charts (line, bar, area):
 {"type":"chart","chartType":"line","title":"Chart Title","data":{"x":["2024-01-01","2024-01-02"],"pageviews":[100,150],"visitors":[80,120]}}
 
-Supported chart types: "line", "bar", "area"
-The data object should have "x" for x-axis labels and named arrays for each series.`
+For pie/donut charts (showing proportions):
+{"type":"chart","chartType":"pie","title":"Device Distribution","data":{"labels":["Desktop","Mobile","Tablet"],"values":[650,280,70]}}
+{"type":"chart","chartType":"donut","title":"Traffic Sources","data":{"labels":["Organic","Direct","Referral"],"values":[450,300,150]}}
+
+Supported chart types: "line", "bar", "area", "pie", "donut"
+- For line/bar/area: data object should have "x" for x-axis labels and named arrays for each series
+- For pie/donut: data object should have "labels" array and "values" array (use raw numbers, not percentages)`
   }
 
   private buildTools(project: Project, timezone: string) {
@@ -183,8 +191,10 @@ The data object should have "x" for x-axis labels and named arrays for each seri
       getProjectInfo: tool({
         description:
           'Get basic information about the current project including name, settings, and available funnels/goals',
-        parameters: z.object({}),
-        execute: async () => {
+        parameters: z.object({
+          // Empty object schema - no parameters needed
+        }),
+        execute: async (_params: Record<string, never>) => {
           this.logger.log({ pid: project.id }, 'Tool: getProjectInfo called')
 
           try {
