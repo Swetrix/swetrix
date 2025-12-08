@@ -13,6 +13,8 @@ import {
   HttpException,
   HttpStatus,
   ParseIntPipe,
+  Headers,
+  Ip,
 } from '@nestjs/common'
 import {
   ApiTags,
@@ -48,6 +50,7 @@ import {
 } from './dto/feature-flag.dto'
 import { FeatureFlagService } from './feature-flag.service'
 import { clickhouse } from '../common/integrations/clickhouse'
+import { getIPFromHeaders, getGeoDetails } from '../common/utils'
 
 const FEATURE_FLAGS_MAXIMUM = 100 // Maximum feature flags per project
 
@@ -331,9 +334,13 @@ export class FeatureFlagController {
   @ApiOperation({
     summary: 'Evaluate feature flags for a visitor (public endpoint)',
     description:
-      'Evaluates all enabled feature flags for a project based on visitor attributes. Does not require authentication.',
+      'Evaluates all enabled feature flags for a project based on visitor attributes derived from the request. Does not require authentication.',
   })
-  async evaluateFlags(@Body() evaluateDto: EvaluateFeatureFlagsDto) {
+  async evaluateFlags(
+    @Body() evaluateDto: EvaluateFeatureFlagsDto,
+    @Headers() headers: Record<string, string>,
+    @Ip() reqIP: string,
+  ) {
     this.logger.log({ pid: evaluateDto.pid }, 'POST /feature-flag/evaluate')
 
     const project = await this.projectService.findOne({
@@ -352,10 +359,38 @@ export class FeatureFlagController {
       evaluateDto.pid,
     )
 
+    // Derive attributes from request headers (like analytics does)
+    const ip = getIPFromHeaders(headers, true) || reqIP || ''
+    const { country, city, region } = getGeoDetails(ip)
+    const { deviceType, browserName, osName } =
+      await this.analyticsService.getRequestInformation(headers)
+
+    // Build attributes from derived values
+    const derivedAttributes: Record<string, string> = {}
+
+    if (country) {
+      derivedAttributes.cc = country
+    }
+    if (city) {
+      derivedAttributes.ct = city
+    }
+    if (region) {
+      derivedAttributes.rg = region
+    }
+    if (deviceType) {
+      derivedAttributes.dv = deviceType
+    }
+    if (browserName) {
+      derivedAttributes.br = browserName
+    }
+    if (osName) {
+      derivedAttributes.os = osName
+    }
+
     const evaluatedFlags = this.featureFlagService.evaluateFlags(
       flags,
       evaluateDto.visitorId,
-      evaluateDto.attributes,
+      derivedAttributes,
     )
 
     // Track evaluations in ClickHouse (async, don't wait)

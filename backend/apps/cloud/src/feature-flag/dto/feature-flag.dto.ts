@@ -160,13 +160,6 @@ export class EvaluateFeatureFlagsDto {
   @IsOptional()
   @IsString()
   visitorId?: string
-
-  @ApiPropertyOptional({
-    description: 'Visitor attributes for targeting (cc, dv, br, os, pg, etc.)',
-    example: { cc: 'US', dv: 'desktop', br: 'Chrome', os: 'Windows' },
-  })
-  @IsOptional()
-  attributes?: Record<string, string>
 }
 
 export class FeatureFlagDto {
