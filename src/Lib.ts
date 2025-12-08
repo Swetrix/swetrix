@@ -104,12 +104,6 @@ export interface FeatureFlagsOptions {
    * If not provided, rollout-based flags may return different results on each evaluation.
    */
   visitorId?: string
-
-  /**
-   * Visitor attributes for targeting rules.
-   * Common attributes: cc (country), dv (device), br (browser), os (operating system), pg (page).
-   */
-  attributes?: Record<string, string>
 }
 
 /**
@@ -421,16 +415,12 @@ export class Lib {
 
     try {
       const apiBase = this.getApiBase()
-      const body: { pid: string; visitorId?: string; attributes?: Record<string, string> } = {
+      const body: { pid: string; visitorId?: string } = {
         pid: this.projectID,
       }
 
       if (options?.visitorId) {
         body.visitorId = options.visitorId
-      }
-
-      if (options?.attributes) {
-        body.attributes = options.attributes
       }
 
       const response = await fetch(`${apiBase}/feature-flag/evaluate`, {
