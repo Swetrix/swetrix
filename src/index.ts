@@ -9,6 +9,7 @@ import {
   defaultActions,
   IErrorEventPayload,
   IPageViewPayload,
+  FeatureFlagsOptions,
 } from './Lib.js'
 
 export let LIB_INSTANCE: Lib | null = null
@@ -120,6 +121,72 @@ export function pageview(options: IPageviewOptions): void {
   LIB_INSTANCE.submitPageView(options.payload, Boolean(options.unique), {})
 }
 
+/**
+ * Fetches all feature flags for the project.
+ * Results are cached for 5 minutes by default.
+ *
+ * @param options - Options for evaluating feature flags (visitorId, attributes).
+ * @param forceRefresh - If true, bypasses the cache and fetches fresh flags.
+ * @returns A promise that resolves to a record of flag keys to boolean values.
+ *
+ * @example
+ * ```typescript
+ * const flags = await getFeatureFlags({
+ *   visitorId: 'user-123',
+ *   attributes: { cc: 'US', dv: 'desktop' }
+ * })
+ *
+ * if (flags['new-checkout']) {
+ *   // Show new checkout flow
+ * }
+ * ```
+ */
+export async function getFeatureFlags(
+  options?: FeatureFlagsOptions,
+  forceRefresh?: boolean,
+): Promise<Record<string, boolean>> {
+  if (!LIB_INSTANCE) return {}
+
+  return LIB_INSTANCE.getFeatureFlags(options, forceRefresh)
+}
+
+/**
+ * Gets the value of a single feature flag.
+ *
+ * @param key - The feature flag key.
+ * @param options - Options for evaluating the feature flag (visitorId, attributes).
+ * @param defaultValue - Default value to return if the flag is not found. Defaults to false.
+ * @returns A promise that resolves to the boolean value of the flag.
+ *
+ * @example
+ * ```typescript
+ * const isEnabled = await getFeatureFlag('dark-mode', { visitorId: 'user-123' })
+ *
+ * if (isEnabled) {
+ *   // Enable dark mode
+ * }
+ * ```
+ */
+export async function getFeatureFlag(
+  key: string,
+  options?: FeatureFlagsOptions,
+  defaultValue: boolean = false,
+): Promise<boolean> {
+  if (!LIB_INSTANCE) return defaultValue
+
+  return LIB_INSTANCE.getFeatureFlag(key, options, defaultValue)
+}
+
+/**
+ * Clears the cached feature flags, forcing a fresh fetch on the next call.
+ * Useful when you know the user's context has changed significantly.
+ */
+export function clearFeatureFlagsCache(): void {
+  if (!LIB_INSTANCE) return
+
+  LIB_INSTANCE.clearFeatureFlagsCache()
+}
+
 export {
   LibOptions,
   TrackEventOptions,
@@ -129,4 +196,5 @@ export {
   ErrorActions,
   IErrorEventPayload,
   IPageViewPayload,
+  FeatureFlagsOptions,
 }

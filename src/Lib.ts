@@ -96,6 +96,31 @@ interface IPerfPayload {
 }
 
 /**
+ * Options for evaluating feature flags.
+ */
+export interface FeatureFlagsOptions {
+  /**
+   * Unique visitor ID for consistent rollout percentages.
+   * If not provided, rollout-based flags may return different results on each evaluation.
+   */
+  visitorId?: string
+
+  /**
+   * Visitor attributes for targeting rules.
+   * Common attributes: cc (country), dv (device), br (browser), os (operating system), pg (page).
+   */
+  attributes?: Record<string, string>
+}
+
+/**
+ * Cached feature flags with timestamp.
+ */
+interface CachedFlags {
+  flags: Record<string, boolean>
+  timestamp: number
+}
+
+/**
  * The object returned by `trackPageViews()`, used to stop tracking pages.
  */
 export interface PageActions {
@@ -174,6 +199,10 @@ export const defaultActions = {
 }
 
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
+const DEFAULT_API_BASE = 'https://api.swetrix.com'
+
+// Default cache duration: 5 minutes
+const DEFAULT_CACHE_DURATION = 5 * 60 * 1000
 
 export class Lib {
   private pageData: PageData | null = null
@@ -182,6 +211,7 @@ export class Lib {
   private perfStatsCollected: boolean = false
   private activePage: string | null = null
   private errorListenerExists = false
+  private cachedFlags: CachedFlags | null = null
 
   constructor(private projectID: string, private options?: LibOptions) {
     this.trackPathChange = this.trackPathChange.bind(this)
@@ -366,6 +396,100 @@ export class Lib {
       // Backend
       ttfb: perf.responseStart - perf.requestStart,
     }
+  }
+
+  /**
+   * Fetches all feature flags for the project.
+   * Results are cached for 5 minutes by default.
+   *
+   * @param options - Options for evaluating feature flags.
+   * @param forceRefresh - If true, bypasses the cache and fetches fresh flags.
+   * @returns A promise that resolves to a record of flag keys to boolean values.
+   */
+  async getFeatureFlags(options?: FeatureFlagsOptions, forceRefresh?: boolean): Promise<Record<string, boolean>> {
+    if (!isInBrowser()) {
+      return {}
+    }
+
+    // Check cache first
+    if (!forceRefresh && this.cachedFlags) {
+      const now = Date.now()
+      if (now - this.cachedFlags.timestamp < DEFAULT_CACHE_DURATION) {
+        return this.cachedFlags.flags
+      }
+    }
+
+    try {
+      const apiBase = this.getApiBase()
+      const body: { pid: string; visitorId?: string; attributes?: Record<string, string> } = {
+        pid: this.projectID,
+      }
+
+      if (options?.visitorId) {
+        body.visitorId = options.visitorId
+      }
+
+      if (options?.attributes) {
+        body.attributes = options.attributes
+      }
+
+      const response = await fetch(`${apiBase}/feature-flag/evaluate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      if (!response.ok) {
+        console.warn('[Swetrix] Failed to fetch feature flags:', response.status)
+        return this.cachedFlags?.flags || {}
+      }
+
+      const data = (await response.json()) as { flags: Record<string, boolean> }
+
+      // Update cache
+      this.cachedFlags = {
+        flags: data.flags,
+        timestamp: Date.now(),
+      }
+
+      return data.flags
+    } catch (error) {
+      console.warn('[Swetrix] Error fetching feature flags:', error)
+      return this.cachedFlags?.flags || {}
+    }
+  }
+
+  /**
+   * Gets the value of a single feature flag.
+   *
+   * @param key - The feature flag key.
+   * @param options - Options for evaluating the feature flag.
+   * @param defaultValue - Default value to return if the flag is not found. Defaults to false.
+   * @returns A promise that resolves to the boolean value of the flag.
+   */
+  async getFeatureFlag(key: string, options?: FeatureFlagsOptions, defaultValue: boolean = false): Promise<boolean> {
+    const flags = await this.getFeatureFlags(options)
+    return flags[key] ?? defaultValue
+  }
+
+  /**
+   * Clears the cached feature flags, forcing a fresh fetch on the next call.
+   */
+  clearFeatureFlagsCache(): void {
+    this.cachedFlags = null
+  }
+
+  /**
+   * Gets the API base URL (without /log suffix).
+   */
+  private getApiBase(): string {
+    if (this.options?.apiURL) {
+      // Remove trailing /log if present
+      return this.options.apiURL.replace(/\/log\/?$/, '')
+    }
+    return DEFAULT_API_BASE
   }
 
   private heartbeat(): void {
