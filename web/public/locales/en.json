@@ -117,6 +117,8 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "closePopup": "Close popup",
+    "collapse": "Collapse",
+    "expand": "Expand",
     "learnMore": "Learn more",
     "yes": "Yes",
     "no": "No",

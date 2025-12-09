@@ -1,7 +1,7 @@
 import cx from 'clsx'
 import _map from 'lodash/map'
-import { ChevronDownIcon, ChevronRightIcon, SettingsIcon } from 'lucide-react'
-import React, { useState, useMemo } from 'react'
+import { ChevronDownIcon, ChevronRightIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, SettingsIcon } from 'lucide-react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps } from 'react-router'
 
@@ -9,6 +9,8 @@ import { PROJECT_TABS } from '~/lib/constants'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import routes from '~/utils/routes'
+
+const SIDEBAR_COLLAPSED_KEY = 'project-sidebar-collapsed'
 
 type ProjectTabKey = keyof typeof PROJECT_TABS | 'settings'
 
@@ -62,7 +64,8 @@ const CollapsibleGroup: React.FC<{
   projectId: string
   dataLoading?: boolean
   searchParams: URLSearchParams
-}> = ({ group, activeTab, onTabChange, projectId, dataLoading, searchParams }) => {
+  isCollapsed?: boolean
+}> = ({ group, activeTab, onTabChange, projectId, dataLoading, searchParams, isCollapsed }) => {
   const [isExpanded, setIsExpanded] = useState(true)
 
   const hasActiveTab = useMemo(() => {
@@ -74,6 +77,61 @@ const CollapsibleGroup: React.FC<{
       setIsExpanded(true)
     }
   }, [hasActiveTab]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // When collapsed, render tabs without group header
+  if (isCollapsed) {
+    return (
+      <div className='mb-1'>
+        <nav className='flex flex-col gap-0.5'>
+          {_map(group.tabs, (tab) => {
+            const isCurrent = tab.id === activeTab
+            const TabIcon = tab.icon
+            const iconColorClass = ICON_COLORS[tab.id] || 'text-gray-500'
+
+            const handleClick = (e: React.MouseEvent) => {
+              if (tab.id === 'settings') {
+                return
+              }
+
+              e.preventDefault()
+              if (!dataLoading) {
+                onTabChange(tab.id as keyof typeof PROJECT_TABS)
+              }
+            }
+
+            const newSearchParams = new URLSearchParams(searchParams.toString())
+            newSearchParams.set('tab', tab.id)
+            const tabUrl: LinkProps['to'] =
+              tab.id === 'settings'
+                ? routes.project_settings.replace(':id', projectId)
+                : { search: newSearchParams.toString() }
+
+            return (
+              <Tooltip
+                key={tab.id}
+                text={tab.label}
+                tooltipNode={
+                  <Link
+                    to={tabUrl}
+                    onClick={handleClick}
+                    className={cx('group flex items-center justify-center rounded-md p-2 transition-colors', {
+                      'bg-gray-100 dark:bg-slate-800': isCurrent,
+                      'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
+                      'cursor-wait': dataLoading && tab.id !== 'settings',
+                    })}
+                    aria-current={isCurrent ? 'page' : undefined}
+                    aria-label={tab.label}
+                  >
+                    <TabIcon className={cx('size-5 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
+                  </Link>
+                }
+              />
+            )
+          })}
+        </nav>
+      </div>
+    )
+  }
 
   return (
     <div className='mb-1'>
@@ -158,6 +216,20 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   allowedToManage,
 }) => {
   const { t } = useTranslation('common')
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true'
+    }
+    return false
+  })
+
+  const toggleCollapsed = useCallback(() => {
+    setIsCollapsed((prev) => {
+      const newValue = !prev
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(newValue))
+      return newValue
+    })
+  }, [])
 
   // Find Ask AI tab (standalone, not in a group)
   const askAiTab = useMemo(() => {
@@ -210,18 +282,34 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   }, [tabs, t])
 
   return (
-    <aside className='flex h-full w-56 shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900'>
+    <aside
+      className={cx(
+        'flex h-full shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white transition-all duration-200 dark:border-slate-800 dark:bg-slate-900',
+        isCollapsed ? 'w-14' : 'w-56',
+      )}
+    >
       {/* Project name at the top */}
       <div className='sticky top-0 z-10 flex items-center border-b border-gray-200 bg-white px-4 py-2 dark:border-slate-800 dark:bg-slate-900'>
-        <Tooltip
-          className='max-w-full'
-          text={projectName}
-          tooltipNode={
-            <Text as='h2' size='lg' weight='semibold' truncate className='max-w-full'>
-              {projectName}
-            </Text>
-          }
-        />
+        {isCollapsed ? (
+          <Tooltip
+            text={projectName}
+            tooltipNode={
+              <Text as='h2' size='lg' weight='semibold' className='text-center'>
+                {projectName.charAt(0).toUpperCase()}
+              </Text>
+            }
+          />
+        ) : (
+          <Tooltip
+            className='max-w-full'
+            text={projectName}
+            tooltipNode={
+              <Text as='h2' size='lg' weight='semibold' truncate className='max-w-full'>
+                {projectName}
+              </Text>
+            }
+          />
+        )}
       </div>
 
       {/* Tabs area */}
@@ -243,6 +331,34 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
 
               const newSearchParams = new URLSearchParams(searchParams.toString())
               newSearchParams.set('tab', askAiTab.id)
+
+              if (isCollapsed) {
+                return (
+                  <Tooltip
+                    text={askAiTab.label}
+                    tooltipNode={
+                      <Link
+                        to={{ search: newSearchParams.toString() }}
+                        onClick={handleClick}
+                        className={cx('group flex items-center justify-center rounded-md p-2 transition-colors', {
+                          'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
+                            isCurrent,
+                          'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
+                          'cursor-wait': dataLoading,
+                        })}
+                        aria-current={isCurrent ? 'page' : undefined}
+                        aria-label={askAiTab.label}
+                      >
+                        <TabIcon
+                          className={cx('size-5 shrink-0', iconColorClass)}
+                          strokeWidth={1.5}
+                          aria-hidden='true'
+                        />
+                      </Link>
+                    }
+                  />
+                )
+              }
 
               return (
                 <Link
@@ -275,29 +391,54 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             projectId={projectId}
             dataLoading={dataLoading}
             searchParams={searchParams}
+            isCollapsed={isCollapsed}
           />
         ))}
       </div>
 
-      {/* Settings at the bottom - always show if user is allowed to manage */}
-      {allowedToManage ? (
-        <div className='sticky bottom-0 border-t border-gray-200 bg-white px-2 py-2 dark:border-slate-800 dark:bg-slate-900'>
+      {/* Bottom section: Collapse button + Settings */}
+      <div className='sticky bottom-0 flex flex-col gap-0.5 border-t border-gray-200 bg-white px-2 py-2 dark:border-slate-800 dark:bg-slate-900'>
+        {/* Collapse/Expand button */}
+        <button
+          type='button'
+          onClick={toggleCollapsed}
+          className={cx(
+            'group flex w-full items-center rounded-md px-2.5 py-2 text-sm font-medium transition-colors',
+            'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800/60 dark:hover:text-gray-200',
+            isCollapsed ? 'justify-center' : 'gap-2.5',
+          )}
+          aria-label={isCollapsed ? t('common.expand') : t('common.collapse')}
+        >
+          {isCollapsed ? (
+            <PanelLeftOpenIcon className='h-5 w-5 shrink-0' strokeWidth={1.5} aria-hidden='true' />
+          ) : (
+            <>
+              <PanelLeftCloseIcon className='h-5 w-5 shrink-0' strokeWidth={1.5} aria-hidden='true' />
+              <span className='truncate'>{t('common.collapse')}</span>
+            </>
+          )}
+        </button>
+
+        {/* Settings - always show if user is allowed to manage */}
+        {allowedToManage ? (
           <Link
             to={routes.project_settings.replace(':id', projectId)}
             className={cx(
-              'group flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors',
+              'group flex w-full items-center rounded-md px-2.5 py-2 text-sm font-medium transition-colors',
               'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800/60 dark:hover:text-gray-200',
+              isCollapsed ? 'justify-center' : 'gap-2.5',
             )}
+            aria-label={t('common.settings')}
           >
             <SettingsIcon
               className={cx('h-5 w-5 shrink-0', ICON_COLORS.settings)}
               strokeWidth={1.5}
               aria-hidden='true'
             />
-            <span className='truncate'>{t('common.settings')}</span>
+            {!isCollapsed ? <span className='truncate'>{t('common.settings')}</span> : null}
           </Link>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </aside>
   )
 }
