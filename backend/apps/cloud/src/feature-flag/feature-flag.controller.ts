@@ -52,7 +52,7 @@ import { FeatureFlagService } from './feature-flag.service'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { getIPFromHeaders, getGeoDetails } from '../common/utils'
 
-const FEATURE_FLAGS_MAXIMUM = 100 // Maximum feature flags per project
+const FEATURE_FLAGS_MAXIMUM = 50 // Maximum feature flags per project
 
 const timeBucketConversion: Record<string, string> = {
   minute: 'toStartOfMinute',
@@ -274,9 +274,20 @@ export class FeatureFlagController {
 
     // Derive attributes from request headers (like analytics does)
     const ip = getIPFromHeaders(headers, true) || reqIP || ''
+    const userAgent = headers['user-agent'] || ''
     const { country, city, region } = getGeoDetails(ip)
     const { deviceType, browserName, osName } =
       await this.analyticsService.getRequestInformation(headers)
+
+    // Generate profileId using the same method as analytics:
+    // - If user provides profileId, use it (with usr_ prefix)
+    // - Otherwise, generate anonymous profileId from monthly salt + ip + useragent (with anon_ prefix)
+    const profileId = await this.analyticsService.generateProfileId(
+      evaluateDto.pid,
+      userAgent,
+      ip,
+      evaluateDto.profileId,
+    )
 
     // Build attributes from derived values
     const derivedAttributes: Record<string, string> = {}
@@ -302,7 +313,7 @@ export class FeatureFlagController {
 
     const evaluatedFlags = this.featureFlagService.evaluateFlags(
       flags,
-      evaluateDto.visitorId,
+      profileId,
       derivedAttributes,
     )
 
@@ -311,7 +322,7 @@ export class FeatureFlagController {
       evaluateDto.pid,
       flags,
       evaluatedFlags,
-      evaluateDto.visitorId,
+      profileId,
     ).catch(err => {
       this.logger.error({ err }, 'Failed to track flag evaluations')
     })
@@ -323,19 +334,19 @@ export class FeatureFlagController {
     pid: string,
     flags: FeatureFlag[],
     evaluatedFlags: Record<string, boolean>,
-    visitorId?: string,
+    profileId: string,
   ) {
     if (flags.length === 0) return
 
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
-    const vid = visitorId || 'anonymous'
 
+    // Note: The ClickHouse column is named 'visitorId' but we store the profileId value in it
     const values = flags.map(flag => ({
       pid,
       flagId: flag.id,
       flagKey: flag.key,
       result: evaluatedFlags[flag.key] ? 1 : 0,
-      visitorId: vid,
+      visitorId: profileId,
       created: now,
     }))
 

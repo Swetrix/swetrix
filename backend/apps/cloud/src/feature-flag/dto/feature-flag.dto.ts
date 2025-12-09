@@ -155,11 +155,12 @@ export class EvaluateFeatureFlagsDto {
   pid: string
 
   @ApiPropertyOptional({
-    description: 'Visitor/user ID for consistent rollout',
+    description:
+      'Optional profile ID for long-term user tracking. If not provided, an anonymous profile ID will be generated based on IP and user agent.',
   })
   @IsOptional()
   @IsString()
-  visitorId?: string
+  profileId?: string
 }
 
 export class FeatureFlagDto {

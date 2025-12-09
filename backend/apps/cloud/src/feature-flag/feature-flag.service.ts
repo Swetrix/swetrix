@@ -87,13 +87,13 @@ export class FeatureFlagService {
    */
   evaluateFlags(
     flags: FeatureFlag[],
-    visitorId?: string,
+    profileId: string,
     attributes?: Record<string, string>,
   ): Record<string, boolean> {
     const result: Record<string, boolean> = {}
 
     for (const flag of flags) {
-      result[flag.key] = this.evaluateFlag(flag, visitorId, attributes)
+      result[flag.key] = this.evaluateFlag(flag, profileId, attributes)
     }
 
     return result
@@ -104,7 +104,7 @@ export class FeatureFlagService {
    */
   evaluateFlag(
     flag: FeatureFlag,
-    visitorId?: string,
+    profileId: string,
     attributes?: Record<string, string>,
   ): boolean {
     // If flag is disabled, always return false
@@ -133,7 +133,7 @@ export class FeatureFlagService {
       return this.isInRolloutPercentage(
         flag.key,
         flag.rolloutPercentage,
-        visitorId,
+        profileId,
       )
     }
 
@@ -194,12 +194,12 @@ export class FeatureFlagService {
 
   /**
    * Determines if a visitor is within the rollout percentage
-   * Uses consistent hashing based on flag key and visitor ID
+   * Uses consistent hashing based on flag key and profile ID
    */
   private isInRolloutPercentage(
     flagKey: string,
     percentage: number,
-    visitorId?: string,
+    profileId: string,
   ): boolean {
     if (percentage >= 100) {
       return true
@@ -208,13 +208,10 @@ export class FeatureFlagService {
       return false
     }
 
-    // Use visitor ID if provided, otherwise generate random
-    const identifier = visitorId || crypto.randomUUID()
-
-    // Create a consistent hash based on flag key and visitor ID
+    // Create a consistent hash based on flag key and profile ID
     const hash = crypto
       .createHash('md5')
-      .update(`${flagKey}:${identifier}`)
+      .update(`${flagKey}:${profileId}`)
       .digest('hex')
 
     // Convert first 8 hex characters to a number (0 to 2^32-1)
