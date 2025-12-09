@@ -46,9 +46,6 @@ const TARGETING_COLUMNS = [
   { value: 'dv', label: 'Device' },
   { value: 'br', label: 'Browser' },
   { value: 'os', label: 'OS' },
-  { value: 'lc', label: 'Locale' },
-  { value: 'ref', label: 'Referrer' },
-  { value: 'pg', label: 'Page' },
 ]
 
 interface FeatureFlagSettingsModalProps {
