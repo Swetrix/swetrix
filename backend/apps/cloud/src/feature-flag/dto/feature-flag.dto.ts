@@ -216,3 +216,30 @@ export class EvaluatedFlagsResponseDto {
   })
   flags: Record<string, boolean>
 }
+
+export class FeatureFlagProfileDto {
+  @ApiProperty({ description: 'Profile ID' })
+  profileId: string
+
+  @ApiProperty({
+    description: 'Whether profile is identified (has user-provided ID)',
+  })
+  isIdentified: boolean
+
+  @ApiProperty({ description: 'Last evaluation result' })
+  lastResult: boolean
+
+  @ApiProperty({ description: 'Total number of evaluations for this profile' })
+  evaluationCount: number
+
+  @ApiProperty({ description: 'Most recent evaluation timestamp' })
+  lastEvaluated: string
+}
+
+export class FeatureFlagProfilesResponseDto {
+  @ApiProperty({ type: [FeatureFlagProfileDto] })
+  profiles: FeatureFlagProfileDto[]
+
+  @ApiProperty({ description: 'Total number of profiles' })
+  total: number
+}

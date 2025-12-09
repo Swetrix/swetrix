@@ -1,5 +1,7 @@
 import { XCircleIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import {
@@ -13,22 +15,30 @@ import {
   PercentIcon,
   UsersIcon,
   ActivityIcon,
+  ChevronDownIcon,
+  DownloadIcon,
+  CheckIcon,
+  XIcon,
 } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { toast } from 'sonner'
 
 import {
   deleteFeatureFlag as deleteFeatureFlagApi,
   getProjectFeatureFlags,
   getFeatureFlagStats,
+  getFeatureFlagProfiles,
   DEFAULT_FEATURE_FLAGS_TAKE,
+  DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
   type ProjectFeatureFlag,
   type FeatureFlagStats,
+  type FeatureFlagProfile,
 } from '~/api'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Spin from '~/ui/icons/Spin'
 import Loader from '~/ui/Loader'
@@ -37,20 +47,117 @@ import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import { Text } from '~/ui/Text'
 import { nFormatter } from '~/utils/generic'
+import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
 import routes from '~/utils/routes'
 
 import FeatureFlagSettingsModal from './FeatureFlagSettingsModal'
+
+dayjs.extend(relativeTime)
+
+interface FeatureFlagProfileRowProps {
+  profile: FeatureFlagProfile
+  timeFormat: '12-hour' | '24-hour'
+}
+
+const FeatureFlagProfileRow = ({ profile, timeFormat }: FeatureFlagProfileRowProps) => {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
+  const location = useLocation()
+
+  const displayName = useMemo(() => {
+    return getProfileDisplayName(profile.profileId, profile.isIdentified)
+  }, [profile.profileId, profile.isIdentified])
+
+  const lastEvaluatedText = useMemo(() => {
+    return dayjs(profile.lastEvaluated)
+      .toDate()
+      .toLocaleDateString(language, {
+        day: 'numeric',
+        month: 'short',
+        hour: 'numeric',
+        minute: 'numeric',
+        hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+      })
+  }, [profile.lastEvaluated, language, timeFormat])
+
+  const params = new URLSearchParams(location.search)
+  params.set('profileId', profile.profileId)
+
+  return (
+    <Link to={{ search: params.toString() }}>
+      <li className='relative mb-2 flex cursor-pointer items-center justify-between gap-x-4 overflow-hidden rounded-lg border border-gray-200 bg-white px-3 py-2.5 transition-colors hover:bg-gray-100 dark:border-slate-700/50 dark:bg-slate-800/50 dark:hover:bg-slate-700/50'>
+        <div className='flex min-w-0 items-center gap-x-3'>
+          {/* Avatar */}
+          <ProfileAvatar profileId={profile.profileId} size={32} className='shrink-0' />
+
+          <div className='min-w-0 flex-auto'>
+            <p className='flex items-center text-xs leading-5 font-semibold text-gray-900 dark:text-gray-50'>
+              <span className='truncate'>{displayName}</span>
+              {profile.isIdentified ? (
+                <Badge label={t('project.identified')} colour='indigo' className='ml-1.5' />
+              ) : null}
+            </p>
+            <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
+              {t('featureFlags.xEvaluations', { count: profile.evaluationCount })} · {lastEvaluatedText}
+            </p>
+          </div>
+        </div>
+        <div className='flex shrink-0 items-center gap-x-2'>
+          {/* Result indicator */}
+          <span
+            className={cx(
+              'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+              profile.lastResult
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
+            )}
+          >
+            {profile.lastResult ? (
+              <CheckIcon className='mr-1 size-3' strokeWidth={2} />
+            ) : (
+              <XIcon className='mr-1 size-3' strokeWidth={2} />
+            )}
+            {profile.lastResult ? 'true' : 'false'}
+          </span>
+        </div>
+      </li>
+    </Link>
+  )
+}
 
 interface FeatureFlagRowProps {
   flag: ProjectFeatureFlag
   stats: FeatureFlagStats | null
   statsLoading: boolean
+  isExpanded: boolean
+  profiles: FeatureFlagProfile[]
+  profilesLoading: boolean
+  canLoadMoreProfiles: boolean
   onDelete: (id: string) => void
   onEdit: (id: string) => void
   onToggle: (id: string, enabled: boolean) => void
+  onToggleExpand: (id: string) => void
+  onLoadMoreProfiles: (id: string) => void
+  timeFormat: '12-hour' | '24-hour'
 }
 
-const FeatureFlagRow = ({ flag, stats, statsLoading, onDelete, onEdit, onToggle }: FeatureFlagRowProps) => {
+const FeatureFlagRow = ({
+  flag,
+  stats,
+  statsLoading,
+  isExpanded,
+  profiles,
+  profilesLoading,
+  canLoadMoreProfiles,
+  onDelete,
+  onEdit,
+  onToggle,
+  onToggleExpand,
+  onLoadMoreProfiles,
+  timeFormat,
+}: FeatureFlagRowProps) => {
   const { t } = useTranslation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
@@ -59,7 +166,11 @@ const FeatureFlagRow = ({ flag, stats, statsLoading, onDelete, onEdit, onToggle 
   return (
     <>
       <li className='relative mb-3 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/25 dark:bg-slate-800/70'>
-        <div className='flex justify-between gap-x-6 px-4 py-4 sm:px-6'>
+        {/* Main row - clickable to expand */}
+        <div
+          onClick={() => onToggleExpand(flag.id)}
+          className='flex cursor-pointer justify-between gap-x-6 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:hover:bg-slate-700/60'
+        >
           <div className='flex min-w-0 gap-x-4'>
             <div className='min-w-0 flex-auto'>
               <div className='flex items-center gap-x-2'>
@@ -215,9 +326,64 @@ const FeatureFlagRow = ({ flag, stats, statsLoading, onDelete, onEdit, onToggle 
               >
                 <Trash2Icon className='size-4' strokeWidth={1.5} />
               </button>
+              <ChevronDownIcon
+                className={cx('size-5 text-gray-500 transition-transform dark:text-gray-400', {
+                  'rotate-180': isExpanded,
+                })}
+                strokeWidth={1.5}
+              />
             </div>
           </div>
         </div>
+
+        {/* Expanded profiles section */}
+        {isExpanded ? (
+          <div className='border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-slate-700'>
+            {profilesLoading && profiles.length === 0 ? (
+              <div className='flex h-[120px] items-center justify-center'>
+                <Spin className='size-8' />
+              </div>
+            ) : profiles.length === 0 ? (
+              <div className='flex h-[120px] items-center justify-center'>
+                <Text as='p' colour='muted'>
+                  {t('featureFlags.noProfiles')}
+                </Text>
+              </div>
+            ) : (
+              <>
+                <ul>
+                  {_map(profiles, (profile) => (
+                    <FeatureFlagProfileRow key={profile.profileId} profile={profile} timeFormat={timeFormat} />
+                  ))}
+                </ul>
+                {canLoadMoreProfiles ? (
+                  <button
+                    type='button'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      onLoadMoreProfiles(flag.id)
+                    }}
+                    disabled={profilesLoading}
+                    className={cx(
+                      'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                      {
+                        'cursor-not-allowed opacity-50': profilesLoading,
+                      },
+                    )}
+                  >
+                    {profilesLoading ? (
+                      <Spin className='mr-2 size-5' />
+                    ) : (
+                      <DownloadIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
+                    )}
+                    {t('featureFlags.loadMore')}
+                  </button>
+                ) : null}
+              </>
+            )}
+          </div>
+        ) : null}
       </li>
       <Modal
         onClose={() => setShowDeleteModal(false)}
@@ -246,7 +412,7 @@ interface FeatureFlagsViewProps {
 
 const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlagsViewProps) => {
   const { id } = useCurrentProject()
-  const { featureFlagsRefreshTrigger } = useViewProjectContext()
+  const { featureFlagsRefreshTrigger, timeFormat } = useViewProjectContext()
   const { t } = useTranslation()
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
@@ -259,6 +425,12 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const [filterQuery, setFilterQuery] = useState('')
+
+  // Expanded flag state
+  const [expandedFlagId, setExpandedFlagId] = useState<string | null>(null)
+  const [flagProfiles, setFlagProfiles] = useState<Record<string, FeatureFlagProfile[]>>({})
+  const [flagProfilesTotal, setFlagProfilesTotal] = useState<Record<string, number>>({})
+  const [profilesLoading, setProfilesLoading] = useState<Record<string, boolean>>({})
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -327,6 +499,58 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     }
   }
 
+  const loadFlagProfiles = async (flagId: string, append = false) => {
+    const currentProfiles = flagProfiles[flagId] || []
+    const skip = append ? currentProfiles.length : 0
+
+    setProfilesLoading((prev) => ({ ...prev, [flagId]: true }))
+    try {
+      const result = await getFeatureFlagProfiles(
+        flagId,
+        period,
+        from,
+        to,
+        timezone,
+        DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
+        skip,
+      )
+      if (isMountedRef.current) {
+        setFlagProfiles((prev) => ({
+          ...prev,
+          [flagId]: append ? [...currentProfiles, ...result.profiles] : result.profiles,
+        }))
+        setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: result.total }))
+      }
+    } catch (err) {
+      console.error('Failed to load flag profiles:', err)
+      if (isMountedRef.current) {
+        setFlagProfiles((prev) => ({ ...prev, [flagId]: append ? currentProfiles : [] }))
+        setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: 0 }))
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setProfilesLoading((prev) => ({ ...prev, [flagId]: false }))
+      }
+    }
+  }
+
+  const handleToggleExpand = (flagId: string) => {
+    if (expandedFlagId === flagId) {
+      // Collapse if already expanded
+      setExpandedFlagId(null)
+    } else {
+      // Expand and load profiles if not already loaded
+      setExpandedFlagId(flagId)
+      if (!flagProfiles[flagId] && !profilesLoading[flagId]) {
+        loadFlagProfiles(flagId)
+      }
+    }
+  }
+
+  const handleLoadMoreProfiles = (flagId: string) => {
+    loadFlagProfiles(flagId, true)
+  }
+
   useEffect(() => {
     loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -338,6 +562,14 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
       loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE)
       // Clear cached stats data to force reload
       setFlagStats({})
+      // Refresh profiles for expanded flag
+      if (expandedFlagId) {
+        setFlagProfiles((prev) => ({ [expandedFlagId]: prev[expandedFlagId] }))
+        loadFlagProfiles(expandedFlagId)
+      } else {
+        setFlagProfiles({})
+        setFlagProfilesTotal({})
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [featureFlagsRefreshTrigger])
@@ -349,6 +581,14 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flags, period, from, to, timezone])
+
+  // Reload profiles when period changes for expanded flag
+  useEffect(() => {
+    if (expandedFlagId && flagProfiles[expandedFlagId]) {
+      loadFlagProfiles(expandedFlagId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period, from, to, timezone])
 
   const handleNewFlag = () => {
     setEditingFlagId(null)
@@ -478,17 +718,30 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
 
           {/* Flags list */}
           <ul className='mt-4'>
-            {_map(filteredFlags, (flag) => (
-              <FeatureFlagRow
-                key={flag.id}
-                flag={flag}
-                stats={flagStats[flag.id] || null}
-                statsLoading={statsLoading[flag.id] || false}
-                onDelete={handleDeleteFlag}
-                onEdit={handleEditFlag}
-                onToggle={handleToggleFlag}
-              />
-            ))}
+            {_map(filteredFlags, (flag) => {
+              const profiles = flagProfiles[flag.id] || []
+              const profilesTotal = flagProfilesTotal[flag.id] || 0
+              const canLoadMore = profiles.length < profilesTotal
+
+              return (
+                <FeatureFlagRow
+                  key={flag.id}
+                  flag={flag}
+                  stats={flagStats[flag.id] || null}
+                  statsLoading={statsLoading[flag.id] || false}
+                  isExpanded={expandedFlagId === flag.id}
+                  profiles={profiles}
+                  profilesLoading={profilesLoading[flag.id] || false}
+                  canLoadMoreProfiles={canLoadMore}
+                  onDelete={handleDeleteFlag}
+                  onEdit={handleEditFlag}
+                  onToggle={handleToggleFlag}
+                  onToggleExpand={handleToggleExpand}
+                  onLoadMoreProfiles={handleLoadMoreProfiles}
+                  timeFormat={timeFormat}
+                />
+              )
+            })}
           </ul>
 
           {filteredFlags.length === 0 && filterQuery ? (

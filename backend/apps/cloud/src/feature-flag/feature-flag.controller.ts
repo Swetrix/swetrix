@@ -47,6 +47,7 @@ import {
   FeatureFlagDto,
   FeatureFlagStatsDto,
   EvaluatedFlagsResponseDto,
+  FeatureFlagProfilesResponseDto,
 } from './dto/feature-flag.dto'
 import { FeatureFlagService } from './feature-flag.service'
 import { clickhouse } from '../common/integrations/clickhouse'
@@ -546,6 +547,126 @@ export class FeatureFlagController {
         trueCount: 0,
         falseCount: 0,
         truePercentage: 0,
+      }
+    }
+  }
+
+  @ApiBearerAuth()
+  @Get('/:id/profiles')
+  @Auth()
+  @ApiResponse({ status: 200, type: FeatureFlagProfilesResponseDto })
+  @ApiOperation({
+    summary: 'Get profiles who have evaluated a feature flag',
+    description:
+      'Returns a list of profiles ordered by most recent evaluation time',
+  })
+  async getFeatureFlagProfiles(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+    @Query('period') period: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('timezone') timezone?: string,
+    @Query('take', new ParseIntPipe({ optional: true })) take?: number,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+  ) {
+    this.logger.log(
+      { userId, id, period, from, to, take, skip },
+      'GET /feature-flag/:id/profiles',
+    )
+
+    const flag = await this.featureFlagService.findOneWithRelations(id)
+
+    if (_isEmpty(flag)) {
+      throw new NotFoundException('Feature flag not found')
+    }
+
+    const project = await this.projectService.getFullProject(flag.project.id)
+    this.projectService.allowedToView(project, userId)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const timeBucket = getLowestPossibleTimeBucket(period, from, to)
+
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+    )
+
+    const safeTake = Math.min(take || 15, 50)
+    const safeSkip = skip || 0
+
+    // Query to get profiles with their most recent evaluation
+    const profilesQuery = `
+      SELECT
+        profileId,
+        max(created) as lastEvaluated,
+        argMax(result, created) as lastResult,
+        count(*) as evaluationCount
+      FROM feature_flag_evaluations
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND flagId = {flagId:String}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY profileId
+      ORDER BY lastEvaluated DESC
+      LIMIT {take:UInt32} OFFSET {skip:UInt32}
+    `
+
+    const countQuery = `
+      SELECT uniqExact(profileId) as total
+      FROM feature_flag_evaluations
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND flagId = {flagId:String}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    const queryParams = {
+      pid: flag.project.id,
+      flagId: flag.id,
+      groupFrom: groupFromUTC,
+      groupTo: groupToUTC,
+      take: safeTake,
+      skip: safeSkip,
+    }
+
+    try {
+      const [profilesResult, countResult] = await Promise.all([
+        clickhouse
+          .query({ query: profilesQuery, query_params: queryParams })
+          .then(resultSet =>
+            resultSet.json<{
+              profileId: string
+              lastEvaluated: string
+              lastResult: number
+              evaluationCount: number
+            }>(),
+          ),
+        clickhouse
+          .query({ query: countQuery, query_params: queryParams })
+          .then(resultSet => resultSet.json<{ total: number }>()),
+      ])
+
+      const profiles = profilesResult.data.map(row => ({
+        profileId: row.profileId,
+        isIdentified: row.profileId.startsWith('usr_'),
+        lastResult: row.lastResult === 1,
+        evaluationCount: Number(row.evaluationCount),
+        lastEvaluated: row.lastEvaluated,
+      }))
+
+      return {
+        profiles,
+        total: Number(countResult.data[0]?.total || 0),
+      }
+    } catch (err) {
+      this.logger.warn({ err }, 'Failed to get flag profiles')
+      return {
+        profiles: [],
+        total: 0,
       }
     }
   }

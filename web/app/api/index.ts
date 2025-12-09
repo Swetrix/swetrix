@@ -1348,6 +1348,34 @@ export const getFeatureFlagStats = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export interface FeatureFlagProfile {
+  profileId: string
+  isIdentified: boolean
+  lastResult: boolean
+  evaluationCount: number
+  lastEvaluated: string
+}
+
+export const DEFAULT_FEATURE_FLAG_PROFILES_TAKE = 15
+
+export const getFeatureFlagProfiles = (
+  flagId: string,
+  period: string,
+  from: string = '',
+  to: string = '',
+  timezone?: string,
+  take: number = DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
+  skip: number = 0,
+) =>
+  api
+    .get(`/feature-flag/${flagId}/profiles`, {
+      params: { period, from, to, timezone, take, skip },
+    })
+    .then((response): { profiles: FeatureFlagProfile[]; total: number } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const reGenerateCaptchaSecretKey = (pid: string) =>
   api
     .post(`project/secret-gen/${pid}`)

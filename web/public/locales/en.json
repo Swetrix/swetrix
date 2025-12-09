@@ -1048,7 +1048,11 @@
     "noStats": "No data yet",
     "targetingRulesCount": "{{count}} targeting rule(s)",
     "howToImplement": "How to implement",
-    "implementationDescription": "Use the code snippets below to check feature flags in your application."
+    "implementationDescription": "Use the code snippets below to check feature flags in your application.",
+    "noProfiles": "No profiles have evaluated this flag yet",
+    "loadMore": "Load more",
+    "xEvaluations": "{{count}} evaluation(s)",
+    "lastEvaluated": "Last evaluated"
   },
   "error": {
     "status": {
