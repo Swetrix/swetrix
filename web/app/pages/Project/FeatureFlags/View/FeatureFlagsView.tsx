@@ -51,14 +51,7 @@ interface FeatureFlagRowProps {
   onToggle: (id: string, enabled: boolean) => void
 }
 
-const FeatureFlagRow = ({
-  flag,
-  stats,
-  statsLoading,
-  onDelete,
-  onEdit,
-  onToggle,
-}: FeatureFlagRowProps) => {
+const FeatureFlagRow = ({ flag, stats, statsLoading, onDelete, onEdit, onToggle }: FeatureFlagRowProps) => {
   const { t } = useTranslation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
@@ -254,6 +247,7 @@ interface FeatureFlagsViewProps {
 
 const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlagsViewProps) => {
   const { id } = useCurrentProject()
+  const { featureFlagsRefreshTrigger } = useViewProjectContext()
   const { t } = useTranslation()
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
@@ -286,8 +280,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     const query = filterQuery.toLowerCase()
     return flags.filter(
       (flag) =>
-        flag.key.toLowerCase().includes(query) ||
-        (flag.description && flag.description.toLowerCase().includes(query)),
+        flag.key.toLowerCase().includes(query) || (flag.description && flag.description.toLowerCase().includes(query)),
     )
   }, [flags, filterQuery])
 
@@ -339,6 +332,16 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
+
+  // Refresh feature flags data when refresh button is clicked
+  useEffect(() => {
+    if (featureFlagsRefreshTrigger > 0) {
+      loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE)
+      // Clear cached stats data to force reload
+      setFlagStats({})
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [featureFlagsRefreshTrigger])
 
   useEffect(() => {
     // Load stats for all flags when flags change or date range changes

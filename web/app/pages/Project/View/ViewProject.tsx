@@ -410,6 +410,7 @@ interface ViewProjectContextType {
   customPanelTabs: CustomTab[]
   captchaRefreshTrigger: number
   goalsRefreshTrigger: number
+  featureFlagsRefreshTrigger: number
 
   // Functions
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
@@ -435,6 +436,7 @@ const defaultViewProjectContext: ViewProjectContextType = {
   customPanelTabs: [],
   captchaRefreshTrigger: 0,
   goalsRefreshTrigger: 0,
+  featureFlagsRefreshTrigger: 0,
   updatePeriod: () => {},
   updateTimebucket: (_newTimebucket) => {},
   refCalendar: { current: null } as any,
@@ -547,6 +549,7 @@ const ViewProjectContent = () => {
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false)
   const [captchaRefreshTrigger, setCaptchaRefreshTrigger] = useState(0)
   const [goalsRefreshTrigger, setGoalsRefreshTrigger] = useState(0)
+  const [featureFlagsRefreshTrigger, setFeatureFlagsRefreshTrigger] = useState(0)
   const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
@@ -2685,6 +2688,11 @@ const ViewProjectContent = () => {
           return
         }
 
+        if (activeTab === PROJECT_TABS.featureFlags) {
+          setFeatureFlagsRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
         loadAnalytics()
       }
     },
@@ -3427,6 +3435,7 @@ const ViewProjectContent = () => {
             customPanelTabs,
             captchaRefreshTrigger,
             goalsRefreshTrigger,
+            featureFlagsRefreshTrigger,
 
             // Functions
             updatePeriod,
