@@ -1267,7 +1267,7 @@ export interface ProjectFeatureFlag {
 
 export interface FeatureFlagStats {
   evaluations: number
-  uniqueVisitors: number
+  profileCount: number
   trueCount: number
   falseCount: number
   truePercentage: number

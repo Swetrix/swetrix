@@ -2,7 +2,6 @@ import { XCircleIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import _size from 'lodash/size'
 import {
   FlagIcon,
   Trash2Icon,
@@ -118,7 +117,7 @@ const FeatureFlagRow = ({ flag, stats, statsLoading, onDelete, onEdit, onToggle 
                     </span>
                     <span className='flex items-center gap-1'>
                       <UsersIcon className='size-3' />
-                      {nFormatter(stats.uniqueVisitors, 1)}
+                      {nFormatter(stats.profileCount, 1)}
                     </span>
                   </>
                 ) : (
@@ -148,10 +147,10 @@ const FeatureFlagRow = ({ flag, stats, statsLoading, onDelete, onEdit, onToggle 
                   </div>
                   <div className='text-right'>
                     <Text as='p' size='sm' weight='semibold'>
-                      {nFormatter(stats.uniqueVisitors, 1)}
+                      {nFormatter(stats.profileCount, 1)}
                     </Text>
                     <Text as='p' size='xs' colour='muted'>
-                      {t('featureFlags.visitors')}
+                      {t('featureFlags.users')}
                     </Text>
                   </div>
                   <div className='text-right'>

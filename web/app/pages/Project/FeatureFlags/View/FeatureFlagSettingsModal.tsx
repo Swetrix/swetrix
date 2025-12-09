@@ -265,7 +265,7 @@ const response = await fetch('https://api.swetrix.com/feature-flag/evaluate', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     pid: '${projectId}',
-    visitorId: 'user-123',
+    profileId: 'user-123',
     attributes: { cc: 'US', dv: 'desktop' }
   })
 })

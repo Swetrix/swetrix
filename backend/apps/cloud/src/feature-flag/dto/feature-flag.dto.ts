@@ -196,8 +196,8 @@ export class FeatureFlagStatsDto {
   @ApiProperty({ description: 'Total number of evaluations' })
   evaluations: number
 
-  @ApiProperty({ description: 'Number of unique visitors' })
-  uniqueVisitors: number
+  @ApiProperty({ description: 'Number of unique profiles' })
+  profileCount: number
 
   @ApiProperty({ description: 'Number of times flag returned true' })
   trueCount: number

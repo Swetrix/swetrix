@@ -8,7 +8,7 @@ const queries = [
     flagId String,
     flagKey String,
     result UInt8,
-    visitorId String,
+    profileId String,
     created DateTime('UTC')
   )
   ENGINE = MergeTree()

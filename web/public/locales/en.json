@@ -1043,7 +1043,7 @@
     "flagEnabled": "Feature flag enabled",
     "flagDisabled": "Feature flag disabled",
     "evaluations": "Evaluations",
-    "visitors": "Visitors",
+    "users": "Users",
     "trueRate": "True rate",
     "noStats": "No data yet",
     "targetingRulesCount": "{{count}} targeting rule(s)",

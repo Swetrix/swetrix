@@ -340,13 +340,12 @@ export class FeatureFlagController {
 
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
 
-    // Note: The ClickHouse column is named 'visitorId' but we store the profileId value in it
     const values = flags.map(flag => ({
       pid,
       flagId: flag.id,
       flagKey: flag.key,
       result: evaluatedFlags[flag.key] ? 1 : 0,
-      visitorId: profileId,
+      profileId,
       created: now,
     }))
 
@@ -490,7 +489,7 @@ export class FeatureFlagController {
     const statsQuery = `
       SELECT
         count(*) as evaluations,
-        uniqExact(visitorId) as uniqueVisitors,
+        uniqExact(profileId) as profileCount,
         countIf(result = 1) as trueCount,
         countIf(result = 0) as falseCount
       FROM feature_flag_evaluations
@@ -513,7 +512,7 @@ export class FeatureFlagController {
         .then(resultSet =>
           resultSet.json<{
             evaluations: number
-            uniqueVisitors: number
+            profileCount: number
             trueCount: number
             falseCount: number
           }>(),
@@ -521,7 +520,7 @@ export class FeatureFlagController {
 
       const stats = data[0] || {
         evaluations: 0,
-        uniqueVisitors: 0,
+        profileCount: 0,
         trueCount: 0,
         falseCount: 0,
       }
@@ -533,7 +532,7 @@ export class FeatureFlagController {
 
       return {
         evaluations: stats.evaluations,
-        uniqueVisitors: stats.uniqueVisitors,
+        profileCount: stats.profileCount,
         trueCount: stats.trueCount,
         falseCount: stats.falseCount,
         truePercentage,
@@ -543,7 +542,7 @@ export class FeatureFlagController {
       this.logger.warn({ err }, 'Failed to get flag stats')
       return {
         evaluations: 0,
-        uniqueVisitors: 0,
+        profileCount: 0,
         trueCount: 0,
         falseCount: 0,
         truePercentage: 0,
