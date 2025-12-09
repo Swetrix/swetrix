@@ -32,6 +32,12 @@ export interface LibOptions {
 
   /** Set a custom URL of the API server (for selfhosted variants of Swetrix). */
   apiURL?: string
+
+  /**
+   * Optional profile ID for long-term user tracking.
+   * If set, it will be used for all pageviews and events unless overridden per-call.
+   */
+  profileId?: string
 }
 
 export interface TrackEventOptions {
@@ -45,6 +51,9 @@ export interface TrackEventOptions {
   meta?: {
     [key: string]: string | number | boolean | null | undefined
   }
+
+  /** Optional profile ID for long-term user tracking. Overrides the global profileId if set. */
+  profileId?: string
 }
 
 // Partial user-editable pageview payload
@@ -63,6 +72,9 @@ export interface IPageViewPayload {
   meta?: {
     [key: string]: string | number | boolean | null | undefined
   }
+
+  /** Optional profile ID for long-term user tracking. Overrides the global profileId if set. */
+  profileId?: string
 }
 
 // Partial user-editable error payload
@@ -318,6 +330,7 @@ export class Lib {
       ca: getUTMCampaign(),
       te: getUTMTerm(),
       co: getUTMContent(),
+      profileId: event.profileId ?? this.options?.profileId,
     }
     await this.sendRequest('custom', data)
   }
@@ -539,6 +552,7 @@ export class Lib {
       ca: getUTMCampaign(),
       te: getUTMTerm(),
       co: getUTMContent(),
+      profileId: this.options?.profileId,
       ...payload,
     }
 
