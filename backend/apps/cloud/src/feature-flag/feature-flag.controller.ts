@@ -63,7 +63,7 @@ const timeBucketConversion: Record<string, string> = {
 }
 
 @ApiTags('Feature Flag')
-@Controller('feature-flag')
+@Controller(['feature-flag', 'v1/feature-flag'])
 export class FeatureFlagController {
   constructor(
     private readonly featureFlagService: FeatureFlagService,
@@ -242,93 +242,6 @@ export class FeatureFlagController {
     }
   }
 
-  @ApiBearerAuth()
-  @Put('/:id')
-  @Auth()
-  @ApiResponse({ status: 200, type: FeatureFlagDto })
-  @ApiOperation({ summary: 'Update a feature flag' })
-  async updateFeatureFlag(
-    @Param('id') id: string,
-    @Body() flagDto: UpdateFeatureFlagDto,
-    @CurrentUserId() uid: string,
-  ) {
-    this.logger.log({ id, uid }, 'PUT /feature-flag/:id')
-
-    const flag = await this.featureFlagService.findOneWithRelations(id)
-
-    if (_isEmpty(flag)) {
-      throw new NotFoundException()
-    }
-
-    this.projectService.allowedToManage(
-      flag.project,
-      uid,
-      'You are not allowed to manage this feature flag',
-    )
-
-    // Check for duplicate key if key is being changed
-    if (flagDto.key && flagDto.key !== flag.key) {
-      const existingFlag = await this.featureFlagService.findOne({
-        where: { project: { id: flag.project.id }, key: flagDto.key },
-      })
-
-      if (existingFlag) {
-        throw new BadRequestException(
-          `A feature flag with key "${flagDto.key}" already exists in this project`,
-        )
-      }
-    }
-
-    const updatePayload: Partial<FeatureFlag> = {
-      ..._pick(flagDto, [
-        'key',
-        'description',
-        'flagType',
-        'rolloutPercentage',
-        'targetingRules',
-        'enabled',
-      ]),
-    }
-
-    await this.featureFlagService.update(id, updatePayload)
-
-    const updatedFlag = await this.featureFlagService.findOne({ where: { id } })
-    if (!updatedFlag) {
-      throw new NotFoundException('Feature flag not found after update')
-    }
-
-    return {
-      ..._omit(updatedFlag, ['project']),
-      pid: flag.project.id,
-    }
-  }
-
-  @ApiBearerAuth()
-  @Delete('/:id')
-  @Auth()
-  @ApiResponse({ status: 204, description: 'Empty body' })
-  @ApiOperation({ summary: 'Delete a feature flag' })
-  async deleteFeatureFlag(
-    @Param('id') id: string,
-    @CurrentUserId() uid: string,
-  ) {
-    this.logger.log({ id, uid }, 'DELETE /feature-flag/:id')
-
-    const flag = await this.featureFlagService.findOneWithRelations(id)
-
-    if (_isEmpty(flag)) {
-      throw new NotFoundException()
-    }
-
-    this.projectService.allowedToManage(
-      flag.project,
-      uid,
-      'You are not allowed to manage this feature flag',
-    )
-
-    await this.featureFlagService.delete(id)
-  }
-
   @Post('/evaluate')
   @ApiResponse({ status: 200, type: EvaluatedFlagsResponseDto })
   @ApiOperation({
@@ -436,6 +349,93 @@ export class FeatureFlagController {
       // Log error but don't fail the request
       this.logger.error({ err }, 'Failed to insert flag evaluations')
     }
+  }
+
+  @ApiBearerAuth()
+  @Put('/:id')
+  @Auth()
+  @ApiResponse({ status: 200, type: FeatureFlagDto })
+  @ApiOperation({ summary: 'Update a feature flag' })
+  async updateFeatureFlag(
+    @Param('id') id: string,
+    @Body() flagDto: UpdateFeatureFlagDto,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ id, uid }, 'PUT /feature-flag/:id')
+
+    const flag = await this.featureFlagService.findOneWithRelations(id)
+
+    if (_isEmpty(flag)) {
+      throw new NotFoundException()
+    }
+
+    this.projectService.allowedToManage(
+      flag.project,
+      uid,
+      'You are not allowed to manage this feature flag',
+    )
+
+    // Check for duplicate key if key is being changed
+    if (flagDto.key && flagDto.key !== flag.key) {
+      const existingFlag = await this.featureFlagService.findOne({
+        where: { project: { id: flag.project.id }, key: flagDto.key },
+      })
+
+      if (existingFlag) {
+        throw new BadRequestException(
+          `A feature flag with key "${flagDto.key}" already exists in this project`,
+        )
+      }
+    }
+
+    const updatePayload: Partial<FeatureFlag> = {
+      ..._pick(flagDto, [
+        'key',
+        'description',
+        'flagType',
+        'rolloutPercentage',
+        'targetingRules',
+        'enabled',
+      ]),
+    }
+
+    await this.featureFlagService.update(id, updatePayload)
+
+    const updatedFlag = await this.featureFlagService.findOne({ where: { id } })
+    if (!updatedFlag) {
+      throw new NotFoundException('Feature flag not found after update')
+    }
+
+    return {
+      ..._omit(updatedFlag, ['project']),
+      pid: flag.project.id,
+    }
+  }
+
+  @ApiBearerAuth()
+  @Delete('/:id')
+  @Auth()
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  @ApiOperation({ summary: 'Delete a feature flag' })
+  async deleteFeatureFlag(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ id, uid }, 'DELETE /feature-flag/:id')
+
+    const flag = await this.featureFlagService.findOneWithRelations(id)
+
+    if (_isEmpty(flag)) {
+      throw new NotFoundException()
+    }
+
+    this.projectService.allowedToManage(
+      flag.project,
+      uid,
+      'You are not allowed to manage this feature flag',
+    )
+
+    await this.featureFlagService.delete(id)
   }
 
   @ApiBearerAuth()
