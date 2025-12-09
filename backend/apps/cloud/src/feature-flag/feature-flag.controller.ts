@@ -569,9 +569,10 @@ export class FeatureFlagController {
     @Query('timezone') timezone?: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+    @Query('result') result?: 'true' | 'false',
   ) {
     this.logger.log(
-      { userId, id, period, from, to, take, skip },
+      { userId, id, period, from, to, take, skip, result },
       'GET /feature-flag/:id/profiles',
     )
 
@@ -598,6 +599,14 @@ export class FeatureFlagController {
     const safeTake = Math.min(take || 15, 50)
     const safeSkip = skip || 0
 
+    // Build HAVING clause for result filter
+    let resultHavingClause = ''
+    if (result === 'true') {
+      resultHavingClause = 'HAVING lastResult = 1'
+    } else if (result === 'false') {
+      resultHavingClause = 'HAVING lastResult = 0'
+    }
+
     // Query to get profiles with their most recent evaluation
     const profilesQuery = `
       SELECT
@@ -611,17 +620,24 @@ export class FeatureFlagController {
         AND flagId = {flagId:String}
         AND created BETWEEN {groupFrom:String} AND {groupTo:String}
       GROUP BY profileId
+      ${resultHavingClause}
       ORDER BY lastEvaluated DESC
       LIMIT {take:UInt32} OFFSET {skip:UInt32}
     `
 
     const countQuery = `
-      SELECT uniqExact(profileId) as total
-      FROM feature_flag_evaluations
-      WHERE
-        pid = {pid:FixedString(12)}
-        AND flagId = {flagId:String}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      SELECT count() as total FROM (
+        SELECT
+          profileId,
+          argMax(result, created) as lastResult
+        FROM feature_flag_evaluations
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND flagId = {flagId:String}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY profileId
+        ${resultHavingClause}
+      )
     `
 
     const queryParams = {

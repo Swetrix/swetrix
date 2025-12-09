@@ -45,6 +45,7 @@ import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
+import { Switch } from '~/ui/Switch'
 import { Text } from '~/ui/Text'
 import { nFormatter } from '~/utils/generic'
 import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
@@ -83,6 +84,7 @@ const FeatureFlagProfileRow = ({ profile, timeFormat }: FeatureFlagProfileRowPro
   }, [profile.lastEvaluated, language, timeFormat])
 
   const params = new URLSearchParams(location.search)
+  params.set('tab', 'profiles')
   params.set('profileId', profile.profileId)
 
   return (
@@ -135,11 +137,13 @@ interface FeatureFlagRowProps {
   profiles: FeatureFlagProfile[]
   profilesLoading: boolean
   canLoadMoreProfiles: boolean
+  resultFilter: boolean
   onDelete: (id: string) => void
   onEdit: (id: string) => void
   onToggle: (id: string, enabled: boolean) => void
   onToggleExpand: (id: string) => void
   onLoadMoreProfiles: (id: string) => void
+  onResultFilterChange: (id: string, filter: boolean) => void
   timeFormat: '12-hour' | '24-hour'
 }
 
@@ -151,11 +155,13 @@ const FeatureFlagRow = ({
   profiles,
   profilesLoading,
   canLoadMoreProfiles,
+  resultFilter,
   onDelete,
   onEdit,
   onToggle,
   onToggleExpand,
   onLoadMoreProfiles,
+  onResultFilterChange,
   timeFormat,
 }: FeatureFlagRowProps) => {
   const { t } = useTranslation()
@@ -339,6 +345,12 @@ const FeatureFlagRow = ({
         {/* Expanded profiles section */}
         {isExpanded ? (
           <div className='border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-slate-700'>
+            {/* Result filter toggle */}
+            <div className='mb-3 flex items-center gap-2'>
+              <Switch checked={resultFilter} onChange={(checked) => onResultFilterChange(flag.id, checked)} />
+              <span className='text-xs text-gray-500 dark:text-gray-400'>{t('featureFlags.served')}</span>
+            </div>
+
             {profilesLoading && profiles.length === 0 ? (
               <div className='flex h-[120px] items-center justify-center'>
                 <Spin className='size-8' />
@@ -431,6 +443,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   const [flagProfiles, setFlagProfiles] = useState<Record<string, FeatureFlagProfile[]>>({})
   const [flagProfilesTotal, setFlagProfilesTotal] = useState<Record<string, number>>({})
   const [profilesLoading, setProfilesLoading] = useState<Record<string, boolean>>({})
+  const [flagResultFilters, setFlagResultFilters] = useState<Record<string, boolean>>({})
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -499,9 +512,11 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     }
   }
 
-  const loadFlagProfiles = async (flagId: string, append = false) => {
-    const currentProfiles = flagProfiles[flagId] || []
+  const loadFlagProfiles = async (flagId: string, append = false, resultFilter?: boolean) => {
+    const currentProfiles = append ? flagProfiles[flagId] || [] : []
     const skip = append ? currentProfiles.length : 0
+    const filter = resultFilter ?? flagResultFilters[flagId] ?? true
+    const apiFilter = filter ? 'true' : 'false'
 
     setProfilesLoading((prev) => ({ ...prev, [flagId]: true }))
     try {
@@ -513,6 +528,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
         timezone,
         DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
         skip,
+        apiFilter,
       )
       if (isMountedRef.current) {
         setFlagProfiles((prev) => ({
@@ -534,7 +550,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     }
   }
 
-  const handleToggleExpand = (flagId: string) => {
+  const handleToggleExpand = async (flagId: string) => {
     if (expandedFlagId === flagId) {
       // Collapse if already expanded
       setExpandedFlagId(null)
@@ -542,13 +558,79 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
       // Expand and load profiles if not already loaded
       setExpandedFlagId(flagId)
       if (!flagProfiles[flagId] && !profilesLoading[flagId]) {
-        loadFlagProfiles(flagId)
+        // First try loading with true filter (served)
+        setProfilesLoading((prev) => ({ ...prev, [flagId]: true }))
+        try {
+          const trueResult = await getFeatureFlagProfiles(
+            flagId,
+            period,
+            from,
+            to,
+            timezone,
+            DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
+            0,
+            'true',
+          )
+
+          if (trueResult.total > 0) {
+            // Has true results, use them
+            if (isMountedRef.current) {
+              setFlagProfiles((prev) => ({ ...prev, [flagId]: trueResult.profiles }))
+              setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: trueResult.total }))
+              setFlagResultFilters((prev) => ({ ...prev, [flagId]: true }))
+            }
+          } else {
+            // No true results, try false
+            const falseResult = await getFeatureFlagProfiles(
+              flagId,
+              period,
+              from,
+              to,
+              timezone,
+              DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
+              0,
+              'false',
+            )
+
+            if (isMountedRef.current) {
+              if (falseResult.total > 0) {
+                // Has false results, use them and set filter to false
+                setFlagProfiles((prev) => ({ ...prev, [flagId]: falseResult.profiles }))
+                setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: falseResult.total }))
+                setFlagResultFilters((prev) => ({ ...prev, [flagId]: false }))
+              } else {
+                // No results at all, default to true filter with empty
+                setFlagProfiles((prev) => ({ ...prev, [flagId]: [] }))
+                setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: 0 }))
+                setFlagResultFilters((prev) => ({ ...prev, [flagId]: true }))
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Failed to load flag profiles:', err)
+          if (isMountedRef.current) {
+            setFlagProfiles((prev) => ({ ...prev, [flagId]: [] }))
+            setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: 0 }))
+            setFlagResultFilters((prev) => ({ ...prev, [flagId]: true }))
+          }
+        } finally {
+          if (isMountedRef.current) {
+            setProfilesLoading((prev) => ({ ...prev, [flagId]: false }))
+          }
+        }
       }
     }
   }
 
   const handleLoadMoreProfiles = (flagId: string) => {
     loadFlagProfiles(flagId, true)
+  }
+
+  const handleResultFilterChange = (flagId: string, filter: boolean) => {
+    setFlagResultFilters((prev) => ({ ...prev, [flagId]: filter }))
+    // Reset profiles and reload with new filter
+    setFlagProfiles((prev) => ({ ...prev, [flagId]: [] }))
+    loadFlagProfiles(flagId, false, filter)
   }
 
   useEffect(() => {
@@ -733,11 +815,13 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
                   profiles={profiles}
                   profilesLoading={profilesLoading[flag.id] || false}
                   canLoadMoreProfiles={canLoadMore}
+                  resultFilter={flagResultFilters[flag.id] ?? true}
                   onDelete={handleDeleteFlag}
                   onEdit={handleEditFlag}
                   onToggle={handleToggleFlag}
                   onToggleExpand={handleToggleExpand}
                   onLoadMoreProfiles={handleLoadMoreProfiles}
+                  onResultFilterChange={handleResultFilterChange}
                   timeFormat={timeFormat}
                 />
               )

@@ -1358,6 +1358,8 @@ export interface FeatureFlagProfile {
 
 export const DEFAULT_FEATURE_FLAG_PROFILES_TAKE = 15
 
+export type FeatureFlagResultFilter = 'all' | 'true' | 'false'
+
 export const getFeatureFlagProfiles = (
   flagId: string,
   period: string,
@@ -1366,10 +1368,19 @@ export const getFeatureFlagProfiles = (
   timezone?: string,
   take: number = DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
   skip: number = 0,
+  resultFilter: FeatureFlagResultFilter = 'all',
 ) =>
   api
     .get(`/feature-flag/${flagId}/profiles`, {
-      params: { period, from, to, timezone, take, skip },
+      params: {
+        period,
+        from,
+        to,
+        timezone,
+        take,
+        skip,
+        result: resultFilter === 'all' ? undefined : resultFilter,
+      },
     })
     .then((response): { profiles: FeatureFlagProfile[]; total: number } => response.data)
     .catch((error) => {

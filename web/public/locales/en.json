@@ -1052,7 +1052,8 @@
     "noProfiles": "No profiles have evaluated this flag yet",
     "loadMore": "Load more",
     "xEvaluations": "{{count}} evaluation(s)",
-    "lastEvaluated": "Last evaluated"
+    "lastEvaluated": "Last evaluated",
+    "served": "Served"
   },
   "error": {
     "status": {
