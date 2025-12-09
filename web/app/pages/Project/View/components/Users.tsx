@@ -12,11 +12,34 @@ import { ClientOnly } from 'remix-utils/client-only'
 import { Profile as ProfileType } from '~/lib/models/Project'
 import { Badge } from '~/ui/Badge'
 import Loader from '~/ui/Loader'
+import Tooltip from '~/ui/Tooltip'
 import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
 
 import CCRow from './CCRow'
 
 dayjs.extend(relativeTime)
+
+// Time thresholds for online status (in minutes)
+const ONLINE_THRESHOLD_MINUTES = 5
+const RECENTLY_ACTIVE_THRESHOLD_MINUTES = 30
+
+type OnlineStatus = 'online' | 'recently_active' | 'offline'
+
+const getOnlineStatus = (lastSeen: string): OnlineStatus => {
+  const now = dayjs()
+  const lastSeenTime = dayjs(lastSeen)
+  const minutesAgo = now.diff(lastSeenTime, 'minute')
+
+  if (minutesAgo < ONLINE_THRESHOLD_MINUTES) {
+    return 'online'
+  }
+
+  if (minutesAgo < RECENTLY_ACTIVE_THRESHOLD_MINUTES) {
+    return 'recently_active'
+  }
+
+  return 'offline'
+}
 
 interface UsersProps {
   profiles: ProfileType[]
@@ -58,6 +81,10 @@ const UserRow = ({ profile, timeFormat }: UserRowProps) => {
       })
   }, [profile.lastSeen, language, timeFormat])
 
+  const onlineStatus = useMemo(() => getOnlineStatus(profile.lastSeen), [profile.lastSeen])
+
+  const lastSeenAgo = useMemo(() => dayjs(profile.lastSeen).fromNow(), [profile.lastSeen])
+
   const params = new URLSearchParams(location.search)
   params.set('profileId', profile.profileId)
 
@@ -65,8 +92,25 @@ const UserRow = ({ profile, timeFormat }: UserRowProps) => {
     <Link to={{ search: params.toString() }}>
       <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'>
         <div className='flex min-w-0 gap-x-4'>
-          {/* Avatar */}
-          <ProfileAvatar profileId={profile.profileId} size={40} className='shrink-0' />
+          {/* Avatar with online status indicator */}
+          <div className='relative shrink-0'>
+            <ProfileAvatar profileId={profile.profileId} size={40} />
+            {onlineStatus === 'offline' ? null : (
+              <Tooltip
+                text={t('project.lastSeenAgo', { time: lastSeenAgo })}
+                className='absolute right-0 bottom-2'
+                tooltipNode={
+                  <span
+                    className={cx(
+                      'block h-3 w-3 rounded-full ring-2 ring-gray-50 dark:ring-slate-800',
+                      onlineStatus === 'online' && 'bg-green-500',
+                      onlineStatus === 'recently_active' && 'bg-yellow-500',
+                    )}
+                  />
+                }
+              />
+            )}
+          </div>
 
           <div className='min-w-0 flex-auto'>
             <p className='flex items-center text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>

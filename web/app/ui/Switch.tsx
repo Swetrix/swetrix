@@ -30,7 +30,7 @@ export const Switch = ({ checked, onChange, disabled = false, className, label, 
           }
         }}
         className={cx(
-          'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75',
+          'relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75',
           {
             'bg-slate-900 dark:bg-slate-500': checked,
             'bg-gray-300 dark:bg-slate-600': !checked,
@@ -41,9 +41,9 @@ export const Switch = ({ checked, onChange, disabled = false, className, label, 
         <span
           aria-hidden='true'
           className={cx(
-            'pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out',
+            'pointer-events-none inline-block size-3 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out',
             {
-              'translate-x-5': checked,
+              'translate-x-3': checked,
               'translate-x-0': !checked,
             },
           )}

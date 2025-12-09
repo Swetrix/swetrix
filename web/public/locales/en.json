@@ -1171,6 +1171,8 @@
     "allUsers": "All",
     "anonymous": "Anonymous",
     "identified": "Identified",
+    "online": "Online",
+    "lastSeenAgo": "Last seen {{time}}",
     "searchUsers": "Search users...",
     "sessions": "Sessions",
     "xSessions": "{{x}} sessions",
