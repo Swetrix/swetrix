@@ -348,7 +348,9 @@ const FeatureFlagRow = ({
             {/* Result filter toggle */}
             <div className='mb-3 flex items-center gap-2'>
               <Switch checked={resultFilter} onChange={(checked) => onResultFilterChange(flag.id, checked)} />
-              <span className='text-xs text-gray-500 dark:text-gray-400'>{t('featureFlags.served')}</span>
+              <Text as='span' size='xs' colour='muted'>
+                {t('featureFlags.served')}
+              </Text>
             </div>
 
             {profilesLoading && profiles.length === 0 ? (

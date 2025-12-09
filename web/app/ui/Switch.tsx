@@ -1,5 +1,7 @@
 import cx from 'clsx'
 
+import { Text } from '~/ui/Text'
+
 interface SwitchProps {
   checked: boolean
   onChange: (checked: boolean) => void
@@ -48,15 +50,18 @@ export const Switch = ({ checked, onChange, disabled = false, className, label, 
         />
       </button>
       {label ? (
-        <label
+        <Text
+          as='label'
+          size='sm'
+          colour='primary'
           htmlFor={switchId}
-          className={cx('ml-2 text-sm text-gray-900 dark:text-gray-100', {
+          className={cx('ml-2', {
             'cursor-pointer': !disabled,
             'cursor-not-allowed opacity-50': disabled,
           })}
         >
           {label}
-        </label>
+        </Text>
       ) : null}
     </div>
   )
