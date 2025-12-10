@@ -36,7 +36,7 @@ interface TooltipProps {
   delay?: number
 }
 
-const Tooltip = ({ text, className, tooltipNode, delay = 200 }: TooltipProps) => (
+const Tooltip = ({ text, className, tooltipNode, delay = 50 }: TooltipProps) => (
   <TooltipProvider delayDuration={delay}>
     <TooltipRoot>
       <TooltipTrigger className={className}>
