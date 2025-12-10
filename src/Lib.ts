@@ -112,10 +112,11 @@ interface IPerfPayload {
  */
 export interface FeatureFlagsOptions {
   /**
-   * Unique visitor ID for consistent rollout percentages.
-   * If not provided, rollout-based flags may return different results on each evaluation.
+   * Optional profile ID for long-term user tracking.
+   * If not provided, an anonymous profile ID will be generated server-side based on IP and user agent.
+   * Overrides the global profileId if set.
    */
-  visitorId?: string
+  profileId?: string
 }
 
 /**
@@ -428,12 +429,14 @@ export class Lib {
 
     try {
       const apiBase = this.getApiBase()
-      const body: { pid: string; visitorId?: string } = {
+      const body: { pid: string; profileId?: string } = {
         pid: this.projectID,
       }
 
-      if (options?.visitorId) {
-        body.visitorId = options.visitorId
+      // Use profileId from options, or fall back to global profileId
+      const profileId = options?.profileId ?? this.options?.profileId
+      if (profileId) {
+        body.profileId = profileId
       }
 
       const response = await fetch(`${apiBase}/feature-flag/evaluate`, {
