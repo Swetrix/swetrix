@@ -1020,6 +1020,7 @@ const getSettingsError = (
   rotateXAxis: boolean,
   chartType: string,
   annotations?: Annotation[],
+  dataNames?: Record<string, string>,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
@@ -1035,11 +1036,22 @@ const getSettingsError = (
     position: 'start',
   }))
 
-  const columns = getColumns(chart, { occurrences: true })
+  // Build columns with both occurrences and affectedUsers if available
+  const columns: any[] = [['x', ..._map(chart.x, (el: string) => dayjs(el).toDate())]]
+
+  if (chart.occurrences) {
+    columns.push(['occurrences', ...chart.occurrences])
+  }
+  if (chart.affectedUsers) {
+    columns.push(['affectedUsers', ...chart.affectedUsers])
+  }
 
   const allYValues: number[] = []
   if (chart.occurrences) {
     allYValues.push(...chart.occurrences.filter((n: any) => n !== undefined && n !== null))
+  }
+  if (chart.affectedUsers) {
+    allYValues.push(...chart.affectedUsers.filter((n: any) => n !== undefined && n !== null))
   }
 
   const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
@@ -1052,17 +1064,25 @@ const getSettingsError = (
     regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
   }
 
+  const types: Record<string, any> = {
+    occurrences: chartType === chartTypes.line ? area() : bar(),
+  }
+  if (chart.affectedUsers) {
+    types.affectedUsers = chartType === chartTypes.line ? area() : bar()
+  }
+
+  const colors: Record<string, string> = {
+    occurrences: '#f97316', // orange-500
+    affectedUsers: '#dc2626', // red-600
+  }
+
   return {
     data: {
       x: 'x',
       columns,
-      types: {
-        occurrences: chartType === chartTypes.line ? area() : bar(),
-      },
-      colors: {
-        occurrences: '#dc2626',
-        occurrencesCompare: 'rgba(220, 38, 38, 0.4)',
-      },
+      types,
+      colors,
+      names: dataNames,
       regions: {
         occurrences: [
           {
@@ -1155,7 +1175,6 @@ const getSettingsError = (
           r: 3,
         },
       },
-      hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare'],
     },
     area: {
       linearGradient: true,

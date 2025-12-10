@@ -170,6 +170,7 @@ import routes from '~/utils/routes'
 import { useCurrentProject, useProjectPassword } from '../../../providers/CurrentProjectProvider'
 import ProjectAlertsView from '../Alerts/View'
 import AskAIView from '../AskAI'
+import ErrorsView from '../Errors/View/ErrorsView'
 import FeatureFlagsView from '../FeatureFlags/View'
 import GoalsView from '../Goals/View'
 
@@ -181,7 +182,6 @@ import CustomEventsSubmenu from './components/CustomEventsSubmenu'
 import CustomMetrics from './components/CustomMetrics'
 import { ErrorChart } from './components/ErrorChart'
 import { ErrorDetails } from './components/ErrorDetails'
-import { Errors } from './components/Errors'
 import Filters from './components/Filters'
 const CaptchaView = lazy(() => import('./components/CaptchaView'))
 import { FunnelChart } from './components/FunnelChart'
@@ -4071,33 +4071,7 @@ const ViewProjectContent = () => {
                         ) : null}
                       </>
                     ) : null}
-                    {activeTab === PROJECT_TABS.errors && !activeEID ? (
-                      <>
-                        {!_isEmpty(errors) ? <Filters tnMapping={tnMapping} /> : null}
-                        {(errorsLoading === null || errorsLoading) && _isEmpty(errors) ? <Loader /> : null}
-                        {typeof errorsLoading === 'boolean' && !errorsLoading && _isEmpty(errors) ? (
-                          <NoEvents filters={filters} />
-                        ) : null}
-                        <Errors errors={errors} />
-                        {canLoadMoreErrors ? (
-                          <button
-                            type='button'
-                            title={t('project.loadMore')}
-                            onClick={() => loadErrors()}
-                            className={cx(
-                              'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
-                              {
-                                'cursor-not-allowed opacity-50': errorsLoading,
-                                hidden: errorsLoading && _isEmpty(errors),
-                              },
-                            )}
-                          >
-                            <DownloadIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
-                            {t('project.loadMore')}
-                          </button>
-                        ) : null}
-                      </>
-                    ) : null}
+                    {activeTab === PROJECT_TABS.errors && !activeEID ? <ErrorsView /> : null}
                     {activeTab === PROJECT_TABS.errors && activeEID ? (
                       <>
                         <div className='mx-auto mt-2 mb-3 flex max-w-max items-center space-x-4 lg:mx-0'>
@@ -4111,7 +4085,16 @@ const ViewProjectContent = () => {
                             {t('project.backToErrors')}
                           </Link>
                         </div>
-                        {activeError?.details ? <ErrorDetails details={activeError.details} /> : null}
+                        {activeError?.details ? (
+                          <ErrorDetails
+                            details={activeError.details}
+                            period={period}
+                            from={dateRange ? getFormatDate(dateRange[0]) : undefined}
+                            to={dateRange ? getFormatDate(dateRange[1]) : undefined}
+                            timeBucket={timeBucket}
+                            projectPassword={projectPassword}
+                          />
+                        ) : null}
                         {activeError?.chart ? (
                           <div
                             onContextMenu={(e) => handleChartContextMenu(e, activeError?.chart?.x)}

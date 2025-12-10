@@ -66,6 +66,7 @@ import { GetSessionDto } from './dto/get-session.dto'
 import { ErrorDto } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDto } from './dto/get-error.dto'
+import { GetErrorOverviewDto } from './dto/get-error-overview.dto'
 import { PatchStatusDto } from './dto/patch-status.dto'
 import {
   customEventTransformer,
@@ -1721,5 +1722,143 @@ export class AnalyticsController {
     )
 
     return result
+  }
+
+  @Get('error-overview')
+  @Auth(true, true)
+  async getErrorOverview(
+    @Query() data: GetErrorOverviewDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+      timeBucket,
+      options,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    let parsedOptions: { showResolved?: boolean } = {}
+    try {
+      parsedOptions = JSON.parse(options || '{}')
+    } catch {
+      // Ignore parse errors
+    }
+
+    let newTimeBucket = timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'errors',
+      )
+
+      newTimeBucket = res.timeBucket[0]
+      diff = res.diff
+    }
+
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters,
+      DataType.ERRORS,
+      true,
+    )
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      newTimeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
+
+    return this.analyticsService.getErrorOverview(
+      pid,
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      groupFromUTC,
+      groupToUTC,
+      newTimeBucket,
+      parsedOptions.showResolved || false,
+    )
+  }
+
+  @Get('error-sessions')
+  @Auth(true, true)
+  async getErrorSessions(
+    @Query() data: GetErrorDto & { take?: number; skip?: number },
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, eid, period, from, to, timeBucket } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const take = this.analyticsService.getSafeNumber(data.take, 10)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 50) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 50',
+      )
+    }
+
+    let newTimeBucket = timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'errors',
+      )
+
+      newTimeBucket = res.timeBucket[0]
+      diff = res.diff
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(DEFAULT_TIMEZONE)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      newTimeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    return this.analyticsService.getErrorAffectedSessions(
+      pid,
+      eid,
+      groupFromUTC,
+      groupToUTC,
+      take,
+      skip,
+    )
   }
 }

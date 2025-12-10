@@ -75,6 +75,8 @@ export interface SwetrixError {
   count: number
   last_seen: string
   status: 'active' | 'regressed' | 'fixed' | 'resolved'
+  users: number
+  sessions: number
 }
 
 export interface SwetrixErrorDetails extends SwetrixError {

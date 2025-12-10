@@ -6,7 +6,7 @@ import { FeatureFlag } from './entity/feature-flag.entity'
 import {
   evaluateFlag as sharedEvaluateFlag,
   evaluateFlags as sharedEvaluateFlags,
-} from '../../../../libs/shared/src/feature-flag'
+} from './evaluation'
 
 @Injectable()
 export class FeatureFlagService {

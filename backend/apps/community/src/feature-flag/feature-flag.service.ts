@@ -21,7 +21,7 @@ import { PaginationOptionsInterface } from '../common/pagination/pagination.resu
 import {
   evaluateFlag as sharedEvaluateFlag,
   evaluateFlags as sharedEvaluateFlags,
-} from '../../../../libs/shared/src/feature-flag'
+} from './evaluation'
 
 dayjs.extend(utc)
 

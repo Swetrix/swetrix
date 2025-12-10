@@ -2,9 +2,9 @@ import {
   FeatureFlagType,
   TargetingRule,
   EvaluatableFeatureFlag,
-} from '../../../../../libs/shared/src/feature-flag'
+} from '../evaluation'
 
-// Re-export shared types for backward compatibility
+// Re-export types for backward compatibility
 export { FeatureFlagType, TargetingRule, EvaluatableFeatureFlag }
 
 export interface FeatureFlag extends EvaluatableFeatureFlag {

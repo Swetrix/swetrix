@@ -628,6 +628,7 @@ export const getSessions = (
 
 export const getErrors = (
   pid: string,
+  timeBucket: string,
   period = '3d',
   filters: any[] = [],
   options: any = {},
@@ -640,7 +641,7 @@ export const getErrors = (
 ) =>
   api
     .get(
-      `log/errors?pid=${pid}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(
+      `log/errors?pid=${pid}&timeBucket=${timeBucket}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(
         filters,
       )}&options=${JSON.stringify(options)}&from=${from}&to=${to}&timezone=${timezone}`,
       {
@@ -770,6 +771,99 @@ export const getError = (
     .then((response): { details: SwetrixErrorDetails; [key: string]: any } => response.data)
     .catch((error) => {
       throw error.response
+    })
+
+export interface ErrorOverviewStats {
+  totalErrors: number
+  uniqueErrors: number
+  affectedSessions: number
+  affectedUsers: number
+  errorRate: number
+}
+
+export interface MostFrequentError {
+  eid: string
+  name: string
+  message: string
+  count: number
+  usersAffected: number
+  lastSeen: string
+}
+
+export interface ErrorOverviewChart {
+  x: string[]
+  occurrences: number[]
+  affectedUsers: number[]
+}
+
+export interface ErrorOverviewResponse {
+  stats: ErrorOverviewStats
+  mostFrequentError: MostFrequentError | null
+  chart: ErrorOverviewChart
+  timeBucket: string
+}
+
+export const getErrorOverview = (
+  pid: string,
+  timeBucket = 'hour',
+  period = '7d',
+  filters: any[] = [],
+  options: any = {},
+  from = '',
+  to = '',
+  timezone = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(
+      `log/error-overview?pid=${pid}&timeBucket=${timeBucket}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&options=${JSON.stringify(options)}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response): ErrorOverviewResponse => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+
+export interface ErrorAffectedSession {
+  psid: string
+  profileId: string | null
+  cc: string | null
+  br: string | null
+  os: string | null
+  firstErrorAt: string
+  lastErrorAt: string
+  errorCount: number
+}
+
+export const getErrorSessions = (
+  pid: string,
+  eid: string,
+  timeBucket = 'hour',
+  period = '7d',
+  from = '',
+  to = '',
+  take = 10,
+  skip = 0,
+  password: string | undefined = '',
+) =>
+  api
+    .get(
+      `log/error-sessions?pid=${pid}&eid=${eid}&timeBucket=${timeBucket}&period=${period}&from=${from}&to=${to}&take=${take}&skip=${skip}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response): { sessions: ErrorAffectedSession[]; total: number } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
     })
 
 export const getFunnelData = (

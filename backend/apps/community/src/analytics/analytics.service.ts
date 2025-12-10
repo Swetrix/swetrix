@@ -2582,9 +2582,10 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        count() as count
+        count() as count,
+        uniqExact(profileId) as affectedUsers
       FROM (
-        SELECT pg, dv, br, os, lc, cc, rg, ct,
+        SELECT pg, dv, br, os, lc, cc, rg, ct, profileId,
           ${timeBucketFunc}(created) as tz_created
         FROM errors
         WHERE
@@ -2834,22 +2835,24 @@ export class AnalyticsService {
     })
   }
 
-  extractErrorsChartData(result, x: string[]): any {
+  extractErrorsChartData(
+    result: any[],
+    x: string[],
+  ): { count: number[]; affectedUsers: number[] } {
     const count = Array(x.length).fill(0)
+    const affectedUsers = Array(x.length).fill(0)
 
     for (let row = 0; row < _size(result); ++row) {
       const dateString = this.generateDateString(result[row])
-
       const index = x.indexOf(dateString)
 
       if (index !== -1) {
-        count[index] = result[row].count
+        count[index] = Number(result[row].count) || 0
+        affectedUsers[index] = Number(result[row].affectedUsers) || 0
       }
     }
 
-    return {
-      count,
-    }
+    return { count, affectedUsers }
   }
 
   generateUTCXAxis(
@@ -3079,11 +3082,12 @@ export class AnalyticsService {
             query_params: paramsData.params,
           })
           .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
-        const { count } = this.extractErrorsChartData(data, x)
+        const { count, affectedUsers } = this.extractErrorsChartData(data, x)
 
         chart = {
           x: this.shiftToTimezone(x, safeTimezone, format),
           occurrences: count,
+          affectedUsers,
         }
       })(),
     ]
@@ -3970,9 +3974,11 @@ export class AnalyticsService {
         any(filename) as filename,
         count(*) as count,
         max(created) as last_seen,
+        count(DISTINCT profileId) as users,
+        count(DISTINCT psid) as sessions,
         status.status
       FROM (
-        SELECT eid, name, message, filename, toTimeZone(errors.created, {timezone:String}) AS created
+        SELECT eid, name, message, filename, psid, profileId, toTimeZone(errors.created, {timezone:String}) AS created
         FROM errors
         WHERE pid = {pid:FixedString(12)}
           AND errors.created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -4137,6 +4143,254 @@ export class AnalyticsService {
       metadata,
       ...groupedChart,
       timeBucket,
+    }
+  }
+
+  async getErrorOverview(
+    pid: string,
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+    groupFrom: string,
+    groupTo: string,
+    timeBucket: string,
+    showResolved: boolean,
+  ): Promise<any> {
+    const resolvedFilter = showResolved
+      ? ''
+      : "AND (status.status = 'active' OR status.status = 'regressed' OR status.status IS NULL)"
+
+    // Get total sessions from analytics table for the time range
+    const queryTotalSessions = `
+      SELECT count(DISTINCT psid) as totalSessions
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    // Get error stats: total errors, unique errors, affected sessions, affected users
+    const queryErrorStats = `
+      SELECT
+        count(*) as totalErrors,
+        count(DISTINCT eid) as uniqueErrors,
+        count(DISTINCT psid) as affectedSessions,
+        count(DISTINCT profileId) as affectedUsers
+      FROM errors
+      LEFT JOIN (
+        SELECT eid, argMax(status, updated) AS status
+        FROM error_statuses
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY eid
+      ) AS status ON errors.eid = status.eid
+      WHERE pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filtersQuery}
+        ${resolvedFilter}
+    `
+
+    // Get most frequent error
+    const queryMostFrequentError = `
+      SELECT
+        errors.eid as eid,
+        any(errors.name) as name,
+        any(errors.message) as message,
+        count(*) as count,
+        count(DISTINCT errors.profileId) as usersAffected,
+        max(errors.created) as lastSeen
+      FROM errors
+      LEFT JOIN (
+        SELECT eid, argMax(status, updated) AS status
+        FROM error_statuses
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY eid
+      ) AS status ON errors.eid = status.eid
+      WHERE errors.pid = {pid:FixedString(12)}
+        AND errors.created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filtersQuery}
+        ${resolvedFilter}
+      GROUP BY errors.eid
+      ORDER BY count DESC
+      LIMIT 1
+    `
+
+    // Get chart data with affected users - use same pattern as other chart methods
+    const timeBucketFunc =
+      timeBucketConversion[timeBucket as keyof typeof timeBucketConversion] ||
+      timeBucketConversion.day
+    const [selector, groupBy] = this.getGroupSubquery(
+      timeBucket as TimeBucketType,
+    )
+    const queryChart = `
+      SELECT
+        ${selector},
+        count(*) as count,
+        uniqExact(profileId) as affectedUsers
+      FROM (
+        SELECT
+          profileId,
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
+        FROM errors
+        LEFT JOIN (
+          SELECT eid, argMax(status, updated) AS status
+          FROM error_statuses
+          WHERE pid = {pid:FixedString(12)}
+          GROUP BY eid
+        ) AS status ON errors.eid = status.eid
+        WHERE pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+          ${resolvedFilter}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+
+    const paramsWithTimezone = {
+      ...paramsData.params,
+      timezone: safeTimezone,
+    }
+
+    const [
+      totalSessionsResult,
+      errorStatsResult,
+      mostFrequentResult,
+      chartResult,
+    ] = await Promise.all([
+      clickhouse
+        .query({
+          query: queryTotalSessions,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data[0]),
+      clickhouse
+        .query({
+          query: queryErrorStats,
+          query_params: paramsWithTimezone,
+        })
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data[0]),
+      clickhouse
+        .query({
+          query: queryMostFrequentError,
+          query_params: paramsWithTimezone,
+        })
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data[0] || null),
+      clickhouse
+        .query({
+          query: queryChart,
+          query_params: paramsWithTimezone,
+        })
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data),
+    ])
+
+    // Process chart data using same pattern as extractErrorsChartData
+    const { x, format } = this.generateUTCXAxis(
+      timeBucket as TimeBucketType,
+      groupFrom,
+      groupTo,
+    )
+    const occurrences = Array(x.length).fill(0)
+    const affectedUsersChart = Array(x.length).fill(0)
+
+    for (const row of chartResult) {
+      const dateString = this.generateDateString(row)
+      const index = x.indexOf(dateString)
+      if (index !== -1) {
+        occurrences[index] = Number(row.count) || 0
+        affectedUsersChart[index] = Number(row.affectedUsers) || 0
+      }
+    }
+
+    const errorRate =
+      totalSessionsResult?.totalSessions > 0
+        ? (Number(errorStatsResult?.affectedSessions || 0) /
+            Number(totalSessionsResult.totalSessions)) *
+          100
+        : 0
+
+    return {
+      stats: {
+        totalErrors: Number(errorStatsResult?.totalErrors || 0),
+        uniqueErrors: Number(errorStatsResult?.uniqueErrors || 0),
+        affectedSessions: Number(errorStatsResult?.affectedSessions || 0),
+        affectedUsers: Number(errorStatsResult?.affectedUsers || 0),
+        errorRate: Math.round(errorRate * 100) / 100,
+      },
+      mostFrequentError: mostFrequentResult
+        ? {
+            eid: mostFrequentResult.eid,
+            name: mostFrequentResult.name,
+            message: mostFrequentResult.message,
+            count: Number(mostFrequentResult.count),
+            usersAffected: Number(mostFrequentResult.usersAffected),
+            lastSeen: mostFrequentResult.lastSeen,
+          }
+        : null,
+      chart: {
+        x: this.shiftToTimezone(x, safeTimezone, format),
+        occurrences,
+        affectedUsers: affectedUsersChart,
+      },
+      timeBucket,
+    }
+  }
+
+  async getErrorAffectedSessions(
+    pid: string,
+    eid: string,
+    groupFrom: string,
+    groupTo: string,
+    take: number = 10,
+    skip: number = 0,
+  ): Promise<{ sessions: any[]; total: number }> {
+    const queryCount = `
+      SELECT count(DISTINCT psid) as total
+      FROM errors
+      WHERE pid = {pid:FixedString(12)}
+        AND eid = {eid:FixedString(32)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    const querySessions = `
+      SELECT DISTINCT
+        errors.psid as psid,
+        any(errors.profileId) as profileId,
+        any(analytics.cc) as cc,
+        any(analytics.br) as br,
+        any(analytics.os) as os,
+        min(errors.created) as firstErrorAt,
+        max(errors.created) as lastErrorAt,
+        count(*) as errorCount
+      FROM errors
+      LEFT JOIN analytics ON errors.psid = analytics.psid AND errors.pid = analytics.pid
+      WHERE errors.pid = {pid:FixedString(12)}
+        AND errors.eid = {eid:FixedString(32)}
+        AND errors.created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY errors.psid
+      ORDER BY lastErrorAt DESC
+      LIMIT ${take}
+      OFFSET ${skip}
+    `
+
+    const params = { pid, eid, groupFrom, groupTo }
+
+    const [countResult, sessionsResult] = await Promise.all([
+      clickhouse
+        .query({ query: queryCount, query_params: params })
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data[0]),
+      clickhouse
+        .query({ query: querySessions, query_params: params })
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data),
+    ])
+
+    return {
+      sessions: sessionsResult,
+      total: Number(countResult?.total || 0),
     }
   }
 
