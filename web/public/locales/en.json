@@ -1323,6 +1323,9 @@
     "resetZoom": "Reset zoom",
     "noEventsForSelectedPeriod": "There are no events for the selected time period.",
     "endOfSession": "End of session",
+    "properties": "Properties",
+    "showLess": "Show less",
+    "showMore": "Show {{count}} more",
     "barChart": "Bar chart",
     "lineChart": "Line chart",
     "settings": {

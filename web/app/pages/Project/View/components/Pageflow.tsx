@@ -1,8 +1,10 @@
 import { TFunction } from 'i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
+import _size from 'lodash/size'
 import _toUpper from 'lodash/toUpper'
-import { BugIcon, ChevronDownIcon, CircleIcon, FileTextIcon, MousePointerClickIcon } from 'lucide-react'
+import _truncate from 'lodash/truncate'
+import { BugIcon, ChevronDownIcon, CircleIcon, FileTextIcon, MousePointerClickIcon, TagIcon } from 'lucide-react'
 import React, { useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
@@ -36,11 +38,65 @@ interface PageflowItemProps {
   t: TFunction
 }
 
-const KeyValue = ({ evKey, evValue }: { evKey: string; evValue: string }) => (
-  <li className='text-[11px] wrap-anywhere'>
-    <span className='text-gray-500 dark:text-gray-400'>{evKey}:</span> {evValue}
-  </li>
-)
+const MetadataPanel = ({ metadata, t }: { metadata: Metadata[]; t: TFunction }) => {
+  const [showAll, setShowAll] = useState(false)
+  const INITIAL_SHOW_COUNT = 5
+  const hasMore = metadata.length > INITIAL_SHOW_COUNT
+  const displayedMetadata = showAll ? metadata : metadata.slice(0, INITIAL_SHOW_COUNT)
+  const remainingCount = metadata.length - INITIAL_SHOW_COUNT
+
+  return (
+    <div className='mt-2 ml-5 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/50'>
+      {/* Header */}
+      <div className='border-b border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-800/50'>
+        <span className='text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400'>
+          {t('project.properties')}
+        </span>
+      </div>
+
+      {/* Table */}
+      <div className='divide-y divide-slate-100 dark:divide-slate-800'>
+        {_map(displayedMetadata, ({ key, value }, index) => {
+          const needsTruncation = _size(value) > 60
+          const displayValue = needsTruncation ? _truncate(value, { length: 60 }) : value
+
+          return (
+            <div
+              key={`${key}${value}${index}`}
+              className='grid grid-cols-[minmax(80px,auto)_1fr] gap-3 px-3 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/30'
+            >
+              <div className='flex items-start'>
+                <span className='font-mono text-[11px] font-medium text-slate-500 dark:text-slate-400'>{key}</span>
+              </div>
+              <div className='flex items-start'>
+                <span
+                  className={cn(
+                    'text-xs break-all text-slate-700 dark:text-slate-300',
+                    needsTruncation && 'cursor-help',
+                  )}
+                  title={needsTruncation ? value : undefined}
+                >
+                  {displayValue}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Show more button */}
+      {hasMore ? (
+        <button
+          type='button'
+          onClick={() => setShowAll(!showAll)}
+          className='w-full border-t border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300'
+        >
+          {showAll ? t('project.showLess') : t('project.showMore', { count: remainingCount })}
+        </button>
+      ) : null}
+    </div>
+  )
+}
 
 const formatDuration = (seconds: number): string => {
   if (seconds <= 0) {
@@ -117,19 +173,6 @@ const PageflowItem = ({
                     : undefined
                 }
               >
-                {hasMetadata ? (
-                  <ChevronDownIcon
-                    className={cn(
-                      'mr-1 h-4 w-4 text-gray-400 transition-transform duration-200 dark:text-gray-500',
-                      {
-                        'rotate-0': !isExpanded,
-                        '-rotate-90': !isExpanded,
-                      },
-                      isExpanded && 'rotate-0',
-                    )}
-                    aria-hidden='true'
-                  />
-                ) : null}
                 <Trans
                   t={t}
                   i18nKey={
@@ -143,6 +186,21 @@ const PageflowItem = ({
                     x: value || _toUpper(t('common.notSet')),
                   }}
                 />
+                {hasMetadata ? (
+                  <span className='ml-2 inline-flex shrink-0 items-center gap-0.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-400'>
+                    <TagIcon className='h-2.5 w-2.5' />
+                    {metadata!.length}
+                  </span>
+                ) : null}
+                {hasMetadata ? (
+                  <ChevronDownIcon
+                    className={cn(
+                      'ml-1 h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 dark:text-gray-500',
+                      isExpanded && 'rotate-180',
+                    )}
+                    aria-hidden='true'
+                  />
+                ) : null}
               </div>
               <div className='text-right text-sm whitespace-nowrap text-gray-700 dark:text-gray-300'>
                 <time dateTime={created}>{displayCreated}</time>
@@ -150,13 +208,7 @@ const PageflowItem = ({
             </div>
 
             {/* Collapsible metadata */}
-            {hasMetadata && isExpanded ? (
-              <ul className='mt-2 ml-5 space-y-0.5 rounded-md bg-gray-50 p-2 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300'>
-                {_map(metadata, ({ key, value: metaValue }, index) => (
-                  <KeyValue key={`${key}${metaValue}${index}`} evKey={key} evValue={metaValue} />
-                ))}
-              </ul>
-            ) : null}
+            {hasMetadata && isExpanded ? <MetadataPanel metadata={metadata!} t={t} /> : null}
 
             {/* Time duration to next step */}
             {timeDuration !== null && timeDuration > 0 ? (
