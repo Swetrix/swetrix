@@ -1322,6 +1322,7 @@
     "refreshing": "Refreshing...",
     "resetZoom": "Reset zoom",
     "noEventsForSelectedPeriod": "There are no events for the selected time period.",
+    "endOfSession": "End of session",
     "barChart": "Bar chart",
     "lineChart": "Line chart",
     "settings": {

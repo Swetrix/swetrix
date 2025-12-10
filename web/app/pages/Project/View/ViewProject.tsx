@@ -4060,6 +4060,7 @@ const ViewProjectContent = () => {
                             pages={activeSession?.pages}
                             timeFormat={timeFormat}
                             zoomedTimeRange={zoomedTimeRange}
+                            sdur={activeSession?.details?.sdur}
                           />
                         )}
                         {activeSession !== null &&
