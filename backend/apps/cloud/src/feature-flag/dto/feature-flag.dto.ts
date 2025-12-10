@@ -11,19 +11,36 @@ import {
   Max,
   MaxLength,
   Matches,
+  ArrayMaxSize,
+  IsIn,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import { FeatureFlagType, TargetingRule } from '../entity/feature-flag.entity'
 
+// Valid targeting rule columns (attribute keys)
+export const VALID_TARGETING_COLUMNS = [
+  'cc', // country code
+  'ct', // city
+  'rg', // region
+  'dv', // device type
+  'br', // browser
+  'os', // operating system
+] as const
+
 export class TargetingRuleDto implements TargetingRule {
   @ApiProperty({
-    description: 'Column/attribute to filter on (cc, dv, br, os, pg, etc.)',
+    description: 'Column/attribute to filter on (cc, ct, rg, dv, br, os)',
+    enum: VALID_TARGETING_COLUMNS,
   })
   @IsString()
+  @IsIn(VALID_TARGETING_COLUMNS, {
+    message: 'Column must be one of: cc, ct, rg, dv, br, os',
+  })
   column: string
 
   @ApiProperty({ description: 'Value to match against' })
   @IsString()
+  @MaxLength(256)
   filter: string
 
   @ApiProperty({
@@ -80,10 +97,11 @@ export class CreateFeatureFlagDto {
   @ApiPropertyOptional({
     type: [TargetingRuleDto],
     description:
-      'Array of targeting rules to filter which visitors see this flag',
+      'Array of targeting rules to filter which visitors see this flag (max 50)',
   })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(50, { message: 'Cannot have more than 50 targeting rules' })
   @ValidateNested({ each: true })
   @Type(() => TargetingRuleDto)
   targetingRules?: TargetingRuleDto[]
@@ -135,10 +153,11 @@ export class UpdateFeatureFlagDto {
 
   @ApiPropertyOptional({
     type: [TargetingRuleDto],
-    description: 'Array of targeting rules',
+    description: 'Array of targeting rules (max 50)',
   })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(50, { message: 'Cannot have more than 50 targeting rules' })
   @ValidateNested({ each: true })
   @Type(() => TargetingRuleDto)
   targetingRules?: TargetingRuleDto[] | null
@@ -152,6 +171,7 @@ export class UpdateFeatureFlagDto {
 export class EvaluateFeatureFlagsDto {
   @ApiProperty({ description: 'Project ID to evaluate flags for' })
   @IsString()
+  @MaxLength(12)
   pid: string
 
   @ApiPropertyOptional({
@@ -160,6 +180,7 @@ export class EvaluateFeatureFlagsDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(256)
   profileId?: string
 }
 

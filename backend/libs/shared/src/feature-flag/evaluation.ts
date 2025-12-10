@@ -155,8 +155,9 @@ export function isInRolloutPercentage(
   }
 
   // Create a consistent hash based on flag key and profile ID
+  // Using SHA-256 for better cryptographic properties
   const hash = crypto
-    .createHash('md5')
+    .createHash('sha256')
     .update(`${flagKey}:${profileId}`)
     .digest('hex')
 

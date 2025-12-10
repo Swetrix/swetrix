@@ -258,12 +258,10 @@ export class FeatureFlagController {
       where: { id: evaluateDto.pid },
     })
 
-    if (_isEmpty(project)) {
-      throw new NotFoundException('Project not found')
-    }
-
-    if (!project.active) {
-      throw new BadRequestException('Project is not active')
+    // Return empty flags instead of revealing whether a project exists
+    // This prevents project ID enumeration attacks
+    if (_isEmpty(project) || !project.active) {
+      return { flags: {} }
     }
 
     const flags = await this.featureFlagService.findEnabledByProject(
