@@ -198,7 +198,6 @@ import { TrafficChart } from './components/TrafficChart'
 import { UserDetails } from './components/UserDetails'
 import UserFlow from './components/UserFlow'
 import { Users, UsersFilter } from './components/Users'
-import WaitingForAnError from './components/WaitingForAnError'
 import WaitingForAnEvent from './components/WaitingForAnEvent'
 import {
   Customs,
@@ -3059,44 +3058,6 @@ const ViewProjectContent = () => {
           <div className='flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8'>
             <MobileTabSelector />
             <WaitingForAnEvent />
-          </div>
-        </div>
-        {!isEmbedded ? <Footer /> : null}
-      </>
-    )
-  }
-
-  if (
-    typeof project.isErrorDataExists === 'boolean' && // to prevent flickering
-    !project.isErrorDataExists &&
-    activeTab === PROJECT_TABS.errors
-  ) {
-    return (
-      <>
-        {!isEmbedded ? <Header /> : null}
-        <div
-          className={cx('flex bg-gray-50 dark:bg-slate-900', {
-            'min-h-including-header': !isEmbedded,
-            'min-h-[100vh]': isEmbedded,
-          })}
-        >
-          {/* Desktop Sidebar */}
-          <div className='h-including-header sticky top-0 hidden md:block'>
-            <ProjectSidebar
-              tabs={tabs}
-              activeTab={activeTab}
-              onTabChange={setDashboardTab}
-              projectId={id}
-              projectName={project.name}
-              dataLoading={dataLoading}
-              searchParams={searchParams}
-              allowedToManage={allowedToManage}
-            />
-          </div>
-          {/* Main Content */}
-          <div className='flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8'>
-            <MobileTabSelector />
-            <WaitingForAnError />
           </div>
         </div>
         {!isEmbedded ? <Footer /> : null}

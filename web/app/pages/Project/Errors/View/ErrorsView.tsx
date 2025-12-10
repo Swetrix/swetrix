@@ -61,6 +61,7 @@ import { ErrorDetails } from '../../View/components/ErrorDetails'
 import Filters from '../../View/components/Filters'
 import NoErrorDetails from '../../View/components/NoErrorDetails'
 import NoEvents from '../../View/components/NoEvents'
+import WaitingForAnError from '../../View/components/WaitingForAnError'
 import { Panel, MetadataPanel } from '../../View/Panels'
 import { ERROR_FILTERS_MAPPING } from '../../View/utils/filters'
 
@@ -368,7 +369,7 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
           </div>
         </div>
         <div className='flex shrink-0 items-center gap-x-4'>
-          <div className='hidden sm:flex sm:flex-col sm:items-end'>
+          <div className='hidden gap-1 sm:flex sm:flex-col sm:items-end'>
             <div className='flex items-center gap-x-3 text-sm leading-6 text-gray-900 dark:text-gray-50'>
               <span className='flex items-center' title={t('dashboard.xOccurrences', { x: error.count })}>
                 <AlertTriangleIcon className='mr-1 size-4' strokeWidth={1.5} /> {error.count}
@@ -392,7 +393,7 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
 const ERRORS_TAKE = 30
 
 const ErrorsView = () => {
-  const { id, allowedToManage } = useCurrentProject()
+  const { id, allowedToManage, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const { timeBucket, timeFormat, period, dateRange, timezone, filters, size } = useViewProjectContext()
   const {
@@ -758,6 +759,11 @@ const ErrorsView = () => {
     }),
     [t],
   )
+
+  // Show waiting for error data state
+  if (typeof project?.isErrorDataExists === 'boolean' && !project.isErrorDataExists) {
+    return <WaitingForAnError />
+  }
 
   // If viewing error detail
   if (activeEID) {
