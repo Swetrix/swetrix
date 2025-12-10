@@ -98,6 +98,9 @@ export interface Session {
 
   sessionStart: string
   lastActivity: string
+
+  profileId: string | null
+  isIdentified: 1 | 0
 }
 
 export interface SessionDetails {

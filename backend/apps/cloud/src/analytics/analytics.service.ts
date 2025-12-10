@@ -4178,7 +4178,8 @@ export class AnalyticsService {
         SELECT 
           CAST(psid, 'String') AS psidCasted, 
           pid, 
-          avg(dateDiff('second', firstSeen, lastSeen)) as avg_duration
+          avg(dateDiff('second', firstSeen, lastSeen)) as avg_duration,
+          any(profileId) as profileId
         FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
         GROUP BY psidCasted, pid
@@ -4194,7 +4195,9 @@ export class AnalyticsService {
         dsf.sessionStart,
         dsf.lastActivity,
         if(dateDiff('second', dsf.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
-        sda.avg_duration AS sdur
+        sda.avg_duration AS sdur,
+        sda.profileId AS profileId,
+        if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified
       FROM distinct_sessions_filtered dsf
       LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
       LEFT JOIN event_counts ec ON dsf.psidCasted = ec.psidCasted AND dsf.pid = ec.pid

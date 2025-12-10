@@ -1092,6 +1092,7 @@
     "addASegment": "Add a segment",
     "loadMore": "Load more",
     "unknownCountry": "Unknown country",
+    "unknownUser": "Unknown user",
     "selectCategory": "Select a category to filter",
     "selectCategoryOptional": "Select a category to filter (optional)",
     "customEventsAndMetrics": "Custom events and metrics (optional)",
