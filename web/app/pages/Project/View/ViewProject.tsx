@@ -4028,7 +4028,9 @@ const ViewProjectContent = () => {
                           </Link>
                           <RefreshStatsButton onRefresh={refreshStats} />
                         </div>
-                        {activeSession?.details ? <SessionDetails details={activeSession?.details} /> : null}
+                        {activeSession?.details ? (
+                          <SessionDetails details={activeSession?.details} pages={activeSession?.pages} />
+                        ) : null}
                         {!_isEmpty(activeSession?.chart) ? (
                           <div className='relative'>
                             <SessionChart

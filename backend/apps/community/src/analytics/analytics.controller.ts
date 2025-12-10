@@ -923,12 +923,7 @@ export class AnalyticsController {
       eventsDTO.profileId,
     )
 
-    await this.analyticsService.recordSession(
-      psid,
-      eventsDTO.pid,
-      profileId,
-      false,
-    )
+    await this.analyticsService.recordSession(psid, eventsDTO.pid, profileId)
 
     const transformed = customEventTransformer(
       psid,
@@ -1046,7 +1041,7 @@ export class AnalyticsController {
       logDTO.profileId,
     )
 
-    await this.analyticsService.recordSession(psid, logDTO.pid, profileId, true)
+    await this.analyticsService.recordSession(psid, logDTO.pid, profileId)
 
     if (unique && logDTO.unique) {
       throw new ForbiddenException(
@@ -1188,7 +1183,7 @@ export class AnalyticsController {
       ip,
     )
 
-    await this.analyticsService.recordSession(psid, logDTO.pid, profileId, true)
+    await this.analyticsService.recordSession(psid, logDTO.pid, profileId)
 
     const { city, region, regionCode, country } = getGeoDetails(ip, null)
 
@@ -1491,12 +1486,7 @@ export class AnalyticsController {
       errorDTO.profileId,
     )
 
-    await this.analyticsService.recordSession(
-      psid,
-      errorDTO.pid,
-      profileId,
-      false,
-    )
+    await this.analyticsService.recordSession(psid, errorDTO.pid, profileId)
 
     const { city, region, regionCode, country } = getGeoDetails(ip, errorDTO.tz)
 

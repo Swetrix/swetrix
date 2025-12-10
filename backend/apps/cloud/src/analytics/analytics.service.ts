@@ -1222,11 +1222,31 @@ export class AnalyticsService {
     psid: string,
     pid: string,
     profileId: string,
-    isPageview: boolean = true,
   ): Promise<void> {
     const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
 
     try {
+      const query = `
+        SELECT firstSeen
+        FROM sessions FINAL
+        WHERE psid = {psid:UInt64}
+          AND pid = {pid:FixedString(12)}
+        LIMIT 1
+      `
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { psid, pid },
+        })
+        .then(resultSet =>
+          resultSet.json<{
+            firstSeen: string
+          }>(),
+        )
+
+      const existingSession = data[0]
+
       await clickhouse.insert({
         table: 'sessions',
         format: 'JSONEachRow',
@@ -1235,10 +1255,8 @@ export class AnalyticsService {
             psid,
             pid,
             profileId,
-            firstSeen: now,
+            firstSeen: existingSession?.firstSeen ?? now,
             lastSeen: now,
-            pageviews: isPageview ? 1 : 0,
-            events: isPageview ? 0 : 1,
           },
         ],
         clickhouse_settings: { async_insert: 1 },
@@ -1256,7 +1274,6 @@ export class AnalyticsService {
     const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
 
     try {
-      // Read current session data to preserve pageviews/events counts
       // TODO: Potentially slow because every write request reads from the database - consider caching or other optimisation
       const query = `
         SELECT firstSeen, pageviews, events
