@@ -2,7 +2,6 @@ import SwetrixSDK from '@swetrix/sdk'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import { AnimatePresence, motion } from 'framer-motion'
-import _debounce from 'lodash/debounce'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _findIndex from 'lodash/findIndex'
@@ -75,9 +74,6 @@ import {
   getPerformanceOverallStats,
   getSessions,
   getSession,
-  getErrors,
-  getError,
-  updateErrorStatus,
   getPropertyMetadata,
   getProjectViews,
   deleteProjectView,
@@ -116,7 +112,6 @@ import {
   TITLE_SUFFIX,
   MARKETPLACE_URL,
   TBPeriodPairsProps,
-  ERROR_PANELS_ORDER,
   ERROR_PERIOD_PAIRS,
   FUNNELS_PERIOD_PAIRS,
   type Period,
@@ -133,8 +128,6 @@ import {
   AnalyticsFunnel,
   OverallObject,
   OverallPerformanceObject,
-  SwetrixError,
-  SwetrixErrorDetails,
   SessionDetails as SessionDetailsModel,
   Session,
   Annotation,
@@ -180,8 +173,6 @@ import { ChartContextMenu } from './components/ChartContextMenu'
 import { ChartManagerProvider } from './components/ChartManager'
 import CustomEventsSubmenu from './components/CustomEventsSubmenu'
 import CustomMetrics from './components/CustomMetrics'
-import { ErrorChart } from './components/ErrorChart'
-import { ErrorDetails } from './components/ErrorDetails'
 import Filters from './components/Filters'
 const CaptchaView = lazy(() => import('./components/CaptchaView'))
 import { FunnelChart } from './components/FunnelChart'
@@ -191,7 +182,6 @@ const InteractiveMap = lazy(() => import('./components/InteractiveMap'))
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import LockedDashboard from './components/LockedDashboard'
 import { MetricCard, MetricCards, PerformanceMetricCards } from './components/MetricCards'
-import NoErrorDetails from './components/NoErrorDetails'
 import NoEvents from './components/NoEvents'
 import NoSessionDetails from './components/NoSessionDetails'
 import { Pageflow } from './components/Pageflow'
@@ -220,8 +210,8 @@ import {
   Properties,
   TrafficLogResponse,
 } from './interfaces/traffic'
-import { Panel, Metadata as MetadataGeneric, MetadataPanel, type CustomTab } from './Panels'
-import { FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, ERROR_FILTERS_MAPPING, parseFilters } from './utils/filters'
+import { Panel, Metadata as MetadataGeneric, type CustomTab } from './Panels'
+import { FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, parseFilters } from './utils/filters'
 import {
   onCSVExportClick,
   getFormatDate,
@@ -239,7 +229,6 @@ import {
 } from './ViewProject.helpers'
 
 const SESSIONS_TAKE = 30
-const ERRORS_TAKE = 30
 
 /**
  * Pixel distance threshold for snapping to nearby annotations when clicking on the chart.
@@ -561,9 +550,6 @@ const ViewProjectContent = () => {
     [CHART_METRICS_MAPPING.customEvents]: false,
     ...(preferences.metricsVisualisation || {}),
   })
-  const [errorOptions, setErrorOptions] = useState<Record<string, boolean>>({
-    [ERROR_FILTERS_MAPPING.showResolved]: false,
-  })
   const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState(CHART_METRICS_MAPPING_PERF.timing)
   const [activePerfMeasure, setActivePerfMeasure] = useState(CHART_MEASURES_MAPPING_PERF.median)
   const checkIfAllMetricsAreDisabled = useMemo(
@@ -725,21 +711,6 @@ const ViewProjectContent = () => {
   const profilesRequestIdRef = useRef(0)
   const skipNextProfilesAutoLoadRef = useRef(false)
 
-  // errors
-  const [errorsSkip, setErrorsSkip] = useState(0)
-  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(false)
-  const [errors, setErrors] = useState<SwetrixError[]>([])
-  const [errorsLoading, setErrorsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
-  const [activeError, setActiveError] = useState<{ details: SwetrixErrorDetails; [key: string]: any } | null>(null)
-  const [errorLoading, setErrorLoading] = useState(false)
-  const [errorStatusUpdating, setErrorStatusUpdating] = useState(false)
-  const activeEID = useMemo(() => {
-    return searchParams.get('eid')
-  }, [searchParams])
-  const prevActiveEIDRef = useRef<string | null>(activeEID)
-  const errorsRequestIdRef = useRef(0)
-  const skipNextErrorsAutoLoadRef = useRef(false)
-
   const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(undefined)
   const [funnelActionLoading, setFunnelActionLoading] = useState(false)
   const [funnelAnalytics, setFunnelAnalytics] = useState<{
@@ -789,17 +760,12 @@ const ViewProjectContent = () => {
     annotation: null,
   })
 
-  // Reset sessions and errors when filters change so lists reload with correct pagination
+  // Reset sessions when filters change so lists reload with correct pagination
   useEffect(() => {
     sessionsRequestIdRef.current += 1
-    errorsRequestIdRef.current += 1
     setSessionsSkip(0)
     setSessions([])
     setSessionsLoading(null)
-
-    setErrorsSkip(0)
-    setErrors([])
-    setErrorsLoading(null)
   }, [filters])
 
   const mode = activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode] ? 'cumulative' : 'periodical'
@@ -1098,16 +1064,6 @@ const ViewProjectContent = () => {
     device: 'br',
   })
 
-  const [errorsActiveTabs, setErrorsActiveTabs] = useState<{
-    location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
-    page: 'pg' | 'host'
-    device: 'br' | 'os' | 'dv'
-  }>({
-    location: 'cc',
-    page: 'pg',
-    device: 'br',
-  })
-
   const setPanelTab = (
     panel: keyof typeof panelsActiveTabs,
     tab: (typeof panelsActiveTabs)[keyof typeof panelsActiveTabs],
@@ -1193,18 +1149,8 @@ const ViewProjectContent = () => {
   }, [isActiveCompare, period, dateRange, periodPairs])
 
   const createVersionDataMapping = useMemo(() => {
-    const browserDataSource =
-      activeTab === PROJECT_TABS.errors
-        ? activeError?.params?.brv
-        : activeTab === PROJECT_TABS.performance
-          ? panelsDataPerf.data?.brv
-          : panelsData.data?.brv
-    const osDataSource =
-      activeTab === PROJECT_TABS.errors
-        ? activeError?.params?.osv
-        : activeTab === PROJECT_TABS.performance
-          ? panelsDataPerf.data?.osv
-          : panelsData.data?.osv
+    const browserDataSource = activeTab === PROJECT_TABS.performance ? panelsDataPerf.data?.brv : panelsData.data?.brv
+    const osDataSource = activeTab === PROJECT_TABS.performance ? panelsDataPerf.data?.osv : panelsData.data?.osv
 
     const browserVersions: { [key: string]: Entry[] } = {}
     const osVersions: { [key: string]: Entry[] } = {}
@@ -1230,15 +1176,7 @@ const ViewProjectContent = () => {
     }
 
     return { browserVersions, osVersions }
-  }, [
-    panelsData.data?.brv,
-    panelsData.data?.osv,
-    activeTab,
-    activeError?.params?.brv,
-    activeError?.params?.osv,
-    panelsDataPerf.data?.brv,
-    panelsDataPerf.data?.osv,
-  ])
+  }, [panelsData.data?.brv, panelsData.data?.osv, activeTab, panelsDataPerf.data?.brv, panelsDataPerf.data?.osv])
 
   useEffect(() => {
     if (!project) {
@@ -1343,16 +1281,6 @@ const ViewProjectContent = () => {
       },
     ]
   }, [t, activeChartMetrics])
-
-  const errorFilters = useMemo(() => {
-    return [
-      {
-        id: ERROR_FILTERS_MAPPING.showResolved,
-        label: t('project.showResolved'),
-        active: errorOptions[ERROR_FILTERS_MAPPING.showResolved],
-      },
-    ]
-  }, [t, errorOptions])
 
   const chartMetricsPerf = useMemo(() => {
     return [
@@ -1592,72 +1520,6 @@ const ViewProjectContent = () => {
       }
       return newActiveChartMetricsCustomEvents
     })
-  }
-
-  const switchActiveErrorFilter = _debounce((pairID: string) => {
-    setErrorOptions((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
-    setErrorsSkip(0)
-  }, 0)
-
-  const updateStatusInErrors = (status: 'active' | 'resolved') => {
-    if (!activeError?.details?.eid) {
-      return
-    }
-
-    const index = _findIndex(errors, (error) => error.eid === activeEID)
-
-    if (index === -1) {
-      return
-    }
-
-    errors[index] = {
-      ...errors[index],
-      status,
-    }
-  }
-
-  const markErrorAsResolved = async () => {
-    if (errorStatusUpdating || !activeEID || !activeError?.details?.eid) {
-      return
-    }
-
-    setErrorStatusUpdating(true)
-
-    try {
-      await updateErrorStatus(id, 'resolved', activeEID)
-      await loadError(activeEID)
-      updateStatusInErrors('resolved')
-    } catch (reason) {
-      console.error('[markErrorAsResolved]', reason)
-      toast.error(t('apiNotifications.updateErrorStatusFailed'))
-      setErrorStatusUpdating(false)
-      return
-    }
-
-    toast.success(t('apiNotifications.errorStatusUpdated'))
-    setErrorStatusUpdating(false)
-  }
-
-  const markErrorAsActive = async () => {
-    if (errorStatusUpdating || !activeEID || !activeError?.details?.eid) {
-      return
-    }
-
-    setErrorStatusUpdating(true)
-
-    try {
-      await updateErrorStatus(id, 'active', activeEID)
-      await loadError(activeEID)
-      updateStatusInErrors('active')
-    } catch (reason) {
-      console.error('[markErrorAsResolved]', reason)
-      toast.error(t('apiNotifications.updateErrorStatusFailed'))
-      setErrorStatusUpdating(false)
-      return
-    }
-
-    toast.success(t('apiNotifications.errorStatusUpdated'))
-    setErrorStatusUpdating(false)
   }
 
   const loadCustomEvents = async () => {
@@ -1983,44 +1845,6 @@ const ViewProjectContent = () => {
     return getPropertyMetadata(id, event, timeBucket, period, '', '', filters, timezone, projectPassword)
   }
 
-  const loadError = useCallback(
-    async (eid: string) => {
-      setErrorLoading(true)
-
-      try {
-        let error
-        let from
-        let to
-
-        if (dateRange) {
-          from = getFormatDate(dateRange[0])
-          to = getFormatDate(dateRange[1])
-        }
-
-        if (period === 'custom' && dateRange) {
-          error = await getError(id, eid, timeBucket, '', filters, from, to, timezone, projectPassword)
-        } else {
-          error = await getError(id, eid, timeBucket, period, filters, '', '', timezone, projectPassword)
-        }
-
-        setActiveError(error)
-      } catch (reason: any) {
-        if (reason?.status === 400) {
-          setErrorLoading(false)
-          setActiveError(null)
-          return
-        }
-
-        const message = _isEmpty(reason.data?.message) ? reason.data : reason.data.message
-
-        console.error('[ERROR] (loadError)(getError)', message)
-        toast.error(message)
-      }
-      setErrorLoading(false)
-    },
-    [dateRange, id, period, timeBucket, projectPassword, timezone, filters],
-  )
-
   const loadSession = async (psid: string) => {
     if (sessionLoading) {
       return
@@ -2057,24 +1881,6 @@ const ViewProjectContent = () => {
     prevActivePSIDRef.current = activePSID
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, dateRange, timeBucket, activePSID])
-
-  useEffect(() => {
-    if (!activeEID) {
-      setActiveError(null)
-      // Coming back from an error detail to the list: reset pagination and reload first page
-      if (prevActiveEIDRef.current) {
-        skipNextErrorsAutoLoadRef.current = true
-        setErrorsSkip(0)
-        loadErrors(0, true)
-      }
-      prevActiveEIDRef.current = null
-      return
-    }
-
-    loadError(activeEID)
-    prevActiveEIDRef.current = activeEID
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, dateRange, timeBucket, activeEID, filters])
 
   const loadSessions = async (forcedSkip?: number, override?: boolean) => {
     if (sessionsLoading) {
@@ -2303,84 +2109,6 @@ const ViewProjectContent = () => {
       console.error('[ERROR](loadProfileSessions) Loading profile sessions failed:', reason)
     } finally {
       setProfileSessionsLoading(false)
-    }
-  }
-
-  const loadErrors = async (forcedSkip?: number, override?: boolean) => {
-    if (errorsLoading) {
-      return
-    }
-
-    const requestId = errorsRequestIdRef.current
-    setErrorsLoading(true)
-
-    try {
-      // If errors list is empty (e.g., after navigating back), default to first page
-      const skip = typeof forcedSkip === 'number' ? forcedSkip : _isEmpty(errors) ? 0 : errorsSkip
-      let dataErrors: { errors: SwetrixError[] }
-      let from
-      let to
-
-      if (dateRange) {
-        from = getFormatDate(dateRange[0])
-        to = getFormatDate(dateRange[1])
-      }
-
-      if (period === 'custom' && dateRange) {
-        dataErrors = await getErrors(
-          id,
-          '',
-          filters,
-          errorOptions,
-          from,
-          to,
-          ERRORS_TAKE,
-          skip,
-          timezone,
-          projectPassword,
-        )
-      } else {
-        dataErrors = await getErrors(
-          id,
-          period,
-          filters,
-          errorOptions,
-          '',
-          '',
-          ERRORS_TAKE,
-          skip,
-          timezone,
-          projectPassword,
-        )
-      }
-
-      if (requestId === errorsRequestIdRef.current) {
-        if (override) {
-          setErrors(dataErrors?.errors || [])
-        } else {
-          setErrors((prev) => [...prev, ...(dataErrors?.errors || [])])
-        }
-
-        setErrorsSkip((prev) => {
-          if (typeof forcedSkip === 'number') {
-            return ERRORS_TAKE + forcedSkip
-          }
-
-          return ERRORS_TAKE + prev
-        })
-
-        if (dataErrors?.errors?.length < ERRORS_TAKE) {
-          setCanLoadMoreErrors(false)
-        } else {
-          setCanLoadMoreErrors(true)
-        }
-      }
-    } catch (reason) {
-      console.error('[ERROR](loadErrors) Loading errors data failed:', reason)
-    } finally {
-      if (requestId === errorsRequestIdRef.current) {
-        setErrorsLoading(false)
-      }
     }
   }
 
@@ -2656,17 +2384,6 @@ const ViewProjectContent = () => {
           return
         }
 
-        if (activeTab === PROJECT_TABS.errors) {
-          if (activeEID) {
-            await loadError(activeEID)
-            return
-          }
-
-          setErrorsSkip(0)
-          loadErrors(0, true)
-          return
-        }
-
         if (activeTab === PROJECT_TABS.profiles) {
           if (activeProfileId) {
             await loadProfile(activeProfileId)
@@ -2697,7 +2414,7 @@ const ViewProjectContent = () => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [authLoading, dataLoading, activeTab, activePSID, activeEID, activeProfileId],
+    [authLoading, dataLoading, activeTab, activePSID, activeProfileId],
   )
 
   useEffect(() => {
@@ -2866,32 +2583,6 @@ const ViewProjectContent = () => {
   }, [activeProfileId])
 
   useEffect(() => {
-    if (authLoading || activeTab !== PROJECT_TABS.errors || authLoading || !project || activeEID) {
-      return
-    }
-
-    if (skipNextErrorsAutoLoadRef.current) {
-      skipNextErrorsAutoLoadRef.current = false
-      return
-    }
-
-    loadErrors()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeTab,
-    errorOptions,
-    dateRange,
-    filters,
-    id,
-    period,
-    projectPassword,
-    timezone,
-    authLoading,
-    project,
-    activeEID,
-  ])
-
-  useEffect(() => {
     let sdk: SwetrixSDK | null = null
 
     const filteredExtensions = _filter(extensions, (ext) => _isString(ext.fileURL))
@@ -3043,7 +2734,6 @@ const ViewProjectContent = () => {
     newSearchParams.set('period', newPeriod)
 
     setSessionsSkip(0)
-    setErrorsSkip(0)
 
     updatePreferences({
       period: newPeriod,
@@ -3448,7 +3138,6 @@ const ViewProjectContent = () => {
           <>
             {(dataLoading && !isAutoRefreshing) ||
             (sessionsLoading && !_isEmpty(sessions)) ||
-            (errorsLoading && !_isEmpty(errors)) ||
             (profilesLoading && !_isEmpty(profiles)) ? (
               <LoadingBar />
             ) : null}
@@ -3512,7 +3201,7 @@ const ViewProjectContent = () => {
                                   className={cx('border-gray-200 dark:border-gray-600', {
                                     // @ts-expect-error
                                     'lg:border-r': activeTab === PROJECT_TABS.funnels,
-                                    hidden: activeTab === PROJECT_TABS.errors && activeError,
+                                    hidden: activeTab === PROJECT_TABS.errors,
                                   })}
                                 >
                                   <button
@@ -3679,75 +3368,13 @@ const ViewProjectContent = () => {
                                 ) : null}
                               </>
                             ) : null}
-                            {activeTab === PROJECT_TABS.errors &&
-                            allowedToManage &&
-                            activeError &&
-                            activeError?.details?.status !== 'resolved' ? (
-                              <button
-                                type='button'
-                                disabled={errorStatusUpdating}
-                                onClick={markErrorAsResolved}
-                                className={cx('p-2 text-sm font-medium text-gray-700 dark:text-gray-50', {
-                                  'cursor-not-allowed': authLoading || errorLoading,
-                                  'opacity-50': errorLoading && !errorStatusUpdating,
-                                  'animate-pulse cursor-not-allowed': errorStatusUpdating,
-                                })}
-                              >
-                                {t('project.resolve')}
-                              </button>
-                            ) : null}
-                            {activeTab === PROJECT_TABS.errors &&
-                            allowedToManage &&
-                            activeError &&
-                            activeError?.details?.status === 'resolved' ? (
-                              <button
-                                type='button'
-                                disabled={errorStatusUpdating}
-                                onClick={markErrorAsActive}
-                                className={cx('p-2 text-sm font-medium text-gray-700 dark:text-gray-50', {
-                                  'cursor-not-allowed': authLoading || errorLoading,
-                                  'opacity-50': errorLoading && !errorStatusUpdating,
-                                  'animate-pulse cursor-not-allowed': errorStatusUpdating,
-                                })}
-                              >
-                                {t('project.markAsActive')}
-                              </button>
-                            ) : null}
-                            {activeTab === PROJECT_TABS.errors && !activeError ? (
-                              <Dropdown
-                                items={errorFilters}
-                                title={t('project.filters')}
-                                labelExtractor={(pair) => {
-                                  const { label, active, id: pairID } = pair
-
-                                  return (
-                                    <Checkbox
-                                      classes={{
-                                        label: 'px-4 py-2',
-                                      }}
-                                      label={label}
-                                      checked={active}
-                                      onChange={() => switchActiveErrorFilter(pairID)}
-                                    />
-                                  )
-                                }}
-                                buttonClassName='!px-2.5'
-                                selectItemClassName='p-0'
-                                keyExtractor={(pair) => pair.id}
-                                onSelect={({ id: pairID }) => {
-                                  switchActiveErrorFilter(pairID)
-                                }}
-                                chevron='mini'
-                                headless
-                              />
-                            ) : null}
                             {activeTab === PROJECT_TABS.funnels ? (
                               <RefreshStatsButton onRefresh={refreshStats} />
                             ) : null}
                             <div className='flex items-center'>
                               <TBPeriodSelector
                                 classes={{
-                                  timeBucket: activeTab === PROJECT_TABS.errors && !activeEID ? 'hidden' : '',
+                                  timeBucket: activeTab === PROJECT_TABS.errors ? 'hidden' : '',
                                 }}
                                 activePeriod={activePeriod}
                                 items={timeBucketSelectorItems}
@@ -4071,243 +3698,7 @@ const ViewProjectContent = () => {
                         ) : null}
                       </>
                     ) : null}
-                    {activeTab === PROJECT_TABS.errors && !activeEID ? <ErrorsView /> : null}
-                    {activeTab === PROJECT_TABS.errors && activeEID ? (
-                      <>
-                        <div className='mx-auto mt-2 mb-3 flex max-w-max items-center space-x-4 lg:mx-0'>
-                          <Link
-                            to={{
-                              search: pureSearchParams,
-                            }}
-                            className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
-                          >
-                            <ChevronLeftIcon className='mr-1 size-3' />
-                            {t('project.backToErrors')}
-                          </Link>
-                        </div>
-                        {activeError?.details ? (
-                          <ErrorDetails
-                            details={activeError.details}
-                            period={period}
-                            from={dateRange ? getFormatDate(dateRange[0]) : undefined}
-                            to={dateRange ? getFormatDate(dateRange[1]) : undefined}
-                            timeBucket={timeBucket}
-                            projectPassword={projectPassword}
-                          />
-                        ) : null}
-                        {activeError?.chart ? (
-                          <div
-                            onContextMenu={(e) => handleChartContextMenu(e, activeError?.chart?.x)}
-                            className='relative'
-                          >
-                            <ErrorChart
-                              chart={activeError?.chart}
-                              timeBucket={activeError?.timeBucket}
-                              timeFormat={timeFormat}
-                              rotateXAxis={rotateXAxis}
-                              chartType={chartType}
-                              dataNames={dataNames}
-                              annotations={annotations}
-                            />
-                          </div>
-                        ) : null}
-                        <Filters tnMapping={tnMapping} />
-                        <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
-                          {!_isEmpty(activeError?.params)
-                            ? _map(ERROR_PANELS_ORDER, (type: keyof typeof tnMapping) => {
-                                if (type === 'location') {
-                                  const locationTabs = [
-                                    { id: 'cc', label: t('project.mapping.cc') },
-                                    { id: 'rg', label: t('project.mapping.rg') },
-                                    { id: 'ct', label: t('project.mapping.ct') },
-                                    { id: 'lc', label: t('project.mapping.lc') },
-                                    { id: 'map', label: 'Map' },
-                                  ]
-
-                                  const rowMapper = (entry: CountryEntry) => {
-                                    const { name: entryName, cc } = entry
-
-                                    if (errorsActiveTabs.location === 'lc') {
-                                      if (entryName === null) {
-                                        return <CCRow cc={null} language={language} />
-                                      }
-                                      const entryNameArray = entryName.split('-')
-                                      const displayName = getLocaleDisplayName(entryName, language)
-
-                                      return (
-                                        <CCRow
-                                          cc={entryNameArray[entryNameArray.length - 1]}
-                                          name={displayName}
-                                          language={language}
-                                        />
-                                      )
-                                    }
-
-                                    if (cc !== undefined) {
-                                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
-                                    }
-
-                                    return <CCRow cc={entryName} language={language} />
-                                  }
-
-                                  return (
-                                    <Panel
-                                      key={errorsActiveTabs.location}
-                                      icon={panelIconMapping.cc}
-                                      id={errorsActiveTabs.location}
-                                      getFilterLink={getFilterLink}
-                                      name={t('project.location')}
-                                      tabs={locationTabs}
-                                      onTabChange={(tab) =>
-                                        setErrorsActiveTabs({
-                                          ...errorsActiveTabs,
-                                          location: tab as 'cc' | 'rg' | 'ct' | 'lc' | 'map',
-                                        })
-                                      }
-                                      activeTabId={errorsActiveTabs.location}
-                                      data={activeError?.params?.[errorsActiveTabs.location] || []}
-                                      rowMapper={rowMapper}
-                                      customRenderer={
-                                        errorsActiveTabs.location === 'map'
-                                          ? () => {
-                                              const countryData = activeError?.params?.cc || []
-                                              const regionData = activeError?.params?.rg || []
-                                              // @ts-expect-error
-                                              const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
-
-                                              return (
-                                                <Suspense
-                                                  fallback={
-                                                    <div className='flex h-full items-center justify-center'>
-                                                      <div className='flex flex-col items-center gap-2'>
-                                                        <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
-                                                        <span className='text-sm text-neutral-600 dark:text-neutral-300'>
-                                                          Loading map...
-                                                        </span>
-                                                      </div>
-                                                    </div>
-                                                  }
-                                                >
-                                                  <InteractiveMap
-                                                    data={countryData}
-                                                    regionData={regionData}
-                                                    total={total}
-                                                    onClick={(type, key) => {
-                                                      const link = getFilterLink(type, key)
-                                                      navigate(link)
-                                                    }}
-                                                  />
-                                                </Suspense>
-                                              )
-                                            }
-                                          : undefined
-                                      }
-                                      valuesHeaderName={t('project.occurrences')}
-                                      highlightColour='red'
-                                    />
-                                  )
-                                }
-
-                                if (type === 'devices') {
-                                  const deviceTabs = [
-                                    { id: 'br', label: t('project.mapping.br') },
-                                    { id: 'os', label: t('project.mapping.os') },
-                                    { id: 'dv', label: t('project.mapping.dv') },
-                                  ]
-
-                                  return (
-                                    <Panel
-                                      key={errorsActiveTabs.device}
-                                      icon={panelIconMapping.os}
-                                      id={errorsActiveTabs.device}
-                                      getFilterLink={getFilterLink}
-                                      name={t('project.devices')}
-                                      tabs={deviceTabs}
-                                      onTabChange={(tab) =>
-                                        setErrorsActiveTabs({ ...errorsActiveTabs, device: tab as 'br' | 'os' | 'dv' })
-                                      }
-                                      activeTabId={errorsActiveTabs.device}
-                                      data={activeError?.params?.[errorsActiveTabs.device] || []}
-                                      rowMapper={getDeviceRowMapper(errorsActiveTabs.device, theme, t)}
-                                      capitalize={errorsActiveTabs.device === 'dv'}
-                                      versionData={
-                                        errorsActiveTabs.device === 'br'
-                                          ? createVersionDataMapping.browserVersions
-                                          : errorsActiveTabs.device === 'os'
-                                            ? createVersionDataMapping.osVersions
-                                            : undefined
-                                      }
-                                      getVersionFilterLink={(parent, version) =>
-                                        getVersionFilterLink(
-                                          parent,
-                                          version,
-                                          errorsActiveTabs.device === 'br' ? 'br' : 'os',
-                                        )
-                                      }
-                                      valuesHeaderName={t('project.occurrences')}
-                                      highlightColour='red'
-                                    />
-                                  )
-                                }
-
-                                if (type === 'pg') {
-                                  const pageTabs = [
-                                    { id: 'pg', label: t('project.mapping.pg') },
-                                    {
-                                      id: 'host',
-                                      label: t('project.mapping.host'),
-                                    },
-                                  ]
-
-                                  return (
-                                    <Panel
-                                      key={errorsActiveTabs.page}
-                                      icon={panelIconMapping.pg}
-                                      id={errorsActiveTabs.page}
-                                      getFilterLink={getFilterLink}
-                                      rowMapper={({ name: entryName }) => {
-                                        if (!entryName) {
-                                          return (
-                                            <span className='italic'>
-                                              {panelsActiveTabs.page === 'pg'
-                                                ? t('common.notSet')
-                                                : t('project.unknownHost')}
-                                            </span>
-                                          )
-                                        }
-
-                                        let decodedUri = entryName as string
-
-                                        try {
-                                          decodedUri = decodeURIComponent(entryName)
-                                        } catch {
-                                          // do nothing
-                                        }
-
-                                        return decodedUri
-                                      }}
-                                      name={t('project.pages')}
-                                      tabs={pageTabs}
-                                      onTabChange={(tab) =>
-                                        setErrorsActiveTabs({ ...errorsActiveTabs, page: tab as 'pg' | 'host' })
-                                      }
-                                      activeTabId={errorsActiveTabs.page}
-                                      data={activeError?.params?.[errorsActiveTabs.page] || []}
-                                      valuesHeaderName={t('project.occurrences')}
-                                      highlightColour='red'
-                                    />
-                                  )
-                                }
-
-                                return null
-                              })
-                            : null}
-                          {activeError?.metadata ? <MetadataPanel metadata={activeError.metadata} /> : null}
-                        </div>
-                        {_isEmpty(activeError) && errorLoading ? <Loader /> : null}
-                        {!errorLoading && _isEmpty(activeError) ? <NoErrorDetails /> : null}
-                      </>
-                    ) : null}
+                    {activeTab === PROJECT_TABS.errors ? <ErrorsView /> : null}
                     {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && isAuthenticated ? (
                       <ProjectAlertsView />
                     ) : null}

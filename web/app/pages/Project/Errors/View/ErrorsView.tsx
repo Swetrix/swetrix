@@ -3,6 +3,7 @@ import { area, bar } from 'billboard.js'
 import cx from 'clsx'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
+import _debounce from 'lodash/debounce'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
@@ -12,16 +13,17 @@ import {
   UsersIcon,
   MonitorIcon,
   ChevronRightIcon,
+  ChevronLeftIcon,
   AlertTriangleIcon,
   UserIcon,
 } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router'
+import { Link, useLocation, useSearchParams, useNavigate, type LinkProps } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { getErrors, getErrorOverview, type ErrorOverviewResponse } from '~/api'
+import { getErrors, getErrorOverview, getError, updateErrorStatus, type ErrorOverviewResponse } from '~/api'
 import {
   TimeFormat,
   tbsFormatMapper,
@@ -29,22 +31,40 @@ import {
   tbsFormatMapperTooltip,
   tbsFormatMapperTooltip24h,
   chartTypes,
+  ERROR_PANELS_ORDER,
 } from '~/lib/constants'
-import { SwetrixError } from '~/lib/models/Project'
+import { CountryEntry, Entry } from '~/lib/models/Entry'
+import { SwetrixError, SwetrixErrorDetails } from '~/lib/models/Project'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
-import { getFormatDate, typeNameMapping } from '~/pages/Project/View/ViewProject.helpers'
+import {
+  getFormatDate,
+  typeNameMapping,
+  panelIconMapping,
+  getDeviceRowMapper,
+} from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useTheme } from '~/providers/ThemeProvider'
 import { Badge } from '~/ui/Badge'
 import BillboardChart from '~/ui/BillboardChart'
+import Checkbox from '~/ui/Checkbox'
+import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { getRelativeDateIfPossible } from '~/utils/date'
-import { nFormatter } from '~/utils/generic'
+import { getLocaleDisplayName, nFormatter } from '~/utils/generic'
 
+import CCRow from '../../View/components/CCRow'
+import { ErrorChart } from '../../View/components/ErrorChart'
+import { ErrorDetails } from '../../View/components/ErrorDetails'
 import Filters from '../../View/components/Filters'
+import NoErrorDetails from '../../View/components/NoErrorDetails'
 import NoEvents from '../../View/components/NoEvents'
+import { Panel, MetadataPanel } from '../../View/Panels'
+import { ERROR_FILTERS_MAPPING } from '../../View/utils/filters'
+
+const InteractiveMap = lazy(() => import('../../View/components/InteractiveMap'))
 
 // Calculate optimal Y axis ticks
 const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
@@ -238,7 +258,6 @@ const StatCard = ({ icon, value, label }: StatCardProps) => (
   </div>
 )
 
-// Most Frequent Error Card
 // Error Item Component
 interface ErrorItemProps {
   error: SwetrixError
@@ -370,15 +389,29 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
   )
 }
 
+const ERRORS_TAKE = 30
+
 const ErrorsView = () => {
-  const { id } = useCurrentProject()
+  const { id, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
-  const { timeBucket, timeFormat, period, dateRange, timezone, filters } = useViewProjectContext()
-  const { t } = useTranslation('common')
+  const { timeBucket, timeFormat, period, dateRange, timezone, filters, size } = useViewProjectContext()
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
+  const { theme } = useTheme()
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   const from = dateRange ? getFormatDate(dateRange[0]) : ''
   const to = dateRange ? getFormatDate(dateRange[1]) : ''
   const tnMapping = typeNameMapping(t)
+  const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
+
+  // Error filters state
+  const [errorOptions, setErrorOptions] = useState<Record<string, boolean>>({
+    [ERROR_FILTERS_MAPPING.showResolved]: false,
+  })
 
   // Overview state
   const [overviewLoading, setOverviewLoading] = useState<boolean | null>(null)
@@ -392,7 +425,30 @@ const ErrorsView = () => {
   const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(false)
   const errorsRequestIdRef = useRef(0)
 
-  const ERRORS_TAKE = 30
+  // Error detail state
+  const activeEID = useMemo(() => searchParams.get('eid'), [searchParams])
+  const prevActiveEIDRef = useRef<string | null>(activeEID)
+  const [activeError, setActiveError] = useState<{ details: SwetrixErrorDetails; [key: string]: any } | null>(null)
+  const [errorLoading, setErrorLoading] = useState(false)
+  const [errorStatusUpdating, setErrorStatusUpdating] = useState(false)
+
+  // Error detail panel tabs
+  const [errorsActiveTabs, setErrorsActiveTabs] = useState<{
+    location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
+    page: 'pg' | 'host'
+    device: 'br' | 'os' | 'dv'
+  }>({
+    location: 'cc',
+    page: 'pg',
+    device: 'br',
+  })
+
+  // Pure search params (without eid) for back navigation
+  const pureSearchParams = useMemo(() => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.delete('eid')
+    return newSearchParams.toString()
+  }, [searchParams])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -412,7 +468,7 @@ const ErrorsView = () => {
         timeBucket,
         period,
         filters,
-        { showResolved: false },
+        errorOptions,
         from,
         to,
         timezone || '',
@@ -431,7 +487,7 @@ const ErrorsView = () => {
         setOverviewLoading(false)
       }
     }
-  }, [id, timeBucket, period, filters, from, to, timezone, projectPassword, overviewLoading, t])
+  }, [id, timeBucket, period, filters, errorOptions, from, to, timezone, projectPassword, overviewLoading, t])
 
   const loadErrors = useCallback(
     async (forcedSkip?: number, override?: boolean) => {
@@ -446,9 +502,9 @@ const ErrorsView = () => {
         const { errors: newErrors } = await getErrors(
           id,
           timeBucket,
-          period,
+          period === 'custom' ? '' : period,
           filters,
-          { showResolved: false },
+          errorOptions,
           from,
           to,
           ERRORS_TAKE,
@@ -478,19 +534,142 @@ const ErrorsView = () => {
         }
       }
     },
-    [id, timeBucket, period, filters, from, to, timezone, projectPassword, errorsLoading, errorsSkip, t],
+    [id, timeBucket, period, filters, errorOptions, from, to, timezone, projectPassword, errorsLoading, errorsSkip, t],
   )
 
-  // Load data on mount and when params change
+  const loadError = useCallback(
+    async (eid: string) => {
+      setErrorLoading(true)
+
+      try {
+        let error
+        if (period === 'custom' && dateRange) {
+          error = await getError(id, eid, timeBucket, '', filters, from, to, timezone, projectPassword)
+        } else {
+          error = await getError(id, eid, timeBucket, period, filters, '', '', timezone, projectPassword)
+        }
+
+        setActiveError(error)
+      } catch (reason: any) {
+        if (reason?.status === 400) {
+          setErrorLoading(false)
+          setActiveError(null)
+          return
+        }
+
+        const message = _isEmpty(reason.data?.message) ? reason.data : reason.data.message
+        console.error('[ErrorsView] Failed to load error:', message)
+        toast.error(message)
+      }
+      setErrorLoading(false)
+    },
+    [dateRange, id, period, timeBucket, projectPassword, timezone, filters, from, to],
+  )
+
+  const updateStatusInErrors = useCallback(
+    (status: 'active' | 'resolved') => {
+      if (!activeError?.details?.eid) return
+
+      setErrors((prevErrors) => {
+        return prevErrors.map((error) => {
+          if (error.eid === activeError.details.eid) {
+            return { ...error, status }
+          }
+          return error
+        })
+      })
+    },
+    [activeError?.details?.eid],
+  )
+
+  const markErrorAsResolved = async () => {
+    if (errorStatusUpdating || !activeEID || !activeError?.details?.eid) return
+
+    setErrorStatusUpdating(true)
+
+    try {
+      await updateErrorStatus(id, 'resolved', activeEID)
+      await loadError(activeEID)
+      updateStatusInErrors('resolved')
+    } catch (reason) {
+      console.error('[markErrorAsResolved]', reason)
+      toast.error(t('apiNotifications.updateErrorStatusFailed'))
+      setErrorStatusUpdating(false)
+      return
+    }
+
+    toast.success(t('apiNotifications.errorStatusUpdated'))
+    setErrorStatusUpdating(false)
+  }
+
+  const markErrorAsActive = async () => {
+    if (errorStatusUpdating || !activeEID || !activeError?.details?.eid) return
+
+    setErrorStatusUpdating(true)
+
+    try {
+      await updateErrorStatus(id, 'active', activeEID)
+      await loadError(activeEID)
+      updateStatusInErrors('active')
+    } catch (reason) {
+      console.error('[markErrorAsActive]', reason)
+      toast.error(t('apiNotifications.updateErrorStatusFailed'))
+      setErrorStatusUpdating(false)
+      return
+    }
+
+    toast.success(t('apiNotifications.errorStatusUpdated'))
+    setErrorStatusUpdating(false)
+  }
+
+  const switchActiveErrorFilter = useMemo(
+    () =>
+      _debounce((pairID: string) => {
+        setErrorOptions((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
+        setErrorsSkip(0)
+      }, 0),
+    [],
+  )
+
+  // Error filters dropdown items
+  const errorFilters = useMemo(() => {
+    return [
+      {
+        id: ERROR_FILTERS_MAPPING.showResolved,
+        label: t('project.showResolved'),
+        active: errorOptions[ERROR_FILTERS_MAPPING.showResolved],
+      },
+    ]
+  }, [t, errorOptions])
+
+  // Load data on mount and when params change (only for list view)
   useEffect(() => {
-    // Don't load until we have valid context values
-    if (!id || !timeBucket || !period) return
+    if (!id || !timeBucket || !period || activeEID) return
 
     loadOverview()
     setErrorsSkip(0)
     loadErrors(0, true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, period, from, to, timeBucket, timezone, filters])
+  }, [id, period, from, to, timeBucket, timezone, filters, errorOptions])
+
+  // Handle activeEID changes
+  useEffect(() => {
+    if (!activeEID) {
+      setActiveError(null)
+      // Coming back from error detail to list: reset and reload
+      if (prevActiveEIDRef.current) {
+        setErrorsSkip(0)
+        loadErrors(0, true)
+        loadOverview()
+      }
+      prevActiveEIDRef.current = null
+      return
+    }
+
+    loadError(activeEID)
+    prevActiveEIDRef.current = activeEID
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period, dateRange, timeBucket, activeEID, filters])
 
   const chartOptions = useMemo(() => {
     if (!overview?.chart || !overview.chart.x || overview.chart.x.length === 0) return null
@@ -502,7 +681,354 @@ const ErrorsView = () => {
 
   const hasErrors = !_isEmpty(errors) || overview?.stats?.totalErrors
 
-  // Initial loading state
+  // Filter link helper
+  const getFilterLink = useCallback(
+    (column: string, value: string | null): LinkProps['to'] => {
+      const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
+      const newSearchParams = new URLSearchParams(searchParams.toString())
+
+      if (isFilterActive) {
+        newSearchParams.delete(column)
+      } else {
+        if (value === null) {
+          newSearchParams.set(column, 'null')
+        } else {
+          newSearchParams.set(column, value)
+        }
+      }
+
+      return { search: newSearchParams.toString() }
+    },
+    [filters, searchParams],
+  )
+
+  const getVersionFilterLink = useCallback(
+    (parent: string | null, version: string | null, panelType: 'br' | 'os') => {
+      const filterParams = new URLSearchParams(searchParams.toString())
+
+      if (panelType === 'br') {
+        filterParams.set('br', parent ?? 'null')
+        filterParams.set('brv', version ?? 'null')
+      } else if (panelType === 'os') {
+        filterParams.set('os', parent ?? 'null')
+        filterParams.set('osv', version ?? 'null')
+      }
+
+      return `?${filterParams.toString()}`
+    },
+    [searchParams],
+  )
+
+  // Version data mapping for browser/OS versions
+  const createVersionDataMapping = useMemo(() => {
+    const browserDataSource = activeError?.params?.brv
+    const osDataSource = activeError?.params?.osv
+
+    const browserVersions: { [key: string]: Entry[] } = {}
+    const osVersions: { [key: string]: Entry[] } = {}
+
+    if (browserDataSource) {
+      browserDataSource.forEach((entry: any) => {
+        const { br, name, count } = entry
+        if (!browserVersions[br]) {
+          browserVersions[br] = []
+        }
+        browserVersions[br].push({ name, count })
+      })
+    }
+
+    if (osDataSource) {
+      osDataSource.forEach((entry: any) => {
+        const { os, name, count } = entry
+        if (!osVersions[os]) {
+          osVersions[os] = []
+        }
+        osVersions[os].push({ name, count })
+      })
+    }
+
+    return { browserVersions, osVersions }
+  }, [activeError?.params?.brv, activeError?.params?.osv])
+
+  // Data names for chart
+  const dataNames = useMemo(
+    () => ({
+      occurrences: t('project.totalErrors'),
+      affectedUsers: t('project.affectedUsers'),
+    }),
+    [t],
+  )
+
+  // If viewing error detail
+  if (activeEID) {
+    return (
+      <div>
+        {/* Loading bar for refreshes */}
+        {errorLoading && activeError ? <LoadingBar /> : null}
+
+        {/* Back link and action buttons */}
+        <div className='mx-auto mt-2 mb-3 flex max-w-max items-center justify-between gap-4 lg:mx-0 lg:max-w-none'>
+          <Link
+            to={{ search: pureSearchParams }}
+            className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+          >
+            <ChevronLeftIcon className='mr-1 size-3' />
+            {t('project.backToErrors')}
+          </Link>
+
+          {/* Status action buttons */}
+          {allowedToManage && activeError && activeError?.details?.status !== 'resolved' ? (
+            <button
+              type='button'
+              disabled={errorStatusUpdating}
+              onClick={markErrorAsResolved}
+              className={cx(
+                'rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-50 dark:hover:bg-slate-600',
+                {
+                  'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
+                  'animate-pulse cursor-not-allowed': errorStatusUpdating,
+                },
+              )}
+            >
+              {t('project.resolve')}
+            </button>
+          ) : null}
+          {allowedToManage && activeError && activeError?.details?.status === 'resolved' ? (
+            <button
+              type='button'
+              disabled={errorStatusUpdating}
+              onClick={markErrorAsActive}
+              className={cx(
+                'rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-50 dark:hover:bg-slate-600',
+                {
+                  'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
+                  'animate-pulse cursor-not-allowed': errorStatusUpdating,
+                },
+              )}
+            >
+              {t('project.markAsActive')}
+            </button>
+          ) : null}
+        </div>
+
+        {/* Error details */}
+        {activeError?.details ? (
+          <ErrorDetails
+            details={activeError.details}
+            period={period}
+            from={dateRange ? getFormatDate(dateRange[0]) : undefined}
+            to={dateRange ? getFormatDate(dateRange[1]) : undefined}
+            timeBucket={timeBucket}
+            projectPassword={projectPassword}
+          />
+        ) : null}
+
+        {/* Error chart */}
+        {activeError?.chart ? (
+          <div className='mt-4'>
+            <ErrorChart
+              chart={activeError?.chart}
+              timeBucket={activeError?.timeBucket}
+              timeFormat={timeFormat}
+              rotateXAxis={rotateXAxis}
+              chartType={chartTypes.line}
+              dataNames={dataNames}
+            />
+          </div>
+        ) : null}
+
+        {/* Filters */}
+        <Filters tnMapping={tnMapping} />
+
+        {/* Panels */}
+        <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
+          {!_isEmpty(activeError?.params)
+            ? _map(ERROR_PANELS_ORDER, (type: keyof typeof tnMapping) => {
+                if (type === 'location') {
+                  const locationTabs = [
+                    { id: 'cc', label: t('project.mapping.cc') },
+                    { id: 'rg', label: t('project.mapping.rg') },
+                    { id: 'ct', label: t('project.mapping.ct') },
+                    { id: 'lc', label: t('project.mapping.lc') },
+                    { id: 'map', label: 'Map' },
+                  ]
+
+                  const rowMapper = (entry: CountryEntry) => {
+                    const { name: entryName, cc } = entry
+
+                    if (errorsActiveTabs.location === 'lc') {
+                      if (entryName === null) {
+                        return <CCRow cc={null} language={language} />
+                      }
+                      const entryNameArray = entryName.split('-')
+                      const displayName = getLocaleDisplayName(entryName, language)
+
+                      return (
+                        <CCRow cc={entryNameArray[entryNameArray.length - 1]} name={displayName} language={language} />
+                      )
+                    }
+
+                    if (cc !== undefined) {
+                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
+                    }
+
+                    return <CCRow cc={entryName} language={language} />
+                  }
+
+                  return (
+                    <Panel
+                      key={errorsActiveTabs.location}
+                      icon={panelIconMapping.cc}
+                      id={errorsActiveTabs.location}
+                      getFilterLink={getFilterLink}
+                      name={t('project.location')}
+                      tabs={locationTabs}
+                      onTabChange={(tab) =>
+                        setErrorsActiveTabs({
+                          ...errorsActiveTabs,
+                          location: tab as 'cc' | 'rg' | 'ct' | 'lc' | 'map',
+                        })
+                      }
+                      activeTabId={errorsActiveTabs.location}
+                      data={activeError?.params?.[errorsActiveTabs.location] || []}
+                      rowMapper={rowMapper}
+                      customRenderer={
+                        errorsActiveTabs.location === 'map'
+                          ? () => {
+                              const countryData = activeError?.params?.cc || []
+                              const regionData = activeError?.params?.rg || []
+                              // @ts-expect-error
+                              const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
+
+                              return (
+                                <Suspense
+                                  fallback={
+                                    <div className='flex h-full items-center justify-center'>
+                                      <div className='flex flex-col items-center gap-2'>
+                                        <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
+                                        <span className='text-sm text-neutral-600 dark:text-neutral-300'>
+                                          Loading map...
+                                        </span>
+                                      </div>
+                                    </div>
+                                  }
+                                >
+                                  <InteractiveMap
+                                    data={countryData}
+                                    regionData={regionData}
+                                    total={total}
+                                    onClick={(type, key) => {
+                                      const link = getFilterLink(type, key)
+                                      navigate(link)
+                                    }}
+                                  />
+                                </Suspense>
+                              )
+                            }
+                          : undefined
+                      }
+                      valuesHeaderName={t('project.occurrences')}
+                      highlightColour='red'
+                    />
+                  )
+                }
+
+                if (type === 'devices') {
+                  const deviceTabs = [
+                    { id: 'br', label: t('project.mapping.br') },
+                    { id: 'os', label: t('project.mapping.os') },
+                    { id: 'dv', label: t('project.mapping.dv') },
+                  ]
+
+                  return (
+                    <Panel
+                      key={errorsActiveTabs.device}
+                      icon={panelIconMapping.os}
+                      id={errorsActiveTabs.device}
+                      getFilterLink={getFilterLink}
+                      name={t('project.devices')}
+                      tabs={deviceTabs}
+                      onTabChange={(tab) =>
+                        setErrorsActiveTabs({ ...errorsActiveTabs, device: tab as 'br' | 'os' | 'dv' })
+                      }
+                      activeTabId={errorsActiveTabs.device}
+                      data={activeError?.params?.[errorsActiveTabs.device] || []}
+                      rowMapper={getDeviceRowMapper(errorsActiveTabs.device, theme, t)}
+                      capitalize={errorsActiveTabs.device === 'dv'}
+                      versionData={
+                        errorsActiveTabs.device === 'br'
+                          ? createVersionDataMapping.browserVersions
+                          : errorsActiveTabs.device === 'os'
+                            ? createVersionDataMapping.osVersions
+                            : undefined
+                      }
+                      getVersionFilterLink={(parent, version) =>
+                        getVersionFilterLink(parent, version, errorsActiveTabs.device === 'br' ? 'br' : 'os')
+                      }
+                      valuesHeaderName={t('project.occurrences')}
+                      highlightColour='red'
+                    />
+                  )
+                }
+
+                if (type === 'pg') {
+                  const pageTabs = [
+                    { id: 'pg', label: t('project.mapping.pg') },
+                    { id: 'host', label: t('project.mapping.host') },
+                  ]
+
+                  return (
+                    <Panel
+                      key={errorsActiveTabs.page}
+                      icon={panelIconMapping.pg}
+                      id={errorsActiveTabs.page}
+                      getFilterLink={getFilterLink}
+                      rowMapper={({ name: entryName }) => {
+                        if (!entryName) {
+                          return (
+                            <span className='italic'>
+                              {errorsActiveTabs.page === 'pg' ? t('common.notSet') : t('project.unknownHost')}
+                            </span>
+                          )
+                        }
+
+                        let decodedUri = entryName as string
+
+                        try {
+                          decodedUri = decodeURIComponent(entryName)
+                        } catch {
+                          // do nothing
+                        }
+
+                        return decodedUri
+                      }}
+                      name={t('project.pages')}
+                      tabs={pageTabs}
+                      onTabChange={(tab) => setErrorsActiveTabs({ ...errorsActiveTabs, page: tab as 'pg' | 'host' })}
+                      activeTabId={errorsActiveTabs.page}
+                      data={activeError?.params?.[errorsActiveTabs.page] || []}
+                      valuesHeaderName={t('project.occurrences')}
+                      highlightColour='red'
+                    />
+                  )
+                }
+
+                return null
+              })
+            : null}
+          {activeError?.metadata ? <MetadataPanel metadata={activeError.metadata} /> : null}
+        </div>
+
+        {/* Loading state */}
+        {_isEmpty(activeError) && errorLoading ? <Loader /> : null}
+
+        {/* No error details */}
+        {!errorLoading && _isEmpty(activeError) ? <NoErrorDetails /> : null}
+      </div>
+    )
+  }
+
+  // List view - Initial loading state
   if ((overviewLoading === null || overviewLoading) && !overview && _isEmpty(errors)) {
     return <Loader />
   }
@@ -510,10 +1036,40 @@ const ErrorsView = () => {
   return (
     <div>
       {/* Loading bar for refreshes */}
-      {overviewLoading && overview ? <LoadingBar /> : null}
+      {(overviewLoading || errorsLoading) && (overview || !_isEmpty(errors)) ? <LoadingBar /> : null}
 
-      {/* Filters */}
-      {hasErrors ? <Filters className='mt-0 mb-4' tnMapping={tnMapping} /> : null}
+      {/* Controls row - Filters dropdown */}
+      {hasErrors ? (
+        <div className='mb-4 flex items-center justify-between'>
+          <Filters className='mt-0 mb-0' tnMapping={tnMapping} />
+          <Dropdown
+            items={errorFilters}
+            title={t('project.filters')}
+            labelExtractor={(pair) => {
+              const { label, active, id: pairID } = pair
+
+              return (
+                <Checkbox
+                  classes={{
+                    label: 'px-4 py-2',
+                  }}
+                  label={label}
+                  checked={active}
+                  onChange={() => switchActiveErrorFilter(pairID)}
+                />
+              )
+            }}
+            buttonClassName='!px-2.5'
+            selectItemClassName='p-0'
+            keyExtractor={(pair) => pair.id}
+            onSelect={({ id: pairID }) => {
+              switchActiveErrorFilter(pairID)
+            }}
+            chevron='mini'
+            headless
+          />
+        </div>
+      ) : null}
 
       {/* No errors state */}
       {!hasErrors && errorsLoading === false && overviewLoading === false ? <NoEvents filters={filters} /> : null}
