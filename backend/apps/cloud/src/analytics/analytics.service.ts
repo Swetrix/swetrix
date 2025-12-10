@@ -1218,7 +1218,7 @@ export class AnalyticsService {
     return profileId.startsWith(AnalyticsService.PROFILE_PREFIX_USER)
   }
 
-  async recordSession(
+  async recordSessionActivity(
     psid: string,
     pid: string,
     profileId: string,
@@ -1263,59 +1263,6 @@ export class AnalyticsService {
       })
     } catch (error) {
       console.error('Failed to record session:', error)
-    }
-  }
-
-  async updateSessionActivity(
-    psid: string,
-    pid: string,
-    profileId: string,
-  ): Promise<void> {
-    const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-
-    try {
-      // TODO: Potentially slow because every write request reads from the database - consider caching or other optimisation
-      const query = `
-        SELECT firstSeen, pageviews, events
-        FROM sessions FINAL
-        WHERE psid = {psid:UInt64}
-          AND pid = {pid:FixedString(12)}
-        LIMIT 1
-      `
-
-      const { data } = await clickhouse
-        .query({
-          query,
-          query_params: { psid, pid },
-        })
-        .then(resultSet =>
-          resultSet.json<{
-            firstSeen: string
-            pageviews: number
-            events: number
-          }>(),
-        )
-
-      const existingSession = data[0]
-
-      await clickhouse.insert({
-        table: 'sessions',
-        format: 'JSONEachRow',
-        values: [
-          {
-            psid,
-            pid,
-            profileId,
-            firstSeen: existingSession?.firstSeen ?? now,
-            lastSeen: now,
-            pageviews: existingSession?.pageviews ?? 0,
-            events: existingSession?.events ?? 0,
-          },
-        ],
-        clickhouse_settings: { async_insert: 1 },
-      })
-    } catch (error) {
-      console.error('Failed to update session activity:', error)
     }
   }
 
