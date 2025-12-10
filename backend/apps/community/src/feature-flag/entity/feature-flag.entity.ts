@@ -1,22 +1,15 @@
-export enum FeatureFlagType {
-  BOOLEAN = 'boolean',
-  ROLLOUT = 'rollout',
-}
+import {
+  FeatureFlagType,
+  TargetingRule,
+  EvaluatableFeatureFlag,
+} from '../../../../../libs/shared/src/feature-flag'
 
-export interface TargetingRule {
-  column: string // cc, dv, br, os, pg, etc.
-  filter: string // value to match
-  isExclusive: boolean // true = exclude, false = include
-}
+// Re-export shared types for backward compatibility
+export { FeatureFlagType, TargetingRule, EvaluatableFeatureFlag }
 
-export interface FeatureFlag {
+export interface FeatureFlag extends EvaluatableFeatureFlag {
   id: string
-  key: string
   description: string | null
-  flagType: FeatureFlagType
-  rolloutPercentage: number
-  targetingRules: TargetingRule[] | null
-  enabled: boolean
   projectId: string
   created: string
 }

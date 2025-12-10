@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import { randomUUID } from 'crypto'
-import * as crypto from 'crypto'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import _isEmpty from 'lodash/isEmpty'
@@ -19,6 +18,10 @@ import {
 } from './entity/feature-flag.entity'
 import { Pagination } from '../common/pagination/pagination'
 import { PaginationOptionsInterface } from '../common/pagination/pagination.results.interface'
+import {
+  evaluateFlag as sharedEvaluateFlag,
+  evaluateFlags as sharedEvaluateFlags,
+} from '../../../../libs/shared/src/feature-flag'
 
 dayjs.extend(utc)
 
@@ -33,7 +36,7 @@ const ALLOWED_FLAG_KEYS = [
 
 @Injectable()
 export class FeatureFlagService {
-  formatFlagFromClickhouse(flag: ClickhouseFeatureFlag): FeatureFlag {
+  formatFlagFromClickhouse(flag: ClickhouseFeatureFlag): FeatureFlag | null {
     if (!flag) {
       return null
     }
@@ -130,7 +133,9 @@ export class FeatureFlagService {
       })
       .then(resultSet => resultSet.json<ClickhouseFeatureFlag>())
 
-    return _map(data, flag => this.formatFlagFromClickhouse(flag))
+    return _map(data, flag => this.formatFlagFromClickhouse(flag)).filter(
+      (flag): flag is FeatureFlag => flag !== null,
+    )
   }
 
   async findEnabledByProject(projectId: string): Promise<FeatureFlag[]> {
@@ -148,40 +153,54 @@ export class FeatureFlagService {
       })
       .then(resultSet => resultSet.json<ClickhouseFeatureFlag>())
 
-    return _map(data, flag => this.formatFlagFromClickhouse(flag))
+    return _map(data, flag => this.formatFlagFromClickhouse(flag)).filter(
+      (flag): flag is FeatureFlag => flag !== null,
+    )
   }
 
   async paginate(
     options: PaginationOptionsInterface,
     projectId: string,
+    search?: string,
   ): Promise<Pagination<FeatureFlag>> {
     const take = options.take || 100
     const skip = options.skip || 0
+
+    const searchCondition = search?.trim()
+      ? `AND (lower(key) LIKE {search:String} OR lower(description) LIKE {search:String})`
+      : ''
 
     const countQuery = `
       SELECT count() as total 
       FROM feature_flag 
       WHERE projectId = {projectId:FixedString(12)}
+      ${searchCondition}
     `
 
     const dataQuery = `
       SELECT * FROM feature_flag 
       WHERE projectId = {projectId:FixedString(12)}
+      ${searchCondition}
       ORDER BY key ASC
       LIMIT {take:UInt32} OFFSET {skip:UInt32}
     `
+
+    const queryParams: Record<string, any> = { projectId, take, skip }
+    if (search?.trim()) {
+      queryParams.search = `%${search.trim().toLowerCase()}%`
+    }
 
     const [countResult, dataResult] = await Promise.all([
       clickhouse
         .query({
           query: countQuery,
-          query_params: { projectId },
+          query_params: queryParams,
         })
         .then(resultSet => resultSet.json<{ total: number }>()),
       clickhouse
         .query({
           query: dataQuery,
-          query_params: { projectId, take, skip },
+          query_params: queryParams,
         })
         .then(resultSet => resultSet.json<ClickhouseFeatureFlag>()),
     ])
@@ -189,7 +208,7 @@ export class FeatureFlagService {
     const total = countResult.data[0]?.total || 0
     const results = _map(dataResult.data, flag =>
       this.formatFlagFromClickhouse(flag),
-    )
+    ).filter((flag): flag is FeatureFlag => flag !== null)
 
     return new Pagination<FeatureFlag>({
       results,
@@ -218,9 +237,15 @@ export class FeatureFlagService {
     const id = randomUUID()
     const created = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
 
+    const enabled = flagData.enabled ?? true
+    const flagType = flagData.flagType || FeatureFlagType.BOOLEAN
+    const rolloutPercentage = flagData.rolloutPercentage ?? 100
+    const description = flagData.description || null
+    const targetingRules = flagData.targetingRules || null
+
     const formattedFlag = this.formatFlagToClickhouse({
       ...flagData,
-      enabled: flagData.enabled ?? true,
+      enabled,
     })
 
     await clickhouse.insert({
@@ -241,13 +266,34 @@ export class FeatureFlagService {
       ],
     })
 
-    return this.findOne(id)
+    // Return the constructed FeatureFlag directly instead of re-querying ClickHouse.
+    // ClickHouse is eventually consistent, so findOne(id) may not return the newly
+    // inserted record immediately after insert.
+    return {
+      id,
+      key: flagData.key,
+      description,
+      flagType,
+      rolloutPercentage,
+      targetingRules,
+      enabled,
+      projectId: flagData.projectId,
+      created,
+    }
   }
 
   async update(
     id: string,
     flagData: Partial<FeatureFlag>,
   ): Promise<FeatureFlag> {
+    // Fetch the existing flag first to merge with updates
+    // This avoids read-after-write issues since ClickHouse mutations are async
+    const existingFlag = await this.findOne(id)
+
+    if (!existingFlag) {
+      return null
+    }
+
     const filtered = _reduce(
       _filter(
         _keys(flagData),
@@ -265,7 +311,7 @@ export class FeatureFlagService {
     const columns = _keys(filtered)
 
     if (_isEmpty(columns)) {
-      return this.findOne(id)
+      return existingFlag
     }
 
     const formattedData = this.formatFlagToClickhouse(
@@ -304,7 +350,12 @@ export class FeatureFlagService {
       query_params: params,
     })
 
-    return this.findOne(id)
+    // Return the merged entity locally instead of re-querying
+    // ClickHouse mutations are async, so findOne might return stale data
+    return {
+      ...existingFlag,
+      ...(filtered as Partial<FeatureFlag>),
+    }
   }
 
   async delete(id: string): Promise<void> {
@@ -333,13 +384,7 @@ export class FeatureFlagService {
     profileId: string,
     attributes?: Record<string, string>,
   ): Record<string, boolean> {
-    const result: Record<string, boolean> = {}
-
-    for (const flag of flags) {
-      result[flag.key] = this.evaluateFlag(flag, profileId, attributes)
-    }
-
-    return result
+    return sharedEvaluateFlags(flags, profileId, attributes)
   }
 
   /**
@@ -350,119 +395,6 @@ export class FeatureFlagService {
     profileId: string,
     attributes?: Record<string, string>,
   ): boolean {
-    // If flag is disabled, always return false
-    if (!flag.enabled) {
-      return false
-    }
-
-    // Check targeting rules if any exist
-    if (flag.targetingRules && flag.targetingRules.length > 0) {
-      const matchesTargeting = this.matchesTargetingRules(
-        flag.targetingRules,
-        attributes,
-      )
-      if (!matchesTargeting) {
-        return false
-      }
-    }
-
-    // For boolean flags, return true if enabled and targeting matches
-    if (flag.flagType === FeatureFlagType.BOOLEAN) {
-      return true
-    }
-
-    // For rollout flags, use percentage-based rollout
-    if (flag.flagType === FeatureFlagType.ROLLOUT) {
-      return this.isInRolloutPercentage(
-        flag.key,
-        flag.rolloutPercentage,
-        profileId,
-      )
-    }
-
-    return false
-  }
-
-  /**
-   * Checks if visitor attributes match the targeting rules
-   * Rules are evaluated as AND (all rules must match)
-   */
-  private matchesTargetingRules(
-    rules: TargetingRule[],
-    attributes?: Record<string, string>,
-  ): boolean {
-    if (!attributes) {
-      // If no attributes provided, we can't match any rules
-      // Return true to be permissive (flag will be shown)
-      return true
-    }
-
-    for (const rule of rules) {
-      const attributeValue = attributes[rule.column]
-
-      // Check if we have the attribute
-      if (attributeValue === undefined) {
-        // If attribute not provided, skip this rule (be permissive)
-        continue
-      }
-
-      const matches = this.matchesRule(attributeValue, rule.filter)
-
-      // If isExclusive (exclude), we want the rule to NOT match
-      // If not isExclusive (include), we want the rule to match
-      if (rule.isExclusive) {
-        // Exclude: if it matches, targeting fails
-        if (matches) {
-          return false
-        }
-      } else {
-        // Include: if it doesn't match, targeting fails
-        if (!matches) {
-          return false
-        }
-      }
-    }
-
-    return true
-  }
-
-  /**
-   * Checks if an attribute value matches a filter value
-   * Supports case-insensitive matching
-   */
-  private matchesRule(attributeValue: string, filterValue: string): boolean {
-    // Case-insensitive exact match
-    return attributeValue.toLowerCase() === filterValue.toLowerCase()
-  }
-
-  /**
-   * Determines if a visitor is within the rollout percentage
-   * Uses consistent hashing based on flag key and profile ID
-   */
-  private isInRolloutPercentage(
-    flagKey: string,
-    percentage: number,
-    profileId: string,
-  ): boolean {
-    if (percentage >= 100) {
-      return true
-    }
-    if (percentage <= 0) {
-      return false
-    }
-
-    // Create a consistent hash based on flag key and profile ID
-    const hash = crypto
-      .createHash('md5')
-      .update(`${flagKey}:${profileId}`)
-      .digest('hex')
-
-    // Convert first 8 hex characters to a number (0 to 2^32-1)
-    const hashValue = parseInt(hash.substring(0, 8), 16)
-
-    // Normalize to 0-100 range
-    const normalizedValue = (hashValue / 0xffffffff) * 100
-
-    return normalizedValue < percentage
+    return sharedEvaluateFlag(flag, profileId, attributes)
   }
 }

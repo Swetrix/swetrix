@@ -160,7 +160,7 @@
     "details": "Details",
     "unknown": "Unknown"
   },
-  "featureFlags": {
+  "swetrixFeatureFlags": {
     "title": "Feature Flags",
     "description": "Enable or disable experimental features to try out new functionality before it's fully released. Feature flags allow you to test new features and provide feedback.",
     "updated": "Feature flags updated successfully",
@@ -1323,7 +1323,6 @@
     "resetZoom": "Reset zoom",
     "noEventsForSelectedPeriod": "There are no events for the selected time period.",
     "endOfSession": "End of session",
-    "properties": "Properties",
     "showLess": "Show less",
     "showMore": "Show {{count}} more",
     "barChart": "Bar chart",

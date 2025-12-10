@@ -1285,9 +1285,23 @@ export type CreateFeatureFlag = {
 
 export const DEFAULT_FEATURE_FLAGS_TAKE = 20
 
-export const getProjectFeatureFlags = (projectId: string, take: number = DEFAULT_FEATURE_FLAGS_TAKE, skip = 0) =>
-  api
-    .get(`/feature-flag/project/${projectId}?take=${take}&skip=${skip}`)
+export const getProjectFeatureFlags = (
+  projectId: string,
+  take: number = DEFAULT_FEATURE_FLAGS_TAKE,
+  skip = 0,
+  search?: string,
+) => {
+  const params = new URLSearchParams({
+    take: String(take),
+    skip: String(skip),
+  })
+
+  if (search?.trim()) {
+    params.append('search', search.trim())
+  }
+
+  return api
+    .get(`/feature-flag/project/${projectId}?${params.toString()}`)
     .then(
       (
         response,
@@ -1299,6 +1313,7 @@ export const getProjectFeatureFlags = (projectId: string, take: number = DEFAULT
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
+}
 
 export const getFeatureFlag = (flagId: string) =>
   api

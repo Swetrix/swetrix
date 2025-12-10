@@ -9,17 +9,14 @@ import {
 } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 import { Project } from '../../project/entity/project.entity'
+import {
+  FeatureFlagType,
+  TargetingRule,
+  EvaluatableFeatureFlag,
+} from '../../../../../libs/shared/src/feature-flag'
 
-export enum FeatureFlagType {
-  BOOLEAN = 'boolean',
-  ROLLOUT = 'rollout',
-}
-
-export interface TargetingRule {
-  column: string // cc, dv, br, os, pg, etc.
-  filter: string // value to match
-  isExclusive: boolean // true = exclude, false = include
-}
+// Re-export shared types for backward compatibility
+export { FeatureFlagType, TargetingRule, EvaluatableFeatureFlag }
 
 @Entity()
 @Unique(['project', 'key'])

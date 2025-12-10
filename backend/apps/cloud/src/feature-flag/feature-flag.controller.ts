@@ -27,7 +27,6 @@ import _map from 'lodash/map'
 import _omit from 'lodash/omit'
 import _pick from 'lodash/pick'
 import _round from 'lodash/round'
-import dayjs from 'dayjs'
 
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
@@ -51,17 +50,13 @@ import {
 } from './dto/feature-flag.dto'
 import { FeatureFlagService } from './feature-flag.service'
 import { clickhouse } from '../common/integrations/clickhouse'
-import { getIPFromHeaders, getGeoDetails } from '../common/utils'
+import {
+  getIPFromHeaders,
+  getGeoDetails,
+  checkRateLimit,
+} from '../common/utils'
 
 const FEATURE_FLAGS_MAXIMUM = 50 // Maximum feature flags per project
-
-const timeBucketConversion: Record<string, string> = {
-  minute: 'toStartOfMinute',
-  hour: 'toStartOfHour',
-  day: 'toStartOfDay',
-  month: 'toStartOfMonth',
-  year: 'toStartOfYear',
-}
 
 @ApiTags('Feature Flag')
 @Controller(['feature-flag', 'v1/feature-flag'])
@@ -74,9 +69,6 @@ export class FeatureFlagController {
     private readonly analyticsService: AnalyticsService,
   ) {}
 
-  // NOTE: More specific routes must come before generic parameter routes
-  // e.g., /project/:projectId must be before /:flagId
-
   @ApiBearerAuth()
   @Get('/project/:projectId')
   @Auth()
@@ -87,9 +79,10 @@ export class FeatureFlagController {
     @Param('projectId') projectId: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+    @Query('search') search?: string,
   ) {
     this.logger.log(
-      { userId, projectId, take, skip },
+      { userId, projectId, take, skip, search },
       'GET /feature-flag/project/:projectId',
     )
 
@@ -103,14 +96,14 @@ export class FeatureFlagController {
 
     const result = await this.featureFlagService.paginate(
       { take, skip },
-      { project: { id: projectId } },
-      ['project'],
+      projectId,
+      search,
     )
 
     // @ts-expect-error
     result.results = _map(result.results, flag => ({
       ..._omit(flag, ['project']),
-      pid: flag.project.id,
+      pid: projectId,
     }))
 
     return result
@@ -257,6 +250,10 @@ export class FeatureFlagController {
   ) {
     this.logger.log({ pid: evaluateDto.pid }, 'POST /feature-flag/evaluate')
 
+    const ip = getIPFromHeaders(headers, true) || reqIP || ''
+
+    await checkRateLimit(ip, 'feature-flag-evaluate', 100, 1800)
+
     const project = await this.projectService.findOne({
       where: { id: evaluateDto.pid },
     })
@@ -274,7 +271,6 @@ export class FeatureFlagController {
     )
 
     // Derive attributes from request headers (like analytics does)
-    const ip = getIPFromHeaders(headers, true) || reqIP || ''
     const userAgent = headers['user-agent'] || ''
     const { country, city, region } = getGeoDetails(ip)
     const { deviceType, browserName, osName } =

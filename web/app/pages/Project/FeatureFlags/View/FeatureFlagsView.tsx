@@ -2,6 +2,7 @@ import { XCircleIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import _debounce from 'lodash/debounce'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import {
@@ -20,7 +21,7 @@ import {
   CheckIcon,
   XIcon,
 } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 import { toast } from 'sonner'
@@ -461,16 +462,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
 
   const pageAmount = Math.ceil(total / DEFAULT_FEATURE_FLAGS_TAKE)
 
-  const filteredFlags = useMemo(() => {
-    if (!filterQuery.trim()) return flags
-    const query = filterQuery.toLowerCase()
-    return flags.filter(
-      (flag) =>
-        flag.key.toLowerCase().includes(query) || (flag.description && flag.description.toLowerCase().includes(query)),
-    )
-  }, [flags, filterQuery])
-
-  const loadFlags = async (take: number, skip: number) => {
+  const loadFlags = async (take: number, skip: number, search?: string) => {
     if (isLoadingRef.current) {
       return
     }
@@ -478,7 +470,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     setIsLoading(true)
 
     try {
-      const result = await getProjectFeatureFlags(id, take, skip)
+      const result = await getProjectFeatureFlags(id, take, skip, search)
       if (isMountedRef.current) {
         setFlags(result.results)
         setTotal(result.total)
@@ -494,6 +486,34 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
       }
     }
   }
+
+  // Debounced search to avoid excessive API calls
+  const debouncedLoadFlags = useMemo(
+    () =>
+      _debounce((search: string) => {
+        loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, 0, search || undefined)
+      }, 300),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [id],
+  )
+
+  // Handle search input change
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      setFilterQuery(value)
+      setPage(1) // Reset to first page when searching
+      debouncedLoadFlags(value)
+    },
+    [debouncedLoadFlags],
+  )
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      debouncedLoadFlags.cancel()
+    }
+  }, [debouncedLoadFlags])
 
   const loadFlagStats = async (flagId: string) => {
     setStatsLoading((prev) => ({ ...prev, [flagId]: true }))
@@ -636,14 +656,14 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   }
 
   useEffect(() => {
-    loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE)
+    loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
 
   // Refresh feature flags data when refresh button is clicked
   useEffect(() => {
     if (featureFlagsRefreshTrigger > 0) {
-      loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE)
+      loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
       // Clear cached stats data to force reload
       setFlagStats({})
       // Refresh profiles for expanded flag
@@ -690,14 +710,14 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   }
 
   const handleModalSuccess = () => {
-    loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE)
+    loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
   }
 
   const handleDeleteFlag = async (flagId: string) => {
     try {
       await deleteFeatureFlagApi(flagId)
       toast.success(t('featureFlags.deleted'))
-      loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE)
+      loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
     } catch (reason: any) {
       toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
     }
@@ -790,7 +810,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
                 type='text'
                 placeholder={t('featureFlags.filterFlags')}
                 value={filterQuery}
-                onChange={(e) => setFilterQuery(e.target.value)}
+                onChange={handleSearchChange}
                 className='w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
               />
             </div>
@@ -802,7 +822,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
 
           {/* Flags list */}
           <ul className='mt-4'>
-            {_map(filteredFlags, (flag) => {
+            {_map(flags, (flag) => {
               const profiles = flagProfiles[flag.id] || []
               const profilesTotal = flagProfilesTotal[flag.id] || 0
               const canLoadMore = profiles.length < profilesTotal
@@ -830,14 +850,14 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
             })}
           </ul>
 
-          {filteredFlags.length === 0 && filterQuery ? (
+          {flags.length === 0 && filterQuery ? (
             <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
               {t('featureFlags.noFlagsMatchFilter')}
             </p>
           ) : null}
         </>
       )}
-      {pageAmount > 1 && !filterQuery ? (
+      {pageAmount > 1 ? (
         <Pagination
           className='mt-4'
           page={page}

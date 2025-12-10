@@ -25,6 +25,7 @@ import {
   type CreateFeatureFlag,
   type TargetingRule,
 } from '~/api'
+import { API_URL, isSelfhosted } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
@@ -257,7 +258,7 @@ const isEnabled = await swetrix.isFeatureEnabled('${key || 'my-feature'}', {
 })`
 
   const fetchCode = `// Using fetch API directly
-const response = await fetch('https://api.swetrix.com/feature-flag/evaluate', {
+const response = await fetch('${isSelfhosted ? API_URL : 'https://api.swetrix.com/'}v1/feature-flag/evaluate', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
