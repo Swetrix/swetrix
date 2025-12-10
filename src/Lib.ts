@@ -32,6 +32,12 @@ export interface LibOptions {
 
   /** Set a custom URL of the API server (for selfhosted variants of Swetrix). */
   apiURL?: string
+
+  /**
+   * Optional profile ID for long-term user tracking.
+   * If set, it will be used for all pageviews and events unless overridden per-call.
+   */
+  profileId?: string
 }
 
 export interface TrackEventOptions {
@@ -45,6 +51,9 @@ export interface TrackEventOptions {
   meta?: {
     [key: string]: string | number | boolean | null | undefined
   }
+
+  /** Optional profile ID for long-term user tracking. Overrides the global profileId if set. */
+  profileId?: string
 }
 
 // Partial user-editable pageview payload
@@ -63,6 +72,9 @@ export interface IPageViewPayload {
   meta?: {
     [key: string]: string | number | boolean | null | undefined
   }
+
+  /** Optional profile ID for long-term user tracking. Overrides the global profileId if set. */
+  profileId?: string
 }
 
 // Partial user-editable error payload
@@ -93,6 +105,26 @@ interface IPerfPayload {
   dom_load: number
   page_load: number
   ttfb: number
+}
+
+/**
+ * Options for evaluating feature flags.
+ */
+export interface FeatureFlagsOptions {
+  /**
+   * Optional profile ID for long-term user tracking.
+   * If not provided, an anonymous profile ID will be generated server-side based on IP and user agent.
+   * Overrides the global profileId if set.
+   */
+  profileId?: string
+}
+
+/**
+ * Cached feature flags with timestamp.
+ */
+interface CachedFlags {
+  flags: Record<string, boolean>
+  timestamp: number
 }
 
 /**
@@ -174,6 +206,10 @@ export const defaultActions = {
 }
 
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
+const DEFAULT_API_BASE = 'https://api.swetrix.com'
+
+// Default cache duration: 5 minutes
+const DEFAULT_CACHE_DURATION = 5 * 60 * 1000
 
 export class Lib {
   private pageData: PageData | null = null
@@ -182,6 +218,7 @@ export class Lib {
   private perfStatsCollected: boolean = false
   private activePage: string | null = null
   private errorListenerExists = false
+  private cachedFlags: CachedFlags | null = null
 
   constructor(private projectID: string, private options?: LibOptions) {
     this.trackPathChange = this.trackPathChange.bind(this)
@@ -294,6 +331,7 @@ export class Lib {
       ca: getUTMCampaign(),
       te: getUTMTerm(),
       co: getUTMContent(),
+      profileId: event.profileId ?? this.options?.profileId,
     }
     await this.sendRequest('custom', data)
   }
@@ -368,6 +406,98 @@ export class Lib {
     }
   }
 
+  /**
+   * Fetches all feature flags for the project.
+   * Results are cached for 5 minutes by default.
+   *
+   * @param options - Options for evaluating feature flags.
+   * @param forceRefresh - If true, bypasses the cache and fetches fresh flags.
+   * @returns A promise that resolves to a record of flag keys to boolean values.
+   */
+  async getFeatureFlags(options?: FeatureFlagsOptions, forceRefresh?: boolean): Promise<Record<string, boolean>> {
+    if (!isInBrowser()) {
+      return {}
+    }
+
+    // Check cache first
+    if (!forceRefresh && this.cachedFlags) {
+      const now = Date.now()
+      if (now - this.cachedFlags.timestamp < DEFAULT_CACHE_DURATION) {
+        return this.cachedFlags.flags
+      }
+    }
+
+    try {
+      const apiBase = this.getApiBase()
+      const body: { pid: string; profileId?: string } = {
+        pid: this.projectID,
+      }
+
+      // Use profileId from options, or fall back to global profileId
+      const profileId = options?.profileId ?? this.options?.profileId
+      if (profileId) {
+        body.profileId = profileId
+      }
+
+      const response = await fetch(`${apiBase}/feature-flag/evaluate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+
+      if (!response.ok) {
+        console.warn('[Swetrix] Failed to fetch feature flags:', response.status)
+        return this.cachedFlags?.flags || {}
+      }
+
+      const data = (await response.json()) as { flags: Record<string, boolean> }
+
+      // Update cache
+      this.cachedFlags = {
+        flags: data.flags,
+        timestamp: Date.now(),
+      }
+
+      return data.flags
+    } catch (error) {
+      console.warn('[Swetrix] Error fetching feature flags:', error)
+      return this.cachedFlags?.flags || {}
+    }
+  }
+
+  /**
+   * Gets the value of a single feature flag.
+   *
+   * @param key - The feature flag key.
+   * @param options - Options for evaluating the feature flag.
+   * @param defaultValue - Default value to return if the flag is not found. Defaults to false.
+   * @returns A promise that resolves to the boolean value of the flag.
+   */
+  async getFeatureFlag(key: string, options?: FeatureFlagsOptions, defaultValue: boolean = false): Promise<boolean> {
+    const flags = await this.getFeatureFlags(options)
+    return flags[key] ?? defaultValue
+  }
+
+  /**
+   * Clears the cached feature flags, forcing a fresh fetch on the next call.
+   */
+  clearFeatureFlagsCache(): void {
+    this.cachedFlags = null
+  }
+
+  /**
+   * Gets the API base URL (without /log suffix).
+   */
+  private getApiBase(): string {
+    if (this.options?.apiURL) {
+      // Remove trailing /log if present
+      return this.options.apiURL.replace(/\/log\/?$/, '')
+    }
+    return DEFAULT_API_BASE
+  }
+
   private heartbeat(): void {
     if (!this.pageViewsOptions?.heartbeatOnBackground && document.visibilityState === 'hidden') {
       return
@@ -425,6 +555,7 @@ export class Lib {
       ca: getUTMCampaign(),
       te: getUTMTerm(),
       co: getUTMContent(),
+      profileId: this.options?.profileId,
       ...payload,
     }
 
