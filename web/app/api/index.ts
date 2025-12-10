@@ -1246,6 +1246,162 @@ export const getGoalChart = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+// Feature Flags API
+export interface TargetingRule {
+  column: string
+  filter: string
+  isExclusive: boolean
+}
+
+export interface ProjectFeatureFlag {
+  id: string
+  key: string
+  description: string | null
+  flagType: 'boolean' | 'rollout'
+  rolloutPercentage: number
+  targetingRules: TargetingRule[] | null
+  enabled: boolean
+  pid: string
+  created: string
+}
+
+export interface FeatureFlagStats {
+  evaluations: number
+  profileCount: number
+  trueCount: number
+  falseCount: number
+  truePercentage: number
+}
+
+export type CreateFeatureFlag = {
+  pid: string
+  key: string
+  description?: string
+  flagType?: 'boolean' | 'rollout'
+  rolloutPercentage?: number
+  targetingRules?: TargetingRule[]
+  enabled?: boolean
+}
+
+export const DEFAULT_FEATURE_FLAGS_TAKE = 20
+
+export const getProjectFeatureFlags = (
+  projectId: string,
+  take: number = DEFAULT_FEATURE_FLAGS_TAKE,
+  skip = 0,
+  search?: string,
+) => {
+  const params = new URLSearchParams({
+    take: String(take),
+    skip: String(skip),
+  })
+
+  if (search?.trim()) {
+    params.append('search', search.trim())
+  }
+
+  return api
+    .get(`/feature-flag/project/${projectId}?${params.toString()}`)
+    .then(
+      (
+        response,
+      ): {
+        results: ProjectFeatureFlag[]
+        total: number
+      } => response.data,
+    )
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+}
+
+export const getFeatureFlag = (flagId: string) =>
+  api
+    .get(`/feature-flag/${flagId}`)
+    .then((response): ProjectFeatureFlag => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const createFeatureFlag = (data: CreateFeatureFlag) =>
+  api
+    .post('feature-flag', data)
+    .then((response): ProjectFeatureFlag => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const updateFeatureFlag = (id: string, data: Partial<ProjectFeatureFlag>) =>
+  api
+    .put(`feature-flag/${id}`, data)
+    .then((response): ProjectFeatureFlag => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const deleteFeatureFlag = (id: string) =>
+  api
+    .delete(`feature-flag/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getFeatureFlagStats = (
+  flagId: string,
+  period: string,
+  from: string = '',
+  to: string = '',
+  timezone?: string,
+) =>
+  api
+    .get(`/feature-flag/${flagId}/stats`, {
+      params: { period, from, to, timezone },
+    })
+    .then((response): FeatureFlagStats => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export interface FeatureFlagProfile {
+  profileId: string
+  isIdentified: boolean
+  lastResult: boolean
+  evaluationCount: number
+  lastEvaluated: string
+}
+
+export const DEFAULT_FEATURE_FLAG_PROFILES_TAKE = 15
+
+export type FeatureFlagResultFilter = 'all' | 'true' | 'false'
+
+export const getFeatureFlagProfiles = (
+  flagId: string,
+  period: string,
+  from: string = '',
+  to: string = '',
+  timezone?: string,
+  take: number = DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
+  skip: number = 0,
+  resultFilter: FeatureFlagResultFilter = 'all',
+) =>
+  api
+    .get(`/feature-flag/${flagId}/profiles`, {
+      params: {
+        period,
+        from,
+        to,
+        timezone,
+        take,
+        skip,
+        result: resultFilter === 'all' ? undefined : resultFilter,
+      },
+    })
+    .then((response): { profiles: FeatureFlagProfile[]; total: number } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const reGenerateCaptchaSecretKey = (pid: string) =>
   api
     .post(`project/secret-gen/${pid}`)

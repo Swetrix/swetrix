@@ -9,6 +9,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger'
 
 import { Alert } from '../../alert/entity/alert.entity'
+import { FeatureFlag } from '../../feature-flag/entity/feature-flag.entity'
 import { Goal } from '../../goal/entity/goal.entity'
 import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
@@ -127,6 +128,10 @@ export class Project {
   @ApiProperty({ type: () => Goal })
   @OneToMany(() => Goal, goal => goal.project)
   goals: Goal[]
+
+  @ApiProperty({ type: () => FeatureFlag })
+  @OneToMany(() => FeatureFlag, featureFlag => featureFlag.project)
+  featureFlags: FeatureFlag[]
 
   @Column('varchar', {
     default: null,

@@ -11,6 +11,7 @@ import { ProjectModule } from './project/project.module'
 import { TaskManagerModule } from './task-manager/task-manager.module'
 import { PingModule } from './ping/ping.module'
 import { GoalModule } from './goal/goal.module'
+import { FeatureFlagModule } from './feature-flag/feature-flag.module'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
 import { AppController } from './app.controller'
@@ -66,6 +67,7 @@ const modules = [
   AnalyticsModule,
   PingModule,
   GoalModule,
+  FeatureFlagModule,
   AuthModule,
 ]
 

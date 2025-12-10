@@ -41,6 +41,7 @@ import {
   TargetIcon,
   PuzzleIcon,
   SparklesIcon,
+  FlagIcon,
 } from 'lucide-react'
 import React, {
   useState,
@@ -169,6 +170,7 @@ import routes from '~/utils/routes'
 import { useCurrentProject, useProjectPassword } from '../../../providers/CurrentProjectProvider'
 import ProjectAlertsView from '../Alerts/View'
 import AskAIView from '../AskAI'
+import FeatureFlagsView from '../FeatureFlags/View'
 import GoalsView from '../Goals/View'
 
 import AddAViewModal from './components/AddAViewModal'
@@ -408,6 +410,7 @@ interface ViewProjectContextType {
   customPanelTabs: CustomTab[]
   captchaRefreshTrigger: number
   goalsRefreshTrigger: number
+  featureFlagsRefreshTrigger: number
 
   // Functions
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
@@ -433,6 +436,7 @@ const defaultViewProjectContext: ViewProjectContextType = {
   customPanelTabs: [],
   captchaRefreshTrigger: 0,
   goalsRefreshTrigger: 0,
+  featureFlagsRefreshTrigger: 0,
   updatePeriod: () => {},
   updateTimebucket: (_newTimebucket) => {},
   refCalendar: { current: null } as any,
@@ -545,6 +549,7 @@ const ViewProjectContent = () => {
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false)
   const [captchaRefreshTrigger, setCaptchaRefreshTrigger] = useState(0)
   const [goalsRefreshTrigger, setGoalsRefreshTrigger] = useState(0)
+  const [featureFlagsRefreshTrigger, setFeatureFlagsRefreshTrigger] = useState(0)
   const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
@@ -1506,6 +1511,11 @@ const ViewProjectContent = () => {
         id: PROJECT_TABS.goals,
         label: t('dashboard.goals'),
         icon: TargetIcon,
+      },
+      {
+        id: PROJECT_TABS.featureFlags,
+        label: t('dashboard.featureFlags'),
+        icon: FlagIcon,
       },
     ]
 
@@ -2678,6 +2688,11 @@ const ViewProjectContent = () => {
           return
         }
 
+        if (activeTab === PROJECT_TABS.featureFlags) {
+          setFeatureFlagsRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
         loadAnalytics()
       }
     },
@@ -3420,6 +3435,7 @@ const ViewProjectContent = () => {
             customPanelTabs,
             captchaRefreshTrigger,
             goalsRefreshTrigger,
+            featureFlagsRefreshTrigger,
 
             // Functions
             updatePeriod,
@@ -4012,7 +4028,9 @@ const ViewProjectContent = () => {
                           </Link>
                           <RefreshStatsButton onRefresh={refreshStats} />
                         </div>
-                        {activeSession?.details ? <SessionDetails details={activeSession?.details} /> : null}
+                        {activeSession?.details ? (
+                          <SessionDetails details={activeSession?.details} pages={activeSession?.pages} />
+                        ) : null}
                         {!_isEmpty(activeSession?.chart) ? (
                           <div className='relative'>
                             <SessionChart
@@ -4042,6 +4060,7 @@ const ViewProjectContent = () => {
                             pages={activeSession?.pages}
                             timeFormat={timeFormat}
                             zoomedTimeRange={zoomedTimeRange}
+                            sdur={activeSession?.details?.sdur}
                           />
                         )}
                         {activeSession !== null &&
@@ -4311,6 +4330,14 @@ const ViewProjectContent = () => {
                     ) : null}
                     {activeTab === PROJECT_TABS.goals ? (
                       <GoalsView
+                        period={period}
+                        from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                        to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                        timezone={timezone}
+                      />
+                    ) : null}
+                    {activeTab === PROJECT_TABS.featureFlags ? (
+                      <FeatureFlagsView
                         period={period}
                         from={dateRange ? getFormatDate(dateRange[0]) : ''}
                         to={dateRange ? getFormatDate(dateRange[1]) : ''}

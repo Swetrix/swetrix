@@ -1218,37 +1218,7 @@ export class AnalyticsService {
     return profileId.startsWith(AnalyticsService.PROFILE_PREFIX_USER)
   }
 
-  async recordSession(
-    psid: string,
-    pid: string,
-    profileId: string,
-    isPageview: boolean = true,
-  ): Promise<void> {
-    const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-
-    try {
-      await clickhouse.insert({
-        table: 'sessions',
-        format: 'JSONEachRow',
-        values: [
-          {
-            psid,
-            pid,
-            profileId,
-            firstSeen: now,
-            lastSeen: now,
-            pageviews: isPageview ? 1 : 0,
-            events: isPageview ? 0 : 1,
-          },
-        ],
-        clickhouse_settings: { async_insert: 1 },
-      })
-    } catch (error) {
-      console.error('Failed to record session:', error)
-    }
-  }
-
-  async updateSessionActivity(
+  async recordSessionActivity(
     psid: string,
     pid: string,
     profileId: string,
@@ -1256,10 +1226,8 @@ export class AnalyticsService {
     const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
 
     try {
-      // Read current session data to preserve pageviews/events counts
-      // TODO: Potentially slow because every write request reads from the database - consider caching or other optimisation
       const query = `
-        SELECT firstSeen, pageviews, events
+        SELECT firstSeen
         FROM sessions FINAL
         WHERE psid = {psid:UInt64}
           AND pid = {pid:FixedString(12)}
@@ -1274,8 +1242,6 @@ export class AnalyticsService {
         .then(resultSet =>
           resultSet.json<{
             firstSeen: string
-            pageviews: number
-            events: number
           }>(),
         )
 
@@ -1291,14 +1257,12 @@ export class AnalyticsService {
             profileId,
             firstSeen: existingSession?.firstSeen ?? now,
             lastSeen: now,
-            pageviews: existingSession?.pageviews ?? 0,
-            events: existingSession?.events ?? 0,
           },
         ],
         clickhouse_settings: { async_insert: 1 },
       })
     } catch (error) {
-      console.error('Failed to update session activity:', error)
+      console.error('Failed to record session:', error)
     }
   }
 
@@ -4178,7 +4142,8 @@ export class AnalyticsService {
         SELECT 
           CAST(psid, 'String') AS psidCasted, 
           pid, 
-          avg(dateDiff('second', firstSeen, lastSeen)) as avg_duration
+          avg(dateDiff('second', firstSeen, lastSeen)) as avg_duration,
+          any(profileId) as profileId
         FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
         GROUP BY psidCasted, pid
@@ -4194,7 +4159,9 @@ export class AnalyticsService {
         dsf.sessionStart,
         dsf.lastActivity,
         if(dateDiff('second', dsf.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
-        sda.avg_duration AS sdur
+        sda.avg_duration AS sdur,
+        sda.profileId AS profileId,
+        if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified
       FROM distinct_sessions_filtered dsf
       LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
       LEFT JOIN event_counts ec ON dsf.psidCasted = ec.psidCasted AND dsf.pid = ec.pid
