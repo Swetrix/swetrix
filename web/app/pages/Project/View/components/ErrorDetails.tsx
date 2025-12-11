@@ -1,5 +1,4 @@
 import { ChevronDownIcon, ChevronUpIcon, ClipboardIcon, CheckIcon } from '@heroicons/react/24/outline'
-import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import { BugIcon, FileCodeIcon, CalendarIcon, HashIcon, ExternalLinkIcon } from 'lucide-react'
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react'

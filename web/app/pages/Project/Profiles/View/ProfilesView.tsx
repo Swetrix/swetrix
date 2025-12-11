@@ -1,3 +1,4 @@
+import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import { ChevronLeftIcon, DownloadIcon } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef } from 'react'
@@ -6,15 +7,14 @@ import { Link, useSearchParams } from 'react-router'
 
 import { getProfiles, getProfile, getProfileSessions } from '~/api'
 import { Profile, ProfileDetails, Session } from '~/lib/models/Project'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
-import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { RefreshStatsButton } from '~/pages/Project/View/components/RefreshStatsButton'
 import { UserDetails } from '~/pages/Project/View/components/UserDetails'
 import { Users, UsersFilter } from '~/pages/Project/View/components/Users'
+import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import Loader from '~/ui/Loader'
-import cx from 'clsx'
 
 const SESSIONS_TAKE = 30
 

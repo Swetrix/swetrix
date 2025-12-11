@@ -24,15 +24,14 @@ import { PerformanceMetricCards } from '~/pages/Project/View/components/MetricCa
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { PerformanceChart } from '~/pages/Project/View/components/PerformanceChart'
 import { Panel } from '~/pages/Project/View/Panels'
+import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import {
   getFormatDate,
   panelIconMapping,
   CHART_METRICS_MAPPING_PERF,
   CHART_MEASURES_MAPPING_PERF,
 } from '~/pages/Project/View/ViewProject.helpers'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
-import { useCurrentProject } from '~/providers/CurrentProjectProvider'
-import { useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
