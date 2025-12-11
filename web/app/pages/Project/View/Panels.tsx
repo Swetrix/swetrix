@@ -265,8 +265,8 @@ export type CustomTab = {
 }
 
 interface MetadataProps {
-  customs: Customs
-  properties: Properties
+  customs?: Customs
+  properties?: Properties
   chartData: any
   filters: Filter[]
   getCustomEventMetadata: (event: string) => Promise<any>
