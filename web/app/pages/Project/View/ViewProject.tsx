@@ -72,8 +72,6 @@ import {
   deleteFunnel,
   getFunnelData,
   getPerformanceOverallStats,
-  getSessions,
-  getSession,
   getPropertyMetadata,
   getProjectViews,
   deleteProjectView,
@@ -128,7 +126,6 @@ import {
   AnalyticsFunnel,
   OverallObject,
   OverallPerformanceObject,
-  SessionDetails as SessionDetailsModel,
   Session,
   Annotation,
   Profile,
@@ -166,6 +163,7 @@ import AskAIView from '../AskAI'
 import ErrorsView from '../Errors/View/ErrorsView'
 import FeatureFlagsView from '../FeatureFlags/View'
 import GoalsView from '../Goals/View'
+import SessionsView from '../Sessions/View/SessionsView'
 
 import AddAViewModal from './components/AddAViewModal'
 import CCRow from './components/CCRow'
@@ -183,16 +181,11 @@ import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import LockedDashboard from './components/LockedDashboard'
 import { MetricCard, MetricCards, PerformanceMetricCards } from './components/MetricCards'
 import NoEvents from './components/NoEvents'
-import NoSessionDetails from './components/NoSessionDetails'
-import { Pageflow } from './components/Pageflow'
 import { PerformanceChart } from './components/PerformanceChart'
 import ProjectSidebar from './components/ProjectSidebar'
 import { RefreshStatsButton } from './components/RefreshStatsButton'
 import RefRow from './components/RefRow'
 import SearchFilters, { getFiltersUrlParams } from './components/SearchFilters'
-import { SessionChart } from './components/SessionChart'
-import { SessionDetails } from './components/SessionDetails'
-import { Sessions } from './components/Sessions'
 import TBPeriodSelector from './components/TBPeriodSelector'
 import { TrafficChart } from './components/TrafficChart'
 import { UserDetails } from './components/UserDetails'
@@ -399,6 +392,7 @@ interface ViewProjectContextType {
   captchaRefreshTrigger: number
   goalsRefreshTrigger: number
   featureFlagsRefreshTrigger: number
+  sessionsRefreshTrigger: number
 
   // Functions
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
@@ -425,6 +419,7 @@ const defaultViewProjectContext: ViewProjectContextType = {
   captchaRefreshTrigger: 0,
   goalsRefreshTrigger: 0,
   featureFlagsRefreshTrigger: 0,
+  sessionsRefreshTrigger: 0,
   updatePeriod: () => {},
   updateTimebucket: (_newTimebucket) => {},
   refCalendar: { current: null } as any,
@@ -538,6 +533,7 @@ const ViewProjectContent = () => {
   const [captchaRefreshTrigger, setCaptchaRefreshTrigger] = useState(0)
   const [goalsRefreshTrigger, setGoalsRefreshTrigger] = useState(0)
   const [featureFlagsRefreshTrigger, setFeatureFlagsRefreshTrigger] = useState(0)
+  const [sessionsRefreshTrigger, setSessionsRefreshTrigger] = useState(0)
   const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
@@ -672,25 +668,6 @@ const ViewProjectContent = () => {
 
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
 
-  // sessions
-  const [sessionsSkip, setSessionsSkip] = useState(0)
-  const [canLoadMoreSessions, setCanLoadMoreSessions] = useState(false)
-  const [sessions, setSessions] = useState<Session[]>([])
-  const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
-  const [activeSession, setActiveSession] = useState<{
-    [key: string]: any
-    details: SessionDetailsModel
-  } | null>(null)
-  const [sessionLoading, setSessionLoading] = useState(false)
-  const activePSID = useMemo(() => {
-    return searchParams.get('psid')
-  }, [searchParams])
-  const prevActivePSIDRef = useRef<string | null>(activePSID)
-  const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(null)
-  const [sessionChartInstance, _setSessionChartInstance] = useState<any>(null)
-  const sessionsRequestIdRef = useRef(0)
-  const skipNextSessionsAutoLoadRef = useRef(false)
-
   // profiles / users
   const [profilesSkip, setProfilesSkip] = useState(0)
   const [canLoadMoreProfiles, setCanLoadMoreProfiles] = useState(false)
@@ -709,6 +686,11 @@ const ViewProjectContent = () => {
   const prevActiveProfileIdRef = useRef<string | null>(activeProfileId)
   const profilesRequestIdRef = useRef(0)
   const skipNextProfilesAutoLoadRef = useRef(false)
+
+  // Check if we're viewing a specific session detail
+  const activePSID = useMemo(() => {
+    return searchParams.get('psid')
+  }, [searchParams])
 
   const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(undefined)
   const [funnelActionLoading, setFunnelActionLoading] = useState(false)
@@ -758,14 +740,6 @@ const ViewProjectContent = () => {
     date: null,
     annotation: null,
   })
-
-  // Reset sessions when filters change so lists reload with correct pagination
-  useEffect(() => {
-    sessionsRequestIdRef.current += 1
-    setSessionsSkip(0)
-    setSessions([])
-    setSessionsLoading(null)
-  }, [filters])
 
   const mode = activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode] ? 'cumulative' : 'periodical'
 
@@ -1844,97 +1818,6 @@ const ViewProjectContent = () => {
     return getPropertyMetadata(id, event, timeBucket, period, '', '', filters, timezone, projectPassword)
   }
 
-  const loadSession = async (psid: string) => {
-    if (sessionLoading) {
-      return
-    }
-
-    setSessionLoading(true)
-
-    try {
-      const session = await getSession(id, psid, timezone, projectPassword)
-
-      setActiveSession(session)
-    } catch (reason: any) {
-      console.error('[ERROR] (loadSession)(getSession)', reason)
-      toast.error(reason)
-    }
-
-    setSessionLoading(false)
-  }
-
-  useEffect(() => {
-    if (!activePSID) {
-      setActiveSession(null)
-      // Coming back from a session detail to the list: reset pagination and reload first page
-      if (prevActivePSIDRef.current) {
-        skipNextSessionsAutoLoadRef.current = true
-        setSessionsSkip(0)
-        loadSessions(0, true)
-      }
-      prevActivePSIDRef.current = null
-      return
-    }
-
-    loadSession(activePSID)
-    prevActivePSIDRef.current = activePSID
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, dateRange, timeBucket, activePSID])
-
-  const loadSessions = async (forcedSkip?: number, override?: boolean) => {
-    if (sessionsLoading) {
-      return
-    }
-
-    const requestId = sessionsRequestIdRef.current
-    setSessionsLoading(true)
-
-    try {
-      const skip = typeof forcedSkip === 'number' ? forcedSkip : sessionsSkip
-      let dataSessions: { sessions: Session[] }
-      let from
-      let to
-
-      if (dateRange) {
-        from = getFormatDate(dateRange[0])
-        to = getFormatDate(dateRange[1])
-      }
-
-      if (period === 'custom' && dateRange) {
-        dataSessions = await getSessions(id, '', filters, from, to, SESSIONS_TAKE, skip, timezone, projectPassword)
-      } else {
-        dataSessions = await getSessions(id, period, filters, '', '', SESSIONS_TAKE, skip, timezone, projectPassword)
-      }
-
-      if (requestId === sessionsRequestIdRef.current) {
-        if (override) {
-          setSessions(dataSessions?.sessions || [])
-        } else {
-          setSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
-        }
-        setSessionsSkip((prev) => {
-          if (typeof forcedSkip === 'number') {
-            return SESSIONS_TAKE + forcedSkip
-          }
-
-          return SESSIONS_TAKE + prev
-        })
-
-        if (dataSessions?.sessions?.length < SESSIONS_TAKE) {
-          setCanLoadMoreSessions(false)
-        } else {
-          setCanLoadMoreSessions(true)
-        }
-      }
-    } catch (reason) {
-      console.error('[ERROR](loadSessions) Loading sessions data failed:', reason)
-    } finally {
-      if (requestId === sessionsRequestIdRef.current) {
-        setSessionsLoading(false)
-      }
-    }
-  }
-
   const loadProfiles = async (forcedSkip?: number, override?: boolean) => {
     if (profilesLoading) {
       return
@@ -2372,17 +2255,6 @@ const ViewProjectContent = () => {
           return
         }
 
-        if (activeTab === PROJECT_TABS.sessions) {
-          if (activePSID) {
-            await loadSession(activePSID)
-            return
-          }
-
-          setSessionsSkip(0)
-          loadSessions(0, true)
-          return
-        }
-
         if (activeTab === PROJECT_TABS.profiles) {
           if (activeProfileId) {
             await loadProfile(activeProfileId)
@@ -2409,11 +2281,16 @@ const ViewProjectContent = () => {
           return
         }
 
+        if (activeTab === PROJECT_TABS.sessions) {
+          setSessionsRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
         loadAnalytics()
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [authLoading, dataLoading, activeTab, activePSID, activeProfileId],
+    [authLoading, dataLoading, activeTab, activeProfileId],
   )
 
   useEffect(() => {
@@ -2512,21 +2389,6 @@ const ViewProjectContent = () => {
     loadFunnelsData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFunnel, activeTab, authLoading, project, dateRange, period, timeBucket])
-
-  useEffect(() => {
-    if (authLoading || activeTab !== PROJECT_TABS.sessions || authLoading || !project || activePSID) {
-      return
-    }
-
-    if (skipNextSessionsAutoLoadRef.current) {
-      // We've explicitly loaded the first page already when closing a session detail
-      skipNextSessionsAutoLoadRef.current = false
-      return
-    }
-
-    loadSessions()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, dateRange, filters, id, period, projectPassword, timezone, authLoading, project, activePSID])
 
   // Load profiles list when users tab is active
   useEffect(() => {
@@ -2732,8 +2594,6 @@ const ViewProjectContent = () => {
     newSearchParams.delete('to')
     newSearchParams.set('period', newPeriod)
 
-    setSessionsSkip(0)
-
     updatePreferences({
       period: newPeriod,
       rangeDate: undefined,
@@ -2768,13 +2628,6 @@ const ViewProjectContent = () => {
 
   const openSettingsHandler = () => {
     navigate(_replace(routes.project_settings, ':id', id))
-  }
-
-  const resetSessionChartZoom = () => {
-    if (sessionChartInstance) {
-      sessionChartInstance.unzoom()
-    }
-    setZoomedTimeRange(null)
   }
 
   const onMainChartZoom = (domain: [Date, Date] | null) => {
@@ -3087,6 +2940,7 @@ const ViewProjectContent = () => {
             captchaRefreshTrigger,
             goalsRefreshTrigger,
             featureFlagsRefreshTrigger,
+            sessionsRefreshTrigger,
 
             // Functions
             updatePeriod,
@@ -3097,11 +2951,7 @@ const ViewProjectContent = () => {
           }}
         >
           <>
-            {(dataLoading && !isAutoRefreshing) ||
-            (sessionsLoading && !_isEmpty(sessions)) ||
-            (profilesLoading && !_isEmpty(profiles)) ? (
-              <LoadingBar />
-            ) : null}
+            {(dataLoading && !isAutoRefreshing) || (profilesLoading && !_isEmpty(profiles)) ? <LoadingBar /> : null}
             {!isEmbedded ? <Header /> : null}
             <EventsRunningOutBanner />
             <div
@@ -3574,90 +3424,8 @@ const ViewProjectContent = () => {
                         )}
                       </>
                     ) : null}
-                    {activeTab === PROJECT_TABS.sessions && !activePSID ? (
-                      <>
-                        {!_isEmpty(sessions) ? <Filters tnMapping={tnMapping} /> : null}
-                        {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) ? <Loader /> : null}
-                        {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) ? (
-                          <NoEvents filters={filters} />
-                        ) : null}
-                        <Sessions sessions={sessions} timeFormat={timeFormat} />
-                        {canLoadMoreSessions ? (
-                          <button
-                            type='button'
-                            title={t('project.loadMore')}
-                            onClick={() => loadSessions()}
-                            className={cx(
-                              'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
-                              {
-                                'cursor-not-allowed opacity-50': sessionsLoading || sessionsLoading === null,
-                                hidden: sessionsLoading && _isEmpty(sessions),
-                              },
-                            )}
-                          >
-                            <DownloadIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
-                            {t('project.loadMore')}
-                          </button>
-                        ) : null}
-                      </>
-                    ) : null}
-                    {activeTab === PROJECT_TABS.sessions && activePSID ? (
-                      <>
-                        <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
-                          <Link
-                            to={{
-                              search: pureSearchParams,
-                            }}
-                            onClick={resetSessionChartZoom}
-                            className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
-                          >
-                            <ChevronLeftIcon className='mr-1 size-3' />
-                            {t('project.backToSessions')}
-                          </Link>
-                          <RefreshStatsButton onRefresh={refreshStats} />
-                        </div>
-                        {activeSession?.details ? (
-                          <SessionDetails details={activeSession?.details} pages={activeSession?.pages} />
-                        ) : null}
-                        {!_isEmpty(activeSession?.chart) ? (
-                          <div className='relative'>
-                            <SessionChart
-                              chart={activeSession?.chart}
-                              timeBucket={activeSession?.timeBucket}
-                              timeFormat={timeFormat}
-                              rotateXAxis={rotateXAxis}
-                              chartType={chartType}
-                              dataNames={dataNames}
-                              onZoom={setZoomedTimeRange}
-                            />
-                            {zoomedTimeRange ? (
-                              <button
-                                onClick={resetSessionChartZoom}
-                                className='absolute top-2 right-0 z-10 rounded border bg-white px-2 py-1 text-xs text-gray-800 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
-                              >
-                                {t('project.resetZoom')}
-                              </button>
-                            ) : null}
-                          </div>
-                        ) : null}
-
-                        {_isEmpty(activeSession) && sessionLoading ? (
-                          <Loader />
-                        ) : (
-                          <Pageflow
-                            pages={activeSession?.pages}
-                            timeFormat={timeFormat}
-                            zoomedTimeRange={zoomedTimeRange}
-                            sdur={activeSession?.details?.sdur}
-                          />
-                        )}
-                        {activeSession !== null &&
-                        _isEmpty(activeSession?.chart) &&
-                        _isEmpty(activeSession?.pages) &&
-                        !sessionLoading ? (
-                          <NoSessionDetails />
-                        ) : null}
-                      </>
+                    {activeTab === PROJECT_TABS.sessions ? (
+                      <SessionsView tnMapping={tnMapping} chartType={chartType} rotateXAxis={rotateXAxis} />
                     ) : null}
                     {activeTab === PROJECT_TABS.errors ? <ErrorsView /> : null}
                     {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && isAuthenticated ? (
