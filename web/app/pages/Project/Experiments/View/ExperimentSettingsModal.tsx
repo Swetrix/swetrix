@@ -196,12 +196,28 @@ const ExperimentSettingsModal = ({
       isControl: false,
     }
     setVariants([...variants, newVariant])
+
+    // Clear variants error if it exists
+    if (errors.variants) {
+      setErrors((prev) => {
+        const { variants: _, ...rest } = prev
+        return rest
+      })
+    }
   }
 
   const handleRemoveVariant = (index: number) => {
     if (variants.length <= 2) return
     const newVariants = variants.filter((_, i) => i !== index)
     setVariants(newVariants)
+
+    // Clear variants error if it exists
+    if (errors.variants) {
+      setErrors((prev) => {
+        const { variants: _, ...rest } = prev
+        return rest
+      })
+    }
   }
 
   const handleVariantChange = (index: number, field: keyof ExperimentVariant, value: string | number | boolean) => {
@@ -215,6 +231,14 @@ const ExperimentSettingsModal = ({
       newVariants[index] = { ...newVariants[index], [field]: value }
     }
     setVariants(newVariants)
+
+    // Clear variants error if it exists - will be re-validated on submit
+    if (errors.variants) {
+      setErrors((prev) => {
+        const { variants: _, ...rest } = prev
+        return rest
+      })
+    }
   }
 
   const distributeEvenly = () => {
@@ -227,12 +251,203 @@ const ExperimentSettingsModal = ({
       rolloutPercentage: basePercentage + (i < remainder ? 1 : 0),
     }))
     setVariants(newVariants)
+
+    // Clear variants error if it exists (percentage will now sum to 100)
+    if (errors.variants) {
+      setErrors((prev) => {
+        const { variants: _, ...rest } = prev
+        return rest
+      })
+    }
   }
 
   const goalOptions = [
     { value: '', label: t('experiments.selectGoal') },
     ...goals.map((goal) => ({ value: goal.id, label: goal.name })),
   ]
+
+  const formContent = isLoading ? (
+    <div className='flex h-64 items-center justify-center'>
+      <Spin className='size-8' />
+    </div>
+  ) : (
+    <div className='space-y-6'>
+      {/* Name */}
+      <div>
+        <Input
+          label={t('experiments.name')}
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value)
+            // Clear name error if user types a valid name
+            if (errors.name && e.target.value.trim()) {
+              setErrors((prev) => {
+                const { name: _, ...rest } = prev
+                return rest
+              })
+            }
+          }}
+          placeholder={t('experiments.namePlaceholder')}
+          error={errors.name}
+        />
+      </div>
+
+      {/* Description */}
+      <div>
+        <Input
+          label={t('experiments.descriptionLabel')}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder={t('experiments.descriptionPlaceholder')}
+        />
+      </div>
+
+      {/* Hypothesis */}
+      <div>
+        <Input
+          label={t('experiments.hypothesisLabel')}
+          value={hypothesis}
+          onChange={(e) => setHypothesis(e.target.value)}
+          placeholder={t('experiments.hypothesisPlaceholder')}
+        />
+      </div>
+
+      {/* Goal selector */}
+      <div>
+        <Select
+          label={t('experiments.goal')}
+          items={goalOptions}
+          keyExtractor={(item) => item.value}
+          labelExtractor={(item) => item.label}
+          onSelect={(item) => setGoalId(item.value)}
+          selectedItem={goalOptions.find((g) => g.value === goalId)}
+          title={goalOptions.find((g) => g.value === goalId)?.label || t('experiments.selectGoal')}
+          capitalise
+        />
+        {goalsLoading && (
+          <Text size='xs' colour='muted' className='mt-1'>
+            {t('experiments.loadingGoals')}
+          </Text>
+        )}
+        {!goalsLoading && goals.length === 0 && (
+          <Text size='xs' colour='muted' className='mt-1'>
+            {t('experiments.noGoalsHint')}
+          </Text>
+        )}
+      </div>
+
+      {/* Variants */}
+      <div>
+        <div className='mb-2 flex items-center justify-between'>
+          <Text as='label' size='sm' weight='medium'>
+            {t('experiments.variants')}
+          </Text>
+          <button
+            type='button'
+            onClick={distributeEvenly}
+            className='text-xs text-indigo-600 hover:text-indigo-500 dark:text-indigo-400'
+          >
+            {t('experiments.distributeEvenly')}
+          </button>
+        </div>
+
+        {errors.variants && (
+          <Text size='xs' className='mb-2 text-red-500'>
+            {errors.variants}
+          </Text>
+        )}
+
+        <div className='space-y-3'>
+          {_map(variants, (variant, index) => (
+            <div
+              key={index}
+              className={cx(
+                'flex items-center gap-2 rounded-lg border p-3',
+                variant.isControl
+                  ? 'border-indigo-300 bg-indigo-50 dark:border-indigo-700 dark:bg-indigo-900/20'
+                  : 'border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800',
+              )}
+            >
+              <div className='flex-1'>
+                <Input
+                  placeholder={t('experiments.variantName')}
+                  value={variant.name}
+                  onChange={(e) => handleVariantChange(index, 'name', e.target.value)}
+                  className='mb-1'
+                />
+                <Input
+                  placeholder={t('experiments.variantKey')}
+                  value={variant.key}
+                  onChange={(e) =>
+                    handleVariantChange(index, 'key', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'))
+                  }
+                  className='font-mono text-xs'
+                />
+              </div>
+              <div className='w-20'>
+                <Input
+                  type='number'
+                  min={0}
+                  max={100}
+                  value={variant.rolloutPercentage}
+                  onChange={(e) => handleVariantChange(index, 'rolloutPercentage', parseInt(e.target.value, 10) || 0)}
+                  className='text-center'
+                />
+                <Text size='xs' colour='muted' className='mt-1 text-center'>
+                  %
+                </Text>
+              </div>
+              <div className='flex flex-col items-center gap-1'>
+                <label className='flex items-center gap-1'>
+                  <input
+                    type='radio'
+                    name='controlVariant'
+                    checked={variant.isControl}
+                    onChange={() => handleVariantChange(index, 'isControl', true)}
+                    className='size-4 text-indigo-600'
+                  />
+                  <Text size='xs' colour='muted'>
+                    {t('experiments.control')}
+                  </Text>
+                </label>
+                {variants.length > 2 && (
+                  <button
+                    type='button'
+                    onClick={() => handleRemoveVariant(index)}
+                    className='rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-red-500 dark:hover:bg-slate-700'
+                  >
+                    <Trash2Icon className='size-4' />
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <Button onClick={handleAddVariant} secondary small className='mt-3'>
+          <PlusIcon className='mr-1 size-4' />
+          {t('experiments.addVariant')}
+        </Button>
+
+        {/* Total percentage indicator */}
+        <div className='mt-3 flex items-center justify-between'>
+          <Text size='sm' colour='muted'>
+            {t('experiments.totalPercentage')}
+          </Text>
+          <Text
+            size='sm'
+            weight='semibold'
+            className={cx({
+              'text-green-600 dark:text-green-400': _sum(variants.map((v) => v.rolloutPercentage)) === 100,
+              'text-red-600 dark:text-red-400': _sum(variants.map((v) => v.rolloutPercentage)) !== 100,
+            })}
+          >
+            {_sum(variants.map((v) => v.rolloutPercentage))}%
+          </Text>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <Modal
@@ -244,182 +459,8 @@ const ExperimentSettingsModal = ({
       closeText={t('common.cancel')}
       size='large'
       isLoading={isSaving}
-    >
-      {isLoading ? (
-        <div className='flex h-64 items-center justify-center'>
-          <Spin className='size-8' />
-        </div>
-      ) : (
-        <div className='space-y-6'>
-          {/* Name */}
-          <div>
-            <Input
-              label={t('experiments.name')}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t('experiments.namePlaceholder')}
-              error={errors.name}
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <Input
-              label={t('experiments.descriptionLabel')}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('experiments.descriptionPlaceholder')}
-            />
-          </div>
-
-          {/* Hypothesis */}
-          <div>
-            <Input
-              label={t('experiments.hypothesisLabel')}
-              value={hypothesis}
-              onChange={(e) => setHypothesis(e.target.value)}
-              placeholder={t('experiments.hypothesisPlaceholder')}
-            />
-          </div>
-
-          {/* Goal selector */}
-          <div>
-            <Select
-              label={t('experiments.goal')}
-              items={goalOptions}
-              keyExtractor={(item) => item.value}
-              labelExtractor={(item) => item.label}
-              onSelect={(item) => setGoalId(item.value)}
-              title={goalOptions.find((g) => g.value === goalId)?.label || t('experiments.selectGoal')}
-              capitalise
-            />
-            {goalsLoading && (
-              <Text size='xs' colour='muted' className='mt-1'>
-                {t('experiments.loadingGoals')}
-              </Text>
-            )}
-            {!goalsLoading && goals.length === 0 && (
-              <Text size='xs' colour='muted' className='mt-1'>
-                {t('experiments.noGoalsHint')}
-              </Text>
-            )}
-          </div>
-
-          {/* Variants */}
-          <div>
-            <div className='mb-2 flex items-center justify-between'>
-              <Text as='label' size='sm' weight='medium'>
-                {t('experiments.variants')}
-              </Text>
-              <button
-                type='button'
-                onClick={distributeEvenly}
-                className='text-xs text-indigo-600 hover:text-indigo-500 dark:text-indigo-400'
-              >
-                {t('experiments.distributeEvenly')}
-              </button>
-            </div>
-
-            {errors.variants && (
-              <Text size='xs' className='mb-2 text-red-500'>
-                {errors.variants}
-              </Text>
-            )}
-
-            <div className='space-y-3'>
-              {_map(variants, (variant, index) => (
-                <div
-                  key={index}
-                  className={cx(
-                    'flex items-center gap-2 rounded-lg border p-3',
-                    variant.isControl
-                      ? 'border-indigo-300 bg-indigo-50 dark:border-indigo-700 dark:bg-indigo-900/20'
-                      : 'border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800',
-                  )}
-                >
-                  <div className='flex-1'>
-                    <Input
-                      placeholder={t('experiments.variantName')}
-                      value={variant.name}
-                      onChange={(e) => handleVariantChange(index, 'name', e.target.value)}
-                      className='mb-1'
-                    />
-                    <Input
-                      placeholder={t('experiments.variantKey')}
-                      value={variant.key}
-                      onChange={(e) =>
-                        handleVariantChange(index, 'key', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'))
-                      }
-                      className='font-mono text-xs'
-                    />
-                  </div>
-                  <div className='w-20'>
-                    <Input
-                      type='number'
-                      min={0}
-                      max={100}
-                      value={variant.rolloutPercentage}
-                      onChange={(e) =>
-                        handleVariantChange(index, 'rolloutPercentage', parseInt(e.target.value, 10) || 0)
-                      }
-                      className='text-center'
-                    />
-                    <Text size='xs' colour='muted' className='mt-1 text-center'>
-                      %
-                    </Text>
-                  </div>
-                  <div className='flex flex-col items-center gap-1'>
-                    <label className='flex items-center gap-1'>
-                      <input
-                        type='radio'
-                        name='controlVariant'
-                        checked={variant.isControl}
-                        onChange={() => handleVariantChange(index, 'isControl', true)}
-                        className='size-4 text-indigo-600'
-                      />
-                      <Text size='xs' colour='muted'>
-                        {t('experiments.control')}
-                      </Text>
-                    </label>
-                    {variants.length > 2 && (
-                      <button
-                        type='button'
-                        onClick={() => handleRemoveVariant(index)}
-                        className='rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-red-500 dark:hover:bg-slate-700'
-                      >
-                        <Trash2Icon className='size-4' />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <Button onClick={handleAddVariant} secondary small className='mt-3'>
-              <PlusIcon className='mr-1 size-4' />
-              {t('experiments.addVariant')}
-            </Button>
-
-            {/* Total percentage indicator */}
-            <div className='mt-3 flex items-center justify-between'>
-              <Text size='sm' colour='muted'>
-                {t('experiments.totalPercentage')}
-              </Text>
-              <Text
-                size='sm'
-                weight='semibold'
-                className={cx({
-                  'text-green-600 dark:text-green-400': _sum(variants.map((v) => v.rolloutPercentage)) === 100,
-                  'text-red-600 dark:text-red-400': _sum(variants.map((v) => v.rolloutPercentage)) !== 100,
-                })}
-              >
-                {_sum(variants.map((v) => v.rolloutPercentage))}%
-              </Text>
-            </div>
-          </div>
-        </div>
-      )}
-    </Modal>
+      message={formContent}
+    />
   )
 }
 
