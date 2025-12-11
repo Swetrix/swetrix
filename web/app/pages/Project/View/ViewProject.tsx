@@ -35,7 +35,6 @@ import {
   ChartColumnIcon,
   ChartLineIcon,
   EyeIcon,
-  PercentIcon,
   KeyboardIcon,
   TargetIcon,
   PuzzleIcon,
@@ -62,16 +61,13 @@ import { toast } from 'sonner'
 import {
   getProjectData,
   getOverallStats,
-  getPerfData,
   getProjectDataCustomEvents,
   getTrafficCompareData,
-  getPerformanceCompareData,
   getCustomEventsMetadata,
   addFunnel,
   updateFunnel,
   deleteFunnel,
   getFunnelData,
-  getPerformanceOverallStats,
   getPropertyMetadata,
   getProjectViews,
   deleteProjectView,
@@ -101,7 +97,6 @@ import {
   TimeFormat,
   chartTypes,
   TRAFFIC_PANELS_ORDER,
-  PERFORMANCE_PANELS_ORDER,
   isSelfhosted,
   tbPeriodPairsCompare,
   PERIOD_PAIRS_COMPARE,
@@ -125,7 +120,6 @@ import {
   Funnel,
   AnalyticsFunnel,
   OverallObject,
-  OverallPerformanceObject,
   Session,
   Annotation,
   Profile,
@@ -146,13 +140,7 @@ import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 import { periodToCompareDate } from '~/utils/compareConvertDate'
-import {
-  getTimeFromSeconds,
-  getStringFromTime,
-  getLocaleDisplayName,
-  nLocaleFormatter,
-  removeDuplicates,
-} from '~/utils/generic'
+import { getLocaleDisplayName, nLocaleFormatter, removeDuplicates } from '~/utils/generic'
 import { getItem, setItem } from '~/utils/localstorage'
 import { groupRefEntries } from '~/utils/referrers'
 import routes from '~/utils/routes'
@@ -163,6 +151,7 @@ import AskAIView from '../AskAI'
 import ErrorsView from '../Errors/View/ErrorsView'
 import FeatureFlagsView from '../FeatureFlags/View'
 import GoalsView from '../Goals/View'
+import PerformanceView from '../Performance/View/PerformanceView'
 import SessionsView from '../Sessions/View/SessionsView'
 
 import AddAViewModal from './components/AddAViewModal'
@@ -179,9 +168,8 @@ const InteractiveMap = lazy(() => import('./components/InteractiveMap'))
 // Keywords list now reuses shared Panel UI; dedicated component removed from render
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import LockedDashboard from './components/LockedDashboard'
-import { MetricCard, MetricCards, PerformanceMetricCards } from './components/MetricCards'
+import { MetricCard, MetricCards } from './components/MetricCards'
 import NoEvents from './components/NoEvents'
-import { PerformanceChart } from './components/PerformanceChart'
 import ProjectSidebar from './components/ProjectSidebar'
 import { RefreshStatsButton } from './components/RefreshStatsButton'
 import RefRow from './components/RefRow'
@@ -211,12 +199,10 @@ import {
   typeNameMapping,
   noRegionPeriods,
   CHART_METRICS_MAPPING,
-  CHART_METRICS_MAPPING_PERF,
   SHORTCUTS_TABS_LISTENERS,
   SHORTCUTS_TABS_MAP,
   SHORTCUTS_GENERAL_LISTENERS,
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
-  CHART_MEASURES_MAPPING_PERF,
   getDeviceRowMapper,
 } from './ViewProject.helpers'
 
@@ -393,6 +379,7 @@ interface ViewProjectContextType {
   goalsRefreshTrigger: number
   featureFlagsRefreshTrigger: number
   sessionsRefreshTrigger: number
+  performanceRefreshTrigger: number
 
   // Functions
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
@@ -420,6 +407,7 @@ const defaultViewProjectContext: ViewProjectContextType = {
   goalsRefreshTrigger: 0,
   featureFlagsRefreshTrigger: 0,
   sessionsRefreshTrigger: 0,
+  performanceRefreshTrigger: 0,
   updatePeriod: () => {},
   updateTimebucket: (_newTimebucket) => {},
   refCalendar: { current: null } as any,
@@ -519,7 +507,6 @@ const ViewProjectContent = () => {
     { label: string; onClick: (data: typeof panelsData, tFunction: typeof t) => void }[]
   >([])
   const [overall, setOverall] = useState<Partial<OverallObject>>({})
-  const [overallPerformance, setOverallPerformance] = useState<Partial<OverallPerformanceObject>>({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
   const [isAddAViewOpened, setIsAddAViewOpened] = useState(false)
@@ -534,6 +521,7 @@ const ViewProjectContent = () => {
   const [goalsRefreshTrigger, setGoalsRefreshTrigger] = useState(0)
   const [featureFlagsRefreshTrigger, setFeatureFlagsRefreshTrigger] = useState(0)
   const [sessionsRefreshTrigger, setSessionsRefreshTrigger] = useState(0)
+  const [performanceRefreshTrigger, setPerformanceRefreshTrigger] = useState(0)
   const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
@@ -545,8 +533,6 @@ const ViewProjectContent = () => {
     [CHART_METRICS_MAPPING.customEvents]: false,
     ...(preferences.metricsVisualisation || {}),
   })
-  const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState(CHART_METRICS_MAPPING_PERF.timing)
-  const [activePerfMeasure, setActivePerfMeasure] = useState(CHART_MEASURES_MAPPING_PERF.median)
   const checkIfAllMetricsAreDisabled = useMemo(
     () => !_some({ ...activeChartMetrics, ...activeChartMetricsCustomEvents }, (value) => value),
     [activeChartMetrics, activeChartMetricsCustomEvents],
@@ -1027,16 +1013,6 @@ const ViewProjectContent = () => {
     metadata: 'ce',
   })
 
-  const [performanceActiveTabs, setPerformanceActiveTabs] = useState<{
-    location: 'cc' | 'rg' | 'ct' | 'map'
-    page: 'pg' | 'host'
-    device: 'br' | 'os' | 'dv'
-  }>({
-    location: 'cc',
-    page: 'pg',
-    device: 'br',
-  })
-
   const setPanelTab = (
     panel: keyof typeof panelsActiveTabs,
     tab: (typeof panelsActiveTabs)[keyof typeof panelsActiveTabs],
@@ -1066,10 +1042,6 @@ const ViewProjectContent = () => {
 
     return `?${filterParams.toString()}`
   }
-
-  const [chartDataPerf, setChartDataPerf] = useState<any>({})
-  const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
-  const [panelsDataPerf, setPanelsDataPerf] = useState<any>({})
 
   // GSC Keywords state
   type KeywordEntry = Entry & { impressions: number; position: number; ctr: number }
@@ -1105,8 +1077,6 @@ const ViewProjectContent = () => {
   )
   const [dataChartCompare, setDataChartCompare] = useState<any>({})
   const [overallCompare, setOverallCompare] = useState<Partial<OverallObject>>({})
-  const [overallPerformanceCompare, setOverallPerformanceCompare] = useState<Partial<OverallPerformanceObject>>({})
-  const [dataChartPerfCompare, setDataChartPerfCompare] = useState<any>({})
   const maxRangeCompare = useMemo(() => {
     if (!isActiveCompare) {
       return 0
@@ -1122,8 +1092,8 @@ const ViewProjectContent = () => {
   }, [isActiveCompare, period, dateRange, periodPairs])
 
   const createVersionDataMapping = useMemo(() => {
-    const browserDataSource = activeTab === PROJECT_TABS.performance ? panelsDataPerf.data?.brv : panelsData.data?.brv
-    const osDataSource = activeTab === PROJECT_TABS.performance ? panelsDataPerf.data?.osv : panelsData.data?.osv
+    const browserDataSource = panelsData.data?.brv
+    const osDataSource = panelsData.data?.osv
 
     const browserVersions: { [key: string]: Entry[] } = {}
     const osVersions: { [key: string]: Entry[] } = {}
@@ -1149,7 +1119,7 @@ const ViewProjectContent = () => {
     }
 
     return { browserVersions, osVersions }
-  }, [panelsData.data?.brv, panelsData.data?.osv, activeTab, panelsDataPerf.data?.brv, panelsDataPerf.data?.osv])
+  }, [panelsData.data?.brv, panelsData.data?.osv])
 
   useEffect(() => {
     if (!project) {
@@ -1255,66 +1225,6 @@ const ViewProjectContent = () => {
     ]
   }, [t, activeChartMetrics])
 
-  const chartMetricsPerf = useMemo(() => {
-    return [
-      {
-        id: CHART_METRICS_MAPPING_PERF.quantiles,
-        label: t('dashboard.allocation'),
-        active: activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.quantiles,
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.full,
-        label: t('dashboard.timingFull'),
-        active: activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.full,
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.timing,
-        label: t('dashboard.timing'),
-        active: activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.timing,
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.network,
-        label: t('dashboard.network'),
-        active: activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.network,
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.frontend,
-        label: t('dashboard.frontend'),
-        active: activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.frontend,
-      },
-      {
-        id: CHART_METRICS_MAPPING_PERF.backend,
-        label: t('dashboard.backend'),
-        active: activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.backend,
-      },
-    ]
-  }, [t, activeChartMetricsPerf])
-
-  const chartMeasuresPerf = useMemo(() => {
-    return [
-      {
-        id: CHART_MEASURES_MAPPING_PERF.p95,
-        label: t('dashboard.xPercentile', { x: 95 }),
-        active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.p95,
-      },
-      {
-        id: CHART_MEASURES_MAPPING_PERF.p75,
-        label: t('dashboard.xPercentile', { x: 75 }),
-        active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.p75,
-      },
-      {
-        id: CHART_MEASURES_MAPPING_PERF.median,
-        label: t('dashboard.median'),
-        active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.median,
-      },
-      {
-        id: CHART_MEASURES_MAPPING_PERF.average,
-        label: t('dashboard.average'),
-        active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.average,
-      },
-    ]
-  }, [t, activePerfMeasure])
-
   const chartMetricsCustomEvents = useMemo(() => {
     if (!_isEmpty(panelsData.customs)) {
       return _map(_keys(panelsData.customs), (key) => ({
@@ -1349,26 +1259,6 @@ const ViewProjectContent = () => {
       ...dataNamesCustomEvents,
     }),
     [t, dataNamesCustomEvents],
-  )
-
-  const dataNamesPerf = useMemo(
-    () => ({
-      full: t('dashboard.timing'),
-      network: t('dashboard.network'),
-      frontend: t('dashboard.frontend'),
-      backend: t('dashboard.backend'),
-      dns: t('dashboard.dns'),
-      tls: t('dashboard.tls'),
-      conn: t('dashboard.conn'),
-      response: t('dashboard.response'),
-      render: t('dashboard.render'),
-      dom_load: t('dashboard.domLoad'),
-      ttfb: t('dashboard.ttfb'),
-      p50: t('dashboard.xPercentile', { x: 50 }),
-      p75: t('dashboard.xPercentile', { x: 75 }),
-      p95: t('dashboard.xPercentile', { x: 95 }),
-    }),
-    [t],
   )
 
   // @ts-expect-error
@@ -1557,8 +1447,6 @@ const ViewProjectContent = () => {
     setDateRangeCompare(null)
     setDataChartCompare({})
     setOverallCompare({})
-    setOverallPerformanceCompare({})
-    setDataChartPerfCompare({})
     setActivePeriodCompare(periodPairsCompare[0].period)
   }
 
@@ -1994,156 +1882,6 @@ const ViewProjectContent = () => {
     }
   }
 
-  const loadAnalyticsPerf = async () => {
-    setDataLoading(true)
-
-    try {
-      let dataPerf: { timeBucket?: TimeBucket[]; params?: any; chart?: any }
-      let from
-      let to
-      let dataCompare
-      let fromCompare: string | undefined
-      let toCompare: string | undefined
-      let rawOverall: any
-
-      const measure =
-        activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.quantiles
-          ? CHART_METRICS_MAPPING_PERF.quantiles
-          : activePerfMeasure
-
-      if (isActiveCompare) {
-        if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
-          let start
-          let end
-          let diff
-          const startCompare = dayjs.utc(dateRangeCompare[0])
-          const endCompare = dayjs.utc(dateRangeCompare[1])
-          const diffCompare = endCompare.diff(startCompare, 'day')
-
-          if (activePeriod?.period === 'custom' && dateRange) {
-            start = dayjs.utc(dateRange[0])
-            end = dayjs.utc(dateRange[1])
-            diff = end.diff(start, 'day')
-          }
-
-          // @ts-expect-error
-          if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
-            fromCompare = getFormatDate(dateRangeCompare[0])
-            toCompare = getFormatDate(dateRangeCompare[1])
-          } else {
-            toast.error(t('project.compareDateRangeError'))
-            compareDisable()
-          }
-        } else {
-          let date
-          if (dateRange) {
-            date = _find(periodToCompareDate, (item) => item.period === period)?.formula(dateRange)
-          } else {
-            date = _find(periodToCompareDate, (item) => item.period === period)?.formula()
-          }
-
-          if (date) {
-            fromCompare = date.from
-            toCompare = date.to
-          }
-        }
-
-        if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          dataCompare = await getPerformanceCompareData(
-            id,
-            timeBucket,
-            '',
-            filters,
-            fromCompare,
-            toCompare,
-            timezone,
-            measure,
-            projectPassword,
-          )
-          const compareOverall = await getPerformanceOverallStats(
-            [id],
-            'custom',
-            fromCompare,
-            toCompare,
-            timezone,
-            filters,
-            measure,
-            projectPassword,
-          )
-          dataCompare.overall = compareOverall[id]
-        }
-      }
-
-      if (dateRange) {
-        from = getFormatDate(dateRange[0])
-        to = getFormatDate(dateRange[1])
-      }
-
-      if (period === 'custom' && dateRange) {
-        dataPerf = await getPerfData(id, timeBucket, '', filters, from, to, timezone, measure, projectPassword)
-        rawOverall = await getOverallStats([id], timeBucket, period, from, to, timezone, filters, projectPassword)
-      } else {
-        dataPerf = await getPerfData(id, timeBucket, period, filters, '', '', timezone, measure, projectPassword)
-        rawOverall = await getPerformanceOverallStats([id], period, '', '', timezone, filters, measure, projectPassword)
-      }
-
-      // @ts-expect-error
-      dataPerf.overall = rawOverall[id]
-
-      setOverallPerformance(rawOverall[id])
-
-      if (_keys(dataPerf).length < 2) {
-        setIsPanelsDataEmptyPerf(true)
-        setDataLoading(false)
-        setAnalyticsLoading(false)
-        return
-      }
-
-      let newTimebucket = timeBucket
-
-      if (period === 'all' && !_isEmpty(dataPerf.timeBucket)) {
-        newTimebucket = _includes(dataPerf.timeBucket, timeBucket)
-          ? timeBucket
-          : (dataPerf.timeBucket?.[0] as TimeBucket)
-        const newSearchParams = new URLSearchParams(searchParams.toString())
-        newSearchParams.set('timeBucket', newTimebucket)
-        setSearchParams(newSearchParams)
-      }
-
-      if (!_isEmpty(dataCompare)) {
-        if (!_isEmpty(dataCompare?.chart)) {
-          setDataChartPerfCompare(dataCompare.chart)
-        }
-
-        if (!_isEmpty(dataCompare?.overall)) {
-          setOverallPerformanceCompare(dataCompare.overall)
-        }
-      }
-
-      if (_isEmpty(dataPerf.params)) {
-        setIsPanelsDataEmptyPerf(true)
-      } else {
-        const { chart: chartPerf } = dataPerf
-        setChartDataPerf(chartPerf)
-
-        setPanelsDataPerf({
-          types: _keys(dataPerf.params),
-          data: dataPerf.params,
-        })
-
-        setIsPanelsDataEmptyPerf(false)
-      }
-
-      setAnalyticsLoading(false)
-      setDataLoading(false)
-    } catch (reason) {
-      setAnalyticsLoading(false)
-      setDataLoading(false)
-      setIsPanelsDataEmptyPerf(true)
-      console.error('[ERROR](loadAnalytics) Loading analytics data failed:', reason)
-    }
-  }
-
   const loadFunnelsData = async () => {
     if (!activeFunnel?.id) {
       return
@@ -2245,11 +1983,6 @@ const ViewProjectContent = () => {
       }
 
       if (!authLoading && !dataLoading) {
-        if (activeTab === PROJECT_TABS.performance) {
-          loadAnalyticsPerf()
-          return
-        }
-
         if (activeTab === PROJECT_TABS.funnels) {
           loadFunnelsData()
           return
@@ -2286,6 +2019,11 @@ const ViewProjectContent = () => {
           return
         }
 
+        if (activeTab === PROJECT_TABS.performance) {
+          setPerformanceRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
         loadAnalytics()
       }
     },
@@ -2318,24 +2056,6 @@ const ViewProjectContent = () => {
     loadCustomEvents()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChartMetricsCustomEvents, activeTab, authLoading, project])
-
-  useEffect(() => {
-    if (activeTab !== PROJECT_TABS.performance || authLoading || !project) return
-
-    loadAnalyticsPerf()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeTab,
-    activePerfMeasure,
-    activeChartMetricsPerf,
-    filters,
-    authLoading,
-    project,
-    isActiveCompare,
-    dateRange,
-    period,
-    timeBucket,
-  ])
 
   // Load GSC Keywords when the traffic sources panel switches to 'keywords'
   useEffect(() => {
@@ -2697,9 +2417,6 @@ const ViewProjectContent = () => {
     {
       label: t('project.asCSV'),
       onClick: () => {
-        if (activeTab === PROJECT_TABS.performance) {
-          return onCSVExportClick(panelsDataPerf, id, tnMapping, language)
-        }
         return onCSVExportClick(panelsData, id, tnMapping, language)
       },
     },
@@ -2941,6 +2658,7 @@ const ViewProjectContent = () => {
             goalsRefreshTrigger,
             featureFlagsRefreshTrigger,
             sessionsRefreshTrigger,
+            performanceRefreshTrigger,
 
             // Functions
             updatePeriod,
@@ -3139,7 +2857,7 @@ const ViewProjectContent = () => {
                                     headless
                                   />
                                 ) : null}
-                                {_includes([PROJECT_TABS.traffic, PROJECT_TABS.performance], activeTab) ? (
+                                {activeTab === PROJECT_TABS.traffic ? (
                                   <Dropdown
                                     header={t('project.exportData')}
                                     items={_filter(
@@ -3449,14 +3167,8 @@ const ViewProjectContent = () => {
                     ) : null}
                     {activeTab === PROJECT_TABS.ai ? <AskAIView projectId={id} /> : null}
                     {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
-                    {analyticsLoading &&
-                    (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) ? (
-                      <Loader />
-                    ) : null}
+                    {analyticsLoading && activeTab === PROJECT_TABS.traffic ? <Loader /> : null}
                     {isPanelsDataEmpty && activeTab === PROJECT_TABS.traffic ? <NoEvents filters={filters} /> : null}
-                    {isPanelsDataEmptyPerf && activeTab === PROJECT_TABS.performance ? (
-                      <NoEvents filters={filters} />
-                    ) : null}
                     {activeTab === PROJECT_TABS.traffic ? (
                       <div className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}>
                         <div className='relative overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
@@ -3916,259 +3628,22 @@ const ViewProjectContent = () => {
                       </div>
                     ) : null}
                     {activeTab === PROJECT_TABS.performance ? (
-                      <div className={cx('pt-2', { hidden: isPanelsDataEmptyPerf || analyticsLoading })}>
-                        <div className='relative overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
-                          <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
-                            <Dropdown
-                              items={chartMetricsPerf}
-                              className='xs:min-w-0'
-                              header={t('main.metric')}
-                              title={[
-                                <EyeIcon key='eye-icon' aria-label={t('project.metricVis')} className='h-5 w-5' />,
-                              ]}
-                              labelExtractor={(pair) => pair.label}
-                              keyExtractor={(pair) => pair.id}
-                              onSelect={({ id: pairID }) => {
-                                setActiveChartMetricsPerf(pairID)
-                              }}
-                              buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-                              chevron='mini'
-                              headless
-                            />
-                            <Dropdown
-                              disabled={activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.quantiles}
-                              items={chartMeasuresPerf}
-                              className='xs:min-w-0'
-                              header={t('project.aggregation')}
-                              title={[
-                                <PercentIcon
-                                  key='percent-icon'
-                                  aria-label={t('project.aggregation')}
-                                  className='h-5 w-5'
-                                />,
-                              ]}
-                              labelExtractor={(pair) => pair.label}
-                              keyExtractor={(pair) => pair.id}
-                              onSelect={({ id: pairID }) => {
-                                setActivePerfMeasure(pairID)
-                              }}
-                              buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-                              chevron='mini'
-                              headless
-                            />
-                            <ChartTypeSwitcher onSwitch={setChartTypeOnClick} type={chartType} />
-                          </div>
-
-                          {!_isEmpty(overallPerformance) ? (
-                            <PerformanceMetricCards
-                              overall={overallPerformance}
-                              overallCompare={overallPerformanceCompare}
-                              activePeriodCompare={activePeriodCompare}
-                            />
-                          ) : null}
-                          {!checkIfAllMetricsAreDisabled && !_isEmpty(chartDataPerf) ? (
-                            <div
-                              onContextMenu={(e) => handleChartContextMenu(e, chartDataPerf?.x)}
-                              className='relative'
-                            >
-                              <PerformanceChart
-                                chart={chartDataPerf}
-                                timeBucket={timeBucket}
-                                activeChartMetrics={activeChartMetricsPerf}
-                                rotateXAxis={rotateXAxis}
-                                chartType={chartType}
-                                timeFormat={timeFormat}
-                                compareChart={dataChartPerfCompare}
-                                onZoom={onMainChartZoom}
-                                enableZoom={shouldEnableZoom}
-                                dataNames={dataNamesPerf}
-                                className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible'
-                                annotations={annotations}
-                              />
-                            </div>
-                          ) : null}
-                        </div>
-                        {!isPanelsDataEmptyPerf ? <Filters tnMapping={tnMapping} /> : null}
-                        <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
-                          {!_isEmpty(panelsDataPerf.types)
-                            ? _map(PERFORMANCE_PANELS_ORDER, (type: keyof typeof tnMapping) => {
-                                if (type === 'location') {
-                                  const locationTabs = [
-                                    { id: 'cc', label: t('project.mapping.cc') },
-                                    { id: 'rg', label: t('project.mapping.rg') },
-                                    { id: 'ct', label: t('project.mapping.ct') },
-                                    { id: 'map', label: 'Map' },
-                                  ]
-
-                                  const rowMapper = (entry: CountryEntry) => {
-                                    const { name: entryName, cc } = entry
-
-                                    if (cc !== undefined) {
-                                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
-                                    }
-
-                                    return <CCRow cc={entryName} language={language} />
-                                  }
-
-                                  return (
-                                    <Panel
-                                      key={performanceActiveTabs.location}
-                                      icon={panelIconMapping.cc}
-                                      id={performanceActiveTabs.location}
-                                      getFilterLink={getFilterLink}
-                                      name={t('project.location')}
-                                      tabs={locationTabs}
-                                      onTabChange={(tab) =>
-                                        setPerformanceActiveTabs({
-                                          ...performanceActiveTabs,
-                                          location: tab as 'cc' | 'rg' | 'ct' | 'map',
-                                        })
-                                      }
-                                      activeTabId={performanceActiveTabs.location}
-                                      data={panelsDataPerf.data[performanceActiveTabs.location]}
-                                      rowMapper={rowMapper}
-                                      // @ts-expect-error
-                                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                                      customRenderer={
-                                        performanceActiveTabs.location === 'map'
-                                          ? () => {
-                                              const countryData = panelsDataPerf.data?.cc || []
-                                              const regionData = panelsDataPerf.data?.rg || []
-                                              // @ts-expect-error
-                                              const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
-
-                                              return (
-                                                <Suspense
-                                                  fallback={
-                                                    <div className='flex h-full items-center justify-center'>
-                                                      <div className='flex flex-col items-center gap-2'>
-                                                        <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
-                                                        <span className='text-sm text-neutral-600 dark:text-neutral-300'>
-                                                          Loading map...
-                                                        </span>
-                                                      </div>
-                                                    </div>
-                                                  }
-                                                >
-                                                  <InteractiveMap
-                                                    data={countryData}
-                                                    regionData={regionData}
-                                                    total={total}
-                                                    onClick={(type, key) => {
-                                                      const link = getFilterLink(type, key)
-                                                      navigate(link)
-                                                    }}
-                                                  />
-                                                </Suspense>
-                                              )
-                                            }
-                                          : undefined
-                                      }
-                                      valuesHeaderName={t('project.loadTime')}
-                                      highlightColour='orange'
-                                    />
-                                  )
-                                }
-
-                                if (type === 'devices') {
-                                  const deviceTabs = [
-                                    { id: 'br', label: t('project.mapping.br') },
-                                    { id: 'dv', label: t('project.mapping.dv') },
-                                  ]
-
-                                  return (
-                                    <Panel
-                                      key={performanceActiveTabs.device}
-                                      icon={panelIconMapping.os}
-                                      id={performanceActiveTabs.device}
-                                      getFilterLink={getFilterLink}
-                                      name={t('project.devices')}
-                                      tabs={deviceTabs}
-                                      onTabChange={(tab) =>
-                                        setPerformanceActiveTabs({
-                                          ...performanceActiveTabs,
-                                          device: tab as 'br' | 'dv',
-                                        })
-                                      }
-                                      activeTabId={performanceActiveTabs.device}
-                                      data={panelsDataPerf.data[performanceActiveTabs.device]}
-                                      rowMapper={getDeviceRowMapper(performanceActiveTabs.device, theme, t)}
-                                      capitalize={performanceActiveTabs.device === 'dv'}
-                                      // @ts-expect-error
-                                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                                      versionData={
-                                        performanceActiveTabs.device === 'br'
-                                          ? createVersionDataMapping.browserVersions
-                                          : undefined
-                                      }
-                                      getVersionFilterLink={(parent, version) =>
-                                        getVersionFilterLink(parent, version, 'br')
-                                      }
-                                      valuesHeaderName={t('project.loadTime')}
-                                      highlightColour='orange'
-                                    />
-                                  )
-                                }
-
-                                if (type === 'pg') {
-                                  const pageTabs = [
-                                    { id: 'pg', label: t('project.mapping.pg') },
-                                    {
-                                      id: 'host',
-                                      label: t('project.mapping.host'),
-                                    },
-                                  ]
-
-                                  return (
-                                    <Panel
-                                      key={performanceActiveTabs.page}
-                                      icon={panelIconMapping.pg}
-                                      id={performanceActiveTabs.page}
-                                      getFilterLink={getFilterLink}
-                                      rowMapper={({ name: entryName }) => {
-                                        if (!entryName) {
-                                          return (
-                                            <span className='italic'>
-                                              {panelsActiveTabs.page === 'pg'
-                                                ? t('common.notSet')
-                                                : t('project.unknownHost')}
-                                            </span>
-                                          )
-                                        }
-
-                                        let decodedUri = entryName as string
-
-                                        try {
-                                          decodedUri = decodeURIComponent(entryName)
-                                        } catch {
-                                          // do nothing
-                                        }
-
-                                        return decodedUri
-                                      }}
-                                      name={t('project.pages')}
-                                      tabs={pageTabs}
-                                      onTabChange={(tab) =>
-                                        setPerformanceActiveTabs({
-                                          ...performanceActiveTabs,
-                                          page: tab as 'pg' | 'host',
-                                        })
-                                      }
-                                      activeTabId={performanceActiveTabs.page}
-                                      data={panelsDataPerf.data[performanceActiveTabs.page]}
-                                      // @ts-expect-error
-                                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                                      valuesHeaderName={t('project.loadTime')}
-                                      highlightColour='orange'
-                                    />
-                                  )
-                                }
-
-                                return null
-                              })
-                            : null}
-                        </div>
-                      </div>
+                      <PerformanceView
+                        tnMapping={tnMapping}
+                        chartType={chartType}
+                        rotateXAxis={rotateXAxis}
+                        isActiveCompare={isActiveCompare}
+                        dateRangeCompare={dateRangeCompare}
+                        activePeriodCompare={activePeriodCompare}
+                        compareDisable={compareDisable}
+                        annotations={annotations}
+                        onChartContextMenu={handleChartContextMenu}
+                        getFilterLink={getFilterLink}
+                        getVersionFilterLink={getVersionFilterLink}
+                        onMainChartZoom={onMainChartZoom}
+                        shouldEnableZoom={shouldEnableZoom}
+                        setChartTypeOnClick={setChartTypeOnClick}
+                      />
                     ) : null}
                     {activeTab === PROJECT_TABS.funnels ? (
                       <div
