@@ -319,7 +319,9 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
 
   return (
     <div className='rounded-lg border border-gray-200 bg-white p-3 dark:border-slate-600 dark:bg-slate-800'>
-      {chart.title ? <h4 className='mb-2 text-sm font-medium text-gray-700 dark:text-gray-300'>{chart.title}</h4> : null}
+      {chart.title ? (
+        <h4 className='mb-2 text-sm font-medium text-gray-700 dark:text-gray-300'>{chart.title}</h4>
+      ) : null}
       <div className={isPieDonut ? 'h-[280px] w-full' : 'h-[200px] w-full'}>
         <BillboardChart options={chartOptions} className='h-full w-full' />
       </div>

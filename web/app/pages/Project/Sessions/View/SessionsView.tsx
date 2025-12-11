@@ -15,7 +15,7 @@ import { SessionDetailView } from '~/pages/Project/View/components/SessionDetail
 import { Sessions } from '~/pages/Project/View/components/Sessions'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
-import { useCurrentProject , useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import Spin from '~/ui/icons/Spin'
 import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
