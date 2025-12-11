@@ -62,6 +62,10 @@ export class FeatureFlag {
   project: Project
 
   @ApiProperty()
+  @Column('varchar', { length: 36, nullable: true })
+  experimentId: string | null
+
+  @ApiProperty()
   @CreateDateColumn()
   created: Date
 }

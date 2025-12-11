@@ -26,6 +26,7 @@ import {
   PuzzleIcon,
   SparklesIcon,
   FlagIcon,
+  FlaskConicalIcon,
 } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext, lazy } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
@@ -82,6 +83,7 @@ import { useCurrentProject, useProjectPassword } from '../../../providers/Curren
 import ProjectAlertsView from '../Alerts/View'
 import AskAIView from '../AskAI'
 import ErrorsView from '../Errors/View/ErrorsView'
+import ExperimentsView from '../Experiments/View'
 import FeatureFlagsView from '../FeatureFlags/View'
 import FunnelsView from '../Funnels/View'
 import GoalsView from '../Goals/View'
@@ -139,6 +141,7 @@ interface ViewProjectContextType {
   customPanelTabs: CustomTab[]
   captchaRefreshTrigger: number
   goalsRefreshTrigger: number
+  experimentsRefreshTrigger: number
   featureFlagsRefreshTrigger: number
   sessionsRefreshTrigger: number
   performanceRefreshTrigger: number
@@ -192,6 +195,7 @@ const defaultViewProjectContext: ViewProjectContextType = {
   customPanelTabs: [],
   captchaRefreshTrigger: 0,
   goalsRefreshTrigger: 0,
+  experimentsRefreshTrigger: 0,
   featureFlagsRefreshTrigger: 0,
   sessionsRefreshTrigger: 0,
   performanceRefreshTrigger: 0,
@@ -288,6 +292,7 @@ const ViewProjectContent = () => {
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false)
   const [captchaRefreshTrigger, setCaptchaRefreshTrigger] = useState(0)
   const [goalsRefreshTrigger, setGoalsRefreshTrigger] = useState(0)
+  const [experimentsRefreshTrigger, setExperimentsRefreshTrigger] = useState(0)
   const [featureFlagsRefreshTrigger, setFeatureFlagsRefreshTrigger] = useState(0)
   const [sessionsRefreshTrigger, setSessionsRefreshTrigger] = useState(0)
   const [performanceRefreshTrigger, setPerformanceRefreshTrigger] = useState(0)
@@ -599,6 +604,11 @@ const ViewProjectContent = () => {
         icon: TargetIcon,
       },
       {
+        id: PROJECT_TABS.experiments,
+        label: t('dashboard.experiments'),
+        icon: FlaskConicalIcon,
+      },
+      {
         id: PROJECT_TABS.featureFlags,
         label: t('dashboard.featureFlags'),
         icon: FlagIcon,
@@ -714,6 +724,11 @@ const ViewProjectContent = () => {
 
         if (activeTab === PROJECT_TABS.goals) {
           setGoalsRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
+        if (activeTab === PROJECT_TABS.experiments) {
+          setExperimentsRefreshTrigger((prev) => prev + 1)
           return
         }
 
@@ -1234,6 +1249,7 @@ const ViewProjectContent = () => {
             customPanelTabs,
             captchaRefreshTrigger,
             goalsRefreshTrigger,
+            experimentsRefreshTrigger,
             featureFlagsRefreshTrigger,
             sessionsRefreshTrigger,
             performanceRefreshTrigger,
@@ -1383,6 +1399,14 @@ const ViewProjectContent = () => {
                     ) : null}
                     {activeTab === PROJECT_TABS.goals ? (
                       <GoalsView
+                        period={period}
+                        from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                        to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                        timezone={timezone}
+                      />
+                    ) : null}
+                    {activeTab === PROJECT_TABS.experiments ? (
+                      <ExperimentsView
                         period={period}
                         from={dateRange ? getFormatDate(dateRange[0]) : ''}
                         to={dateRange ? getFormatDate(dateRange[1]) : ''}

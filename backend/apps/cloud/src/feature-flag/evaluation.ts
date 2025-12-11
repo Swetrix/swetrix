@@ -169,3 +169,54 @@ export function isInRolloutPercentage(
 
   return normalizedValue < percentage
 }
+
+/**
+ * Experiment variant interface
+ */
+export interface ExperimentVariant {
+  key: string
+  rolloutPercentage: number
+}
+
+/**
+ * Determines which experiment variant a user should see
+ * Uses consistent hashing to ensure the same user always sees the same variant
+ *
+ * @param experimentId - The experiment ID
+ * @param variants - Array of variants with their rollout percentages
+ * @param profileId - The user's profile ID
+ * @returns The key of the variant the user should see, or null if no match
+ */
+export function getExperimentVariant(
+  experimentId: string,
+  variants: ExperimentVariant[],
+  profileId: string,
+): string | null {
+  if (variants.length === 0) {
+    return null
+  }
+
+  // Create a consistent hash based on experiment ID and profile ID
+  const hash = crypto
+    .createHash('sha256')
+    .update(`experiment:${experimentId}:${profileId}`)
+    .digest('hex')
+
+  // Convert first 8 hex characters to a number (0 to 2^32-1)
+  const hashValue = parseInt(hash.substring(0, 8), 16)
+
+  // Normalize to 0-100 range
+  const normalizedValue = (hashValue / 0xffffffff) * 100
+
+  // Assign to variant based on cumulative percentages
+  let cumulativePercentage = 0
+  for (const variant of variants) {
+    cumulativePercentage += variant.rolloutPercentage
+    if (normalizedValue < cumulativePercentage) {
+      return variant.key
+    }
+  }
+
+  // Fallback to last variant (shouldn't happen if percentages sum to 100)
+  return variants[variants.length - 1].key
+}

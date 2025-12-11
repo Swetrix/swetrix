@@ -1496,6 +1496,159 @@ export const getFeatureFlagProfiles = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+// Experiments (A/B Testing) API
+
+export type ExperimentStatus = 'draft' | 'running' | 'paused' | 'completed'
+
+export interface ExperimentVariant {
+  id?: string
+  name: string
+  key: string
+  rolloutPercentage: number
+  isControl: boolean
+}
+
+export interface Experiment {
+  id: string
+  name: string
+  description: string | null
+  hypothesis: string | null
+  status: ExperimentStatus
+  startedAt: string | null
+  endedAt: string | null
+  pid: string
+  goalId: string | null
+  featureFlagId: string | null
+  variants: ExperimentVariant[]
+  created: string
+}
+
+export interface ExperimentVariantResult {
+  key: string
+  name: string
+  isControl: boolean
+  exposures: number
+  conversions: number
+  conversionRate: number
+  probabilityOfBeingBest: number
+  improvement: number
+}
+
+export interface ExperimentResults {
+  experimentId: string
+  status: ExperimentStatus
+  variants: ExperimentVariantResult[]
+  totalExposures: number
+  totalConversions: number
+  hasWinner: boolean
+  winnerKey: string | null
+  confidenceLevel: number
+}
+
+export interface CreateExperiment {
+  pid: string
+  name: string
+  description?: string
+  hypothesis?: string
+  goalId?: string
+  variants: ExperimentVariant[]
+}
+
+export const DEFAULT_EXPERIMENTS_TAKE = 20
+
+export const getProjectExperiments = (projectId: string, take: number = DEFAULT_EXPERIMENTS_TAKE, skip = 0) => {
+  const params = new URLSearchParams({
+    take: String(take),
+    skip: String(skip),
+  })
+
+  return api
+    .get(`/experiment/project/${projectId}?${params.toString()}`)
+    .then(
+      (
+        response,
+      ): {
+        results: Experiment[]
+        total: number
+      } => response.data,
+    )
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+}
+
+export const getExperiment = (experimentId: string) =>
+  api
+    .get(`/experiment/${experimentId}`)
+    .then((response): Experiment => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const createExperiment = (data: CreateExperiment) =>
+  api
+    .post('experiment', data)
+    .then((response): Experiment => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const updateExperiment = (id: string, data: Partial<CreateExperiment>) =>
+  api
+    .put(`experiment/${id}`, data)
+    .then((response): Experiment => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const deleteExperiment = (id: string) =>
+  api
+    .delete(`experiment/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const startExperiment = (id: string) =>
+  api
+    .post(`experiment/${id}/start`)
+    .then((response): Experiment => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const pauseExperiment = (id: string) =>
+  api
+    .post(`experiment/${id}/pause`)
+    .then((response): Experiment => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const completeExperiment = (id: string) =>
+  api
+    .post(`experiment/${id}/complete`)
+    .then((response): Experiment => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getExperimentResults = (
+  experimentId: string,
+  period: string,
+  from: string = '',
+  to: string = '',
+  timezone?: string,
+) =>
+  api
+    .get(`/experiment/${experimentId}/results`, {
+      params: { period, from, to, timezone },
+    })
+    .then((response): ExperimentResults => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const reGenerateCaptchaSecretKey = (pid: string) =>
   api
     .post(`project/secret-gen/${pid}`)

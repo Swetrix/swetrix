@@ -27,6 +27,7 @@ const ICON_COLORS: Record<string, string> = {
   errors: 'text-red-500',
   funnels: 'text-teal-500',
   goals: 'text-purple-500',
+  experiments: 'text-pink-500',
   featureFlags: 'text-orange-500',
   // CAPTCHA
   captcha: 'text-emerald-500',

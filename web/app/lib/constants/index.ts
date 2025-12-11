@@ -405,6 +405,7 @@ const SELFHOSTED_PROJECT_TABS = {
   sessions: 'sessions',
   errors: 'errors',
   goals: 'goals',
+  experiments: 'experiments',
   featureFlags: 'featureFlags',
 } as const
 
@@ -416,6 +417,7 @@ const PRODUCTION_PROJECT_TABS = {
   sessions: 'sessions',
   errors: 'errors',
   goals: 'goals',
+  experiments: 'experiments',
   featureFlags: 'featureFlags',
   alerts: 'alerts',
   captcha: 'captcha',
