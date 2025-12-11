@@ -12,14 +12,17 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import { getPerfData, getPerformanceCompareData, getPerformanceOverallStats, getOverallStats } from '~/api'
+import { useAnnotations } from '~/hooks/useAnnotations'
 import { PERFORMANCE_PANELS_ORDER, chartTypes, PERIOD_PAIRS_COMPARE, type TimeBucket } from '~/lib/constants'
 import { CountryEntry } from '~/lib/models/Entry'
-import { Annotation, OverallPerformanceObject } from '~/lib/models/Project'
-import Filters from '~/pages/Project/View/components/Filters'
-import NoEvents from '~/pages/Project/View/components/NoEvents'
-import { PerformanceMetricCards } from '~/pages/Project/View/components/MetricCards'
-import { PerformanceChart } from '~/pages/Project/View/components/PerformanceChart'
+import { OverallPerformanceObject } from '~/lib/models/Project'
+import AnnotationModal from '~/modals/AnnotationModal'
 import CCRow from '~/pages/Project/View/components/CCRow'
+import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
+import Filters from '~/pages/Project/View/components/Filters'
+import { PerformanceMetricCards } from '~/pages/Project/View/components/MetricCards'
+import NoEvents from '~/pages/Project/View/components/NoEvents'
+import { PerformanceChart } from '~/pages/Project/View/components/PerformanceChart'
 import { Panel } from '~/pages/Project/View/Panels'
 import {
   getFormatDate,
@@ -126,41 +129,52 @@ const getDeviceRowMapper = (activeTabId: string, theme: string, t: any) => {
 
 interface PerformanceViewProps {
   tnMapping: Record<string, string>
-  chartType: string
-  rotateXAxis: boolean
-  isActiveCompare: boolean
-  dateRangeCompare: Date[] | null
-  activePeriodCompare: string | null
-  compareDisable: () => void
-  annotations: Annotation[]
-  onChartContextMenu: (e: React.MouseEvent, xAxisData: string[]) => void
-  getFilterLink: (column: string, value: string | null) => any
-  getVersionFilterLink: (parent: string | null, version: string | null, panelType: 'br' | 'os') => string
-  onMainChartZoom: (domain: [Date, Date] | null) => void
-  shouldEnableZoom: boolean
-  setChartTypeOnClick: (type: 'line' | 'bar') => void
 }
 
-const PerformanceView = ({
-  tnMapping,
-  chartType,
-  rotateXAxis,
-  isActiveCompare,
-  dateRangeCompare,
-  activePeriodCompare,
-  compareDisable,
-  annotations,
-  onChartContextMenu,
-  getFilterLink,
-  getVersionFilterLink,
-  onMainChartZoom,
-  shouldEnableZoom,
-  setChartTypeOnClick,
-}: PerformanceViewProps) => {
-  const { id, project } = useCurrentProject()
+const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
+  const { id, project, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
-  const { performanceRefreshTrigger, timezone, period, dateRange, filters, timeFormat, timeBucket, activePeriod } =
-    useViewProjectContext()
+  const {
+    performanceRefreshTrigger,
+    timezone,
+    period,
+    dateRange,
+    filters,
+    timeFormat,
+    timeBucket,
+    activePeriod,
+    // Comparison state from context
+    isActiveCompare,
+    dateRangeCompare,
+    activePeriodCompare,
+    compareDisable,
+    // Chart state from context
+    chartType,
+    setChartTypeOnClick,
+    rotateXAxis,
+    // Zoom state from context
+    onMainChartZoom,
+    shouldEnableZoom,
+    // Filter functions from context
+    getFilterLink,
+  } = useViewProjectContext()
+
+  // Annotations hook
+  const {
+    annotations,
+    isAnnotationModalOpen,
+    annotationToEdit,
+    annotationModalDate,
+    annotationActionLoading,
+    contextMenu,
+    onAnnotationCreate,
+    onAnnotationUpdate,
+    onAnnotationDelete,
+    openAnnotationModal,
+    closeAnnotationModal,
+    handleChartContextMenu,
+    closeContextMenu,
+  } = useAnnotations({ allowedToManage })
   const {
     t,
     i18n: { language },
@@ -572,7 +586,7 @@ const PerformanceView = ({
           />
         ) : null}
         {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData) ? (
-          <div onContextMenu={(e) => onChartContextMenu(e, chartData?.x)} className='relative'>
+          <div onContextMenu={(e) => handleChartContextMenu(e, chartData?.x)} className='relative'>
             <PerformanceChart
               chart={chartData}
               timeBucket={timeBucket}
@@ -760,6 +774,39 @@ const PerformanceView = ({
             })
           : null}
       </div>
+      <AnnotationModal
+        isOpened={isAnnotationModalOpen}
+        onClose={closeAnnotationModal}
+        onSubmit={annotationToEdit ? onAnnotationUpdate : onAnnotationCreate}
+        onDelete={annotationToEdit ? onAnnotationDelete : undefined}
+        loading={annotationActionLoading}
+        annotation={annotationToEdit}
+        defaultDate={annotationModalDate}
+        allowedToManage={allowedToManage}
+      />
+      <ChartContextMenu
+        isOpen={contextMenu.isOpen}
+        x={contextMenu.x}
+        y={contextMenu.y}
+        onClose={closeContextMenu}
+        onAddAnnotation={() => {
+          openAnnotationModal(contextMenu.date || undefined)
+        }}
+        onEditAnnotation={
+          contextMenu.annotation
+            ? () => openAnnotationModal(contextMenu.annotation?.date, contextMenu.annotation!)
+            : undefined
+        }
+        onDeleteAnnotation={
+          contextMenu.annotation
+            ? () => {
+                onAnnotationDelete(contextMenu.annotation!)
+              }
+            : undefined
+        }
+        existingAnnotation={contextMenu.annotation}
+        allowedToManage={allowedToManage}
+      />
     </div>
   )
 }

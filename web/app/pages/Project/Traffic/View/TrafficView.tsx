@@ -22,10 +22,13 @@ import {
   getPropertyMetadata,
   getGSCKeywords,
 } from '~/api'
+import { useAnnotations } from '~/hooks/useAnnotations'
 import { TRAFFIC_PANELS_ORDER, chartTypes, PERIOD_PAIRS_COMPARE, isSelfhosted, type TimeBucket } from '~/lib/constants'
 import { CountryEntry, Entry } from '~/lib/models/Entry'
-import { Annotation, OverallObject } from '~/lib/models/Project'
+import { OverallObject } from '~/lib/models/Project'
+import AnnotationModal from '~/modals/AnnotationModal'
 import CCRow from '~/pages/Project/View/components/CCRow'
+import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
 import CustomMetrics from '~/pages/Project/View/components/CustomMetrics'
 import Filters from '~/pages/Project/View/components/Filters'
 import { MetricCard, MetricCards } from '~/pages/Project/View/components/MetricCards'
@@ -77,19 +80,6 @@ type KeywordEntry = Entry & { impressions: number; position: number; ctr: number
 
 interface TrafficViewProps {
   tnMapping: Record<string, string>
-  chartType: string
-  rotateXAxis: boolean
-  isActiveCompare: boolean
-  dateRangeCompare: Date[] | null
-  activePeriodCompare: string | null
-  compareDisable: () => void
-  annotations: Annotation[]
-  onChartContextMenu: (e: React.MouseEvent, xAxisData: string[]) => void
-  getFilterLink: (column: string, value: string | null) => any
-  getVersionFilterLink: (parent: string | null, version: string | null, panelType: 'br' | 'os') => string
-  onMainChartZoom: (domain: [Date, Date] | null) => void
-  shouldEnableZoom: boolean
-  setChartTypeOnClick: (type: 'line' | 'bar') => void
   customMetrics: ProjectViewCustomEvent[]
   onCustomMetric: (metrics: ProjectViewCustomEvent[]) => void
   onRemoveCustomMetric: (metricId: string) => void
@@ -100,19 +90,6 @@ interface TrafficViewProps {
 
 const TrafficView = ({
   tnMapping,
-  chartType,
-  rotateXAxis,
-  isActiveCompare,
-  dateRangeCompare,
-  activePeriodCompare,
-  compareDisable,
-  annotations,
-  onChartContextMenu,
-  getFilterLink,
-  getVersionFilterLink,
-  onMainChartZoom,
-  shouldEnableZoom,
-  setChartTypeOnClick,
   customMetrics,
   onCustomMetric,
   onRemoveCustomMetric,
@@ -120,10 +97,33 @@ const TrafficView = ({
   mode,
   sdkInstance,
 }: TrafficViewProps) => {
-  const { id, project } = useCurrentProject()
+  const { id, project, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
-  const { trafficRefreshTrigger, timezone, period, dateRange, filters, timeFormat, timeBucket, activePeriod } =
-    useViewProjectContext()
+  const {
+    trafficRefreshTrigger,
+    timezone,
+    period,
+    dateRange,
+    filters,
+    timeFormat,
+    timeBucket,
+    activePeriod,
+    // Comparison state from context
+    isActiveCompare,
+    dateRangeCompare,
+    activePeriodCompare,
+    compareDisable,
+    // Chart state from context
+    chartType,
+    setChartTypeOnClick,
+    rotateXAxis,
+    // Zoom state from context
+    onMainChartZoom,
+    shouldEnableZoom,
+    // Filter functions from context
+    getFilterLink,
+    getVersionFilterLink,
+  } = useViewProjectContext()
   const {
     t,
     i18n: { language },
@@ -131,6 +131,23 @@ const TrafficView = ({
   const { theme } = useTheme()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+
+  // Annotations hook
+  const {
+    annotations,
+    isAnnotationModalOpen,
+    annotationToEdit,
+    annotationModalDate,
+    annotationActionLoading,
+    contextMenu,
+    onAnnotationCreate,
+    onAnnotationUpdate,
+    onAnnotationDelete,
+    openAnnotationModal,
+    closeAnnotationModal,
+    handleChartContextMenu,
+    closeContextMenu,
+  } = useAnnotations({ allowedToManage })
 
   // Traffic-specific state
   const [dataLoading, setDataLoading] = useState(false)
@@ -823,7 +840,7 @@ const TrafficView = ({
           </div>
         ) : null}
         {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData) ? (
-          <div onContextMenu={(e) => onChartContextMenu(e, chartData.x)} className='relative'>
+          <div onContextMenu={(e) => handleChartContextMenu(e, chartData.x)} className='relative'>
             <TrafficChart
               chartData={chartData}
               timeBucket={timeBucket}
@@ -1143,6 +1160,39 @@ const TrafficView = ({
           />
         ) : null}
       </div>
+      <AnnotationModal
+        isOpened={isAnnotationModalOpen}
+        onClose={closeAnnotationModal}
+        onSubmit={annotationToEdit ? onAnnotationUpdate : onAnnotationCreate}
+        onDelete={annotationToEdit ? onAnnotationDelete : undefined}
+        loading={annotationActionLoading}
+        annotation={annotationToEdit}
+        defaultDate={annotationModalDate}
+        allowedToManage={allowedToManage}
+      />
+      <ChartContextMenu
+        isOpen={contextMenu.isOpen}
+        x={contextMenu.x}
+        y={contextMenu.y}
+        onClose={closeContextMenu}
+        onAddAnnotation={() => {
+          openAnnotationModal(contextMenu.date || undefined)
+        }}
+        onEditAnnotation={
+          contextMenu.annotation
+            ? () => openAnnotationModal(contextMenu.annotation?.date, contextMenu.annotation!)
+            : undefined
+        }
+        onDeleteAnnotation={
+          contextMenu.annotation
+            ? () => {
+                onAnnotationDelete(contextMenu.annotation!)
+              }
+            : undefined
+        }
+        existingAnnotation={contextMenu.annotation}
+        allowedToManage={allowedToManage}
+      />
     </div>
   )
 }
