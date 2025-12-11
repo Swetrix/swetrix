@@ -3,7 +3,9 @@ import {
   IsNotEmpty,
   IsObject,
   IsOptional,
+  IsString,
   Matches,
+  MaxLength,
   Validate,
 } from 'class-validator'
 import { Transform } from 'class-transformer'
@@ -27,6 +29,17 @@ export class PageviewsDto {
   @IsNotEmpty()
   @Matches(PID_REGEX, { message: 'The provided Project ID (pid) is incorrect' })
   pid: string
+
+  @ApiProperty({
+    example: 'user_12345',
+    description:
+      'Optional profile ID for long-term user tracking. If not provided, one will be auto-generated.',
+    maxLength: 256,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  profileId?: string
 
   // Tracking metrics
   @ApiProperty({

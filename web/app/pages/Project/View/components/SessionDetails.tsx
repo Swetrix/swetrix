@@ -1,7 +1,10 @@
 import cx from 'clsx'
+import dayjs from 'dayjs'
 import _capitalize from 'lodash/capitalize'
+import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { SessionDetails as Details } from '~/lib/models/Project'
@@ -10,15 +13,44 @@ import { getLocaleDisplayName, getStringFromTime, getTimeFromSeconds } from '~/u
 import CCRow from './CCRow'
 import { MetricCard, MetricCardSelect } from './MetricCards'
 
-interface SessionDetailsProps {
-  details: Details
+interface PageflowItem {
+  type: 'pageview' | 'event' | 'error'
+  value: string
+  created: string
 }
 
-export const SessionDetails = ({ details }: SessionDetailsProps) => {
+interface SessionDetailsProps {
+  details: Details
+  pages?: PageflowItem[]
+}
+
+export const SessionDetails = ({ details, pages }: SessionDetailsProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
+
+  // Calculate session duration from pages if sdur is 0 or not available
+  const sessionDuration = useMemo(() => {
+    if (details.sdur && details.sdur > 0) {
+      return details.sdur
+    }
+
+    // Fallback: calculate duration from pageview timestamps only (for consistency with session list)
+    if (!_isEmpty(pages)) {
+      const pageviews = pages!.filter((p) => p.type === 'pageview')
+      if (pageviews.length >= 1) {
+        const firstPageview = pageviews[0]
+        const lastPageview = pageviews[pageviews.length - 1]
+        const diffSeconds = dayjs(lastPageview.created).diff(dayjs(firstPageview.created), 'seconds')
+        if (diffSeconds > 0) {
+          return diffSeconds
+        }
+      }
+    }
+
+    return 0
+  }, [details.sdur, pages])
 
   const geo = [
     {
@@ -186,8 +218,8 @@ export const SessionDetails = ({ details }: SessionDetailsProps) => {
               <span className='mr-1.5 h-2.5 w-2.5 animate-pulse rounded-full bg-red-500' />
               {t('dashboard.live').toUpperCase()}
             </span>
-          ) : details.sdur !== undefined ? (
-            getStringFromTime(getTimeFromSeconds(details.sdur))
+          ) : sessionDuration > 0 ? (
+            getStringFromTime(getTimeFromSeconds(sessionDuration))
           ) : (
             'N/A'
           )

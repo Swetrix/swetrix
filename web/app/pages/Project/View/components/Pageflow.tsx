@@ -1,11 +1,14 @@
+import { TFunction } from 'i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
+import _size from 'lodash/size'
 import _toUpper from 'lodash/toUpper'
-import { BugIcon, FileTextIcon, MousePointerClickIcon } from 'lucide-react'
-import React, { useMemo } from 'react'
+import _truncate from 'lodash/truncate'
+import { BugIcon, ChevronDownIcon, CircleIcon, FileTextIcon, MousePointerClickIcon, TagIcon } from 'lucide-react'
+import React, { useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
-import { cn } from '~/utils/generic'
+import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 
 interface Metadata {
   key: string
@@ -21,28 +24,216 @@ interface PageflowProps {
   }[]
   timeFormat: '12-hour' | '24-hour'
   zoomedTimeRange?: [Date, Date] | null
+  sdur?: number
 }
 
-const KeyValue = ({ evKey, evValue }: { evKey: string; evValue: string }) => (
-  <li className='text-[11px] wrap-anywhere'>
-    {evKey}: {evValue}
-  </li>
-)
+interface PageflowItemProps {
+  value: string
+  created: string
+  type: 'pageview' | 'event' | 'error'
+  metadata?: Metadata[]
+  displayCreated: string
+  timeDuration: number | null
+  isLastEvent: boolean
+  t: TFunction
+}
 
-const TransValue = ({ metadata, children }: { metadata?: Metadata[]; children: React.ReactNode }) => (
-  <div className='ml-1 text-gray-900 dark:text-gray-50'>
-    <p className='font-medium'>{children}</p>
-    {metadata ? (
-      <ul className='mt-1'>
-        {_map(metadata, ({ key, value }, index) => (
-          <KeyValue key={`${key}${value}${index}`} evKey={key} evValue={value} />
-        ))}
-      </ul>
-    ) : null}
-  </div>
-)
+const MetadataPanel = ({ metadata, t }: { metadata: Metadata[]; t: TFunction }) => {
+  const [showAll, setShowAll] = useState(false)
+  const INITIAL_SHOW_COUNT = 5
+  const hasMore = metadata.length > INITIAL_SHOW_COUNT
+  const displayedMetadata = showAll ? metadata : metadata.slice(0, INITIAL_SHOW_COUNT)
+  const remainingCount = metadata.length - INITIAL_SHOW_COUNT
 
-export const Pageflow = ({ pages, timeFormat, zoomedTimeRange }: PageflowProps) => {
+  return (
+    <div className='mt-2 ml-5 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/50'>
+      {/* Header */}
+      <div className='border-b border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-800/50'>
+        <span className='text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400'>
+          {t('project.properties')}
+        </span>
+      </div>
+
+      {/* Table */}
+      <div className='divide-y divide-slate-100 dark:divide-slate-800'>
+        {_map(displayedMetadata, ({ key, value }, index) => {
+          const needsTruncation = _size(value) > 60
+          const displayValue = needsTruncation ? _truncate(value, { length: 60 }) : value
+
+          return (
+            <div
+              key={`${key}${value}${index}`}
+              className='grid grid-cols-[minmax(80px,auto)_1fr] gap-3 px-3 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/30'
+            >
+              <div className='flex items-start'>
+                <span className='font-mono text-[11px] font-medium text-slate-500 dark:text-slate-400'>{key}</span>
+              </div>
+              <div className='flex items-start'>
+                <span
+                  className={cn(
+                    'text-xs break-all text-slate-700 dark:text-slate-300',
+                    needsTruncation && 'cursor-help',
+                  )}
+                  title={needsTruncation ? value : undefined}
+                >
+                  {displayValue}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Show more button */}
+      {hasMore ? (
+        <button
+          type='button'
+          onClick={() => setShowAll(!showAll)}
+          className='w-full border-t border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300'
+        >
+          {showAll ? t('project.showLess') : t('project.showMore', { count: remainingCount })}
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
+const formatDuration = (seconds: number): string => {
+  if (seconds <= 0) {
+    return ''
+  }
+
+  return getStringFromTime(getTimeFromSeconds(seconds))
+}
+
+const PageflowItem = ({
+  value,
+  created,
+  type,
+  metadata,
+  displayCreated,
+  timeDuration,
+  isLastEvent,
+  t,
+}: PageflowItemProps) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const hasMetadata = metadata && metadata.length > 0
+
+  return (
+    <li>
+      <div className='relative pb-8'>
+        {/* Solid line to next event OR dotted line to end of session */}
+        {!isLastEvent ? (
+          <span
+            className='absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
+            aria-hidden='true'
+          />
+        ) : (
+          <span
+            className='absolute top-4 left-4 -ml-px h-full w-0.5 border-l-2 border-dashed border-slate-200 dark:border-slate-700'
+            aria-hidden='true'
+          />
+        )}
+        <div className='relative flex space-x-3'>
+          <div>
+            <span
+              className={cn('flex h-8 w-8 items-center justify-center rounded-full', {
+                'bg-slate-400 dark:bg-slate-800': type !== 'error',
+                'bg-red-400 dark:bg-red-800': type === 'error',
+              })}
+            >
+              {type === 'pageview' ? (
+                <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+              ) : null}
+              {type === 'event' ? (
+                <MousePointerClickIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+              ) : null}
+              {type === 'error' ? (
+                <BugIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+              ) : null}
+            </span>
+          </div>
+          <div className='flex min-w-0 flex-1 flex-col pt-1.5'>
+            <div className='flex justify-between space-x-4'>
+              <div
+                className={cn('flex items-center text-sm text-gray-700 dark:text-gray-300', {
+                  'cursor-pointer': hasMetadata,
+                })}
+                onClick={hasMetadata ? () => setIsExpanded(!isExpanded) : undefined}
+                role={hasMetadata ? 'button' : undefined}
+                tabIndex={hasMetadata ? 0 : undefined}
+                onKeyDown={
+                  hasMetadata
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setIsExpanded(!isExpanded)
+                        }
+                      }
+                    : undefined
+                }
+              >
+                <Trans
+                  t={t}
+                  i18nKey={
+                    type === 'pageview' ? 'project.pageviewX' : type === 'event' ? 'project.eventX' : 'project.errorX'
+                  }
+                  components={{
+                    value: <span className='ml-1 font-medium text-gray-900 dark:text-gray-50' />,
+                    span: <span />,
+                  }}
+                  values={{
+                    x: value || _toUpper(t('common.notSet')),
+                  }}
+                />
+                {hasMetadata ? (
+                  <span className='ml-2 inline-flex shrink-0 items-center gap-0.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-400'>
+                    <TagIcon className='h-2.5 w-2.5' />
+                    {metadata!.length}
+                  </span>
+                ) : null}
+                {hasMetadata ? (
+                  <ChevronDownIcon
+                    className={cn(
+                      'ml-1 h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 dark:text-gray-500',
+                      isExpanded && 'rotate-180',
+                    )}
+                    aria-hidden='true'
+                  />
+                ) : null}
+              </div>
+              <div className='text-right text-sm whitespace-nowrap text-gray-700 dark:text-gray-300'>
+                <time dateTime={created}>{displayCreated}</time>
+              </div>
+            </div>
+
+            {/* Collapsible metadata */}
+            {hasMetadata && isExpanded ? <MetadataPanel metadata={metadata!} t={t} /> : null}
+
+            {/* Time duration to next step */}
+            {timeDuration !== null && timeDuration > 0 ? (
+              <div className='mt-1 flex items-center text-xs text-gray-500 dark:text-gray-400'>
+                <svg
+                  className='mr-1 h-3 w-3'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                  xmlns='http://www.w3.org/2000/svg'
+                >
+                  <circle cx='12' cy='12' r='10' strokeWidth='2' />
+                  <polyline points='12 6 12 12 16 14' strokeWidth='2' strokeLinecap='round' />
+                </svg>
+                {formatDuration(timeDuration)}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </li>
+  )
+}
+
+export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0 }: PageflowProps) => {
   const {
     t,
     i18n: { language },
@@ -62,6 +253,36 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange }: PageflowProps) 
       return pageTime >= zoomedTimeRange[0].getTime() && pageTime <= zoomedTimeRange[1].getTime()
     })
   }, [pages, zoomedTimeRange])
+
+  // Calculate time between events
+  const timeBetweenEvents = useMemo(() => {
+    if (filteredPages.length < 2) {
+      return []
+    }
+
+    const times: number[] = []
+    for (let i = 0; i < filteredPages.length - 1; i++) {
+      const currentTime = new Date(filteredPages[i].created).getTime()
+      const nextTime = new Date(filteredPages[i + 1].created).getTime()
+      const diffSeconds = Math.round((nextTime - currentTime) / 1000)
+      times.push(diffSeconds)
+    }
+    return times
+  }, [filteredPages])
+
+  // Calculate time remaining after the last event
+  const timeAfterLastEvent = useMemo(() => {
+    if (sdur <= 0 || filteredPages.length === 0) {
+      return 0
+    }
+
+    const firstEventTime = new Date(filteredPages[0].created).getTime()
+    const lastEventTime = new Date(filteredPages[filteredPages.length - 1].created).getTime()
+    const timeBetweenFirstAndLast = Math.round((lastEventTime - firstEventTime) / 1000)
+    const remaining = sdur - timeBetweenFirstAndLast
+
+    return remaining > 0 ? remaining : 0
+  }, [filteredPages, sdur])
 
   if (zoomedTimeRange && _isEmpty(filteredPages)) {
     return (
@@ -84,64 +305,65 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange }: PageflowProps) 
             hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
           })
 
+          const isLastEvent = index === filteredPages.length - 1
+          const timeDuration = !isLastEvent ? timeBetweenEvents[index] : null
+
           return (
-            <li key={`${value}${created}${index}`}>
-              <div className='relative pb-8'>
-                {index !== filteredPages.length - 1 ? (
-                  <span
-                    className='absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
-                    aria-hidden='true'
-                  />
-                ) : null}
-                <div className='relative flex space-x-3'>
-                  <div>
-                    <span
-                      className={cn('flex h-8 w-8 items-center justify-center rounded-full', {
-                        'bg-slate-400 dark:bg-slate-800': type !== 'error',
-                        'bg-red-400 dark:bg-red-800': type === 'error',
-                      })}
-                    >
-                      {type === 'pageview' ? (
-                        <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
-                      ) : null}
-                      {type === 'event' ? (
-                        <MousePointerClickIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
-                      ) : null}
-                      {type === 'error' ? (
-                        <BugIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
-                      ) : null}
-                    </span>
-                  </div>
-                  <div className='flex min-w-0 flex-1 justify-between space-x-4 pt-1.5'>
-                    <div className='flex text-sm text-gray-700 dark:text-gray-300'>
-                      <Trans
-                        t={t}
-                        i18nKey={
-                          type === 'pageview'
-                            ? 'project.pageviewX'
-                            : type === 'event'
-                              ? 'project.eventX'
-                              : 'project.errorX'
-                        }
-                        components={{
-                          // @ts-expect-error Children is provided by Trans
-                          value: <TransValue metadata={metadata} />,
-                          span: <span />,
-                        }}
-                        values={{
-                          x: value || _toUpper(t('common.notSet')),
-                        }}
-                      />
-                    </div>
-                    <div className='text-right text-sm whitespace-nowrap text-gray-700 dark:text-gray-300'>
-                      <time dateTime={created}>{displayCreated}</time>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </li>
+            <PageflowItem
+              key={`${value}${created}${index}`}
+              value={value}
+              created={created}
+              type={type}
+              metadata={metadata}
+              displayCreated={displayCreated}
+              timeDuration={timeDuration}
+              isLastEvent={isLastEvent}
+              t={t}
+            />
           )
         })}
+
+        {/* End of session marker */}
+        {filteredPages.length > 0 ? (
+          <li>
+            <div className='relative pb-8'>
+              <div className='relative flex space-x-3'>
+                <div>
+                  <span className='flex h-8 w-8 items-center justify-center rounded-full border-2 border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900'>
+                    <CircleIcon
+                      className='h-3 w-3 text-slate-400 dark:text-slate-500'
+                      aria-hidden='true'
+                      fill='currentColor'
+                    />
+                  </span>
+                </div>
+                <div className='flex min-w-0 flex-1 flex-col pt-1.5'>
+                  <div className='flex justify-between space-x-4'>
+                    <div className='text-sm font-medium text-gray-500 dark:text-gray-400'>
+                      {t('project.endOfSession')}
+                    </div>
+                  </div>
+                  {/* Time after last event (only if sdur > 0) */}
+                  {timeAfterLastEvent > 0 ? (
+                    <div className='mt-1 flex items-center text-xs text-gray-500 dark:text-gray-400'>
+                      <svg
+                        className='mr-1 h-3 w-3'
+                        fill='none'
+                        stroke='currentColor'
+                        viewBox='0 0 24 24'
+                        xmlns='http://www.w3.org/2000/svg'
+                      >
+                        <circle cx='12' cy='12' r='10' strokeWidth='2' />
+                        <polyline points='12 6 12 12 16 14' strokeWidth='2' strokeLinecap='round' />
+                      </svg>
+                      {formatDuration(timeAfterLastEvent)}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </li>
+        ) : null}
       </ul>
     </div>
   )

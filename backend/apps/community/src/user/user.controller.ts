@@ -109,8 +109,6 @@ export class UserController {
       botsProtectionLevel: row.projectBotsProtectionLevel,
       created: row.projectCreated,
       isAnalyticsProject: true,
-      isCaptchaProject: false,
-      isCaptchaEnabled: false,
       captchaSecretKey: null,
       uiHidden: false,
       funnels: [],

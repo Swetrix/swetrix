@@ -100,7 +100,7 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
           <RotateCw className='absolute inset-0 h-5 w-5 animate-spin text-gray-700 dark:text-gray-50' />
         ) : null}
       </div>
-      <div className='pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-slate-700'>
+      <div className='pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-slate-700'>
         {showSpinner ? t('project.refreshing') : t('project.refreshingIn', { seconds: remainingSeconds })}
         <div className='absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-slate-700' />
       </div>

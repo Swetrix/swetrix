@@ -2,6 +2,8 @@ import _isEmpty from 'lodash/isEmpty'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Text } from '~/ui/Text'
+
 import { Filter } from '../interfaces/traffic'
 import { typeNameMapping } from '../ViewProject.helpers'
 
@@ -18,9 +20,13 @@ const NoEvents = ({ filters }: NoEventsProps) => {
   if (_isEmpty(filters)) {
     return (
       <div className='mt-5 flex flex-col py-6 sm:px-6 lg:px-8'>
-        <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-          <h2 className='my-3 text-center text-4xl leading-tight font-semibold'>{t('project.noEvTitle')}</h2>
-          <h3 className='mb-8 text-center text-2xl leading-snug'>{t('project.noEvContent')}</h3>
+        <div className='mx-auto w-full max-w-7xl'>
+          <Text as='h2' size='4xl' weight='semibold' className='my-3 text-center leading-tight'>
+            {t('project.noEvTitle')}
+          </Text>
+          <Text as='h3' size='2xl' className='mb-8 text-center leading-snug'>
+            {t('project.noEvContent')}
+          </Text>
         </div>
       </div>
     )
@@ -32,9 +38,13 @@ const NoEvents = ({ filters }: NoEventsProps) => {
         <Filters tnMapping={tnMapping} />
       </div>
       <div className='mt-5 flex flex-col py-6 sm:px-6 lg:px-8'>
-        <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-          <h2 className='my-3 text-center text-4xl leading-tight font-semibold'>{t('project.noEvTitle')}</h2>
-          <h3 className='mb-8 text-center text-2xl leading-snug'>{t('project.noEventsFiltersDesc')}</h3>
+        <div className='mx-auto w-full max-w-7xl'>
+          <Text as='h2' size='4xl' weight='semibold' className='my-3 text-center leading-tight'>
+            {t('project.noEvTitle')}
+          </Text>
+          <Text as='h3' size='2xl' className='mb-8 text-center leading-snug'>
+            {t('project.noEventsFiltersDesc')}
+          </Text>
         </div>
       </div>
     </>

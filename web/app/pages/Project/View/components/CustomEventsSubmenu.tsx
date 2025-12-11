@@ -161,7 +161,6 @@ const CustomEventsSubmenu: React.FC<CustomEventsSubmenuProps> = ({
                         className='max-w-max'
                         onClick={(e) => {
                           e.stopPropagation()
-                          e.preventDefault()
                         }}
                       >
                         <Checkbox

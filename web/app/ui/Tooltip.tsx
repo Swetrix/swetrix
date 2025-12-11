@@ -33,10 +33,11 @@ interface TooltipProps {
   text: string | number | React.ReactNode
   className?: string
   tooltipNode?: React.ReactNode
+  delay?: number
 }
 
-const Tooltip = ({ text, className, tooltipNode }: TooltipProps) => (
-  <TooltipProvider delayDuration={200}>
+const Tooltip = ({ text, className, tooltipNode, delay = 50 }: TooltipProps) => (
+  <TooltipProvider delayDuration={delay}>
     <TooltipRoot>
       <TooltipTrigger className={className}>
         {tooltipNode || (

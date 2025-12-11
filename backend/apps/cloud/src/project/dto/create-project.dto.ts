@@ -15,11 +15,6 @@ export class CreateProjectDTO extends ProjectOrganisationDto {
   @ApiProperty({
     required: false,
   })
-  isCaptcha?: boolean
-
-  @ApiProperty({
-    required: false,
-  })
   public?: boolean
 
   @ApiProperty({
