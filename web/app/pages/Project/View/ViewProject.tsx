@@ -31,7 +31,7 @@ import {
 import React, { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext, lazy } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, Link, useSearchParams, LinkProps } from 'react-router'
+import { useNavigate, useSearchParams, LinkProps } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
@@ -95,7 +95,6 @@ import TrafficView from '../Traffic/View/TrafficView'
 import AddAViewModal from './components/AddAViewModal'
 import { ChartManagerProvider } from './components/ChartManager'
 const CaptchaView = lazy(() => import('./components/CaptchaView'))
-import DashboardHeader from './components/DashboardHeader'
 // Keywords list now reuses shared Panel UI; dedicated component removed from render
 import LockedDashboard from './components/LockedDashboard'
 import ProjectSidebar from './components/ProjectSidebar'
@@ -157,6 +156,9 @@ interface ViewProjectContextType {
   setDateRangeCompare: (value: Date[] | null) => void
   setActivePeriodCompare: (value: string) => void
   compareDisable: () => void
+  maxRangeCompare: number
+  periodPairsCompare: { label: string; period: string }[]
+  setPeriodPairsCompare: (value: { label: string; period: string }[]) => void
 
   // Chart state
   chartType: keyof typeof chartTypes
@@ -174,9 +176,13 @@ interface ViewProjectContextType {
   // Functions
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
   updateTimebucket: (newTimebucket: TimeBucket) => void
+  setShowFiltersSearch: (value: boolean) => void
+  resetDateRange: () => void
+  refreshStats: (isManual?: boolean) => Promise<void>
 
   // Refs
   refCalendar: React.RefObject<any>
+  refCalendarCompare: React.RefObject<any>
 }
 
 const defaultViewProjectContext: ViewProjectContextType = {
@@ -211,6 +217,9 @@ const defaultViewProjectContext: ViewProjectContextType = {
   setDateRangeCompare: () => {},
   setActivePeriodCompare: () => {},
   compareDisable: () => {},
+  maxRangeCompare: 0,
+  periodPairsCompare: [],
+  setPeriodPairsCompare: () => {},
 
   // Chart state defaults
   chartType: chartTypes.line,
@@ -227,7 +236,11 @@ const defaultViewProjectContext: ViewProjectContextType = {
 
   updatePeriod: () => {},
   updateTimebucket: (_newTimebucket) => {},
+  setShowFiltersSearch: () => {},
+  resetDateRange: () => {},
+  refreshStats: async () => {},
   refCalendar: { current: null } as any,
+  refCalendarCompare: { current: null } as any,
 }
 
 export const ViewProjectContext = createContext<ViewProjectContextType>(defaultViewProjectContext)
@@ -243,7 +256,7 @@ const ViewProjectContent = () => {
 
   const { theme, setTheme } = useTheme()
 
-  const { isAuthenticated, user, isLoading: authLoading } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
 
   const { timezone = DEFAULT_TIMEZONE } = user || {}
 
@@ -419,7 +432,7 @@ const ViewProjectContent = () => {
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
 
   // Check if we're viewing a specific session detail
-  const activePSID = useMemo(() => {
+  const _activePSID = useMemo(() => {
     return searchParams.get('psid')
   }, [searchParams])
 
@@ -470,21 +483,24 @@ const ViewProjectContent = () => {
     setProjectViewDeleting(false)
   }
 
-  const getVersionFilterLink = (parent: string | null, version: string | null, panelType: 'br' | 'os') => {
-    const filterParams = new URLSearchParams(searchParams.toString())
+  const getVersionFilterLink = useCallback(
+    (parent: string | null, version: string | null, panelType: 'br' | 'os') => {
+      const filterParams = new URLSearchParams(searchParams.toString())
 
-    if (panelType === 'br') {
-      // Apply both browser and browser version filters together
-      filterParams.set('br', parent ?? 'null')
-      filterParams.set('brv', version ?? 'null')
-    } else if (panelType === 'os') {
-      // Apply both OS and OS version filters together
-      filterParams.set('os', parent ?? 'null')
-      filterParams.set('osv', version ?? 'null')
-    }
+      if (panelType === 'br') {
+        // Apply both browser and browser version filters together
+        filterParams.set('br', parent ?? 'null')
+        filterParams.set('brv', version ?? 'null')
+      } else if (panelType === 'os') {
+        // Apply both OS and OS version filters together
+        filterParams.set('os', parent ?? 'null')
+        filterParams.set('osv', version ?? 'null')
+      }
 
-    return `?${filterParams.toString()}`
-  }
+      return `?${filterParams.toString()}`
+    },
+    [searchParams],
+  )
 
   const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user?.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize()
@@ -531,7 +547,7 @@ const ViewProjectContent = () => {
     document.title = pageTitle
   }, [project, user, liveVisitors, t])
 
-  const timeBucketSelectorItems = useMemo(() => {
+  const _timeBucketSelectorItems = useMemo(() => {
     if (activeTab === PROJECT_TABS.errors) {
       return _filter(periodPairs, (el) => {
         return _includes(ERROR_PERIOD_PAIRS, el.period)
@@ -604,11 +620,6 @@ const ViewProjectContent = () => {
         icon: TargetIcon,
       },
       {
-        id: PROJECT_TABS.experiments,
-        label: t('dashboard.experiments'),
-        icon: FlaskConicalIcon,
-      },
-      {
         id: PROJECT_TABS.featureFlags,
         label: t('dashboard.featureFlags'),
         icon: FlagIcon,
@@ -646,6 +657,11 @@ const ViewProjectContent = () => {
         label: t('common.captcha'),
         icon: PuzzleIcon,
       },
+      {
+        id: PROJECT_TABS.experiments,
+        label: t('dashboard.experiments'),
+        icon: FlaskConicalIcon,
+      },
       ...adminTabs,
     ].filter((x) => !!x)
 
@@ -658,11 +674,11 @@ const ViewProjectContent = () => {
 
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
 
-  const compareDisable = () => {
+  const compareDisable = useCallback(() => {
     setIsActiveCompare(false)
     setDateRangeCompare(null)
     setActivePeriodCompare(periodPairsCompare[0].period)
-  }
+  }, [periodPairsCompare])
 
   const onCustomMetric = (metrics: ProjectViewCustomEvent[]) => {
     if (activeTab !== PROJECT_TABS.traffic) {
@@ -897,69 +913,78 @@ const ViewProjectContent = () => {
   }, [dataLoading])
 
   // We can assume period provided is never custom, as it's handled separately in the Datepicker callback function
-  const updatePeriod = ({ period: newPeriod }: { period: Period }) => {
-    if (period === newPeriod) {
-      return
-    }
+  const updatePeriod = useCallback(
+    ({ period: newPeriod }: { period: Period }) => {
+      if (period === newPeriod) {
+        return
+      }
 
-    const newSearchParams = new URLSearchParams(searchParams.toString())
-    newSearchParams.delete('from')
-    newSearchParams.delete('to')
-    newSearchParams.set('period', newPeriod)
+      const newSearchParams = new URLSearchParams(searchParams.toString())
+      newSearchParams.delete('from')
+      newSearchParams.delete('to')
+      newSearchParams.set('period', newPeriod)
 
-    updatePreferences({
-      period: newPeriod,
-      rangeDate: undefined,
-    })
+      updatePreferences({
+        period: newPeriod,
+        rangeDate: undefined,
+      })
 
-    sdkInstance?._emitEvent('timeupdate', {
-      period: newPeriod,
-      dateRange: null,
-    })
+      sdkInstance?._emitEvent('timeupdate', {
+        period: newPeriod,
+        dateRange: null,
+      })
 
-    setSearchParams(newSearchParams)
-  }
+      setSearchParams(newSearchParams)
+    },
+    [period, searchParams, setSearchParams, sdkInstance, updatePreferences],
+  )
 
-  const updateTimebucket = (newTimebucket: TimeBucket) => {
-    if (dataLoading) {
-      return
-    }
+  const updateTimebucket = useCallback(
+    (newTimebucket: TimeBucket) => {
+      if (dataLoading) {
+        return
+      }
 
-    const newSearchParams = new URLSearchParams(searchParams.toString())
-    newSearchParams.set('timeBucket', newTimebucket)
-    setSearchParams(newSearchParams)
+      const newSearchParams = new URLSearchParams(searchParams.toString())
+      newSearchParams.set('timeBucket', newTimebucket)
+      setSearchParams(newSearchParams)
 
-    updatePreferences({
-      timeBucket: newTimebucket,
-    })
-    sdkInstance?._emitEvent('timeupdate', {
-      period,
-      timeBucket: newTimebucket,
-      dateRange,
-    })
-  }
+      updatePreferences({
+        timeBucket: newTimebucket,
+      })
+      sdkInstance?._emitEvent('timeupdate', {
+        period,
+        timeBucket: newTimebucket,
+        dateRange,
+      })
+    },
+    [dataLoading, searchParams, setSearchParams, sdkInstance, period, dateRange, updatePreferences],
+  )
 
   const openSettingsHandler = () => {
     navigate(_replace(routes.project_settings, ':id', id))
   }
 
-  const onMainChartZoom = (domain: [Date, Date] | null) => {
-    if (!domain) {
-      return
-    }
+  const onMainChartZoom = useCallback(
+    (domain: [Date, Date] | null) => {
+      if (!domain) {
+        return
+      }
 
-    const [from, to] = domain
-    const newSearchParams = new URLSearchParams(searchParams.toString())
+      const [from, to] = domain
+      const newSearchParams = new URLSearchParams(searchParams.toString())
 
-    // Format dates based on time bucket precision
-    let fromFormatted = from.toISOString().split('T')[0] + 'T00:00:00.000Z'
-    let toFormatted = to.toISOString().split('T')[0] + 'T23:59:59.999Z'
+      // Format dates based on time bucket precision
+      let fromFormatted = from.toISOString().split('T')[0] + 'T00:00:00.000Z'
+      let toFormatted = to.toISOString().split('T')[0] + 'T23:59:59.999Z'
 
-    newSearchParams.set('from', fromFormatted)
-    newSearchParams.set('to', toFormatted)
-    newSearchParams.set('period', 'custom')
-    setSearchParams(newSearchParams)
-  }
+      newSearchParams.set('from', fromFormatted)
+      newSearchParams.set('to', toFormatted)
+      newSearchParams.set('period', 'custom')
+      setSearchParams(newSearchParams)
+    },
+    [searchParams, setSearchParams],
+  )
 
   // Detect touch-capable devices (mobile/tablets) to avoid accidental zoom while scrolling
   const isTouchDevice = useMemo(() => {
@@ -984,27 +1009,30 @@ const ViewProjectContent = () => {
     return daysDiff > 1
   }, [period, dateRange, isTouchDevice])
 
-  const getFilterLink = (column: string, value: string | null): LinkProps['to'] => {
-    const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
+  const getFilterLink = useCallback(
+    (column: string, value: string | null): LinkProps['to'] => {
+      const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
 
-    const newSearchParams = new URLSearchParams(searchParams.toString())
-    let searchString = ''
+      const newSearchParams = new URLSearchParams(searchParams.toString())
+      let searchString = ''
 
-    if (isFilterActive) {
-      newSearchParams.delete(column, value ?? 'null')
-      newSearchParams.delete(`!${column}`, value ?? 'null')
-      newSearchParams.delete(`~${column}`, value ?? 'null')
-      newSearchParams.delete(`^${column}`, value ?? 'null')
-      searchString = newSearchParams.toString()
-    } else {
-      newSearchParams.append(column, value ?? 'null')
-      searchString = newSearchParams.toString()
-    }
+      if (isFilterActive) {
+        newSearchParams.delete(column, value ?? 'null')
+        newSearchParams.delete(`!${column}`, value ?? 'null')
+        newSearchParams.delete(`~${column}`, value ?? 'null')
+        newSearchParams.delete(`^${column}`, value ?? 'null')
+        searchString = newSearchParams.toString()
+      } else {
+        newSearchParams.append(column, value ?? 'null')
+        searchString = newSearchParams.toString()
+      }
 
-    return {
-      search: searchString,
-    }
-  }
+      return {
+        search: searchString,
+      }
+    },
+    [filters, searchParams],
+  )
 
   const exportTypes = [
     {
@@ -1015,17 +1043,17 @@ const ViewProjectContent = () => {
     },
   ]
 
-  const setChartTypeOnClick = (type: keyof typeof chartTypes) => {
+  const setChartTypeOnClick = useCallback((type: keyof typeof chartTypes) => {
     setItem('chartType', type)
     setChartType(type)
-  }
+  }, [])
 
-  const resetDateRange = () => {
+  const resetDateRange = useCallback(() => {
     const newSearchParams = new URLSearchParams(searchParams.toString())
     newSearchParams.delete('from')
     newSearchParams.delete('to')
     setSearchParams(newSearchParams)
-  }
+  }, [searchParams, setSearchParams])
 
   /* KEYBOARD SHORTCUTS */
   const generalShortcutsActions = {
@@ -1172,6 +1200,9 @@ const ViewProjectContent = () => {
       setDateRangeCompare,
       setActivePeriodCompare,
       compareDisable,
+      maxRangeCompare,
+      periodPairsCompare,
+      setPeriodPairsCompare,
 
       // Chart state
       chartType,
@@ -1189,9 +1220,13 @@ const ViewProjectContent = () => {
       // Functions
       updatePeriod,
       updateTimebucket,
+      setShowFiltersSearch,
+      resetDateRange,
+      refreshStats,
 
       // Refs
       refCalendar,
+      refCalendarCompare,
     }),
     [
       timezone,
@@ -1223,6 +1258,9 @@ const ViewProjectContent = () => {
       setDateRangeCompare,
       setActivePeriodCompare,
       compareDisable,
+      maxRangeCompare,
+      periodPairsCompare,
+      setPeriodPairsCompare,
       chartType,
       setChartTypeOnClick,
       rotateXAxis,
@@ -1232,7 +1270,11 @@ const ViewProjectContent = () => {
       getVersionFilterLink,
       updatePeriod,
       updateTimebucket,
+      setShowFiltersSearch,
+      resetDateRange,
+      refreshStats,
       refCalendar,
+      refCalendarCompare,
     ],
   )
 
@@ -1370,76 +1412,44 @@ const ViewProjectContent = () => {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.15 }}
                   >
-                    {activeTab !== PROJECT_TABS.alerts &&
-                    activeTab !== PROJECT_TABS.ai &&
-                    activeTab !== PROJECT_TABS.funnels &&
-                    (activeTab !== PROJECT_TABS.sessions || !activePSID) ? (
-                      <DashboardHeader
-                        refreshStats={refreshStats}
-                        timeBucketSelectorItems={timeBucketSelectorItems}
-                        isActiveCompare={isActiveCompare}
-                        setIsActiveCompare={setIsActiveCompare}
-                        compareDisable={compareDisable}
-                        maxRangeCompare={maxRangeCompare}
-                        dateRangeCompare={dateRangeCompare}
-                        setDateRangeCompare={setDateRangeCompare}
-                        activePeriodCompare={activePeriodCompare}
-                        setActivePeriodCompare={setActivePeriodCompare}
-                        periodPairsCompare={periodPairsCompare}
-                        setPeriodPairsCompare={setPeriodPairsCompare}
-                        setShowFiltersSearch={setShowFiltersSearch}
-                        resetDateRange={resetDateRange}
-                        refCalendar={refCalendar}
-                        refCalendarCompare={refCalendarCompare}
-                        showSearchButton={activeTab !== PROJECT_TABS.errors}
-                        hideTimeBucket={activeTab === PROJECT_TABS.errors}
-                        rightContent={
-                          activeTab === PROJECT_TABS.traffic ? (
-                            <TrafficHeaderActions
-                              projectViews={projectViews}
-                              projectViewsLoading={projectViewsLoading}
-                              projectViewDeleting={projectViewDeleting}
-                              loadProjectViews={loadProjectViews}
-                              onProjectViewDelete={onProjectViewDelete}
-                              setProjectViewToUpdate={setProjectViewToUpdate}
-                              setIsAddAViewOpened={setIsAddAViewOpened}
-                              onCustomMetric={onCustomMetric}
-                              filters={filters}
-                              allowedToManage={allowedToManage}
-                              dataLoading={dataLoading}
-                              exportTypes={exportTypes}
-                              customExportTypes={customExportTypes}
-                              panelsData={_panelsData}
-                            />
-                          ) : null
+                    {activeTab === PROJECT_TABS.ai ? <AskAIView projectId={id} /> : null}
+                    {activeTab === PROJECT_TABS.traffic ? (
+                      <TrafficView
+                        tnMapping={tnMapping}
+                        customMetrics={customMetrics}
+                        onCustomMetric={onCustomMetric}
+                        onRemoveCustomMetric={onRemoveCustomMetric}
+                        resetCustomMetrics={resetCustomMetrics}
+                        mode={mode}
+                        sdkInstance={sdkInstance}
+                        headerRightContent={
+                          <TrafficHeaderActions
+                            projectViews={projectViews}
+                            projectViewsLoading={projectViewsLoading}
+                            projectViewDeleting={projectViewDeleting}
+                            loadProjectViews={loadProjectViews}
+                            onProjectViewDelete={onProjectViewDelete}
+                            setProjectViewToUpdate={setProjectViewToUpdate}
+                            setIsAddAViewOpened={setIsAddAViewOpened}
+                            onCustomMetric={onCustomMetric}
+                            filters={filters}
+                            allowedToManage={allowedToManage}
+                            dataLoading={dataLoading}
+                            exportTypes={exportTypes}
+                            customExportTypes={customExportTypes}
+                            panelsData={_panelsData}
+                          />
                         }
                       />
                     ) : null}
-                    {activeTab === PROJECT_TABS.alerts && (project.role !== 'owner' || !isAuthenticated) ? (
-                      <div className='mt-5 rounded-xl bg-gray-700 p-5'>
-                        <div className='flex items-center text-gray-50'>
-                          <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
-                          <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
-                        </div>
-                        <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
-                        <Link
-                          to={routes.signup}
-                          className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
-                          aria-label={t('titles.signup')}
-                        >
-                          {t('header.startForFree')}
-                        </Link>
-                      </div>
-                    ) : null}
+                    {activeTab === PROJECT_TABS.performance ? <PerformanceView tnMapping={tnMapping} /> : null}
                     {activeTab === PROJECT_TABS.funnels ? <FunnelsView /> : null}
+                    {activeTab === PROJECT_TABS.alerts ? <ProjectAlertsView /> : null}
                     {activeTab === PROJECT_TABS.profiles ? <ProfilesView chartType={chartType} /> : null}
                     {activeTab === PROJECT_TABS.sessions ? (
                       <SessionsView tnMapping={tnMapping} chartType={chartType} rotateXAxis={rotateXAxis} />
                     ) : null}
                     {activeTab === PROJECT_TABS.errors ? <ErrorsView /> : null}
-                    {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && isAuthenticated ? (
-                      <ProjectAlertsView />
-                    ) : null}
                     {activeTab === PROJECT_TABS.goals ? (
                       <GoalsView
                         period={period}
@@ -1464,20 +1474,7 @@ const ViewProjectContent = () => {
                         timezone={timezone}
                       />
                     ) : null}
-                    {activeTab === PROJECT_TABS.ai ? <AskAIView projectId={id} /> : null}
                     {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
-                    {activeTab === PROJECT_TABS.traffic ? (
-                      <TrafficView
-                        tnMapping={tnMapping}
-                        customMetrics={customMetrics}
-                        onCustomMetric={onCustomMetric}
-                        onRemoveCustomMetric={onRemoveCustomMetric}
-                        resetCustomMetrics={resetCustomMetrics}
-                        mode={mode}
-                        sdkInstance={sdkInstance}
-                      />
-                    ) : null}
-                    {activeTab === PROJECT_TABS.performance ? <PerformanceView tnMapping={tnMapping} /> : null}
                   </motion.div>
                 </AnimatePresence>
 

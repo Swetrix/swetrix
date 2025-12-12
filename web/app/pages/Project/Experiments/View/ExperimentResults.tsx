@@ -1,7 +1,6 @@
 import cx from 'clsx'
 import _map from 'lodash/map'
 import {
-  ArrowLeftIcon,
   TrophyIcon,
   UsersIcon,
   TargetIcon,
@@ -22,8 +21,7 @@ import {
   type ExperimentResults as ExperimentResultsType,
   type ExperimentVariantResult,
 } from '~/api'
-import Button from '~/ui/Button'
-import Loader from '~/ui/Loader'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { nFormatter } from '~/utils/generic'
@@ -523,133 +521,121 @@ const ExperimentResults = ({ experimentId, period, from, to, timezone, onBack }:
 
   if (error || !experiment || !results) {
     return (
-      <div className='mt-4'>
-        <Button onClick={onBack} secondary small className='mb-4'>
-          <ArrowLeftIcon className='mr-1 size-4' />
-          {t('common.back')}
-        </Button>
+      <>
+        <DashboardHeader onBack={onBack} showLiveVisitors={false} />
         <div className='rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20'>
           <Text colour='muted'>{error || t('experiments.loadError')}</Text>
         </div>
-      </div>
+      </>
     )
   }
 
   return (
-    <div className='mt-4 space-y-6'>
-      {/* Header */}
-      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-        <div className='flex items-center gap-4'>
-          <Button onClick={onBack} secondary small>
-            <ArrowLeftIcon className='mr-1 size-4' />
-            {t('common.back')}
-          </Button>
-          <div className='min-w-0'>
-            <div className='flex items-center gap-2'>
-              <FlaskConicalIcon className='size-5 text-purple-500' strokeWidth={1.5} />
-              <Text as='h2' size='xl' weight='bold' truncate>
-                {experiment.name}
+    <>
+      <DashboardHeader
+        onBack={onBack}
+        showLiveVisitors={false}
+        leftContent={
+          <div className='flex items-center gap-2'>
+            <FlaskConicalIcon className='size-5 text-purple-500' strokeWidth={1.5} />
+            <Text as='h2' size='xl' weight='bold' truncate>
+              {experiment.name}
+            </Text>
+            <div
+              className={cx('inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium', {
+                'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400': results.status === 'draft',
+                'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': results.status === 'running',
+                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': results.status === 'paused',
+                'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': results.status === 'completed',
+              })}
+            >
+              {t(`experiments.status.${results.status}`)}
+            </div>
+          </div>
+        }
+      />
+      <div className='mt-4 space-y-6'>
+        {/* Winner announcement */}
+        {results.hasWinner && results.winnerKey && (
+          <div className='flex items-center gap-4 rounded-xl border border-green-300 bg-linear-to-r from-green-50 to-emerald-50 p-4 dark:border-green-700 dark:bg-green-900/20'>
+            <div className='flex size-12 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50'>
+              <TrophyIcon className='size-6 text-green-600 dark:text-green-400' />
+            </div>
+            <div>
+              <Text weight='bold' size='lg' className='text-green-800 dark:text-green-200'>
+                {t('experiments.winnerFound')}
+              </Text>
+              <Text size='sm' className='text-green-700 dark:text-green-300'>
+                {t('experiments.winnerDescription', {
+                  variant: results.variants.find((v) => v.key === results.winnerKey)?.name || results.winnerKey,
+                })}
               </Text>
             </div>
-            {experiment.description && (
-              <Text size='sm' colour='muted' className='mt-0.5'>
-                {experiment.description}
-              </Text>
-            )}
           </div>
-        </div>
-        <div
-          className={cx('inline-flex items-center self-start rounded-full px-3 py-1 text-sm font-medium', {
-            'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400': results.status === 'draft',
-            'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': results.status === 'running',
-            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': results.status === 'paused',
-            'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': results.status === 'completed',
-          })}
-        >
-          {t(`experiments.status.${results.status}`)}
-        </div>
-      </div>
+        )}
 
-      {/* Winner announcement */}
-      {results.hasWinner && results.winnerKey && (
-        <div className='flex items-center gap-4 rounded-xl border border-green-300 bg-linear-to-r from-green-50 to-emerald-50 p-4 dark:border-green-700 dark:bg-green-900/20'>
-          <div className='flex size-12 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50'>
-            <TrophyIcon className='size-6 text-green-600 dark:text-green-400' />
-          </div>
-          <div>
-            <Text weight='bold' size='lg' className='text-green-800 dark:text-green-200'>
-              {t('experiments.winnerFound')}
-            </Text>
-            <Text size='sm' className='text-green-700 dark:text-green-300'>
-              {t('experiments.winnerDescription', {
-                variant: results.variants.find((v) => v.key === results.winnerKey)?.name || results.winnerKey,
-              })}
+        {/* No data message */}
+        {results.totalExposures === 0 && (
+          <div className='rounded-xl border border-yellow-300 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20'>
+            <Text weight='semibold'>{t('experiments.noDataYet')}</Text>
+            <Text colour='muted' size='sm' className='mt-1'>
+              {t('experiments.noDataDescription')}
             </Text>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* No data message */}
-      {results.totalExposures === 0 && (
-        <div className='rounded-xl border border-yellow-300 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20'>
-          <Text weight='semibold'>{t('experiments.noDataYet')}</Text>
-          <Text colour='muted' size='sm' className='mt-1'>
-            {t('experiments.noDataDescription')}
+        {/* Stats Grid - 2x2 layout */}
+        <div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
+          <StatCard
+            icon={UsersIcon}
+            label={t('experiments.totalExposures')}
+            value={nFormatter(results.totalExposures, 1)}
+            iconClassName='bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+          />
+          <StatCard
+            icon={TargetIcon}
+            label={t('experiments.totalConversions')}
+            value={nFormatter(results.totalConversions, 1)}
+            subValue={`${overallConversionRate}%`}
+            iconClassName='bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+          />
+          <StatCard
+            icon={FlaskConicalIcon}
+            label={t('experiments.variantsCount')}
+            value={results.variants.length}
+            iconClassName='bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
+          />
+          <StatCard
+            icon={PercentIcon}
+            label={t('experiments.confidenceLevel')}
+            value={`${results.confidenceLevel}%`}
+            iconClassName='bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+          />
+        </div>
+
+        {/* Metrics Table */}
+        <MetricsTable variants={sortedVariants} winnerKey={results.winnerKey} hasWinner={results.hasWinner} />
+
+        {/* Exposures Table */}
+        <ExposuresTable variants={sortedVariants} totalExposures={results.totalExposures} />
+
+        {/* Hypothesis */}
+        {experiment.hypothesis && (
+          <CollapsibleSection title={t('experiments.hypothesisLabel')}>
+            <Text className='italic' colour='muted'>
+              "{experiment.hypothesis}"
+            </Text>
+          </CollapsibleSection>
+        )}
+
+        {/* Statistical note */}
+        <div className='rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50'>
+          <Text size='xs' colour='muted'>
+            {t('experiments.statisticalNote')}
           </Text>
         </div>
-      )}
-
-      {/* Stats Grid - 2x2 layout */}
-      <div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
-        <StatCard
-          icon={UsersIcon}
-          label={t('experiments.totalExposures')}
-          value={nFormatter(results.totalExposures, 1)}
-          iconClassName='bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-        />
-        <StatCard
-          icon={TargetIcon}
-          label={t('experiments.totalConversions')}
-          value={nFormatter(results.totalConversions, 1)}
-          subValue={`${overallConversionRate}%`}
-          iconClassName='bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
-        />
-        <StatCard
-          icon={FlaskConicalIcon}
-          label={t('experiments.variantsCount')}
-          value={results.variants.length}
-          iconClassName='bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
-        />
-        <StatCard
-          icon={PercentIcon}
-          label={t('experiments.confidenceLevel')}
-          value={`${results.confidenceLevel}%`}
-          iconClassName='bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
-        />
       </div>
-
-      {/* Metrics Table */}
-      <MetricsTable variants={sortedVariants} winnerKey={results.winnerKey} hasWinner={results.hasWinner} />
-
-      {/* Exposures Table */}
-      <ExposuresTable variants={sortedVariants} totalExposures={results.totalExposures} />
-
-      {/* Hypothesis */}
-      {experiment.hypothesis && (
-        <CollapsibleSection title={t('experiments.hypothesisLabel')}>
-          <Text className='italic' colour='muted'>
-            "{experiment.hypothesis}"
-          </Text>
-        </CollapsibleSection>
-      )}
-
-      {/* Statistical note */}
-      <div className='rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50'>
-        <Text size='xs' colour='muted'>
-          {t('experiments.statisticalNote')}
-        </Text>
-      </div>
-    </div>
+    </>
   )
 }
 

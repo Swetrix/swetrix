@@ -20,12 +20,12 @@ const ICON_COLORS: Record<string, string> = {
   // Web Analytics
   traffic: 'text-blue-500',
   performance: 'text-amber-500',
+  funnels: 'text-teal-500',
   alerts: 'text-cyan-500',
   // Product Analytics
   profiles: 'text-indigo-500',
   sessions: 'text-indigo-500',
   errors: 'text-red-500',
-  funnels: 'text-teal-500',
   goals: 'text-purple-500',
   experiments: 'text-pink-500',
   featureFlags: 'text-orange-500',
@@ -242,7 +242,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     const groups: TabGroup[] = []
 
     const webAnalyticsTabs = tabs.filter((tab) =>
-      [PROJECT_TABS.traffic, PROJECT_TABS.performance, PROJECT_TABS.alerts].includes(tab.id as any),
+      [PROJECT_TABS.traffic, PROJECT_TABS.performance, PROJECT_TABS.funnels, PROJECT_TABS.alerts].includes(
+        tab.id as any,
+      ),
     )
     if (webAnalyticsTabs.length > 0) {
       groups.push({
@@ -256,7 +258,6 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       [
         PROJECT_TABS.profiles,
         PROJECT_TABS.sessions,
-        PROJECT_TABS.funnels,
         PROJECT_TABS.errors,
         PROJECT_TABS.goals,
         PROJECT_TABS.experiments,

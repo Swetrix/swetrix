@@ -1,14 +1,14 @@
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import { ChevronLeftIcon, DownloadIcon } from 'lucide-react'
+import { DownloadIcon } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 
 import { getProfiles, getProfile, getProfileSessions } from '~/api'
 import { Profile, ProfileDetails, Session } from '~/lib/models/Project'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
-import { RefreshStatsButton } from '~/pages/Project/View/components/RefreshStatsButton'
 import { UserDetails } from '~/pages/Project/View/components/UserDetails'
 import { Users, UsersFilter } from '~/pages/Project/View/components/Users'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
@@ -313,24 +313,15 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
 
   // Profile detail view
   if (activeProfileId) {
+    const backSearchParams = (() => {
+      const params = new URLSearchParams(searchParams)
+      params.delete('profileId')
+      return params.toString()
+    })()
+
     return (
       <>
-        <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
-          <Link
-            to={{
-              search: (() => {
-                const params = new URLSearchParams(searchParams)
-                params.delete('profileId')
-                return params.toString()
-              })(),
-            }}
-            className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
-          >
-            <ChevronLeftIcon className='mr-1 size-3' />
-            {t('project.backToUsers')}
-          </Link>
-          <RefreshStatsButton onRefresh={() => loadProfile(activeProfileId)} />
-        </div>
+        <DashboardHeader backLink={`?${backSearchParams}`} showLiveVisitors={false} />
         {profileLoading ? (
           <Loader />
         ) : (
@@ -355,6 +346,7 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
   // Profiles list view
   return (
     <>
+      <DashboardHeader showLiveVisitors />
       <UsersFilter
         profileType={profileTypeFilter}
         onProfileTypeChange={(type) => {

@@ -10,14 +10,13 @@ import _toNumber from 'lodash/toNumber'
 import _values from 'lodash/values'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useNavigate, Link } from 'react-router'
+import { Link } from 'react-router'
 import { toast } from 'sonner'
 
 import { createAlert, updateAlert, deleteAlert, CreateAlert, getAlert } from '~/api'
-import { withAuthentication, auth } from '~/hoc/protected'
-import { useRequiredParams } from '~/hooks/useRequiredParams'
-import { PROJECT_TABS, QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from '~/lib/constants'
+import { QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
@@ -25,22 +24,33 @@ import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
+import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 
 interface ProjectAlertsSettingsProps {
+  alertId?: string | null
+  projectId: string
   isSettings?: boolean
+  onClose?: () => void
+  onSave?: () => void
+  backLink?: string
 }
 
-const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
+const ProjectAlertsSettings = ({
+  alertId,
+  projectId,
+  isSettings,
+  onClose,
+  onSave,
+  backLink,
+}: ProjectAlertsSettingsProps) => {
   const { user, isLoading: authLoading } = useAuth()
 
-  const navigate = useNavigate()
-  const { id, pid } = useRequiredParams<{ id: string; pid: string }>()
   const { t } = useTranslation('common')
   const [form, setForm] = useState<Partial<Alerts>>({
-    pid,
+    pid: projectId,
     name: '',
     queryTime: QUERY_TIME.LAST_1_HOUR,
     queryCondition: QUERY_CONDITION.GREATER_THAN,
@@ -70,7 +80,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     )
   }, [user])
 
-  const loadAlert = async (alertId: string) => {
+  const loadAlert = async (id: string) => {
     if (!isSettings) {
       setIsLoading(false)
       return
@@ -83,7 +93,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     setIsLoading(true)
 
     try {
-      const result = await getAlert(alertId)
+      const result = await getAlert(id)
       setAlert(result)
       setForm(result)
     } catch (reason: any) {
@@ -98,10 +108,14 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
       return
     }
 
-    loadAlert(id)
+    if (alertId) {
+      loadAlert(alertId)
+    } else {
+      setIsLoading(false)
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, id, isSettings])
+  }, [authLoading, alertId, isSettings])
 
   const queryTimeTMapping: Record<string, string> = useMemo(() => {
     const values = _values(QUERY_TIME)
@@ -231,12 +245,12 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
       }
     }
 
-    if (isSettings) {
-      updateAlert(id as string, submissionData)
+    if (isSettings && alertId) {
+      updateAlert(alertId, submissionData)
         .then((res) => {
-          navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           setAlert(res)
           toast.success(t('alertsSettings.alertUpdated'))
+          onSave?.()
         })
         .catch((reason) => {
           toast.error(reason.message || reason || 'Something went wrong')
@@ -244,8 +258,8 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     } else {
       createAlert(submissionData as CreateAlert)
         .then(() => {
-          navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           toast.success(t('alertsSettings.alertCreated'))
+          onSave?.()
         })
         .catch((reason) => {
           toast.error(reason.message || reason || 'Something went wrong')
@@ -253,16 +267,16 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     }
   }
 
-  const onDelete = () => {
-    if (!id) {
+  const onDeleteAlert = () => {
+    if (!alertId) {
       toast.error('Something went wrong')
       return
     }
 
-    deleteAlert(id)
+    deleteAlert(alertId)
       .then(() => {
-        navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
         toast.success(t('alertsSettings.alertDeleted'))
+        onSave?.()
       })
       .catch((reason) => {
         toast.error(reason.message || reason || 'Something went wrong')
@@ -317,7 +331,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
 
   if (isLoading || isLoading === null) {
     return (
-      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
+      <div className='mt-4'>
         <Loader />
       </div>
     )
@@ -325,7 +339,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
 
   if (error && !isLoading) {
     return (
-      <div className='min-h-page bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
+      <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
         <div className='mx-auto max-w-max'>
           <main className='sm:flex'>
             <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
@@ -361,13 +375,20 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
   }
 
   return (
-    <div
-      className={cx('flex min-h-min-footer flex-col bg-gray-50 dark:bg-slate-900', {
-        'pb-40': isSettings,
-      })}
-    >
-      <form className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
+    <div>
+      <DashboardHeader
+        backLink={backLink}
+        showLiveVisitors={false}
+        showSearchButton={false}
+        showRefreshButton={false}
+        showPeriodSelector={false}
+        leftContent={
+          <Text as='h2' size='xl' weight='bold' className='wrap-break-word break-all'>
+            {title}
+          </Text>
+        }
+      />
+      <form className='w-full py-4' onSubmit={handleSubmit}>
         {!authLoading && !isIntegrationLinked ? (
           <div className='mt-2 flex items-center rounded-sm bg-blue-50 px-5 py-3 text-base whitespace-pre-wrap dark:bg-slate-800 dark:text-gray-50'>
             <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
@@ -531,9 +552,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
             <div className='flex items-center justify-between'>
               <Button
                 className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-                as={Link}
-                // @ts-expect-error
-                to={`/projects/${pid}?tab=${PROJECT_TABS.alerts}`}
+                onClick={onClose}
                 secondary
                 regular
               >
@@ -548,9 +567,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
           <div className='mt-5 flex items-center justify-between'>
             <Button
               className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              as={Link}
-              // @ts-expect-error
-              to={`/projects/${pid}?tab=${PROJECT_TABS.alerts}`}
+              onClick={onClose}
               secondary
               regular
             >
@@ -564,7 +581,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
       </form>
       <Modal
         onClose={() => setShowModal(false)}
-        onSubmit={onDelete}
+        onSubmit={onDeleteAlert}
         submitText={t('alert.delete')}
         closeText={t('common.close')}
         title={t('alert.qDelete')}
@@ -577,4 +594,4 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
   )
 }
 
-export default withAuthentication(ProjectAlertsSettings, auth.authenticated)
+export default ProjectAlertsSettings

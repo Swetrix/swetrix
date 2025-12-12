@@ -30,6 +30,7 @@ import {
   type Experiment,
   type ExperimentStatus,
 } from '~/api'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { Badge } from '~/ui/Badge'
@@ -470,73 +471,76 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   }
 
   return (
-    <div className='mt-4'>
-      {isLoading && !_isEmpty(experiments) ? <LoadingBar /> : null}
-      {_isEmpty(experiments) ? (
-        <div className='mt-5 rounded-xl bg-gray-700 p-5'>
-          <div className='flex items-center text-gray-50'>
-            <FlaskConicalIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
-            <p className='text-3xl font-bold'>{t('experiments.title')}</p>
-          </div>
-          <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('experiments.description')}</p>
-          <Button
-            onClick={handleNewExperiment}
-            className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
-            secondary
-            large
-          >
-            {t('experiments.create')}
-          </Button>
-        </div>
-      ) : (
-        <>
-          {/* Header with add button */}
-          <div className='mb-4 flex items-center justify-between'>
-            <Text as='h2' size='lg' weight='semibold'>
-              {t('experiments.title')}
-            </Text>
-            <Button onClick={handleNewExperiment} primary regular>
-              <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
+    <>
+      <DashboardHeader showLiveVisitors />
+      <div className='mt-4'>
+        {isLoading && !_isEmpty(experiments) ? <LoadingBar /> : null}
+        {_isEmpty(experiments) ? (
+          <div className='mt-5 rounded-xl bg-gray-700 p-5'>
+            <div className='flex items-center text-gray-50'>
+              <FlaskConicalIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+              <p className='text-3xl font-bold'>{t('experiments.title')}</p>
+            </div>
+            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('experiments.description')}</p>
+            <Button
+              onClick={handleNewExperiment}
+              className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
+              secondary
+              large
+            >
               {t('experiments.create')}
             </Button>
           </div>
+        ) : (
+          <>
+            {/* Header with add button */}
+            <div className='mb-4 flex items-center justify-between'>
+              <Text as='h2' size='lg' weight='semibold'>
+                {t('experiments.title')}
+              </Text>
+              <Button onClick={handleNewExperiment} primary regular>
+                <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
+                {t('experiments.create')}
+              </Button>
+            </div>
 
-          {/* Experiments list */}
-          <ul className='mt-4'>
-            {_map(experiments, (experiment) => (
-              <ExperimentRow
-                key={experiment.id}
-                experiment={experiment}
-                onDelete={handleDeleteExperiment}
-                onEdit={handleEditExperiment}
-                onStart={handleStartExperiment}
-                onPause={handlePauseExperiment}
-                onComplete={handleCompleteExperiment}
-                onViewResults={handleViewResults}
-              />
-            ))}
-          </ul>
-        </>
-      )}
-      {pageAmount > 1 ? (
-        <Pagination
-          className='mt-4'
-          page={page}
-          pageAmount={pageAmount}
-          setPage={setPage}
-          total={total}
-          pageSize={DEFAULT_EXPERIMENTS_TAKE}
+            {/* Experiments list */}
+            <ul className='mt-4'>
+              {_map(experiments, (experiment) => (
+                <ExperimentRow
+                  key={experiment.id}
+                  experiment={experiment}
+                  onDelete={handleDeleteExperiment}
+                  onEdit={handleEditExperiment}
+                  onStart={handleStartExperiment}
+                  onPause={handlePauseExperiment}
+                  onComplete={handleCompleteExperiment}
+                  onViewResults={handleViewResults}
+                />
+              ))}
+            </ul>
+          </>
+        )}
+        {pageAmount > 1 ? (
+          <Pagination
+            className='mt-4'
+            page={page}
+            pageAmount={pageAmount}
+            setPage={setPage}
+            total={total}
+            pageSize={DEFAULT_EXPERIMENTS_TAKE}
+          />
+        ) : null}
+
+        <ExperimentSettingsModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSuccess={handleModalSuccess}
+          projectId={id}
+          experimentId={editingExperimentId}
         />
-      ) : null}
-
-      <ExperimentSettingsModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSuccess={handleModalSuccess}
-        projectId={id}
-        experimentId={editingExperimentId}
-      />
-    </div>
+      </div>
+    </>
   )
 }
 
