@@ -838,6 +838,9 @@ const getSettings = (
     },
     bar: {
       linearGradient: true,
+      radius: {
+        ratio: 0.15,
+      },
     },
     zoom:
       onZoom && enableZoom !== false
@@ -1008,6 +1011,9 @@ const getSettingsSession = (
     },
     bar: {
       linearGradient: true,
+      radius: {
+        ratio: 0.15,
+      },
     },
     bindto: '#sessionChart',
   }
@@ -1181,6 +1187,9 @@ const getSettingsError = (
     },
     bar: {
       linearGradient: true,
+      radius: {
+        ratio: 0.15,
+      },
     },
   }
 }
@@ -1601,6 +1610,9 @@ const getSettingsPerf = (
     },
     bar: {
       linearGradient: true,
+      radius: {
+        ratio: 0.15,
+      },
     },
     zoom:
       onZoom && enableZoom !== false
@@ -1955,6 +1967,9 @@ const getSettingsCaptcha = (
     },
     bar: {
       linearGradient: true,
+      radius: {
+        ratio: 0.15,
+      },
     },
   }
 }
