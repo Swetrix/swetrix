@@ -13,7 +13,12 @@ import {
   IsUUID,
 } from 'class-validator'
 import { Type } from 'class-transformer'
-import { ExperimentStatus } from '../entity/experiment.entity'
+import {
+  ExperimentStatus,
+  ExposureTrigger,
+  MultipleVariantHandling,
+  FeatureFlagMode,
+} from '../entity/experiment.entity'
 
 export class ExperimentVariantDto {
   @ApiProperty()
@@ -25,6 +30,12 @@ export class ExperimentVariantDto {
   @IsString()
   @MaxLength(100)
   key: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  description?: string
 
   @ApiProperty()
   @IsNumber()
@@ -59,6 +70,45 @@ export class CreateExperimentDto {
   @MaxLength(500)
   hypothesis?: string
 
+  // Exposure criteria
+  @ApiPropertyOptional({ enum: ExposureTrigger })
+  @IsOptional()
+  @IsEnum(ExposureTrigger)
+  exposureTrigger?: ExposureTrigger
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  customEventName?: string
+
+  @ApiPropertyOptional({ enum: MultipleVariantHandling })
+  @IsOptional()
+  @IsEnum(MultipleVariantHandling)
+  multipleVariantHandling?: MultipleVariantHandling
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  filterInternalUsers?: boolean
+
+  // Feature flag configuration
+  @ApiPropertyOptional({ enum: FeatureFlagMode })
+  @IsOptional()
+  @IsEnum(FeatureFlagMode)
+  featureFlagMode?: FeatureFlagMode
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  featureFlagKey?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  existingFeatureFlagId?: string
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsUUID()
@@ -90,6 +140,45 @@ export class UpdateExperimentDto {
   @MaxLength(500)
   hypothesis?: string
 
+  // Exposure criteria
+  @ApiPropertyOptional({ enum: ExposureTrigger })
+  @IsOptional()
+  @IsEnum(ExposureTrigger)
+  exposureTrigger?: ExposureTrigger
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  customEventName?: string
+
+  @ApiPropertyOptional({ enum: MultipleVariantHandling })
+  @IsOptional()
+  @IsEnum(MultipleVariantHandling)
+  multipleVariantHandling?: MultipleVariantHandling
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  filterInternalUsers?: boolean
+
+  // Feature flag configuration
+  @ApiPropertyOptional({ enum: FeatureFlagMode })
+  @IsOptional()
+  @IsEnum(FeatureFlagMode)
+  featureFlagMode?: FeatureFlagMode
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  featureFlagKey?: string
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  existingFeatureFlagId?: string
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsUUID()
@@ -118,6 +207,26 @@ export class ExperimentDto {
 
   @ApiProperty({ enum: ExperimentStatus })
   status: ExperimentStatus
+
+  // Exposure criteria
+  @ApiProperty({ enum: ExposureTrigger })
+  exposureTrigger: ExposureTrigger
+
+  @ApiProperty()
+  customEventName: string | null
+
+  @ApiProperty({ enum: MultipleVariantHandling })
+  multipleVariantHandling: MultipleVariantHandling
+
+  @ApiProperty()
+  filterInternalUsers: boolean
+
+  // Feature flag configuration
+  @ApiProperty({ enum: FeatureFlagMode })
+  featureFlagMode: FeatureFlagMode
+
+  @ApiProperty()
+  featureFlagKey: string | null
 
   @ApiProperty()
   startedAt: Date | null

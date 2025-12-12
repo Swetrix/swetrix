@@ -23,6 +23,10 @@ export class ExperimentVariant {
   key: string
 
   @ApiProperty()
+  @Column('varchar', { length: 300, nullable: true })
+  description: string | null
+
+  @ApiProperty()
   @Column('tinyint', { unsigned: true, default: 50 })
   rolloutPercentage: number
 

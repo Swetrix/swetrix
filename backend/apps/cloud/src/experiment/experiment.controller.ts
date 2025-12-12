@@ -37,7 +37,13 @@ import {
 } from '../analytics/analytics.service'
 import { Auth } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
-import { Experiment, ExperimentStatus } from './entity/experiment.entity'
+import {
+  Experiment,
+  ExperimentStatus,
+  ExposureTrigger,
+  MultipleVariantHandling,
+  FeatureFlagMode,
+} from './entity/experiment.entity'
 import { ExperimentVariant } from './entity/experiment-variant.entity'
 import {
   CreateExperimentDto,
@@ -238,6 +244,40 @@ export class ExperimentController {
       }
     }
 
+    // Validate exposure criteria
+    if (
+      experimentDto.exposureTrigger === ExposureTrigger.CUSTOM_EVENT &&
+      !experimentDto.customEventName?.trim()
+    ) {
+      throw new BadRequestException(
+        'Custom event name is required when using custom event exposure trigger',
+      )
+    }
+
+    // Handle feature flag mode
+    let existingFeatureFlag: FeatureFlag | null = null
+    if (experimentDto.featureFlagMode === FeatureFlagMode.LINK) {
+      if (!experimentDto.existingFeatureFlagId) {
+        throw new BadRequestException(
+          'Feature flag ID is required when linking an existing flag',
+        )
+      }
+      existingFeatureFlag = await this.featureFlagService.findOne({
+        where: {
+          id: experimentDto.existingFeatureFlagId,
+          project: { id: experimentDto.pid },
+        },
+      })
+      if (!existingFeatureFlag) {
+        throw new NotFoundException('Feature flag not found')
+      }
+      if (existingFeatureFlag.experimentId) {
+        throw new BadRequestException(
+          'This feature flag is already linked to another experiment',
+        )
+      }
+    }
+
     try {
       // Create the experiment
       const experiment = new Experiment()
@@ -248,11 +288,27 @@ export class ExperimentController {
       experiment.project = project
       experiment.goal = goal
 
+      // Exposure criteria
+      experiment.exposureTrigger =
+        experimentDto.exposureTrigger || ExposureTrigger.FEATURE_FLAG
+      experiment.customEventName = experimentDto.customEventName || null
+      experiment.multipleVariantHandling =
+        experimentDto.multipleVariantHandling || MultipleVariantHandling.EXCLUDE
+      experiment.filterInternalUsers =
+        experimentDto.filterInternalUsers !== false
+
+      // Feature flag configuration
+      experiment.featureFlagMode =
+        experimentDto.featureFlagMode || FeatureFlagMode.CREATE
+      experiment.featureFlagKey = experimentDto.featureFlagKey || null
+      experiment.featureFlag = existingFeatureFlag
+
       // Create variants
       experiment.variants = experimentDto.variants.map(v => {
         const variant = new ExperimentVariant()
         variant.name = v.name
         variant.key = v.key
+        variant.description = v.description || null
         variant.rolloutPercentage = v.rolloutPercentage
         variant.isControl = v.isControl
         return variant
@@ -260,11 +316,18 @@ export class ExperimentController {
 
       const newExperiment = await this.experimentService.create(experiment)
 
+      // If linking existing flag, update it with experiment ID
+      if (existingFeatureFlag) {
+        await this.featureFlagService.update(existingFeatureFlag.id, {
+          experimentId: newExperiment.id,
+        })
+      }
+
       return {
         ..._omit(newExperiment, ['project', 'goal', 'featureFlag']),
         pid: experimentDto.pid,
         goalId: goal?.id || null,
-        featureFlagId: null,
+        featureFlagId: existingFeatureFlag?.id || null,
       }
     } catch (reason) {
       this.logger.error({ reason }, 'Error while creating experiment')
@@ -357,6 +420,7 @@ export class ExperimentController {
         const variant = new ExperimentVariant()
         variant.name = v.name
         variant.key = v.key
+        variant.description = v.description || null
         variant.rolloutPercentage = v.rolloutPercentage
         variant.isControl = v.isControl
         variant.experiment = experiment
@@ -364,10 +428,82 @@ export class ExperimentController {
       }
     }
 
-    const updatePayload: Partial<Experiment> = {
-      ..._pick(experimentDto, ['name', 'description', 'hypothesis']),
-      goal,
+    // Validate exposure criteria
+    const exposureTrigger =
+      experimentDto.exposureTrigger ?? experiment.exposureTrigger
+    const customEventName =
+      experimentDto.customEventName ?? experiment.customEventName
+    if (
+      exposureTrigger === ExposureTrigger.CUSTOM_EVENT &&
+      !customEventName?.trim()
+    ) {
+      throw new BadRequestException(
+        'Custom event name is required when using custom event exposure trigger',
+      )
     }
+
+    // Handle feature flag mode changes
+    let featureFlag = experiment.featureFlag
+    if (
+      experimentDto.featureFlagMode !== undefined &&
+      experimentDto.featureFlagMode !== experiment.featureFlagMode
+    ) {
+      if (experimentDto.featureFlagMode === FeatureFlagMode.LINK) {
+        if (!experimentDto.existingFeatureFlagId) {
+          throw new BadRequestException(
+            'Feature flag ID is required when linking an existing flag',
+          )
+        }
+        const existingFlag = await this.featureFlagService.findOne({
+          where: {
+            id: experimentDto.existingFeatureFlagId,
+            project: { id: experiment.project.id },
+          },
+        })
+        if (!existingFlag) {
+          throw new NotFoundException('Feature flag not found')
+        }
+        if (existingFlag.experimentId && existingFlag.experimentId !== id) {
+          throw new BadRequestException(
+            'This feature flag is already linked to another experiment',
+          )
+        }
+        // Unlink old flag if exists
+        if (experiment.featureFlag) {
+          await this.featureFlagService.update(experiment.featureFlag.id, {
+            experimentId: null,
+          })
+        }
+        // Link new flag
+        await this.featureFlagService.update(existingFlag.id, {
+          experimentId: id,
+        })
+        featureFlag = existingFlag
+      }
+    }
+
+    const updatePayload: Partial<Experiment> = {
+      ..._pick(experimentDto, [
+        'name',
+        'description',
+        'hypothesis',
+        'exposureTrigger',
+        'customEventName',
+        'multipleVariantHandling',
+        'filterInternalUsers',
+        'featureFlagMode',
+        'featureFlagKey',
+      ]),
+      goal,
+      featureFlag,
+    }
+
+    // Remove undefined values
+    Object.keys(updatePayload).forEach(key => {
+      if (updatePayload[key] === undefined) {
+        delete updatePayload[key]
+      }
+    })
 
     await this.experimentService.update(id, updatePayload)
 
@@ -408,9 +544,17 @@ export class ExperimentController {
       'You are not allowed to manage this experiment',
     )
 
-    // Delete associated feature flag if exists
+    // Handle feature flag - delete if created for this experiment, unlink if linked
     if (experiment.featureFlag) {
-      await this.featureFlagService.delete(experiment.featureFlag.id)
+      if (experiment.featureFlagMode === FeatureFlagMode.CREATE) {
+        // Delete the flag that was created specifically for this experiment
+        await this.featureFlagService.delete(experiment.featureFlag.id)
+      } else {
+        // Just unlink the flag, don't delete it
+        await this.featureFlagService.update(experiment.featureFlag.id, {
+          experimentId: null,
+        })
+      }
     }
 
     await this.experimentService.delete(id)
@@ -453,17 +597,37 @@ export class ExperimentController {
     // Create or update the feature flag for this experiment
     let featureFlag = experiment.featureFlag
     if (!featureFlag) {
-      // Create a new feature flag for the experiment
-      const flagKey = `experiment_${experiment.id.replace(/-/g, '_').substring(0, 20)}`
-      featureFlag = new FeatureFlag()
-      featureFlag.key = flagKey
-      featureFlag.description = `Feature flag for experiment: ${experiment.name}`
-      featureFlag.flagType = FeatureFlagType.ROLLOUT
-      featureFlag.rolloutPercentage = 100 // We control distribution via variants
-      featureFlag.enabled = true
-      featureFlag.project = experiment.project
-      featureFlag.experimentId = experiment.id
-      featureFlag = await this.featureFlagService.create(featureFlag)
+      // Only create new flag if mode is CREATE (not LINK)
+      if (experiment.featureFlagMode === FeatureFlagMode.CREATE) {
+        // Use custom key if provided, otherwise generate one
+        const flagKey =
+          experiment.featureFlagKey?.trim() ||
+          `experiment_${experiment.id.replace(/-/g, '_').substring(0, 20)}`
+
+        // Check if key already exists
+        const existingFlag = await this.featureFlagService.findOne({
+          where: { key: flagKey, project: { id: experiment.project.id } },
+        })
+        if (existingFlag) {
+          throw new BadRequestException(
+            `Feature flag with key "${flagKey}" already exists`,
+          )
+        }
+
+        featureFlag = new FeatureFlag()
+        featureFlag.key = flagKey
+        featureFlag.description = `Feature flag for experiment: ${experiment.name}`
+        featureFlag.flagType = FeatureFlagType.ROLLOUT
+        featureFlag.rolloutPercentage = 100 // We control distribution via variants
+        featureFlag.enabled = true
+        featureFlag.project = experiment.project
+        featureFlag.experimentId = experiment.id
+        featureFlag = await this.featureFlagService.create(featureFlag)
+      } else {
+        throw new BadRequestException(
+          'No feature flag linked to this experiment. Please link a feature flag first.',
+        )
+      }
     } else {
       // Enable the existing flag
       await this.featureFlagService.update(featureFlag.id, { enabled: true })

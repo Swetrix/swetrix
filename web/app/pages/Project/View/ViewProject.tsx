@@ -1138,6 +1138,104 @@ const ViewProjectContent = () => {
     </div>
   )
 
+  const contextValue = useMemo(
+    () => ({
+      // States
+      timezone,
+      dateRange,
+      isLoading: authLoading,
+      timeBucket,
+      period,
+      activePeriod,
+      periodPairs,
+      timeFormat,
+      size,
+      dataLoading,
+      activeTab,
+      filters,
+      customPanelTabs,
+      captchaRefreshTrigger,
+      goalsRefreshTrigger,
+      experimentsRefreshTrigger,
+      featureFlagsRefreshTrigger,
+      sessionsRefreshTrigger,
+      performanceRefreshTrigger,
+      trafficRefreshTrigger,
+      funnelsRefreshTrigger,
+      profilesRefreshTrigger,
+
+      // Comparison state
+      isActiveCompare,
+      dateRangeCompare,
+      activePeriodCompare,
+      setIsActiveCompare,
+      setDateRangeCompare,
+      setActivePeriodCompare,
+      compareDisable,
+
+      // Chart state
+      chartType,
+      setChartTypeOnClick,
+      rotateXAxis,
+
+      // Zoom state
+      onMainChartZoom,
+      shouldEnableZoom,
+
+      // Filter functions
+      getFilterLink,
+      getVersionFilterLink,
+
+      // Functions
+      updatePeriod,
+      updateTimebucket,
+
+      // Refs
+      refCalendar,
+    }),
+    [
+      timezone,
+      dateRange,
+      authLoading,
+      timeBucket,
+      period,
+      activePeriod,
+      periodPairs,
+      timeFormat,
+      size,
+      dataLoading,
+      activeTab,
+      filters,
+      customPanelTabs,
+      captchaRefreshTrigger,
+      goalsRefreshTrigger,
+      experimentsRefreshTrigger,
+      featureFlagsRefreshTrigger,
+      sessionsRefreshTrigger,
+      performanceRefreshTrigger,
+      trafficRefreshTrigger,
+      funnelsRefreshTrigger,
+      profilesRefreshTrigger,
+      isActiveCompare,
+      dateRangeCompare,
+      activePeriodCompare,
+      setIsActiveCompare,
+      setDateRangeCompare,
+      setActivePeriodCompare,
+      compareDisable,
+      chartType,
+      setChartTypeOnClick,
+      rotateXAxis,
+      onMainChartZoom,
+      shouldEnableZoom,
+      getFilterLink,
+      getVersionFilterLink,
+      updatePeriod,
+      updateTimebucket,
+      refCalendar,
+    ],
+  )
+
   if (authLoading || !project) {
     return (
       <>
@@ -1231,62 +1329,7 @@ const ViewProjectContent = () => {
   return (
     <ClientOnly>
       {() => (
-        <ViewProjectContext.Provider
-          value={{
-            // States
-            timezone,
-            dateRange,
-            isLoading: authLoading,
-            timeBucket,
-            period,
-            activePeriod,
-            periodPairs,
-            timeFormat,
-            size,
-            dataLoading,
-            activeTab,
-            filters,
-            customPanelTabs,
-            captchaRefreshTrigger,
-            goalsRefreshTrigger,
-            experimentsRefreshTrigger,
-            featureFlagsRefreshTrigger,
-            sessionsRefreshTrigger,
-            performanceRefreshTrigger,
-            trafficRefreshTrigger,
-            funnelsRefreshTrigger,
-            profilesRefreshTrigger,
-
-            // Comparison state
-            isActiveCompare,
-            dateRangeCompare,
-            activePeriodCompare,
-            setIsActiveCompare,
-            setDateRangeCompare,
-            setActivePeriodCompare,
-            compareDisable,
-
-            // Chart state
-            chartType,
-            setChartTypeOnClick,
-            rotateXAxis,
-
-            // Zoom state
-            onMainChartZoom,
-            shouldEnableZoom,
-
-            // Filter functions
-            getFilterLink,
-            getVersionFilterLink,
-
-            // Functions
-            updatePeriod,
-            updateTimebucket,
-
-            // Refs
-            refCalendar,
-          }}
-        >
+        <ViewProjectContext.Provider value={contextValue}>
           <>
             {dataLoading && !isAutoRefreshing ? <LoadingBar /> : null}
             {!isEmbedded ? <Header /> : null}

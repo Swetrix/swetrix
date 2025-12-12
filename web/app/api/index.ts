@@ -1500,10 +1500,17 @@ export const getFeatureFlagProfiles = (
 
 export type ExperimentStatus = 'draft' | 'running' | 'paused' | 'completed'
 
+export type ExposureTrigger = 'feature_flag' | 'custom_event'
+
+export type MultipleVariantHandling = 'exclude' | 'first_exposure'
+
+export type FeatureFlagMode = 'create' | 'link'
+
 export interface ExperimentVariant {
   id?: string
   name: string
   key: string
+  description?: string | null
   rolloutPercentage: number
   isControl: boolean
 }
@@ -1514,6 +1521,14 @@ export interface Experiment {
   description: string | null
   hypothesis: string | null
   status: ExperimentStatus
+  // Exposure criteria
+  exposureTrigger: ExposureTrigger
+  customEventName: string | null
+  multipleVariantHandling: MultipleVariantHandling
+  filterInternalUsers: boolean
+  // Feature flag configuration
+  featureFlagMode: FeatureFlagMode
+  featureFlagKey: string | null
   startedAt: string | null
   endedAt: string | null
   pid: string
@@ -1550,6 +1565,15 @@ export interface CreateExperiment {
   name: string
   description?: string
   hypothesis?: string
+  // Exposure criteria
+  exposureTrigger?: ExposureTrigger
+  customEventName?: string
+  multipleVariantHandling?: MultipleVariantHandling
+  filterInternalUsers?: boolean
+  // Feature flag configuration
+  featureFlagMode?: FeatureFlagMode
+  featureFlagKey?: string
+  existingFeatureFlagId?: string
   goalId?: string
   variants: ExperimentVariant[]
 }

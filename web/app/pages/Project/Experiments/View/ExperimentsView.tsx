@@ -15,7 +15,7 @@ import {
   BarChart3Icon,
   ChevronDownIcon,
 } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
@@ -42,6 +42,7 @@ import Pagination from '~/ui/Pagination'
 import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
+import ExperimentResults from './ExperimentResults'
 import ExperimentSettingsModal from './ExperimentSettingsModal'
 
 dayjs.extend(relativeTime)
@@ -302,12 +303,15 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
 
   const pageAmount = Math.ceil(total / DEFAULT_EXPERIMENTS_TAKE)
 
-  const loadExperiments = async (take: number, skip: number) => {
+  const loadExperiments = async (take: number, skip: number, showLoading = true) => {
     if (isLoadingRef.current) {
       return
     }
     isLoadingRef.current = true
-    setIsLoading(true)
+    // Only show loading state if requested and we don't have existing data
+    if (showLoading) {
+      setIsLoading(true)
+    }
 
     try {
       const result = await getProjectExperiments(id, take, skip)
@@ -335,29 +339,31 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   // Refresh experiments data when refresh button is clicked
   useEffect(() => {
     if (experimentsRefreshTrigger > 0) {
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE)
+      // Silent refresh - don't show loading state since we already have data
+      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experimentsRefreshTrigger])
 
-  const handleNewExperiment = () => {
+  const handleNewExperiment = useCallback(() => {
     setEditingExperimentId(null)
     setIsModalOpen(true)
-  }
+  }, [])
 
-  const handleEditExperiment = (experimentId: string) => {
+  const handleEditExperiment = useCallback((experimentId: string) => {
     setEditingExperimentId(experimentId)
     setIsModalOpen(true)
-  }
+  }, [])
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false)
     setEditingExperimentId(null)
-  }
+  }, [])
 
-  const handleModalSuccess = () => {
+  const handleModalSuccess = useCallback(() => {
     loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE)
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page])
 
   const handleDeleteExperiment = async (experimentId: string) => {
     try {
@@ -451,7 +457,6 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
 
   // If viewing results, show the results component
   if (viewingResultsId) {
-    const ExperimentResults = require('./ExperimentResults').default
     return (
       <ExperimentResults
         experimentId={viewingResultsId}
@@ -535,4 +540,4 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   )
 }
 
-export default ExperimentsView
+export default memo(ExperimentsView)
