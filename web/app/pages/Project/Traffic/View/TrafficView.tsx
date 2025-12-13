@@ -34,6 +34,7 @@ import CustomMetrics from '~/pages/Project/View/components/CustomMetrics'
 import Filters from '~/pages/Project/View/components/Filters'
 import { MetricCard, MetricCards } from '~/pages/Project/View/components/MetricCards'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
+import WaitingForAnEvent from '~/pages/Project/View/components/WaitingForAnEvent'
 import RefRow from '~/pages/Project/View/components/RefRow'
 import { TrafficChart } from '~/pages/Project/View/components/TrafficChart'
 import UserFlow from '~/pages/Project/View/components/UserFlow'
@@ -710,6 +711,11 @@ const TrafficView = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trafficRefreshTrigger])
+
+  // Show waiting state if project has no traffic data yet
+  if (!project?.isDataExists) {
+    return <WaitingForAnEvent />
+  }
 
   // Show loader during initial load
   if (analyticsLoading) {

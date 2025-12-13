@@ -74,7 +74,6 @@ import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
-import Select from '~/ui/Select'
 import { removeDuplicates } from '~/utils/generic'
 import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
@@ -97,10 +96,9 @@ import { ChartManagerProvider } from './components/ChartManager'
 const CaptchaView = lazy(() => import('./components/CaptchaView'))
 // Keywords list now reuses shared Panel UI; dedicated component removed from render
 import LockedDashboard from './components/LockedDashboard'
-import ProjectSidebar from './components/ProjectSidebar'
+import ProjectSidebar, { MobileSidebarTrigger } from './components/ProjectSidebar'
 import SearchFilters from './components/SearchFilters'
 import TrafficHeaderActions from './components/TrafficHeaderActions'
-import WaitingForAnEvent from './components/WaitingForAnEvent'
 import {
   Customs,
   Filter,
@@ -298,7 +296,6 @@ const ViewProjectContent = () => {
     { label: string; onClick: (data: typeof _panelsData, tFunction: typeof t) => void }[]
   >([])
   const [isAddAViewOpened, setIsAddAViewOpened] = useState(false)
-  const [analyticsLoading, _setAnalyticsLoading] = useState(true)
 
   // prevY2NeededRef removed - no longer needed with new chart management
   const [dataLoading, _setDataLoading] = useState(false)
@@ -576,6 +573,7 @@ const ViewProjectContent = () => {
   }, [activeTab, isActiveCompare, period, periodPairs])
 
   const [showFiltersSearch, setShowFiltersSearch] = useState(false)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   // @ts-expect-error
   const tabs: {
@@ -1144,27 +1142,9 @@ const ViewProjectContent = () => {
     updatePeriod(pair)
   })
 
-  // Mobile tab selector dropdown
-  const MobileTabSelector = () => (
-    <div className='mb-4 md:hidden'>
-      <Select
-        items={tabs}
-        keyExtractor={(item) => item.id}
-        labelExtractor={(item) => item.label}
-        onSelect={(item) => {
-          if (item.id === 'settings') {
-            openSettingsHandler()
-            return
-          }
-
-          setDashboardTab(item?.id)
-        }}
-        title={activeTabLabel}
-        capitalise
-        selectedItem={tabs.find((tab) => tab.id === activeTab)}
-      />
-    </div>
-  )
+  // Mobile sidebar handlers
+  const openMobileSidebar = useCallback(() => setIsMobileSidebarOpen(true), [])
+  const closeMobileSidebar = useCallback(() => setIsMobileSidebarOpen(false), [])
 
   const contextValue = useMemo(
     () => ({
@@ -1285,7 +1265,7 @@ const ViewProjectContent = () => {
         <div
           className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
             'min-h-including-header': !isEmbedded,
-            'min-h-[100vh]': isEmbedded,
+            'min-h-screen': isEmbedded,
           })}
         >
           <Loader />
@@ -1300,13 +1280,13 @@ const ViewProjectContent = () => {
       <>
         {!isEmbedded ? <Header /> : null}
         <div
-          className={cx('flex bg-gray-50 dark:bg-slate-900', {
+          className={cx('flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900', {
             'min-h-including-header': !isEmbedded,
-            'min-h-[100vh]': isEmbedded,
+            'min-h-screen': isEmbedded,
           })}
         >
-          {/* Desktop Sidebar */}
-          <div className='h-including-header sticky top-0 hidden md:block'>
+          <div className='relative flex flex-1'>
+            {/* Desktop Sidebar */}
             <ProjectSidebar
               tabs={tabs}
               activeTab={activeTab}
@@ -1316,54 +1296,33 @@ const ViewProjectContent = () => {
               dataLoading={dataLoading}
               searchParams={searchParams}
               allowedToManage={allowedToManage}
+              className='hidden md:flex'
             />
-          </div>
-          {/* Main Content */}
-          <div className='flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8'>
-            <MobileTabSelector />
-            <LockedDashboard />
-          </div>
-        </div>
-        {!isEmbedded ? <Footer /> : null}
-      </>
-    )
-  }
+            {/* Mobile Sidebar */}
+            {isMobileSidebarOpen ? (
+              <ProjectSidebar
+                tabs={tabs}
+                activeTab={activeTab}
+                onTabChange={setDashboardTab}
+                projectId={id}
+                projectName={project.name}
+                dataLoading={dataLoading}
+                searchParams={searchParams}
+                allowedToManage={allowedToManage}
+                isMobileOpen={isMobileSidebarOpen}
+                onMobileClose={closeMobileSidebar}
+              />
+            ) : null}
 
-  if (
-    !project.isDataExists &&
-    activeTab !== PROJECT_TABS.errors &&
-    !(activeTab === PROJECT_TABS.captcha && project.isCaptchaDataExists) &&
-    !analyticsLoading
-  ) {
-    return (
-      <>
-        {!isEmbedded ? <Header /> : null}
-        <div
-          className={cx('flex bg-gray-50 dark:bg-slate-900', {
-            'min-h-including-header': !isEmbedded,
-            'min-h-[100vh]': isEmbedded,
-          })}
-        >
-          {/* Desktop Sidebar */}
-          <div className='h-including-header sticky top-0 hidden md:block'>
-            <ProjectSidebar
-              tabs={tabs}
-              activeTab={activeTab}
-              onTabChange={setDashboardTab}
-              projectId={id}
-              projectName={project.name}
-              dataLoading={dataLoading}
-              searchParams={searchParams}
-              allowedToManage={allowedToManage}
-            />
+            {/* Main Content */}
+            <div className='flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8'>
+              <MobileSidebarTrigger onClick={openMobileSidebar} activeTabLabel={activeTabLabel} />
+              <LockedDashboard />
+            </div>
           </div>
-          {/* Main Content */}
-          <div className='flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8'>
-            <MobileTabSelector />
-            <WaitingForAnEvent />
-          </div>
+
+          {!isEmbedded ? <Footer /> : null}
         </div>
-        {!isEmbedded ? <Footer /> : null}
       </>
     )
   }
@@ -1374,16 +1333,15 @@ const ViewProjectContent = () => {
         <ViewProjectContext.Provider value={contextValue}>
           <>
             {dataLoading && !isAutoRefreshing ? <LoadingBar /> : null}
-            {!isEmbedded ? <Header /> : null}
-            <EventsRunningOutBanner />
             <div
-              ref={ref}
-              className={cx('flex bg-gray-50 dark:bg-slate-900', {
-                'min-h-[100vh]': analyticsLoading && isEmbedded,
+              className={cx('flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900', {
+                'min-h-including-header': !isEmbedded,
+                'min-h-screen': isEmbedded,
               })}
             >
-              {/* Desktop Sidebar */}
-              <div className='h-including-header sticky top-0 hidden md:block'>
+              {!isEmbedded ? <Header /> : null}
+
+              <div ref={ref} className='relative flex flex-1'>
                 <ProjectSidebar
                   tabs={tabs}
                   activeTab={activeTab}
@@ -1393,94 +1351,101 @@ const ViewProjectContent = () => {
                   dataLoading={dataLoading}
                   searchParams={searchParams}
                   allowedToManage={allowedToManage}
+                  className='hidden md:flex'
                 />
-              </div>
-              {/* Main Content */}
-              <div
-                className={cx('flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8', {
-                  'min-h-including-header': !isEmbedded,
-                  'min-h-[100vh]': isEmbedded,
-                })}
-                ref={dashboardRef}
-              >
-                <MobileTabSelector />
-                <AnimatePresence mode='wait'>
-                  <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    {activeTab === PROJECT_TABS.ai ? <AskAIView projectId={id} /> : null}
-                    {activeTab === PROJECT_TABS.traffic ? (
-                      <TrafficView
-                        tnMapping={tnMapping}
-                        customMetrics={customMetrics}
-                        onCustomMetric={onCustomMetric}
-                        onRemoveCustomMetric={onRemoveCustomMetric}
-                        resetCustomMetrics={resetCustomMetrics}
-                        mode={mode}
-                        sdkInstance={sdkInstance}
-                        headerRightContent={
-                          <TrafficHeaderActions
-                            projectViews={projectViews}
-                            projectViewsLoading={projectViewsLoading}
-                            projectViewDeleting={projectViewDeleting}
-                            loadProjectViews={loadProjectViews}
-                            onProjectViewDelete={onProjectViewDelete}
-                            setProjectViewToUpdate={setProjectViewToUpdate}
-                            setIsAddAViewOpened={setIsAddAViewOpened}
-                            onCustomMetric={onCustomMetric}
-                            filters={filters}
-                            allowedToManage={allowedToManage}
-                            dataLoading={dataLoading}
-                            exportTypes={exportTypes}
-                            customExportTypes={customExportTypes}
-                            panelsData={_panelsData}
-                          />
-                        }
-                      />
-                    ) : null}
-                    {activeTab === PROJECT_TABS.performance ? <PerformanceView tnMapping={tnMapping} /> : null}
-                    {activeTab === PROJECT_TABS.funnels ? <FunnelsView /> : null}
-                    {activeTab === PROJECT_TABS.alerts ? <ProjectAlertsView /> : null}
-                    {activeTab === PROJECT_TABS.profiles ? <ProfilesView chartType={chartType} /> : null}
-                    {activeTab === PROJECT_TABS.sessions ? (
-                      <SessionsView tnMapping={tnMapping} chartType={chartType} rotateXAxis={rotateXAxis} />
-                    ) : null}
-                    {activeTab === PROJECT_TABS.errors ? <ErrorsView /> : null}
-                    {activeTab === PROJECT_TABS.goals ? (
-                      <GoalsView
-                        period={period}
-                        from={dateRange ? getFormatDate(dateRange[0]) : ''}
-                        to={dateRange ? getFormatDate(dateRange[1]) : ''}
-                        timezone={timezone}
-                      />
-                    ) : null}
-                    {activeTab === PROJECT_TABS.experiments ? (
-                      <ExperimentsView
-                        period={period}
-                        from={dateRange ? getFormatDate(dateRange[0]) : ''}
-                        to={dateRange ? getFormatDate(dateRange[1]) : ''}
-                        timezone={timezone}
-                      />
-                    ) : null}
-                    {activeTab === PROJECT_TABS.featureFlags ? (
-                      <FeatureFlagsView
-                        period={period}
-                        from={dateRange ? getFormatDate(dateRange[0]) : ''}
-                        to={dateRange ? getFormatDate(dateRange[1]) : ''}
-                        timezone={timezone}
-                      />
-                    ) : null}
-                    {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
-                  </motion.div>
-                </AnimatePresence>
+                {isMobileSidebarOpen ? (
+                  <ProjectSidebar
+                    tabs={tabs}
+                    activeTab={activeTab}
+                    onTabChange={setDashboardTab}
+                    projectId={id}
+                    projectName={project.name}
+                    dataLoading={dataLoading}
+                    searchParams={searchParams}
+                    allowedToManage={allowedToManage}
+                    isMobileOpen={isMobileSidebarOpen}
+                    onMobileClose={closeMobileSidebar}
+                  />
+                ) : null}
+                {/* Main Content */}
+                <div className='flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8' ref={dashboardRef}>
+                  <EventsRunningOutBanner />
+                  <MobileSidebarTrigger onClick={openMobileSidebar} activeTabLabel={activeTabLabel} />
+                  <AnimatePresence mode='wait'>
+                    <motion.div
+                      key={activeTab}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      {activeTab === PROJECT_TABS.ai ? <AskAIView projectId={id} /> : null}
+                      {activeTab === PROJECT_TABS.traffic ? (
+                        <TrafficView
+                          tnMapping={tnMapping}
+                          customMetrics={customMetrics}
+                          onCustomMetric={onCustomMetric}
+                          onRemoveCustomMetric={onRemoveCustomMetric}
+                          resetCustomMetrics={resetCustomMetrics}
+                          mode={mode}
+                          sdkInstance={sdkInstance}
+                          headerRightContent={
+                            <TrafficHeaderActions
+                              projectViews={projectViews}
+                              projectViewsLoading={projectViewsLoading}
+                              projectViewDeleting={projectViewDeleting}
+                              loadProjectViews={loadProjectViews}
+                              onProjectViewDelete={onProjectViewDelete}
+                              setProjectViewToUpdate={setProjectViewToUpdate}
+                              setIsAddAViewOpened={setIsAddAViewOpened}
+                              onCustomMetric={onCustomMetric}
+                              filters={filters}
+                              allowedToManage={allowedToManage}
+                              dataLoading={dataLoading}
+                              exportTypes={exportTypes}
+                              customExportTypes={customExportTypes}
+                              panelsData={_panelsData}
+                            />
+                          }
+                        />
+                      ) : null}
+                      {activeTab === PROJECT_TABS.performance ? <PerformanceView tnMapping={tnMapping} /> : null}
+                      {activeTab === PROJECT_TABS.funnels ? <FunnelsView /> : null}
+                      {activeTab === PROJECT_TABS.alerts ? <ProjectAlertsView /> : null}
+                      {activeTab === PROJECT_TABS.profiles ? <ProfilesView chartType={chartType} /> : null}
+                      {activeTab === PROJECT_TABS.sessions ? (
+                        <SessionsView tnMapping={tnMapping} chartType={chartType} rotateXAxis={rotateXAxis} />
+                      ) : null}
+                      {activeTab === PROJECT_TABS.errors ? <ErrorsView /> : null}
+                      {activeTab === PROJECT_TABS.goals ? (
+                        <GoalsView
+                          period={period}
+                          from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                          to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                          timezone={timezone}
+                        />
+                      ) : null}
+                      {activeTab === PROJECT_TABS.experiments ? (
+                        <ExperimentsView
+                          period={period}
+                          from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                          to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                          timezone={timezone}
+                        />
+                      ) : null}
+                      {activeTab === PROJECT_TABS.featureFlags ? (
+                        <FeatureFlagsView
+                          period={period}
+                          from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                          to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                          timezone={timezone}
+                        />
+                      ) : null}
+                      {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
+                    </motion.div>
+                  </AnimatePresence>
 
-                {isEmbedded ? null : (
-                  <>
-                    <div className='flex-1' />
+                  {isEmbedded ? null : (
                     <div className='mt-4 flex w-full items-center justify-between gap-2'>
                       <Dropdown
                         items={whitelist}
@@ -1564,9 +1529,11 @@ const ViewProjectContent = () => {
                         />
                       </div>
                     </div>
-                  </>
-                )}
+                  )}
+                </div>
               </div>
+
+              {isEmbedded ? null : <Footer showDBIPMessage />}
             </div>
             <ViewProjectHotkeys isOpened={isHotkeysHelpOpened} onClose={() => setIsHotkeysHelpOpened(false)} />
             <SearchFilters
@@ -1590,7 +1557,6 @@ const ViewProjectContent = () => {
               defaultView={projectViewToUpdate}
               tnMapping={tnMapping}
             />
-            {!isEmbedded ? <Footer showDBIPMessage /> : null}
           </>
         </ViewProjectContext.Provider>
       )}

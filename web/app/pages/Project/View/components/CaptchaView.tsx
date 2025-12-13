@@ -10,6 +10,7 @@ import { useSearchParams } from 'react-router'
 import { getCaptchaData } from '~/api'
 import useSize from '~/hooks/useSize'
 import { chartTypes, BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
@@ -25,6 +26,7 @@ import CCRow from './CCRow'
 import DashboardHeader from './DashboardHeader'
 import Filters from './Filters'
 import NoEvents from './NoEvents'
+import WaitingForAnEvent from './WaitingForAnEvent'
 
 const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
 
@@ -49,6 +51,7 @@ interface CaptchaViewProps {
 
 const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const { theme } = useTheme()
+  const { project } = useCurrentProject()
   const { period, timeBucket, dateRange, captchaRefreshTrigger, timeFormat, size } = useContext(ViewProjectContext)
   const [searchParams] = useSearchParams()
 
@@ -172,6 +175,11 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
 
   // Check if we have existing data
   const hasExistingData = chartData !== null || !_isEmpty(panelsData.types)
+
+  // Show waiting state if project has no captcha data yet
+  if (!project?.isCaptchaDataExists) {
+    return <WaitingForAnEvent />
+  }
 
   // Show Loader only on initial load (no existing data)
   if (analyticsLoading && !hasExistingData) {

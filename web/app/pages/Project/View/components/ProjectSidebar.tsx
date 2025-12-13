@@ -1,13 +1,21 @@
-import cx from 'clsx'
 import _map from 'lodash/map'
-import { ChevronDownIcon, ChevronRightIcon, PanelLeftCloseIcon, PanelLeftOpenIcon, SettingsIcon } from 'lucide-react'
-import React, { useState, useMemo, useCallback } from 'react'
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  PanelLeftCloseIcon,
+  PanelLeftOpenIcon,
+  SettingsIcon,
+  XIcon,
+  MenuIcon,
+} from 'lucide-react'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps } from 'react-router'
 
 import { PROJECT_TABS } from '~/lib/constants'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
+import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
 const SIDEBAR_COLLAPSED_KEY = 'project-sidebar-collapsed'
@@ -48,6 +56,7 @@ interface TabGroup {
 }
 
 interface ProjectSidebarProps {
+  className?: string
   tabs: Tab[]
   activeTab: ProjectTabKey
   onTabChange: (tabId: keyof typeof PROJECT_TABS) => void
@@ -56,6 +65,9 @@ interface ProjectSidebarProps {
   dataLoading?: boolean
   searchParams: URLSearchParams
   allowedToManage?: boolean
+  // Mobile-specific props
+  isMobileOpen?: boolean
+  onMobileClose?: () => void
 }
 
 const CollapsibleGroup: React.FC<{
@@ -66,7 +78,8 @@ const CollapsibleGroup: React.FC<{
   dataLoading?: boolean
   searchParams: URLSearchParams
   isCollapsed?: boolean
-}> = ({ group, activeTab, onTabChange, projectId, dataLoading, searchParams, isCollapsed }) => {
+  onMobileClose?: () => void
+}> = ({ group, activeTab, onTabChange, projectId, dataLoading, searchParams, isCollapsed, onMobileClose }) => {
   const [isExpanded, setIsExpanded] = useState(true)
 
   const hasActiveTab = useMemo(() => {
@@ -91,12 +104,14 @@ const CollapsibleGroup: React.FC<{
 
             const handleClick = (e: React.MouseEvent) => {
               if (tab.id === 'settings') {
+                onMobileClose?.()
                 return
               }
 
               e.preventDefault()
               if (!dataLoading) {
                 onTabChange(tab.id as keyof typeof PROJECT_TABS)
+                onMobileClose?.()
               }
             }
 
@@ -115,7 +130,7 @@ const CollapsibleGroup: React.FC<{
                   <Link
                     to={tabUrl}
                     onClick={handleClick}
-                    className={cx('group flex items-center justify-center rounded-md p-2 transition-colors', {
+                    className={cn('group flex items-center justify-center rounded-md p-2 transition-colors', {
                       'bg-gray-100 dark:bg-slate-800': isCurrent,
                       'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
                       'cursor-wait': dataLoading && tab.id !== 'settings',
@@ -123,7 +138,7 @@ const CollapsibleGroup: React.FC<{
                     aria-current={isCurrent ? 'page' : undefined}
                     aria-label={tab.label}
                   >
-                    <TabIcon className={cx('size-5 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
+                    <TabIcon className={cn('size-5 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
                   </Link>
                 }
               />
@@ -152,7 +167,7 @@ const CollapsibleGroup: React.FC<{
       </button>
 
       <div
-        className={cx('overflow-hidden transition-all duration-200 ease-in-out', {
+        className={cn('overflow-hidden transition-all duration-200 ease-in-out', {
           'max-h-96 opacity-100': isExpanded,
           'max-h-0 opacity-0': !isExpanded,
         })}
@@ -165,12 +180,14 @@ const CollapsibleGroup: React.FC<{
 
             const handleClick = (e: React.MouseEvent) => {
               if (tab.id === 'settings') {
+                onMobileClose?.()
                 return // Let the Link handle navigation
               }
 
               e.preventDefault()
               if (!dataLoading) {
                 onTabChange(tab.id as keyof typeof PROJECT_TABS)
+                onMobileClose?.()
               }
             }
 
@@ -186,14 +203,14 @@ const CollapsibleGroup: React.FC<{
                 key={tab.id}
                 to={tabUrl}
                 onClick={handleClick}
-                className={cx('group flex items-center gap-1.5 rounded-md px-2.5 py-2 transition-colors', {
+                className={cn('group flex items-center gap-1.5 rounded-md px-2.5 py-2 transition-colors', {
                   'bg-gray-100 dark:bg-slate-800': isCurrent,
                   'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
                   'cursor-wait': dataLoading && tab.id !== 'settings',
                 })}
                 aria-current={isCurrent ? 'page' : undefined}
               >
-                <TabIcon className={cx('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
+                <TabIcon className={cn('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
                 <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
                   {tab.label}
                 </Text>
@@ -215,6 +232,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   dataLoading,
   searchParams,
   allowedToManage,
+  isMobileOpen = false,
+  onMobileClose,
+  className,
 }) => {
   const { t } = useTranslation('common')
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -232,12 +252,36 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     })
   }, [])
 
-  // Find Ask AI tab (standalone, not in a group)
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobileOpen) {
+        onMobileClose?.()
+      }
+    }
+
+    if (isMobileOpen) {
+      document.addEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = ''
+    }
+  }, [isMobileOpen, onMobileClose])
+
+  const handleTabChange = useCallback(
+    (tabId: keyof typeof PROJECT_TABS) => {
+      onTabChange(tabId)
+      onMobileClose?.()
+    },
+    [onTabChange, onMobileClose],
+  )
+
   const askAiTab = useMemo(() => {
     return tabs.find((tab) => tab.id === PROJECT_TABS.ai)
   }, [tabs])
 
-  // Group tabs by category
   const tabGroups = useMemo<TabGroup[]>(() => {
     const groups: TabGroup[] = []
 
@@ -284,16 +328,17 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     return groups
   }, [tabs, t])
 
-  return (
+  const sidebarContent = (
     <aside
-      className={cx(
-        'flex h-full shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white transition-all duration-200 dark:border-slate-800 dark:bg-slate-900',
-        isCollapsed ? 'w-14' : 'w-56',
+      className={cn(
+        'sticky top-0 flex h-screen shrink-0 flex-col self-start border-r border-gray-200 bg-white transition-all duration-200 dark:border-slate-800 dark:bg-slate-900',
+        isMobileOpen ? 'w-64' : isCollapsed ? 'w-14' : 'w-56',
+        className,
       )}
     >
       {/* Project name at the top */}
-      <div className='sticky top-0 z-10 flex items-center border-b border-gray-200 bg-white px-4 py-2 dark:border-slate-800 dark:bg-slate-900'>
-        {isCollapsed ? (
+      <div className='sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 dark:border-slate-800 dark:bg-slate-900'>
+        {isCollapsed && !isMobileOpen ? (
           <Tooltip
             text={projectName}
             tooltipNode={
@@ -304,7 +349,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
           />
         ) : (
           <Tooltip
-            className='max-w-full'
+            className='max-w-full flex-1'
             text={projectName}
             tooltipNode={
               <Text as='h2' size='lg' weight='semibold' truncate className='max-w-full'>
@@ -313,10 +358,21 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             }
           />
         )}
+        {/* Close button for mobile */}
+        {isMobileOpen ? (
+          <button
+            type='button'
+            onClick={onMobileClose}
+            className='ml-2 rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200'
+            aria-label={t('common.close')}
+          >
+            <XIcon className='h-5 w-5' strokeWidth={1.5} />
+          </button>
+        ) : null}
       </div>
 
       {/* Tabs area */}
-      <div className='flex-1 px-2 py-3'>
+      <div className='flex-1 overflow-y-auto px-2 py-3'>
         {/* Ask AI - standalone tab above groups */}
         {askAiTab ? (
           <div className='mb-3'>
@@ -328,14 +384,14 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
               const handleClick = (e: React.MouseEvent) => {
                 e.preventDefault()
                 if (!dataLoading) {
-                  onTabChange(askAiTab.id as keyof typeof PROJECT_TABS)
+                  handleTabChange(askAiTab.id as keyof typeof PROJECT_TABS)
                 }
               }
 
               const newSearchParams = new URLSearchParams(searchParams.toString())
               newSearchParams.set('tab', askAiTab.id)
 
-              if (isCollapsed) {
+              if (isCollapsed && !isMobileOpen) {
                 return (
                   <Tooltip
                     text={askAiTab.label}
@@ -343,7 +399,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                       <Link
                         to={{ search: newSearchParams.toString() }}
                         onClick={handleClick}
-                        className={cx('group flex items-center justify-center rounded-md p-2 transition-colors', {
+                        className={cn('group flex items-center justify-center rounded-md p-2 transition-colors', {
                           'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
                             isCurrent,
                           'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
@@ -353,7 +409,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                         aria-label={askAiTab.label}
                       >
                         <TabIcon
-                          className={cx('size-5 shrink-0', iconColorClass)}
+                          className={cn('size-5 shrink-0', iconColorClass)}
                           strokeWidth={1.5}
                           aria-hidden='true'
                         />
@@ -367,7 +423,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                 <Link
                   to={{ search: newSearchParams.toString() }}
                   onClick={handleClick}
-                  className={cx('group flex items-center gap-2 rounded-md px-2.5 py-2 transition-colors', {
+                  className={cn('group flex items-center gap-2 rounded-md px-2.5 py-2 transition-colors', {
                     'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
                       isCurrent,
                     'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
@@ -375,7 +431,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                   })}
                   aria-current={isCurrent ? 'page' : undefined}
                 >
-                  <TabIcon className={cx('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
+                  <TabIcon className={cn('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
                   <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
                     {askAiTab.label}
                   </Text>
@@ -394,55 +450,100 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             projectId={projectId}
             dataLoading={dataLoading}
             searchParams={searchParams}
-            isCollapsed={isCollapsed}
+            isCollapsed={isCollapsed && !isMobileOpen ? true : false}
+            onMobileClose={onMobileClose}
           />
         ))}
       </div>
 
       {/* Bottom section: Collapse button + Settings */}
       <div className='sticky bottom-0 flex flex-col gap-0.5 border-t border-gray-200 bg-white px-2 py-2 dark:border-slate-800 dark:bg-slate-900'>
-        {/* Collapse/Expand button */}
-        <button
-          type='button'
-          onClick={toggleCollapsed}
-          className={cx(
-            'group flex w-full items-center rounded-md px-2.5 py-2 text-sm font-medium transition-colors',
-            'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800/60 dark:hover:text-gray-200',
-            isCollapsed ? 'justify-center' : 'gap-2.5',
-          )}
-          aria-label={isCollapsed ? t('common.expand') : t('common.collapse')}
-        >
-          {isCollapsed ? (
-            <PanelLeftOpenIcon className='h-5 w-5 shrink-0' strokeWidth={1.5} aria-hidden='true' />
-          ) : (
-            <>
-              <PanelLeftCloseIcon className='h-5 w-5 shrink-0' strokeWidth={1.5} aria-hidden='true' />
-              <span className='truncate'>{t('common.collapse')}</span>
-            </>
-          )}
-        </button>
+        {/* Collapse/Expand button - hide on mobile */}
+        {!isMobileOpen ? (
+          <button
+            type='button'
+            onClick={toggleCollapsed}
+            className={cn(
+              'group flex w-full items-center rounded-md px-2.5 py-2 text-sm font-medium transition-colors',
+              'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800/60 dark:hover:text-gray-200',
+              isCollapsed ? 'justify-center' : 'gap-2.5',
+            )}
+            aria-label={isCollapsed ? t('common.expand') : t('common.collapse')}
+          >
+            {isCollapsed ? (
+              <PanelLeftOpenIcon className='h-5 w-5 shrink-0' strokeWidth={1.5} aria-hidden='true' />
+            ) : (
+              <>
+                <PanelLeftCloseIcon className='h-5 w-5 shrink-0' strokeWidth={1.5} aria-hidden='true' />
+                <span className='truncate'>{t('common.collapse')}</span>
+              </>
+            )}
+          </button>
+        ) : null}
 
         {/* Settings - always show if user is allowed to manage */}
         {allowedToManage ? (
           <Link
             to={routes.project_settings.replace(':id', projectId)}
-            className={cx(
+            onClick={onMobileClose}
+            className={cn(
               'group flex w-full items-center rounded-md px-2.5 py-2 text-sm font-medium transition-colors',
               'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800/60 dark:hover:text-gray-200',
-              isCollapsed ? 'justify-center' : 'gap-2.5',
+              isCollapsed && !isMobileOpen ? 'justify-center' : 'gap-2.5',
             )}
             aria-label={t('common.settings')}
           >
             <SettingsIcon
-              className={cx('h-5 w-5 shrink-0', ICON_COLORS.settings)}
+              className={cn('h-5 w-5 shrink-0', ICON_COLORS.settings)}
               strokeWidth={1.5}
               aria-hidden='true'
             />
-            {!isCollapsed ? <span className='truncate'>{t('common.settings')}</span> : null}
+            {!isCollapsed || isMobileOpen ? <span className='truncate'>{t('common.settings')}</span> : null}
           </Link>
         ) : null}
       </div>
     </aside>
+  )
+
+  // Mobile: render with overlay
+  if (isMobileOpen) {
+    return (
+      <div className='fixed inset-0 z-50 md:hidden'>
+        {/* Overlay */}
+        <div className='absolute inset-0 bg-black/50 transition-opacity' onClick={onMobileClose} aria-hidden='true' />
+        {/* Sidebar panel */}
+        <div className='animate-slide-in-left relative h-full w-fit'>{sidebarContent}</div>
+      </div>
+    )
+  }
+
+  // Desktop: render normally
+  return sidebarContent
+}
+
+// Mobile trigger button component
+interface MobileSidebarTriggerProps {
+  onClick: () => void
+  activeTabLabel?: string
+}
+
+export const MobileSidebarTrigger: React.FC<MobileSidebarTriggerProps> = ({ onClick, activeTabLabel }) => {
+  const { t } = useTranslation('common')
+
+  return (
+    <div className='mb-4 flex items-center gap-3 md:hidden'>
+      <button
+        type='button'
+        onClick={onClick}
+        className='flex items-center justify-center rounded-md border border-gray-300 bg-white p-2 text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700'
+        aria-label={t('common.openMenu')}
+      >
+        <MenuIcon className='h-5 w-5' strokeWidth={1.5} />
+      </button>
+      {activeTabLabel ? (
+        <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>{activeTabLabel}</span>
+      ) : null}
+    </div>
   )
 }
 
