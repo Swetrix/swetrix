@@ -276,6 +276,19 @@ export class VariantResultDto {
   improvement: number // % improvement over control
 }
 
+export class ExperimentChartDataDto {
+  @ApiProperty({ type: [String], description: 'X-axis timestamps' })
+  x: string[]
+
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: { type: 'array', items: { type: 'number' } },
+    description:
+      'Win probability for each variant over time. Keys are variant keys.',
+  })
+  winProbability: Record<string, number[]>
+}
+
 export class ExperimentResultsDto {
   @ApiProperty()
   experimentId: string
@@ -300,6 +313,15 @@ export class ExperimentResultsDto {
 
   @ApiProperty()
   confidenceLevel: number // e.g., 95 for 95% confidence
+
+  @ApiPropertyOptional({ type: ExperimentChartDataDto })
+  chart?: ExperimentChartDataDto
+
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Allowed time buckets when period is "all"',
+  })
+  timeBucket?: string[]
 }
 
 export class ExperimentStatsDto {

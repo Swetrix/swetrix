@@ -135,10 +135,16 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
   }
 
   const loadProfile = async (profileId: string) => {
+    const hasExistingProfileData = !!activeProfile && activeProfile.profileId === profileId
+
     setProfileLoading(true)
-    setProfileSessions([])
-    setProfileSessionsSkip(0)
-    setCanLoadMoreProfileSessions(false)
+    // Avoid flicker on refresh: keep currently displayed details/sessions while we refetch.
+    // Only reset sessions when opening a different profile (or first load).
+    if (!hasExistingProfileData) {
+      setProfileSessions([])
+      setProfileSessionsSkip(0)
+      setCanLoadMoreProfileSessions(false)
+    }
 
     try {
       let from
@@ -161,8 +167,8 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
 
       if (isMountedRef.current) {
         setActiveProfile(data)
-        // Load initial sessions for the profile
-        loadProfileSessionsData(profileId, 0)
+        // Load initial sessions for the profile (override existing on refresh)
+        loadProfileSessionsData(profileId, 0, true)
       }
     } catch (reason) {
       console.error('[ERROR](loadProfile) Loading profile data failed:', reason)
@@ -176,7 +182,7 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
     }
   }
 
-  const loadProfileSessionsData = async (profileId: string, forcedSkip?: number) => {
+  const loadProfileSessionsData = async (profileId: string, forcedSkip?: number, override?: boolean) => {
     if (profileSessionsLoading) {
       return
     }
@@ -223,7 +229,11 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
       }
 
       if (isMountedRef.current) {
-        setProfileSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
+        if (override) {
+          setProfileSessions(dataSessions?.sessions || [])
+        } else {
+          setProfileSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
+        }
         setProfileSessionsSkip((prev) => {
           if (typeof forcedSkip === 'number') {
             return SESSIONS_TAKE + forcedSkip
@@ -322,7 +332,7 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
     return (
       <>
         <DashboardHeader backLink={`?${backSearchParams}`} showLiveVisitors={false} />
-        {profileLoading ? (
+        {profileLoading && !activeProfile ? (
           <Loader />
         ) : (
           <UserDetails

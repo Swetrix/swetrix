@@ -1,9 +1,17 @@
+import type { ChartOptions } from 'billboard.js'
+import { area } from 'billboard.js'
 import cx from 'clsx'
+import * as d3 from 'd3'
+import dayjs from 'dayjs'
+import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
+import _size from 'lodash/size'
 import {
   TrophyIcon,
   UsersIcon,
   TargetIcon,
+  InfoIcon,
+  PencilIcon,
   TrendingUpIcon,
   TrendingDownIcon,
   FlaskConicalIcon,
@@ -17,76 +25,245 @@ import { useTranslation } from 'react-i18next'
 import {
   getExperiment,
   getExperimentResults,
+  getGoal,
   type Experiment,
   type ExperimentResults as ExperimentResultsType,
+  type ExperimentChartData,
   type ExperimentVariantResult,
+  type Goal,
 } from '~/api'
+import {
+  TimeFormat,
+  tbsFormatMapper,
+  tbsFormatMapper24h,
+  tbsFormatMapperTooltip,
+  tbsFormatMapperTooltip24h,
+} from '~/lib/constants'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
+import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import BillboardChart from '~/ui/BillboardChart'
+import Button from '~/ui/Button'
+import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { nFormatter } from '~/utils/generic'
 
+import ExperimentSettingsModal from './ExperimentSettingsModal'
+
+// Variant colors for the chart
+const VARIANT_COLORS = [
+  '#6366f1', // indigo-500
+  '#22c55e', // green-500
+  '#f59e0b', // amber-500
+  '#ef4444', // red-500
+  '#8b5cf6', // violet-500
+  '#06b6d4', // cyan-500
+  '#ec4899', // pink-500
+  '#14b8a6', // teal-500
+]
+
 interface ExperimentResultsProps {
   experimentId: string
   period: string
+  timeBucket: string
   from: string
   to: string
   timezone?: string
   onBack: () => void
+  // When this value changes, results are re-fetched (used by global refresh button)
+  refreshTrigger?: number
 }
 
-// Stats card component for the 2x2 grid
-const StatCard = memo(
-  ({
-    icon: Icon,
-    label,
-    value,
-    subValue,
-    iconClassName,
-  }: {
-    icon: React.ElementType
-    label: string
-    value: string | number
-    subValue?: string
-    iconClassName?: string
-  }) => (
-    <div className='flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-slate-700/50 dark:bg-slate-800/50'>
-      <div
-        className={cx(
-          'flex size-10 shrink-0 items-center justify-center rounded-lg',
-          iconClassName || 'bg-indigo-100 dark:bg-indigo-900/30',
-        )}
-      >
-        <Icon
-          className={cx(
-            'size-5',
-            iconClassName
-              ? iconClassName.replace('bg-', 'text-').replace('/30', '')
-              : 'text-indigo-600 dark:text-indigo-400',
-          )}
-          strokeWidth={1.5}
-        />
-      </div>
-      <div className='min-w-0 flex-1'>
-        <Text size='xs' colour='muted' className='truncate'>
-          {label}
+// Stats card component with large background icon (matching ErrorsView style)
+interface StatCardProps {
+  icon: React.ReactNode
+  value: string | number
+  label: string
+  subValue?: string
+}
+
+const StatCard = memo(({ icon, value, label, subValue }: StatCardProps) => (
+  <div className='relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
+    <div className='pointer-events-none absolute -bottom-5 -left-5 opacity-10 [&>svg]:size-24'>{icon}</div>
+    <div className='relative'>
+      <div className='flex items-baseline gap-1.5'>
+        <Text as='p' size='3xl' weight='bold' className='leading-tight tabular-nums'>
+          {value}
         </Text>
-        <div className='flex items-baseline gap-1.5'>
-          <Text as='p' weight='bold' size='xl' className='tabular-nums'>
-            {value}
+        {subValue ? (
+          <Text size='sm' colour='muted'>
+            {subValue}
           </Text>
-          {subValue && (
-            <Text size='xs' colour='muted'>
-              {subValue}
-            </Text>
-          )}
-        </div>
+        ) : null}
       </div>
+      <Text as='p' size='sm' colour='secondary' className='leading-tight'>
+        {label}
+      </Text>
     </div>
-  ),
-)
+  </div>
+))
 
 StatCard.displayName = 'StatCard'
+
+// Win Probability Time Series Chart component
+const getWinProbabilityChartSettings = (
+  chartData: ExperimentChartData,
+  variants: ExperimentVariantResult[],
+  timeBucket: string,
+  timeFormat: string,
+): ChartOptions => {
+  const xAxisSize = _size(chartData.x)
+
+  // Create columns: x axis + one column per variant
+  const columns: any[] = [['x', ..._map(chartData.x, (el) => dayjs(el).toDate())]]
+
+  // Create types and colors for each variant
+  const types: Record<string, any> = {}
+  const colors: Record<string, string> = {}
+  const names: Record<string, string> = {}
+
+  variants.forEach((variant, idx) => {
+    const key = variant.key
+    const data = chartData.winProbability[key] || []
+    columns.push([key, ...data])
+    types[key] = area()
+    colors[key] = VARIANT_COLORS[idx % VARIANT_COLORS.length]
+    names[key] = variant.name
+  })
+
+  return {
+    data: {
+      x: 'x',
+      columns,
+      types,
+      colors,
+      names,
+    },
+    grid: {
+      y: {
+        show: true,
+        lines: [{ value: 95, class: 'grid-line-95', text: '95%' }],
+      },
+    },
+    transition: {
+      duration: 200,
+    },
+    resize: {
+      auto: true,
+      timer: false,
+    },
+    axis: {
+      x: {
+        clipPath: false,
+        tick: {
+          fit: true,
+          rotate: 0,
+          format:
+            // @ts-expect-error
+            timeFormat === TimeFormat['24-hour']
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+        },
+        localtime: timeFormat === TimeFormat['24-hour'],
+        type: 'timeseries',
+      },
+      y: {
+        tick: {
+          format: (d: number) => `${d}%`,
+          values: [0, 25, 50, 75, 100],
+        },
+        max: 100,
+        min: 0,
+        show: true,
+        inner: true,
+      },
+    },
+    tooltip: {
+      contents: (items: any, _: any, __: any, color: any) => {
+        if (!items || _isEmpty(items) || !items[0]) return ''
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+          <li class='font-semibold'>${
+            timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(items[0].x)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(items[0].x)
+          }</li>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          ${_map(items, (el: { id: string; name: string; value: number }) => {
+            return `
+            <li class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <span>${el.name}</span>
+              </div>
+              <span class='pl-4 font-medium'>${el.value}%</span>
+            </li>
+            `
+          }).join('')}</ul>`
+      },
+    },
+    point: {
+      focus: {
+        only: xAxisSize > 1,
+      },
+      pattern: ['circle'],
+      r: 2,
+    },
+    legend: {
+      item: {
+        tile: {
+          type: 'circle',
+          width: 10,
+          r: 3,
+        },
+      },
+    },
+    area: {
+      linearGradient: true,
+    },
+  }
+}
+
+// Win Probability Chart Panel
+const WinProbabilityChart = memo(
+  ({
+    chartData,
+    variants,
+    timeBucket,
+  }: {
+    chartData: ExperimentChartData | undefined
+    variants: ExperimentVariantResult[]
+    timeBucket: string
+  }) => {
+    const { t } = useTranslation()
+    const { timeFormat } = useViewProjectContext()
+
+    const chartOptions = useMemo(() => {
+      if (!chartData || !chartData.x || chartData.x.length === 0 || variants.length === 0) return null
+      return getWinProbabilityChartSettings(chartData, variants, timeBucket, timeFormat)
+    }, [chartData, variants, timeBucket, timeFormat])
+
+    if (!chartOptions) {
+      return (
+        <div className='flex h-[220px] items-center justify-center rounded-xl border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
+          <Text colour='muted' size='sm'>
+            {t('experiments.noDataYet')}
+          </Text>
+        </div>
+      )
+    }
+
+    return (
+      <div className='rounded-xl border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
+        <Text as='h3' weight='semibold' size='sm' className='mb-2'>
+          {t('experiments.probabilityOfWinning')}
+        </Text>
+        <BillboardChart options={chartOptions} className='h-[180px]' />
+      </div>
+    )
+  },
+)
+
+WinProbabilityChart.displayName = 'WinProbabilityChart'
 
 // Confidence interval visualization (diamond chart like PostHog)
 const ConfidenceBar = memo(
@@ -191,11 +368,11 @@ const ExposuresTable = memo(
                         <Text weight='medium' size='sm'>
                           {variant.name}
                         </Text>
-                        {variant.isControl && (
+                        {variant.isControl ? (
                           <span className='rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'>
                             {t('experiments.control')}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -283,7 +460,7 @@ const MetricsTable = memo(
             </thead>
             <tbody className='divide-y divide-gray-200 dark:divide-slate-700'>
               {/* Control variant */}
-              {controlVariant && (
+              {controlVariant ? (
                 <tr className='hover:bg-gray-50 dark:hover:bg-slate-700/30'>
                   <TableCell>
                     <div className='flex items-center gap-2'>
@@ -296,11 +473,11 @@ const MetricsTable = memo(
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div>
-                      <Text weight='semibold' size='sm' className='tabular-nums'>
+                    <div className='flex flex-col'>
+                      <Text as='p' weight='semibold' size='sm' className='tabular-nums'>
                         {controlVariant.conversionRate}%
                       </Text>
-                      <Text size='xs' colour='muted' className='tabular-nums'>
+                      <Text as='p' size='xs' colour='muted' className='mt-0.5 tabular-nums'>
                         {nFormatter(controlVariant.conversions, 1)} / {nFormatter(controlVariant.exposures, 1)}
                       </Text>
                     </div>
@@ -323,7 +500,7 @@ const MetricsTable = memo(
                     />
                   </TableCell>
                 </tr>
-              )}
+              ) : null}
 
               {/* Test variants */}
               {_map(testVariants, (variant) => {
@@ -342,20 +519,20 @@ const MetricsTable = memo(
                         <Text weight='medium' size='sm'>
                           {variant.name}
                         </Text>
-                        {isWinner && (
+                        {isWinner ? (
                           <span className='flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/50 dark:text-green-300'>
                             <TrophyIcon className='size-3' />
                             {t('experiments.winner')}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div>
-                        <Text weight='semibold' size='sm' className='tabular-nums'>
+                      <div className='flex flex-col'>
+                        <Text as='p' weight='semibold' size='sm' className='tabular-nums'>
                           {variant.conversionRate}%
                         </Text>
-                        <Text size='xs' colour='muted' className='tabular-nums'>
+                        <Text as='p' size='xs' colour='muted' className='mt-0.5 tabular-nums'>
                           {nFormatter(variant.conversions, 1)} / {nFormatter(variant.exposures, 1)}
                         </Text>
                       </div>
@@ -394,11 +571,11 @@ const MetricsTable = memo(
                         >
                           {variant.probabilityOfBeingBest}%
                         </Text>
-                        {variant.probabilityOfBeingBest >= 95 && (
+                        {variant.probabilityOfBeingBest >= 95 ? (
                           <span className='rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/50 dark:text-green-300'>
                             Significant
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -442,7 +619,7 @@ const CollapsibleSection = memo(
             <ChevronDownIcon className='size-4 text-gray-500' />
           )}
         </button>
-        {isOpen && <div className='border-t border-gray-200 px-4 py-4 dark:border-slate-700'>{children}</div>}
+        {isOpen ? <div className='border-t border-gray-200 px-4 py-4 dark:border-slate-700'>{children}</div> : null}
       </div>
     )
   },
@@ -450,14 +627,26 @@ const CollapsibleSection = memo(
 
 CollapsibleSection.displayName = 'CollapsibleSection'
 
-const ExperimentResults = ({ experimentId, period, from, to, timezone, onBack }: ExperimentResultsProps) => {
+const ExperimentResults = ({
+  experimentId,
+  period,
+  timeBucket,
+  from,
+  to,
+  timezone,
+  onBack,
+  refreshTrigger,
+}: ExperimentResultsProps) => {
   const { t } = useTranslation()
   const isMountedRef = useRef(true)
 
   const [experiment, setExperiment] = useState<Experiment | null>(null)
   const [results, setResults] = useState<ExperimentResultsType | null>(null)
+  const [goal, setGoal] = useState<Goal | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
     isMountedRef.current = true
@@ -468,18 +657,34 @@ const ExperimentResults = ({ experimentId, period, from, to, timezone, onBack }:
 
   useEffect(() => {
     const loadData = async () => {
-      setIsLoading(true)
+      const hasData = !!experiment && !!results
+      // Avoid flickering: only show the full loader when we don't have any data yet.
+      if (!hasData) {
+        setIsLoading(true)
+      }
+      // Clear previous error on a new attempt; if refresh fails, we keep existing data rendered.
       setError(null)
 
       try {
         const [experimentData, resultsData] = await Promise.all([
           getExperiment(experimentId),
-          getExperimentResults(experimentId, period, from, to, timezone),
+          getExperimentResults(experimentId, period, timeBucket, from, to, timezone),
         ])
+
+        let goalData: Goal | null = null
+        if (experimentData.goalId) {
+          try {
+            goalData = await getGoal(experimentData.goalId)
+          } catch {
+            // Goal is optional and might have been deleted or be inaccessible.
+            goalData = null
+          }
+        }
 
         if (isMountedRef.current) {
           setExperiment(experimentData)
           setResults(resultsData)
+          setGoal(goalData)
         }
       } catch (err: any) {
         if (isMountedRef.current) {
@@ -493,15 +698,14 @@ const ExperimentResults = ({ experimentId, period, from, to, timezone, onBack }:
     }
 
     loadData()
-  }, [experimentId, period, from, to, timezone])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [experimentId, period, timeBucket, from, to, timezone, reloadToken, refreshTrigger])
 
-  // Calculate overall conversion rate
   const overallConversionRate = useMemo(() => {
     if (!results || results.totalExposures === 0) return 0
     return ((results.totalConversions / results.totalExposures) * 100).toFixed(2)
   }, [results])
 
-  // Sort variants: control first, then by probability
   const sortedVariants = useMemo(() => {
     if (!results) return []
     return [...results.variants].sort((a, b) => {
@@ -511,15 +715,15 @@ const ExperimentResults = ({ experimentId, period, from, to, timezone, onBack }:
     })
   }, [results])
 
-  if (isLoading) {
-    return (
-      <div className='mt-4'>
-        <Loader />
-      </div>
-    )
-  }
+  if (!experiment || !results) {
+    if (isLoading) {
+      return (
+        <div className='mt-4'>
+          <Loader />
+        </div>
+      )
+    }
 
-  if (error || !experiment || !results) {
     return (
       <>
         <DashboardHeader onBack={onBack} showLiveVisitors={false} />
@@ -535,6 +739,26 @@ const ExperimentResults = ({ experimentId, period, from, to, timezone, onBack }:
       <DashboardHeader
         onBack={onBack}
         showLiveVisitors={false}
+        rightContent={
+          // Backend forbids updating running/completed experiments; keep button visible (disabled) to make this explicit.
+          <Button
+            type='button'
+            onClick={() => setIsSettingsOpen(true)}
+            disabled={results.status === 'running' || results.status === 'completed'}
+            title={
+              results.status === 'running'
+                ? 'Pause this experiment to edit settings.'
+                : results.status === 'completed'
+                  ? 'Completed experiments can’t be edited.'
+                  : t('common.edit')
+            }
+            secondary
+            small
+          >
+            <PencilIcon className='mr-1 size-4' strokeWidth={1.5} />
+            {t('common.edit')}
+          </Button>
+        }
         leftContent={
           <div className='flex items-center gap-2'>
             <FlaskConicalIcon className='size-5 text-purple-500' strokeWidth={1.5} />
@@ -551,12 +775,27 @@ const ExperimentResults = ({ experimentId, period, from, to, timezone, onBack }:
             >
               {t(`experiments.status.${results.status}`)}
             </div>
+            {goal?.name ? (
+              <div className='inline-flex max-w-[240px] items-center gap-1.5 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'>
+                <TargetIcon className='size-3.5' strokeWidth={1.5} />
+                <Text as='span' size='xs' weight='medium' colour='inherit' truncate>
+                  {goal.name}
+                </Text>
+              </div>
+            ) : null}
           </div>
         }
       />
+      <ExperimentSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onSuccess={() => setReloadToken((v) => v + 1)}
+        projectId={experiment.pid}
+        experimentId={experiment.id}
+      />
       <div className='mt-4 space-y-6'>
         {/* Winner announcement */}
-        {results.hasWinner && results.winnerKey && (
+        {results.hasWinner && results.winnerKey ? (
           <div className='flex items-center gap-4 rounded-xl border border-green-300 bg-linear-to-r from-green-50 to-emerald-50 p-4 dark:border-green-700 dark:bg-green-900/20'>
             <div className='flex size-12 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50'>
               <TrophyIcon className='size-6 text-green-600 dark:text-green-400' />
@@ -572,45 +811,67 @@ const ExperimentResults = ({ experimentId, period, from, to, timezone, onBack }:
               </Text>
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* No data message */}
-        {results.totalExposures === 0 && (
-          <div className='rounded-xl border border-yellow-300 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20'>
-            <Text weight='semibold'>{t('experiments.noDataYet')}</Text>
-            <Text colour='muted' size='sm' className='mt-1'>
-              {t('experiments.noDataDescription')}
-            </Text>
+        {results.totalExposures === 0 ? (
+          <div className='flex items-start gap-4 rounded-xl border border-yellow-300 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20'>
+            <div className='flex size-12 shrink-0 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/40'>
+              <InfoIcon className='size-6 text-yellow-700 dark:text-yellow-300' strokeWidth={1.5} />
+            </div>
+            <div className='min-w-0 flex-1'>
+              <Text as='p' weight='bold' size='lg' className='text-yellow-900 dark:text-yellow-100'>
+                {t('experiments.noDataYet')}
+              </Text>
+              <Text as='p' colour='muted' size='sm' className='mt-1'>
+                {t('experiments.noDataDescription')}
+              </Text>
+              {goal?.name ? (
+                <div className='mt-2 flex items-center gap-2 text-yellow-900/80 dark:text-yellow-100/80'>
+                  <TargetIcon className='size-4' strokeWidth={1.5} />
+                  <Text as='p' size='sm'>
+                    {t('experiments.goal')}:{' '}
+                    <Text as='span' size='sm' weight='medium'>
+                      {goal.name}
+                    </Text>
+                  </Text>
+                </div>
+              ) : null}
+            </div>
           </div>
-        )}
+        ) : null}
 
-        {/* Stats Grid - 2x2 layout */}
-        <div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
-          <StatCard
-            icon={UsersIcon}
-            label={t('experiments.totalExposures')}
-            value={nFormatter(results.totalExposures, 1)}
-            iconClassName='bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-          />
-          <StatCard
-            icon={TargetIcon}
-            label={t('experiments.totalConversions')}
-            value={nFormatter(results.totalConversions, 1)}
-            subValue={`${overallConversionRate}%`}
-            iconClassName='bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
-          />
-          <StatCard
-            icon={FlaskConicalIcon}
-            label={t('experiments.variantsCount')}
-            value={results.variants.length}
-            iconClassName='bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
-          />
-          <StatCard
-            icon={PercentIcon}
-            label={t('experiments.confidenceLevel')}
-            value={`${results.confidenceLevel}%`}
-            iconClassName='bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
-          />
+        {/* Chart and Stats Row */}
+        <div className='flex flex-col gap-3 lg:flex-row'>
+          {/* Win Probability Chart - Left side */}
+          <div className='w-full lg:w-[65%]'>
+            <WinProbabilityChart chartData={results.chart} variants={sortedVariants} timeBucket={timeBucket} />
+          </div>
+
+          {/* Stats Grid - Right side as 2x2 */}
+          <div className='grid w-full grid-cols-2 gap-3 lg:w-[35%]'>
+            <StatCard
+              icon={<UsersIcon className='text-blue-600' strokeWidth={1.5} />}
+              value={nFormatter(results.totalExposures, 1)}
+              label={t('experiments.totalExposures')}
+            />
+            <StatCard
+              icon={<TargetIcon className='text-green-600' strokeWidth={1.5} />}
+              value={nFormatter(results.totalConversions, 1)}
+              subValue={`(${overallConversionRate}%)`}
+              label={t('experiments.totalConversions')}
+            />
+            <StatCard
+              icon={<FlaskConicalIcon className='text-purple-600' strokeWidth={1.5} />}
+              value={results.variants.length}
+              label={t('experiments.variantsCount')}
+            />
+            <StatCard
+              icon={<PercentIcon className='text-amber-600' strokeWidth={1.5} />}
+              value={`${results.confidenceLevel}%`}
+              label={t('experiments.confidenceLevel')}
+            />
+          </div>
         </div>
 
         {/* Metrics Table */}
@@ -620,20 +881,13 @@ const ExperimentResults = ({ experimentId, period, from, to, timezone, onBack }:
         <ExposuresTable variants={sortedVariants} totalExposures={results.totalExposures} />
 
         {/* Hypothesis */}
-        {experiment.hypothesis && (
+        {experiment.hypothesis ? (
           <CollapsibleSection title={t('experiments.hypothesisLabel')}>
             <Text className='italic' colour='muted'>
               "{experiment.hypothesis}"
             </Text>
           </CollapsibleSection>
-        )}
-
-        {/* Statistical note */}
-        <div className='rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50'>
-          <Text size='xs' colour='muted'>
-            {t('experiments.statisticalNote')}
-          </Text>
-        </div>
+        ) : null}
       </div>
     </>
   )

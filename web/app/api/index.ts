@@ -1549,6 +1549,11 @@ export interface ExperimentVariantResult {
   improvement: number
 }
 
+export interface ExperimentChartData {
+  x: string[]
+  winProbability: Record<string, number[]>
+}
+
 export interface ExperimentResults {
   experimentId: string
   status: ExperimentStatus
@@ -1558,6 +1563,8 @@ export interface ExperimentResults {
   hasWinner: boolean
   winnerKey: string | null
   confidenceLevel: number
+  chart?: ExperimentChartData
+  timeBucket?: string[]
 }
 
 export interface CreateExperiment {
@@ -1660,13 +1667,14 @@ export const completeExperiment = (id: string) =>
 export const getExperimentResults = (
   experimentId: string,
   period: string,
+  timeBucket: string,
   from: string = '',
   to: string = '',
   timezone?: string,
 ) =>
   api
     .get(`/experiment/${experimentId}/results`, {
-      params: { period, from, to, timezone },
+      params: { period, timeBucket, from, to, timezone },
     })
     .then((response): ExperimentResults => response.data)
     .catch((error) => {

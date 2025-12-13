@@ -81,6 +81,7 @@ const ExperimentRow = ({
 
   const statusColors = STATUS_COLORS[experiment.status]
   const variantsCount = experiment.variants?.length || 0
+  const isEditDisabled = experiment.status === 'running' || experiment.status === 'completed'
 
   const handleStart = async () => {
     setActionLoading(true)
@@ -212,16 +213,25 @@ const ExperimentRow = ({
 
             {/* Edit/Delete buttons */}
             <div className='flex items-center gap-1 border-l border-gray-200 pl-2 dark:border-slate-700'>
-              {experiment.status !== 'running' && experiment.status !== 'completed' && (
-                <button
-                  type='button'
-                  onClick={() => onEdit(experiment.id)}
-                  aria-label={t('common.edit')}
-                  className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
-                >
-                  <PencilIcon className='size-4' strokeWidth={1.5} />
-                </button>
-              )}
+              <button
+                type='button'
+                onClick={() => (!isEditDisabled ? onEdit(experiment.id) : undefined)}
+                disabled={isEditDisabled}
+                aria-label={t('common.edit')}
+                title={
+                  experiment.status === 'running'
+                    ? 'Pause this experiment to edit settings.'
+                    : experiment.status === 'completed'
+                      ? 'Completed experiments can’t be edited.'
+                      : t('common.edit')
+                }
+                className={cx(
+                  'rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300',
+                  isEditDisabled && 'cursor-not-allowed opacity-50 hover:border-transparent hover:bg-transparent',
+                )}
+              >
+                <PencilIcon className='size-4' strokeWidth={1.5} />
+              </button>
               <button
                 type='button'
                 onClick={() => setShowDeleteModal(true)}
@@ -276,7 +286,7 @@ interface ExperimentsViewProps {
 
 const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsViewProps) => {
   const { id } = useCurrentProject()
-  const { experimentsRefreshTrigger } = useViewProjectContext()
+  const { experimentsRefreshTrigger, timeBucket } = useViewProjectContext()
   const { t } = useTranslation()
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
@@ -293,6 +303,8 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
 
   // Results view state
   const [viewingResultsId, setViewingResultsId] = useState<string | null>(null)
+  const [resultsRefreshTrigger, setResultsRefreshTrigger] = useState(0)
+  const [shouldRefreshListOnReturn, setShouldRefreshListOnReturn] = useState(false)
 
   // Cleanup on unmount
   useEffect(() => {
@@ -337,14 +349,30 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
 
-  // Refresh experiments data when refresh button is clicked
+  // Refresh experiments data when refresh button is clicked.
+  // If user is viewing results, refresh results instead and defer list refresh until they return.
   useEffect(() => {
     if (experimentsRefreshTrigger > 0) {
+      if (viewingResultsId) {
+        setResultsRefreshTrigger((prev) => prev + 1)
+        setShouldRefreshListOnReturn(true)
+        return
+      }
+
       // Silent refresh - don't show loading state since we already have data
       loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [experimentsRefreshTrigger])
+  }, [experimentsRefreshTrigger, viewingResultsId, page])
+
+  // If refresh happened while in results view, refresh list once upon returning.
+  useEffect(() => {
+    if (!viewingResultsId && shouldRefreshListOnReturn) {
+      setShouldRefreshListOnReturn(false)
+      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewingResultsId, shouldRefreshListOnReturn, page])
 
   const handleNewExperiment = useCallback(() => {
     setEditingExperimentId(null)
@@ -462,9 +490,11 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
       <ExperimentResults
         experimentId={viewingResultsId}
         period={period}
+        timeBucket={timeBucket}
         from={from}
         to={to}
         timezone={timezone}
+        refreshTrigger={resultsRefreshTrigger}
         onBack={() => setViewingResultsId(null)}
       />
     )

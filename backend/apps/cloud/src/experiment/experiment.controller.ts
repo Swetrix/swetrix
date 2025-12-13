@@ -760,12 +760,13 @@ export class ExperimentController {
     @CurrentUserId() userId: string,
     @Param('id') id: string,
     @Query('period') period: string,
+    @Query('timeBucket') timeBucketParam?: string,
     @Query('from') from?: string,
     @Query('to') to?: string,
     @Query('timezone') timezone?: string,
   ) {
     this.logger.log(
-      { userId, id, period, from, to },
+      { userId, id, period, timeBucket: timeBucketParam, from, to },
       'GET /experiment/:id/results',
     )
 
@@ -781,15 +782,36 @@ export class ExperimentController {
     this.projectService.allowedToView(project, userId)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const timeBucket = getLowestPossibleTimeBucket(period, from, to)
 
-    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
-      from,
-      to,
-      timeBucket,
-      period,
-      safeTimezone,
-    )
+    // Handle "all" period like analytics controller
+    let timeBucket =
+      timeBucketParam || getLowestPossibleTimeBucket(period, from, to)
+    let allowedTimeBucketForPeriodAll: string[] | undefined
+    let diff: number | undefined
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        experiment.project.id,
+        'analytics',
+      )
+
+      diff = res.diff
+
+      timeBucket = res.timeBucket.includes(timeBucket as any)
+        ? timeBucket
+        : res.timeBucket[0]
+      allowedTimeBucketForPeriodAll = res.timeBucket
+    }
+
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.analyticsService.getGroupFromTo(
+        from,
+        to,
+        timeBucket as any,
+        period,
+        safeTimezone,
+        diff,
+      )
 
     // Get exposures per variant from ClickHouse
     const exposuresQuery = `
@@ -835,9 +857,29 @@ export class ExperimentController {
       // Build match condition based on goal match type
       let matchCondition = ''
       if (experiment.goal.matchType === 'exact') {
-        matchCondition = `${matchColumn} = {goalValue:String}`
+        matchCondition = `c.${matchColumn} = {goalValue:String}`
       } else {
-        matchCondition = `${matchColumn} ILIKE concat('%', {goalValue:String}, '%')`
+        matchCondition = `c.${matchColumn} ILIKE concat('%', {goalValue:String}, '%')`
+      }
+
+      // Build metadata filters condition (e.g. currency = EUR)
+      // ClickHouse stores metadata as Nested(key String, value String)
+      let metaCondition = ''
+      const metaParams: Record<string, string> = {}
+      const metadataFilters = experiment.goal.metadataFilters
+      if (metadataFilters && metadataFilters.length > 0) {
+        const conditions: string[] = []
+        metadataFilters.forEach((filter, index) => {
+          const keyParam = `metaKey${index}`
+          const valueParam = `metaValue${index}`
+          metaParams[keyParam] = filter.key
+          metaParams[valueParam] = filter.value
+          conditions.push(
+            `has(c.meta.key, {${keyParam}:String}) AND c.meta.value[indexOf(c.meta.key, {${keyParam}:String})] = {${valueParam}:String}`,
+          )
+        })
+
+        metaCondition = `AND (${conditions.join(' AND ')})`
       }
 
       const conversionsQuery = `
@@ -845,13 +887,16 @@ export class ExperimentController {
           e.variantKey,
           uniqExact(e.profileId) as conversions
         FROM experiment_exposures e
-        INNER JOIN ${table} c ON e.profileId = c.psid AND e.pid = c.pid
+        INNER JOIN ${table} c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId)
         WHERE 
           e.pid = {pid:FixedString(12)}
           AND e.experimentId = {experimentId:String}
           AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND c.profileId IS NOT NULL
+          AND c.created BETWEEN {groupFrom:String} AND {groupTo:String}
           AND c.created >= e.created
           AND ${matchCondition}
+          ${metaCondition}
         GROUP BY e.variantKey
       `
 
@@ -861,6 +906,7 @@ export class ExperimentController {
         groupFrom: groupFromUTC,
         groupTo: groupToUTC,
         goalValue,
+        ...metaParams,
       }
 
       try {
@@ -940,6 +986,25 @@ export class ExperimentController {
     )
     const hasWinner = highestProbVariant.probabilityOfBeingBest >= 95
 
+    // Generate chart data with win probability over time
+    let chart:
+      | { x: string[]; winProbability: Record<string, number[]> }
+      | undefined
+
+    try {
+      chart = await this.generateExperimentChart(
+        experiment,
+        timeBucket as any,
+        groupFrom,
+        groupTo,
+        groupFromUTC,
+        groupToUTC,
+        safeTimezone,
+      )
+    } catch (err) {
+      this.logger.warn({ err }, 'Failed to generate experiment chart data')
+    }
+
     return {
       experimentId: experiment.id,
       status: experiment.status,
@@ -949,6 +1014,278 @@ export class ExperimentController {
       hasWinner,
       winnerKey: hasWinner ? highestProbVariant.key : null,
       confidenceLevel: 95,
+      chart,
+      timeBucket: allowedTimeBucketForPeriodAll,
     }
+  }
+
+  /**
+   * Generate time-series chart data for experiment win probabilities
+   */
+  private async generateExperimentChart(
+    experiment: Experiment,
+    timeBucket: string,
+    groupFrom: string,
+    groupTo: string,
+    groupFromUTC: string,
+    groupToUTC: string,
+    safeTimezone: string,
+  ): Promise<{ x: string[]; winProbability: Record<string, number[]> }> {
+    // Generate X axis based on time bucket
+    const { xShifted } = this.analyticsService.generateXAxis(
+      timeBucket as any,
+      groupFrom,
+      groupTo,
+      safeTimezone,
+    )
+
+    // Get date grouping columns for SQL
+    const dateColumns = this.getTimeBucketDateColumns(timeBucket)
+
+    // Query exposures grouped by time bucket and variant
+    const exposuresQuery = `
+      SELECT
+        ${dateColumns},
+        variantKey,
+        uniqExact(profileId) as exposures
+      FROM experiment_exposures
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND experimentId = {experimentId:String}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY ${dateColumns}, variantKey
+      ORDER BY ${dateColumns}
+    `
+
+    const queryParams = {
+      pid: experiment.project.id,
+      experimentId: experiment.id,
+      groupFrom: groupFromUTC,
+      groupTo: groupToUTC,
+      timezone: safeTimezone,
+    }
+
+    let exposuresData: any[] = []
+    try {
+      const result = await clickhouse
+        .query({ query: exposuresQuery, query_params: queryParams })
+        .then(resultSet => resultSet.json())
+      exposuresData = result.data as any[]
+    } catch (err) {
+      this.logger.warn({ err }, 'Failed to get time-bucketed exposures')
+    }
+
+    // Query conversions grouped by time bucket and variant (if goal exists)
+    let conversionsData: any[] = []
+    if (experiment.goal) {
+      const goalType = experiment.goal.type
+      const table = goalType === 'custom_event' ? 'customEV' : 'analytics'
+      const matchColumn = goalType === 'custom_event' ? 'ev' : 'pg'
+      const goalValue = experiment.goal.value || ''
+
+      // Build match condition based on goal match type
+      let matchCondition = ''
+      if (experiment.goal.matchType === 'exact') {
+        matchCondition = `c.${matchColumn} = {goalValue:String}`
+      } else {
+        matchCondition = `c.${matchColumn} ILIKE concat('%', {goalValue:String}, '%')`
+      }
+
+      // Build metadata filters condition
+      let metaCondition = ''
+      const metaParams: Record<string, string> = {}
+      const metadataFilters = experiment.goal.metadataFilters
+      if (metadataFilters && metadataFilters.length > 0) {
+        const conditions: string[] = []
+        metadataFilters.forEach((filter, index) => {
+          const keyParam = `metaKey${index}`
+          const valueParam = `metaValue${index}`
+          metaParams[keyParam] = filter.key
+          metaParams[valueParam] = filter.value
+          conditions.push(
+            `has(c.meta.key, {${keyParam}:String}) AND c.meta.value[indexOf(c.meta.key, {${keyParam}:String})] = {${valueParam}:String}`,
+          )
+        })
+        metaCondition = `AND (${conditions.join(' AND ')})`
+      }
+
+      const conversionsQuery = `
+        SELECT
+          ${this.getTimeBucketDateColumnsForJoin(timeBucket, 'e')},
+          e.variantKey,
+          uniqExact(e.profileId) as conversions
+        FROM experiment_exposures e
+        INNER JOIN ${table} c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId)
+        WHERE
+          e.pid = {pid:FixedString(12)}
+          AND e.experimentId = {experimentId:String}
+          AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND c.created >= e.created
+          AND ${matchCondition}
+          ${metaCondition}
+        GROUP BY ${this.getTimeBucketDateColumnsForJoin(timeBucket, 'e')}, e.variantKey
+        ORDER BY ${this.getTimeBucketDateColumnsForJoin(timeBucket, 'e')}
+      `
+
+      try {
+        const result = await clickhouse
+          .query({
+            query: conversionsQuery,
+            query_params: { ...queryParams, goalValue, ...metaParams },
+          })
+          .then(resultSet => resultSet.json())
+        conversionsData = result.data as any[]
+      } catch (err) {
+        this.logger.warn({ err }, 'Failed to get time-bucketed conversions')
+      }
+    }
+
+    // Build cumulative data per variant per time bucket
+    const variantKeys = experiment.variants.map(v => v.key)
+    const winProbability: Record<string, number[]> = {}
+
+    // Initialize arrays for each variant
+    for (const key of variantKeys) {
+      winProbability[key] = Array(xShifted.length).fill(0)
+    }
+
+    // Track cumulative exposures and conversions per variant
+    const cumulativeExposures: Record<string, number> = {}
+    const cumulativeConversions: Record<string, number> = {}
+
+    for (const key of variantKeys) {
+      cumulativeExposures[key] = 0
+      cumulativeConversions[key] = 0
+    }
+
+    // Process each time bucket
+    for (let i = 0; i < xShifted.length; i++) {
+      const bucketDate = xShifted[i]
+
+      // Add exposures for this bucket
+      for (const row of exposuresData) {
+        const rowDate = this.generateDateStringFromRow(row, timeBucket)
+        if (rowDate === bucketDate) {
+          const key = row.variantKey
+          if (variantKeys.includes(key)) {
+            cumulativeExposures[key] += Number(row.exposures) || 0
+          }
+        }
+      }
+
+      // Add conversions for this bucket
+      for (const row of conversionsData) {
+        const rowDate = this.generateDateStringFromRow(row, timeBucket)
+        if (rowDate === bucketDate) {
+          const key = row.variantKey
+          if (variantKeys.includes(key)) {
+            cumulativeConversions[key] += Number(row.conversions) || 0
+          }
+        }
+      }
+
+      // Calculate Bayesian probabilities for this point in time
+      const variantData = variantKeys.map(key => ({
+        key,
+        exposures: cumulativeExposures[key],
+        conversions: cumulativeConversions[key],
+      }))
+
+      const probabilities = calculateBayesianProbabilities(variantData)
+
+      // Store probabilities for each variant
+      for (const key of variantKeys) {
+        winProbability[key][i] = _round((probabilities.get(key) || 0) * 100, 2)
+      }
+    }
+
+    return {
+      x: xShifted,
+      winProbability,
+    }
+  }
+
+  /**
+   * Get SQL date columns for time bucket grouping
+   */
+  private getTimeBucketDateColumns(timeBucket: string): string {
+    switch (timeBucket) {
+      case 'minute':
+        return 'toYear(created) as year, toMonth(created) as month, toDayOfMonth(created) as day, toHour(created) as hour, toMinute(created) as minute'
+      case 'hour':
+        return 'toYear(created) as year, toMonth(created) as month, toDayOfMonth(created) as day, toHour(created) as hour'
+      case 'day':
+        return 'toYear(created) as year, toMonth(created) as month, toDayOfMonth(created) as day'
+      case 'month':
+        return 'toYear(created) as year, toMonth(created) as month'
+      case 'year':
+        return 'toYear(created) as year'
+      default:
+        return 'toYear(created) as year, toMonth(created) as month, toDayOfMonth(created) as day'
+    }
+  }
+
+  /**
+   * Get SQL date columns for time bucket grouping with table alias
+   */
+  private getTimeBucketDateColumnsForJoin(
+    timeBucket: string,
+    alias: string,
+  ): string {
+    switch (timeBucket) {
+      case 'minute':
+        return `toYear(${alias}.created) as year, toMonth(${alias}.created) as month, toDayOfMonth(${alias}.created) as day, toHour(${alias}.created) as hour, toMinute(${alias}.created) as minute`
+      case 'hour':
+        return `toYear(${alias}.created) as year, toMonth(${alias}.created) as month, toDayOfMonth(${alias}.created) as day, toHour(${alias}.created) as hour`
+      case 'day':
+        return `toYear(${alias}.created) as year, toMonth(${alias}.created) as month, toDayOfMonth(${alias}.created) as day`
+      case 'month':
+        return `toYear(${alias}.created) as year, toMonth(${alias}.created) as month`
+      case 'year':
+        return `toYear(${alias}.created) as year`
+      default:
+        return `toYear(${alias}.created) as year, toMonth(${alias}.created) as month, toDayOfMonth(${alias}.created) as day`
+    }
+  }
+
+  /**
+   * Generate date string from row based on time bucket
+   */
+  private generateDateStringFromRow(row: any, timeBucket: string): string {
+    const { year, month, day, hour, minute } = row
+
+    let dateString = `${year}`
+
+    if (typeof month === 'number') {
+      dateString += month < 10 ? `-0${month}` : `-${month}`
+    }
+
+    if (
+      typeof day === 'number' &&
+      timeBucket !== 'month' &&
+      timeBucket !== 'year'
+    ) {
+      dateString += day < 10 ? `-0${day}` : `-${day}`
+    }
+
+    if (
+      typeof hour === 'number' &&
+      (timeBucket === 'hour' || timeBucket === 'minute')
+    ) {
+      const strMinute =
+        typeof minute === 'number'
+          ? minute < 10
+            ? `0${minute}`
+            : `${minute}`
+          : '00'
+
+      if (hour < 10) {
+        dateString += ` 0${hour}:${strMinute}:00`
+      } else {
+        dateString += ` ${hour}:${strMinute}:00`
+      }
+    }
+
+    return dateString
   }
 }
