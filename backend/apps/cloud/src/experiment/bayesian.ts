@@ -11,6 +11,44 @@ export interface VariantData {
   conversions: number
 }
 
+type RandomFn = () => number
+
+/**
+ * Deterministic (seeded) PRNG: mulberry32
+ * Returns a function that generates numbers in [0, 1).
+ */
+function mulberry32(seed: number): RandomFn {
+  let a = seed >>> 0
+  return () => {
+    a |= 0
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+function fnv1a32(input: string): number {
+  let hash = 0x811c9dc5
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return hash >>> 0
+}
+
+function seedFromVariants(
+  variants: VariantData[],
+  simulations: number,
+): number {
+  const normalized = [...variants]
+    .sort((a, b) => a.key.localeCompare(b.key))
+    .map(v => `${v.key}:${v.exposures}:${v.conversions}`)
+    .join('|')
+  // Mix in simulations so changing it changes output deterministically.
+  return (fnv1a32(normalized) ^ (simulations >>> 0)) >>> 0
+}
+
 /**
  * Beta distribution sampling using the Box-Muller transform
  * and the relationship between Beta and Gamma distributions.
@@ -19,7 +57,7 @@ export interface VariantData {
  * X ~ Gamma(alpha, 1), Y ~ Gamma(beta, 1)
  * Then X / (X + Y) ~ Beta(alpha, beta)
  */
-function sampleGamma(shape: number): number {
+function sampleGamma(shape: number, random: RandomFn): number {
   // For shape >= 1, use Marsaglia and Tsang's method
   if (shape >= 1) {
     const d = shape - 1 / 3
@@ -31,14 +69,14 @@ function sampleGamma(shape: number): number {
 
       do {
         // Generate standard normal using Box-Muller
-        const u1 = Math.random()
-        const u2 = Math.random()
+        const u1 = Math.max(random(), Number.EPSILON)
+        const u2 = random()
         x = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
         v = 1 + c * x
       } while (v <= 0)
 
       v = v * v * v
-      const u = Math.random()
+      const u = random()
 
       if (u < 1 - 0.0331 * x * x * x * x) {
         return d * v
@@ -53,8 +91,8 @@ function sampleGamma(shape: number): number {
   // For shape < 1, use the transformation:
   // If X ~ Gamma(shape + 1, 1), then X * U^(1/shape) ~ Gamma(shape, 1)
   // where U ~ Uniform(0, 1)
-  const sample = sampleGamma(shape + 1)
-  const u = Math.random()
+  const sample = sampleGamma(shape + 1, random)
+  const u = random()
   return sample * Math.pow(u, 1 / shape)
 }
 
@@ -65,9 +103,9 @@ function sampleGamma(shape: number): number {
  * @param beta - Second shape parameter (failures + 1)
  * @returns A sample from Beta(alpha, beta)
  */
-function sampleBeta(alpha: number, beta: number): number {
-  const x = sampleGamma(alpha)
-  const y = sampleGamma(beta)
+function sampleBeta(alpha: number, beta: number, random: RandomFn): number {
+  const x = sampleGamma(alpha, random)
+  const y = sampleGamma(beta, random)
   return x / (x + y)
 }
 
@@ -109,6 +147,10 @@ export function calculateBayesianProbabilities(
     wins.set(v.key, 0)
   }
 
+  // Use deterministic PRNG so the same input always produces the same output.
+  // This prevents slight "drift" between the table value and the last chart point.
+  const random = mulberry32(seedFromVariants(variants, simulations))
+
   // Run Monte Carlo simulation
   for (let i = 0; i < simulations; i++) {
     let bestRate = -1
@@ -122,7 +164,7 @@ export function calculateBayesianProbabilities(
       const beta = Math.max(1, variant.exposures - variant.conversions + 1)
 
       // Sample from the Beta distribution
-      const rate = sampleBeta(alpha, beta)
+      const rate = sampleBeta(alpha, beta, random)
 
       if (rate > bestRate) {
         bestRate = rate
@@ -166,8 +208,11 @@ export function calculateCredibleInterval(
   // Use numerical approximation for Beta distribution quantiles
   // Sample many times and find percentiles
   const samples: number[] = []
+  const random = mulberry32(
+    seedFromVariants([{ key: 'v', exposures, conversions }], 10000),
+  )
   for (let i = 0; i < 10000; i++) {
-    samples.push(sampleBeta(alpha, beta))
+    samples.push(sampleBeta(alpha, beta, random))
   }
   samples.sort((a, b) => a - b)
 
@@ -204,10 +249,27 @@ export function calculateExpectedLift(
   const testBeta = testExposures - testConversions + 1
 
   let totalLift = 0
+  const random = mulberry32(
+    seedFromVariants(
+      [
+        {
+          key: 'c',
+          exposures: controlExposures,
+          conversions: controlConversions,
+        },
+        {
+          key: 't',
+          exposures: testExposures,
+          conversions: testConversions,
+        },
+      ],
+      simulations,
+    ),
+  )
 
   for (let i = 0; i < simulations; i++) {
-    const controlRate = sampleBeta(controlAlpha, controlBeta)
-    const testRate = sampleBeta(testAlpha, testBeta)
+    const controlRate = sampleBeta(controlAlpha, controlBeta, random)
+    const testRate = sampleBeta(testAlpha, testBeta, random)
 
     if (controlRate > 0) {
       totalLift += (testRate - controlRate) / controlRate

@@ -1039,22 +1039,38 @@ export class ExperimentController {
       safeTimezone,
     )
 
-    // Get date grouping columns for SQL
-    const dateColumns = this.getTimeBucketDateColumns(timeBucket)
+    // Important: table results use overall uniqExact(profileId) counts per variant.
+    // For the time-series we must avoid "summing per-bucket uniques", because a profile
+    // can appear in multiple time buckets (re-exposed / repeated events). Instead we:
+    // - bucket exposures by the first exposure per (variantKey, profileId)
+    // - bucket conversions by the first conversion per (variantKey, profileId)
+    // This guarantees that the last chart point uses the same data as the table.
+    const dateColumnsGroupBy = this.getTimeBucketDateColumnsGroupBy(timeBucket)
+    const exposuresDateColumnsSelect = this.getTimeBucketDateColumnsSelect(
+      timeBucket,
+      'firstCreated',
+    )
 
-    // Query exposures grouped by time bucket and variant
+    // Query exposures grouped by time bucket and variant (first exposure per profile)
     const exposuresQuery = `
       SELECT
-        ${dateColumns},
+        ${exposuresDateColumnsSelect},
         variantKey,
-        uniqExact(profileId) as exposures
-      FROM experiment_exposures
-      WHERE
-        pid = {pid:FixedString(12)}
-        AND experimentId = {experimentId:String}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-      GROUP BY ${dateColumns}, variantKey
-      ORDER BY ${dateColumns}
+        count() as exposures
+      FROM (
+        SELECT
+          variantKey,
+          profileId,
+          min(created) as firstCreated
+        FROM experiment_exposures
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND experimentId = {experimentId:String}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY variantKey, profileId
+      )
+      GROUP BY ${dateColumnsGroupBy}, variantKey
+      ORDER BY ${dateColumnsGroupBy}
     `
 
     const queryParams = {
@@ -1082,6 +1098,10 @@ export class ExperimentController {
       const table = goalType === 'custom_event' ? 'customEV' : 'analytics'
       const matchColumn = goalType === 'custom_event' ? 'ev' : 'pg'
       const goalValue = experiment.goal.value || ''
+      const conversionsDateColumnsSelect = this.getTimeBucketDateColumnsSelect(
+        timeBucket,
+        'firstConversion',
+      )
 
       // Build match condition based on goal match type
       let matchCondition = ''
@@ -1111,20 +1131,29 @@ export class ExperimentController {
 
       const conversionsQuery = `
         SELECT
-          ${this.getTimeBucketDateColumnsForJoin(timeBucket, 'e')},
-          e.variantKey,
-          uniqExact(e.profileId) as conversions
-        FROM experiment_exposures e
-        INNER JOIN ${table} c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId)
-        WHERE
-          e.pid = {pid:FixedString(12)}
-          AND e.experimentId = {experimentId:String}
-          AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
-          AND c.created >= e.created
-          AND ${matchCondition}
-          ${metaCondition}
-        GROUP BY ${this.getTimeBucketDateColumnsForJoin(timeBucket, 'e')}, e.variantKey
-        ORDER BY ${this.getTimeBucketDateColumnsForJoin(timeBucket, 'e')}
+          ${conversionsDateColumnsSelect},
+          variantKey,
+          count() as conversions
+        FROM (
+          SELECT
+            e.variantKey as variantKey,
+            e.profileId as profileId,
+            min(c.created) as firstConversion
+          FROM experiment_exposures e
+          INNER JOIN ${table} c ON e.pid = c.pid AND e.profileId = assumeNotNull(c.profileId)
+          WHERE
+            e.pid = {pid:FixedString(12)}
+            AND e.experimentId = {experimentId:String}
+            AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
+            AND c.profileId IS NOT NULL
+            AND c.created BETWEEN {groupFrom:String} AND {groupTo:String}
+            AND c.created >= e.created
+            AND ${matchCondition}
+            ${metaCondition}
+          GROUP BY e.variantKey, e.profileId
+        )
+        GROUP BY ${dateColumnsGroupBy}, variantKey
+        ORDER BY ${dateColumnsGroupBy}
       `
 
       try {
@@ -1158,28 +1187,45 @@ export class ExperimentController {
       cumulativeConversions[key] = 0
     }
 
+    // Index bucket deltas for O(buckets * variants) processing
+    const exposuresByBucket: Record<string, Record<string, number>> = {}
+    for (const row of exposuresData) {
+      const rowDate = this.generateDateStringFromRow(row, timeBucket)
+      const key = row.variantKey
+      if (!rowDate || !key) continue
+      exposuresByBucket[rowDate] ||= {}
+      exposuresByBucket[rowDate][key] = Number(row.exposures) || 0
+    }
+
+    const conversionsByBucket: Record<string, Record<string, number>> = {}
+    for (const row of conversionsData) {
+      const rowDate = this.generateDateStringFromRow(row, timeBucket)
+      const key = row.variantKey
+      if (!rowDate || !key) continue
+      conversionsByBucket[rowDate] ||= {}
+      conversionsByBucket[rowDate][key] = Number(row.conversions) || 0
+    }
+
     // Process each time bucket
     for (let i = 0; i < xShifted.length; i++) {
       const bucketDate = xShifted[i]
 
       // Add exposures for this bucket
-      for (const row of exposuresData) {
-        const rowDate = this.generateDateStringFromRow(row, timeBucket)
-        if (rowDate === bucketDate) {
-          const key = row.variantKey
-          if (variantKeys.includes(key)) {
-            cumulativeExposures[key] += Number(row.exposures) || 0
+      const exposuresDelta = exposuresByBucket[bucketDate]
+      if (exposuresDelta) {
+        for (const [key, value] of Object.entries(exposuresDelta)) {
+          if (typeof cumulativeExposures[key] === 'number') {
+            cumulativeExposures[key] += value
           }
         }
       }
 
       // Add conversions for this bucket
-      for (const row of conversionsData) {
-        const rowDate = this.generateDateStringFromRow(row, timeBucket)
-        if (rowDate === bucketDate) {
-          const key = row.variantKey
-          if (variantKeys.includes(key)) {
-            cumulativeConversions[key] += Number(row.conversions) || 0
+      const conversionsDelta = conversionsByBucket[bucketDate]
+      if (conversionsDelta) {
+        for (const [key, value] of Object.entries(conversionsDelta)) {
+          if (typeof cumulativeConversions[key] === 'number') {
+            cumulativeConversions[key] += value
           }
         }
       }
@@ -1208,43 +1254,40 @@ export class ExperimentController {
   /**
    * Get SQL date columns for time bucket grouping
    */
-  private getTimeBucketDateColumns(timeBucket: string): string {
-    switch (timeBucket) {
-      case 'minute':
-        return 'toYear(created) as year, toMonth(created) as month, toDayOfMonth(created) as day, toHour(created) as hour, toMinute(created) as minute'
-      case 'hour':
-        return 'toYear(created) as year, toMonth(created) as month, toDayOfMonth(created) as day, toHour(created) as hour'
-      case 'day':
-        return 'toYear(created) as year, toMonth(created) as month, toDayOfMonth(created) as day'
-      case 'month':
-        return 'toYear(created) as year, toMonth(created) as month'
-      case 'year':
-        return 'toYear(created) as year'
-      default:
-        return 'toYear(created) as year, toMonth(created) as month, toDayOfMonth(created) as day'
-    }
-  }
-
-  /**
-   * Get SQL date columns for time bucket grouping with table alias
-   */
-  private getTimeBucketDateColumnsForJoin(
+  private getTimeBucketDateColumnsSelect(
     timeBucket: string,
-    alias: string,
+    dateExpr: string,
   ): string {
     switch (timeBucket) {
       case 'minute':
-        return `toYear(${alias}.created) as year, toMonth(${alias}.created) as month, toDayOfMonth(${alias}.created) as day, toHour(${alias}.created) as hour, toMinute(${alias}.created) as minute`
+        return `toYear(${dateExpr}, {timezone:String}) as year, toMonth(${dateExpr}, {timezone:String}) as month, toDayOfMonth(${dateExpr}, {timezone:String}) as day, toHour(${dateExpr}, {timezone:String}) as hour, toMinute(${dateExpr}, {timezone:String}) as minute`
       case 'hour':
-        return `toYear(${alias}.created) as year, toMonth(${alias}.created) as month, toDayOfMonth(${alias}.created) as day, toHour(${alias}.created) as hour`
+        return `toYear(${dateExpr}, {timezone:String}) as year, toMonth(${dateExpr}, {timezone:String}) as month, toDayOfMonth(${dateExpr}, {timezone:String}) as day, toHour(${dateExpr}, {timezone:String}) as hour`
       case 'day':
-        return `toYear(${alias}.created) as year, toMonth(${alias}.created) as month, toDayOfMonth(${alias}.created) as day`
+        return `toYear(${dateExpr}, {timezone:String}) as year, toMonth(${dateExpr}, {timezone:String}) as month, toDayOfMonth(${dateExpr}, {timezone:String}) as day`
       case 'month':
-        return `toYear(${alias}.created) as year, toMonth(${alias}.created) as month`
+        return `toYear(${dateExpr}, {timezone:String}) as year, toMonth(${dateExpr}, {timezone:String}) as month`
       case 'year':
-        return `toYear(${alias}.created) as year`
+        return `toYear(${dateExpr}, {timezone:String}) as year`
       default:
-        return `toYear(${alias}.created) as year, toMonth(${alias}.created) as month, toDayOfMonth(${alias}.created) as day`
+        return `toYear(${dateExpr}, {timezone:String}) as year, toMonth(${dateExpr}, {timezone:String}) as month, toDayOfMonth(${dateExpr}, {timezone:String}) as day`
+    }
+  }
+
+  private getTimeBucketDateColumnsGroupBy(timeBucket: string): string {
+    switch (timeBucket) {
+      case 'minute':
+        return 'year, month, day, hour, minute'
+      case 'hour':
+        return 'year, month, day, hour'
+      case 'day':
+        return 'year, month, day'
+      case 'month':
+        return 'year, month'
+      case 'year':
+        return 'year'
+      default:
+        return 'year, month, day'
     }
   }
 
