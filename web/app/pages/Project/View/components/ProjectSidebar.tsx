@@ -352,7 +352,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             className='max-w-full flex-1'
             text={projectName}
             tooltipNode={
-              <Text as='h2' size='lg' weight='semibold' truncate className='max-w-full'>
+              <Text as='h2' size='lg' weight='semibold' truncate className='text-left'>
                 {projectName}
               </Text>
             }
