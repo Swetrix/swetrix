@@ -64,7 +64,7 @@ import {
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { IUsageInfoRedis } from '../user/interfaces'
-import { ProjectSubscriber, Funnel, Annotation } from './entity'
+import { ProjectSubscriber, Funnel, Annotation, PinnedProject } from './entity'
 import { AddSubscriberType } from './types'
 import {
   CreateProjectDTO,
@@ -292,6 +292,8 @@ export class ProjectService {
     private readonly funnelRepository: Repository<Funnel>,
     @InjectRepository(Annotation)
     private readonly annotationRepository: Repository<Annotation>,
+    @InjectRepository(PinnedProject)
+    private readonly pinnedProjectRepository: Repository<PinnedProject>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
     private readonly userService: UserService,
@@ -1655,6 +1657,8 @@ export class ProjectService {
       _map(paginated.results, ({ id }) => id),
     )
 
+    const pinnedProjectIds = await this.getPinnedProjectIds(userId)
+
     paginated.results = _map(paginated.results, project => {
       const userShare = project.share?.find(share => share.user?.id === userId)
       const organisationMembership = project.organisation?.members?.find(
@@ -1681,12 +1685,71 @@ export class ProjectService {
         isDataExists: _includes(pidsWithData, project?.id),
         isErrorDataExists: _includes(pidsWithErrorData, project?.id),
         organisationId: project?.organisation?.id,
+        isPinned: _includes(pinnedProjectIds, project?.id),
         role,
         passwordHash: undefined,
         admin: undefined,
       }
     })
 
+    // Sort pinned projects first
+    paginated.results.sort((a: any, b: any) => {
+      if (a.isPinned && !b.isPinned) return -1
+      if (!a.isPinned && b.isPinned) return 1
+      return 0
+    })
+
     return paginated
+  }
+
+  async getPinnedProjectIds(userId: string): Promise<string[]> {
+    const pinnedProjects = await this.pinnedProjectRepository.find({
+      where: { user: { id: userId } },
+      relations: ['project'],
+      select: {
+        project: {
+          id: true,
+        },
+      },
+    })
+
+    return _map(pinnedProjects, pp => pp.project?.id).filter(Boolean)
+  }
+
+  async pinProject(userId: string, projectId: string): Promise<void> {
+    // Check if already pinned
+    const existing = await this.pinnedProjectRepository.findOne({
+      where: {
+        user: { id: userId },
+        project: { id: projectId },
+      },
+    })
+
+    if (existing) {
+      return // Already pinned
+    }
+
+    await this.pinnedProjectRepository.save({
+      user: { id: userId },
+      project: { id: projectId },
+    })
+  }
+
+  async unpinProject(userId: string, projectId: string): Promise<void> {
+    await this.pinnedProjectRepository.delete({
+      user: { id: userId },
+      project: { id: projectId },
+    })
+  }
+
+  async isProjectPinned(userId: string, projectId: string): Promise<boolean> {
+    const pinned = await this.pinnedProjectRepository.findOne({
+      where: {
+        user: { id: userId },
+        project: { id: projectId },
+      },
+    })
+
+    return !!pinned
   }
 }

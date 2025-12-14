@@ -205,6 +205,7 @@ export interface Project {
   botsProtectionLevel: 'off' | 'basic'
   role?: Role
   gscPropertyUri?: string | null
+  isPinned?: boolean
 }
 
 export interface Extension {

@@ -139,6 +139,8 @@
     "disable": "Disable",
     "copied": "Copied",
     "new": "New",
+    "all": "All",
+    "active": "Active",
     "loading": "Loading..",
     "edit": "Edit",
     "account": "Account",
@@ -872,6 +874,11 @@
     "public": "Public",
     "shared": "Shared",
     "disabled": "Disabled",
+    "pinned": "Pinned",
+    "unpinned": "Unpinned",
+    "pin": "Pin project",
+    "unpin": "Unpin project",
+    "noData": "no data",
     "pageviews": "Pageviews",
     "captchaEvents": "CAPTCHA events",
     "firstSeen": "First seen",
@@ -1219,6 +1226,7 @@
     "support": "Contact support"
   },
   "project": {
+    "passwordProtectedHint": "Please enter the password to view this dashboard.",
     "captchaCompletions": "CAPTCHA completions",
     "addAnnotation": "Add annotation",
     "editAnnotation": "Edit annotation",

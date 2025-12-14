@@ -6,13 +6,30 @@ import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _round from 'lodash/round'
 import _size from 'lodash/size'
-import { Settings2Icon } from 'lucide-react'
-import React, { useState, useMemo } from 'react'
+import { Settings2Icon, PinIcon } from 'lucide-react'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
 
-import { acceptProjectShare } from '~/api'
+import { acceptProjectShare, pinProject, unpinProject } from '~/api'
+
+// Detect if device supports hover (i.e., not a touch-only device)
+const useIsTouchDevice = () => {
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
+
+  useEffect(() => {
+    // Check if device is touch-only (no hover support)
+    const mediaQuery = window.matchMedia('(hover: none)')
+    setIsTouchDevice(mediaQuery.matches)
+
+    const handler = (e: MediaQueryListEvent) => setIsTouchDevice(e.matches)
+    mediaQuery.addEventListener('change', handler)
+    return () => mediaQuery.removeEventListener('change', handler)
+  }, [])
+
+  return isTouchDevice
+}
 import useFeatureFlag from '~/hooks/useFeatureFlag'
 import { OverallObject, Project } from '~/lib/models/Project'
 import { FeatureFlag } from '~/lib/models/User'
@@ -46,6 +63,8 @@ interface MiniCardProps {
 const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
   const { t } = useTranslation('common')
   const statsDidGrowUp = percChange ? percChange >= 0 : false
+  const hasNoData = total === 0 || total === 'N/A'
+  const isLoading = total === null
 
   return (
     <div>
@@ -54,14 +73,23 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
       </Text>
 
       <div className='flex font-bold'>
-        {total === null ? (
-          <Spin className='mt-2 !ml-0' />
+        {isLoading ? (
+          <Spin className='mt-2 ml-0!' />
+        ) : hasNoData ? (
+          <div className='flex items-baseline gap-1'>
+            <Text as='p' weight='bold' size='xl' colour='muted'>
+              —
+            </Text>
+            <Text as='span' size='xs' colour='muted' className='font-normal'>
+              {t('dashboard.noData')}
+            </Text>
+          </div>
         ) : (
           <>
             <Text as='p' weight='bold' size='xl' colour='secondary'>
               {_isNumber(total) ? nFormatter(total) : total}
             </Text>
-            {_isNumber(percChange) ? (
+            {_isNumber(percChange) && percChange !== 0 ? (
               <p
                 className={cx('flex items-start text-xs', {
                   'text-green-600': statsDidGrowUp,
@@ -104,13 +132,55 @@ export const ProjectCard = ({
   const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
 
   const { user, mergeUser } = useAuth()
+  const isTouchDevice = useIsTouchDevice()
 
   const shareId = useMemo(
     () => _find(project.share, (item) => item.user?.id === user?.id)?.id,
     [project.share, user?.id],
   )
 
-  const { id, name, public: isPublic, active, isTransferring, share, organisation, role } = project
+  const { id, name, public: isPublic, active, isTransferring, share, organisation, role, isPinned } = project
+  const [isPinning, setIsPinning] = useState(false)
+  const [localIsPinned, setLocalIsPinned] = useState(isPinned)
+
+  // Sync local state with prop
+  useEffect(() => {
+    setLocalIsPinned(isPinned)
+  }, [isPinned])
+
+  const handlePinToggle = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      if (isPinning) return
+
+      setIsPinning(true)
+      // Optimistically update local state
+      const newPinnedState = !localIsPinned
+      setLocalIsPinned(newPinnedState)
+
+      try {
+        if (!newPinnedState) {
+          await unpinProject(id)
+          toast.success(t('dashboard.unpinned'))
+        } else {
+          await pinProject(id)
+          toast.success(t('dashboard.pinned'))
+        }
+        // Silently refetch projects in background - don't await
+        refetchProjects()
+      } catch (reason: any) {
+        // Revert on error
+        setLocalIsPinned(!newPinnedState)
+        console.error('[ERROR] Error while toggling pin:', reason)
+        toast.error(t('apiNotifications.somethingWentWrong'))
+      } finally {
+        setIsPinning(false)
+      }
+    },
+    [id, localIsPinned, isPinning, refetchProjects, t],
+  )
 
   const badges = useMemo(() => {
     const list: BadgeProps[] = []
@@ -198,6 +268,10 @@ export const ProjectCard = ({
     return params.toString()
   }, [showPeriodSelector, activePeriod, isHostnameNavigationEnabled, project.name])
 
+  // Determine if action buttons should always be visible
+  // Show on touch devices, or when project is pinned
+  const alwaysShowActions = isTouchDevice || localIsPinned
+
   return (
     <Link
       to={{
@@ -206,7 +280,7 @@ export const ProjectCard = ({
       }}
       onClick={onElementClick}
       className={cx(
-        'relative cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60',
+        'group relative cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60',
         viewMode === 'list' ? 'flex items-center justify-between px-6 py-4' : 'min-h-[153.1px]',
       )}
     >
@@ -222,16 +296,35 @@ export const ProjectCard = ({
             {name}
           </Text>
 
-          {project.isAccessConfirmed && role !== 'viewer' ? (
-            <Link
-              className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
-              onClick={(e) => e.stopPropagation()}
-              to={_replace(routes.project_settings, ':id', id)}
-              aria-label={`${t('project.settings.settings')} ${name}`}
+          <div
+            className={cx(
+              'flex shrink-0 items-center transition-opacity',
+              alwaysShowActions ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+            )}
+          >
+            <button
+              type='button'
+              className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+              onClick={handlePinToggle}
+              disabled={isPinning}
+              aria-label={localIsPinned ? t('dashboard.unpin') : t('dashboard.pin')}
             >
-              <Settings2Icon className='size-5' strokeWidth={1.5} />
-            </Link>
-          ) : null}
+              <PinIcon
+                className={cx('size-5 transition-transform', localIsPinned && 'rotate-[30deg]')}
+                strokeWidth={1.5}
+              />
+            </button>
+            {project.isAccessConfirmed && role !== 'viewer' ? (
+              <Link
+                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                onClick={(e) => e.stopPropagation()}
+                to={_replace(routes.project_settings, ':id', id)}
+                aria-label={`${t('project.settings.settings')} ${name}`}
+              >
+                <Settings2Icon className='size-5' strokeWidth={1.5} />
+              </Link>
+            ) : null}
+          </div>
         </div>
         <div className='mt-1 flex shrink-0 flex-wrap gap-2'>
           {badges.length > 0 ? (

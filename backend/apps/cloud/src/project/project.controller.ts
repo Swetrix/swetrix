@@ -275,6 +275,50 @@ export class ProjectController {
   }
 
   @ApiBearerAuth()
+  @Post('/:id/pin')
+  @ApiOperation({ summary: 'Pin a project to the top of the dashboard' })
+  @ApiResponse({ status: 200, description: 'Project pinned successfully' })
+  @Auth(true)
+  async pinProject(
+    @Param('id') projectId: string,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ projectId, userId }, 'POST /project/:id/pin')
+
+    if (!isValidPID(projectId)) {
+      throw new BadRequestException('The provided project ID is incorrect')
+    }
+
+    const project = await this.projectService.getFullProject(projectId, userId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, userId)
+
+    await this.projectService.pinProject(userId, projectId)
+  }
+
+  @ApiBearerAuth()
+  @Delete('/:id/pin')
+  @ApiOperation({ summary: 'Unpin a project from the top of the dashboard' })
+  @ApiResponse({ status: 200, description: 'Project unpinned successfully' })
+  @Auth(true)
+  async unpinProject(
+    @Param('id') projectId: string,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ projectId, userId }, 'DELETE /project/:id/pin')
+
+    if (!isValidPID(projectId)) {
+      throw new BadRequestException('The provided project ID is incorrect')
+    }
+
+    await this.projectService.unpinProject(userId, projectId)
+  }
+
+  @ApiBearerAuth()
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
   @Auth(true)

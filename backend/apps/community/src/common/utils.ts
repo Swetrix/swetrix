@@ -1161,6 +1161,71 @@ const sumArrays = (source: number[], target: number[]) => {
   return result
 }
 
+// Pinned projects functions
+const getPinnedProjectsClickhouse = async (
+  visitorId: string,
+): Promise<string[]> => {
+  const query = `SELECT projectId FROM pinned_project WHERE visitorId = {visitorId:String};`
+
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: { visitorId },
+    })
+    .then(resultSet => resultSet.json<{ projectId: string }>())
+
+  return _map(data, row => row.projectId)
+}
+
+const pinProjectClickhouse = async (
+  visitorId: string,
+  projectId: string,
+): Promise<void> => {
+  const id = crypto.randomUUID()
+  const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+  await clickhouse.insert({
+    table: 'pinned_project',
+    format: 'JSONEachRow',
+    values: [
+      {
+        id,
+        visitorId,
+        projectId,
+        created: now,
+      },
+    ],
+  })
+}
+
+const unpinProjectClickhouse = async (
+  visitorId: string,
+  projectId: string,
+): Promise<void> => {
+  const query = `ALTER TABLE pinned_project DELETE WHERE visitorId = {visitorId:String} AND projectId = {projectId:FixedString(12)};`
+
+  await clickhouse.command({
+    query,
+    query_params: { visitorId, projectId },
+  })
+}
+
+const isProjectPinnedClickhouse = async (
+  visitorId: string,
+  projectId: string,
+): Promise<boolean> => {
+  const query = `SELECT 1 FROM pinned_project WHERE visitorId = {visitorId:String} AND projectId = {projectId:FixedString(12)} LIMIT 1;`
+
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: { visitorId, projectId },
+    })
+    .then(resultSet => resultSet.json())
+
+  return !_isEmpty(data)
+}
+
 export {
   checkRateLimit,
   createProjectClickhouse,
@@ -1205,4 +1270,9 @@ export {
   createAnnotationClickhouse,
   updateAnnotationClickhouse,
   deleteAnnotationClickhouse,
+  // pinned projects
+  getPinnedProjectsClickhouse,
+  pinProjectClickhouse,
+  unpinProjectClickhouse,
+  isProjectPinnedClickhouse,
 }

@@ -431,6 +431,22 @@ export const deleteProject = (id: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const pinProject = (id: string) =>
+  api
+    .post(`/project/${id}/pin`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const unpinProject = (id: string) =>
+  api
+    .delete(`/project/${id}/pin`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const resetProject = (id: string) =>
   api
     .delete(`/project/reset/${id}`)
