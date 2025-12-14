@@ -161,6 +161,11 @@ const Session = ({ session, timeFormat }: SessionProps) => {
             <p className='flex items-center text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>
               <span className='truncate'>{displayName}</span>
               {session.isIdentified ? <Badge label={t('project.identified')} colour='indigo' className='ml-2' /> : null}
+              <Badge
+                label={session.isFirstSession ? t('project.sessionNew') : t('project.sessionReturn')}
+                colour={session.isFirstSession ? 'green' : 'slate'}
+                className='ml-2'
+              />
             </p>
             <p className='mt-1 flex flex-wrap items-center gap-x-2 text-xs leading-5 text-gray-500 dark:text-gray-300'>
               <span className='flex'>

@@ -103,6 +103,7 @@ export interface Session {
 
   profileId: string | null
   isIdentified: 1 | 0
+  isFirstSession: 1 | 0
 }
 
 export interface SessionDetails {
