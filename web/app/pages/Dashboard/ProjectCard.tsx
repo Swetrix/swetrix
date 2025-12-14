@@ -94,7 +94,7 @@ const MiniCard = ({ labelTKey, total, percChange, hasData }: MiniCardProps) => {
                 size='xs'
                 weight='medium'
                 colour={statsDidGrowUp ? 'success' : 'muted'}
-                className='flex items-start'
+                className='-mt-3 flex items-center'
               >
                 {statsDidGrowUp ? (
                   <>
