@@ -77,7 +77,7 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
           <Spin className='mt-2 ml-0!' />
         ) : hasNoData ? (
           <div className='flex items-baseline gap-1'>
-            <Text as='p' weight='bold' size='xl' colour='muted'>
+            <Text as='p' weight='bold' size='sm' colour='muted'>
               —
             </Text>
             <Text as='span' size='xs' colour='muted' className='font-normal'>
