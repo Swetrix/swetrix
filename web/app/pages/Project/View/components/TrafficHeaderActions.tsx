@@ -6,8 +6,6 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
-import { isSelfhosted, MARKETPLACE_URL } from '~/lib/constants'
-import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import Dropdown from '~/ui/Dropdown'
 import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
@@ -18,7 +16,7 @@ import { getFiltersUrlParams } from './SearchFilters'
 
 interface ExportType {
   label: string
-  onClick: (data: any, tFunction: any) => void
+  onClick: () => void
 }
 
 interface TrafficHeaderActionsProps {
@@ -37,11 +35,10 @@ interface TrafficHeaderActionsProps {
 
   // Export dropdown props
   exportTypes: ExportType[]
-  customExportTypes: ExportType[]
   panelsData: any
 }
 
-export const TrafficHeaderActions = ({
+const TrafficHeaderActions = ({
   projectViews,
   projectViewsLoading,
   projectViewDeleting,
@@ -54,11 +51,8 @@ export const TrafficHeaderActions = ({
   allowedToManage,
   dataLoading,
   exportTypes,
-  customExportTypes,
-  panelsData,
 }: TrafficHeaderActionsProps) => {
   const { t } = useTranslation('common')
-  const { id } = useCurrentProject()
   const [searchParams, setSearchParams] = useSearchParams()
 
   return (
@@ -165,35 +159,16 @@ export const TrafficHeaderActions = ({
       {/* Export Dropdown */}
       <Dropdown
         header={t('project.exportData')}
-        items={_filter(
-          [
-            ...exportTypes,
-            ...customExportTypes,
-            !isSelfhosted && {
-              label: t('project.lookingForMore'),
-              lookingForMore: true,
-              onClick: () => {},
-            },
-          ],
-          (el) => !!el,
-        )}
+        items={exportTypes}
         title={[<DownloadIcon key='download-icon' className='h-5 w-5' />]}
         labelExtractor={(item) => item.label}
         keyExtractor={(item) => item.label}
-        onSelect={(item, e) => {
-          // @ts-expect-error lookingForMore is defined as an exception above
-          if (item.lookingForMore) {
-            e?.stopPropagation()
-            window.open(MARKETPLACE_URL, '_blank')
-
-            return
-          }
-
+        onSelect={(item) => {
           trackCustom('DASHBOARD_EXPORT', {
-            type: item.label === t('project.asCSV') ? 'csv' : 'extension',
+            type: 'csv',
           })
 
-          item.onClick(panelsData, t)
+          item.onClick()
         }}
         chevron='mini'
         buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:dark:ring-gray-200'

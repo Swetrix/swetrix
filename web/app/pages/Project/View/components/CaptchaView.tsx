@@ -10,6 +10,7 @@ import { useSearchParams } from 'react-router'
 import { getCaptchaData } from '~/api'
 import useSize from '~/hooks/useSize'
 import { chartTypes, BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
@@ -22,8 +23,10 @@ import { deviceIconMapping } from '../ViewProject.helpers'
 
 import { CaptchaChart } from './CaptchaChart'
 import CCRow from './CCRow'
+import DashboardHeader from './DashboardHeader'
 import Filters from './Filters'
 import NoEvents from './NoEvents'
+import WaitingForAnEvent from './WaitingForAnEvent'
 
 const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
 
@@ -48,6 +51,7 @@ interface CaptchaViewProps {
 
 const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const { theme } = useTheme()
+  const { project } = useCurrentProject()
   const { period, timeBucket, dateRange, captchaRefreshTrigger, timeFormat, size } = useContext(ViewProjectContext)
   const [searchParams] = useSearchParams()
 
@@ -172,6 +176,11 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   // Check if we have existing data
   const hasExistingData = chartData !== null || !_isEmpty(panelsData.types)
 
+  // Show waiting state if project has no captcha data yet
+  if (!_isEmpty(project) && !project?.isCaptchaDataExists) {
+    return <WaitingForAnEvent />
+  }
+
   // Show Loader only on initial load (no existing data)
   if (analyticsLoading && !hasExistingData) {
     return <Loader />
@@ -182,100 +191,158 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   }
 
   return (
-    <div ref={ref}>
-      {dataLoading && hasExistingData ? <LoadingBar /> : null}
-      <div className='mt-5'>
-        <Filters tnMapping={tnMapping} />
-        {chartData ? (
-          <div className='mt-4'>
-            <CaptchaChart
-              chart={chartData}
-              timeBucket={timeBucket}
-              timeFormat={timeFormat}
-              rotateXAxis={rotateXAxis}
-              chartType={chartTypes.line}
-              dataNames={dataNames}
-            />
-          </div>
-        ) : null}
-        <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
-          {!_isEmpty(panelsData.types)
-            ? _map(PANELS_ORDER, (type: keyof typeof tnMapping) => {
-                const panelName = tnMapping[type]
-                const panelIcon = panelIconMapping[type]
+    <>
+      <DashboardHeader showLiveVisitors />
+      <div ref={ref}>
+        {dataLoading && hasExistingData ? <LoadingBar /> : null}
+        <div className='mt-5'>
+          <Filters tnMapping={tnMapping} />
+          {chartData ? (
+            <div className='mt-4'>
+              <CaptchaChart
+                chart={chartData}
+                timeBucket={timeBucket}
+                timeFormat={timeFormat}
+                rotateXAxis={rotateXAxis}
+                chartType={chartTypes.line}
+                dataNames={dataNames}
+              />
+            </div>
+          ) : null}
+          <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
+            {!_isEmpty(panelsData.types)
+              ? _map(PANELS_ORDER, (type: keyof typeof tnMapping) => {
+                  const panelName = tnMapping[type]
+                  const panelIcon = panelIconMapping[type]
 
-                if (type === 'cc') {
-                  const rowMapper = (entry: any) => {
-                    const { name: entryName, cc } = entry
-                    if (cc) {
-                      return <CCRow cc={cc} name={entryName} language={language} />
+                  if (type === 'cc') {
+                    const rowMapper = (entry: any) => {
+                      const { name: entryName, cc } = entry
+                      if (cc) {
+                        return <CCRow cc={cc} name={entryName} language={language} />
+                      }
+                      return <CCRow cc={entryName} language={language} />
                     }
-                    return <CCRow cc={entryName} language={language} />
+
+                    return (
+                      <Panel
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        getFilterLink={getFilterLink}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        rowMapper={rowMapper}
+                        activeTabId={type}
+                      />
+                    )
                   }
 
-                  return (
-                    <Panel
-                      key={type}
-                      icon={panelIcon}
-                      id={type}
-                      getFilterLink={getFilterLink}
-                      name={panelName}
-                      data={panelsData.data[type]}
-                      rowMapper={rowMapper}
-                      activeTabId={type}
-                    />
-                  )
-                }
+                  if (type === 'dv') {
+                    return (
+                      <Panel
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        getFilterLink={getFilterLink}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
+                          const { name: entryName } = entry
+                          const icon = deviceIconMapping[entryName]
+                          if (!icon) {
+                            return entryName
+                          }
+                          return (
+                            <>
+                              {icon}
+                              &nbsp;
+                              {entryName}
+                            </>
+                          )
+                        }}
+                        capitalize
+                        activeTabId={type}
+                      />
+                    )
+                  }
 
-                if (type === 'dv') {
-                  return (
-                    <Panel
-                      key={type}
-                      icon={panelIcon}
-                      id={type}
-                      getFilterLink={getFilterLink}
-                      name={panelName}
-                      data={panelsData.data[type]}
-                      rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
-                        const { name: entryName } = entry
-                        const icon = deviceIconMapping[entryName]
-                        if (!icon) {
-                          return entryName
-                        }
+                  if (type === 'br') {
+                    const rowMapper = (entry: any) => {
+                      const { name: entryName } = entry
+                      // @ts-expect-error
+                      const logoUrl = BROWSER_LOGO_MAP[entryName]
+                      if (!logoUrl) {
                         return (
                           <>
-                            {icon}
+                            <GlobeAltIcon className='h-5 w-5' />
                             &nbsp;
                             {entryName}
                           </>
                         )
-                      }}
-                      capitalize
-                      activeTabId={type}
-                    />
-                  )
-                }
-
-                if (type === 'br') {
-                  const rowMapper = (entry: any) => {
-                    const { name: entryName } = entry
-                    // @ts-expect-error
-                    const logoUrl = BROWSER_LOGO_MAP[entryName]
-                    if (!logoUrl) {
+                      }
                       return (
                         <>
-                          <GlobeAltIcon className='h-5 w-5' />
+                          <img src={logoUrl} className='h-5 w-5' alt='' />
                           &nbsp;
                           {entryName}
                         </>
                       )
                     }
+
                     return (
-                      <>
-                        <img src={logoUrl} className='h-5 w-5' alt='' />
-                        &nbsp;
-                        {entryName}
-                      </>
+                      <Panel
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        getFilterLink={getFilterLink}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        rowMapper={rowMapper}
+                        activeTabId={type}
+                      />
+                    )
+                  }
+
+                  if (type === 'os') {
+                    const rowMapper = (entry: any) => {
+                      const { name: entryName } = entry
+                      // @ts-expect-error
+                      const logoPathLight = OS_LOGO_MAP[entryName]
+                      // @ts-expect-error
+                      const logoPathDark = OS_LOGO_MAP_DARK[entryName]
+                      let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
+                      logoPath ||= logoPathLight
+                      if (!logoPath) {
+                        return (
+                          <>
+                            <GlobeAltIcon className='h-5 w-5' />
+                            &nbsp;
+                            {entryName}
+                          </>
+                        )
+                      }
+                      const logoUrl = `/${logoPath}`
+                      return (
+                        <>
+                          <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
+                          &nbsp;
+                          {entryName}
+                        </>
+                      )
+                    }
+
+                    return (
+                      <Panel
+                        key={type}
+                        icon={panelIcon}
+                        id={type}
+                        getFilterLink={getFilterLink}
+                        name={panelName}
+                        data={panelsData.data[type]}
+                        rowMapper={rowMapper}
+                        activeTabId={type}
+                      />
                     )
                   }
 
@@ -287,70 +354,15 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                       getFilterLink={getFilterLink}
                       name={panelName}
                       data={panelsData.data[type]}
-                      rowMapper={rowMapper}
                       activeTabId={type}
                     />
                   )
-                }
-
-                if (type === 'os') {
-                  const rowMapper = (entry: any) => {
-                    const { name: entryName } = entry
-                    // @ts-expect-error
-                    const logoPathLight = OS_LOGO_MAP[entryName]
-                    // @ts-expect-error
-                    const logoPathDark = OS_LOGO_MAP_DARK[entryName]
-                    let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
-                    logoPath ||= logoPathLight
-                    if (!logoPath) {
-                      return (
-                        <>
-                          <GlobeAltIcon className='h-5 w-5' />
-                          &nbsp;
-                          {entryName}
-                        </>
-                      )
-                    }
-                    const logoUrl = `/${logoPath}`
-                    return (
-                      <>
-                        <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
-                        &nbsp;
-                        {entryName}
-                      </>
-                    )
-                  }
-
-                  return (
-                    <Panel
-                      key={type}
-                      icon={panelIcon}
-                      id={type}
-                      getFilterLink={getFilterLink}
-                      name={panelName}
-                      data={panelsData.data[type]}
-                      rowMapper={rowMapper}
-                      activeTabId={type}
-                    />
-                  )
-                }
-
-                return (
-                  <Panel
-                    key={type}
-                    icon={panelIcon}
-                    id={type}
-                    getFilterLink={getFilterLink}
-                    name={panelName}
-                    data={panelsData.data[type]}
-                    activeTabId={type}
-                  />
-                )
-              })
-            : null}
+                })
+              : null}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

@@ -4,6 +4,7 @@ import { area, bar } from 'billboard.js'
 import cx from 'clsx'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
+import _debounce from 'lodash/debounce'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
@@ -17,7 +18,7 @@ import {
   MousePointerClickIcon,
   ChevronDownIcon,
 } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
@@ -40,6 +41,7 @@ import {
   tbsFormatMapperTooltip24h,
   chartTypes,
 } from '~/lib/constants'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import BillboardChart from '~/ui/BillboardChart'
@@ -440,6 +442,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const [filterQuery, setFilterQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
 
   // Expanded goal state
   const [expandedGoalId, setExpandedGoalId] = useState<string | null>(null)
@@ -460,15 +463,25 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
 
   const pageAmount = Math.ceil(total / DEFAULT_GOALS_TAKE)
 
-  const filteredGoals = useMemo(() => {
-    if (!filterQuery.trim()) return goals
-    const query = filterQuery.toLowerCase()
-    return goals.filter(
-      (goal) => goal.name.toLowerCase().includes(query) || (goal.value && goal.value.toLowerCase().includes(query)),
-    )
-  }, [goals, filterQuery])
+  // Debounced search handler
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedSetSearch = useCallback(
+    _debounce((value: string) => {
+      setDebouncedSearch(value)
+      setPage(1) // Reset to first page when search changes
+    }, 300),
+    [],
+  )
 
-  const loadGoals = async (take: number, skip: number) => {
+  // Update debounced search when filterQuery changes
+  useEffect(() => {
+    debouncedSetSearch(filterQuery)
+    return () => {
+      debouncedSetSearch.cancel()
+    }
+  }, [filterQuery, debouncedSetSearch])
+
+  const loadGoals = async (take: number, skip: number, search?: string) => {
     if (isLoadingRef.current) {
       return
     }
@@ -476,7 +489,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
     setIsLoading(true)
 
     try {
-      const result = await getProjectGoals(id, take, skip)
+      const result = await getProjectGoals(id, take, skip, search)
       if (isMountedRef.current) {
         setGoals(result.results)
         setTotal(result.total)
@@ -546,9 +559,9 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   }
 
   useEffect(() => {
-    loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE)
+    loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page])
+  }, [page, debouncedSearch])
 
   useEffect(() => {
     // Load stats for all goals when goals change or date range changes
@@ -571,7 +584,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   // Refresh goals data when refresh button is clicked
   useEffect(() => {
     if (goalsRefreshTrigger > 0) {
-      loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE)
+      loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
       // Clear cached chart data for non-expanded goals, silently refresh expanded goal
       if (expandedGoalId) {
         // Keep only the expanded goal's data while we fetch fresh data
@@ -602,7 +615,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   }
 
   const handleModalSuccess = () => {
-    loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE)
+    loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
   }
 
   const handleDeleteGoal = async (goalId: string) => {
@@ -610,7 +623,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
       await deleteGoalApi(goalId)
       toast.success(t('goals.deleted'))
       // Reload goals
-      loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE)
+      loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
     } catch (reason: any) {
       toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
     }
@@ -663,88 +676,96 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   }
 
   return (
-    <div className='mt-4'>
-      {isLoading && !_isEmpty(goals) ? <LoadingBar /> : null}
-      {_isEmpty(goals) ? (
-        <div className='mt-5 rounded-xl bg-gray-700 p-5'>
-          <div className='flex items-center text-gray-50'>
-            <TargetIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
-            <p className='text-3xl font-bold'>{t('goals.title')}</p>
-          </div>
-          <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('goals.description')}</p>
-          <Button
-            onClick={handleNewGoal}
-            className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
-            secondary
-            large
-          >
-            {t('goals.add')}
-          </Button>
-        </div>
-      ) : (
-        <>
-          {/* Header with filter and add button */}
-          <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='relative'>
-              <SearchIcon className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400' strokeWidth={1.5} />
-              <input
-                type='text'
-                placeholder={t('goals.filterGoals')}
-                value={filterQuery}
-                onChange={(e) => setFilterQuery(e.target.value)}
-                className='w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
-              />
+    <>
+      <DashboardHeader showLiveVisitors />
+      <div className='mt-4'>
+        {isLoading && !_isEmpty(goals) ? <LoadingBar /> : null}
+        {_isEmpty(goals) ? (
+          <div className='mt-5 rounded-xl bg-gray-700 p-5'>
+            <div className='flex items-center text-gray-50'>
+              <TargetIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+              <p className='text-3xl font-bold'>{t('goals.title')}</p>
             </div>
-            <Button onClick={handleNewGoal} primary regular>
-              <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
-              {t('goals.addGoal')}
+            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('goals.description')}</p>
+            <Button
+              onClick={handleNewGoal}
+              className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
+              secondary
+              large
+            >
+              {t('goals.add')}
             </Button>
           </div>
+        ) : (
+          <>
+            {/* Header with filter and add button */}
+            <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+              <div className='relative'>
+                <SearchIcon
+                  className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400'
+                  strokeWidth={1.5}
+                />
+                <input
+                  type='text'
+                  placeholder={t('goals.filterGoals')}
+                  value={filterQuery}
+                  onChange={(e) => setFilterQuery(e.target.value)}
+                  className='w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
+                />
+              </div>
+              <Button onClick={handleNewGoal} primary regular>
+                <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
+                {t('goals.addGoal')}
+              </Button>
+            </div>
 
-          {/* Goals list */}
-          <ul className='mt-4'>
-            {_map(filteredGoals, (goal) => (
-              <GoalRow
-                key={goal.id}
-                goal={goal}
-                stats={goalStats[goal.id] || null}
-                statsLoading={statsLoading[goal.id] || false}
-                isExpanded={expandedGoalId === goal.id}
-                chartData={goalChartData[goal.id] || null}
-                chartLoading={chartLoading[goal.id] || false}
-                timeBucket={timeBucket}
-                timeFormat={timeFormat}
-                onDelete={handleDeleteGoal}
-                onEdit={handleEditGoal}
-                onToggleExpand={handleToggleExpand}
-              />
-            ))}
-          </ul>
+            {/* Goals list */}
+            <ul className='mt-4'>
+              {_map(goals, (goal) => (
+                <GoalRow
+                  key={goal.id}
+                  goal={goal}
+                  stats={goalStats[goal.id] || null}
+                  statsLoading={statsLoading[goal.id] || false}
+                  isExpanded={expandedGoalId === goal.id}
+                  chartData={goalChartData[goal.id] || null}
+                  chartLoading={chartLoading[goal.id] || false}
+                  timeBucket={timeBucket}
+                  timeFormat={timeFormat}
+                  onDelete={handleDeleteGoal}
+                  onEdit={handleEditGoal}
+                  onToggleExpand={handleToggleExpand}
+                />
+              ))}
+            </ul>
 
-          {filteredGoals.length === 0 && filterQuery ? (
-            <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>{t('goals.noGoalsMatchFilter')}</p>
-          ) : null}
-        </>
-      )}
-      {pageAmount > 1 && !filterQuery ? (
-        <Pagination
-          className='mt-4'
-          page={page}
-          pageAmount={pageAmount}
-          setPage={setPage}
-          total={total}
-          pageSize={DEFAULT_GOALS_TAKE}
+            {goals.length === 0 && debouncedSearch ? (
+              <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
+                {t('goals.noGoalsMatchFilter')}
+              </p>
+            ) : null}
+          </>
+        )}
+        {pageAmount > 1 ? (
+          <Pagination
+            className='mt-4'
+            page={page}
+            pageAmount={pageAmount}
+            setPage={setPage}
+            total={total}
+            pageSize={DEFAULT_GOALS_TAKE}
+          />
+        ) : null}
+
+        <GoalSettingsModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSuccess={handleModalSuccess}
+          projectId={id}
+          goalId={editingGoalId}
         />
-      ) : null}
-
-      <GoalSettingsModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSuccess={handleModalSuccess}
-        projectId={id}
-        goalId={editingGoalId}
-      />
-    </div>
+      </div>
+    </>
   )
 }
 

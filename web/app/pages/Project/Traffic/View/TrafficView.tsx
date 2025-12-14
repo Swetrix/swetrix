@@ -30,16 +30,19 @@ import AnnotationModal from '~/modals/AnnotationModal'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
 import CustomMetrics from '~/pages/Project/View/components/CustomMetrics'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import { MetricCard, MetricCards } from '~/pages/Project/View/components/MetricCards'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import RefRow from '~/pages/Project/View/components/RefRow'
 import { TrafficChart } from '~/pages/Project/View/components/TrafficChart'
 import UserFlow from '~/pages/Project/View/components/UserFlow'
+import WaitingForAnEvent from '~/pages/Project/View/components/WaitingForAnEvent'
 import {
   Customs,
   TrafficMeta,
   Params,
+  ProjectView,
   ProjectViewCustomEvent,
   Properties,
   TrafficLogResponse,
@@ -53,18 +56,21 @@ import {
   noRegionPeriods,
   CHART_METRICS_MAPPING,
   getDeviceRowMapper,
+  onCSVExportClick,
 } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import { periodToCompareDate } from '~/utils/compareConvertDate'
 import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
 import CustomEventsSubmenu from '../../View/components/CustomEventsSubmenu'
+import TrafficHeaderActions from '../../View/components/TrafficHeaderActions'
 
 const InteractiveMap = lazy(() => import('~/pages/Project/View/components/InteractiveMap'))
 
@@ -81,21 +87,34 @@ type KeywordEntry = Entry & { impressions: number; position: number; ctr: number
 interface TrafficViewProps {
   tnMapping: Record<string, string>
   customMetrics: ProjectViewCustomEvent[]
-  onCustomMetric: (metrics: ProjectViewCustomEvent[]) => void
   onRemoveCustomMetric: (metricId: string) => void
   resetCustomMetrics: () => void
   mode: 'periodical' | 'cumulative'
-  sdkInstance: any
+  // Segment/View props
+  projectViews: ProjectView[]
+  projectViewsLoading: boolean | null
+  projectViewDeleting: boolean
+  loadProjectViews: () => Promise<void>
+  onProjectViewDelete: (viewId: string) => Promise<void>
+  setProjectViewToUpdate: (view: ProjectView | undefined) => void
+  setIsAddAViewOpened: (value: boolean) => void
+  onCustomMetric: (metrics: ProjectViewCustomEvent[]) => void
 }
 
 const TrafficView = ({
   tnMapping,
   customMetrics,
-  onCustomMetric,
   onRemoveCustomMetric,
   resetCustomMetrics,
   mode,
-  sdkInstance,
+  projectViews,
+  projectViewsLoading,
+  projectViewDeleting,
+  loadProjectViews,
+  onProjectViewDelete,
+  setProjectViewToUpdate,
+  setIsAddAViewOpened,
+  onCustomMetric,
 }: TrafficViewProps) => {
   const { id, project, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
@@ -147,7 +166,7 @@ const TrafficView = ({
     closeAnnotationModal,
     handleChartContextMenu,
     closeContextMenu,
-  } = useAnnotations({ allowedToManage })
+  } = useAnnotations()
 
   // Traffic-specific state
   const [dataLoading, setDataLoading] = useState(false)
@@ -515,27 +534,15 @@ const TrafficView = ({
         data.overall = rawOverall[id]
         setOverall(rawOverall[id])
 
-        const sdkData = {
-          ...(data || {}),
-          filters,
-          timezone,
-          timeBucket,
-          period,
-          from,
-          to,
-        }
-
         if (_keys(data).length < 2) {
           setAnalyticsLoading(false)
           setDataLoading(false)
           setIsPanelsDataEmpty(true)
-          sdkInstance?._emitEvent('load', sdkData)
           return
         }
 
         const { chart, params, customs, properties, meta } = data
         let newTimebucket = timeBucket
-        sdkInstance?._emitEvent('load', sdkData)
 
         if (period === 'all' && !_isEmpty(data.timeBucket)) {
           newTimebucket = _includes(data.timeBucket, timeBucket) ? timeBucket : (data.timeBucket?.[0] as TimeBucket)
@@ -708,6 +715,22 @@ const TrafficView = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trafficRefreshTrigger])
 
+  const exportTypes = useMemo(
+    () => [
+      {
+        label: t('project.asCSV'),
+        onClick: () =>
+          onCSVExportClick({ data: panelsData.data, types: panelsData.types || [] }, id, tnMapping, language),
+      },
+    ],
+    [t, panelsData, id, tnMapping, language],
+  )
+
+  // Show waiting state if project has no traffic data yet
+  if (!project?.isDataExists) {
+    return <WaitingForAnEvent />
+  }
+
   // Show loader during initial load
   if (analyticsLoading) {
     return <Loader />
@@ -717,6 +740,24 @@ const TrafficView = ({
   if (isPanelsDataEmpty) {
     return <NoEvents filters={filters} />
   }
+
+  const headerRightContent = (
+    <TrafficHeaderActions
+      projectViews={projectViews}
+      projectViewsLoading={projectViewsLoading}
+      projectViewDeleting={projectViewDeleting}
+      loadProjectViews={loadProjectViews}
+      onProjectViewDelete={onProjectViewDelete}
+      setProjectViewToUpdate={setProjectViewToUpdate}
+      setIsAddAViewOpened={setIsAddAViewOpened}
+      onCustomMetric={onCustomMetric}
+      filters={filters}
+      allowedToManage={allowedToManage}
+      dataLoading={dataLoading}
+      exportTypes={exportTypes}
+      panelsData={panelsData}
+    />
+  )
 
   const ChartTypeSwitcher = ({ type, onSwitch }: { type: string; onSwitch: (type: 'line' | 'bar') => void }) => {
     if (type === chartTypes.bar) {
@@ -745,455 +786,463 @@ const TrafficView = ({
   }
 
   return (
-    <div className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}>
-      <div className='relative overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
-        <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
-          <Dropdown
-            header={t('project.metricVis')}
-            items={
-              isActiveCompare
-                ? _filter(chartMetrics, (el) => !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id))
-                : chartMetrics
-            }
-            title={[<EyeIcon key='eye-icon' aria-label={t('project.metricVis')} className='h-5 w-5' />]}
-            labelExtractor={(pair) => {
-              const { label, id: pairID, active, conflicts } = pair
+    <>
+      <DashboardHeader rightContent={headerRightContent} />
+      {dataLoading && !isPanelsDataEmpty ? <LoadingBar /> : null}
+      <div className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}>
+        <div className='relative overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
+          <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
+            <Dropdown
+              header={t('project.metricVis')}
+              items={
+                isActiveCompare
+                  ? _filter(chartMetrics, (el) => !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id))
+                  : chartMetrics
+              }
+              title={[<EyeIcon key='eye-icon' aria-label={t('project.metricVis')} className='h-5 w-5' />]}
+              labelExtractor={(pair) => {
+                const { label, id: pairID, active, conflicts } = pair
 
-              const conflicted = isConflicted(conflicts)
+                const conflicted = isConflicted(conflicts)
 
-              if (pairID === CHART_METRICS_MAPPING.customEvents) {
-                if (_isEmpty(panelsData.customs)) {
+                if (pairID === CHART_METRICS_MAPPING.customEvents) {
+                  if (_isEmpty(panelsData.customs)) {
+                    return (
+                      <span className='flex cursor-not-allowed items-center p-2'>
+                        <BanIcon className='mr-2 h-4 w-4' strokeWidth={1.5} />
+                        {label}
+                      </span>
+                    )
+                  }
+
                   return (
-                    <span className='flex cursor-not-allowed items-center p-2'>
-                      <BanIcon className='mr-2 h-4 w-4' strokeWidth={1.5} />
-                      {label}
-                    </span>
+                    <CustomEventsSubmenu
+                      label={label}
+                      chartMetricsCustomEvents={chartMetricsCustomEvents}
+                      switchCustomEventChart={switchCustomEventChart}
+                    />
                   )
                 }
 
                 return (
-                  <CustomEventsSubmenu
+                  <Checkbox
+                    classes={{
+                      label: cx('p-2', { hidden: analyticsLoading }),
+                    }}
                     label={label}
-                    chartMetricsCustomEvents={chartMetricsCustomEvents}
-                    switchCustomEventChart={switchCustomEventChart}
+                    disabled={conflicted}
+                    checked={active}
+                    onChange={() => {
+                      switchTrafficChartMetric(pairID, conflicts)
+                    }}
                   />
                 )
-              }
+              }}
+              buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+              selectItemClassName='p-0'
+              keyExtractor={(pair) => pair.id}
+              onSelect={({ id: pairID, conflicts }, e) => {
+                e?.stopPropagation()
+                e?.preventDefault()
 
-              return (
-                <Checkbox
-                  classes={{
-                    label: cx('p-2', { hidden: analyticsLoading }),
-                  }}
-                  label={label}
-                  disabled={conflicted}
-                  checked={active}
-                  onChange={() => {
-                    switchTrafficChartMetric(pairID, conflicts)
-                  }}
-                />
-              )
-            }}
-            buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-            selectItemClassName='p-0'
-            keyExtractor={(pair) => pair.id}
-            onSelect={({ id: pairID, conflicts }, e) => {
-              e?.stopPropagation()
-              e?.preventDefault()
-
-              if (pairID !== CHART_METRICS_MAPPING.customEvents) {
-                switchTrafficChartMetric(pairID, conflicts)
-              }
-            }}
-            chevron='mini'
-            headless
-          />
-          <ChartTypeSwitcher onSwitch={setChartTypeOnClick} type={chartType} />
-        </div>
-        {!_isEmpty(overall) ? (
-          <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
-            <MetricCards overall={overall} overallCompare={overallCompare} activePeriodCompare={activePeriodCompare} />
-            {!_isEmpty(panelsData.meta)
-              ? _map(panelsData.meta, ({ key, current, previous }) => (
-                  <React.Fragment key={key}>
-                    <MetricCard
-                      label={t('project.metrics.xAvg', { x: key })}
-                      value={current.avg}
-                      change={current.avg - previous.avg}
-                      goodChangeDirection='down'
-                      valueMapper={(value, type) =>
-                        `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
-                      }
-                    />
-                    <MetricCard
-                      label={t('project.metrics.xTotal', { x: key })}
-                      value={current.sum}
-                      change={current.sum - previous.sum}
-                      goodChangeDirection='down'
-                      valueMapper={(value, type) =>
-                        `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
-                      }
-                    />
-                  </React.Fragment>
-                ))
-              : null}
-          </div>
-        ) : null}
-        {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData) ? (
-          <div onContextMenu={(e) => handleChartContextMenu(e, chartData.x)} className='relative'>
-            <TrafficChart
-              chartData={chartData}
-              timeBucket={timeBucket}
-              activeChartMetrics={activeChartMetrics}
-              applyRegions={!_includes(noRegionPeriods, activePeriod?.period)}
-              timeFormat={timeFormat}
-              rotateXAxis={rotateXAxis}
-              chartType={chartType}
-              customEventsChartData={customEventsChartData}
-              dataChartCompare={dataChartCompare}
-              onZoom={onMainChartZoom}
-              enableZoom={shouldEnableZoom}
-              dataNames={dataNames}
-              className='mt-5 h-80 md:mt-0 [&_svg]:overflow-visible!'
-              annotations={annotations}
+                if (pairID !== CHART_METRICS_MAPPING.customEvents) {
+                  switchTrafficChartMetric(pairID, conflicts)
+                }
+              }}
+              chevron='mini'
+              headless
             />
+            <ChartTypeSwitcher onSwitch={setChartTypeOnClick} type={chartType} />
           </div>
-        ) : null}
-      </div>
-      {!isPanelsDataEmpty ? <Filters tnMapping={tnMapping} /> : null}
-      <CustomMetrics
-        metrics={customMetrics}
-        onRemoveMetric={(metricId) => onRemoveCustomMetric(metricId)}
-        resetMetrics={resetCustomMetrics}
-      />
-      <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
-        {!_isEmpty(panelsData.types)
-          ? _map(TRAFFIC_PANELS_ORDER, (type: string) => {
-              if (type === 'location') {
-                const locationTabs = [
-                  { id: 'cc', label: t('project.mapping.cc') },
-                  { id: 'rg', label: t('project.mapping.rg') },
-                  { id: 'ct', label: t('project.mapping.ct') },
-                  { id: 'lc', label: t('project.mapping.lc') },
-                  { id: 'map', label: 'Map' },
-                ]
+          {!_isEmpty(overall) ? (
+            <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+              <MetricCards
+                overall={overall}
+                overallCompare={overallCompare}
+                activePeriodCompare={activePeriodCompare}
+              />
+              {!_isEmpty(panelsData.meta)
+                ? _map(panelsData.meta, ({ key, current, previous }) => (
+                    <React.Fragment key={key}>
+                      <MetricCard
+                        label={t('project.metrics.xAvg', { x: key })}
+                        value={current.avg}
+                        change={current.avg - previous.avg}
+                        goodChangeDirection='down'
+                        valueMapper={(value, type) =>
+                          `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
+                        }
+                      />
+                      <MetricCard
+                        label={t('project.metrics.xTotal', { x: key })}
+                        value={current.sum}
+                        change={current.sum - previous.sum}
+                        goodChangeDirection='down'
+                        valueMapper={(value, type) =>
+                          `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
+                        }
+                      />
+                    </React.Fragment>
+                  ))
+                : null}
+            </div>
+          ) : null}
+          {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData) ? (
+            <div onContextMenu={(e) => handleChartContextMenu(e, chartData.x)} className='relative'>
+              <TrafficChart
+                chartData={chartData}
+                timeBucket={timeBucket}
+                activeChartMetrics={activeChartMetrics}
+                applyRegions={!_includes(noRegionPeriods, activePeriod?.period)}
+                timeFormat={timeFormat}
+                rotateXAxis={rotateXAxis}
+                chartType={chartType}
+                customEventsChartData={customEventsChartData}
+                dataChartCompare={dataChartCompare}
+                onZoom={onMainChartZoom}
+                enableZoom={shouldEnableZoom}
+                dataNames={dataNames}
+                className='mt-5 h-80 md:mt-0 [&_svg]:overflow-visible!'
+                annotations={annotations}
+              />
+            </div>
+          ) : null}
+        </div>
+        {!isPanelsDataEmpty ? <Filters tnMapping={tnMapping} /> : null}
+        <CustomMetrics
+          metrics={customMetrics}
+          onRemoveMetric={(metricId) => onRemoveCustomMetric(metricId)}
+          resetMetrics={resetCustomMetrics}
+        />
+        <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
+          {!_isEmpty(panelsData.types)
+            ? _map(TRAFFIC_PANELS_ORDER, (type: string) => {
+                if (type === 'location') {
+                  const locationTabs = [
+                    { id: 'cc', label: t('project.mapping.cc') },
+                    { id: 'rg', label: t('project.mapping.rg') },
+                    { id: 'ct', label: t('project.mapping.ct') },
+                    { id: 'lc', label: t('project.mapping.lc') },
+                    { id: 'map', label: 'Map' },
+                  ]
 
-                const rowMapper = (entry: CountryEntry) => {
-                  const { name: entryName, cc } = entry
+                  const rowMapper = (entry: CountryEntry) => {
+                    const { name: entryName, cc } = entry
 
-                  if (panelsActiveTabs.location === 'lc') {
-                    if (entryName === null) {
-                      return <CCRow cc={null} language={language} />
+                    if (panelsActiveTabs.location === 'lc') {
+                      if (entryName === null) {
+                        return <CCRow cc={null} language={language} />
+                      }
+
+                      const entryNameArray = entryName.split('-')
+                      const displayName = getLocaleDisplayName(entryName, language)
+
+                      return (
+                        <CCRow cc={entryNameArray[entryNameArray.length - 1]} name={displayName} language={language} />
+                      )
                     }
 
-                    const entryNameArray = entryName.split('-')
-                    const displayName = getLocaleDisplayName(entryName, language)
+                    if (cc !== undefined) {
+                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
+                    }
 
-                    return (
-                      <CCRow cc={entryNameArray[entryNameArray.length - 1]} name={displayName} language={language} />
-                    )
+                    return <CCRow cc={entryName} language={language} />
                   }
 
-                  if (cc !== undefined) {
-                    return <CCRow cc={cc} name={entryName || undefined} language={language} />
-                  }
+                  return (
+                    <Panel
+                      key={panelsActiveTabs.location}
+                      icon={panelIconMapping.cc}
+                      id={panelsActiveTabs.location}
+                      getFilterLink={getFilterLink}
+                      name={t('project.location')}
+                      tabs={locationTabs}
+                      onTabChange={(tab) => setPanelTab('location', tab)}
+                      activeTabId={panelsActiveTabs.location}
+                      data={panelsData.data[panelsActiveTabs.location]}
+                      rowMapper={rowMapper}
+                      customRenderer={
+                        panelsActiveTabs.location === 'map'
+                          ? () => {
+                              const countryData = panelsData.data?.cc || []
+                              const regionData = panelsData.data?.rg || []
+                              const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
 
-                  return <CCRow cc={entryName} language={language} />
-                }
-
-                return (
-                  <Panel
-                    key={panelsActiveTabs.location}
-                    icon={panelIconMapping.cc}
-                    id={panelsActiveTabs.location}
-                    getFilterLink={getFilterLink}
-                    name={t('project.location')}
-                    tabs={locationTabs}
-                    onTabChange={(tab) => setPanelTab('location', tab)}
-                    activeTabId={panelsActiveTabs.location}
-                    data={panelsData.data[panelsActiveTabs.location]}
-                    rowMapper={rowMapper}
-                    customRenderer={
-                      panelsActiveTabs.location === 'map'
-                        ? () => {
-                            const countryData = panelsData.data?.cc || []
-                            const regionData = panelsData.data?.rg || []
-                            const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
-
-                            return (
-                              <Suspense
-                                fallback={
-                                  <div className='flex h-full items-center justify-center'>
-                                    <div className='flex flex-col items-center gap-2'>
-                                      <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
-                                      <span className='text-sm text-neutral-600 dark:text-neutral-300'>
-                                        Loading map...
-                                      </span>
+                              return (
+                                <Suspense
+                                  fallback={
+                                    <div className='flex h-full items-center justify-center'>
+                                      <div className='flex flex-col items-center gap-2'>
+                                        <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
+                                        <span className='text-sm text-neutral-600 dark:text-neutral-300'>
+                                          Loading map...
+                                        </span>
+                                      </div>
                                     </div>
-                                  </div>
-                                }
-                              >
-                                <InteractiveMap
-                                  data={countryData}
-                                  regionData={regionData}
-                                  total={total}
-                                  onClick={(mapType, key) => {
-                                    const link = getFilterLink(mapType, key)
-                                    navigate(link)
-                                  }}
-                                />
-                              </Suspense>
-                            )
-                          }
-                        : undefined
-                    }
-                  />
-                )
-              }
-
-              if (type === 'devices') {
-                const deviceTabs = [
-                  { id: 'br', label: t('project.mapping.br') },
-                  { id: 'os', label: t('project.mapping.os') },
-                  { id: 'dv', label: t('project.mapping.dv') },
-                ]
-
-                return (
-                  <Panel
-                    key={panelsActiveTabs.device}
-                    icon={panelIconMapping.os}
-                    id={panelsActiveTabs.device}
-                    getFilterLink={getFilterLink}
-                    name={t('project.devices')}
-                    tabs={deviceTabs}
-                    onTabChange={(tab) => setPanelTab('device', tab)}
-                    activeTabId={panelsActiveTabs.device}
-                    data={panelsData.data[panelsActiveTabs.device]}
-                    rowMapper={getDeviceRowMapper(panelsActiveTabs.device, theme, t)}
-                    capitalize={panelsActiveTabs.device === 'dv'}
-                    versionData={
-                      panelsActiveTabs.device === 'br'
-                        ? createVersionDataMapping.browserVersions
-                        : panelsActiveTabs.device === 'os'
-                          ? createVersionDataMapping.osVersions
+                                  }
+                                >
+                                  <InteractiveMap
+                                    data={countryData}
+                                    regionData={regionData}
+                                    total={total}
+                                    onClick={(mapType, key) => {
+                                      const link = getFilterLink(mapType, key)
+                                      navigate(link)
+                                    }}
+                                  />
+                                </Suspense>
+                              )
+                            }
                           : undefined
-                    }
-                    getVersionFilterLink={(parent, version) =>
-                      getVersionFilterLink(parent, version, panelsActiveTabs.device === 'br' ? 'br' : 'os')
-                    }
-                  />
-                )
-              }
-
-              if (type === 'pg') {
-                const pageTabs = [
-                  { id: 'pg', label: t('project.mapping.pg') },
-                  { id: 'entryPage', label: t('project.entryPages') },
-                  { id: 'exitPage', label: t('project.exitPages') },
-                  { id: 'userFlow', label: t('project.mapping.userFlow') },
-                  {
-                    id: 'host',
-                    label: t('project.mapping.host'),
-                  },
-                ]
-
-                return (
-                  <Panel
-                    key={panelsActiveTabs.page}
-                    icon={panelIconMapping.pg}
-                    id={panelsActiveTabs.page}
-                    getFilterLink={getFilterLink}
-                    rowMapper={({ name: entryName }) => {
-                      if (!entryName) {
-                        return (
-                          <span className='italic'>
-                            {panelsActiveTabs.page === 'host' ? t('project.unknownHost') : t('common.notSet')}
-                          </span>
-                        )
                       }
-
-                      let decodedUri = entryName as string
-
-                      try {
-                        decodedUri = decodeURIComponent(entryName)
-                      } catch {
-                        // do nothing
-                      }
-
-                      return decodedUri
-                    }}
-                    name={t('project.pages')}
-                    tabs={pageTabs}
-                    onTabChange={(tab) => setPanelTab('page', tab)}
-                    activeTabId={panelsActiveTabs.page}
-                    data={panelsData.data[panelsActiveTabs.page]}
-                    customRenderer={
-                      panelsActiveTabs.page === 'userFlow'
-                        ? () => <UserFlow isReversed={false} setReversed={() => {}} />
-                        : undefined
-                    }
-                  />
-                )
-              }
-
-              if (type === 'traffic-sources') {
-                const hasRefNameFilter = filters.some((f) => f.column === 'refn')
-                const trafficSourcesTabs = [
-                  { id: 'ref', label: t('project.mapping.ref') },
-                  !isSelfhosted && { id: 'keywords', label: t('project.mapping.keywords') },
-                  [
-                    { id: 'so', label: t('project.mapping.so') },
-                    { id: 'me', label: t('project.mapping.me') },
-                    { id: 'ca', label: t('project.mapping.ca') },
-                    { id: 'te', label: t('project.mapping.te') },
-                    { id: 'co', label: t('project.mapping.co') },
-                  ],
-                ].filter((x) => !!x)
-
-                const getTrafficSourcesRowMapper = (activeTab: string) => {
-                  if (activeTab === 'ref') {
-                    // eslint-disable-next-line
-                    return ({ name: entryName }: any) => <RefRow rowName={entryName} />
-                  }
-                  return ({ name: entryName }: any) => decodeURIComponent(entryName)
+                    />
+                  )
                 }
 
-                return (
-                  <Panel
-                    key={panelsActiveTabs.source}
-                    icon={panelIconMapping.ref}
-                    id={panelsActiveTabs.source}
-                    getFilterLink={(column: string, value: string | null) => {
-                      if (panelsActiveTabs.source === 'ref') {
-                        // If grouped by name/domain (no refn filter active) -> filter by refn
-                        return getFilterLink(hasRefNameFilter || value === null ? 'ref' : 'refn', value)
-                      }
-                      return getFilterLink(column, value)
-                    }}
-                    name={t('project.trafficSources')}
-                    tabs={trafficSourcesTabs}
-                    onTabChange={(tab) => setPanelTab('source', tab)}
-                    activeTabId={panelsActiveTabs.source}
-                    data={
-                      panelsActiveTabs.source === 'keywords'
-                        ? keywords
-                        : panelsActiveTabs.source === 'ref'
-                          ? (() => {
-                              const raw = panelsData.data?.ref || []
-                              return hasRefNameFilter
-                                ? (raw as unknown as Entry[])
-                                : (groupRefEntries(raw as any) as unknown as Entry[])
-                            })()
-                          : (panelsData.data[panelsActiveTabs.source] as unknown as Entry[])
-                    }
-                    valuesHeaderName={panelsActiveTabs.source === 'keywords' ? t('project.clicks') : undefined}
-                    rowMapper={getTrafficSourcesRowMapper(panelsActiveTabs.source)}
-                    disableRowClick={panelsActiveTabs.source === 'keywords'}
-                    hidePercentageInDetails={panelsActiveTabs.source === 'keywords'}
-                    detailsExtraColumns={
-                      panelsActiveTabs.source === 'keywords'
-                        ? [
-                            {
-                              header: t('project.impressions'),
-                              render: (entry: any) => entry.impressions,
-                              sortLabel: 'impressions',
-                              getSortValue: (entry: any) => Number(entry.impressions || 0),
-                            },
-                            {
-                              header: t('project.position'),
-                              render: (entry: any) => entry.position,
-                              sortLabel: 'position',
-                              getSortValue: (entry: any) => Number(entry.position || 0),
-                            },
-                            {
-                              header: t('project.ctr'),
-                              render: (entry: any) => `${entry.ctr}%`,
-                              sortLabel: 'ctr',
-                              getSortValue: (entry: any) => Number(entry.ctr || 0),
-                            },
-                          ]
-                        : undefined
-                    }
-                    customRenderer={
-                      panelsActiveTabs.source === 'keywords'
-                        ? keywordsLoading
-                          ? () => <Loader />
-                          : keywordsNotConnected
-                            ? () => (
-                                <div className='mt-4 text-center'>
-                                  <p className='text-sm text-gray-800 dark:text-gray-200'>
-                                    {['owner', 'admin'].includes(project?.role || '')
-                                      ? t('project.connectGsc')
-                                      : t('project.gscConnectionRequired')}
-                                  </p>
-                                  {['owner', 'admin'].includes(project?.role || '') ? (
-                                    <Link
-                                      to={`${routes.project_settings.replace(':id', id)}?tab=integrations`}
-                                      className='mt-2 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-                                    >
-                                      {t('project.goToProjectSettings')}
-                                    </Link>
-                                  ) : null}
-                                </div>
-                              )
-                            : undefined
-                        : undefined
-                    }
-                  />
-                )
-              }
+                if (type === 'devices') {
+                  const deviceTabs = [
+                    { id: 'br', label: t('project.mapping.br') },
+                    { id: 'os', label: t('project.mapping.os') },
+                    { id: 'dv', label: t('project.mapping.dv') },
+                  ]
 
-              return null
-            })
-          : null}
-        {!_isEmpty(panelsData.data) ? (
-          <MetadataGeneric
-            customs={panelsData.customs}
-            properties={panelsData.properties}
-            filters={filters}
-            getFilterLink={getFilterLink}
-            chartData={chartData}
-            getCustomEventMetadata={getCustomEventMetadata}
-            getPropertyMetadata={_getPropertyMetadata}
-            onTabChange={(tab) => setPanelTab('metadata', tab)}
-            activeTabId={panelsActiveTabs.metadata}
-          />
-        ) : null}
+                  return (
+                    <Panel
+                      key={panelsActiveTabs.device}
+                      icon={panelIconMapping.os}
+                      id={panelsActiveTabs.device}
+                      getFilterLink={getFilterLink}
+                      name={t('project.devices')}
+                      tabs={deviceTabs}
+                      onTabChange={(tab) => setPanelTab('device', tab)}
+                      activeTabId={panelsActiveTabs.device}
+                      data={panelsData.data[panelsActiveTabs.device]}
+                      rowMapper={getDeviceRowMapper(panelsActiveTabs.device, theme, t)}
+                      capitalize={panelsActiveTabs.device === 'dv'}
+                      versionData={
+                        panelsActiveTabs.device === 'br'
+                          ? createVersionDataMapping.browserVersions
+                          : panelsActiveTabs.device === 'os'
+                            ? createVersionDataMapping.osVersions
+                            : undefined
+                      }
+                      getVersionFilterLink={(parent, version) =>
+                        getVersionFilterLink(parent, version, panelsActiveTabs.device === 'br' ? 'br' : 'os')
+                      }
+                    />
+                  )
+                }
+
+                if (type === 'pg') {
+                  const pageTabs = [
+                    { id: 'pg', label: t('project.mapping.pg') },
+                    { id: 'entryPage', label: t('project.entryPages') },
+                    { id: 'exitPage', label: t('project.exitPages') },
+                    { id: 'userFlow', label: t('project.mapping.userFlow') },
+                    {
+                      id: 'host',
+                      label: t('project.mapping.host'),
+                    },
+                  ]
+
+                  return (
+                    <Panel
+                      key={panelsActiveTabs.page}
+                      icon={panelIconMapping.pg}
+                      id={panelsActiveTabs.page}
+                      getFilterLink={getFilterLink}
+                      rowMapper={({ name: entryName }) => {
+                        if (!entryName) {
+                          return (
+                            <span className='italic'>
+                              {panelsActiveTabs.page === 'host' ? t('project.unknownHost') : t('common.notSet')}
+                            </span>
+                          )
+                        }
+
+                        let decodedUri = entryName as string
+
+                        try {
+                          decodedUri = decodeURIComponent(entryName)
+                        } catch {
+                          // do nothing
+                        }
+
+                        return decodedUri
+                      }}
+                      name={t('project.pages')}
+                      tabs={pageTabs}
+                      onTabChange={(tab) => setPanelTab('page', tab)}
+                      activeTabId={panelsActiveTabs.page}
+                      data={panelsData.data[panelsActiveTabs.page]}
+                      customRenderer={
+                        panelsActiveTabs.page === 'userFlow'
+                          ? () => <UserFlow isReversed={false} setReversed={() => {}} />
+                          : undefined
+                      }
+                    />
+                  )
+                }
+
+                if (type === 'traffic-sources') {
+                  const hasRefNameFilter = filters.some((f) => f.column === 'refn')
+                  const trafficSourcesTabs = [
+                    { id: 'ref', label: t('project.mapping.ref') },
+                    !isSelfhosted && { id: 'keywords', label: t('project.mapping.keywords') },
+                    [
+                      { id: 'so', label: t('project.mapping.so') },
+                      { id: 'me', label: t('project.mapping.me') },
+                      { id: 'ca', label: t('project.mapping.ca') },
+                      { id: 'te', label: t('project.mapping.te') },
+                      { id: 'co', label: t('project.mapping.co') },
+                    ],
+                  ].filter((x) => !!x)
+
+                  const getTrafficSourcesRowMapper = (activeTab: string) => {
+                    if (activeTab === 'ref') {
+                      // eslint-disable-next-line
+                      return ({ name: entryName }: any) => <RefRow rowName={entryName} />
+                    }
+                    return ({ name: entryName }: any) => decodeURIComponent(entryName)
+                  }
+
+                  return (
+                    <Panel
+                      key={panelsActiveTabs.source}
+                      icon={panelIconMapping.ref}
+                      id={panelsActiveTabs.source}
+                      getFilterLink={(column: string, value: string | null) => {
+                        if (panelsActiveTabs.source === 'ref') {
+                          // If grouped by name/domain (no refn filter active) -> filter by refn
+                          return getFilterLink(hasRefNameFilter || value === null ? 'ref' : 'refn', value)
+                        }
+                        return getFilterLink(column, value)
+                      }}
+                      name={t('project.trafficSources')}
+                      tabs={trafficSourcesTabs}
+                      onTabChange={(tab) => setPanelTab('source', tab)}
+                      activeTabId={panelsActiveTabs.source}
+                      data={
+                        panelsActiveTabs.source === 'keywords'
+                          ? keywords
+                          : panelsActiveTabs.source === 'ref'
+                            ? (() => {
+                                const raw = panelsData.data?.ref || []
+                                return hasRefNameFilter
+                                  ? (raw as unknown as Entry[])
+                                  : (groupRefEntries(raw as any) as unknown as Entry[])
+                              })()
+                            : (panelsData.data[panelsActiveTabs.source] as unknown as Entry[])
+                      }
+                      valuesHeaderName={panelsActiveTabs.source === 'keywords' ? t('project.clicks') : undefined}
+                      rowMapper={getTrafficSourcesRowMapper(panelsActiveTabs.source)}
+                      disableRowClick={panelsActiveTabs.source === 'keywords'}
+                      hidePercentageInDetails={panelsActiveTabs.source === 'keywords'}
+                      detailsExtraColumns={
+                        panelsActiveTabs.source === 'keywords'
+                          ? [
+                              {
+                                header: t('project.impressions'),
+                                render: (entry: any) => entry.impressions,
+                                sortLabel: 'impressions',
+                                getSortValue: (entry: any) => Number(entry.impressions || 0),
+                              },
+                              {
+                                header: t('project.position'),
+                                render: (entry: any) => entry.position,
+                                sortLabel: 'position',
+                                getSortValue: (entry: any) => Number(entry.position || 0),
+                              },
+                              {
+                                header: t('project.ctr'),
+                                render: (entry: any) => `${entry.ctr}%`,
+                                sortLabel: 'ctr',
+                                getSortValue: (entry: any) => Number(entry.ctr || 0),
+                              },
+                            ]
+                          : undefined
+                      }
+                      customRenderer={
+                        panelsActiveTabs.source === 'keywords'
+                          ? keywordsLoading
+                            ? () => <Loader />
+                            : keywordsNotConnected
+                              ? () => (
+                                  <div className='mt-4 text-center'>
+                                    <p className='text-sm text-gray-800 dark:text-gray-200'>
+                                      {['owner', 'admin'].includes(project?.role || '')
+                                        ? t('project.connectGsc')
+                                        : t('project.gscConnectionRequired')}
+                                    </p>
+                                    {['owner', 'admin'].includes(project?.role || '') ? (
+                                      <Link
+                                        to={`${routes.project_settings.replace(':id', id)}?tab=integrations`}
+                                        className='mt-2 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+                                      >
+                                        {t('project.goToProjectSettings')}
+                                      </Link>
+                                    ) : null}
+                                  </div>
+                                )
+                              : undefined
+                          : undefined
+                      }
+                    />
+                  )
+                }
+
+                return null
+              })
+            : null}
+          {!_isEmpty(panelsData.data) ? (
+            <MetadataGeneric
+              customs={panelsData.customs}
+              properties={panelsData.properties}
+              filters={filters}
+              getFilterLink={getFilterLink}
+              chartData={chartData}
+              getCustomEventMetadata={getCustomEventMetadata}
+              getPropertyMetadata={_getPropertyMetadata}
+              onTabChange={(tab) => setPanelTab('metadata', tab)}
+              activeTabId={panelsActiveTabs.metadata}
+            />
+          ) : null}
+        </div>
+        <AnnotationModal
+          isOpened={isAnnotationModalOpen}
+          onClose={closeAnnotationModal}
+          onSubmit={annotationToEdit ? onAnnotationUpdate : onAnnotationCreate}
+          onDelete={annotationToEdit ? onAnnotationDelete : undefined}
+          loading={annotationActionLoading}
+          annotation={annotationToEdit}
+          defaultDate={annotationModalDate}
+          allowedToManage={allowedToManage}
+        />
+        <ChartContextMenu
+          isOpen={contextMenu.isOpen}
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={closeContextMenu}
+          onAddAnnotation={() => {
+            openAnnotationModal(contextMenu.date || undefined)
+          }}
+          onEditAnnotation={
+            contextMenu.annotation
+              ? () => openAnnotationModal(contextMenu.annotation?.date, contextMenu.annotation!)
+              : undefined
+          }
+          onDeleteAnnotation={
+            contextMenu.annotation
+              ? () => {
+                  onAnnotationDelete(contextMenu.annotation!)
+                }
+              : undefined
+          }
+          existingAnnotation={contextMenu.annotation}
+          allowedToManage={allowedToManage}
+        />
       </div>
-      <AnnotationModal
-        isOpened={isAnnotationModalOpen}
-        onClose={closeAnnotationModal}
-        onSubmit={annotationToEdit ? onAnnotationUpdate : onAnnotationCreate}
-        onDelete={annotationToEdit ? onAnnotationDelete : undefined}
-        loading={annotationActionLoading}
-        annotation={annotationToEdit}
-        defaultDate={annotationModalDate}
-        allowedToManage={allowedToManage}
-      />
-      <ChartContextMenu
-        isOpen={contextMenu.isOpen}
-        x={contextMenu.x}
-        y={contextMenu.y}
-        onClose={closeContextMenu}
-        onAddAnnotation={() => {
-          openAnnotationModal(contextMenu.date || undefined)
-        }}
-        onEditAnnotation={
-          contextMenu.annotation
-            ? () => openAnnotationModal(contextMenu.annotation?.date, contextMenu.annotation!)
-            : undefined
-        }
-        onDeleteAnnotation={
-          contextMenu.annotation
-            ? () => {
-                onAnnotationDelete(contextMenu.annotation!)
-              }
-            : undefined
-        }
-        existingAnnotation={contextMenu.annotation}
-        allowedToManage={allowedToManage}
-      />
-    </div>
+    </>
   )
 }
 

@@ -5,7 +5,7 @@ import {
 } from '../evaluation'
 
 // Re-export types for backward compatibility
-export { FeatureFlagType, TargetingRule, EvaluatableFeatureFlag }
+export { FeatureFlagType, TargetingRule }
 
 export interface FeatureFlag extends EvaluatableFeatureFlag {
   id: string

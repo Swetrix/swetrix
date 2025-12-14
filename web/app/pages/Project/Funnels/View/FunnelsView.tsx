@@ -3,26 +3,25 @@ import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
-import { ChevronLeftIcon, FilterIcon } from 'lucide-react'
+import { FilterIcon } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import { addFunnel, updateFunnel, deleteFunnel, getFunnelData, getFunnels } from '~/api'
-import { MAX_MONTHS_IN_PAST, FUNNELS_PERIOD_PAIRS } from '~/lib/constants'
+import { FUNNELS_PERIOD_PAIRS } from '~/lib/constants'
 import { Funnel, AnalyticsFunnel } from '~/lib/models/Project'
 import NewFunnel from '~/modals/NewFunnel'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { FunnelChart } from '~/pages/Project/View/components/FunnelChart'
 import FunnelsList from '~/pages/Project/View/components/FunnelsList'
-import { RefreshStatsButton } from '~/pages/Project/View/components/RefreshStatsButton'
-import TBPeriodSelector from '~/pages/Project/View/components/TBPeriodSelector'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useAuth } from '~/providers/AuthProvider'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
-import DatePicker from '~/ui/Datepicker'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
 import { nLocaleFormatter } from '~/utils/generic'
 import routes from '~/utils/routes'
@@ -31,8 +30,7 @@ const FunnelsView = () => {
   const { id, project, mergeProject, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const { isAuthenticated } = useAuth()
-  const { timezone, period, dateRange, activePeriod, periodPairs, updatePeriod, refCalendar, funnelsRefreshTrigger } =
-    useViewProjectContext()
+  const { timezone, period, dateRange, periodPairs, funnelsRefreshTrigger } = useViewProjectContext()
 
   // Filter periods to only include those valid for funnels
   const timeBucketSelectorItems = useMemo(() => {
@@ -41,7 +39,7 @@ const FunnelsView = () => {
     })
   }, [periodPairs])
   const { t } = useTranslation('common')
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
 
   const isMountedRef = useRef(true)
 
@@ -218,19 +216,6 @@ const FunnelsView = () => {
     }
   }, [funnelAnalytics])
 
-  const refreshStats = async (_isManual: boolean = true) => {
-    if (!dataLoading) {
-      await loadFunnelsData()
-    }
-  }
-
-  const resetDateRange = () => {
-    const newSearchParams = new URLSearchParams(searchParams.toString())
-    newSearchParams.delete('from')
-    newSearchParams.delete('to')
-    setSearchParams(newSearchParams)
-  }
-
   // Load funnels data when activeFunnel changes
   useEffect(() => {
     if (!project) return
@@ -256,64 +241,19 @@ const FunnelsView = () => {
   if (activeFunnel) {
     return (
       <>
-        {/* Funnel Header */}
-        <div className='relative top-0 z-20 -mt-2 flex flex-col items-center justify-between bg-gray-50/50 py-2 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
-          <div className='flex flex-wrap items-center justify-center gap-2'>
-            <Text as='h2' size='xl' weight='bold' className='break-words break-all'>
+        <DashboardHeader
+          backLink={`?${pureSearchParams}`}
+          showLiveVisitors={false}
+          showSearchButton={false}
+          hideTimeBucket
+          timeBucketSelectorItems={timeBucketSelectorItems}
+          leftContent={
+            <Text as='h2' size='xl' weight='bold' className='wrap-break-word break-all'>
               {activeFunnel?.name}
             </Text>
-          </div>
-          <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
-            <RefreshStatsButton onRefresh={refreshStats} />
-            <div className='flex items-center'>
-              <TBPeriodSelector
-                activePeriod={activePeriod}
-                items={timeBucketSelectorItems}
-                title={activePeriod?.label}
-                onSelect={(pair) => {
-                  if (dataLoading) {
-                    return
-                  }
-
-                  if (pair.isCustomDate) {
-                    setTimeout(() => {
-                      refCalendar.current?.openCalendar?.()
-                    }, 100)
-                  } else {
-                    resetDateRange()
-                    updatePeriod(pair)
-                  }
-                }}
-              />
-              <DatePicker
-                ref={refCalendar}
-                onChange={([from, to]) => {
-                  const newSearchParams = new URLSearchParams(searchParams.toString())
-                  newSearchParams.set('from', from.toISOString())
-                  newSearchParams.set('to', to.toISOString())
-                  newSearchParams.set('period', 'custom')
-                  setSearchParams(newSearchParams)
-                }}
-                value={dateRange || []}
-                maxDateMonths={MAX_MONTHS_IN_PAST}
-                maxRange={0}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Back to funnels link */}
-        <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
-          <Link
-            to={{
-              search: pureSearchParams,
-            }}
-            className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
-          >
-            <ChevronLeftIcon className='mr-1 size-3' />
-            {t('project.backToFunnels')}
-          </Link>
-        </div>
+          }
+        />
+        {dataLoading && funnelAnalytics ? <LoadingBar /> : null}
 
         {/* Funnel Chart */}
         <div

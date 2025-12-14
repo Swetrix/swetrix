@@ -117,19 +117,30 @@ export class GoalService {
   async paginate(
     options: PaginationOptionsInterface,
     projectId: string,
+    search?: string,
   ): Promise<Pagination<Goal>> {
     const take = options.take || 100
     const skip = options.skip || 0
+
+    let searchCondition = ''
+    const queryParams: Record<string, any> = { projectId, take, skip }
+
+    if (search && search.trim()) {
+      searchCondition = `AND (name ILIKE concat('%', {search:String}, '%') OR value ILIKE concat('%', {search:String}, '%'))`
+      queryParams.search = search.trim()
+    }
 
     const countQuery = `
       SELECT count() as total 
       FROM goal 
       WHERE projectId = {projectId:FixedString(12)}
+      ${searchCondition}
     `
 
     const dataQuery = `
       SELECT * FROM goal 
       WHERE projectId = {projectId:FixedString(12)}
+      ${searchCondition}
       ORDER BY name ASC
       LIMIT {take:UInt32} OFFSET {skip:UInt32}
     `
@@ -138,13 +149,13 @@ export class GoalService {
       clickhouse
         .query({
           query: countQuery,
-          query_params: { projectId },
+          query_params: queryParams,
         })
         .then(resultSet => resultSet.json<{ total: number }>()),
       clickhouse
         .query({
           query: dataQuery,
-          query_params: { projectId, take, skip },
+          query_params: queryParams,
         })
         .then(resultSet => resultSet.json<ClickhouseGoal>()),
     ])

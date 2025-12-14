@@ -773,7 +773,7 @@ export const getError = (
       throw error.response
     })
 
-export interface ErrorOverviewStats {
+interface ErrorOverviewStats {
   totalErrors: number
   uniqueErrors: number
   affectedSessions: number
@@ -781,7 +781,7 @@ export interface ErrorOverviewStats {
   errorRate: number
 }
 
-export interface MostFrequentError {
+interface MostFrequentError {
   eid: string
   name: string
   message: string
@@ -790,7 +790,7 @@ export interface MostFrequentError {
   lastSeen: string
 }
 
-export interface ErrorOverviewChart {
+interface ErrorOverviewChart {
   x: string[]
   occurrences: number[]
   affectedUsers: number[]
@@ -1257,9 +1257,18 @@ export interface GoalChartData {
 
 export const DEFAULT_GOALS_TAKE = 20
 
-export const getProjectGoals = (projectId: string, take: number = DEFAULT_GOALS_TAKE, skip = 0) =>
-  api
-    .get(`/goal/project/${projectId}?take=${take}&skip=${skip}`)
+export const getProjectGoals = (projectId: string, take: number = DEFAULT_GOALS_TAKE, skip = 0, search?: string) => {
+  const params = new URLSearchParams({
+    take: String(take),
+    skip: String(skip),
+  })
+
+  if (search?.trim()) {
+    params.append('search', search.trim())
+  }
+
+  return api
+    .get(`/goal/project/${projectId}?${params.toString()}`)
     .then(
       (
         response,
@@ -1271,6 +1280,7 @@ export const getProjectGoals = (projectId: string, take: number = DEFAULT_GOALS_
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
+}
 
 export const getGoal = (goalId: string) =>
   api
@@ -1467,7 +1477,7 @@ export interface FeatureFlagProfile {
 
 export const DEFAULT_FEATURE_FLAG_PROFILES_TAKE = 15
 
-export type FeatureFlagResultFilter = 'all' | 'true' | 'false'
+type FeatureFlagResultFilter = 'all' | 'true' | 'false'
 
 export const getFeatureFlagProfiles = (
   flagId: string,
@@ -1492,6 +1502,191 @@ export const getFeatureFlagProfiles = (
       },
     })
     .then((response): { profiles: FeatureFlagProfile[]; total: number } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+// Experiments (A/B Testing) API
+
+export type ExperimentStatus = 'draft' | 'running' | 'paused' | 'completed'
+
+export type ExposureTrigger = 'feature_flag' | 'custom_event'
+
+export type MultipleVariantHandling = 'exclude' | 'first_exposure'
+
+export type FeatureFlagMode = 'create' | 'link'
+
+export interface ExperimentVariant {
+  id?: string
+  name: string
+  key: string
+  description?: string | null
+  rolloutPercentage: number
+  isControl: boolean
+}
+
+export interface Experiment {
+  id: string
+  name: string
+  description: string | null
+  hypothesis: string | null
+  status: ExperimentStatus
+  // Exposure criteria
+  exposureTrigger: ExposureTrigger
+  customEventName: string | null
+  multipleVariantHandling: MultipleVariantHandling
+  filterInternalUsers: boolean
+  // Feature flag configuration
+  featureFlagMode: FeatureFlagMode
+  featureFlagKey: string | null
+  startedAt: string | null
+  endedAt: string | null
+  pid: string
+  goalId: string | null
+  featureFlagId: string | null
+  variants: ExperimentVariant[]
+  created: string
+}
+
+export interface ExperimentVariantResult {
+  key: string
+  name: string
+  isControl: boolean
+  exposures: number
+  conversions: number
+  conversionRate: number
+  probabilityOfBeingBest: number
+  improvement: number
+}
+
+export interface ExperimentChartData {
+  x: string[]
+  winProbability: Record<string, number[]>
+}
+
+export interface ExperimentResults {
+  experimentId: string
+  status: ExperimentStatus
+  variants: ExperimentVariantResult[]
+  totalExposures: number
+  totalConversions: number
+  hasWinner: boolean
+  winnerKey: string | null
+  confidenceLevel: number
+  chart?: ExperimentChartData
+  timeBucket?: string[]
+}
+
+interface CreateExperiment {
+  pid: string
+  name: string
+  description?: string
+  hypothesis?: string
+  // Exposure criteria
+  exposureTrigger?: ExposureTrigger
+  customEventName?: string
+  multipleVariantHandling?: MultipleVariantHandling
+  filterInternalUsers?: boolean
+  // Feature flag configuration
+  featureFlagMode?: FeatureFlagMode
+  featureFlagKey?: string
+  existingFeatureFlagId?: string
+  goalId?: string
+  variants: ExperimentVariant[]
+}
+
+export const DEFAULT_EXPERIMENTS_TAKE = 20
+
+export const getProjectExperiments = (projectId: string, take: number = DEFAULT_EXPERIMENTS_TAKE, skip = 0) => {
+  const params = new URLSearchParams({
+    take: String(take),
+    skip: String(skip),
+  })
+
+  return api
+    .get(`/experiment/project/${projectId}?${params.toString()}`)
+    .then(
+      (
+        response,
+      ): {
+        results: Experiment[]
+        total: number
+      } => response.data,
+    )
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+}
+
+export const getExperiment = (experimentId: string) =>
+  api
+    .get(`/experiment/${experimentId}`)
+    .then((response): Experiment => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const createExperiment = (data: CreateExperiment) =>
+  api
+    .post('experiment', data)
+    .then((response): Experiment => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const updateExperiment = (id: string, data: Partial<CreateExperiment>) =>
+  api
+    .put(`experiment/${id}`, data)
+    .then((response): Experiment => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const deleteExperiment = (id: string) =>
+  api
+    .delete(`experiment/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const startExperiment = (id: string) =>
+  api
+    .post(`experiment/${id}/start`)
+    .then((response): Experiment => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const pauseExperiment = (id: string) =>
+  api
+    .post(`experiment/${id}/pause`)
+    .then((response): Experiment => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const completeExperiment = (id: string) =>
+  api
+    .post(`experiment/${id}/complete`)
+    .then((response): Experiment => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getExperimentResults = (
+  experimentId: string,
+  period: string,
+  timeBucket: string,
+  from: string = '',
+  to: string = '',
+  timezone?: string,
+) =>
+  api
+    .get(`/experiment/${experimentId}/results`, {
+      params: { period, timeBucket, from, to, timezone },
+    })
+    .then((response): ExperimentResults => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -2053,6 +2248,7 @@ export const getGSCKeywords = (
         response,
       ): {
         keywords: { name: string; count: number; impressions: number; position: number; ctr: number }[]
+        notConnected?: boolean
       } => response.data,
     )
     .catch((error) => {

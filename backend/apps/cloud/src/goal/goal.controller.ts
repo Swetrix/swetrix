@@ -101,9 +101,10 @@ export class GoalController {
     @Param('projectId') projectId: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+    @Query('search') search?: string,
   ) {
     this.logger.log(
-      { userId, projectId, take, skip },
+      { userId, projectId, take, skip, search },
       'GET /goal/project/:projectId',
     )
 
@@ -119,6 +120,7 @@ export class GoalController {
       { take, skip },
       { project: { id: projectId } },
       ['project'],
+      search,
     )
 
     // @ts-expect-error

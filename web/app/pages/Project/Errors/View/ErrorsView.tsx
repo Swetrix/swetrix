@@ -13,7 +13,6 @@ import {
   UsersIcon,
   MonitorIcon,
   ChevronRightIcon,
-  ChevronLeftIcon,
   AlertTriangleIcon,
   UserIcon,
 } from 'lucide-react'
@@ -56,6 +55,7 @@ import { getRelativeDateIfPossible } from '~/utils/date'
 import { getLocaleDisplayName, nFormatter } from '~/utils/generic'
 
 import CCRow from '../../View/components/CCRow'
+import DashboardHeader from '../../View/components/DashboardHeader'
 import { ErrorChart } from '../../View/components/ErrorChart'
 import { ErrorDetails } from '../../View/components/ErrorDetails'
 import Filters from '../../View/components/Filters'
@@ -767,55 +767,51 @@ const ErrorsView = () => {
 
   // If viewing error detail
   if (activeEID) {
+    const resolveButton =
+      allowedToManage && activeError && activeError?.details?.status !== 'resolved' ? (
+        <button
+          type='button'
+          disabled={errorStatusUpdating}
+          onClick={markErrorAsResolved}
+          className={cx(
+            'rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-50 dark:hover:bg-slate-600',
+            {
+              'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
+              'animate-pulse cursor-not-allowed': errorStatusUpdating,
+            },
+          )}
+        >
+          {t('project.resolve')}
+        </button>
+      ) : allowedToManage && activeError && activeError?.details?.status === 'resolved' ? (
+        <button
+          type='button'
+          disabled={errorStatusUpdating}
+          onClick={markErrorAsActive}
+          className={cx(
+            'rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-50 dark:hover:bg-slate-600',
+            {
+              'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
+              'animate-pulse cursor-not-allowed': errorStatusUpdating,
+            },
+          )}
+        >
+          {t('project.markAsActive')}
+        </button>
+      ) : null
+
     return (
       <div>
         {/* Loading bar for refreshes */}
         {errorLoading && activeError ? <LoadingBar /> : null}
 
-        {/* Back link and action buttons */}
-        <div className='mx-auto mt-2 mb-3 flex max-w-max items-center justify-between gap-4 lg:mx-0 lg:max-w-none'>
-          <Link
-            to={{ search: pureSearchParams }}
-            className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
-          >
-            <ChevronLeftIcon className='mr-1 size-3' />
-            {t('project.backToErrors')}
-          </Link>
-
-          {/* Status action buttons */}
-          {allowedToManage && activeError && activeError?.details?.status !== 'resolved' ? (
-            <button
-              type='button'
-              disabled={errorStatusUpdating}
-              onClick={markErrorAsResolved}
-              className={cx(
-                'rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-50 dark:hover:bg-slate-600',
-                {
-                  'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
-                  'animate-pulse cursor-not-allowed': errorStatusUpdating,
-                },
-              )}
-            >
-              {t('project.resolve')}
-            </button>
-          ) : null}
-          {allowedToManage && activeError && activeError?.details?.status === 'resolved' ? (
-            <button
-              type='button'
-              disabled={errorStatusUpdating}
-              onClick={markErrorAsActive}
-              className={cx(
-                'rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-50 dark:hover:bg-slate-600',
-                {
-                  'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
-                  'animate-pulse cursor-not-allowed': errorStatusUpdating,
-                },
-              )}
-            >
-              {t('project.markAsActive')}
-            </button>
-          ) : null}
-        </div>
+        <DashboardHeader
+          backLink={`?${pureSearchParams}`}
+          showLiveVisitors={false}
+          showSearchButton={false}
+          hideTimeBucket
+          rightContent={resolveButton}
+        />
 
         {/* Error details */}
         {activeError?.details ? (
@@ -1041,6 +1037,8 @@ const ErrorsView = () => {
 
   return (
     <div>
+      <DashboardHeader showLiveVisitors showSearchButton={false} hideTimeBucket />
+
       {/* Loading bar for refreshes */}
       {(overviewLoading || errorsLoading) && (overview || !_isEmpty(errors)) ? <LoadingBar /> : null}
 
