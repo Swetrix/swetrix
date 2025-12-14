@@ -13,23 +13,6 @@ import { Link } from 'react-router'
 import { toast } from 'sonner'
 
 import { acceptProjectShare, pinProject, unpinProject } from '~/api'
-
-// Detect if device supports hover (i.e., not a touch-only device)
-const useIsTouchDevice = () => {
-  const [isTouchDevice, setIsTouchDevice] = useState(false)
-
-  useEffect(() => {
-    // Check if device is touch-only (no hover support)
-    const mediaQuery = window.matchMedia('(hover: none)')
-    setIsTouchDevice(mediaQuery.matches)
-
-    const handler = (e: MediaQueryListEvent) => setIsTouchDevice(e.matches)
-    mediaQuery.addEventListener('change', handler)
-    return () => mediaQuery.removeEventListener('change', handler)
-  }, [])
-
-  return isTouchDevice
-}
 import useFeatureFlag from '~/hooks/useFeatureFlag'
 import { OverallObject, Project } from '~/lib/models/Project'
 import { FeatureFlag } from '~/lib/models/User'
@@ -43,6 +26,23 @@ import routes from '~/utils/routes'
 
 import Sparkline from './Sparkline'
 import { DASHBOARD_TABS } from './Tabs'
+
+// Detect if device supports hover (i.e., not a touch-only device)
+const useIsTouchDevice = () => {
+  const [isTouchDevice, setIsTouchDevice] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(hover: none)').matches
+  })
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(hover: none)')
+    const handler = (e: MediaQueryListEvent) => setIsTouchDevice(e.matches)
+    mediaQuery.addEventListener('change', handler)
+    return () => mediaQuery.removeEventListener('change', handler)
+  }, [])
+
+  return isTouchDevice
+}
 
 interface ProjectCardProps {
   live?: string | number | null
