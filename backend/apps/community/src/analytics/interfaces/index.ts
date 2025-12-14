@@ -156,6 +156,11 @@ interface IPerformanceObject {
   networkChange: number
 }
 
+interface IOverallChart {
+  x: string[]
+  visits: number[]
+}
+
 interface IOverallObject {
   current: IOverallPeriodStats
   previous: IOverallPeriodStats
@@ -164,6 +169,7 @@ interface IOverallObject {
   usersChange?: number
   bounceRateChange?: number
   sdurChange?: number
+  chart?: IOverallChart
 }
 
 export interface IOverall {

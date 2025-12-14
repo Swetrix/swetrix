@@ -967,12 +967,13 @@ export const getOverallStats = (
   timezone = 'Etc/GMT',
   filters: any = '',
   password?: string,
+  includeChart = false,
 ) =>
   api
     .get(
       `log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(
         ',',
-      )}]&timeBucket=${tb}&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
+      )}]&timeBucket=${tb}&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}&includeChart=${includeChart}`,
       {
         headers: {
           'x-password': password,

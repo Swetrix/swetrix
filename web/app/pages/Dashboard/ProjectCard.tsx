@@ -24,6 +24,7 @@ import { Text } from '~/ui/Text'
 import { nFormatter, calculateRelativePercentage } from '~/utils/generic'
 import routes from '~/utils/routes'
 
+import Sparkline from './Sparkline'
 import { DASHBOARD_TABS } from './Tabs'
 
 interface ProjectCardProps {
@@ -205,11 +206,17 @@ export const ProjectCard = ({
       }}
       onClick={onElementClick}
       className={cx(
-        'cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60',
+        'relative cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60',
         viewMode === 'list' ? 'flex items-center justify-between px-6 py-4' : 'min-h-[153.1px]',
       )}
     >
-      <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
+      {/* Background sparkline chart */}
+      {viewMode === 'grid' && overallStats?.chart ? (
+        <div className='pointer-events-none absolute inset-x-0 bottom-0 z-0 opacity-50'>
+          <Sparkline chart={overallStats.chart} className='w-full' />
+        </div>
+      ) : null}
+      <div className={cx('relative z-10 flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
         <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
           <Text as='p' size='lg' weight='semibold' truncate>
             {name}
@@ -234,7 +241,7 @@ export const ProjectCard = ({
           )}
         </div>
       </div>
-      <div className={cx('flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4')}>
+      <div className={cx('relative z-10 flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4')}>
         {isHostnameNavigationEnabled ? (
           <MiniCard
             labelTKey='dashboard.pageviews'

@@ -348,7 +348,17 @@ const Dashboard = () => {
 
       try {
         const timeBucket = tbPeriodPairs(t).find((p) => p.period === activePeriod)?.tbs[0] || ''
-        const stats = await getOverallStats(projectIds, timeBucket, activePeriod)
+        const stats = await getOverallStats(
+          projectIds,
+          timeBucket,
+          activePeriod,
+          '',
+          '',
+          'Etc/GMT',
+          '',
+          undefined,
+          true,
+        )
         setOverallStats((prev) => ({ ...prev, ...stats }))
       } catch (reason) {
         console.error('Failed to fetch overall stats:', reason)
