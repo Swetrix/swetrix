@@ -548,6 +548,7 @@ export class AnalyticsService {
     safeTimezone: string,
     diff?: number,
     checkTimebucket = true,
+    now?: dayjs.Dayjs,
   ): IGetGroupFromTo {
     let groupFrom: dayjs.Dayjs
     let groupTo: dayjs.Dayjs
@@ -555,9 +556,13 @@ export class AnalyticsService {
     let groupToUTC: string
     const formatFrom = 'YYYY-MM-DD HH:mm:ss'
     const formatTo = 'YYYY-MM-DD HH:mm:ss'
-    const djsNow = _includes(GMT_0_TIMEZONES, safeTimezone)
-      ? dayjs.utc()
-      : dayjs().tz(safeTimezone)
+    const djsNow = now
+      ? _includes(GMT_0_TIMEZONES, safeTimezone)
+        ? dayjs.utc(now.toDate())
+        : dayjs(now.toDate()).tz(safeTimezone)
+      : _includes(GMT_0_TIMEZONES, safeTimezone)
+        ? dayjs.utc()
+        : dayjs().tz(safeTimezone)
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
       if (!isValidDate(from)) {
@@ -1639,6 +1644,7 @@ export class AnalyticsService {
     timezone?: string,
     filters?: string,
     includeChart?: boolean,
+    now?: dayjs.Dayjs,
   ): Promise<IOverall> {
     const safeTimezone = this.getSafeTimezone(timezone)
 
@@ -1658,6 +1664,7 @@ export class AnalyticsService {
         safeTimezone,
         undefined,
         false,
+        now,
       )
 
     const result = {}

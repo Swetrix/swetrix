@@ -29,6 +29,7 @@ import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import { SaltService } from '../analytics/salt.service'
+import { TimeBucketType } from '../analytics/dto/getData.dto'
 import { PayoutsService } from '../payouts/payouts.service'
 import { GoalService } from '../goal/goal.service'
 import { Goal, GoalType, GoalMatchType } from '../goal/entity/goal.entity'
@@ -306,24 +307,31 @@ export class TaskManagerService {
     goal: Goal,
     _table: 'analytics' | 'customEV',
   ): { condition: string; params: Record<string, string> } {
+    const goalValue = (goal.value ?? '').toString()
+
+    // If goal value is blank, never match anything (avoid LIKE '%%')
+    if (goalValue.trim() === '') {
+      return { condition: '1=0', params: {} }
+    }
+
     const params: Record<string, string> = {}
 
     if (goal.type === GoalType.CUSTOM_EVENT) {
       if (goal.matchType === GoalMatchType.EXACT) {
-        params.goalValue = goal.value || ''
+        params.goalValue = goalValue
         return { condition: `ev = {goalValue:String}`, params }
       } else {
-        params.goalValue = `%${goal.value || ''}%`
+        params.goalValue = `%${goalValue}%`
         return { condition: `ev LIKE {goalValue:String}`, params }
       }
     }
 
     // Pageview goal
     if (goal.matchType === GoalMatchType.EXACT) {
-      params.goalValue = goal.value || ''
+      params.goalValue = goalValue
       return { condition: `pg = {goalValue:String}`, params }
     } else {
-      params.goalValue = `%${goal.value || ''}%`
+      params.goalValue = `%${goalValue}%`
       return { condition: `pg LIKE {goalValue:String}`, params }
     }
   }
@@ -429,9 +437,18 @@ export class TaskManagerService {
     const date = `${timeAgoFormatted} - ${nowFormatted}`
     const tip = getRandomTip()
 
-    // Date range for additional queries
-    const groupFrom = timeAgo.format('YYYY-MM-DD 00:00:00')
-    const groupTo = now.format('YYYY-MM-DD 23:59:59')
+    // Date range for additional queries (must match summary period + cron execution timestamp)
+    const safeTimezone = this.analyticsService.getSafeTimezone(undefined)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      '',
+      '',
+      TimeBucketType.DAY,
+      params.analyticsParam,
+      safeTimezone,
+      undefined,
+      false,
+      now,
+    )
 
     const promises = _map(users, async user => {
       const { id, email, projects } = user
@@ -444,6 +461,12 @@ export class TaskManagerService {
           ids,
           undefined,
           params.analyticsParam,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          now,
         ),
       )
 
@@ -551,9 +574,18 @@ export class TaskManagerService {
     const date = `${timeAgoFormatted} - ${nowFormatted}`
     const tip = getRandomTip()
 
-    // Date range for additional queries
-    const groupFrom = timeAgo.format('YYYY-MM-DD 00:00:00')
-    const groupTo = now.format('YYYY-MM-DD 23:59:59')
+    // Date range for additional queries (must match summary period + cron execution timestamp)
+    const safeTimezone = this.analyticsService.getSafeTimezone(undefined)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      '',
+      '',
+      TimeBucketType.DAY,
+      params.analyticsParam,
+      safeTimezone,
+      undefined,
+      false,
+      now,
+    )
 
     const promises = _map(subscribers, async subscriber => {
       const { id, email } = subscriber
@@ -567,6 +599,12 @@ export class TaskManagerService {
           ids,
           undefined,
           params.analyticsParam,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          now,
         ),
       )
 

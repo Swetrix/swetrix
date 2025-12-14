@@ -328,7 +328,7 @@ export const sumArrays = (source: number[], target: number[]) => {
  * @returns Formatted duration string
  */
 export const formatDuration = (seconds: number | null | undefined): string => {
-  if (!seconds || seconds <= 0) return '0s'
+  if (seconds == null || !Number.isFinite(seconds) || seconds <= 0) return '0s'
 
   const roundedSeconds = Math.round(seconds)
 
