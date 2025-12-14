@@ -319,8 +319,10 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
       return
     }
     isLoadingRef.current = true
-    // Only show loading state if requested and we don't have existing data
-    if (showLoading) {
+
+    // Only toggle global loading UI when we don't already have cached data
+    const didShowLoading = showLoading && (!experiments || experiments.length === 0)
+    if (didShowLoading) {
       setIsLoading(true)
     }
 
@@ -329,6 +331,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
       if (isMountedRef.current) {
         setExperiments(result.results)
         setTotal(result.total)
+        setError(null) // Clear any previous error on success
       }
     } catch (reason: any) {
       if (isMountedRef.current) {
@@ -336,7 +339,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
       }
     } finally {
       isLoadingRef.current = false
-      if (isMountedRef.current) {
+      if (isMountedRef.current && didShowLoading) {
         setIsLoading(false)
       }
     }

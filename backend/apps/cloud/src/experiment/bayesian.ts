@@ -129,34 +129,50 @@ export function calculateBayesianProbabilities(
     return new Map()
   }
 
-  if (variants.length === 1) {
-    return new Map([[variants[0].key, 1]])
+  // Sanitize simulations: ensure it's a positive integer to avoid division by zero and invalid seeds
+  simulations = Math.max(1, Math.floor(simulations))
+
+  // Sanitize variant data: clamp exposures and conversions to valid ranges
+  const sanitizedVariants = variants.map(v => {
+    const exposures = Math.max(0, Math.floor(v.exposures))
+    const conversions = Math.min(
+      Math.max(0, Math.floor(v.conversions)),
+      exposures,
+    )
+    return { key: v.key, exposures, conversions }
+  })
+
+  if (sanitizedVariants.length === 1) {
+    return new Map([[sanitizedVariants[0].key, 1]])
   }
 
-  // Check if we have any data at all
-  const totalExposures = variants.reduce((sum, v) => sum + v.exposures, 0)
+  // Check if we have any data at all (recompute from sanitized values)
+  const totalExposures = sanitizedVariants.reduce(
+    (sum, v) => sum + v.exposures,
+    0,
+  )
   if (totalExposures === 0) {
     // No data yet - equal probability for all variants
-    const prob = 1 / variants.length
-    return new Map(variants.map(v => [v.key, prob]))
+    const prob = 1 / sanitizedVariants.length
+    return new Map(sanitizedVariants.map(v => [v.key, prob]))
   }
 
   // Count wins for each variant
   const wins = new Map<string, number>()
-  for (const v of variants) {
+  for (const v of sanitizedVariants) {
     wins.set(v.key, 0)
   }
 
   // Use deterministic PRNG so the same input always produces the same output.
   // This prevents slight "drift" between the table value and the last chart point.
-  const random = mulberry32(seedFromVariants(variants, simulations))
+  const random = mulberry32(seedFromVariants(sanitizedVariants, simulations))
 
   // Run Monte Carlo simulation
   for (let i = 0; i < simulations; i++) {
     let bestRate = -1
     let bestKey = ''
 
-    for (const variant of variants) {
+    for (const variant of sanitizedVariants) {
       // Calculate Beta distribution parameters
       // alpha = conversions + 1 (prior success)
       // beta = exposures - conversions + 1 (prior failure)

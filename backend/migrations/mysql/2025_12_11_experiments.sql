@@ -37,5 +37,5 @@ CREATE TABLE IF NOT EXISTS `experiment_variant` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Add experimentId to feature_flag table for linking
-ALTER TABLE `feature_flag` ADD COLUMN IF NOT EXISTS `experimentId` varchar(36) DEFAULT NULL;
+ALTER TABLE `feature_flag` ADD COLUMN `experimentId` varchar(36) DEFAULT NULL;
 ALTER TABLE `feature_flag` ADD KEY `FK_feature_flag_experiment` (`experimentId`);

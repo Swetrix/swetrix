@@ -334,9 +334,13 @@ export class FeatureFlagController {
 
       for (const experiment of experiments) {
         if (experiment.variants && experiment.variants.length > 0) {
+          // Sort variants by key to ensure stable ordering regardless of DB query order
+          const sortedVariants = [...experiment.variants].sort((a, b) =>
+            a.key.localeCompare(b.key),
+          )
           const variantKey = getExperimentVariant(
             experiment.id,
-            experiment.variants.map(v => ({
+            sortedVariants.map(v => ({
               key: v.key,
               rolloutPercentage: v.rolloutPercentage,
             })),

@@ -177,7 +177,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const hasExistingData = chartData !== null || !_isEmpty(panelsData.types)
 
   // Show waiting state if project has no captcha data yet
-  if (!project?.isCaptchaDataExists) {
+  if (!_isEmpty(project) && !project?.isCaptchaDataExists) {
     return <WaitingForAnEvent />
   }
 

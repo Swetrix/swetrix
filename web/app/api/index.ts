@@ -1257,9 +1257,18 @@ export interface GoalChartData {
 
 export const DEFAULT_GOALS_TAKE = 20
 
-export const getProjectGoals = (projectId: string, take: number = DEFAULT_GOALS_TAKE, skip = 0) =>
-  api
-    .get(`/goal/project/${projectId}?take=${take}&skip=${skip}`)
+export const getProjectGoals = (projectId: string, take: number = DEFAULT_GOALS_TAKE, skip = 0, search?: string) => {
+  const params = new URLSearchParams({
+    take: String(take),
+    skip: String(skip),
+  })
+
+  if (search?.trim()) {
+    params.append('search', search.trim())
+  }
+
+  return api
+    .get(`/goal/project/${projectId}?${params.toString()}`)
     .then(
       (
         response,
@@ -1271,6 +1280,7 @@ export const getProjectGoals = (projectId: string, take: number = DEFAULT_GOALS_
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
+}
 
 export const getGoal = (goalId: string) =>
   api

@@ -83,9 +83,10 @@ export class GoalController {
     @Param('projectId') projectId: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+    @Query('search') search?: string,
   ) {
     this.logger.log(
-      { userId, projectId, take, skip },
+      { userId, projectId, take, skip, search },
       'GET /goal/project/:projectId',
     )
 
@@ -97,7 +98,11 @@ export class GoalController {
 
     this.projectService.allowedToView(project, userId)
 
-    const result = await this.goalService.paginate({ take, skip }, projectId)
+    const result = await this.goalService.paginate(
+      { take, skip },
+      projectId,
+      search,
+    )
 
     return {
       ...result,

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
+import { FindManyOptions, FindOneOptions, Repository, ILike } from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Goal } from './entity/goal.entity'
 
@@ -15,11 +15,23 @@ export class GoalService {
     options: PaginationOptionsInterface,
     where: FindManyOptions<Goal>['where'],
     relations?: Array<string>,
+    search?: string,
   ): Promise<Pagination<Goal>> {
+    let finalWhere: FindManyOptions<Goal>['where'] = where
+
+    if (search && search.trim()) {
+      const searchPattern = `%${search.trim()}%`
+      // Use array of where conditions for OR with the base where conditions
+      finalWhere = [
+        { ...where, name: ILike(searchPattern) },
+        { ...where, value: ILike(searchPattern) },
+      ]
+    }
+
     const [results, total] = await this.goalsRepository.findAndCount({
       take: options.take || 100,
       skip: options.skip || 0,
-      where,
+      where: finalWhere,
       order: {
         name: 'ASC',
       },
