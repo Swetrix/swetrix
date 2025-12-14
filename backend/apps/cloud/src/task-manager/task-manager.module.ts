@@ -14,6 +14,7 @@ import { AppLoggerModule } from '../logger/logger.module'
 import { Message } from '../integrations/telegram/entities/message.entity'
 import { DiscordModule } from '../integrations/discord/discord.module'
 import { SlackModule } from '../integrations/slack/slack.module'
+import { GoalModule } from '../goal/goal.module'
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { SlackModule } from '../integrations/slack/slack.module'
     PayoutsModule,
     DiscordModule,
     SlackModule,
+    GoalModule,
   ],
   providers: [TaskManagerService, TelegramService],
   exports: [TaskManagerService],

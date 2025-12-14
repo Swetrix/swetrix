@@ -30,6 +30,8 @@ import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import { SaltService } from '../analytics/salt.service'
 import { PayoutsService } from '../payouts/payouts.service'
+import { GoalService } from '../goal/goal.service'
+import { Goal, GoalType, GoalMatchType } from '../goal/entity/goal.entity'
 import { PayoutStatus } from '../payouts/entities/payouts.entity'
 import {
   ACCOUNT_PLANS,
@@ -294,7 +296,101 @@ export class TaskManagerService {
     private readonly discordService: DiscordService,
     private readonly slackService: SlackService,
     private readonly saltService: SaltService,
+    private readonly goalService: GoalService,
   ) {}
+
+  /**
+   * Build goal match condition for querying conversions
+   */
+  private buildGoalMatchCondition(
+    goal: Goal,
+    _table: 'analytics' | 'customEV',
+  ): { condition: string; params: Record<string, string> } {
+    const params: Record<string, string> = {}
+
+    if (goal.type === GoalType.CUSTOM_EVENT) {
+      if (goal.matchType === GoalMatchType.EXACT) {
+        params.goalValue = goal.value || ''
+        return { condition: `ev = {goalValue:String}`, params }
+      } else {
+        params.goalValue = `%${goal.value || ''}%`
+        return { condition: `ev LIKE {goalValue:String}`, params }
+      }
+    }
+
+    // Pageview goal
+    if (goal.matchType === GoalMatchType.EXACT) {
+      params.goalValue = goal.value || ''
+      return { condition: `pg = {goalValue:String}`, params }
+    } else {
+      params.goalValue = `%${goal.value || ''}%`
+      return { condition: `pg LIKE {goalValue:String}`, params }
+    }
+  }
+
+  /**
+   * Get goal conversions for a specific period
+   */
+  async getGoalConversionsForReport(
+    goal: Goal,
+    pid: string,
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<{ conversions: number; conversionRate: number }> {
+    const table = goal.type === GoalType.CUSTOM_EVENT ? 'customEV' : 'analytics'
+    const { condition: matchCondition, params: matchParams } =
+      this.buildGoalMatchCondition(goal, table)
+
+    // Get conversions
+    const conversionsQuery = `
+      SELECT 
+        count(*) as conversions,
+        uniqExact(psid) as uniqueSessions
+      FROM ${table}
+      WHERE 
+        pid = {pid:FixedString(12)}
+        AND ${matchCondition}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    const { data: conversionsData } = await clickhouse
+      .query({
+        query: conversionsQuery,
+        query_params: {
+          pid,
+          groupFrom,
+          groupTo,
+          ...matchParams,
+        },
+      })
+      .then(resultSet =>
+        resultSet.json<{ conversions: number; uniqueSessions: number }>(),
+      )
+
+    const conversions = conversionsData[0]?.conversions || 0
+    const uniqueSessions = conversionsData[0]?.uniqueSessions || 0
+
+    // Get total sessions for conversion rate
+    const totalSessionsQuery = `
+      SELECT uniqExact(psid) as totalSessions
+      FROM analytics
+      WHERE 
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    const { data: totalData } = await clickhouse
+      .query({
+        query: totalSessionsQuery,
+        query_params: { pid, groupFrom, groupTo },
+      })
+      .then(resultSet => resultSet.json<{ totalSessions: number }>())
+
+    const totalSessions = totalData[0]?.totalSessions || 1
+    const conversionRate = Math.round((uniqueSessions / totalSessions) * 100)
+
+    return { conversions, conversionRate }
+  }
 
   generateUnsubscribeUrl(
     id: string,
@@ -323,14 +419,19 @@ export class TaskManagerService {
 
     const users = await this.userService.getReportUsers(reportFrequency)
 
-    const now = dayjs.utc().format('DD.MM.YYYY')
+    const now = dayjs.utc()
+    const nowFormatted = now.format('DD.MM.YYYY')
     const timeAgo = dayjs
       .utc()
       // @ts-expect-error
       .subtract(...params.dayjsParams)
-      .format('DD.MM.YYYY')
-    const date = `${timeAgo} - ${now}`
+    const timeAgoFormatted = timeAgo.format('DD.MM.YYYY')
+    const date = `${timeAgoFormatted} - ${nowFormatted}`
     const tip = getRandomTip()
+
+    // Date range for additional queries
+    const groupFrom = timeAgo.format('YYYY-MM-DD 00:00:00')
+    const groupTo = now.format('YYYY-MM-DD 23:59:59')
 
     const promises = _map(users, async user => {
       const { id, email, projects } = user
@@ -338,7 +439,7 @@ export class TaskManagerService {
       const unsubscribeUrl = this.generateUnsubscribeUrl(id, 'user-reports')
 
       const ids = _map(projects, p => p.id)
-      const data = this.analyticsService.convertSummaryToObsoleteFormat(
+      const data = this.analyticsService.convertSummaryToReportFormat(
         await this.analyticsService.getAnalyticsSummary(
           ids,
           undefined,
@@ -346,13 +447,72 @@ export class TaskManagerService {
         ),
       )
 
+      // Fetch additional data for each project
+      const projectsWithExtraData = await Promise.all(
+        _map(ids, async (pid, index) => {
+          const projectData = data[pid] || {}
+
+          // Fetch top country
+          const topCountry = await this.analyticsService.getTopCountryForReport(
+            pid,
+            groupFrom,
+            groupTo,
+          )
+
+          // Fetch error count
+          const errorStats = await this.analyticsService.getErrorCountForReport(
+            pid,
+            groupFrom,
+            groupTo,
+          )
+
+          // Fetch goals with conversions (only if they have any conversions)
+          const projectGoals = await this.goalService.findByProject(pid)
+          const goalsWithConversions = await Promise.all(
+            _map(projectGoals, async goal => {
+              const { conversions, conversionRate } =
+                await this.getGoalConversionsForReport(
+                  goal,
+                  pid,
+                  groupFrom,
+                  groupTo,
+                )
+              return {
+                name: goal.name,
+                conversions,
+                conversionRate,
+              }
+            }),
+          )
+
+          // Only include goals that have conversions
+          const activeGoals = _filter(
+            goalsWithConversions,
+            g => g.conversions > 0,
+          )
+
+          return {
+            data: projectData,
+            name: projects[index].name,
+            topCountry: topCountry?.cc || null,
+            // Only include errors if there are any
+            errors:
+              errorStats.count > 0
+                ? {
+                    count: errorStats.count,
+                    uniqueErrors: errorStats.uniqueErrors,
+                  }
+                : null,
+            // Only include goals if there are any with conversions
+            goals: activeGoals.length > 0 ? activeGoals : null,
+          }
+        }),
+      )
+
       const result = {
         type: params.type,
         date,
-        projects: _map(ids, (pid, index) => ({
-          data: data[pid],
-          name: projects[index].name,
-        })),
+        projects: projectsWithExtraData,
         tip,
         unsubscribeUrl,
       }
@@ -381,14 +541,19 @@ export class TaskManagerService {
 
     const subscribers =
       await this.projectService.getSubscribersForReports(reportFrequency)
-    const now = dayjs.utc().format('DD.MM.YYYY')
+    const now = dayjs.utc()
+    const nowFormatted = now.format('DD.MM.YYYY')
     const timeAgo = dayjs
       .utc()
       // @ts-expect-error
       .subtract(...params.dayjsParams)
-      .format('DD.MM.YYYY')
-    const date = `${timeAgo} - ${now}`
+    const timeAgoFormatted = timeAgo.format('DD.MM.YYYY')
+    const date = `${timeAgoFormatted} - ${nowFormatted}`
     const tip = getRandomTip()
+
+    // Date range for additional queries
+    const groupFrom = timeAgo.format('YYYY-MM-DD 00:00:00')
+    const groupTo = now.format('YYYY-MM-DD 23:59:59')
 
     const promises = _map(subscribers, async subscriber => {
       const { id, email } = subscriber
@@ -397,7 +562,7 @@ export class TaskManagerService {
       const unsubscribeUrl = this.generateUnsubscribeUrl(id, '3rdparty')
 
       const ids = projects.map(project => project.id)
-      const data = this.analyticsService.convertSummaryToObsoleteFormat(
+      const data = this.analyticsService.convertSummaryToReportFormat(
         await this.analyticsService.getAnalyticsSummary(
           ids,
           undefined,
@@ -405,13 +570,72 @@ export class TaskManagerService {
         ),
       )
 
+      // Fetch additional data for each project
+      const projectsWithExtraData = await Promise.all(
+        _map(ids, async (pid, index) => {
+          const projectData = data[pid] || {}
+
+          // Fetch top country
+          const topCountry = await this.analyticsService.getTopCountryForReport(
+            pid,
+            groupFrom,
+            groupTo,
+          )
+
+          // Fetch error count
+          const errorStats = await this.analyticsService.getErrorCountForReport(
+            pid,
+            groupFrom,
+            groupTo,
+          )
+
+          // Fetch goals with conversions (only if they have any conversions)
+          const projectGoals = await this.goalService.findByProject(pid)
+          const goalsWithConversions = await Promise.all(
+            _map(projectGoals, async goal => {
+              const { conversions, conversionRate } =
+                await this.getGoalConversionsForReport(
+                  goal,
+                  pid,
+                  groupFrom,
+                  groupTo,
+                )
+              return {
+                name: goal.name,
+                conversions,
+                conversionRate,
+              }
+            }),
+          )
+
+          // Only include goals that have conversions
+          const activeGoals = _filter(
+            goalsWithConversions,
+            g => g.conversions > 0,
+          )
+
+          return {
+            data: projectData,
+            name: projects[index].name,
+            topCountry: topCountry?.cc || null,
+            // Only include errors if there are any
+            errors:
+              errorStats.count > 0
+                ? {
+                    count: errorStats.count,
+                    uniqueErrors: errorStats.uniqueErrors,
+                  }
+                : null,
+            // Only include goals if there are any with conversions
+            goals: activeGoals.length > 0 ? activeGoals : null,
+          }
+        }),
+      )
+
       const result = {
         type: params.type,
         date,
-        projects: _map(ids, (pid, index) => ({
-          data: data[pid],
-          name: projects[index].name,
-        })),
+        projects: projectsWithExtraData,
         tip,
         unsubscribeUrl,
       }

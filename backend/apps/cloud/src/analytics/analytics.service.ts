@@ -63,6 +63,7 @@ import {
   hash,
   millisecondsToSeconds,
   sumArrays,
+  formatDuration,
 } from '../common/utils'
 import { PageviewsDto } from './dto/pageviews.dto'
 import { EventsDto } from './dto/events.dto'
@@ -1516,6 +1517,117 @@ export class AnalyticsService {
     }
 
     return result
+  }
+
+  convertSummaryToReportFormat(summary: IOverall): any {
+    const result = {}
+
+    for (const pid of _keys(summary)) {
+      const { current, previous } = summary[pid]
+
+      result[pid] = {
+        // Existing metrics
+        pageviews: current.all,
+        previousPageviews: previous.all,
+        percChangePageviews: calculateRelativePercentage(
+          previous.all,
+          current.all,
+        ),
+
+        uniqueVisitors: current.unique,
+        previousUniqueVisitors: previous.unique,
+        percChangeUnique: calculateRelativePercentage(
+          previous.unique,
+          current.unique,
+        ),
+
+        // Active Users (MAU/WAU)
+        activeUsers: current.users || 0,
+        previousActiveUsers: previous.users || 0,
+        percChangeUsers: calculateRelativePercentage(
+          previous.users || 0,
+          current.users || 0,
+        ),
+
+        // Average Session Duration
+        avgDuration: formatDuration(current.sdur),
+        avgDurationSeconds: _round(current.sdur || 0),
+        previousAvgDuration: formatDuration(previous.sdur),
+        previousAvgDurationSeconds: _round(previous.sdur || 0),
+        percChangeDuration: calculateRelativePercentage(
+          previous.sdur || 0,
+          current.sdur || 0,
+        ),
+
+        // Bounce Rate
+        bounceRate: _round(current.bounceRate || 0, 1),
+        previousBounceRate: _round(previous.bounceRate || 0, 1),
+        // For bounce rate, lower is better, so we invert the change
+        bounceRateChange: _round(
+          (current.bounceRate || 0) - (previous.bounceRate || 0),
+          1,
+        ),
+      }
+    }
+
+    return result
+  }
+
+  async getTopCountryForReport(
+    pid: string,
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<{ cc: string; count: number } | null> {
+    const query = `
+      SELECT 
+        cc,
+        count() as count
+      FROM analytics
+      WHERE 
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        AND cc IS NOT NULL
+        AND cc != ''
+      GROUP BY cc
+      ORDER BY count DESC
+      LIMIT 1
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, groupFrom, groupTo },
+      })
+      .then(resultSet => resultSet.json<{ cc: string; count: number }>())
+
+    return data[0] || null
+  }
+
+  async getErrorCountForReport(
+    pid: string,
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<{ count: number; uniqueErrors: number }> {
+    const query = `
+      SELECT 
+        count() as count,
+        count(DISTINCT eid) as uniqueErrors
+      FROM errors
+      WHERE 
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, groupFrom, groupTo },
+      })
+      .then(resultSet =>
+        resultSet.json<{ count: number; uniqueErrors: number }>(),
+      )
+
+    return data[0] || { count: 0, uniqueErrors: 0 }
   }
 
   async getAnalyticsSummary(
