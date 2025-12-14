@@ -395,15 +395,15 @@ export class ProjectService {
     updProject.public = Boolean(updProject.public)
     updProject.isPasswordProtected = Boolean(updProject.isPasswordProtected)
 
-    updProject.origins = _isNull(updProject.origins)
+    updProject.origins = _isEmpty(updProject.origins)
       ? []
       : _split(updProject.origins, ',')
 
-    updProject.ipBlacklist = _isNull(updProject.ipBlacklist)
+    updProject.ipBlacklist = _isEmpty(updProject.ipBlacklist)
       ? []
       : _split(updProject.ipBlacklist, ',')
 
-    updProject.countryBlacklist = _isNull(updProject.countryBlacklist)
+    updProject.countryBlacklist = _isEmpty(updProject.countryBlacklist)
       ? []
       : _split(updProject.countryBlacklist, ',')
 
