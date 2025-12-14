@@ -53,6 +53,12 @@ interface IntegrationsProps {
   handleIntegrationSave: (data: Partial<User>, cb: (isSuccess: boolean) => void) => void
 }
 
+interface IntegrationStatus {
+  connected?: string | null
+  confirmed?: boolean | string | null
+  id?: string | null
+}
+
 const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
   const { user, mergeUser } = useAuth()
 
@@ -124,7 +130,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
 
   const getIntegrationStatus = (key: string) => {
     if (!user) {
-      return {}
+      return {} as IntegrationStatus
     }
 
     if (key === 'telegram') {
@@ -132,7 +138,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         connected: user.telegramChatId,
         confirmed: user.isTelegramChatIdConfirmed,
         id: user.telegramChatId,
-      }
+      } satisfies IntegrationStatus
     }
 
     if (key === 'discord') {
@@ -140,7 +146,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         connected: user.discordWebhookUrl,
         confirmed: user.discordWebhookUrl,
         id: null,
-      }
+      } satisfies IntegrationStatus
     }
 
     if (key === 'slack') {
@@ -148,10 +154,10 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         connected: user.slackWebhookUrl,
         confirmed: user.slackWebhookUrl,
         id: null,
-      }
+      } satisfies IntegrationStatus
     }
 
-    return {}
+    return {} as IntegrationStatus
   }
 
   const removeIntegration = async (key: string) => {
@@ -387,62 +393,89 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
   return (
     <>
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.integrationsDesc')}</p>
-      <div className='mt-2 overflow-hidden bg-white ring-1 ring-black/10 sm:rounded-md dark:bg-slate-800'>
-        <ul className='divide-y divide-gray-200 dark:divide-slate-700'>
-          {_map(available, ({ name, key, description, Icon }) => {
-            const { connected, confirmed, id } = getIntegrationStatus(key)
-            const status = connected ? (confirmed ? 'connected' : 'pending') : 'notConnected'
+      <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-900'>
+        <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
+          <thead className='bg-gray-50 dark:bg-slate-800'>
+            <tr>
+              <th
+                scope='col'
+                className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+              >
+                {t('common.name')}
+              </th>
+              <th
+                scope='col'
+                className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+              >
+                {t('common.details')}
+              </th>
+              <th
+                scope='col'
+                className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+              >
+                {t('common.status')}
+              </th>
+              <th scope='col' className='px-4 py-3' />
+            </tr>
+          </thead>
+          <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+            {_map(available, ({ name, key, description, Icon }) => {
+              const { connected, confirmed, id } = getIntegrationStatus(key)
+              const status = connected ? (confirmed ? 'connected' : 'pending') : 'notConnected'
 
-            return (
-              <li key={key} className='items-center px-1 py-4 sm:flex sm:px-6'>
-                <div className='flex min-w-0 flex-1 items-center'>
-                  <div className='hidden shrink-0 sm:block'>
-                    <Icon className='size-12 max-h-12 max-w-12' />
-                  </div>
-                  <div className='min-w-0 flex-1 px-2 sm:px-4 md:grid md:grid-cols-2 md:gap-4'>
-                    <div>
-                      <p className='text-md font-medium text-gray-800 dark:text-gray-50'>{name}</p>
-                      <p className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-100'>
-                        <span>{description}</span>
-                      </p>
+              return (
+                <tr key={key} className='hover:bg-gray-50 dark:hover:bg-slate-800/50'>
+                  <td className='px-4 py-3 text-sm text-gray-900 dark:text-gray-100'>
+                    <div className='flex items-center gap-3'>
+                      <div className='hidden shrink-0 sm:block'>
+                        <Icon className='size-9' />
+                      </div>
+                      <span className='font-medium'>{name}</span>
                     </div>
-                    <div>
+                  </td>
+                  <td className='px-4 py-3 text-sm text-gray-700 dark:text-gray-300'>
+                    <div className='space-y-1'>
+                      <p className='text-sm text-gray-700 dark:text-gray-300'>{description}</p>
                       {id ? (
-                        <p className='text-sm text-gray-900 dark:text-gray-50'>
+                        <p className='text-sm text-gray-900 dark:text-gray-100'>
                           {t('profileSettings.chatID')}
                           {`: ${id}`}
                         </p>
                       ) : null}
-                      <p className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-100'>
-                        {status === 'notConnected' ? (
-                          <XCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-red-400' aria-hidden='true' />
-                        ) : null}
-                        {status === 'pending' ? (
-                          <ClockIcon className='mr-1.5 h-5 w-5 shrink-0 text-yellow-400' aria-hidden='true' />
-                        ) : null}
-                        {status === 'connected' ? (
-                          <CheckCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-green-400' aria-hidden='true' />
-                        ) : null}
-                        {t(`common.${status}`)}
-                      </p>
                     </div>
-                  </div>
-                </div>
-                <div className='mt-2 flex justify-center sm:mt-0 sm:block'>
-                  {connected ? (
-                    <Button onClick={() => removeIntegration(key)} small danger>
-                      {t('profileSettings.removeIntegration')}
-                    </Button>
-                  ) : (
-                    <Button onClick={setupIntegration(key)} small primary>
-                      {t('profileSettings.addIntegration')}
-                    </Button>
-                  )}
-                </div>
-              </li>
-            )
-          })}
-        </ul>
+                  </td>
+                  <td className='px-4 py-3 text-sm text-gray-700 dark:text-gray-300'>
+                    <div className='flex items-center'>
+                      {status === 'notConnected' ? (
+                        <XCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-red-400' aria-hidden='true' />
+                      ) : null}
+                      {status === 'pending' ? (
+                        <ClockIcon className='mr-1.5 h-5 w-5 shrink-0 text-yellow-400' aria-hidden='true' />
+                      ) : null}
+                      {status === 'connected' ? (
+                        <CheckCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-green-400' aria-hidden='true' />
+                      ) : null}
+                      {t(`common.${status}`)}
+                    </div>
+                  </td>
+                  <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
+                    <div className='flex items-center justify-end gap-2'>
+                      {connected ? (
+                        <Button onClick={() => removeIntegration(key)} small danger>
+                          {t('profileSettings.removeIntegration')}
+                        </Button>
+                      ) : (
+                        <Button onClick={setupIntegration(key)} small primary>
+                          {t('profileSettings.addIntegration')}
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
       </div>
     </>
   )

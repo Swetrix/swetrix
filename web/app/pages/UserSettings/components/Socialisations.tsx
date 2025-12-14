@@ -42,13 +42,13 @@ const getStatusByUser = (user: User | null, socialisation: string) => {
   }
 
   if (socialisation === SSO_PROVIDERS.GOOGLE) {
-    const connected = user.googleId
+    const connected = !!user.googleId
     const unlinkable = !user.registeredWithGoogle
     return [connected, unlinkable]
   }
 
   if (socialisation === SSO_PROVIDERS.GITHUB) {
-    const connected = user.githubId
+    const connected = !!user.githubId
     const unlinkable = !user.registeredWithGithub
     return [connected, unlinkable]
   }
@@ -130,64 +130,82 @@ const Socialisations = () => {
   return (
     <>
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.socialisationsDesc')}</p>
-      <div className='mt-2 overflow-hidden bg-white ring-1 ring-black/10 sm:rounded-md dark:bg-slate-800'>
-        <ul className='divide-y divide-gray-200 dark:divide-slate-700'>
-          {_map(AVAILABLE_SSO_PROVIDERS, ({ name, key, icons }) => {
-            const [connected, unlinkable] = getStatusByUser(user, key)
-            const { Light, Dark } = icons
+      <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-900'>
+        <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
+          <thead className='bg-gray-50 dark:bg-slate-800'>
+            <tr>
+              <th
+                scope='col'
+                className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+              >
+                {t('common.name')}
+              </th>
+              <th
+                scope='col'
+                className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+              >
+                {t('common.status')}
+              </th>
+              <th scope='col' className='px-4 py-3' />
+            </tr>
+          </thead>
+          <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+            {_map(AVAILABLE_SSO_PROVIDERS, ({ name, key, icons }) => {
+              const [connected, unlinkable] = getStatusByUser(user, key)
+              const { Light, Dark } = icons
+              const status = connected ? 'connected' : 'notConnected'
 
-            const status = connected ? 'connected' : 'notConnected'
-
-            return (
-              <li key={key}>
-                <div className='items-center px-1 py-4 sm:flex sm:px-6'>
-                  <div className='flex min-w-0 flex-1 items-center'>
-                    <div className='hidden shrink-0 sm:block'>
-                      {theme === 'dark' ? (
-                        <Light className='h-12 max-h-12 w-12 max-w-12 rounded-full' />
-                      ) : (
-                        <Dark className='h-12 max-h-12 w-12 max-w-12 rounded-full' />
-                      )}
-                    </div>
-                    <div className='min-w-0 flex-1 px-2 sm:px-4 md:grid md:grid-cols-2 md:gap-4'>
-                      <div>
-                        <p className='text-md font-medium text-gray-800 dark:text-gray-50'>{name}</p>
-                        <p className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-100'>
-                          {status === 'notConnected' ? (
-                            <XCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-red-400' aria-hidden='true' />
-                          ) : null}
-                          {status === 'connected' ? (
-                            <CheckCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-green-400' aria-hidden='true' />
-                          ) : null}
-                          {t(`common.${status}`)}
-                        </p>
+              return (
+                <tr key={key} className='hover:bg-gray-50 dark:hover:bg-slate-800/50'>
+                  <td className='px-4 py-3 text-sm text-gray-900 dark:text-gray-100'>
+                    <div className='flex items-center gap-3'>
+                      <div className='hidden shrink-0 sm:block'>
+                        {theme === 'dark' ? (
+                          <Light className='h-9 w-9 rounded-md' />
+                        ) : (
+                          <Dark className='h-9 w-9 rounded-md' />
+                        )}
                       </div>
+                      <span className='font-medium'>{name}</span>
                     </div>
-                  </div>
-                  <div className='mt-2 flex justify-center sm:mt-0 sm:block'>
-                    {connected && !unlinkable ? (
-                      <Button onClick={() => toast.error(t('profileSettings.cantUnlinkSocialisation'))} small danger>
-                        {t('common.unlink')}
-                      </Button>
-                    ) : null}
+                  </td>
+                  <td className='px-4 py-3 text-sm text-gray-700 dark:text-gray-300'>
+                    <div className='flex items-center'>
+                      {status === 'notConnected' ? (
+                        <XCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-red-400' aria-hidden='true' />
+                      ) : null}
+                      {status === 'connected' ? (
+                        <CheckCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-green-400' aria-hidden='true' />
+                      ) : null}
+                      {t(`common.${status}`)}
+                    </div>
+                  </td>
+                  <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
+                    <div className='flex items-center justify-end gap-2'>
+                      {connected && !unlinkable ? (
+                        <Button onClick={() => toast.error(t('profileSettings.cantUnlinkSocialisation'))} small danger>
+                          {t('common.unlink')}
+                        </Button>
+                      ) : null}
 
-                    {connected && unlinkable ? (
-                      <Button onClick={() => onUnlinkSSO(key)} loading={isLoading} small danger>
-                        {t('common.unlink')}
-                      </Button>
-                    ) : null}
+                      {connected && unlinkable ? (
+                        <Button onClick={() => onUnlinkSSO(key)} loading={isLoading} small danger>
+                          {t('common.unlink')}
+                        </Button>
+                      ) : null}
 
-                    {!connected ? (
-                      <Button onClick={() => linkSSO(key)} loading={isLoading} small primary>
-                        {t('common.link')}
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-              </li>
-            )
-          })}
-        </ul>
+                      {!connected ? (
+                        <Button onClick={() => linkSSO(key)} loading={isLoading} small primary>
+                          {t('common.link')}
+                        </Button>
+                      ) : null}
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
       </div>
     </>
   )
