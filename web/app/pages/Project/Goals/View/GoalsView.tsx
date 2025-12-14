@@ -678,7 +678,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   return (
     <>
       <DashboardHeader showLiveVisitors />
-      <div className='mt-4'>
+      <div>
         {isLoading && !_isEmpty(goals) ? <LoadingBar /> : null}
         {_isEmpty(goals) ? (
           <div className='mt-5 rounded-xl bg-gray-700 p-5'>

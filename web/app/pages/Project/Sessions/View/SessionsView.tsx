@@ -295,7 +295,7 @@ const SessionsView = ({ tnMapping, chartType, rotateXAxis }: SessionsViewProps) 
     <>
       <DashboardHeader showLiveVisitors />
       {sessionsLoading && !_isEmpty(sessions) ? <LoadingBar /> : null}
-      <div className='mt-4'>
+      <div>
         {!_isEmpty(sessions) ? <Filters tnMapping={tnMapping} /> : null}
         {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) ? <Loader /> : null}
         {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) ? (

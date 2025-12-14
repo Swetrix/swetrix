@@ -785,7 +785,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   return (
     <>
       <DashboardHeader showLiveVisitors />
-      <div className='mt-4'>
+      <div>
         {isLoading && !_isEmpty(flags) ? <LoadingBar /> : null}
         {_isEmpty(flags) ? (
           <div className='mt-5 rounded-xl bg-gray-700 p-5'>

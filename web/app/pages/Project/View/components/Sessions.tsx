@@ -232,7 +232,7 @@ export const Sessions: React.FC<SessionsProps> = ({ sessions, timeFormat }) => {
       }
     >
       {() => (
-        <ul className='mt-4'>
+        <ul>
           {_map(sessions, (session) => (
             <Session key={session.psid} session={session} timeFormat={timeFormat} />
           ))}

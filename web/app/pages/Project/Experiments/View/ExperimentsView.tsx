@@ -504,7 +504,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   return (
     <>
       <DashboardHeader showLiveVisitors />
-      <div className='mt-4'>
+      <div>
         {isLoading && !_isEmpty(experiments) ? <LoadingBar /> : null}
         {_isEmpty(experiments) ? (
           <div className='mt-5 rounded-xl bg-gray-700 p-5'>
@@ -525,10 +525,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
         ) : (
           <>
             {/* Header with add button */}
-            <div className='mb-4 flex items-center justify-between'>
-              <Text as='h2' size='lg' weight='semibold'>
-                {t('experiments.title')}
-              </Text>
+            <div className='mb-4 flex items-center justify-center lg:justify-end'>
               <Button onClick={handleNewExperiment} primary regular>
                 <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
                 {t('experiments.create')}

@@ -195,7 +195,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
       <DashboardHeader showLiveVisitors />
       <div ref={ref}>
         {dataLoading && hasExistingData ? <LoadingBar /> : null}
-        <div className='mt-5'>
+        <div>
           <Filters tnMapping={tnMapping} />
           {chartData ? (
             <div className='mt-4'>

@@ -1035,45 +1035,44 @@ const ErrorsView = () => {
     return <Loader />
   }
 
+  const filtersDropdown = hasErrors ? (
+    <Dropdown
+      items={errorFilters}
+      title={t('project.filters')}
+      labelExtractor={(pair) => {
+        const { label, active, id: pairID } = pair
+
+        return (
+          <Checkbox
+            classes={{
+              label: 'px-4 py-2',
+            }}
+            label={label}
+            checked={active}
+            onChange={() => switchActiveErrorFilter(pairID)}
+          />
+        )
+      }}
+      buttonClassName='rounded-md border border-transparent p-2 transition-all hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+      selectItemClassName='p-0'
+      keyExtractor={(pair) => pair.id}
+      onSelect={({ id: pairID }) => {
+        switchActiveErrorFilter(pairID)
+      }}
+      chevron='mini'
+      headless
+    />
+  ) : null
+
   return (
     <div>
-      <DashboardHeader showLiveVisitors showSearchButton={false} hideTimeBucket />
+      <DashboardHeader showLiveVisitors showSearchButton={false} hideTimeBucket rightContent={filtersDropdown} />
 
       {/* Loading bar for refreshes */}
       {(overviewLoading || errorsLoading) && (overview || !_isEmpty(errors)) ? <LoadingBar /> : null}
 
-      {/* Controls row - Filters dropdown */}
-      {hasErrors ? (
-        <div className='mb-4 flex items-center justify-between'>
-          <Filters className='mt-0 mb-0' tnMapping={tnMapping} />
-          <Dropdown
-            items={errorFilters}
-            title={t('project.filters')}
-            labelExtractor={(pair) => {
-              const { label, active, id: pairID } = pair
-
-              return (
-                <Checkbox
-                  classes={{
-                    label: 'px-4 py-2',
-                  }}
-                  label={label}
-                  checked={active}
-                  onChange={() => switchActiveErrorFilter(pairID)}
-                />
-              )
-            }}
-            buttonClassName='!px-2.5'
-            selectItemClassName='p-0'
-            keyExtractor={(pair) => pair.id}
-            onSelect={({ id: pairID }) => {
-              switchActiveErrorFilter(pairID)
-            }}
-            chevron='mini'
-            headless
-          />
-        </div>
-      ) : null}
+      {/* Filters */}
+      {hasErrors ? <Filters tnMapping={tnMapping} /> : null}
 
       {/* No errors state */}
       {!hasErrors && errorsLoading === false && overviewLoading === false ? <NoEvents filters={filters} /> : null}
