@@ -289,7 +289,6 @@ export class ProjectController {
         role,
         isLocked: false,
         isAccessConfirmed,
-        isAnalyticsProject: true,
       }
     })
 
@@ -1136,7 +1135,6 @@ export class ProjectController {
       role,
       isLocked: false,
       isAccessConfirmed,
-      isAnalyticsProject: true,
     })
   }
 

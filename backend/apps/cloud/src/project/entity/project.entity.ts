@@ -68,10 +68,6 @@ export class Project {
   @Column('boolean', { default: false })
   isTransferring: boolean
 
-  @ApiProperty()
-  @Column('boolean', { default: true })
-  isAnalyticsProject: boolean
-
   // CAPTCHA secret key - if set, CAPTCHA is enabled for this project
   @ApiProperty()
   @Column('varchar', { default: null, length: CAPTCHA_SECRET_KEY_LENGTH })

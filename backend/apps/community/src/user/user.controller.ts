@@ -108,7 +108,6 @@ export class UserController {
       isPasswordProtected: Boolean(row.projectIsPasswordProtected),
       botsProtectionLevel: row.projectBotsProtectionLevel,
       created: row.projectCreated,
-      isAnalyticsProject: true,
       captchaSecretKey: null,
       uiHidden: false,
       funnels: [],

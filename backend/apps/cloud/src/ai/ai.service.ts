@@ -464,7 +464,6 @@ Available columns for filters:
       id: project.id,
       name: project.name,
       created: project.created,
-      isAnalyticsProject: project.isAnalyticsProject,
       captchaEnabled: !!project.captchaSecretKey,
       funnels: _map(funnels, f => ({ id: f.id, name: f.name, steps: f.steps })),
       goals: _map(goals, g => ({

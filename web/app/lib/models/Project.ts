@@ -183,7 +183,6 @@ export interface Project {
   countryBlacklist: string[] | null
   active: boolean
   public: boolean
-  isAnalyticsProject: boolean
   captchaSecretKey: string | null
   captchaDifficulty: number
   created: string
