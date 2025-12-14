@@ -1,4 +1,4 @@
-// This script initialises the Swetrix cloud edition database and tables if they're absent
+// This script initialises the Swetrix selfhosted edition database and tables if they're absent
 const { queriesRunner, dbName } = require('./setup')
 const { initialiseDatabase } = require('./initialise_database')
 
@@ -6,14 +6,14 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.user
   (
     id FixedString(36),
-    email String,
-    password String,
-    timezone String,
-    timeFormat String,
+    email String CODEC(ZSTD(3)),
+    password String CODEC(ZSTD(3)),
+    timezone String CODEC(ZSTD(3)),
+    timeFormat String CODEC(ZSTD(3)),
     showLiveVisitorsInTitle Int8,
-    onboardingStep String,
+    onboardingStep String CODEC(ZSTD(3)),
     hasCompletedOnboarding Int8,
-    apiKey Nullable(String)
+    apiKey Nullable(String) CODEC(ZSTD(3))
   )
   ENGINE = MergeTree()
   PRIMARY KEY id;`,
@@ -21,17 +21,17 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.project
   (
     id FixedString(12),
-    name String,
-    origins Nullable(String),
-    ipBlacklist Nullable(String),
-    countryBlacklist Nullable(String),
+    name String CODEC(ZSTD(3)),
+    origins Nullable(String) CODEC(ZSTD(3)),
+    ipBlacklist Nullable(String) CODEC(ZSTD(3)),
+    countryBlacklist Nullable(String) CODEC(ZSTD(3)),
     active Int8,
     public Int8,
     isPasswordProtected Int8,
-    botsProtectionLevel String DEFAULT 'basic',
-    passwordHash Nullable(String),
-    adminId Nullable(String),
-    created DateTime
+    botsProtectionLevel String CODEC(ZSTD(3)) DEFAULT 'basic',
+    passwordHash Nullable(String) CODEC(ZSTD(3)),
+    adminId Nullable(String) CODEC(ZSTD(3)),
+    created DateTime CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
@@ -39,19 +39,19 @@ const CLICKHOUSE_INIT_QUERIES = [
 
   `CREATE TABLE IF NOT EXISTS ${dbName}.refresh_token
   (
-    userId String,
-    refreshToken String
+    userId String CODEC(ZSTD(3)),
+    refreshToken String CODEC(ZSTD(3))
   )
   ENGINE = MergeTree()
   ORDER BY userId;`,
 
   `CREATE TABLE IF NOT EXISTS ${dbName}.funnel
   (
-    id String,
-    name String,
-    steps String,
+    id String CODEC(ZSTD(3)),
+    name String CODEC(ZSTD(3)),
+    steps String CODEC(ZSTD(3)),
     projectId FixedString(12),
-    created DateTime
+    created DateTime CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
   PRIMARY KEY id;`,
@@ -60,11 +60,11 @@ const CLICKHOUSE_INIT_QUERIES = [
   (
     id FixedString(36),
     projectId FixedString(12),
-    name String,
-    type String,
-    filters Nullable(String),
-    createdAt DateTime,
-    updatedAt DateTime
+    name String CODEC(ZSTD(3)),
+    type String CODEC(ZSTD(3)),
+    filters Nullable(String) CODEC(ZSTD(3)),
+    createdAt DateTime CODEC(Delta(4), LZ4),
+    updatedAt DateTime CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
   PRIMARY KEY id;`,
@@ -73,11 +73,11 @@ const CLICKHOUSE_INIT_QUERIES = [
   (
     id FixedString(36),
     viewId FixedString(36),
-    customEventName String,
-    metaKey Nullable(String),
-    metaValue Nullable(String),
-    metricKey String,
-    metaValueType String
+    customEventName String CODEC(ZSTD(3)),
+    metaKey Nullable(String) CODEC(ZSTD(3)),
+    metaValue Nullable(String) CODEC(ZSTD(3)),
+    metricKey String CODEC(ZSTD(3)),
+    metaValueType String CODEC(ZSTD(3))
   )
   ENGINE = MergeTree()
   PRIMARY KEY id;`,
@@ -87,10 +87,10 @@ const CLICKHOUSE_INIT_QUERIES = [
     id FixedString(36),
     userId FixedString(36),
     projectId FixedString(12),
-    role String,
+    role String CODEC(ZSTD(3)),
     confirmed Int8,
-    created DateTime,
-    updated DateTime
+    created DateTime CODEC(Delta(4), LZ4),
+    updated DateTime CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
   PRIMARY KEY id;`,
@@ -100,8 +100,8 @@ const CLICKHOUSE_INIT_QUERIES = [
     id FixedString(36),
     projectId FixedString(12),
     date Date,
-    text String,
-    created DateTime
+    text String CODEC(ZSTD(3)),
+    created DateTime CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
   PRIMARY KEY id;`,

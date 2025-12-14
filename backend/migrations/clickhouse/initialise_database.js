@@ -8,32 +8,32 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.analytics
   (
     psid Nullable(UInt64),
-    profileId Nullable(String),
+    profileId Nullable(String) CODEC(ZSTD(3)),
     pid FixedString(12),
-    host Nullable(String),
-    pg Nullable(String),
+    host Nullable(String) CODEC(ZSTD(3)),
+    pg Nullable(String) CODEC(ZSTD(3)),
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),
-    brv Nullable(String),
+    brv Nullable(String) CODEC(ZSTD(3)),
     os LowCardinality(Nullable(String)),
-    osv Nullable(String),
+    osv Nullable(String) CODEC(ZSTD(3)),
     lc LowCardinality(Nullable(String)),
-    ref Nullable(String),
-    so Nullable(String),
-    me Nullable(String),
-    ca Nullable(String),
-    te Nullable(String),
-    co Nullable(String),
+    ref Nullable(String) CODEC(ZSTD(3)),
+    so Nullable(String) CODEC(ZSTD(3)),
+    me Nullable(String) CODEC(ZSTD(3)),
+    ca Nullable(String) CODEC(ZSTD(3)),
+    te Nullable(String) CODEC(ZSTD(3)),
+    co Nullable(String) CODEC(ZSTD(3)),
     cc Nullable(FixedString(2)),
     rg LowCardinality(Nullable(String)),
     rgc LowCardinality(Nullable(String)),
-    ct Nullable(String),
+    ct Nullable(String) CODEC(ZSTD(3)),
     meta Nested
     (
-      key String,
-      value String
+      key String CODEC(ZSTD(3)),
+      value String CODEC(ZSTD(3))
     ),
-    created DateTime('UTC')
+    created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
@@ -43,33 +43,33 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.customEV
   (
     psid Nullable(UInt64),
-    profileId Nullable(String),
+    profileId Nullable(String) CODEC(ZSTD(3)),
     pid FixedString(12),
-    host Nullable(String),
-    ev String,
-    pg Nullable(String),
+    host Nullable(String) CODEC(ZSTD(3)),
+    ev String CODEC(ZSTD(3)),
+    pg Nullable(String) CODEC(ZSTD(3)),
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),
-    brv Nullable(String),
+    brv Nullable(String) CODEC(ZSTD(3)),
     os LowCardinality(Nullable(String)),
-    osv Nullable(String),
+    osv Nullable(String) CODEC(ZSTD(3)),
     lc LowCardinality(Nullable(String)),
-    ref Nullable(String),
-    so Nullable(String),
-    me Nullable(String),
-    ca Nullable(String),
-    te Nullable(String),
-    co Nullable(String),
+    ref Nullable(String) CODEC(ZSTD(3)),
+    so Nullable(String) CODEC(ZSTD(3)),
+    me Nullable(String) CODEC(ZSTD(3)),
+    ca Nullable(String) CODEC(ZSTD(3)),
+    te Nullable(String) CODEC(ZSTD(3)),
+    co Nullable(String) CODEC(ZSTD(3)),
     cc Nullable(FixedString(2)),
     rg LowCardinality(Nullable(String)),
     rgc LowCardinality(Nullable(String)),
-    ct Nullable(String),
+    ct Nullable(String) CODEC(ZSTD(3)),
     meta Nested
     (
-      key String,
-      value String
+      key String CODEC(ZSTD(3)),
+      value String CODEC(ZSTD(3))
     ),
-    created DateTime('UTC')
+    created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
@@ -79,15 +79,15 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.performance
   (
     pid FixedString(12),
-    host Nullable(String),
-    pg Nullable(String),
+    host Nullable(String) CODEC(ZSTD(3)),
+    pg Nullable(String) CODEC(ZSTD(3)),
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),
-    brv Nullable(String),
+    brv Nullable(String) CODEC(ZSTD(3)),
     cc Nullable(FixedString(2)),
     rg LowCardinality(Nullable(String)),
     rgc LowCardinality(Nullable(String)),
-    ct Nullable(String),
+    ct Nullable(String) CODEC(ZSTD(3)),
     dns Nullable(UInt32),
     tls Nullable(UInt32),
     conn Nullable(UInt32),
@@ -96,7 +96,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     domLoad Nullable(UInt32),
     pageLoad Nullable(UInt32),
     ttfb Nullable(UInt32),
-    created DateTime('UTC')
+    created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
@@ -106,33 +106,33 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.errors
   (
     psid Nullable(UInt64),
-    profileId Nullable(String),
+    profileId Nullable(String) CODEC(ZSTD(3)),
     eid FixedString(32),
     pid FixedString(12),
-    host Nullable(String),
-    pg Nullable(String),
+    host Nullable(String) CODEC(ZSTD(3)),
+    pg Nullable(String) CODEC(ZSTD(3)),
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),
-    brv Nullable(String),
+    brv Nullable(String) CODEC(ZSTD(3)),
     os LowCardinality(Nullable(String)),
-    osv Nullable(String),
+    osv Nullable(String) CODEC(ZSTD(3)),
     lc LowCardinality(Nullable(String)),
     cc LowCardinality(Nullable(FixedString(2))),
     rg LowCardinality(Nullable(String)),
     rgc LowCardinality(Nullable(String)),
-    ct Nullable(String),
-    name String,
-    message Nullable(String),
-    stackTrace Nullable(String),
+    ct Nullable(String) CODEC(ZSTD(3)),
+    name String CODEC(ZSTD(3)),
+    message Nullable(String) CODEC(ZSTD(3)),
+    stackTrace Nullable(String) CODEC(ZSTD(3)),
     meta Nested
     (
-      key String,
-      value String
+      key String CODEC(ZSTD(3)),
+      value String CODEC(ZSTD(3))
     ),
     lineno Nullable(UInt32),
     colno Nullable(UInt32),
-    filename Nullable(String),
-    created DateTime('UTC')
+    filename Nullable(String) CODEC(ZSTD(3)),
+    created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
@@ -153,24 +153,11 @@ const CLICKHOUSE_INIT_QUERIES = [
   (
     psid UInt64,
     pid FixedString(12),
-    profileId Nullable(String),
-    firstSeen DateTime('UTC'),
-    lastSeen DateTime('UTC'),
+    profileId Nullable(String) CODEC(ZSTD(3)),
+    firstSeen DateTime('UTC') CODEC(Delta(4), LZ4),
+    lastSeen DateTime('UTC') CODEC(Delta(4), LZ4),
     pageviews UInt32 DEFAULT 1,
     events UInt32 DEFAULT 0
-  )
-  ENGINE = ReplacingMergeTree(lastSeen)
-  ORDER BY (pid, psid)
-  PARTITION BY toYYYYMM(firstSeen);`,
-
-  // Session duration table
-  `CREATE TABLE IF NOT EXISTS ${dbName}.sessions
-  (
-    psid UInt64,
-    pid FixedString(12),
-    profileId Nullable(String),
-    firstSeen DateTime('UTC'),
-    lastSeen DateTime('UTC')
   )
   ENGINE = ReplacingMergeTree(lastSeen)
   ORDER BY (pid, psid)
@@ -180,11 +167,11 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.feature_flag_evaluations
   (
     pid FixedString(12),
-    flagId String,
-    flagKey String,
+    flagId String CODEC(ZSTD(3)),
+    flagKey String CODEC(ZSTD(3)),
     result UInt8,
-    profileId String,
-    created DateTime('UTC')
+    profileId String CODEC(ZSTD(3)),
+    created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
@@ -195,10 +182,10 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.experiment_exposures
   (
     pid FixedString(12),
-    experimentId String,
-    variantKey String,
-    profileId String,
-    created DateTime('UTC')
+    experimentId String CODEC(ZSTD(3)),
+    variantKey String CODEC(ZSTD(3)),
+    profileId String CODEC(ZSTD(3)),
+    created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
@@ -211,10 +198,10 @@ const CLICKHOUSE_INIT_QUERIES = [
     pid FixedString(12),
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),
-    os Nullable(String),
+    os Nullable(String) CODEC(ZSTD(3)),
     cc Nullable(FixedString(2)),
     manuallyPassed UInt8,
-    created DateTime('UTC')
+    created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
