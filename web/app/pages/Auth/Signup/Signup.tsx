@@ -331,7 +331,7 @@ const Signup = () => {
                         tos: (
                           <Link
                             to={routes.terms}
-                            className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+                            className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
                             aria-label={t('footer.tos')}
                           />
                         ),
@@ -339,7 +339,7 @@ const Signup = () => {
                         pp: (
                           <Link
                             to={routes.privacy}
-                            className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+                            className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
                             aria-label={t('footer.pp')}
                           />
                         ),
@@ -376,7 +376,7 @@ const Signup = () => {
                       db: (
                         <a
                           href={HAVE_I_BEEN_PWNED_URL}
-                          className='font-medium text-indigo-400 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-500'
+                          className='font-medium underline decoration-dashed hover:decoration-solid'
                           target='_blank'
                           rel='noreferrer noopener'
                         />
@@ -404,7 +404,7 @@ const Signup = () => {
                 url: (
                   <Link
                     to={routes.signin}
-                    className='font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+                    className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
                     aria-label={t('titles.signin')}
                   />
                 ),

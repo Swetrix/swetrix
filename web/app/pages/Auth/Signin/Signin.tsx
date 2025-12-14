@@ -407,7 +407,7 @@ const Signin = () => {
               />
               <Link
                 to={routes.reset_password}
-                className='text-sm font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+                className='text-sm font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
               >
                 {t('auth.signin.forgot')}
               </Link>
@@ -428,7 +428,7 @@ const Signin = () => {
                   url: (
                     <Link
                       to={routes.signup}
-                      className='font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+                      className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
                       aria-label={t('titles.signup')}
                     />
                   ),

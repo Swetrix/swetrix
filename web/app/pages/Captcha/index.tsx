@@ -163,7 +163,7 @@ const Captcha = () => {
               href={`${DOCS_URL}/captcha/introduction`}
               target='_blank'
               rel='noopener noreferrer'
-              className='inline-flex items-center text-base font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+              className='inline-flex items-center text-base font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
             >
               {t('captchaPage.howItWorks.readDocs')}
               <ArrowRightIcon className='ml-2 h-4 w-4' />
