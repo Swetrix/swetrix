@@ -1,4 +1,3 @@
-import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import cx from 'clsx'
 import _find from 'lodash/find'
 import _isNumber from 'lodash/isNumber'
@@ -6,7 +5,7 @@ import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _round from 'lodash/round'
 import _size from 'lodash/size'
-import { Settings2Icon, PinIcon } from 'lucide-react'
+import { Settings2Icon, PinIcon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -58,12 +57,12 @@ interface MiniCardProps {
   labelTKey: string
   total?: number | string | null
   percChange?: number
+  hasData?: boolean
 }
 
-const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
+const MiniCard = ({ labelTKey, total, percChange, hasData }: MiniCardProps) => {
   const { t } = useTranslation('common')
   const statsDidGrowUp = percChange ? percChange >= 0 : false
-  const hasNoData = total === 0 || total === 'N/A'
   const isLoading = total === null
 
   return (
@@ -75,7 +74,7 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
       <div className='flex font-bold'>
         {isLoading ? (
           <Spin className='mt-2 ml-0!' />
-        ) : hasNoData ? (
+        ) : !hasData || total === 'N/A' ? (
           <div className='flex items-baseline gap-1'>
             <Text as='p' weight='bold' size='sm' colour='muted'>
               —
@@ -86,29 +85,30 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
           </div>
         ) : (
           <>
-            <Text as='p' weight='bold' size='xl' colour='secondary'>
+            <Text as='p' weight='bold' size='base' colour='secondary'>
               {_isNumber(total) ? nFormatter(total) : total}
             </Text>
             {_isNumber(percChange) && percChange !== 0 ? (
-              <p
-                className={cx('flex items-start text-xs', {
-                  'text-green-600': statsDidGrowUp,
-                  'text-slate-600 dark:text-slate-400': !statsDidGrowUp,
-                })}
+              <Text
+                as='p'
+                size='xs'
+                weight='medium'
+                colour={statsDidGrowUp ? 'success' : 'muted'}
+                className='flex items-start'
               >
                 {statsDidGrowUp ? (
                   <>
-                    <ChevronUpIcon className='h-4 w-4 shrink-0 text-green-500' />
+                    <ChevronUpIcon className='size-3.5 shrink-0 text-green-500' />
                     <span className='sr-only'>{t('dashboard.inc')}</span>
                   </>
                 ) : (
                   <>
-                    <ChevronDownIcon className='h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400' />
+                    <ChevronDownIcon className='size-3.5 shrink-0 text-slate-500 dark:text-slate-400' />
                     <span className='sr-only'>{t('dashboard.dec')}</span>
                   </>
                 )}
                 {nFormatter(percChange)}%
-              </p>
+              </Text>
             ) : null}
           </>
         )}
@@ -346,6 +346,7 @@ export const ProjectCard = ({
                   _round(project?.trafficStats?.percentageChange, 2)
                 : undefined
             }
+            hasData={project?.isDataExists || project?.isErrorDataExists || project?.isCaptchaDataExists}
           />
         ) : (
           <MiniCard
@@ -356,9 +357,14 @@ export const ProjectCard = ({
                 ? 0
                 : calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)
             }
+            hasData={project?.isDataExists || project?.isErrorDataExists || project?.isCaptchaDataExists}
           />
         )}
-        <MiniCard labelTKey='dashboard.liveVisitors' total={live} />
+        <MiniCard
+          labelTKey='dashboard.liveVisitors'
+          total={live}
+          hasData={project?.isDataExists || project?.isErrorDataExists || project?.isCaptchaDataExists}
+        />
       </div>
       {project.role !== 'owner' && !project.isAccessConfirmed ? (
         <Modal
