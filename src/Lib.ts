@@ -609,8 +609,12 @@ export class Lib {
       return
     }
 
-    const data = {
+    const data: { pid: string; profileId?: string } = {
       pid: this.projectID,
+    }
+
+    if (this.options?.profileId) {
+      data.profileId = this.options.profileId
     }
 
     this.sendRequest('hb', data)
