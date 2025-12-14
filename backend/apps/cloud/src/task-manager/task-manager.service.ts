@@ -113,6 +113,31 @@ const checkQueryCondition = (
 }
 
 const CHUNK_SIZE = 5000
+const REPORTS_USERS_CONCURRENCY = 3
+const REPORTS_PROJECTS_CONCURRENCY = 5
+
+const mapLimit = async <T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> => {
+  const results: R[] = new Array(items.length)
+  const concurrency = Math.max(1, Math.min(limit, items.length))
+  let nextIndex = 0
+
+  const workers = Array.from({ length: concurrency }).map(async () => {
+    while (true) {
+      const current = nextIndex++
+      if (current >= items.length) {
+        break
+      }
+      results[current] = await fn(items[current], current)
+    }
+  })
+
+  await Promise.all(workers)
+  return results
+}
 
 // TODO: Count for other tables like captcha, errors, customEV too
 const generatePlanUsageQueryForUser = (
@@ -305,7 +330,7 @@ export class TaskManagerService {
    */
   private buildGoalMatchCondition(
     goal: Goal,
-    _table: 'analytics' | 'customEV',
+    paramKey: string,
   ): { condition: string; params: Record<string, string> } {
     const goalValue = (goal.value ?? '').toString()
 
@@ -315,89 +340,161 @@ export class TaskManagerService {
     }
 
     const params: Record<string, string> = {}
+    const column = goal.type === GoalType.CUSTOM_EVENT ? 'ev' : 'pg'
 
-    if (goal.type === GoalType.CUSTOM_EVENT) {
-      if (goal.matchType === GoalMatchType.EXACT) {
-        params.goalValue = goalValue
-        return { condition: `ev = {goalValue:String}`, params }
-      } else {
-        params.goalValue = `%${goalValue}%`
-        return { condition: `ev LIKE {goalValue:String}`, params }
-      }
-    }
-
-    // Pageview goal
     if (goal.matchType === GoalMatchType.EXACT) {
-      params.goalValue = goalValue
-      return { condition: `pg = {goalValue:String}`, params }
-    } else {
-      params.goalValue = `%${goalValue}%`
-      return { condition: `pg LIKE {goalValue:String}`, params }
+      params[paramKey] = goalValue
+      return { condition: `${column} = {${paramKey}:String}`, params }
     }
+
+    if (goal.matchType === GoalMatchType.CONTAINS) {
+      params[paramKey] = `%${goalValue}%`
+      return { condition: `${column} LIKE {${paramKey}:String}`, params }
+    }
+
+    // Regex goal
+    params[paramKey] = goalValue
+    return { condition: `match(${column}, {${paramKey}:String})`, params }
   }
 
   /**
-   * Get goal conversions for a specific period
+   * Get goal conversions for a specific period (batched per table using UNION ALL).
    */
-  async getGoalConversionsForReport(
-    goal: Goal,
+  private async getGoalsWithConversionsForReport(
     pid: string,
+    projectGoals: Goal[],
     groupFrom: string,
     groupTo: string,
-  ): Promise<{ conversions: number; conversionRate: number }> {
-    const table = goal.type === GoalType.CUSTOM_EVENT ? 'customEV' : 'analytics'
-    const { condition: matchCondition, params: matchParams } =
-      this.buildGoalMatchCondition(goal, table)
+    totalSessions: number,
+  ): Promise<
+    Array<{ goalId: string; conversions: number; conversionRate: number }>
+  > {
+    if (_isEmpty(projectGoals)) {
+      return []
+    }
 
-    // Get conversions
-    const conversionsQuery = `
-      SELECT 
-        count(*) as conversions,
-        uniqExact(psid) as uniqueSessions
-      FROM ${table}
-      WHERE 
-        pid = {pid:FixedString(12)}
-        AND ${matchCondition}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-    `
+    const total = Number(totalSessions) || 0
 
-    const { data: conversionsData } = await clickhouse
-      .query({
-        query: conversionsQuery,
-        query_params: {
-          pid,
-          groupFrom,
-          groupTo,
-          ...matchParams,
-        },
+    const buildUnionQuery = (
+      table: 'analytics' | 'customEV',
+      goals: Goal[],
+    ): { query: string; params: Record<string, any> } | null => {
+      if (_isEmpty(goals)) {
+        return null
+      }
+
+      const params: Record<string, any> = { pid, groupFrom, groupTo }
+      const parts: string[] = []
+      let idx = 0
+
+      for (const goal of goals) {
+        const goalIdKey = `goalId${idx}`
+        const goalValueKey = `goalValue${idx}`
+        const { condition, params: matchParams } = this.buildGoalMatchCondition(
+          goal,
+          goalValueKey,
+        )
+
+        // Skip blanks / never-matching goals
+        if (condition === '1=0') {
+          continue
+        }
+
+        params[goalIdKey] = goal.id
+        Object.assign(params, matchParams)
+
+        parts.push(`
+          SELECT
+            {${goalIdKey}:String} as goalId,
+            count(*) as conversions,
+            uniqExact(psid) as uniqueSessions
+          FROM ${table}
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND ${condition}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        `)
+
+        idx += 1
+      }
+
+      if (_isEmpty(parts)) {
+        return null
+      }
+
+      return {
+        query: parts.join('\nUNION ALL\n'),
+        params,
+      }
+    }
+
+    const analyticsGoals = _filter(
+      projectGoals,
+      g => g.type === GoalType.PAGEVIEW,
+    )
+    const customEventGoals = _filter(
+      projectGoals,
+      g => g.type === GoalType.CUSTOM_EVENT,
+    )
+
+    const analyticsQuery = buildUnionQuery('analytics', analyticsGoals)
+    const customEventQuery = buildUnionQuery('customEV', customEventGoals)
+
+    const [analyticsRes, customEventRes] = await Promise.all([
+      analyticsQuery
+        ? clickhouse
+            .query({
+              query: analyticsQuery.query,
+              query_params: analyticsQuery.params,
+            })
+            .then(resultSet =>
+              resultSet.json<{
+                goalId: string
+                conversions: any
+                uniqueSessions: any
+              }>(),
+            )
+        : Promise.resolve({ data: [] as any[] }),
+      customEventQuery
+        ? clickhouse
+            .query({
+              query: customEventQuery.query,
+              query_params: customEventQuery.params,
+            })
+            .then(resultSet =>
+              resultSet.json<{
+                goalId: string
+                conversions: any
+                uniqueSessions: any
+              }>(),
+            )
+        : Promise.resolve({ data: [] as any[] }),
+    ])
+
+    const combined = [
+      ...(analyticsRes.data || []),
+      ...(customEventRes.data || []),
+    ]
+    const result: Array<{
+      goalId: string
+      conversions: number
+      conversionRate: number
+    }> = []
+
+    for (const row of combined) {
+      const conversions = Number(row.conversions) || 0
+      const uniqueSessions = Number(row.uniqueSessions) || 0
+      const conversionRate =
+        total > 0 ? Math.round((uniqueSessions / total) * 100) : 0
+
+      result.push({
+        goalId: row.goalId,
+        conversions,
+        conversionRate,
       })
-      .then(resultSet =>
-        resultSet.json<{ conversions: number; uniqueSessions: number }>(),
-      )
+    }
 
-    const conversions = conversionsData[0]?.conversions || 0
-    const uniqueSessions = conversionsData[0]?.uniqueSessions || 0
-
-    // Get total sessions for conversion rate
-    const totalSessionsQuery = `
-      SELECT uniqExact(psid) as totalSessions
-      FROM analytics
-      WHERE 
-        pid = {pid:FixedString(12)}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-    `
-
-    const { data: totalData } = await clickhouse
-      .query({
-        query: totalSessionsQuery,
-        query_params: { pid, groupFrom, groupTo },
-      })
-      .then(resultSet => resultSet.json<{ totalSessions: number }>())
-
-    const totalSessions = totalData[0]?.totalSessions || 1
-    const conversionRate = Math.round((uniqueSessions / totalSessions) * 100)
-
-    return { conversions, conversionRate }
+    return result
   }
 
   generateUnsubscribeUrl(
@@ -450,107 +547,120 @@ export class TaskManagerService {
       now,
     )
 
-    const promises = _map(users, async user => {
+    await mapLimit(users, REPORTS_USERS_CONCURRENCY, async user => {
       const { id, email, projects } = user
 
-      const unsubscribeUrl = this.generateUnsubscribeUrl(id, 'user-reports')
+      try {
+        const unsubscribeUrl = this.generateUnsubscribeUrl(id, 'user-reports')
+        const ids = _map(projects, p => p.id)
 
-      const ids = _map(projects, p => p.id)
-      const data = this.analyticsService.convertSummaryToReportFormat(
-        await this.analyticsService.getAnalyticsSummary(
+        const [summary, topCountries, errorCounts, totalSessions] =
+          await Promise.all([
+            this.analyticsService.getAnalyticsSummary(
+              ids,
+              undefined,
+              params.analyticsParam,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              now,
+            ),
+            this.analyticsService.getTopCountriesForReport(
+              ids,
+              groupFrom,
+              groupTo,
+            ),
+            this.analyticsService.getErrorCountsForReport(
+              ids,
+              groupFrom,
+              groupTo,
+            ),
+            this.analyticsService.getTotalSessionsForReport(
+              ids,
+              groupFrom,
+              groupTo,
+            ),
+          ])
+
+        const data = this.analyticsService.convertSummaryToReportFormat(summary)
+
+        const projectsWithExtraData = await mapLimit(
           ids,
-          undefined,
-          params.analyticsParam,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          now,
-        ),
-      )
+          REPORTS_PROJECTS_CONCURRENCY,
+          async (pid, index) => {
+            const projectData = data[pid] || {}
+            const topCountry = topCountries[pid]?.cc || null
+            const errorStats = errorCounts[pid] || { count: 0, uniqueErrors: 0 }
+            const pidTotalSessions = totalSessions[pid] || 0
 
-      // Fetch additional data for each project
-      const projectsWithExtraData = await Promise.all(
-        _map(ids, async (pid, index) => {
-          const projectData = data[pid] || {}
+            const projectGoals = await this.goalService.findByProject(pid)
+            const conversions = await this.getGoalsWithConversionsForReport(
+              pid,
+              projectGoals,
+              groupFrom,
+              groupTo,
+              pidTotalSessions,
+            )
 
-          // Fetch top country
-          const topCountry = await this.analyticsService.getTopCountryForReport(
-            pid,
-            groupFrom,
-            groupTo,
-          )
+            const conversionsById = _reduce(
+              conversions,
+              (acc, row) => ({ ...acc, [row.goalId]: row }),
+              {},
+            ) as Record<
+              string,
+              { goalId: string; conversions: number; conversionRate: number }
+            >
 
-          // Fetch error count
-          const errorStats = await this.analyticsService.getErrorCountForReport(
-            pid,
-            groupFrom,
-            groupTo,
-          )
-
-          // Fetch goals with conversions (only if they have any conversions)
-          const projectGoals = await this.goalService.findByProject(pid)
-          const goalsWithConversions = await Promise.all(
-            _map(projectGoals, async goal => {
-              const { conversions, conversionRate } =
-                await this.getGoalConversionsForReport(
-                  goal,
-                  pid,
-                  groupFrom,
-                  groupTo,
-                )
+            const goalsWithConversions = _map(projectGoals, goal => {
+              const stats = conversionsById[goal.id]
               return {
                 name: goal.name,
-                conversions,
-                conversionRate,
+                conversions: stats?.conversions || 0,
+                conversionRate: stats?.conversionRate || 0,
               }
-            }),
-          )
+            })
 
-          // Only include goals that have conversions
-          const activeGoals = _filter(
-            goalsWithConversions,
-            g => g.conversions > 0,
-          )
+            const activeGoals = _filter(
+              goalsWithConversions,
+              g => g.conversions > 0,
+            )
 
-          return {
-            data: projectData,
-            name: projects[index].name,
-            topCountry: topCountry?.cc || null,
-            // Only include errors if there are any
-            errors:
-              errorStats.count > 0
-                ? {
-                    count: errorStats.count,
-                    uniqueErrors: errorStats.uniqueErrors,
-                  }
-                : null,
-            // Only include goals if there are any with conversions
-            goals: activeGoals.length > 0 ? activeGoals : null,
-          }
-        }),
-      )
+            return {
+              data: projectData,
+              name: projects[index].name,
+              topCountry,
+              errors:
+                errorStats.count > 0
+                  ? {
+                      count: errorStats.count,
+                      uniqueErrors: errorStats.uniqueErrors,
+                    }
+                  : null,
+              goals: activeGoals.length > 0 ? activeGoals : null,
+            }
+          },
+        )
 
-      const result = {
-        type: params.type,
-        date,
-        projects: projectsWithExtraData,
-        tip,
-        unsubscribeUrl,
+        const result = {
+          type: params.type,
+          date,
+          projects: projectsWithExtraData,
+          tip,
+          unsubscribeUrl,
+        }
+
+        await this.mailerService.sendEmail(
+          email,
+          LetterTemplate.ProjectReport,
+          result,
+        )
+      } catch (reason) {
+        this.logger.error(
+          `[CRON WORKER](handleUserReports) Frequency: ${reportFrequency}; Error occured: ${reason}`,
+        )
       }
-
-      await this.mailerService.sendEmail(
-        email,
-        LetterTemplate.ProjectReport,
-        result,
-      )
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleUserReports) Frequency: ${reportFrequency}; Error occured: ${reason}`,
-      )
     })
   }
 
@@ -587,108 +697,121 @@ export class TaskManagerService {
       now,
     )
 
-    const promises = _map(subscribers, async subscriber => {
+    await mapLimit(subscribers, REPORTS_USERS_CONCURRENCY, async subscriber => {
       const { id, email } = subscriber
-      const projects = await this.projectService.getSubscriberProjects(id)
 
-      const unsubscribeUrl = this.generateUnsubscribeUrl(id, '3rdparty')
+      try {
+        const projects = await this.projectService.getSubscriberProjects(id)
+        const unsubscribeUrl = this.generateUnsubscribeUrl(id, '3rdparty')
+        const ids = projects.map(project => project.id)
 
-      const ids = projects.map(project => project.id)
-      const data = this.analyticsService.convertSummaryToReportFormat(
-        await this.analyticsService.getAnalyticsSummary(
+        const [summary, topCountries, errorCounts, totalSessions] =
+          await Promise.all([
+            this.analyticsService.getAnalyticsSummary(
+              ids,
+              undefined,
+              params.analyticsParam,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              now,
+            ),
+            this.analyticsService.getTopCountriesForReport(
+              ids,
+              groupFrom,
+              groupTo,
+            ),
+            this.analyticsService.getErrorCountsForReport(
+              ids,
+              groupFrom,
+              groupTo,
+            ),
+            this.analyticsService.getTotalSessionsForReport(
+              ids,
+              groupFrom,
+              groupTo,
+            ),
+          ])
+
+        const data = this.analyticsService.convertSummaryToReportFormat(summary)
+
+        const projectsWithExtraData = await mapLimit(
           ids,
-          undefined,
-          params.analyticsParam,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          now,
-        ),
-      )
+          REPORTS_PROJECTS_CONCURRENCY,
+          async (pid, index) => {
+            const projectData = data[pid] || {}
+            const topCountry = topCountries[pid]?.cc || null
+            const errorStats = errorCounts[pid] || { count: 0, uniqueErrors: 0 }
+            const pidTotalSessions = totalSessions[pid] || 0
 
-      // Fetch additional data for each project
-      const projectsWithExtraData = await Promise.all(
-        _map(ids, async (pid, index) => {
-          const projectData = data[pid] || {}
+            const projectGoals = await this.goalService.findByProject(pid)
+            const conversions = await this.getGoalsWithConversionsForReport(
+              pid,
+              projectGoals,
+              groupFrom,
+              groupTo,
+              pidTotalSessions,
+            )
 
-          // Fetch top country
-          const topCountry = await this.analyticsService.getTopCountryForReport(
-            pid,
-            groupFrom,
-            groupTo,
-          )
+            const conversionsById = _reduce(
+              conversions,
+              (acc, row) => ({ ...acc, [row.goalId]: row }),
+              {},
+            ) as Record<
+              string,
+              { goalId: string; conversions: number; conversionRate: number }
+            >
 
-          // Fetch error count
-          const errorStats = await this.analyticsService.getErrorCountForReport(
-            pid,
-            groupFrom,
-            groupTo,
-          )
-
-          // Fetch goals with conversions (only if they have any conversions)
-          const projectGoals = await this.goalService.findByProject(pid)
-          const goalsWithConversions = await Promise.all(
-            _map(projectGoals, async goal => {
-              const { conversions, conversionRate } =
-                await this.getGoalConversionsForReport(
-                  goal,
-                  pid,
-                  groupFrom,
-                  groupTo,
-                )
+            const goalsWithConversions = _map(projectGoals, goal => {
+              const stats = conversionsById[goal.id]
               return {
                 name: goal.name,
-                conversions,
-                conversionRate,
+                conversions: stats?.conversions || 0,
+                conversionRate: stats?.conversionRate || 0,
               }
-            }),
-          )
+            })
 
-          // Only include goals that have conversions
-          const activeGoals = _filter(
-            goalsWithConversions,
-            g => g.conversions > 0,
-          )
+            const activeGoals = _filter(
+              goalsWithConversions,
+              g => g.conversions > 0,
+            )
 
-          return {
-            data: projectData,
-            name: projects[index].name,
-            topCountry: topCountry?.cc || null,
-            // Only include errors if there are any
-            errors:
-              errorStats.count > 0
-                ? {
-                    count: errorStats.count,
-                    uniqueErrors: errorStats.uniqueErrors,
-                  }
-                : null,
-            // Only include goals if there are any with conversions
-            goals: activeGoals.length > 0 ? activeGoals : null,
-          }
-        }),
-      )
+            return {
+              data: projectData,
+              name: projects[index].name,
+              topCountry,
+              errors:
+                errorStats.count > 0
+                  ? {
+                      count: errorStats.count,
+                      uniqueErrors: errorStats.uniqueErrors,
+                    }
+                  : null,
+              goals: activeGoals.length > 0 ? activeGoals : null,
+            }
+          },
+        )
 
-      const result = {
-        type: params.type,
-        date,
-        projects: projectsWithExtraData,
-        tip,
-        unsubscribeUrl,
+        const result = {
+          type: params.type,
+          date,
+          projects: projectsWithExtraData,
+          tip,
+          unsubscribeUrl,
+        }
+
+        await this.mailerService.sendEmail(
+          email,
+          LetterTemplate.ProjectReport,
+          result,
+        )
+      } catch (reason) {
+        this.logger.error(
+          `[CRON WORKER](handleSubscriberReports) Frequency: ${reportFrequency}; Error: ${reason}`,
+        )
       }
-
-      await this.mailerService.sendEmail(
-        email,
-        LetterTemplate.ProjectReport,
-        result,
-      )
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleSubscriberReports) Frequency: ${reportFrequency}; Error: ${reason}`,
-      )
     })
   }
 

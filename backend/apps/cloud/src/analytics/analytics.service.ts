@@ -1608,6 +1608,60 @@ export class AnalyticsService {
     return data[0] || null
   }
 
+  async getTopCountriesForReport(
+    pids: string[],
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<Record<string, { cc: string; count: number }>> {
+    if (_isEmpty(pids)) {
+      return {}
+    }
+
+    const query = `
+      WITH counts AS (
+        SELECT 
+          pid,
+          cc,
+          count() as cnt
+        FROM analytics
+        WHERE 
+          pid IN {pids:Array(FixedString(12))}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND cc IS NOT NULL
+          AND cc != ''
+        GROUP BY pid, cc
+      )
+      SELECT
+        pid,
+        argMax(cc, cnt) as cc,
+        max(cnt) as count
+      FROM counts
+      GROUP BY pid
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pids, groupFrom, groupTo },
+      })
+      .then(resultSet =>
+        resultSet.json<{ pid: string; cc: string; count: any }>(),
+      )
+
+    const result: Record<string, { cc: string; count: number }> = {}
+    for (const row of data || []) {
+      if (!row?.pid) {
+        continue
+      }
+      result[row.pid] = {
+        cc: row.cc,
+        count: Number(row.count) || 0,
+      }
+    }
+
+    return result
+  }
+
   async getErrorCountForReport(
     pid: string,
     groupFrom: string,
@@ -1633,6 +1687,92 @@ export class AnalyticsService {
       )
 
     return data[0] || { count: 0, uniqueErrors: 0 }
+  }
+
+  async getErrorCountsForReport(
+    pids: string[],
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<Record<string, { count: number; uniqueErrors: number }>> {
+    if (_isEmpty(pids)) {
+      return {}
+    }
+
+    const query = `
+      SELECT 
+        pid,
+        count() as count,
+        count(DISTINCT eid) as uniqueErrors
+      FROM errors
+      WHERE 
+        pid IN {pids:Array(FixedString(12))}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY pid
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pids, groupFrom, groupTo },
+      })
+      .then(resultSet =>
+        resultSet.json<{
+          pid: string
+          count: any
+          uniqueErrors: any
+        }>(),
+      )
+
+    const result: Record<string, { count: number; uniqueErrors: number }> = {}
+    for (const row of data || []) {
+      if (!row?.pid) {
+        continue
+      }
+      result[row.pid] = {
+        count: Number(row.count) || 0,
+        uniqueErrors: Number(row.uniqueErrors) || 0,
+      }
+    }
+
+    return result
+  }
+
+  async getTotalSessionsForReport(
+    pids: string[],
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<Record<string, number>> {
+    if (_isEmpty(pids)) {
+      return {}
+    }
+
+    const query = `
+      SELECT 
+        pid,
+        uniqExact(psid) as totalSessions
+      FROM analytics
+      WHERE 
+        pid IN {pids:Array(FixedString(12))}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY pid
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pids, groupFrom, groupTo },
+      })
+      .then(resultSet => resultSet.json<{ pid: string; totalSessions: any }>())
+
+    const result: Record<string, number> = {}
+    for (const row of data || []) {
+      if (!row?.pid) {
+        continue
+      }
+      result[row.pid] = Number(row.totalSessions) || 0
+    }
+
+    return result
   }
 
   async getAnalyticsSummary(
