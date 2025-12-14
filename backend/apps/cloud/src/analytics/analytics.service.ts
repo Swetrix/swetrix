@@ -1638,20 +1638,27 @@ export class AnalyticsService {
     to?: string,
     timezone?: string,
     filters?: string,
+    includeChart?: boolean,
   ): Promise<IOverall> {
     const safeTimezone = this.getSafeTimezone(timezone)
 
-    const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
-      from,
-      to,
-      ['today', 'yesterday', 'custom'].includes(period)
-        ? TimeBucketType.HOUR
-        : (timeBucket as TimeBucketType) || TimeBucketType.DAY,
+    // Determine the time bucket for chart data
+    const effectiveTimeBucket = ['today', 'yesterday', 'custom'].includes(
       period,
-      safeTimezone,
-      undefined,
-      false,
     )
+      ? TimeBucketType.HOUR
+      : (timeBucket as TimeBucketType) || TimeBucketType.DAY
+
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.getGroupFromTo(
+        from,
+        to,
+        effectiveTimeBucket,
+        period,
+        safeTimezone,
+        undefined,
+        false,
+      )
 
     const result = {}
 
@@ -1731,6 +1738,29 @@ export class AnalyticsService {
             bounceRateChange: bounceRate,
             sdurChange: data[0].sdur,
             customEVFilterApplied,
+          }
+
+          // For 'all' period, we use month time bucket for chart
+          if (includeChart) {
+            const allTimeChartBucket = TimeBucketType.MONTH
+            const { groupFrom: allFrom, groupTo: allTo } = this.getGroupFromTo(
+              undefined,
+              undefined,
+              allTimeChartBucket,
+              'all',
+              safeTimezone,
+            )
+            const chartData = await this.getSimplifiedChartData(
+              pid,
+              allTimeChartBucket,
+              allFrom,
+              allTo,
+              filtersQuery,
+              filtersParams,
+              safeTimezone,
+              customEVFilterApplied,
+            )
+            result[pid].chart = chartData
           }
           return
         }
@@ -1885,6 +1915,21 @@ export class AnalyticsService {
           sdurChange: currentPeriod.sdur - previousPeriod.sdur,
           customEVFilterApplied,
         }
+
+        // Add chart data if requested
+        if (includeChart) {
+          const chartData = await this.getSimplifiedChartData(
+            pid,
+            effectiveTimeBucket,
+            groupFrom,
+            groupTo,
+            filtersQuery,
+            filtersParams,
+            safeTimezone,
+            customEVFilterApplied,
+          )
+          result[pid].chart = chartData
+        }
       } catch (reason) {
         console.error(
           `[ERROR] (getAnalyticsSummary) Error occurred for PID ${pid}`,
@@ -1899,6 +1944,74 @@ export class AnalyticsService {
     await Promise.all(promises)
 
     return result
+  }
+
+  /**
+   * Get simplified chart data for dashboard cards
+   * Returns only x (dates) and visits (pageviews) for a lightweight chart
+   */
+  async getSimplifiedChartData(
+    pid: string,
+    timeBucket: TimeBucketType,
+    groupFrom: string,
+    groupTo: string,
+    filtersQuery: string,
+    filtersParams: Record<string, string | boolean>,
+    safeTimezone: string,
+    customEVFilterApplied: boolean,
+  ): Promise<{ x: string[]; visits: number[] }> {
+    const { xShifted } = this.generateXAxis(
+      timeBucket,
+      groupFrom,
+      groupTo,
+      safeTimezone,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom,
+        groupTo,
+        ...filtersParams,
+      },
+    }
+
+    if (customEVFilterApplied) {
+      const query = this.generateCustomEventsAggregationQuery(
+        timeBucket,
+        filtersQuery,
+        ChartRenderMode.PERIODICAL,
+      )
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { ...paramsData.params, timezone: safeTimezone },
+        })
+        .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
+
+      const visits =
+        this.extractCustomEventsChartData(data, xShifted)?._unknown_event || []
+
+      return { x: xShifted, visits }
+    }
+
+    const query = this.generateAnalyticsAggregationQuery(
+      timeBucket,
+      filtersQuery,
+      ChartRenderMode.PERIODICAL,
+    )
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { ...paramsData.params, timezone: safeTimezone },
+      })
+      .then(resultSet => resultSet.json<TrafficCHResponse>())
+
+    const { visits } = this.extractChartData(data, xShifted)
+
+    return { x: xShifted, visits }
   }
 
   async getPerformanceSummary(

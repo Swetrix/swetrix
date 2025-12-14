@@ -15,6 +15,7 @@ import {
   Funnel,
   ProjectShare,
   Annotation,
+  PinnedProject,
 } from './entity'
 import { ProjectsViewsRepository } from './repositories/projects-views.repository'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -32,6 +33,7 @@ import { ProjectExtraService } from './project-extra.service'
       Annotation,
       ProjectViewEntity,
       ProjectViewCustomEventEntity,
+      PinnedProject,
     ]),
     forwardRef(() => UserModule),
     forwardRef(() => OrganisationModule),

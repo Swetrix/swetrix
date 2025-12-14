@@ -854,6 +854,7 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       timeBucket,
       filters,
+      includeChart,
     } = data
     const pidsArray = getPIDsArray(pids, pid)
 
@@ -892,6 +893,7 @@ export class AnalyticsController {
       to,
       timezone,
       filters,
+      includeChart,
     )
   }
 

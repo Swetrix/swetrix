@@ -348,7 +348,17 @@ const Dashboard = () => {
 
       try {
         const timeBucket = tbPeriodPairs(t).find((p) => p.period === activePeriod)?.tbs[0] || ''
-        const stats = await getOverallStats(projectIds, timeBucket, activePeriod)
+        const stats = await getOverallStats(
+          projectIds,
+          timeBucket,
+          activePeriod,
+          '',
+          '',
+          'Etc/GMT',
+          '',
+          undefined,
+          true,
+        )
         setOverallStats((prev) => ({ ...prev, ...stats }))
       } catch (reason) {
         console.error('Failed to fetch overall stats:', reason)
@@ -375,12 +385,12 @@ const Dashboard = () => {
             <CircleXIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
             <div className='sm:ml-6'>
               <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
-                <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
+                <Text as='h1' size='4xl' weight='bold' className='sm:text-5xl'>
                   {t('apiNotifications.somethingWentWrong')}
-                </h1>
-                <p className='mt-4 text-2xl font-medium text-gray-700 dark:text-gray-200'>
+                </Text>
+                <Text as='p' size='2xl' weight='medium' colour='secondary' className='mt-4'>
                   {t('apiNotifications.errorCode', { error })}
-                </p>
+                </Text>
               </div>
               <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
                 <button
@@ -671,7 +681,9 @@ const Dashboard = () => {
                 />
               </div>
             ) : null}
-            <p className='mt-2 text-sm text-gray-500 italic dark:text-gray-300'>{t('project.settings.createHint')}</p>
+            <Text as='p' size='sm' colour='muted' className='mt-2 italic'>
+              {t('project.settings.createHint')}
+            </Text>
           </div>
         }
         title={t('project.settings.create')}

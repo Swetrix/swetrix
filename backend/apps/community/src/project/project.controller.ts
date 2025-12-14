@@ -97,6 +97,9 @@ import {
   createAnnotationClickhouse,
   updateAnnotationClickhouse,
   deleteAnnotationClickhouse,
+  getPinnedProjectsClickhouse,
+  pinProjectClickhouse,
+  unpinProjectClickhouse,
 } from '../common/utils'
 import { Funnel } from './entity/funnel.entity'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -290,11 +293,71 @@ export class ProjectController {
       }
     })
 
+    // Get pinned projects
+    const pinnedProjectIds = await getPinnedProjectsClickhouse(userId)
+
+    // Add isPinned flag to results
+    const resultsWithPinned = _map(results, project => ({
+      ...project,
+      isPinned: _includes(pinnedProjectIds, project?.id),
+    }))
+
+    // Sort pinned projects first
+    resultsWithPinned.sort((a: any, b: any) => {
+      if (a.isPinned && !b.isPinned) return -1
+      if (!a.isPinned && b.isPinned) return 1
+      return 0
+    })
+
     return {
-      results,
+      results: resultsWithPinned,
       page_total: _size(combinedProjects),
       total: _size(combinedProjects),
     }
+  }
+
+  @ApiBearerAuth()
+  @Post('/:id/pin')
+  @ApiOperation({ summary: 'Pin a project to the top of the dashboard' })
+  @ApiResponse({ status: 200, description: 'Project pinned successfully' })
+  @Auth(true)
+  async pinProject(
+    @Param('id') projectId: string,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ projectId, userId }, 'POST /project/:id/pin')
+
+    if (!isValidPID(projectId)) {
+      throw new BadRequestException('The provided project ID is incorrect')
+    }
+
+    const project = await this.projectService.getFullProject(projectId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, userId)
+
+    await pinProjectClickhouse(userId, projectId)
+  }
+
+  @ApiBearerAuth()
+  @Delete('/:id/pin')
+  @ApiOperation({ summary: 'Unpin a project from the top of the dashboard' })
+  @ApiResponse({ status: 200, description: 'Project unpinned successfully' })
+  @Auth(true)
+  async unpinProject(
+    @Param('id') projectId: string,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ projectId, userId }, 'DELETE /project/:id/pin')
+
+    if (!isValidPID(projectId)) {
+      throw new BadRequestException('The provided project ID is incorrect')
+    }
+
+    await unpinProjectClickhouse(userId, projectId)
   }
 
   @Post('transfer')

@@ -15,9 +15,11 @@ import { withAuthentication, auth } from '~/hoc/protected'
 import { isSelfhosted, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
 import { useAuth } from '~/providers/AuthProvider'
+import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
+import { Text } from '~/ui/Text'
 import { setAccessToken, removeAccessToken } from '~/utils/accessToken'
 import { deleteCookie, getCookie } from '~/utils/cookie'
 import { cn, delay, openBrowserWindow } from '~/utils/generic'
@@ -37,6 +39,7 @@ const Signin = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { t } = useTranslation('common')
+  const { theme } = useTheme()
   const [form, setForm] = useState<SigninForm>({
     email: '',
     password: '',
@@ -250,62 +253,135 @@ const Signin = () => {
 
   if (isTwoFARequired) {
     return (
-      <div className='flex min-h-page flex-col bg-gray-50 px-4 py-10 sm:px-6 lg:px-8 dark:bg-slate-900'>
-        <form className='mx-auto max-w-prose' onSubmit={_submit2FA}>
-          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('auth.signin.2fa')}</h2>
-          <p className='mt-4 text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
-            {t('auth.signin.2faDesc')}
-          </p>
-          <Input
-            label={t('profileSettings.enter2faToDisable')}
-            value={twoFACode}
-            placeholder={t('auth.signin.6digitCode')}
-            className='mt-4'
-            onChange={handle2FAInput}
-            disabled={isLoading}
-            error={twoFACodeError}
-          />
-          <div className='mt-3 flex justify-between'>
-            <div className='text-sm whitespace-pre-line text-gray-600 dark:text-gray-400'>
-              {!isSelfhosted ? (
-                <Trans
-                  t={t}
-                  i18nKey='auth.signin.2faUnavailable'
-                  components={{
-                    ctl: (
-                      <Link to={routes.contact} className='underline hover:text-gray-900 dark:hover:text-gray-200' />
-                    ),
-                  }}
-                />
-              ) : null}
+      <div className='flex min-h-min-footer bg-gray-50 dark:bg-slate-900'>
+        {/* Left side - 2FA Form */}
+        <div className='flex w-full flex-col justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:w-1/2 lg:px-12 xl:px-24 dark:bg-slate-900'>
+          <div className='mx-auto w-full max-w-md'>
+            <div className='mb-8'>
+              <Text as='h1' size='3xl' weight='bold' className='tracking-tight'>
+                {t('auth.signin.2fa')}
+              </Text>
+              <Text as='p' colour='muted' className='mt-2 whitespace-pre-line'>
+                {t('auth.signin.2faDesc')}
+              </Text>
             </div>
-            <Button type='submit' loading={isLoading} primary large>
-              {t('common.continue')}
-            </Button>
+
+            <form onSubmit={_submit2FA}>
+              <Input
+                label={t('profileSettings.enter2faToDisable')}
+                value={twoFACode}
+                placeholder={t('auth.signin.6digitCode')}
+                onChange={handle2FAInput}
+                disabled={isLoading}
+                error={twoFACodeError}
+              />
+              <div className='mt-6 flex items-center justify-between'>
+                <Text as='div' size='sm' colour='muted' className='whitespace-pre-line'>
+                  {!isSelfhosted ? (
+                    <Trans
+                      t={t}
+                      i18nKey='auth.signin.2faUnavailable'
+                      components={{
+                        ctl: (
+                          <Link
+                            to={routes.contact}
+                            className='text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+                          />
+                        ),
+                      }}
+                    />
+                  ) : null}
+                </Text>
+                <Button type='submit' loading={isLoading} primary large>
+                  {t('common.continue')}
+                </Button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
+
+        {/* Right side - Visual */}
+        <div className='relative hidden overflow-hidden bg-linear-to-br from-slate-800 via-slate-900 to-slate-950 lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center dark:from-slate-900 dark:via-slate-950 dark:to-black'>
+          {/* Decorative gradient orbs */}
+          <div className='absolute -top-24 -right-24 size-64 rounded-full bg-indigo-500/20 blur-3xl' />
+          <div className='absolute -bottom-24 -left-24 size-64 rounded-full bg-slate-500/20 blur-3xl' />
+          <div className='relative z-10 px-12 text-center'>
+            <div className='mx-auto mb-8 flex size-20 items-center justify-center rounded-2xl bg-indigo-600/20 ring-1 ring-indigo-500/30'>
+              <svg
+                className='size-10 text-indigo-400'
+                fill='none'
+                viewBox='0 0 24 24'
+                strokeWidth={1.5}
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z'
+                />
+              </svg>
+            </div>
+            <Text as='h2' size='2xl' weight='bold' className='text-white'>
+              {t('auth.signin.secureAuth')}
+            </Text>
+            <Text as='p' className='mt-3 text-slate-400'>
+              {t('auth.signin.secureAuthDesc')}
+            </Text>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-10 sm:px-6 lg:px-8 dark:bg-slate-900'>
-      <div className='sm:mx-auto sm:w-full sm:max-w-md'>
-        <h2 className='text-center text-2xl leading-9 font-bold text-gray-900 dark:text-gray-50'>
-          {t('auth.signin.title')}
-        </h2>
-      </div>
-      <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
-        <div className='bg-white px-6 py-12 shadow-xs ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-900 dark:ring-slate-800'>
-          <form className='space-y-6' onSubmit={handleSubmit}>
+    <div className='flex min-h-min-footer bg-gray-50 dark:bg-slate-900'>
+      {/* Left side - Form */}
+      <div className='flex w-full flex-col justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:w-1/2 lg:px-12 xl:px-24 dark:bg-slate-900'>
+        <div className='mx-auto w-full max-w-md'>
+          {/* Header */}
+          <div className='mb-8'>
+            <Text as='h1' size='3xl' weight='bold' className='tracking-tight'>
+              {t('auth.signin.title')}
+            </Text>
+            <Text as='p' colour='muted' className='mt-2'>
+              {t('auth.signin.welcomeBack')}
+            </Text>
+          </div>
+
+          {/* SSO Buttons */}
+          <div className={cn('grid gap-3', isSelfhosted ? 'grid-cols-1' : 'grid-cols-2')}>
+            {isSelfhosted ? (
+              <OIDCAuth onClick={() => onSsoLogin('openid-connect')} disabled={isLoading} className='w-full' />
+            ) : (
+              <>
+                <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
+                <GithubAuth onClick={() => onSsoLogin('github')} disabled={isLoading} />
+              </>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className='relative my-6'>
+            <div className='absolute inset-0 flex items-center' aria-hidden='true'>
+              <div className='w-full border-t border-gray-200 dark:border-gray-700' />
+            </div>
+            <div className='relative flex justify-center text-sm'>
+              <Text as='span' colour='muted' size='sm' className='bg-gray-50 px-4 dark:bg-slate-900'>
+                {t('auth.common.orContinueWith')} email
+              </Text>
+            </div>
+          </div>
+
+          {/* Form */}
+          <form className='space-y-4' onSubmit={handleSubmit}>
             <Input
               name='email'
               type='email'
               label={t('auth.common.email')}
               value={form.email}
-              className='mt-4'
               onChange={handleInput}
               error={beenSubmitted ? errors.email : ''}
+              placeholder='you@company.com'
             />
             <Input
               name='password'
@@ -313,10 +389,10 @@ const Signin = () => {
               label={t('auth.common.password')}
               hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
               value={form.password}
-              className='mt-4'
               onChange={handleInput}
               error={beenSubmitted ? errors.password : ''}
             />
+
             <div className='flex items-center justify-between'>
               <Checkbox
                 checked={form.dontRemember}
@@ -327,67 +403,98 @@ const Signin = () => {
                   }))
                 }
                 name='dontRemember'
-                label={t('auth.common.noRemember')}
+                label={<Text size='sm'>{t('auth.common.noRemember')}</Text>}
               />
-              <div className='text-sm leading-6'>
-                <Link
-                  to={routes.reset_password}
-                  className='font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
-                >
-                  {t('auth.signin.forgot')}
-                </Link>
-              </div>
+              <Link
+                to={routes.reset_password}
+                className='text-sm font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+              >
+                {t('auth.signin.forgot')}
+              </Link>
             </div>
 
-            <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
+            <Button className='mt-6 w-full justify-center' type='submit' loading={isLoading} primary giant>
               {t('auth.signin.button')}
             </Button>
           </form>
 
-          <div>
-            <div className='relative mt-10'>
-              <div className='absolute inset-0 flex items-center' aria-hidden='true'>
-                <div className='w-full border-t border-gray-200 dark:border-gray-600' />
-              </div>
-              <div className='relative flex justify-center text-sm leading-6 font-medium'>
-                <span className='bg-white px-6 text-gray-900 dark:bg-slate-900 dark:text-gray-50'>
-                  {t('auth.common.orContinueWith')}
-                </span>
-              </div>
+          {/* Sign up link */}
+          {!isSelfhosted ? (
+            <Text as='p' size='sm' colour='muted' className='mt-6 text-center'>
+              <Trans
+                t={t}
+                i18nKey='auth.signin.notAMember'
+                components={{
+                  url: (
+                    <Link
+                      to={routes.signup}
+                      className='font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+                      aria-label={t('titles.signup')}
+                    />
+                  ),
+                }}
+                values={{
+                  amount: TRIAL_DAYS,
+                }}
+              />
+            </Text>
+          ) : null}
+        </div>
+      </div>
+
+      {/* Right side - Visual showcase */}
+      <div className='relative hidden overflow-hidden bg-linear-to-br from-slate-800 via-slate-900 to-slate-950 lg:flex lg:w-1/2 lg:flex-col lg:justify-between dark:from-slate-900 dark:via-slate-950 dark:to-black'>
+        {/* Decorative gradient orbs */}
+        <div className='absolute -top-24 -right-24 size-96 rounded-full bg-indigo-500/20 blur-3xl' />
+        <div className='absolute -bottom-24 -left-24 size-96 rounded-full bg-slate-500/20 blur-3xl' />
+
+        <div className='relative z-10 flex flex-1 flex-col justify-center px-10 py-10'>
+          {/* Welcome message */}
+          <div className='mb-8'>
+            <Text as='h2' size='2xl' weight='bold' className='mb-2 text-white'>
+              {t('auth.signin.dashboardAwaits')}
+            </Text>
+            <Text as='p' size='lg' className='text-slate-400'>
+              {t('auth.signin.trustedByThousands')}
+            </Text>
+          </div>
+
+          {/* Dashboard preview */}
+          <div className='relative'>
+            <div className='overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/10'>
+              <img
+                src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
+                alt='Swetrix Dashboard'
+                className='w-full'
+              />
             </div>
-            <div className={cn('mt-6 grid gap-4', isSelfhosted ? 'grid-cols-1' : 'grid-cols-2')}>
-              {isSelfhosted ? (
-                <OIDCAuth onClick={() => onSsoLogin('openid-connect')} disabled={isLoading} className='w-full' />
-              ) : (
-                <>
-                  <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
-                  <GithubAuth onClick={() => onSsoLogin('github')} disabled={isLoading} />
-                </>
-              )}
-            </div>
+            <div className='pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-slate-900/80 to-transparent' />
           </div>
         </div>
 
-        {!isSelfhosted ? (
-          <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
-            <Trans
-              t={t}
-              i18nKey='auth.signin.notAMember'
-              components={{
-                url: (
-                  <Link
-                    to={routes.signup}
-                    className='leading-6 font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
-                    aria-label={t('titles.signup')}
-                  />
-                ),
-              }}
-              values={{
-                amount: TRIAL_DAYS,
-              }}
-            />
-          </p>
-        ) : null}
+        {/* Testimonial */}
+        <div className='relative z-10 border-t border-white/10 bg-white/5 px-10 py-6 backdrop-blur-sm'>
+          <blockquote>
+            <Text as='p' size='sm' className='text-white/90'>
+              {t('auth.signin.testimonial')}
+            </Text>
+            <footer className='mt-3 flex items-center gap-3'>
+              <img
+                src='/assets/users/alex-casterlabs.jpg'
+                alt='Alex Bowles'
+                className='size-8 rounded-full ring-2 ring-white/20'
+              />
+              <div>
+                <Text as='p' size='sm' weight='medium' className='text-white'>
+                  Alex Bowles
+                </Text>
+                <Text as='p' size='xs' className='text-slate-400'>
+                  Co-founder of Casterlabs
+                </Text>
+              </div>
+            </footer>
+          </blockquote>
+        </div>
       </div>
     </div>
   )
