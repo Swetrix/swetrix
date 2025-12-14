@@ -120,11 +120,26 @@ export interface FeatureFlagsOptions {
 }
 
 /**
- * Cached feature flags with timestamp.
+ * Options for evaluating experiments.
  */
-interface CachedFlags {
+export interface ExperimentOptions {
+  /**
+   * Optional profile ID for long-term user tracking.
+   * If not provided, an anonymous profile ID will be generated server-side based on IP and user agent.
+   * Overrides the global profileId if set.
+   */
+  profileId?: string
+}
+
+/**
+ * Cached feature flags and experiments with timestamp.
+ */
+interface CachedData {
   flags: Record<string, boolean>
+  experiments: Record<string, string>
   timestamp: number
+  /** The profileId used when fetching this cached data */
+  profileId?: string
 }
 
 /**
@@ -218,7 +233,7 @@ export class Lib {
   private perfStatsCollected: boolean = false
   private activePage: string | null = null
   private errorListenerExists = false
-  private cachedFlags: CachedFlags | null = null
+  private cachedData: CachedData | null = null
 
   constructor(private projectID: string, private options?: LibOptions) {
     this.trackPathChange = this.trackPathChange.bind(this)
@@ -407,11 +422,11 @@ export class Lib {
   }
 
   /**
-   * Fetches all feature flags for the project.
+   * Fetches all feature flags and experiments for the project.
    * Results are cached for 5 minutes by default.
    *
    * @param options - Options for evaluating feature flags.
-   * @param forceRefresh - If true, bypasses the cache and fetches fresh flags.
+   * @param forceRefresh - If true, bypasses the cache and fetches fresh data.
    * @returns A promise that resolves to a record of flag keys to boolean values.
    */
   async getFeatureFlags(options?: FeatureFlagsOptions, forceRefresh?: boolean): Promise<Record<string, boolean>> {
@@ -419,51 +434,68 @@ export class Lib {
       return {}
     }
 
-    // Check cache first
-    if (!forceRefresh && this.cachedFlags) {
+    const requestedProfileId = options?.profileId ?? this.options?.profileId
+
+    // Check cache first - must match profileId and not be expired
+    if (!forceRefresh && this.cachedData) {
       const now = Date.now()
-      if (now - this.cachedFlags.timestamp < DEFAULT_CACHE_DURATION) {
-        return this.cachedFlags.flags
+      const isSameProfile = this.cachedData.profileId === requestedProfileId
+      if (isSameProfile && now - this.cachedData.timestamp < DEFAULT_CACHE_DURATION) {
+        return this.cachedData.flags
       }
     }
 
     try {
-      const apiBase = this.getApiBase()
-      const body: { pid: string; profileId?: string } = {
-        pid: this.projectID,
-      }
-
-      // Use profileId from options, or fall back to global profileId
-      const profileId = options?.profileId ?? this.options?.profileId
-      if (profileId) {
-        body.profileId = profileId
-      }
-
-      const response = await fetch(`${apiBase}/feature-flag/evaluate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      })
-
-      if (!response.ok) {
-        console.warn('[Swetrix] Failed to fetch feature flags:', response.status)
-        return this.cachedFlags?.flags || {}
-      }
-
-      const data = (await response.json()) as { flags: Record<string, boolean> }
-
-      // Update cache
-      this.cachedFlags = {
-        flags: data.flags,
-        timestamp: Date.now(),
-      }
-
-      return data.flags
+      await this.fetchFlagsAndExperiments(options)
+      return this.cachedData?.flags || {}
     } catch (error) {
       console.warn('[Swetrix] Error fetching feature flags:', error)
-      return this.cachedFlags?.flags || {}
+      return this.cachedData?.flags || {}
+    }
+  }
+
+  /**
+   * Internal method to fetch both feature flags and experiments from the API.
+   */
+  private async fetchFlagsAndExperiments(options?: FeatureFlagsOptions | ExperimentOptions): Promise<void> {
+    const apiBase = this.getApiBase()
+    const body: { pid: string; profileId?: string } = {
+      pid: this.projectID,
+    }
+
+    // Use profileId from options, or fall back to global profileId
+    const profileId = options?.profileId ?? this.options?.profileId
+    if (profileId) {
+      body.profileId = profileId
+    }
+
+    const response = await fetch(`${apiBase}/feature-flag/evaluate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      console.warn('[Swetrix] Failed to fetch feature flags and experiments:', response.status)
+      return
+    }
+
+    const data = (await response.json()) as {
+      flags: Record<string, boolean>
+      experiments?: Record<string, string>
+    }
+
+    // Use profileId from options, or fall back to global profileId
+    const cachedProfileId = options?.profileId ?? this.options?.profileId
+
+    // Update cache with both flags and experiments
+    this.cachedData = {
+      flags: data.flags || {},
+      experiments: data.experiments || {},
+      timestamp: Date.now(),
+      profileId: cachedProfileId,
     }
   }
 
@@ -481,10 +513,84 @@ export class Lib {
   }
 
   /**
-   * Clears the cached feature flags, forcing a fresh fetch on the next call.
+   * Clears the cached feature flags and experiments, forcing a fresh fetch on the next call.
    */
   clearFeatureFlagsCache(): void {
-    this.cachedFlags = null
+    this.cachedData = null
+  }
+
+  /**
+   * Fetches all A/B test experiments for the project.
+   * Results are cached for 5 minutes by default (shared cache with feature flags).
+   *
+   * @param options - Options for evaluating experiments.
+   * @param forceRefresh - If true, bypasses the cache and fetches fresh data.
+   * @returns A promise that resolves to a record of experiment IDs to variant keys.
+   *
+   * @example
+   * ```typescript
+   * const experiments = await getExperiments()
+   * // experiments = { 'exp-123': 'variant-a', 'exp-456': 'control' }
+   * ```
+   */
+  async getExperiments(options?: ExperimentOptions, forceRefresh?: boolean): Promise<Record<string, string>> {
+    if (!isInBrowser()) {
+      return {}
+    }
+
+    const requestedProfileId = options?.profileId ?? this.options?.profileId
+
+    // Check cache first - must match profileId and not be expired
+    if (!forceRefresh && this.cachedData) {
+      const now = Date.now()
+      const isSameProfile = this.cachedData.profileId === requestedProfileId
+      if (isSameProfile && now - this.cachedData.timestamp < DEFAULT_CACHE_DURATION) {
+        return this.cachedData.experiments
+      }
+    }
+
+    try {
+      await this.fetchFlagsAndExperiments(options)
+      return this.cachedData?.experiments || {}
+    } catch (error) {
+      console.warn('[Swetrix] Error fetching experiments:', error)
+      return this.cachedData?.experiments || {}
+    }
+  }
+
+  /**
+   * Gets the variant key for a specific A/B test experiment.
+   *
+   * @param experimentId - The experiment ID.
+   * @param options - Options for evaluating the experiment.
+   * @param defaultVariant - Default variant key to return if the experiment is not found. Defaults to null.
+   * @returns A promise that resolves to the variant key assigned to this user, or defaultVariant if not found.
+   *
+   * @example
+   * ```typescript
+   * const variant = await getExperiment('checkout-redesign')
+   *
+   * if (variant === 'new-checkout') {
+   *   // Show new checkout flow
+   * } else {
+   *   // Show control (original) checkout
+   * }
+   * ```
+   */
+  async getExperiment(
+    experimentId: string,
+    options?: ExperimentOptions,
+    defaultVariant: string | null = null,
+  ): Promise<string | null> {
+    const experiments = await this.getExperiments(options)
+    return experiments[experimentId] ?? defaultVariant
+  }
+
+  /**
+   * Clears the cached experiments (alias for clearFeatureFlagsCache since they share the same cache).
+   */
+  clearExperimentsCache(): void {
+    this.cachedData = null
   }
 
   /**

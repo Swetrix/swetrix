@@ -10,6 +10,7 @@ import {
   IErrorEventPayload,
   IPageViewPayload,
   FeatureFlagsOptions,
+  ExperimentOptions,
 } from './Lib.js'
 
 export let LIB_INSTANCE: Lib | null = null
@@ -187,6 +188,81 @@ export function clearFeatureFlagsCache(): void {
   LIB_INSTANCE.clearFeatureFlagsCache()
 }
 
+/**
+ * Fetches all A/B test experiments for the project.
+ * Results are cached for 5 minutes by default (shared cache with feature flags).
+ *
+ * @param options - Options for evaluating experiments.
+ * @param forceRefresh - If true, bypasses the cache and fetches fresh data.
+ * @returns A promise that resolves to a record of experiment IDs to variant keys.
+ *
+ * @example
+ * ```typescript
+ * const experiments = await getExperiments()
+ * // experiments = { 'exp-123': 'variant-a', 'exp-456': 'control' }
+ *
+ * // Use the assigned variant
+ * const checkoutVariant = experiments['checkout-experiment-id']
+ * if (checkoutVariant === 'new-checkout') {
+ *   showNewCheckout()
+ * } else {
+ *   showOriginalCheckout()
+ * }
+ * ```
+ */
+export async function getExperiments(
+  options?: ExperimentOptions,
+  forceRefresh?: boolean,
+): Promise<Record<string, string>> {
+  if (!LIB_INSTANCE) return {}
+
+  return LIB_INSTANCE.getExperiments(options, forceRefresh)
+}
+
+/**
+ * Gets the variant key for a specific A/B test experiment.
+ *
+ * @param experimentId - The experiment ID.
+ * @param options - Options for evaluating the experiment.
+ * @param defaultVariant - Default variant key to return if the experiment is not found. Defaults to null.
+ * @returns A promise that resolves to the variant key assigned to this user, or defaultVariant if not found.
+ *
+ * @example
+ * ```typescript
+ * const variant = await getExperiment('checkout-redesign-experiment-id')
+ *
+ * if (variant === 'new-checkout') {
+ *   // Show new checkout flow
+ *   showNewCheckout()
+ * } else if (variant === 'control') {
+ *   // Show original checkout (control group)
+ *   showOriginalCheckout()
+ * } else {
+ *   // Experiment not running or user not included
+ *   showOriginalCheckout()
+ * }
+ * ```
+ */
+export async function getExperiment(
+  experimentId: string,
+  options?: ExperimentOptions,
+  defaultVariant: string | null = null,
+): Promise<string | null> {
+  if (!LIB_INSTANCE) return defaultVariant
+
+  return LIB_INSTANCE.getExperiment(experimentId, options, defaultVariant)
+}
+
+/**
+ * Clears the cached experiments, forcing a fresh fetch on the next call.
+ * This is an alias for clearFeatureFlagsCache since experiments and flags share the same cache.
+ */
+export function clearExperimentsCache(): void {
+  if (!LIB_INSTANCE) return
+
+  LIB_INSTANCE.clearExperimentsCache()
+}
+
 export {
   LibOptions,
   TrackEventOptions,
@@ -197,4 +273,5 @@ export {
   IErrorEventPayload,
   IPageViewPayload,
   FeatureFlagsOptions,
+  ExperimentOptions,
 }
