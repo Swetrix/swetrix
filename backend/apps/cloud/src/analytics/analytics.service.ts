@@ -63,6 +63,7 @@ import {
   hash,
   millisecondsToSeconds,
   sumArrays,
+  formatDuration,
 } from '../common/utils'
 import { PageviewsDto } from './dto/pageviews.dto'
 import { EventsDto } from './dto/events.dto'
@@ -547,6 +548,7 @@ export class AnalyticsService {
     safeTimezone: string,
     diff?: number,
     checkTimebucket = true,
+    now?: dayjs.Dayjs,
   ): IGetGroupFromTo {
     let groupFrom: dayjs.Dayjs
     let groupTo: dayjs.Dayjs
@@ -554,9 +556,13 @@ export class AnalyticsService {
     let groupToUTC: string
     const formatFrom = 'YYYY-MM-DD HH:mm:ss'
     const formatTo = 'YYYY-MM-DD HH:mm:ss'
-    const djsNow = _includes(GMT_0_TIMEZONES, safeTimezone)
-      ? dayjs.utc()
-      : dayjs().tz(safeTimezone)
+    const djsNow = now
+      ? _includes(GMT_0_TIMEZONES, safeTimezone)
+        ? dayjs.utc(now.toDate())
+        : dayjs(now.toDate()).tz(safeTimezone)
+      : _includes(GMT_0_TIMEZONES, safeTimezone)
+        ? dayjs.utc()
+        : dayjs().tz(safeTimezone)
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
       if (!isValidDate(from)) {
@@ -1518,6 +1524,257 @@ export class AnalyticsService {
     return result
   }
 
+  convertSummaryToReportFormat(summary: IOverall): any {
+    const result = {}
+
+    for (const pid of _keys(summary)) {
+      const { current, previous } = summary[pid]
+
+      result[pid] = {
+        // Existing metrics
+        pageviews: current.all,
+        previousPageviews: previous.all,
+        percChangePageviews: calculateRelativePercentage(
+          previous.all,
+          current.all,
+        ),
+
+        uniqueVisitors: current.unique,
+        previousUniqueVisitors: previous.unique,
+        percChangeUnique: calculateRelativePercentage(
+          previous.unique,
+          current.unique,
+        ),
+
+        // Active Users (MAU/WAU)
+        activeUsers: current.users || 0,
+        previousActiveUsers: previous.users || 0,
+        percChangeUsers: calculateRelativePercentage(
+          previous.users || 0,
+          current.users || 0,
+        ),
+
+        // Average Session Duration
+        avgDuration: formatDuration(current.sdur),
+        avgDurationSeconds: _round(current.sdur || 0),
+        previousAvgDuration: formatDuration(previous.sdur),
+        previousAvgDurationSeconds: _round(previous.sdur || 0),
+        percChangeDuration: calculateRelativePercentage(
+          previous.sdur || 0,
+          current.sdur || 0,
+        ),
+
+        // Bounce Rate
+        bounceRate: _round(current.bounceRate || 0, 1),
+        previousBounceRate: _round(previous.bounceRate || 0, 1),
+        // For bounce rate, lower is better, so we invert the change
+        bounceRateChange: _round(
+          (current.bounceRate || 0) - (previous.bounceRate || 0),
+          1,
+        ),
+      }
+    }
+
+    return result
+  }
+
+  async getTopCountryForReport(
+    pid: string,
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<{ cc: string; count: number } | null> {
+    const query = `
+      SELECT 
+        cc,
+        count() as count
+      FROM analytics
+      WHERE 
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        AND cc IS NOT NULL
+        AND cc != ''
+      GROUP BY cc
+      ORDER BY count DESC
+      LIMIT 1
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, groupFrom, groupTo },
+      })
+      .then(resultSet => resultSet.json<{ cc: string; count: number }>())
+
+    return data[0] || null
+  }
+
+  async getTopCountriesForReport(
+    pids: string[],
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<Record<string, { cc: string; count: number }>> {
+    if (_isEmpty(pids)) {
+      return {}
+    }
+
+    const query = `
+      WITH counts AS (
+        SELECT 
+          pid,
+          cc,
+          count() as cnt
+        FROM analytics
+        WHERE 
+          pid IN {pids:Array(FixedString(12))}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND cc IS NOT NULL
+          AND cc != ''
+        GROUP BY pid, cc
+      )
+      SELECT
+        pid,
+        argMax(cc, cnt) as cc,
+        max(cnt) as count
+      FROM counts
+      GROUP BY pid
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pids, groupFrom, groupTo },
+      })
+      .then(resultSet =>
+        resultSet.json<{ pid: string; cc: string; count: any }>(),
+      )
+
+    const result: Record<string, { cc: string; count: number }> = {}
+    for (const row of data || []) {
+      if (!row?.pid) {
+        continue
+      }
+      result[row.pid] = {
+        cc: row.cc,
+        count: Number(row.count) || 0,
+      }
+    }
+
+    return result
+  }
+
+  async getErrorCountForReport(
+    pid: string,
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<{ count: number; uniqueErrors: number }> {
+    const query = `
+      SELECT 
+        count() as count,
+        count(DISTINCT eid) as uniqueErrors
+      FROM errors
+      WHERE 
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, groupFrom, groupTo },
+      })
+      .then(resultSet =>
+        resultSet.json<{ count: number; uniqueErrors: number }>(),
+      )
+
+    return data[0] || { count: 0, uniqueErrors: 0 }
+  }
+
+  async getErrorCountsForReport(
+    pids: string[],
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<Record<string, { count: number; uniqueErrors: number }>> {
+    if (_isEmpty(pids)) {
+      return {}
+    }
+
+    const query = `
+      SELECT 
+        pid,
+        count() as count,
+        count(DISTINCT eid) as uniqueErrors
+      FROM errors
+      WHERE 
+        pid IN {pids:Array(FixedString(12))}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY pid
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pids, groupFrom, groupTo },
+      })
+      .then(resultSet =>
+        resultSet.json<{
+          pid: string
+          count: any
+          uniqueErrors: any
+        }>(),
+      )
+
+    const result: Record<string, { count: number; uniqueErrors: number }> = {}
+    for (const row of data || []) {
+      if (!row?.pid) {
+        continue
+      }
+      result[row.pid] = {
+        count: Number(row.count) || 0,
+        uniqueErrors: Number(row.uniqueErrors) || 0,
+      }
+    }
+
+    return result
+  }
+
+  async getTotalSessionsForReport(
+    pids: string[],
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<Record<string, number>> {
+    if (_isEmpty(pids)) {
+      return {}
+    }
+
+    const query = `
+      SELECT 
+        pid,
+        uniqExact(psid) as totalSessions
+      FROM analytics
+      WHERE 
+        pid IN {pids:Array(FixedString(12))}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY pid
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pids, groupFrom, groupTo },
+      })
+      .then(resultSet => resultSet.json<{ pid: string; totalSessions: any }>())
+
+    const result: Record<string, number> = {}
+    for (const row of data || []) {
+      if (!row?.pid) {
+        continue
+      }
+      result[row.pid] = Number(row.totalSessions) || 0
+    }
+
+    return result
+  }
+
   async getAnalyticsSummary(
     pids: string[],
     timeBucket?: string,
@@ -1527,6 +1784,7 @@ export class AnalyticsService {
     timezone?: string,
     filters?: string,
     includeChart?: boolean,
+    now?: dayjs.Dayjs,
   ): Promise<IOverall> {
     const safeTimezone = this.getSafeTimezone(timezone)
 
@@ -1546,6 +1804,7 @@ export class AnalyticsService {
         safeTimezone,
         undefined,
         false,
+        now,
       )
 
     const result = {}
