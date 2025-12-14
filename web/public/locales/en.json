@@ -1063,6 +1063,8 @@
     "description": "Run A/B tests to compare variants and find what works best.\nCreate experiments linked to goals and let Bayesian statistics determine the winner.",
     "create": "Create Experiment",
     "edit": "Edit Experiment",
+    "editDisabledRunning": "Pause this experiment to edit settings.",
+    "editDisabledCompleted": "Completed experiments can't be edited.",
     "delete": "Delete experiment",
     "deleted": "Experiment has been deleted",
     "created": "Experiment has been created",

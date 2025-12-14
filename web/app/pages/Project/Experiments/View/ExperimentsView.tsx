@@ -13,7 +13,6 @@ import {
   PauseIcon,
   CheckCircleIcon,
   BarChart3Icon,
-  ChevronDownIcon,
 } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -33,7 +32,6 @@ import {
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
-import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Spin from '~/ui/icons/Spin'
 import Loader from '~/ui/Loader'
@@ -162,23 +160,23 @@ const ExperimentRow = ({
               </div>
             </div>
           </div>
-          <div className='flex shrink-0 items-center gap-x-2'>
+          <div className='flex shrink-0 items-center gap-x-1'>
             {/* Action buttons based on status */}
-            {experiment.status === 'draft' && (
+            {experiment.status === 'draft' ? (
               <Button
                 onClick={handleStart}
                 disabled={actionLoading || !experiment.goalId}
                 title={!experiment.goalId ? t('experiments.needGoal') : undefined}
-                primary
+                ghost
                 small
               >
                 {actionLoading ? <Spin className='size-4' /> : <PlayIcon className='mr-1 size-4' strokeWidth={1.5} />}
                 {t('experiments.start')}
               </Button>
-            )}
-            {experiment.status === 'running' && (
+            ) : null}
+            {experiment.status === 'running' ? (
               <>
-                <Button onClick={handlePause} disabled={actionLoading} secondary small>
+                <Button onClick={handlePause} disabled={actionLoading} ghost small>
                   {actionLoading ? (
                     <Spin className='size-4' />
                   ) : (
@@ -186,30 +184,30 @@ const ExperimentRow = ({
                   )}
                   {t('experiments.pause')}
                 </Button>
-                <Button onClick={() => onViewResults(experiment.id)} secondary small>
+                <Button onClick={() => onViewResults(experiment.id)} ghost small>
                   <BarChart3Icon className='mr-1 size-4' strokeWidth={1.5} />
                   {t('experiments.results')}
                 </Button>
               </>
-            )}
-            {experiment.status === 'paused' && (
+            ) : null}
+            {experiment.status === 'paused' ? (
               <>
-                <Button onClick={handleStart} disabled={actionLoading} primary small>
+                <Button onClick={handleStart} disabled={actionLoading} ghost small>
                   {actionLoading ? <Spin className='size-4' /> : <PlayIcon className='mr-1 size-4' strokeWidth={1.5} />}
                   {t('experiments.resume')}
                 </Button>
-                <Button onClick={() => setShowCompleteModal(true)} disabled={actionLoading} secondary small>
+                <Button onClick={() => setShowCompleteModal(true)} disabled={actionLoading} ghost small>
                   <CheckCircleIcon className='mr-1 size-4' strokeWidth={1.5} />
                   {t('experiments.complete')}
                 </Button>
               </>
-            )}
-            {experiment.status === 'completed' && (
-              <Button onClick={() => onViewResults(experiment.id)} primary small>
+            ) : null}
+            {experiment.status === 'completed' ? (
+              <Button onClick={() => onViewResults(experiment.id)} ghost small>
                 <BarChart3Icon className='mr-1 size-4' strokeWidth={1.5} />
                 {t('experiments.viewResults')}
               </Button>
-            )}
+            ) : null}
 
             {/* Edit/Delete buttons */}
             <div className='flex items-center gap-1 border-l border-gray-200 pl-2 dark:border-slate-700'>

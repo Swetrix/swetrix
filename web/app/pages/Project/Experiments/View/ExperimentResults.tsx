@@ -741,23 +741,27 @@ const ExperimentResults = ({
         showLiveVisitors={false}
         rightContent={
           // Backend forbids updating running/completed experiments; keep button visible (disabled) to make this explicit.
-          <Button
-            type='button'
-            onClick={() => setIsSettingsOpen(true)}
-            disabled={results.status === 'running' || results.status === 'completed'}
-            title={
+          <Tooltip
+            text={
               results.status === 'running'
-                ? 'Pause this experiment to edit settings.'
+                ? t('experiments.editDisabledRunning')
                 : results.status === 'completed'
-                  ? 'Completed experiments can’t be edited.'
+                  ? t('experiments.editDisabledCompleted')
                   : t('common.edit')
             }
-            secondary
-            small
-          >
-            <PencilIcon className='mr-1 size-4' strokeWidth={1.5} />
-            {t('common.edit')}
-          </Button>
+            tooltipNode={
+              <Button
+                type='button'
+                onClick={() => setIsSettingsOpen(true)}
+                disabled={results.status === 'running' || results.status === 'completed'}
+                ghost
+                small
+              >
+                <PencilIcon className='mr-1 size-4' strokeWidth={1.5} />
+                {t('common.edit')}
+              </Button>
+            }
+          />
         }
         leftContent={
           <div className='flex items-center gap-2'>
