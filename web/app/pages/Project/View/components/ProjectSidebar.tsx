@@ -70,6 +70,21 @@ interface ProjectSidebarProps {
   onMobileClose?: () => void
 }
 
+const TAB_HINT_KEYS: Record<string, string> = {
+  ai: 'dashboard.askAiHint',
+  traffic: 'dashboard.trafficHint',
+  performance: 'dashboard.performanceHint',
+  funnels: 'dashboard.funnelsHint',
+  alerts: 'dashboard.alertsHint',
+  profiles: 'dashboard.profilesHint',
+  sessions: 'dashboard.sessionsHint',
+  errors: 'dashboard.errorsHint',
+  goals: 'dashboard.goalsHint',
+  experiments: 'dashboard.experimentsHint',
+  featureFlags: 'dashboard.featureFlagsHint',
+  captcha: 'dashboard.captchaHint',
+}
+
 const CollapsibleGroup: React.FC<{
   group: TabGroup
   activeTab: ProjectTabKey
@@ -80,6 +95,7 @@ const CollapsibleGroup: React.FC<{
   isCollapsed?: boolean
   onMobileClose?: () => void
 }> = ({ group, activeTab, onTabChange, projectId, dataLoading, searchParams, isCollapsed, onMobileClose }) => {
+  const { t } = useTranslation('common')
   const [isExpanded, setIsExpanded] = useState(true)
 
   const hasActiveTab = useMemo(() => {
@@ -198,23 +214,32 @@ const CollapsibleGroup: React.FC<{
                 ? routes.project_settings.replace(':id', projectId)
                 : { search: newSearchParams.toString() }
 
+            const hintKey = TAB_HINT_KEYS[tab.id]
+            const hintText = hintKey ? t(hintKey) : undefined
+
             return (
-              <Link
+              <Tooltip
                 key={tab.id}
-                to={tabUrl}
-                onClick={handleClick}
-                className={cn('group flex items-center gap-1.5 rounded-md px-2.5 py-2 transition-colors', {
-                  'bg-gray-100 dark:bg-slate-800': isCurrent,
-                  'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
-                  'cursor-wait': dataLoading && tab.id !== 'settings',
-                })}
-                aria-current={isCurrent ? 'page' : undefined}
-              >
-                <TabIcon className={cn('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
-                <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
-                  {tab.label}
-                </Text>
-              </Link>
+                text={hintText}
+                delay={1000}
+                tooltipNode={
+                  <Link
+                    to={tabUrl}
+                    onClick={handleClick}
+                    className={cn('group flex items-center gap-1.5 rounded-md px-2.5 py-2 transition-colors', {
+                      'bg-gray-100 dark:bg-slate-800': isCurrent,
+                      'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
+                      'cursor-wait': dataLoading && tab.id !== 'settings',
+                    })}
+                    aria-current={isCurrent ? 'page' : undefined}
+                  >
+                    <TabIcon className={cn('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
+                    <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
+                      {tab.label}
+                    </Text>
+                  </Link>
+                }
+              />
             )
           })}
         </nav>
@@ -420,22 +445,29 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
               }
 
               return (
-                <Link
-                  to={{ search: newSearchParams.toString() }}
-                  onClick={handleClick}
-                  className={cn('group flex items-center gap-2 rounded-md px-2.5 py-2 transition-colors', {
-                    'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
-                      isCurrent,
-                    'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
-                    'cursor-wait': dataLoading,
-                  })}
-                  aria-current={isCurrent ? 'page' : undefined}
-                >
-                  <TabIcon className={cn('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
-                  <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
-                    {askAiTab.label}
-                  </Text>
-                </Link>
+                <Tooltip
+                  text={t('dashboard.askAiHint')}
+                  delay={1000}
+                  className='w-full'
+                  tooltipNode={
+                    <Link
+                      to={{ search: newSearchParams.toString() }}
+                      onClick={handleClick}
+                      className={cn('group flex items-center gap-2 rounded-md px-2.5 py-2 transition-colors', {
+                        'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
+                          isCurrent,
+                        'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
+                        'cursor-wait': dataLoading,
+                      })}
+                      aria-current={isCurrent ? 'page' : undefined}
+                    >
+                      <TabIcon className={cn('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
+                      <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
+                        {askAiTab.label}
+                      </Text>
+                    </Link>
+                  }
+                />
               )
             })()}
           </div>
