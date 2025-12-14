@@ -386,6 +386,8 @@ export const I18N_CACHE_BREAKER = 27
 
 export const roles: Role[] = ['admin', 'viewer']
 
+export const FUNNELS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'all', 'custom']
+
 const SELFHOSTED_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
