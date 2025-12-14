@@ -47,11 +47,15 @@ const getOnlineStatus = (lastActivity: string): OnlineStatus => {
 interface SessionsProps {
   sessions: SessionType[]
   timeFormat: '12-hour' | '24-hour'
+  hideNewReturnBadge?: boolean
+  hideUserDetails?: boolean
 }
 
 interface SessionProps {
   session: SessionType
   timeFormat: '12-hour' | '24-hour'
+  hideNewReturnBadge?: boolean
+  hideUserDetails?: boolean
 }
 
 const Separator = () => (
@@ -60,7 +64,7 @@ const Separator = () => (
   </svg>
 )
 
-const Session = ({ session, timeFormat }: SessionProps) => {
+const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails }: SessionProps) => {
   const {
     t,
     i18n: { language },
@@ -132,41 +136,49 @@ const Session = ({ session, timeFormat }: SessionProps) => {
       <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'>
         <div className='flex min-w-0 gap-x-4'>
           {/* Avatar with online status indicator */}
-          <div className='relative shrink-0'>
-            {session.profileId ? (
-              <ProfileAvatar profileId={session.profileId} size={40} />
-            ) : (
-              <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 dark:bg-slate-600'>
-                <span className='text-sm font-medium text-gray-500 dark:text-gray-300'>?</span>
-              </div>
-            )}
-            {onlineStatus === 'offline' ? null : (
-              <Tooltip
-                text={t('project.lastSeenAgo', { time: lastActivityAgo })}
-                className='absolute right-0 bottom-2'
-                tooltipNode={
-                  <span
-                    className={cx(
-                      'block h-3 w-3 rounded-full ring-2 ring-gray-50 dark:ring-slate-800',
-                      onlineStatus === 'online' && 'bg-green-500',
-                      onlineStatus === 'recently_active' && 'bg-yellow-500',
-                    )}
-                  />
-                }
-              />
-            )}
-          </div>
+          {hideUserDetails ? null : (
+            <div className='relative shrink-0'>
+              {session.profileId ? (
+                <ProfileAvatar profileId={session.profileId} size={40} />
+              ) : (
+                <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 dark:bg-slate-600'>
+                  <span className='text-sm font-medium text-gray-500 dark:text-gray-300'>?</span>
+                </div>
+              )}
+              {onlineStatus === 'offline' ? null : (
+                <Tooltip
+                  text={t('project.lastSeenAgo', { time: lastActivityAgo })}
+                  className='absolute right-0 bottom-2'
+                  tooltipNode={
+                    <span
+                      className={cx(
+                        'block h-3 w-3 rounded-full ring-2 ring-gray-50 dark:ring-slate-800',
+                        onlineStatus === 'online' && 'bg-green-500',
+                        onlineStatus === 'recently_active' && 'bg-yellow-500',
+                      )}
+                    />
+                  }
+                />
+              )}
+            </div>
+          )}
 
           <div className='min-w-0 flex-auto'>
-            <p className='flex items-center text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>
-              <span className='truncate'>{displayName}</span>
-              {session.isIdentified ? <Badge label={t('project.identified')} colour='indigo' className='ml-2' /> : null}
-              <Badge
-                label={session.isFirstSession ? t('project.sessionNew') : t('project.sessionReturn')}
-                colour={session.isFirstSession ? 'green' : 'slate'}
-                className='ml-2'
-              />
-            </p>
+            {hideUserDetails ? null : (
+              <p className='flex items-center text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+                <span className='truncate'>{displayName}</span>
+                {session.isIdentified ? (
+                  <Badge label={t('project.identified')} colour='indigo' className='ml-2' />
+                ) : null}
+                {hideNewReturnBadge ? null : (
+                  <Badge
+                    label={session.isFirstSession ? t('project.sessionNew') : t('project.sessionReturn')}
+                    colour={session.isFirstSession ? 'green' : 'slate'}
+                    className='ml-2'
+                  />
+                )}
+              </p>
+            )}
             <p className='mt-1 flex flex-wrap items-center gap-x-2 text-xs leading-5 text-gray-500 dark:text-gray-300'>
               <span className='flex'>
                 {session.cc ? <CCRow size={18} cc={session.cc} language={language} /> : t('project.unknownCountry')}
@@ -222,7 +234,7 @@ const Session = ({ session, timeFormat }: SessionProps) => {
   )
 }
 
-export const Sessions: React.FC<SessionsProps> = ({ sessions, timeFormat }) => {
+export const Sessions: React.FC<SessionsProps> = ({ sessions, timeFormat, hideNewReturnBadge, hideUserDetails }) => {
   return (
     <ClientOnly
       fallback={
@@ -234,7 +246,13 @@ export const Sessions: React.FC<SessionsProps> = ({ sessions, timeFormat }) => {
       {() => (
         <ul>
           {_map(sessions, (session) => (
-            <Session key={session.psid} session={session} timeFormat={timeFormat} />
+            <Session
+              key={session.psid}
+              session={session}
+              timeFormat={timeFormat}
+              hideNewReturnBadge={hideNewReturnBadge}
+              hideUserDetails={hideUserDetails}
+            />
           ))}
         </ul>
       )}

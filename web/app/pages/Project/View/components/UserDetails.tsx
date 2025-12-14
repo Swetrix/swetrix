@@ -379,7 +379,7 @@ export const UserDetails = ({
               <p className='py-4 text-center text-sm text-gray-400'>{t('project.noSessions')}</p>
             ) : (
               <>
-                <Sessions sessions={sessions} timeFormat={timeFormat} />
+                <Sessions sessions={sessions} timeFormat={timeFormat} hideNewReturnBadge hideUserDetails />
                 {canLoadMoreSessions ? (
                   <Button
                     onClick={onLoadMoreSessions}
