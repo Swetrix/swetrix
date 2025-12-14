@@ -34,7 +34,7 @@ import { Text } from '~/ui/Text'
 import { nFormatter, getLocaleDisplayName } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
-import { Customs, Filter, Properties } from './interfaces/traffic'
+import { Customs, Filter } from './interfaces/traffic'
 import { useViewProjectContext } from './ViewProject'
 import { typeNameMapping } from './ViewProject.helpers'
 
@@ -59,6 +59,7 @@ interface PanelContainerProps {
   onTabChange?: (tab: string) => void
   activeTabId?: string
   onDetailsClick?: () => void
+  dropdownPlaceholder?: string
 }
 
 const PanelContainer = ({
@@ -70,6 +71,7 @@ const PanelContainer = ({
   onTabChange,
   activeTabId,
   onDetailsClick,
+  dropdownPlaceholder,
 }: PanelContainerProps) => {
   const { t } = useTranslation('common')
 
@@ -78,7 +80,7 @@ const PanelContainer = ({
       className={cx(
         'overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pt-5 pb-3 dark:border-slate-800/60 dark:bg-slate-800/25',
         {
-          'col-span-full sm:col-span-2': type === 'metadata',
+          'col-span-full sm:col-span-2': type === 'metadata' || type === 'customEvents',
         },
       )}
     >
@@ -94,7 +96,9 @@ const PanelContainer = ({
                 if (Array.isArray(tab)) {
                   const dropdownTabs = tab
                   const activeDropdownTab = dropdownTabs.find((t) => t.id === activeTabId)
-                  const dropdownTitle = activeDropdownTab ? activeDropdownTab.label : t('project.campaigns')
+                  const dropdownTitle = activeDropdownTab
+                    ? activeDropdownTab.label
+                    : dropdownPlaceholder || t('project.campaigns')
 
                   return (
                     <Dropdown
@@ -147,7 +151,7 @@ const PanelContainer = ({
           ) : null}
         </div>
       </div>
-      <div className='relative flex h-[19.6rem] flex-col overflow-x-auto'>{children}</div>
+      <div className='relative flex h-[19.6rem] flex-col overflow-auto'>{children}</div>
       {onDetailsClick ? (
         <div className='mt-2 flex items-center justify-center'>
           <Button
@@ -164,16 +168,12 @@ const PanelContainer = ({
   )
 }
 
-interface MetadataProps {
+interface CustomEventsProps {
   customs?: Customs
-  properties?: Properties
   chartData: any
   filters: Filter[]
   getCustomEventMetadata: (event: string) => Promise<any>
-  getPropertyMetadata: (property: string) => Promise<any>
   getFilterLink: (column: string, value: string | null) => LinkProps['to']
-  onTabChange: (tab: string) => void
-  activeTabId: string
 }
 
 interface SortRows {
@@ -377,17 +377,7 @@ function sortDesc<T>(obj: T, sortByKeys?: boolean): T {
   ) as T
 }
 
-const Metadata = ({
-  customs,
-  properties,
-  chartData,
-  filters,
-  getCustomEventMetadata,
-  getPropertyMetadata,
-  getFilterLink,
-  onTabChange,
-  activeTabId,
-}: MetadataProps) => {
+const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, getFilterLink }: CustomEventsProps) => {
   const { t } = useTranslation('common')
   const [detailsOpened, setDetailsOpened] = useState(false)
   const [activeEvents, setActiveEvents] = useState<any>({})
@@ -407,30 +397,14 @@ const Metadata = ({
   })
   const navigate = useNavigate()
 
-  const tabs = [
-    {
-      id: 'ce',
-      label: t('project.customEv'),
-    },
-    {
-      id: 'props',
-      label: t('project.properties'),
-    },
-  ]
-
   useEffect(() => {
-    if (activeTabId === 'ce') {
-      setEventsData(customs)
-    } else {
-      setEventsData(properties)
-    }
-
+    setEventsData(customs)
     setSort({
       label: 'quantity',
       sortByAscend: false,
       sortByDescend: false,
     })
-  }, [customs, properties, activeTabId])
+  }, [customs])
 
   useEffect(() => {
     setEventsMetadata({})
@@ -470,9 +444,7 @@ const Metadata = ({
       }))
 
       try {
-        const fn = activeTabId === 'ce' ? getCustomEventMetadata : getPropertyMetadata
-
-        const { result } = await fn(ev)
+        const { result } = await getCustomEventMetadata(ev)
         setEventsMetadata((metadata: any) => ({
           ...metadata,
           [ev]: result,
@@ -534,10 +506,7 @@ const Metadata = ({
   }
 
   const _getFilterLink = (column: string | null, value: string | null) => {
-    if (activeTabId === 'ce') {
-      return getFilterLink('ev' + (column ? `:key:${column}` : ''), value)
-    }
-    return getFilterLink('tag:key' + (column ? `:${column}` : ''), value)
+    return getFilterLink('ev' + (column ? `:key:${column}` : ''), value)
   }
 
   const CustomEventsTable = () => (
@@ -549,7 +518,7 @@ const Metadata = ({
               className='flex w-2/5 cursor-pointer items-center pl-2 text-left hover:opacity-90 sm:w-4/6'
               onClick={() => onSortBy('event')}
             >
-              {activeTabId === 'props' ? t('project.property') : t('project.event')}
+              {t('project.event')}
               <Sort
                 className='ml-1'
                 sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
@@ -650,7 +619,7 @@ const Metadata = ({
     </div>
   )
 
-  const renderTabContent = () => {
+  const renderContent = () => {
     if (_isEmpty(eventsData)) {
       return (
         <Text as='p' size='base' colour='secondary' className='mt-1'>
@@ -661,9 +630,9 @@ const Metadata = ({
 
     return (
       <>
-        <div className='mb-1 flex items-center justify-between px-1 py-1'>
+        <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-white px-1 py-1 dark:bg-slate-800/25'>
           <Text size='sm' weight='medium' colour='muted' className='w-4/6'>
-            {activeTabId === 'props' ? t('project.property') : t('project.event')}
+            {t('project.event')}
           </Text>
           <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
             {t('project.quantity')}
@@ -729,7 +698,7 @@ const Metadata = ({
         <Modal
           onClose={onModalClose}
           isOpened={detailsOpened}
-          title={activeTabId === 'props' ? t('project.properties') : t('project.customEv')}
+          title={t('project.customEv')}
           message={<CustomEventsTable />}
           size='large'
         />
@@ -738,15 +707,450 @@ const Metadata = ({
   }
 
   return (
+    <PanelContainer name={t('project.customEv')} type='customEvents' onDetailsClick={() => setDetailsOpened(true)}>
+      {renderContent()}
+    </PanelContainer>
+  )
+}
+
+interface MetadataKeyPanelProps {
+  title: string
+  metadataKeys: string[]
+  getMetadataValues: (key: string) => Promise<{ result: Array<{ key: string; value: string; count: number }> }>
+  getFilterLink: (column: string, value: string | null) => LinkProps['to']
+  chartData: any
+  filters: Filter[]
+  activeKey: string
+  onKeyChange: (key: string) => void
+  filterPrefix: 'ev:key' | 'tag:key'
+  // For 'property' mode: dropdown shows property keys, values are for that key
+  // For 'customEvent' mode: dropdown shows event names, values show ALL metadata for that event (grouped by key)
+  mode: 'property' | 'customEvent'
+}
+
+const MetadataKeyPanel = ({
+  title,
+  metadataKeys,
+  getMetadataValues,
+  getFilterLink,
+  chartData,
+  filters,
+  activeKey,
+  onKeyChange,
+  filterPrefix,
+  mode,
+}: MetadataKeyPanelProps) => {
+  const { t } = useTranslation('common')
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  // For property mode: simple value/count pairs
+  // For customEvent mode: raw data with key/value/count (grouped by metadata key)
+  const [valuesData, setValuesData] = useState<Array<{ value: string; count: number }>>([])
+  const [rawMetadata, setRawMetadata] = useState<Array<{ key: string; value: string; count: number }>>([])
+  const [detailsOpened, setDetailsOpened] = useState(false)
+
+  const uniques = _sum(chartData.uniques)
+
+  // Load values when activeKey changes
+  useEffect(() => {
+    if (!activeKey) {
+      setValuesData([])
+      setRawMetadata([])
+      return
+    }
+
+    const loadValues = async () => {
+      setLoading(true)
+      try {
+        const { result } = await getMetadataValues(activeKey)
+        if (mode === 'property') {
+          // For properties: filter by the selected key and extract values
+          const values = result
+            .filter((item) => item.key === activeKey)
+            .map((item) => ({ value: item.value, count: item.count }))
+          setValuesData(values)
+        } else {
+          // For custom events: show all metadata (result is already for this event)
+          setRawMetadata(result)
+          // Flatten for display purposes
+          const values = result.map((item) => ({ value: `${item.key}: ${item.value}`, count: item.count }))
+          setValuesData(values)
+        }
+      } catch (error) {
+        console.error(`[ERROR](MetadataKeyPanel) Failed to load values for key ${activeKey}`, error)
+        setValuesData([])
+        setRawMetadata([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadValues()
+  }, [activeKey, getMetadataValues, mode])
+
+  // Reload values when filters change
+  useEffect(() => {
+    if (activeKey) {
+      const loadValues = async () => {
+        setLoading(true)
+        try {
+          const { result } = await getMetadataValues(activeKey)
+          if (mode === 'property') {
+            const values = result
+              .filter((item) => item.key === activeKey)
+              .map((item) => ({ value: item.value, count: item.count }))
+            setValuesData(values)
+          } else {
+            setRawMetadata(result)
+            const values = result.map((item) => ({ value: `${item.key}: ${item.value}`, count: item.count }))
+            setValuesData(values)
+          }
+        } catch (error) {
+          console.error(`[ERROR](MetadataKeyPanel) Failed to reload values for key ${activeKey}`, error)
+          setValuesData([])
+          setRawMetadata([])
+        } finally {
+          setLoading(false)
+        }
+      }
+      loadValues()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
+
+  const valuesToDisplay = useMemo(() => {
+    if (mode === 'customEvent') {
+      // For custom events, display grouped by metadata key
+      const sorted = _orderBy(rawMetadata, 'count', 'desc')
+      return _slice(sorted, 0, ENTRIES_PER_PANEL)
+    }
+    const sorted = _orderBy(valuesData, 'count', 'desc')
+    return _slice(sorted, 0, ENTRIES_PER_PANEL)
+  }, [valuesData, rawMetadata, mode])
+
+  const _getFilterLink = (metaKey: string | null, value: string) => {
+    if (mode === 'customEvent') {
+      // For custom events: filter format is ev:key:metaKey with value
+      return getFilterLink(`ev:key${metaKey ? `:${metaKey}` : ''}`, value)
+    }
+    // For properties: filter format is tag:key:propertyKey with value
+    return getFilterLink(`${filterPrefix}:${activeKey}`, value)
+  }
+
+  const dropdownItems = useMemo(() => {
+    return metadataKeys.map((key) => ({ id: key, label: key }))
+  }, [metadataKeys])
+
+  const sortedRawMetadata = useMemo(() => _orderBy(rawMetadata, 'count', 'desc'), [rawMetadata])
+  const sortedValuesData = useMemo(() => _orderBy(valuesData, 'count', 'desc'), [valuesData])
+
+  const DetailsTable = () => {
+    if (mode === 'customEvent') {
+      return (
+        <div className='max-h-[500px] overflow-y-auto'>
+          <table className='w-full border-separate border-spacing-y-1'>
+            <thead className='sticky top-0 z-10 bg-white dark:bg-slate-900'>
+              <tr className='text-base text-gray-900 dark:text-gray-50'>
+                <th className='pl-2 text-left' style={{ width: '25%' }}>
+                  {t('project.key')}
+                </th>
+                <th className='text-left' style={{ width: '25%' }}>
+                  {t('project.value')}
+                </th>
+                <th className='text-right' style={{ width: '25%' }}>
+                  {t('project.quantity')}
+                </th>
+                <th className='pr-2 text-right' style={{ width: '25%' }}>
+                  {t('project.conversion')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {_map(sortedRawMetadata, ({ key, value, count }) => {
+                const perc = uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
+                const link = _getFilterLink(key, value)
+
+                return (
+                  <tr
+                    key={`${key}-${value}`}
+                    className='group cursor-pointer text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+                    onClick={() => {
+                      navigate(link)
+                      setDetailsOpened(false)
+                    }}
+                  >
+                    <td className='py-1 pl-2 text-left'>
+                      <span className='truncate'>{key}</span>
+                    </td>
+                    <td className='flex items-center py-1 text-left'>
+                      <span className='truncate'>{value}</span>
+                      <FilterIcon
+                        className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
+                        strokeWidth={1.5}
+                      />
+                    </td>
+                    <td className='py-1 text-right'>{count}</td>
+                    <td className='py-1 pr-2 text-right'>{perc}%</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+
+    // Property mode
+    return (
+      <div className='max-h-[500px] overflow-y-auto'>
+        <table className='w-full border-separate border-spacing-y-1'>
+          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-900'>
+            <tr className='text-base text-gray-900 dark:text-gray-50'>
+              <th className='pl-2 text-left' style={{ width: '50%' }}>
+                {t('project.value')}
+              </th>
+              <th className='text-right' style={{ width: '25%' }}>
+                {t('project.quantity')}
+              </th>
+              <th className='pr-2 text-right' style={{ width: '25%' }}>
+                {t('project.conversion')}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {_map(sortedValuesData, ({ value, count }) => {
+              const perc = uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
+              const link = _getFilterLink(null, value)
+
+              return (
+                <tr
+                  key={value}
+                  className='group cursor-pointer text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+                  onClick={() => {
+                    navigate(link)
+                    setDetailsOpened(false)
+                  }}
+                >
+                  <td className='flex items-center py-1 pl-2 text-left'>
+                    <span className='truncate'>{value}</span>
+                    <FilterIcon
+                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
+                      strokeWidth={1.5}
+                    />
+                  </td>
+                  <td className='py-1 text-right'>{count}</td>
+                  <td className='py-1 pr-2 text-right'>{perc}%</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  const renderContent = () => {
+    if (_isEmpty(metadataKeys)) {
+      return (
+        <Text as='p' size='base' colour='secondary' className='mt-1'>
+          {t('project.noParamData')}
+        </Text>
+      )
+    }
+
+    if (!activeKey) {
+      return (
+        <Text as='p' size='base' colour='secondary' className='mt-1'>
+          {t('project.selectKey')}
+        </Text>
+      )
+    }
+
+    if (loading) {
+      return (
+        <div className='flex items-center justify-center py-8'>
+          <Spin />
+        </div>
+      )
+    }
+
+    if (_isEmpty(valuesData) && (mode === 'property' || _isEmpty(rawMetadata))) {
+      return (
+        <Text as='p' size='base' colour='secondary' className='mt-1'>
+          {t('project.noData')}
+        </Text>
+      )
+    }
+
+    if (mode === 'customEvent') {
+      // Custom event mode: show key-value pairs
+      const maxValue = Math.max(...rawMetadata.map((v) => v.count))
+
+      return (
+        <>
+          <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-white px-1 py-1 dark:bg-slate-800/25'>
+            <Text size='sm' weight='medium' colour='muted' className='w-2/6'>
+              {t('project.key')}
+            </Text>
+            <Text size='sm' weight='medium' colour='muted' className='w-2/6'>
+              {t('project.value')}
+            </Text>
+            <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
+              {t('project.quantity')}
+            </Text>
+            <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
+              {t('project.conversion')}
+            </Text>
+          </div>
+
+          <div className='space-y-0.5'>
+            {_map(valuesToDisplay as Array<{ key: string; value: string; count: number }>, ({ key, value, count }) => {
+              const perc = uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
+              const link = _getFilterLink(key, value)
+
+              return (
+                <div
+                  key={`${key}-${value}`}
+                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800'
+                  onClick={() => {
+                    navigate(link)
+                  }}
+                >
+                  <div
+                    className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                    style={{
+                      width: `${(count / maxValue) * 100}%`,
+                    }}
+                  />
+
+                  <div className='relative z-10 w-2/6 min-w-0 truncate'>
+                    <Text size='sm' truncate>
+                      {key}
+                    </Text>
+                  </div>
+                  <div className='relative z-10 flex w-2/6 min-w-0 items-center'>
+                    <Text size='sm' truncate>
+                      {value}
+                    </Text>
+                    <FilterIcon
+                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
+                      strokeWidth={1.5}
+                    />
+                    <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                  </div>
+                  <div className='relative z-10 w-1/6 text-right'>
+                    <Text size='sm' weight='medium'>
+                      {count}
+                    </Text>
+                  </div>
+                  <div className='relative z-10 w-1/6 text-right'>
+                    <Text size='sm' weight='medium'>
+                      {perc}%
+                    </Text>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <Modal
+            onClose={() => setDetailsOpened(false)}
+            isOpened={detailsOpened}
+            title={`${title}: ${activeKey}`}
+            message={<DetailsTable />}
+            size='large'
+          />
+        </>
+      )
+    }
+
+    // Property mode: show simple value list
+    const maxValue = Math.max(...valuesData.map((v) => v.count))
+
+    return (
+      <>
+        <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-white px-1 py-1 dark:bg-slate-800/25'>
+          <Text size='sm' weight='medium' colour='muted' className='w-4/6'>
+            {t('project.value')}
+          </Text>
+          <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
+            {t('project.quantity')}
+          </Text>
+          <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
+            {t('project.conversion')}
+          </Text>
+        </div>
+
+        <div className='space-y-0.5'>
+          {_map(valuesToDisplay as Array<{ value: string; count: number }>, ({ value, count }) => {
+            const perc = uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
+            const link = _getFilterLink(null, value)
+
+            return (
+              <div
+                key={value}
+                className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800'
+                onClick={() => {
+                  navigate(link)
+                }}
+              >
+                <div
+                  className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                  style={{
+                    width: `${(count / maxValue) * 100}%`,
+                  }}
+                />
+
+                <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
+                  <Text size='sm' truncate>
+                    {value}
+                  </Text>
+                  <FilterIcon
+                    className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
+                    strokeWidth={1.5}
+                  />
+                  <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                </div>
+                <div className='relative z-10 w-1/6 text-right'>
+                  <Text size='sm' weight='medium'>
+                    {count}
+                  </Text>
+                </div>
+                <div className='relative z-10 w-1/6 text-right'>
+                  <Text size='sm' weight='medium'>
+                    {perc}%
+                  </Text>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <Modal
+          onClose={() => setDetailsOpened(false)}
+          isOpened={detailsOpened}
+          title={`${title}: ${activeKey}`}
+          message={<DetailsTable />}
+          size='large'
+        />
+      </>
+    )
+  }
+
+  const hasData =
+    mode === 'customEvent' ? _size(rawMetadata) > ENTRIES_PER_PANEL : _size(valuesData) > ENTRIES_PER_PANEL
+
+  return (
     <PanelContainer
-      name={t('project.metadata')}
-      type='metadata'
-      tabs={tabs}
-      onTabChange={onTabChange}
-      activeTabId={activeTabId}
-      onDetailsClick={() => setDetailsOpened(true)}
+      name={title}
+      type='metadataKey'
+      tabs={_isEmpty(dropdownItems) ? undefined : [dropdownItems]}
+      onTabChange={onKeyChange}
+      activeTabId={activeKey}
+      onDetailsClick={hasData ? () => setDetailsOpened(true) : undefined}
+      dropdownPlaceholder={mode === 'customEvent' ? t('project.selectEvent') : t('project.selectProperty')}
     >
-      {renderTabContent()}
+      {renderContent()}
     </PanelContainer>
   )
 }
@@ -1197,7 +1601,7 @@ const Panel = ({
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       ) : (
         <>
-          <div className='mb-1 flex items-center justify-between px-1 py-1'>
+          <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-white px-1 py-1 dark:bg-slate-800/25'>
             <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>
               {tnMapping[activeTabId as keyof typeof tnMapping]}
             </span>
@@ -1616,7 +2020,13 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
 }
 
 const PanelMemo = memo(Panel) as typeof Panel
-const MetadataMemo = memo(Metadata) as typeof Metadata
+const CustomEventsMemo = memo(CustomEvents) as typeof CustomEvents
+const MetadataKeyPanelMemo = memo(MetadataKeyPanel) as typeof MetadataKeyPanel
 const MetadataPanelMemo = memo(MetadataPanel) as typeof MetadataPanel
 
-export { PanelMemo as Panel, MetadataMemo as Metadata, MetadataPanelMemo as MetadataPanel }
+export {
+  PanelMemo as Panel,
+  CustomEventsMemo as CustomEvents,
+  MetadataKeyPanelMemo as MetadataKeyPanel,
+  MetadataPanelMemo as MetadataPanel,
+}

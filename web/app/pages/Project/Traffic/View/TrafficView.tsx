@@ -47,7 +47,7 @@ import {
   Properties,
   TrafficLogResponse,
 } from '~/pages/Project/View/interfaces/traffic'
-import { Panel, Metadata as MetadataGeneric } from '~/pages/Project/View/Panels'
+import { Panel, CustomEvents, MetadataKeyPanel } from '~/pages/Project/View/Panels'
 import { FILTER_CHART_METRICS_MAPPING_FOR_COMPARE } from '~/pages/Project/View/utils/filters'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import {
@@ -198,13 +198,15 @@ const TrafficView = ({
     page: 'pg' | 'host' | 'userFlow' | 'entryPage' | 'exitPage'
     device: 'br' | 'os' | 'dv'
     source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co' | 'keywords'
-    metadata: 'ce' | 'props'
+    customEvMetadata: string
+    pageviewMetadata: string
   }>({
     location: 'cc',
     page: 'pg',
     device: 'br',
     source: 'ref',
-    metadata: 'ce',
+    customEvMetadata: '',
+    pageviewMetadata: '',
   })
 
   // GSC Keywords state
@@ -1199,17 +1201,44 @@ const TrafficView = ({
                 return null
               })
             : null}
-          {!_isEmpty(panelsData.data) ? (
-            <MetadataGeneric
+          {/* Custom Events Panel - Full Width */}
+          {!_isEmpty(panelsData.customs) ? (
+            <CustomEvents
               customs={panelsData.customs}
-              properties={panelsData.properties}
               filters={filters}
               getFilterLink={getFilterLink}
               chartData={chartData}
               getCustomEventMetadata={getCustomEventMetadata}
-              getPropertyMetadata={_getPropertyMetadata}
-              onTabChange={(tab) => setPanelTab('metadata', tab)}
-              activeTabId={panelsActiveTabs.metadata}
+            />
+          ) : null}
+          {/* Custom Events Metadata Panel - Left */}
+          {!_isEmpty(panelsData.customs) ? (
+            <MetadataKeyPanel
+              title={t('project.customEvMetadata')}
+              metadataKeys={_keys(panelsData.customs)}
+              getMetadataValues={getCustomEventMetadata}
+              getFilterLink={getFilterLink}
+              chartData={chartData}
+              filters={filters}
+              activeKey={panelsActiveTabs.customEvMetadata}
+              onKeyChange={(key) => setPanelTab('customEvMetadata', key)}
+              filterPrefix='ev:key'
+              mode='customEvent'
+            />
+          ) : null}
+          {/* Pageview Metadata Panel - Right */}
+          {!_isEmpty(panelsData.properties) ? (
+            <MetadataKeyPanel
+              title={t('project.pageviewMetadata')}
+              metadataKeys={_keys(panelsData.properties)}
+              getMetadataValues={_getPropertyMetadata}
+              getFilterLink={getFilterLink}
+              chartData={chartData}
+              filters={filters}
+              activeKey={panelsActiveTabs.pageviewMetadata}
+              onKeyChange={(key) => setPanelTab('pageviewMetadata', key)}
+              filterPrefix='tag:key'
+              mode='property'
             />
           ) : null}
         </div>
