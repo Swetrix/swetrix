@@ -13,6 +13,8 @@ import {
   HttpException,
   HttpStatus,
   ParseIntPipe,
+  Headers,
+  Ip,
 } from '@nestjs/common'
 import {
   ApiTags,
@@ -37,6 +39,7 @@ import {
 } from '../analytics/analytics.service'
 import { Auth } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
+import { checkRateLimit, getIPFromHeaders } from '../common/utils'
 import {
   Experiment,
   ExperimentStatus,
@@ -156,8 +159,14 @@ export class ExperimentController {
   async createExperiment(
     @Body() experimentDto: CreateExperimentDto,
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() reqIP: string,
   ) {
     this.logger.log({ uid, pid: experimentDto.pid }, 'POST /experiment')
+
+    const ip = getIPFromHeaders(headers) || reqIP
+    await checkRateLimit(ip, 'experiment-create', 20, 3600)
+    await checkRateLimit(uid, 'experiment-create', 20, 3600)
 
     const user = await this.userService.findOne({
       where: { id: uid },
@@ -210,7 +219,6 @@ export class ExperimentController {
       )
     }
 
-    // Validate variants
     if (!experimentDto.variants || experimentDto.variants.length < 2) {
       throw new BadRequestException(
         'An experiment must have at least 2 variants',
@@ -233,7 +241,6 @@ export class ExperimentController {
       )
     }
 
-    // Get goal if provided
     let goal = null
     if (experimentDto.goalId) {
       goal = await this.goalService.findOne({
@@ -244,7 +251,6 @@ export class ExperimentController {
       }
     }
 
-    // Validate exposure criteria
     if (
       experimentDto.exposureTrigger === ExposureTrigger.CUSTOM_EVENT &&
       !experimentDto.customEventName?.trim()
@@ -254,7 +260,6 @@ export class ExperimentController {
       )
     }
 
-    // Handle feature flag mode
     let existingFeatureFlag: FeatureFlag | null = null
     if (experimentDto.featureFlagMode === FeatureFlagMode.LINK) {
       if (!experimentDto.existingFeatureFlagId) {
@@ -279,7 +284,6 @@ export class ExperimentController {
     }
 
     try {
-      // Create the experiment
       const experiment = new Experiment()
       experiment.name = experimentDto.name
       experiment.description = experimentDto.description || null
@@ -288,7 +292,6 @@ export class ExperimentController {
       experiment.project = project
       experiment.goal = goal
 
-      // Exposure criteria
       experiment.exposureTrigger =
         experimentDto.exposureTrigger || ExposureTrigger.FEATURE_FLAG
       experiment.customEventName = experimentDto.customEventName || null
@@ -297,13 +300,11 @@ export class ExperimentController {
       experiment.filterInternalUsers =
         experimentDto.filterInternalUsers !== false
 
-      // Feature flag configuration
       experiment.featureFlagMode =
         experimentDto.featureFlagMode || FeatureFlagMode.CREATE
       experiment.featureFlagKey = experimentDto.featureFlagKey || null
       experiment.featureFlag = existingFeatureFlag
 
-      // Create variants
       experiment.variants = experimentDto.variants.map(v => {
         const variant = new ExperimentVariant()
         variant.name = v.name
@@ -316,7 +317,6 @@ export class ExperimentController {
 
       const newExperiment = await this.experimentService.create(experiment)
 
-      // If linking existing flag, update it with experiment ID
       if (existingFeatureFlag) {
         await this.featureFlagService.update(existingFeatureFlag.id, {
           experimentId: newExperiment.id,
@@ -344,8 +344,14 @@ export class ExperimentController {
     @Param('id') id: string,
     @Body() experimentDto: UpdateExperimentDto,
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() reqIP: string,
   ) {
     this.logger.log({ id, uid }, 'PUT /experiment/:id')
+
+    const ip = getIPFromHeaders(headers) || reqIP
+    await checkRateLimit(ip, 'experiment-update', 30, 3600)
+    await checkRateLimit(uid, 'experiment-update', 30, 3600)
 
     const experiment = await this.experimentService.findOneWithRelations(id)
 
@@ -359,19 +365,16 @@ export class ExperimentController {
       'You are not allowed to manage this experiment',
     )
 
-    // Cannot update running experiments (except for pausing)
     if (experiment.status === ExperimentStatus.RUNNING) {
       throw new BadRequestException(
         'Cannot update a running experiment. Pause it first.',
       )
     }
 
-    // Cannot update completed experiments
     if (experiment.status === ExperimentStatus.COMPLETED) {
       throw new BadRequestException('Cannot update a completed experiment')
     }
 
-    // Update goal if provided
     let goal = experiment.goal
     if (experimentDto.goalId !== undefined) {
       if (experimentDto.goalId) {
@@ -389,7 +392,6 @@ export class ExperimentController {
       }
     }
 
-    // Update variants if provided
     if (experimentDto.variants) {
       if (experimentDto.variants.length < 2) {
         throw new BadRequestException(
@@ -413,7 +415,6 @@ export class ExperimentController {
         )
       }
 
-      // Delete old variants and create new ones
       await this.experimentService.deleteVariantsByExperiment(id)
 
       for (const v of experimentDto.variants) {
@@ -428,7 +429,6 @@ export class ExperimentController {
       }
     }
 
-    // Validate exposure criteria
     const exposureTrigger =
       experimentDto.exposureTrigger ?? experiment.exposureTrigger
     const customEventName =
@@ -442,7 +442,6 @@ export class ExperimentController {
       )
     }
 
-    // Handle feature flag mode changes
     let featureFlag = experiment.featureFlag
     if (
       experimentDto.featureFlagMode !== undefined &&
@@ -468,13 +467,11 @@ export class ExperimentController {
             'This feature flag is already linked to another experiment',
           )
         }
-        // Unlink old flag if exists
         if (experiment.featureFlag) {
           await this.featureFlagService.update(experiment.featureFlag.id, {
             experimentId: null,
           })
         }
-        // Link new flag
         await this.featureFlagService.update(existingFlag.id, {
           experimentId: id,
         })
@@ -498,7 +495,6 @@ export class ExperimentController {
       featureFlag,
     }
 
-    // Remove undefined values
     Object.keys(updatePayload).forEach(key => {
       if (updatePayload[key] === undefined) {
         delete updatePayload[key]
@@ -529,8 +525,14 @@ export class ExperimentController {
   async deleteExperiment(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() reqIP: string,
   ) {
     this.logger.log({ id, uid }, 'DELETE /experiment/:id')
+
+    const ip = getIPFromHeaders(headers) || reqIP
+    await checkRateLimit(ip, 'experiment-delete', 20, 3600)
+    await checkRateLimit(uid, 'experiment-delete', 20, 3600)
 
     const experiment = await this.experimentService.findOneWithRelations(id)
 
@@ -544,13 +546,10 @@ export class ExperimentController {
       'You are not allowed to manage this experiment',
     )
 
-    // Handle feature flag - delete if created for this experiment, unlink if linked
     if (experiment.featureFlag) {
       if (experiment.featureFlagMode === FeatureFlagMode.CREATE) {
-        // Delete the flag that was created specifically for this experiment
         await this.featureFlagService.delete(experiment.featureFlag.id)
       } else {
-        // Just unlink the flag, don't delete it
         await this.featureFlagService.update(experiment.featureFlag.id, {
           experimentId: null,
         })
@@ -565,8 +564,17 @@ export class ExperimentController {
   @Auth()
   @ApiResponse({ status: 200, type: ExperimentDto })
   @ApiOperation({ summary: 'Start an experiment' })
-  async startExperiment(@Param('id') id: string, @CurrentUserId() uid: string) {
+  async startExperiment(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() reqIP: string,
+  ) {
     this.logger.log({ id, uid }, 'POST /experiment/:id/start')
+
+    const ip = getIPFromHeaders(headers) || reqIP
+    await checkRateLimit(ip, 'experiment-lifecycle', 30, 3600)
+    await checkRateLimit(uid, 'experiment-lifecycle', 30, 3600)
 
     const experiment = await this.experimentService.findOneWithRelations(id)
 
@@ -594,17 +602,13 @@ export class ExperimentController {
       )
     }
 
-    // Create or update the feature flag for this experiment
     let featureFlag = experiment.featureFlag
     if (!featureFlag) {
-      // Only create new flag if mode is CREATE (not LINK)
       if (experiment.featureFlagMode === FeatureFlagMode.CREATE) {
-        // Use custom key if provided, otherwise generate one
         const flagKey =
           experiment.featureFlagKey?.trim() ||
           `experiment_${experiment.id.replace(/-/g, '_').substring(0, 20)}`
 
-        // Check if key already exists
         const existingFlag = await this.featureFlagService.findOne({
           where: { key: flagKey, project: { id: experiment.project.id } },
         })
@@ -618,7 +622,7 @@ export class ExperimentController {
         featureFlag.key = flagKey
         featureFlag.description = `Feature flag for experiment: ${experiment.name}`
         featureFlag.flagType = FeatureFlagType.ROLLOUT
-        featureFlag.rolloutPercentage = 100 // We control distribution via variants
+        featureFlag.rolloutPercentage = 100
         featureFlag.enabled = true
         featureFlag.project = experiment.project
         featureFlag.experimentId = experiment.id
@@ -629,7 +633,6 @@ export class ExperimentController {
         )
       }
     } else {
-      // Enable the existing flag
       await this.featureFlagService.update(featureFlag.id, { enabled: true })
     }
 
@@ -655,8 +658,17 @@ export class ExperimentController {
   @Auth()
   @ApiResponse({ status: 200, type: ExperimentDto })
   @ApiOperation({ summary: 'Pause an experiment' })
-  async pauseExperiment(@Param('id') id: string, @CurrentUserId() uid: string) {
+  async pauseExperiment(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() reqIP: string,
+  ) {
     this.logger.log({ id, uid }, 'POST /experiment/:id/pause')
+
+    const ip = getIPFromHeaders(headers) || reqIP
+    await checkRateLimit(ip, 'experiment-lifecycle', 30, 3600)
+    await checkRateLimit(uid, 'experiment-lifecycle', 30, 3600)
 
     const experiment = await this.experimentService.findOneWithRelations(id)
 
@@ -674,7 +686,6 @@ export class ExperimentController {
       throw new BadRequestException('Can only pause a running experiment')
     }
 
-    // Disable the feature flag
     if (experiment.featureFlag) {
       await this.featureFlagService.update(experiment.featureFlag.id, {
         enabled: false,
@@ -704,8 +715,14 @@ export class ExperimentController {
   async completeExperiment(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() reqIP: string,
   ) {
     this.logger.log({ id, uid }, 'POST /experiment/:id/complete')
+
+    const ip = getIPFromHeaders(headers) || reqIP
+    await checkRateLimit(ip, 'experiment-lifecycle', 30, 3600)
+    await checkRateLimit(uid, 'experiment-lifecycle', 30, 3600)
 
     const experiment = await this.experimentService.findOneWithRelations(id)
 
@@ -728,7 +745,6 @@ export class ExperimentController {
       )
     }
 
-    // Disable the feature flag
     if (experiment.featureFlag) {
       await this.featureFlagService.update(experiment.featureFlag.id, {
         enabled: false,
@@ -783,7 +799,6 @@ export class ExperimentController {
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
 
-    // Handle "all" period like analytics controller
     let timeBucket =
       timeBucketParam || getLowestPossibleTimeBucket(period, from, to)
     let allowedTimeBucketForPeriodAll: string[] | undefined
@@ -813,7 +828,6 @@ export class ExperimentController {
         diff,
       )
 
-    // Get exposures per variant from ClickHouse
     const exposuresQuery = `
       SELECT 
         variantKey,
@@ -845,8 +859,6 @@ export class ExperimentController {
       this.logger.warn({ err }, 'Failed to get experiment exposures')
     }
 
-    // Get conversions per variant
-    // We need to join exposures with goal conversions
     let conversionsData: { variantKey: string; conversions: number }[] = []
     if (experiment.goal) {
       const goalType = experiment.goal.type
@@ -854,7 +866,6 @@ export class ExperimentController {
       const matchColumn = goalType === 'custom_event' ? 'ev' : 'pg'
       const goalValue = experiment.goal.value || ''
 
-      // Build match condition based on goal match type
       let matchCondition = ''
       if (experiment.goal.matchType === 'exact') {
         matchCondition = `c.${matchColumn} = {goalValue:String}`
@@ -862,8 +873,6 @@ export class ExperimentController {
         matchCondition = `c.${matchColumn} ILIKE concat('%', {goalValue:String}, '%')`
       }
 
-      // Build metadata filters condition (e.g. currency = EUR)
-      // ClickHouse stores metadata as Nested(key String, value String)
       let metaCondition = ''
       const metaParams: Record<string, string> = {}
       const metadataFilters = experiment.goal.metadataFilters
@@ -921,7 +930,6 @@ export class ExperimentController {
       }
     }
 
-    // Build variant results
     const exposuresMap = new Map(
       exposuresData.map(e => [e.variantKey, Number(e.exposures)]),
     )
@@ -929,7 +937,6 @@ export class ExperimentController {
       conversionsData.map(c => [c.variantKey, Number(c.conversions)]),
     )
 
-    // Find control variant
     const controlVariant = experiment.variants.find(v => v.isControl)
     const controlExposures = controlVariant
       ? exposuresMap.get(controlVariant.key) || 0
@@ -940,17 +947,14 @@ export class ExperimentController {
     const controlRate =
       controlExposures > 0 ? controlConversions / controlExposures : 0
 
-    // Prepare data for Bayesian calculation
     const variantData = experiment.variants.map(v => ({
       key: v.key,
       exposures: exposuresMap.get(v.key) || 0,
       conversions: conversionsMap.get(v.key) || 0,
     }))
 
-    // Calculate Bayesian probabilities
     const probabilities = calculateBayesianProbabilities(variantData)
 
-    // Build variant results
     const variantResults: VariantResultDto[] = experiment.variants.map(v => {
       const exposures = exposuresMap.get(v.key) || 0
       const conversions = conversionsMap.get(v.key) || 0
@@ -978,7 +982,6 @@ export class ExperimentController {
       }
     })
 
-    // Determine if there's a winner (>95% probability)
     const totalExposures = _sum(variantResults.map(v => v.exposures))
     const totalConversions = _sum(variantResults.map(v => v.conversions))
     const highestProbVariant = variantResults.reduce((a, b) =>
@@ -986,7 +989,6 @@ export class ExperimentController {
     )
     const hasWinner = highestProbVariant.probabilityOfBeingBest >= 95
 
-    // Generate chart data with win probability over time
     let chart:
       | { x: string[]; winProbability: Record<string, number[]> }
       | undefined
@@ -1031,7 +1033,6 @@ export class ExperimentController {
     groupToUTC: string,
     safeTimezone: string,
   ): Promise<{ x: string[]; winProbability: Record<string, number[]> }> {
-    // Generate X axis based on time bucket
     const { xShifted } = this.analyticsService.generateXAxis(
       timeBucket as any,
       groupFrom,
@@ -1051,7 +1052,6 @@ export class ExperimentController {
       'firstCreated',
     )
 
-    // Query exposures grouped by time bucket and variant (first exposure per profile)
     const exposuresQuery = `
       SELECT
         ${exposuresDateColumnsSelect},
@@ -1091,7 +1091,6 @@ export class ExperimentController {
       this.logger.warn({ err }, 'Failed to get time-bucketed exposures')
     }
 
-    // Query conversions grouped by time bucket and variant (if goal exists)
     let conversionsData: any[] = []
     if (experiment.goal) {
       const goalType = experiment.goal.type
@@ -1103,7 +1102,6 @@ export class ExperimentController {
         'firstConversion',
       )
 
-      // Build match condition based on goal match type
       let matchCondition = ''
       if (experiment.goal.matchType === 'exact') {
         matchCondition = `c.${matchColumn} = {goalValue:String}`
@@ -1111,7 +1109,6 @@ export class ExperimentController {
         matchCondition = `c.${matchColumn} ILIKE concat('%', {goalValue:String}, '%')`
       }
 
-      // Build metadata filters condition
       let metaCondition = ''
       const metaParams: Record<string, string> = {}
       const metadataFilters = experiment.goal.metadataFilters
@@ -1169,16 +1166,13 @@ export class ExperimentController {
       }
     }
 
-    // Build cumulative data per variant per time bucket
     const variantKeys = experiment.variants.map(v => v.key)
     const winProbability: Record<string, number[]> = {}
 
-    // Initialize arrays for each variant
     for (const key of variantKeys) {
       winProbability[key] = Array(xShifted.length).fill(0)
     }
 
-    // Track cumulative exposures and conversions per variant
     const cumulativeExposures: Record<string, number> = {}
     const cumulativeConversions: Record<string, number> = {}
 
@@ -1187,7 +1181,6 @@ export class ExperimentController {
       cumulativeConversions[key] = 0
     }
 
-    // Index bucket deltas for O(buckets * variants) processing
     const exposuresByBucket: Record<string, Record<string, number>> = {}
     for (const row of exposuresData) {
       const rowDate = this.generateDateStringFromRow(row, timeBucket)
@@ -1206,11 +1199,9 @@ export class ExperimentController {
       conversionsByBucket[rowDate][key] = Number(row.conversions) || 0
     }
 
-    // Process each time bucket
     for (let i = 0; i < xShifted.length; i++) {
       const bucketDate = xShifted[i]
 
-      // Add exposures for this bucket
       const exposuresDelta = exposuresByBucket[bucketDate]
       if (exposuresDelta) {
         for (const [key, value] of Object.entries(exposuresDelta)) {
@@ -1220,7 +1211,6 @@ export class ExperimentController {
         }
       }
 
-      // Add conversions for this bucket
       const conversionsDelta = conversionsByBucket[bucketDate]
       if (conversionsDelta) {
         for (const [key, value] of Object.entries(conversionsDelta)) {
@@ -1230,7 +1220,6 @@ export class ExperimentController {
         }
       }
 
-      // Calculate Bayesian probabilities for this point in time
       const variantData = variantKeys.map(key => ({
         key,
         exposures: cumulativeExposures[key],
@@ -1239,7 +1228,6 @@ export class ExperimentController {
 
       const probabilities = calculateBayesianProbabilities(variantData)
 
-      // Store probabilities for each variant
       for (const key of variantKeys) {
         winProbability[key][i] = _round((probabilities.get(key) || 0) * 100, 2)
       }

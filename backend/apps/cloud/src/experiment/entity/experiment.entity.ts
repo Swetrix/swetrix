@@ -21,22 +21,19 @@ export enum ExperimentStatus {
   COMPLETED = 'completed',
 }
 
-// Exposure trigger type - determines how users are considered exposed to the experiment
 export enum ExposureTrigger {
-  FEATURE_FLAG = 'feature_flag', // Default: When $feature_flag_called event is recorded
-  CUSTOM_EVENT = 'custom_event', // Custom: When a specific custom event is recorded
+  FEATURE_FLAG = 'feature_flag',
+  CUSTOM_EVENT = 'custom_event',
 }
 
-// How to handle users exposed to multiple variants
 export enum MultipleVariantHandling {
-  EXCLUDE = 'exclude', // Exclude from analysis (recommended)
-  FIRST_EXPOSURE = 'first_exposure', // Use first exposure only
+  EXCLUDE = 'exclude',
+  FIRST_EXPOSURE = 'first_exposure',
 }
 
-// Feature flag mode - create new or link existing
 export enum FeatureFlagMode {
-  CREATE = 'create', // Create a new feature flag for this experiment
-  LINK = 'link', // Link an existing multivariate feature flag
+  CREATE = 'create',
+  LINK = 'link',
 }
 
 @Entity()
@@ -65,7 +62,6 @@ export class Experiment {
   })
   status: ExperimentStatus
 
-  // Exposure criteria
   @ApiProperty()
   @Column({
     type: 'enum',
@@ -90,7 +86,6 @@ export class Experiment {
   @Column('boolean', { default: true })
   filterInternalUsers: boolean
 
-  // Feature flag configuration
   @ApiProperty()
   @Column({
     type: 'enum',

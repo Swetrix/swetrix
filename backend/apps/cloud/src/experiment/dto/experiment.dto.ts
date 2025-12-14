@@ -11,6 +11,8 @@ import {
   Max,
   MaxLength,
   IsUUID,
+  IsNotEmpty,
+  Matches,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import {
@@ -19,6 +21,7 @@ import {
   MultipleVariantHandling,
   FeatureFlagMode,
 } from '../entity/experiment.entity'
+import { PID_REGEX } from '../../common/constants'
 
 export class ExperimentVariantDto {
   @ApiProperty()
@@ -49,8 +52,12 @@ export class ExperimentVariantDto {
 }
 
 export class CreateExperimentDto {
-  @ApiProperty()
-  @IsString()
+  @ApiProperty({
+    description: 'The project ID',
+    example: 'aHbCdEfGhIjK',
+  })
+  @IsNotEmpty()
+  @Matches(PID_REGEX, { message: 'The provided Project ID (pid) is incorrect' })
   pid: string
 
   @ApiProperty()
@@ -70,7 +77,6 @@ export class CreateExperimentDto {
   @MaxLength(500)
   hypothesis?: string
 
-  // Exposure criteria
   @ApiPropertyOptional({ enum: ExposureTrigger })
   @IsOptional()
   @IsEnum(ExposureTrigger)
@@ -92,7 +98,6 @@ export class CreateExperimentDto {
   @IsBoolean()
   filterInternalUsers?: boolean
 
-  // Feature flag configuration
   @ApiPropertyOptional({ enum: FeatureFlagMode })
   @IsOptional()
   @IsEnum(FeatureFlagMode)
@@ -140,7 +145,6 @@ export class UpdateExperimentDto {
   @MaxLength(500)
   hypothesis?: string
 
-  // Exposure criteria
   @ApiPropertyOptional({ enum: ExposureTrigger })
   @IsOptional()
   @IsEnum(ExposureTrigger)
@@ -162,7 +166,6 @@ export class UpdateExperimentDto {
   @IsBoolean()
   filterInternalUsers?: boolean
 
-  // Feature flag configuration
   @ApiPropertyOptional({ enum: FeatureFlagMode })
   @IsOptional()
   @IsEnum(FeatureFlagMode)
@@ -208,7 +211,6 @@ export class ExperimentDto {
   @ApiProperty({ enum: ExperimentStatus })
   status: ExperimentStatus
 
-  // Exposure criteria
   @ApiProperty({ enum: ExposureTrigger })
   exposureTrigger: ExposureTrigger
 
@@ -221,7 +223,6 @@ export class ExperimentDto {
   @ApiProperty()
   filterInternalUsers: boolean
 
-  // Feature flag configuration
   @ApiProperty({ enum: FeatureFlagMode })
   featureFlagMode: FeatureFlagMode
 
@@ -273,7 +274,7 @@ export class VariantResultDto {
   probabilityOfBeingBest: number
 
   @ApiProperty()
-  improvement: number // % improvement over control
+  improvement: number
 }
 
 export class ExperimentChartDataDto {
@@ -312,7 +313,7 @@ export class ExperimentResultsDto {
   winnerKey: string | null
 
   @ApiProperty()
-  confidenceLevel: number // e.g., 95 for 95% confidence
+  confidenceLevel: number
 
   @ApiPropertyOptional({ type: ExperimentChartDataDto })
   chart?: ExperimentChartDataDto

@@ -45,7 +45,6 @@ function seedFromVariants(
     .sort((a, b) => a.key.localeCompare(b.key))
     .map(v => `${v.key}:${v.exposures}:${v.conversions}`)
     .join('|')
-  // Mix in simulations so changing it changes output deterministically.
   return (fnv1a32(normalized) ^ (simulations >>> 0)) >>> 0
 }
 
@@ -58,7 +57,6 @@ function seedFromVariants(
  * Then X / (X + Y) ~ Beta(alpha, beta)
  */
 function sampleGamma(shape: number, random: RandomFn): number {
-  // For shape >= 1, use Marsaglia and Tsang's method
   if (shape >= 1) {
     const d = shape - 1 / 3
     const c = 1 / Math.sqrt(9 * d)
@@ -68,7 +66,6 @@ function sampleGamma(shape: number, random: RandomFn): number {
       let v: number
 
       do {
-        // Generate standard normal using Box-Muller
         const u1 = Math.max(random(), Number.EPSILON)
         const u2 = random()
         x = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
@@ -88,9 +85,6 @@ function sampleGamma(shape: number, random: RandomFn): number {
     }
   }
 
-  // For shape < 1, use the transformation:
-  // If X ~ Gamma(shape + 1, 1), then X * U^(1/shape) ~ Gamma(shape, 1)
-  // where U ~ Uniform(0, 1)
   const sample = sampleGamma(shape + 1, random)
   const u = random()
   return sample * Math.pow(u, 1 / shape)
@@ -129,10 +123,8 @@ export function calculateBayesianProbabilities(
     return new Map()
   }
 
-  // Sanitize simulations: ensure it's a positive integer to avoid division by zero and invalid seeds
   simulations = Math.max(1, Math.floor(simulations))
 
-  // Sanitize variant data: clamp exposures and conversions to valid ranges
   const sanitizedVariants = variants.map(v => {
     const exposures = Math.max(0, Math.floor(v.exposures))
     const conversions = Math.min(
@@ -146,40 +138,30 @@ export function calculateBayesianProbabilities(
     return new Map([[sanitizedVariants[0].key, 1]])
   }
 
-  // Check if we have any data at all (recompute from sanitized values)
   const totalExposures = sanitizedVariants.reduce(
     (sum, v) => sum + v.exposures,
     0,
   )
   if (totalExposures === 0) {
-    // No data yet - equal probability for all variants
     const prob = 1 / sanitizedVariants.length
     return new Map(sanitizedVariants.map(v => [v.key, prob]))
   }
 
-  // Count wins for each variant
   const wins = new Map<string, number>()
   for (const v of sanitizedVariants) {
     wins.set(v.key, 0)
   }
 
-  // Use deterministic PRNG so the same input always produces the same output.
-  // This prevents slight "drift" between the table value and the last chart point.
   const random = mulberry32(seedFromVariants(sanitizedVariants, simulations))
 
-  // Run Monte Carlo simulation
   for (let i = 0; i < simulations; i++) {
     let bestRate = -1
     let bestKey = ''
 
     for (const variant of sanitizedVariants) {
-      // Calculate Beta distribution parameters
-      // alpha = conversions + 1 (prior success)
-      // beta = exposures - conversions + 1 (prior failure)
       const alpha = variant.conversions + 1
       const beta = Math.max(1, variant.exposures - variant.conversions + 1)
 
-      // Sample from the Beta distribution
       const rate = sampleBeta(alpha, beta, random)
 
       if (rate > bestRate) {
@@ -188,11 +170,9 @@ export function calculateBayesianProbabilities(
       }
     }
 
-    // Increment win count for the best variant in this simulation
     wins.set(bestKey, (wins.get(bestKey) || 0) + 1)
   }
 
-  // Convert wins to probabilities
   const probabilities = new Map<string, number>()
   for (const [key, winCount] of wins) {
     probabilities.set(key, winCount / simulations)
