@@ -28,7 +28,6 @@
     "@react-router/fs-routes": "^7.9.6",
     "@react-router/node": "^7.9.6",
     "@react-router/serve": "^7.9.6",
-    "@swetrix/sdk": "^1.2.0",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/react-virtual": "^3.13.12",
     "@types/leaflet": "^1.9.21",

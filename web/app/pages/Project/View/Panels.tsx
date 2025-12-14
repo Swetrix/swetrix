@@ -4,7 +4,6 @@ import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
 import cx from 'clsx'
 import _ceil from 'lodash/ceil'
-import _find from 'lodash/find'
 import _floor from 'lodash/floor'
 import _fromPairs from 'lodash/fromPairs'
 import _isEmpty from 'lodash/isEmpty'
@@ -24,7 +23,6 @@ import React, { memo, useState, useEffect, useMemo, Fragment, useRef } from 'rea
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps, useNavigate } from 'react-router'
 
-import { DangerouslySetHtmlContent } from '~/components/DangerouslySetInnerHTML'
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import Button from '~/ui/Button'
@@ -33,7 +31,6 @@ import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
-import { trackError } from '~/utils/analytics'
 import { nFormatter, getLocaleDisplayName } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
@@ -64,52 +61,6 @@ interface PanelContainerProps {
   onDetailsClick?: () => void
 }
 
-class ExtensionErrorBoundary extends React.Component<
-  { children: React.ReactNode; extensionID: string },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode; extensionID: string }) {
-    super(props)
-    this.state = { hasError: false }
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true }
-  }
-
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    trackError({
-      name: `Extension Error: ${error.name}`,
-      message: error.message,
-      stackTrace: info.componentStack,
-      meta: {
-        extensionID: this.props?.extensionID || 'unknown',
-      },
-    })
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div>
-          <Text as='p' size='sm' colour='error'>
-            Something went wrong. Please try again later.
-          </Text>
-          <br />
-          <Text as='p' size='sm' colour='error'>
-            <span>Extension ID: </span>
-            <span>{this.props?.extensionID || 'unknown'}</span>
-          </Text>
-          <Text as='p' size='sm' colour='error'>
-            If the problem persists, please contact support.
-          </Text>
-        </div>
-      )
-    }
-    return this.props.children
-  }
-}
-
 const PanelContainer = ({
   name,
   children,
@@ -120,51 +71,7 @@ const PanelContainer = ({
   activeTabId,
   onDetailsClick,
 }: PanelContainerProps) => {
-  const { customPanelTabs } = useViewProjectContext()
   const { t } = useTranslation('common')
-
-  const panelExtensions = useMemo(() => {
-    return customPanelTabs.filter((tab) => tab.panelID === type)
-  }, [customPanelTabs, type])
-
-  const panelTabs = useMemo(() => {
-    if (panelExtensions.length === 0) {
-      return tabs
-    }
-
-    const panelTabs = [...(tabs || [])]
-
-    if (panelTabs.length === 0) {
-      panelTabs.push({
-        id: 'default',
-        label: 'Data',
-      })
-    }
-
-    return [
-      ...panelTabs,
-      ...panelExtensions.map((tab) => ({
-        id: tab.extensionID,
-        label: 'Addon',
-      })),
-    ]
-  }, [panelExtensions, tabs])
-
-  const contentRenderer = () => {
-    const { extensionID, tabContent } =
-      _find(panelExtensions, (tab) => tab.extensionID === activeTabId) || ({} as CustomTab)
-
-    if (extensionID) {
-      // Using this instead of dangerouslySetInnerHTML to support script tags
-      return (
-        <ExtensionErrorBoundary extensionID={extensionID}>
-          <DangerouslySetHtmlContent className='absolute overflow-auto' html={tabContent || ''} />
-        </ExtensionErrorBoundary>
-      )
-    }
-
-    return children
-  }
 
   return (
     <div
@@ -181,9 +88,9 @@ const PanelContainer = ({
           {name}
         </Text>
         <div className='scrollbar-thin flex items-center gap-2.5 overflow-x-auto'>
-          {panelTabs && onTabChange ? (
+          {tabs && onTabChange ? (
             <>
-              {panelTabs.map((tab, index) => {
+              {tabs.map((tab, index) => {
                 if (Array.isArray(tab)) {
                   const dropdownTabs = tab
                   const activeDropdownTab = dropdownTabs.find((t) => t.id === activeTabId)
@@ -240,7 +147,7 @@ const PanelContainer = ({
           ) : null}
         </div>
       </div>
-      <div className='relative flex h-[19.6rem] flex-col overflow-x-auto'>{contentRenderer()}</div>
+      <div className='relative flex h-[19.6rem] flex-col overflow-x-auto'>{children}</div>
       {onDetailsClick ? (
         <div className='mt-2 flex items-center justify-center'>
           <Button
@@ -255,13 +162,6 @@ const PanelContainer = ({
       ) : null}
     </div>
   )
-}
-
-export type CustomTab = {
-  extensionID: string
-  panelID: string
-  onOpen?: () => void
-  tabContent?: string
 }
 
 interface MetadataProps {

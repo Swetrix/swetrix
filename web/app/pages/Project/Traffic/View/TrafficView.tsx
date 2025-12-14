@@ -42,6 +42,7 @@ import {
   Customs,
   TrafficMeta,
   Params,
+  ProjectView,
   ProjectViewCustomEvent,
   Properties,
   TrafficLogResponse,
@@ -55,6 +56,7 @@ import {
   noRegionPeriods,
   CHART_METRICS_MAPPING,
   getDeviceRowMapper,
+  onCSVExportClick,
 } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -68,6 +70,7 @@ import { groupRefEntries } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
 import CustomEventsSubmenu from '../../View/components/CustomEventsSubmenu'
+import TrafficHeaderActions from '../../View/components/TrafficHeaderActions'
 
 const InteractiveMap = lazy(() => import('~/pages/Project/View/components/InteractiveMap'))
 
@@ -87,8 +90,15 @@ interface TrafficViewProps {
   onRemoveCustomMetric: (metricId: string) => void
   resetCustomMetrics: () => void
   mode: 'periodical' | 'cumulative'
-  sdkInstance: any
-  headerRightContent?: React.ReactNode
+  // Segment/View props
+  projectViews: ProjectView[]
+  projectViewsLoading: boolean | null
+  projectViewDeleting: boolean
+  loadProjectViews: () => Promise<void>
+  onProjectViewDelete: (viewId: string) => Promise<void>
+  setProjectViewToUpdate: (view: ProjectView | undefined) => void
+  setIsAddAViewOpened: (value: boolean) => void
+  onCustomMetric: (metrics: ProjectViewCustomEvent[]) => void
 }
 
 const TrafficView = ({
@@ -97,8 +107,14 @@ const TrafficView = ({
   onRemoveCustomMetric,
   resetCustomMetrics,
   mode,
-  sdkInstance,
-  headerRightContent,
+  projectViews,
+  projectViewsLoading,
+  projectViewDeleting,
+  loadProjectViews,
+  onProjectViewDelete,
+  setProjectViewToUpdate,
+  setIsAddAViewOpened,
+  onCustomMetric,
 }: TrafficViewProps) => {
   const { id, project, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
@@ -518,27 +534,15 @@ const TrafficView = ({
         data.overall = rawOverall[id]
         setOverall(rawOverall[id])
 
-        const sdkData = {
-          ...(data || {}),
-          filters,
-          timezone,
-          timeBucket,
-          period,
-          from,
-          to,
-        }
-
         if (_keys(data).length < 2) {
           setAnalyticsLoading(false)
           setDataLoading(false)
           setIsPanelsDataEmpty(true)
-          sdkInstance?._emitEvent('load', sdkData)
           return
         }
 
         const { chart, params, customs, properties, meta } = data
         let newTimebucket = timeBucket
-        sdkInstance?._emitEvent('load', sdkData)
 
         if (period === 'all' && !_isEmpty(data.timeBucket)) {
           newTimebucket = _includes(data.timeBucket, timeBucket) ? timeBucket : (data.timeBucket?.[0] as TimeBucket)
@@ -711,6 +715,17 @@ const TrafficView = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trafficRefreshTrigger])
 
+  const exportTypes = useMemo(
+    () => [
+      {
+        label: t('project.asCSV'),
+        onClick: () =>
+          onCSVExportClick({ data: panelsData.data, types: panelsData.types || [] }, id, tnMapping, language),
+      },
+    ],
+    [t, panelsData, id, tnMapping, language],
+  )
+
   // Show waiting state if project has no traffic data yet
   if (!project?.isDataExists) {
     return <WaitingForAnEvent />
@@ -725,6 +740,24 @@ const TrafficView = ({
   if (isPanelsDataEmpty) {
     return <NoEvents filters={filters} />
   }
+
+  const headerRightContent = (
+    <TrafficHeaderActions
+      projectViews={projectViews}
+      projectViewsLoading={projectViewsLoading}
+      projectViewDeleting={projectViewDeleting}
+      loadProjectViews={loadProjectViews}
+      onProjectViewDelete={onProjectViewDelete}
+      setProjectViewToUpdate={setProjectViewToUpdate}
+      setIsAddAViewOpened={setIsAddAViewOpened}
+      onCustomMetric={onCustomMetric}
+      filters={filters}
+      allowedToManage={allowedToManage}
+      dataLoading={dataLoading}
+      exportTypes={exportTypes}
+      panelsData={panelsData}
+    />
+  )
 
   const ChartTypeSwitcher = ({ type, onSwitch }: { type: string; onSwitch: (type: 'line' | 'bar') => void }) => {
     if (type === chartTypes.bar) {

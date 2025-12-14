@@ -1,15 +1,10 @@
-import SwetrixSDK from '@swetrix/sdk'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import { AnimatePresence, motion } from 'framer-motion'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _includes from 'lodash/includes'
-import _isEmpty from 'lodash/isEmpty'
-import _isString from 'lodash/isString'
-import _map from 'lodash/map'
 import _replace from 'lodash/replace'
-import _uniqBy from 'lodash/uniqBy'
 import {
   MoonIcon,
   SunIcon,
@@ -44,21 +39,15 @@ import { changeLanguage } from '~/i18n'
 import {
   tbPeriodPairs,
   DEFAULT_TIMEZONE,
-  CDN_URL,
-  isDevelopment,
   timeBucketToDays,
   PROJECT_TABS,
   TimeFormat,
   chartTypes,
   isSelfhosted,
   tbPeriodPairsCompare,
-  PERIOD_PAIRS_COMPARE,
-  FILTERS_PERIOD_PAIRS,
   LS_IS_ACTIVE_COMPARE_KEY,
   TITLE_SUFFIX,
   TBPeriodPairsProps,
-  ERROR_PERIOD_PAIRS,
-  FUNNELS_PERIOD_PAIRS,
   type Period,
   type TimeBucket,
   VALID_PERIODS,
@@ -73,8 +62,6 @@ import { useTheme } from '~/providers/ThemeProvider'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
-import LoadingBar from '~/ui/LoadingBar'
-import { removeDuplicates } from '~/utils/generic'
 import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
@@ -94,24 +81,12 @@ import TrafficView from '../Traffic/View/TrafficView'
 import AddAViewModal from './components/AddAViewModal'
 import { ChartManagerProvider } from './components/ChartManager'
 const CaptchaView = lazy(() => import('./components/CaptchaView'))
-// Keywords list now reuses shared Panel UI; dedicated component removed from render
 import LockedDashboard from './components/LockedDashboard'
 import ProjectSidebar, { MobileSidebarTrigger } from './components/ProjectSidebar'
 import SearchFilters from './components/SearchFilters'
-import TrafficHeaderActions from './components/TrafficHeaderActions'
-import {
-  Customs,
-  Filter,
-  TrafficMeta,
-  Params,
-  ProjectView,
-  ProjectViewCustomEvent,
-  Properties,
-} from './interfaces/traffic'
-import { type CustomTab } from './Panels'
+import { Filter, ProjectView, ProjectViewCustomEvent } from './interfaces/traffic'
 import { parseFilters } from './utils/filters'
 import {
-  onCSVExportClick,
   getFormatDate,
   typeNameMapping,
   CHART_METRICS_MAPPING,
@@ -135,7 +110,6 @@ interface ViewProjectContextType {
   dataLoading: boolean
   activeTab: keyof typeof PROJECT_TABS
   filters: Filter[]
-  customPanelTabs: CustomTab[]
   captchaRefreshTrigger: number
   goalsRefreshTrigger: number
   experimentsRefreshTrigger: number
@@ -196,7 +170,6 @@ const defaultViewProjectContext: ViewProjectContextType = {
   dataLoading: false,
   activeTab: PROJECT_TABS.traffic,
   filters: [],
-  customPanelTabs: [],
   captchaRefreshTrigger: 0,
   goalsRefreshTrigger: 0,
   experimentsRefreshTrigger: 0,
@@ -249,7 +222,7 @@ export const useViewProjectContext = () => {
 }
 
 const ViewProjectContent = () => {
-  const { id, project, preferences, updatePreferences, extensions, allowedToManage, liveVisitors } = useCurrentProject()
+  const { id, project, preferences, updatePreferences, allowedToManage, liveVisitors } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
 
   const { theme, setTheme } = useTheme()
@@ -262,9 +235,6 @@ const ViewProjectContent = () => {
     t,
     i18n: { language },
   } = useTranslation('common')
-
-  const [customPanelTabs, setCustomPanelTabs] = useState<CustomTab[]>([])
-  const [sdkInstance, setSdkInstance] = useState<SwetrixSDK | null>(null)
 
   const dashboardRef = useRef<HTMLDivElement>(null)
 
@@ -283,23 +253,9 @@ const ViewProjectContent = () => {
     return tabs.split(',')
   }, [searchParams])
 
-  // Traffic data state - now handled by TrafficView, kept for export compatibility
-  const [_panelsData, _setPanelsData] = useState<{
-    types: (keyof Params)[]
-    data: Params
-    customs: Customs
-    properties: Properties
-    meta?: TrafficMeta[]
-    // @ts-expect-error
-  }>({})
-  const [customExportTypes, setCustomExportTypes] = useState<
-    { label: string; onClick: (data: typeof _panelsData, tFunction: typeof t) => void }[]
-  >([])
   const [isAddAViewOpened, setIsAddAViewOpened] = useState(false)
 
-  // prevY2NeededRef removed - no longer needed with new chart management
-  const [dataLoading, _setDataLoading] = useState(false)
-  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false)
+  const [dataLoading] = useState(false)
   const [captchaRefreshTrigger, setCaptchaRefreshTrigger] = useState(0)
   const [goalsRefreshTrigger, setGoalsRefreshTrigger] = useState(0)
   const [experimentsRefreshTrigger, setExperimentsRefreshTrigger] = useState(0)
@@ -309,7 +265,7 @@ const ViewProjectContent = () => {
   const [trafficRefreshTrigger, setTrafficRefreshTrigger] = useState(0)
   const [funnelsRefreshTrigger, setFunnelsRefreshTrigger] = useState(0)
   const [profilesRefreshTrigger, setProfilesRefreshTrigger] = useState(0)
-  const [activeChartMetrics, _setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
+  const [activeChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
     [CHART_METRICS_MAPPING.sessionDuration]: false,
@@ -428,11 +384,6 @@ const ViewProjectContent = () => {
 
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
 
-  // Check if we're viewing a specific session detail
-  const _activePSID = useMemo(() => {
-    return searchParams.get('psid')
-  }, [searchParams])
-
   // null -> not loaded yet
   const [projectViews, setProjectViews] = useState<ProjectView[]>([])
   const [projectViewsLoading, setProjectViewsLoading] = useState<boolean | null>(null) //  // null - not loaded, true - loading, false - loaded
@@ -543,34 +494,6 @@ const ViewProjectContent = () => {
 
     document.title = pageTitle
   }, [project, user, liveVisitors, t])
-
-  const _timeBucketSelectorItems = useMemo(() => {
-    if (activeTab === PROJECT_TABS.errors) {
-      return _filter(periodPairs, (el) => {
-        return _includes(ERROR_PERIOD_PAIRS, el.period)
-      })
-    }
-
-    if (activeTab === PROJECT_TABS.funnels) {
-      return _filter(periodPairs, (el) => {
-        return _includes(FUNNELS_PERIOD_PAIRS, el.period)
-      })
-    }
-
-    if (isActiveCompare) {
-      return _filter(periodPairs, (el) => {
-        return _includes(FILTERS_PERIOD_PAIRS, el.period)
-      })
-    }
-
-    if (_includes(FILTERS_PERIOD_PAIRS, period)) {
-      return periodPairs
-    }
-
-    return _filter(periodPairs, (el) => {
-      return el.period !== PERIOD_PAIRS_COMPARE.COMPARE
-    })
-  }, [activeTab, isActiveCompare, period, periodPairs])
 
   const [showFiltersSearch, setShowFiltersSearch] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
@@ -715,11 +638,7 @@ const ViewProjectContent = () => {
   }
 
   const refreshStats = useCallback(
-    async (isManual = true) => {
-      if (!isManual) {
-        setIsAutoRefreshing(true)
-      }
-
+    async (_isManual = true) => {
       if (!authLoading && !dataLoading) {
         if (activeTab === PROJECT_TABS.funnels) {
           setFunnelsRefreshTrigger((prev) => prev + 1)
@@ -771,144 +690,8 @@ const ViewProjectContent = () => {
   )
 
   useEffect(() => {
-    let sdk: SwetrixSDK | null = null
-
-    const filteredExtensions = _filter(extensions, (ext) => _isString(ext.fileURL))
-
-    if (!_isEmpty(filteredExtensions)) {
-      const processedExtensions = _map(filteredExtensions, (ext) => {
-        const { id: extId, fileURL } = ext
-        return {
-          id: extId,
-          cdnURL: `${CDN_URL}file/${fileURL}`,
-        }
-      })
-
-      // temp fix until it's deployed so I could change it in SDK and extensions too
-      const processPanelId = (id: string) => {
-        if (id === 'ce') {
-          return 'metadata'
-        }
-        return id
-      }
-
-      sdk = new SwetrixSDK(
-        processedExtensions,
-        {
-          debug: isDevelopment,
-        },
-        {
-          onAddExportDataRow: (label: any, onClick: (e: any) => void) => {
-            setCustomExportTypes((prev) => {
-              // TODO: Fix this
-              // A temporary measure to prevent duplicate items stored here (for some reason, SDK is initialised two times)
-              return _uniqBy(
-                [
-                  {
-                    label,
-                    onClick,
-                  },
-                  ...prev,
-                ],
-                'label',
-              )
-            })
-          },
-          onRemoveExportDataRow: (label: any) => {
-            setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
-          },
-          onAddPanelTab: (extensionID: string, panelID: string, tabContent?: string, onOpen?: () => void) => {
-            const processedPanelID = processPanelId(panelID)
-            setCustomPanelTabs((prev) =>
-              removeDuplicates(
-                [
-                  ...prev,
-                  {
-                    extensionID,
-                    panelID: processedPanelID,
-                    tabContent,
-                    onOpen,
-                  },
-                ],
-                ['extensionID', 'panelID'],
-              ),
-            )
-          },
-          onUpdatePanelTab: (extensionID: string, panelID: string, tabContent: any) => {
-            const processedPanelID = processPanelId(panelID)
-            setCustomPanelTabs((prev) =>
-              _map(prev, (row) => {
-                if (row.extensionID === extensionID && row.panelID === processedPanelID) {
-                  return {
-                    ...row,
-                    tabContent,
-                  }
-                }
-
-                return row
-              }),
-            )
-          },
-          onRemovePanelTab: (extensionID: string, panelID: string) => {
-            const processedPanelID = processPanelId(panelID)
-            setCustomPanelTabs((prev) =>
-              _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== processedPanelID),
-            )
-          },
-        },
-      )
-      setSdkInstance(sdk)
-    }
-
-    return () => {
-      if (sdk) {
-        sdk._destroy()
-      }
-    }
-  }, [extensions])
-
-  useEffect(() => {
-    sdkInstance?._emitEvent('timeupdate', {
-      period,
-      timeBucket,
-      dateRange: period === 'custom' ? dateRange : null,
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sdkInstance])
-
-  useEffect(() => {
-    sdkInstance?._emitEvent('clientinfo', {
-      language,
-      theme,
-    })
-  }, [sdkInstance, language, theme])
-
-  useEffect(() => {
-    if (_isEmpty(project)) {
-      return
-    }
-
-    const { active: isActive, created, public: isPublic, name } = project
-
-    sdkInstance?._emitEvent('projectinfo', {
-      id: project.id,
-      name,
-      isActive,
-      created,
-      isPublic,
-    })
-  }, [sdkInstance, project])
-
-  useEffect(() => {
     setPeriodPairsCompare(tbPeriodPairsCompare(t, undefined, language))
   }, [t, language])
-
-  // Reset isAutoRefreshing when loading completes
-  useEffect(() => {
-    if (!dataLoading) {
-      setIsAutoRefreshing(false)
-    }
-  }, [dataLoading])
 
   // We can assume period provided is never custom, as it's handled separately in the Datepicker callback function
   const updatePeriod = useCallback(
@@ -927,14 +710,9 @@ const ViewProjectContent = () => {
         rangeDate: undefined,
       })
 
-      sdkInstance?._emitEvent('timeupdate', {
-        period: newPeriod,
-        dateRange: null,
-      })
-
       setSearchParams(newSearchParams)
     },
-    [period, searchParams, setSearchParams, sdkInstance, updatePreferences],
+    [period, searchParams, setSearchParams, updatePreferences],
   )
 
   const updateTimebucket = useCallback(
@@ -950,13 +728,8 @@ const ViewProjectContent = () => {
       updatePreferences({
         timeBucket: newTimebucket,
       })
-      sdkInstance?._emitEvent('timeupdate', {
-        period,
-        timeBucket: newTimebucket,
-        dateRange,
-      })
     },
-    [dataLoading, searchParams, setSearchParams, sdkInstance, period, dateRange, updatePreferences],
+    [dataLoading, searchParams, setSearchParams, updatePreferences],
   )
 
   const openSettingsHandler = () => {
@@ -1031,15 +804,6 @@ const ViewProjectContent = () => {
     },
     [filters, searchParams],
   )
-
-  const exportTypes = [
-    {
-      label: t('project.asCSV'),
-      onClick: () => {
-        return onCSVExportClick(_panelsData, id, tnMapping, language)
-      },
-    },
-  ]
 
   const setChartTypeOnClick = useCallback((type: keyof typeof chartTypes) => {
     setItem('chartType', type)
@@ -1161,7 +925,6 @@ const ViewProjectContent = () => {
       dataLoading,
       activeTab,
       filters,
-      customPanelTabs,
       captchaRefreshTrigger,
       goalsRefreshTrigger,
       experimentsRefreshTrigger,
@@ -1221,7 +984,6 @@ const ViewProjectContent = () => {
       dataLoading,
       activeTab,
       filters,
-      customPanelTabs,
       captchaRefreshTrigger,
       goalsRefreshTrigger,
       experimentsRefreshTrigger,
@@ -1332,7 +1094,6 @@ const ViewProjectContent = () => {
       {() => (
         <ViewProjectContext.Provider value={contextValue}>
           <>
-            {dataLoading && !isAutoRefreshing ? <LoadingBar /> : null}
             <div
               className={cx('flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900', {
                 'min-h-including-header': !isEmbedded,
@@ -1387,25 +1148,14 @@ const ViewProjectContent = () => {
                           onRemoveCustomMetric={onRemoveCustomMetric}
                           resetCustomMetrics={resetCustomMetrics}
                           mode={mode}
-                          sdkInstance={sdkInstance}
-                          headerRightContent={
-                            <TrafficHeaderActions
-                              projectViews={projectViews}
-                              projectViewsLoading={projectViewsLoading}
-                              projectViewDeleting={projectViewDeleting}
-                              loadProjectViews={loadProjectViews}
-                              onProjectViewDelete={onProjectViewDelete}
-                              setProjectViewToUpdate={setProjectViewToUpdate}
-                              setIsAddAViewOpened={setIsAddAViewOpened}
-                              onCustomMetric={onCustomMetric}
-                              filters={filters}
-                              allowedToManage={allowedToManage}
-                              dataLoading={dataLoading}
-                              exportTypes={exportTypes}
-                              customExportTypes={customExportTypes}
-                              panelsData={_panelsData}
-                            />
-                          }
+                          projectViews={projectViews}
+                          projectViewsLoading={projectViewsLoading}
+                          projectViewDeleting={projectViewDeleting}
+                          loadProjectViews={loadProjectViews}
+                          onProjectViewDelete={onProjectViewDelete}
+                          setProjectViewToUpdate={setProjectViewToUpdate}
+                          setIsAddAViewOpened={setIsAddAViewOpened}
+                          onCustomMetric={onCustomMetric}
                         />
                       ) : null}
                       {activeTab === PROJECT_TABS.performance ? <PerformanceView tnMapping={tnMapping} /> : null}

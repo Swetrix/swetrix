@@ -139,14 +139,6 @@ export const tbPeriodPairs = (
   },
 ]
 
-export const FILTERS_PERIOD_PAIRS = ['1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
-
-// TODO: add 'custom' later after an issue with it is resolved
-// currently if you select a date range - it will not display errors within the last day of the date range
-export const ERROR_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'all']
-
-export const FUNNELS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'all', 'custom']
-
 export const tbPeriodPairsCompare = (
   t: typeof i18nextT,
   dates?: Date[],
@@ -292,7 +284,6 @@ export const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 export const BOOK_A_CALL_URL = 'https://cal.com/swetrix'
 export const PERFORMANCE_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=performance'
 export const ERROR_TRACKING_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=errors'
-export const MARKETPLACE_URL = 'https://marketplace.swetrix.com'
 export const DOCS_URL = 'https://docs.swetrix.com'
 export const INTEGRATIONS_URL = 'https://docs.swetrix.com/integrations'
 export const ERROR_TRACKING_DOCS_URL = 'https://docs.swetrix.com/error-tracking'
@@ -331,12 +322,10 @@ export const isDisableMarketingPages =
   (isBrowser ? window.REMIX_ENV?.DISABLE_MARKETING_PAGES : process.env.DISABLE_MARKETING_PAGES) === 'true'
 
 export const apiUrlUnprocessed = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
-const cdnUrlUnprocessed = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_URL
 
 export const TITLE_SUFFIX = isSelfhosted ? '| Swetrix Community Edition' : '| Swetrix'
 
 export const API_URL = _endsWith(apiUrlUnprocessed, '/') ? apiUrlUnprocessed : `${apiUrlUnprocessed}/`
-export const CDN_URL = _endsWith(cdnUrlUnprocessed, '/') ? cdnUrlUnprocessed : `${cdnUrlUnprocessed}/`
 const NODE_ENV = isBrowser ? window.REMIX_ENV?.NODE_ENV : process.env.NODE_ENV
 
 export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
