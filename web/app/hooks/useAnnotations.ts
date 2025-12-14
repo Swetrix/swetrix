@@ -158,12 +158,7 @@ interface UseAnnotationsReturn {
   closeContextMenu: () => void
 }
 
-interface UseAnnotationsOptions {
-  allowedToManage?: boolean
-}
-
-export const useAnnotations = (options: UseAnnotationsOptions = {}): UseAnnotationsReturn => {
-  const { allowedToManage = true } = options
+export const useAnnotations = (): UseAnnotationsReturn => {
   const { id, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const { t } = useTranslation('common')

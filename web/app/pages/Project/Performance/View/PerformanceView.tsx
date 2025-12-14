@@ -19,6 +19,7 @@ import { OverallPerformanceObject } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import { PerformanceMetricCards } from '~/pages/Project/View/components/MetricCards'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
@@ -35,6 +36,7 @@ import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjec
 import { useTheme } from '~/providers/ThemeProvider'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 
 const InteractiveMap = lazy(() => import('~/pages/Project/View/components/InteractiveMap'))
@@ -173,7 +175,7 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     closeAnnotationModal,
     handleChartContextMenu,
     closeContextMenu,
-  } = useAnnotations({ allowedToManage })
+  } = useAnnotations()
   const {
     t,
     i18n: { language },
@@ -542,271 +544,275 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
   }
 
   return (
-    <div className={cx('pt-2', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-      <div className='relative overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
-        <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
-          <Dropdown
-            items={chartMetrics}
-            className='xs:min-w-0'
-            header={t('main.metric')}
-            title={[<EyeIcon key='eye-icon' aria-label={t('project.metricVis')} className='h-5 w-5' />]}
-            labelExtractor={(pair) => pair.label}
-            keyExtractor={(pair) => pair.id}
-            onSelect={({ id: pairID }) => {
-              setActiveChartMetrics(pairID)
-            }}
-            buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-            chevron='mini'
-            headless
-          />
-          <Dropdown
-            disabled={activeChartMetrics === CHART_METRICS_MAPPING_PERF.quantiles}
-            items={chartMeasures}
-            className='xs:min-w-0'
-            header={t('project.aggregation')}
-            title={[<PercentIcon key='percent-icon' aria-label={t('project.aggregation')} className='h-5 w-5' />]}
-            labelExtractor={(pair) => pair.label}
-            keyExtractor={(pair) => pair.id}
-            onSelect={({ id: pairID }) => {
-              setActiveMeasure(pairID)
-            }}
-            buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-            chevron='mini'
-            headless
-          />
-          <ChartTypeSwitcher onSwitch={setChartTypeOnClick} type={chartType} />
-        </div>
-
-        {!_isEmpty(overall) ? (
-          <PerformanceMetricCards
-            overall={overall}
-            overallCompare={overallCompare}
-            activePeriodCompare={activePeriodCompare}
-          />
-        ) : null}
-        {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData) ? (
-          <div onContextMenu={(e) => handleChartContextMenu(e, chartData?.x)} className='relative'>
-            <PerformanceChart
-              chart={chartData}
-              timeBucket={timeBucket}
-              activeChartMetrics={activeChartMetrics}
-              rotateXAxis={rotateXAxis}
-              chartType={chartType}
-              timeFormat={timeFormat}
-              compareChart={chartDataCompare}
-              onZoom={onMainChartZoom}
-              enableZoom={shouldEnableZoom}
-              dataNames={dataNames}
-              className='mt-5 h-80 md:mt-0 [&_svg]:overflow-visible!'
-              annotations={annotations}
+    <>
+      <DashboardHeader />
+      {dataLoading && !isPanelsDataEmpty ? <LoadingBar /> : null}
+      <div className={cx('pt-2', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+        <div className='relative overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
+          <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
+            <Dropdown
+              items={chartMetrics}
+              className='xs:min-w-0'
+              header={t('main.metric')}
+              title={[<EyeIcon key='eye-icon' aria-label={t('project.metricVis')} className='h-5 w-5' />]}
+              labelExtractor={(pair) => pair.label}
+              keyExtractor={(pair) => pair.id}
+              onSelect={({ id: pairID }) => {
+                setActiveChartMetrics(pairID)
+              }}
+              buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+              chevron='mini'
+              headless
             />
+            <Dropdown
+              disabled={activeChartMetrics === CHART_METRICS_MAPPING_PERF.quantiles}
+              items={chartMeasures}
+              className='xs:min-w-0'
+              header={t('project.aggregation')}
+              title={[<PercentIcon key='percent-icon' aria-label={t('project.aggregation')} className='h-5 w-5' />]}
+              labelExtractor={(pair) => pair.label}
+              keyExtractor={(pair) => pair.id}
+              onSelect={({ id: pairID }) => {
+                setActiveMeasure(pairID)
+              }}
+              buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+              chevron='mini'
+              headless
+            />
+            <ChartTypeSwitcher onSwitch={setChartTypeOnClick} type={chartType} />
           </div>
-        ) : null}
-      </div>
-      {!isPanelsDataEmpty ? <Filters tnMapping={tnMapping} /> : null}
-      <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
-        {!_isEmpty(panelsData.types)
-          ? _map(PERFORMANCE_PANELS_ORDER, (type: keyof typeof tnMapping) => {
-              if (type === 'location') {
-                const locationTabs = [
-                  { id: 'cc', label: t('project.mapping.cc') },
-                  { id: 'rg', label: t('project.mapping.rg') },
-                  { id: 'ct', label: t('project.mapping.ct') },
-                  { id: 'map', label: 'Map' },
-                ]
 
-                const rowMapper = (entry: CountryEntry) => {
-                  const { name: entryName, cc } = entry
+          {!_isEmpty(overall) ? (
+            <PerformanceMetricCards
+              overall={overall}
+              overallCompare={overallCompare}
+              activePeriodCompare={activePeriodCompare}
+            />
+          ) : null}
+          {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData) ? (
+            <div onContextMenu={(e) => handleChartContextMenu(e, chartData?.x)} className='relative'>
+              <PerformanceChart
+                chart={chartData}
+                timeBucket={timeBucket}
+                activeChartMetrics={activeChartMetrics}
+                rotateXAxis={rotateXAxis}
+                chartType={chartType}
+                timeFormat={timeFormat}
+                compareChart={chartDataCompare}
+                onZoom={onMainChartZoom}
+                enableZoom={shouldEnableZoom}
+                dataNames={dataNames}
+                className='mt-5 h-80 md:mt-0 [&_svg]:overflow-visible!'
+                annotations={annotations}
+              />
+            </div>
+          ) : null}
+        </div>
+        {!isPanelsDataEmpty ? <Filters tnMapping={tnMapping} /> : null}
+        <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
+          {!_isEmpty(panelsData.types)
+            ? _map(PERFORMANCE_PANELS_ORDER, (type: keyof typeof tnMapping) => {
+                if (type === 'location') {
+                  const locationTabs = [
+                    { id: 'cc', label: t('project.mapping.cc') },
+                    { id: 'rg', label: t('project.mapping.rg') },
+                    { id: 'ct', label: t('project.mapping.ct') },
+                    { id: 'map', label: 'Map' },
+                  ]
 
-                  if (cc !== undefined) {
-                    return <CCRow cc={cc} name={entryName || undefined} language={language} />
+                  const rowMapper = (entry: CountryEntry) => {
+                    const { name: entryName, cc } = entry
+
+                    if (cc !== undefined) {
+                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
+                    }
+
+                    return <CCRow cc={entryName} language={language} />
                   }
 
-                  return <CCRow cc={entryName} language={language} />
+                  return (
+                    <Panel
+                      key={activeTabs.location}
+                      icon={panelIconMapping.cc}
+                      id={activeTabs.location}
+                      getFilterLink={getFilterLink}
+                      name={t('project.location')}
+                      tabs={locationTabs}
+                      onTabChange={(tab) =>
+                        setActiveTabs({
+                          ...activeTabs,
+                          location: tab as 'cc' | 'rg' | 'ct' | 'map',
+                        })
+                      }
+                      activeTabId={activeTabs.location}
+                      data={panelsData.data[activeTabs.location]}
+                      rowMapper={rowMapper}
+                      // @ts-expect-error
+                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                      customRenderer={
+                        activeTabs.location === 'map'
+                          ? () => {
+                              const countryData = panelsData.data?.cc || []
+                              const regionData = panelsData.data?.rg || []
+                              // @ts-expect-error
+                              const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
+
+                              return (
+                                <Suspense
+                                  fallback={
+                                    <div className='flex h-full items-center justify-center'>
+                                      <div className='flex flex-col items-center gap-2'>
+                                        <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
+                                        <span className='text-sm text-neutral-600 dark:text-neutral-300'>
+                                          Loading map...
+                                        </span>
+                                      </div>
+                                    </div>
+                                  }
+                                >
+                                  <InteractiveMap
+                                    data={countryData}
+                                    regionData={regionData}
+                                    total={total}
+                                    onClick={(type, key) => {
+                                      const link = getFilterLink(type, key)
+                                      navigate(link)
+                                    }}
+                                  />
+                                </Suspense>
+                              )
+                            }
+                          : undefined
+                      }
+                      valuesHeaderName={t('project.loadTime')}
+                      highlightColour='orange'
+                    />
+                  )
                 }
 
-                return (
-                  <Panel
-                    key={activeTabs.location}
-                    icon={panelIconMapping.cc}
-                    id={activeTabs.location}
-                    getFilterLink={getFilterLink}
-                    name={t('project.location')}
-                    tabs={locationTabs}
-                    onTabChange={(tab) =>
-                      setActiveTabs({
-                        ...activeTabs,
-                        location: tab as 'cc' | 'rg' | 'ct' | 'map',
-                      })
-                    }
-                    activeTabId={activeTabs.location}
-                    data={panelsData.data[activeTabs.location]}
-                    rowMapper={rowMapper}
-                    // @ts-expect-error
-                    valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                    customRenderer={
-                      activeTabs.location === 'map'
-                        ? () => {
-                            const countryData = panelsData.data?.cc || []
-                            const regionData = panelsData.data?.rg || []
-                            // @ts-expect-error
-                            const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
+                if (type === 'devices') {
+                  const deviceTabs = [
+                    { id: 'br', label: t('project.mapping.br') },
+                    { id: 'dv', label: t('project.mapping.dv') },
+                  ]
 
-                            return (
-                              <Suspense
-                                fallback={
-                                  <div className='flex h-full items-center justify-center'>
-                                    <div className='flex flex-col items-center gap-2'>
-                                      <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
-                                      <span className='text-sm text-neutral-600 dark:text-neutral-300'>
-                                        Loading map...
-                                      </span>
-                                    </div>
-                                  </div>
-                                }
-                              >
-                                <InteractiveMap
-                                  data={countryData}
-                                  regionData={regionData}
-                                  total={total}
-                                  onClick={(type, key) => {
-                                    const link = getFilterLink(type, key)
-                                    navigate(link)
-                                  }}
-                                />
-                              </Suspense>
-                            )
-                          }
-                        : undefined
-                    }
-                    valuesHeaderName={t('project.loadTime')}
-                    highlightColour='orange'
-                  />
-                )
-              }
-
-              if (type === 'devices') {
-                const deviceTabs = [
-                  { id: 'br', label: t('project.mapping.br') },
-                  { id: 'dv', label: t('project.mapping.dv') },
-                ]
-
-                return (
-                  <Panel
-                    key={activeTabs.device}
-                    icon={panelIconMapping.os}
-                    id={activeTabs.device}
-                    getFilterLink={getFilterLink}
-                    name={t('project.devices')}
-                    tabs={deviceTabs}
-                    onTabChange={(tab) =>
-                      setActiveTabs({
-                        ...activeTabs,
-                        device: tab as 'br' | 'dv',
-                      })
-                    }
-                    activeTabId={activeTabs.device}
-                    data={panelsData.data[activeTabs.device]}
-                    rowMapper={getDeviceRowMapper(activeTabs.device, theme, t)}
-                    capitalize={activeTabs.device === 'dv'}
-                    // @ts-expect-error
-                    valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                    valuesHeaderName={t('project.loadTime')}
-                    highlightColour='orange'
-                  />
-                )
-              }
-
-              if (type === 'pg') {
-                const pageTabs = [
-                  { id: 'pg', label: t('project.mapping.pg') },
-                  {
-                    id: 'host',
-                    label: t('project.mapping.host'),
-                  },
-                ]
-
-                return (
-                  <Panel
-                    key={activeTabs.page}
-                    icon={panelIconMapping.pg}
-                    id={activeTabs.page}
-                    getFilterLink={getFilterLink}
-                    rowMapper={({ name: entryName }) => {
-                      if (!entryName) {
-                        return (
-                          <span className='italic'>
-                            {activeTabs.page === 'pg' ? t('common.notSet') : t('project.unknownHost')}
-                          </span>
-                        )
+                  return (
+                    <Panel
+                      key={activeTabs.device}
+                      icon={panelIconMapping.os}
+                      id={activeTabs.device}
+                      getFilterLink={getFilterLink}
+                      name={t('project.devices')}
+                      tabs={deviceTabs}
+                      onTabChange={(tab) =>
+                        setActiveTabs({
+                          ...activeTabs,
+                          device: tab as 'br' | 'dv',
+                        })
                       }
+                      activeTabId={activeTabs.device}
+                      data={panelsData.data[activeTabs.device]}
+                      rowMapper={getDeviceRowMapper(activeTabs.device, theme, t)}
+                      capitalize={activeTabs.device === 'dv'}
+                      // @ts-expect-error
+                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                      valuesHeaderName={t('project.loadTime')}
+                      highlightColour='orange'
+                    />
+                  )
+                }
 
-                      let decodedUri = entryName as string
+                if (type === 'pg') {
+                  const pageTabs = [
+                    { id: 'pg', label: t('project.mapping.pg') },
+                    {
+                      id: 'host',
+                      label: t('project.mapping.host'),
+                    },
+                  ]
 
-                      try {
-                        decodedUri = decodeURIComponent(entryName)
-                      } catch {
-                        // do nothing
+                  return (
+                    <Panel
+                      key={activeTabs.page}
+                      icon={panelIconMapping.pg}
+                      id={activeTabs.page}
+                      getFilterLink={getFilterLink}
+                      rowMapper={({ name: entryName }) => {
+                        if (!entryName) {
+                          return (
+                            <span className='italic'>
+                              {activeTabs.page === 'pg' ? t('common.notSet') : t('project.unknownHost')}
+                            </span>
+                          )
+                        }
+
+                        let decodedUri = entryName as string
+
+                        try {
+                          decodedUri = decodeURIComponent(entryName)
+                        } catch {
+                          // do nothing
+                        }
+
+                        return decodedUri
+                      }}
+                      name={t('project.pages')}
+                      tabs={pageTabs}
+                      onTabChange={(tab) =>
+                        setActiveTabs({
+                          ...activeTabs,
+                          page: tab as 'pg' | 'host',
+                        })
                       }
+                      activeTabId={activeTabs.page}
+                      data={panelsData.data[activeTabs.page]}
+                      // @ts-expect-error
+                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                      valuesHeaderName={t('project.loadTime')}
+                      highlightColour='orange'
+                    />
+                  )
+                }
 
-                      return decodedUri
-                    }}
-                    name={t('project.pages')}
-                    tabs={pageTabs}
-                    onTabChange={(tab) =>
-                      setActiveTabs({
-                        ...activeTabs,
-                        page: tab as 'pg' | 'host',
-                      })
-                    }
-                    activeTabId={activeTabs.page}
-                    data={panelsData.data[activeTabs.page]}
-                    // @ts-expect-error
-                    valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                    valuesHeaderName={t('project.loadTime')}
-                    highlightColour='orange'
-                  />
-                )
-              }
-
-              return null
-            })
-          : null}
+                return null
+              })
+            : null}
+        </div>
+        <AnnotationModal
+          isOpened={isAnnotationModalOpen}
+          onClose={closeAnnotationModal}
+          onSubmit={annotationToEdit ? onAnnotationUpdate : onAnnotationCreate}
+          onDelete={annotationToEdit ? onAnnotationDelete : undefined}
+          loading={annotationActionLoading}
+          annotation={annotationToEdit}
+          defaultDate={annotationModalDate}
+          allowedToManage={allowedToManage}
+        />
+        <ChartContextMenu
+          isOpen={contextMenu.isOpen}
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={closeContextMenu}
+          onAddAnnotation={() => {
+            openAnnotationModal(contextMenu.date || undefined)
+          }}
+          onEditAnnotation={
+            contextMenu.annotation
+              ? () => openAnnotationModal(contextMenu.annotation?.date, contextMenu.annotation!)
+              : undefined
+          }
+          onDeleteAnnotation={
+            contextMenu.annotation
+              ? () => {
+                  onAnnotationDelete(contextMenu.annotation!)
+                }
+              : undefined
+          }
+          existingAnnotation={contextMenu.annotation}
+          allowedToManage={allowedToManage}
+        />
       </div>
-      <AnnotationModal
-        isOpened={isAnnotationModalOpen}
-        onClose={closeAnnotationModal}
-        onSubmit={annotationToEdit ? onAnnotationUpdate : onAnnotationCreate}
-        onDelete={annotationToEdit ? onAnnotationDelete : undefined}
-        loading={annotationActionLoading}
-        annotation={annotationToEdit}
-        defaultDate={annotationModalDate}
-        allowedToManage={allowedToManage}
-      />
-      <ChartContextMenu
-        isOpen={contextMenu.isOpen}
-        x={contextMenu.x}
-        y={contextMenu.y}
-        onClose={closeContextMenu}
-        onAddAnnotation={() => {
-          openAnnotationModal(contextMenu.date || undefined)
-        }}
-        onEditAnnotation={
-          contextMenu.annotation
-            ? () => openAnnotationModal(contextMenu.annotation?.date, contextMenu.annotation!)
-            : undefined
-        }
-        onDeleteAnnotation={
-          contextMenu.annotation
-            ? () => {
-                onAnnotationDelete(contextMenu.annotation!)
-              }
-            : undefined
-        }
-        existingAnnotation={contextMenu.annotation}
-        allowedToManage={allowedToManage}
-      />
-    </div>
+    </>
   )
 }
 

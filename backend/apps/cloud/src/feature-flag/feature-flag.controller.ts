@@ -49,12 +49,15 @@ import {
   FeatureFlagProfilesResponseDto,
 } from './dto/feature-flag.dto'
 import { FeatureFlagService } from './feature-flag.service'
+import { ExperimentService } from '../experiment/experiment.service'
+import { ExperimentStatus } from '../experiment/entity/experiment.entity'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
   getIPFromHeaders,
   getGeoDetails,
   checkRateLimit,
 } from '../common/utils'
+import { getExperimentVariant } from './evaluation'
 
 const FEATURE_FLAGS_MAXIMUM = 50 // Maximum feature flags per project
 
@@ -67,6 +70,7 @@ export class FeatureFlagController {
     private readonly logger: AppLoggerService,
     private readonly userService: UserService,
     private readonly analyticsService: AnalyticsService,
+    private readonly experimentService: ExperimentService,
   ) {}
 
   @ApiBearerAuth()
@@ -312,17 +316,63 @@ export class FeatureFlagController {
       derivedAttributes,
     )
 
+    // Determine experiment variants for flags linked to running experiments
+    const experimentVariants = new Map<string, string>()
+    const flagsWithExperiments = flags.filter(
+      f => f.experimentId && evaluatedFlags[f.key],
+    )
+
+    if (flagsWithExperiments.length > 0) {
+      // Get running experiments for these flags
+      const experiments = await this.experimentService.find({
+        where: flagsWithExperiments.map(f => ({
+          id: f.experimentId,
+          status: ExperimentStatus.RUNNING,
+        })),
+        relations: ['variants'],
+      })
+
+      for (const experiment of experiments) {
+        if (experiment.variants && experiment.variants.length > 0) {
+          const variantKey = getExperimentVariant(
+            experiment.id,
+            experiment.variants.map(v => ({
+              key: v.key,
+              rolloutPercentage: v.rolloutPercentage,
+            })),
+            profileId,
+          )
+          if (variantKey) {
+            experimentVariants.set(experiment.id, variantKey)
+          }
+        }
+      }
+    }
+
     // Track evaluations in ClickHouse (async, don't wait)
     this.trackEvaluations(
       evaluateDto.pid,
       flags,
       evaluatedFlags,
       profileId,
+      experimentVariants,
     ).catch(err => {
       this.logger.error({ err }, 'Failed to track flag evaluations')
     })
 
-    return { flags: evaluatedFlags }
+    // Build response with experiment variants
+    const response: {
+      flags: Record<string, boolean>
+      experiments?: Record<string, string>
+    } = {
+      flags: evaluatedFlags,
+    }
+
+    if (experimentVariants.size > 0) {
+      response.experiments = Object.fromEntries(experimentVariants)
+    }
+
+    return response
   }
 
   private async trackEvaluations(
@@ -330,6 +380,7 @@ export class FeatureFlagController {
     flags: FeatureFlag[],
     evaluatedFlags: Record<string, boolean>,
     profileId: string,
+    experimentVariants?: Map<string, string>, // experimentId -> variantKey
   ) {
     if (flags.length === 0) return
 
@@ -353,6 +404,29 @@ export class FeatureFlagController {
     } catch (err) {
       // Log error but don't fail the request
       this.logger.error({ err }, 'Failed to insert flag evaluations')
+    }
+
+    // Track experiment exposures for flags linked to experiments
+    if (experimentVariants && experimentVariants.size > 0) {
+      const experimentExposures = Array.from(experimentVariants.entries()).map(
+        ([experimentId, variantKey]) => ({
+          pid,
+          experimentId,
+          variantKey,
+          profileId,
+          created: now,
+        }),
+      )
+
+      try {
+        await clickhouse.insert({
+          table: 'experiment_exposures',
+          values: experimentExposures,
+          format: 'JSONEachRow',
+        })
+      } catch (err) {
+        this.logger.error({ err }, 'Failed to insert experiment exposures')
+      }
     }
   }
 

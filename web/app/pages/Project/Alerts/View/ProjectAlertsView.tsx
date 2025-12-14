@@ -4,23 +4,24 @@ import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
-import _replace from 'lodash/replace'
 import _values from 'lodash/values'
 import { Settings2Icon, Trash2Icon, BellRingIcon, DollarSignIcon, TriangleAlertIcon, BellPlusIcon } from 'lucide-react'
 import { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import { deleteAlert as deleteAlertApi, getProjectAlerts } from '~/api'
 import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import PaidFeature from '~/modals/PaidFeature'
+import ProjectAlertsSettings from '~/pages/Project/Alerts/Settings/ProjectAlertsSettings'
 import { useAuth } from '~/providers/AuthProvider'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { Badge, type BadgeProps } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import routes from '~/utils/routes'
@@ -191,10 +192,11 @@ const AddAlert = ({ handleNewAlert, isLimitReached }: AddAlertProps) => {
 }
 
 const ProjectAlerts = () => {
-  const { id } = useCurrentProject()
+  const { id, project } = useCurrentProject()
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuth()
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [total, setTotal] = useState(0)
@@ -205,10 +207,23 @@ const ProjectAlerts = () => {
 
   const pageAmount = Math.ceil(total / DEFAULT_ALERTS_TAKE)
 
-  const navigate = useNavigate()
-
   const limits = PLAN_LIMITS[user?.planCode || 'trial']
   const isLimitReached = isAuthenticated && total >= limits?.maxAlerts
+
+  // Check if user has permission to view alerts
+  const canManageAlerts = project?.role === 'owner' && isAuthenticated
+
+  // Get active alert from URL params
+  const activeAlertId = searchParams.get('alertId')
+  const isCreatingAlert = searchParams.get('newAlert') === 'true'
+
+  // Search params without the alert params. Needed for the back button.
+  const pureSearchParams = useMemo(() => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.delete('alertId')
+    newSearchParams.delete('newAlert')
+    return newSearchParams.toString()
+  }, [searchParams])
 
   const loadAlerts = async (take: number, skip: number) => {
     if (isLoading) {
@@ -228,10 +243,14 @@ const ProjectAlerts = () => {
   }
 
   useEffect(() => {
+    if (!canManageAlerts) {
+      return
+    }
+
     loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page])
+  }, [page, canManageAlerts])
 
   const queryMetricTMapping: Record<string, string> = useMemo(() => {
     const values = _values(QUERY_METRIC)
@@ -262,7 +281,28 @@ const ProjectAlerts = () => {
       return
     }
 
-    navigate(_replace(routes.create_alert, ':pid', id))
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.set('newAlert', 'true')
+    setSearchParams(newSearchParams)
+  }
+
+  const openAlert = (alertId: string) => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.set('alertId', alertId)
+    setSearchParams(newSearchParams)
+  }
+
+  const closeAlertSettings = () => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.delete('alertId')
+    newSearchParams.delete('newAlert')
+    setSearchParams(newSearchParams)
+  }
+
+  const handleAlertSaved = () => {
+    closeAlertSettings()
+    // Reload alerts after saving
+    loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
   }
 
   const onDelete = async (id: string) => {
@@ -319,8 +359,43 @@ const ProjectAlerts = () => {
     )
   }
 
+  // Show signup prompt for non-owners or unauthenticated users
+  if (!canManageAlerts) {
+    return (
+      <div className='mt-5 rounded-xl bg-gray-700 p-5'>
+        <div className='flex items-center text-gray-50'>
+          <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+          <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
+        </div>
+        <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
+        <Link
+          to={routes.signup}
+          className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
+          aria-label={t('titles.signup')}
+        >
+          {t('header.startForFree')}
+        </Link>
+      </div>
+    )
+  }
+
+  // Show alert settings view when editing or creating an alert
+  if (activeAlertId || isCreatingAlert) {
+    return (
+      <ProjectAlertsSettings
+        alertId={activeAlertId}
+        projectId={id}
+        isSettings={!!activeAlertId}
+        onClose={closeAlertSettings}
+        onSave={handleAlertSaved}
+        backLink={`?${pureSearchParams}`}
+      />
+    )
+  }
+
   return (
     <>
+      {isLoading && !_isEmpty(alerts) ? <LoadingBar /> : null}
       <div className='mt-4'>
         {_isEmpty(alerts) ? (
           <div className='mt-5 rounded-xl bg-gray-700 p-5'>
@@ -347,9 +422,7 @@ const ProjectAlerts = () => {
                 <AlertCard
                   key={alert.id}
                   {...alert}
-                  openAlert={(alertId) => {
-                    navigate(_replace(_replace(routes.alert_settings, ':pid', id), ':id', alertId))
-                  }}
+                  openAlert={openAlert}
                   deleteAlert={onDelete}
                   queryMetricTMapping={queryMetricTMapping}
                 />

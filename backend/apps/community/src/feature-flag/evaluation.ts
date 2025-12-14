@@ -87,7 +87,7 @@ export function evaluateFlag(
  * Checks if visitor attributes match the targeting rules
  * Rules are evaluated as AND (all rules must match)
  */
-export function matchesTargetingRules(
+function matchesTargetingRules(
   rules: TargetingRule[],
   attributes?: Record<string, string>,
 ): boolean {
@@ -130,10 +130,7 @@ export function matchesTargetingRules(
  * Checks if an attribute value matches a filter value
  * Supports case-insensitive matching
  */
-export function matchesRule(
-  attributeValue: string,
-  filterValue: string,
-): boolean {
+function matchesRule(attributeValue: string, filterValue: string): boolean {
   // Case-insensitive exact match
   return attributeValue.toLowerCase() === filterValue.toLowerCase()
 }
@@ -142,7 +139,7 @@ export function matchesRule(
  * Determines if a visitor is within the rollout percentage
  * Uses consistent hashing based on flag key and profile ID
  */
-export function isInRolloutPercentage(
+function isInRolloutPercentage(
   flagKey: string,
   percentage: number,
   profileId: string,

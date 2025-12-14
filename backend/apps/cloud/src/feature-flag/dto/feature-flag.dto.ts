@@ -18,7 +18,7 @@ import { Type } from 'class-transformer'
 import { FeatureFlagType, TargetingRule } from '../entity/feature-flag.entity'
 
 // Valid targeting rule columns (attribute keys)
-export const VALID_TARGETING_COLUMNS = [
+const VALID_TARGETING_COLUMNS = [
   'cc', // country code
   'ct', // city
   'rg', // region

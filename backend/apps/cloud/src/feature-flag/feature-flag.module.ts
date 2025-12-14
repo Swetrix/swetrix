@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common'
+import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { ProjectModule } from '../project/project.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { UserModule } from '../user/user.module'
 import { AnalyticsModule } from '../analytics/analytics.module'
+import { ExperimentModule } from '../experiment/experiment.module'
 import { FeatureFlagService } from './feature-flag.service'
 import { FeatureFlag } from './entity/feature-flag.entity'
 import { FeatureFlagController } from './feature-flag.controller'
@@ -16,6 +17,7 @@ import { FeatureFlagController } from './feature-flag.controller'
     AppLoggerModule,
     UserModule,
     AnalyticsModule,
+    forwardRef(() => ExperimentModule),
   ],
   providers: [FeatureFlagService],
   exports: [FeatureFlagService],

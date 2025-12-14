@@ -1,4 +1,5 @@
 import cx from 'clsx'
+import { useId } from 'react'
 
 import { Text } from '~/ui/Text'
 
@@ -12,7 +13,8 @@ interface SwitchProps {
 }
 
 export const Switch = ({ checked, onChange, disabled = false, className, label, id }: SwitchProps) => {
-  const switchId = id || `switch-${Math.random().toString(36).substr(2, 9)}`
+  const generatedId = useId()
+  const switchId = id || generatedId
 
   return (
     <div className={cx('inline-flex items-center', className)}>

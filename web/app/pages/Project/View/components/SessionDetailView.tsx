@@ -136,7 +136,7 @@ export const SessionDetailView = ({
     }
 
     return 0
-  }, [activeSession?.details?.sdur, activeSession?.pages])
+  }, [activeSession])
 
   const resetZoom = () => {
     setZoomedTimeRange(null)

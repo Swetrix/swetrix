@@ -1,16 +1,16 @@
 import { XCircleIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import { ChevronLeftIcon, DownloadIcon } from 'lucide-react'
+import { DownloadIcon } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 
 import { getSessions, getSession } from '~/api'
 import { Session, SessionDetails as SessionDetailsType } from '~/lib/models/Project'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
-import { RefreshStatsButton } from '~/pages/Project/View/components/RefreshStatsButton'
 import { SessionDetailView } from '~/pages/Project/View/components/SessionDetailView'
 import { Sessions } from '~/pages/Project/View/components/Sessions'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
@@ -18,6 +18,7 @@ import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import Spin from '~/ui/icons/Spin'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import routes from '~/utils/routes'
 
 const SESSIONS_TAKE = 30
@@ -235,15 +236,6 @@ const SessionsView = ({ tnMapping, chartType, rotateXAxis }: SessionsViewProps) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionsRefreshTrigger])
 
-  const refreshStats = () => {
-    if (activePSID) {
-      loadSession(activePSID)
-    } else {
-      setSessionsSkip(0)
-      loadSessions(0, true)
-    }
-  }
-
   if (error && sessionsLoading === false) {
     return (
       <div className='bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
@@ -284,19 +276,8 @@ const SessionsView = ({ tnMapping, chartType, rotateXAxis }: SessionsViewProps) 
   // Session Detail View
   if (activePSID) {
     return (
-      <div className='mt-4'>
-        <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
-          <Link
-            to={{
-              search: pureSearchParams,
-            }}
-            className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
-          >
-            <ChevronLeftIcon className='mr-1 size-3' />
-            {t('project.backToSessions')}
-          </Link>
-          <RefreshStatsButton onRefresh={refreshStats} />
-        </div>
+      <>
+        <DashboardHeader backLink={`?${pureSearchParams}`} showLiveVisitors={false} />
         <SessionDetailView
           activeSession={activeSession}
           sessionLoading={sessionLoading}
@@ -305,41 +286,45 @@ const SessionsView = ({ tnMapping, chartType, rotateXAxis }: SessionsViewProps) 
           rotateXAxis={rotateXAxis}
           dataNames={dataNames}
         />
-      </div>
+      </>
     )
   }
 
   // Sessions List View
   return (
-    <div className='mt-4'>
-      {!_isEmpty(sessions) ? <Filters tnMapping={tnMapping} /> : null}
-      {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) ? <Loader /> : null}
-      {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) ? (
-        <NoEvents filters={filters} />
-      ) : null}
-      <Sessions sessions={sessions} timeFormat={timeFormat} />
-      {canLoadMoreSessions ? (
-        <button
-          type='button'
-          title={t('project.loadMore')}
-          onClick={() => loadSessions()}
-          className={cx(
-            'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
-            {
-              'cursor-not-allowed opacity-50': sessionsLoading || sessionsLoading === null,
-              hidden: sessionsLoading && _isEmpty(sessions),
-            },
-          )}
-        >
-          {sessionsLoading ? (
-            <Spin className='mr-2 size-5' />
-          ) : (
-            <DownloadIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
-          )}
-          {t('project.loadMore')}
-        </button>
-      ) : null}
-    </div>
+    <>
+      <DashboardHeader showLiveVisitors />
+      {sessionsLoading && !_isEmpty(sessions) ? <LoadingBar /> : null}
+      <div className='mt-4'>
+        {!_isEmpty(sessions) ? <Filters tnMapping={tnMapping} /> : null}
+        {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) ? <Loader /> : null}
+        {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) ? (
+          <NoEvents filters={filters} />
+        ) : null}
+        <Sessions sessions={sessions} timeFormat={timeFormat} />
+        {canLoadMoreSessions ? (
+          <button
+            type='button'
+            title={t('project.loadMore')}
+            onClick={() => loadSessions()}
+            className={cx(
+              'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+              {
+                'cursor-not-allowed opacity-50': sessionsLoading || sessionsLoading === null,
+                hidden: sessionsLoading && _isEmpty(sessions),
+              },
+            )}
+          >
+            {sessionsLoading ? (
+              <Spin className='mr-2 size-5' />
+            ) : (
+              <DownloadIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
+            )}
+            {t('project.loadMore')}
+          </button>
+        ) : null}
+      </div>
+    </>
   )
 }
 

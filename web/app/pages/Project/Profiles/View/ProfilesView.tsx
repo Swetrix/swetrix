@@ -1,20 +1,21 @@
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import { ChevronLeftIcon, DownloadIcon } from 'lucide-react'
+import { DownloadIcon } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 
 import { getProfiles, getProfile, getProfileSessions } from '~/api'
 import { Profile, ProfileDetails, Session } from '~/lib/models/Project'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
-import { RefreshStatsButton } from '~/pages/Project/View/components/RefreshStatsButton'
 import { UserDetails } from '~/pages/Project/View/components/UserDetails'
 import { Users, UsersFilter } from '~/pages/Project/View/components/Users'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 
 const SESSIONS_TAKE = 30
 
@@ -135,10 +136,16 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
   }
 
   const loadProfile = async (profileId: string) => {
+    const hasExistingProfileData = !!activeProfile && activeProfile.profileId === profileId
+
     setProfileLoading(true)
-    setProfileSessions([])
-    setProfileSessionsSkip(0)
-    setCanLoadMoreProfileSessions(false)
+    // Avoid flicker on refresh: keep currently displayed details/sessions while we refetch.
+    // Only reset sessions when opening a different profile (or first load).
+    if (!hasExistingProfileData) {
+      setProfileSessions([])
+      setProfileSessionsSkip(0)
+      setCanLoadMoreProfileSessions(false)
+    }
 
     try {
       let from
@@ -161,8 +168,8 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
 
       if (isMountedRef.current) {
         setActiveProfile(data)
-        // Load initial sessions for the profile
-        loadProfileSessionsData(profileId, 0)
+        // Load initial sessions for the profile (override existing on refresh)
+        loadProfileSessionsData(profileId, 0, true)
       }
     } catch (reason) {
       console.error('[ERROR](loadProfile) Loading profile data failed:', reason)
@@ -176,7 +183,7 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
     }
   }
 
-  const loadProfileSessionsData = async (profileId: string, forcedSkip?: number) => {
+  const loadProfileSessionsData = async (profileId: string, forcedSkip?: number, override?: boolean) => {
     if (profileSessionsLoading) {
       return
     }
@@ -223,7 +230,11 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
       }
 
       if (isMountedRef.current) {
-        setProfileSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
+        if (override) {
+          setProfileSessions(dataSessions?.sessions || [])
+        } else {
+          setProfileSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
+        }
         setProfileSessionsSkip((prev) => {
           if (typeof forcedSkip === 'number') {
             return SESSIONS_TAKE + forcedSkip
@@ -300,38 +311,18 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profilesRefreshTrigger])
 
-  // Handle refresh - exposed via ref or can be called from parent
-  const handleRefresh = async () => {
-    if (activeProfileId) {
-      await loadProfile(activeProfileId)
-      return
-    }
-
-    setProfilesSkip(0)
-    loadProfiles(0, true)
-  }
-
   // Profile detail view
   if (activeProfileId) {
+    const backSearchParams = (() => {
+      const params = new URLSearchParams(searchParams)
+      params.delete('profileId')
+      return params.toString()
+    })()
+
     return (
       <>
-        <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
-          <Link
-            to={{
-              search: (() => {
-                const params = new URLSearchParams(searchParams)
-                params.delete('profileId')
-                return params.toString()
-              })(),
-            }}
-            className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
-          >
-            <ChevronLeftIcon className='mr-1 size-3' />
-            {t('project.backToUsers')}
-          </Link>
-          <RefreshStatsButton onRefresh={() => loadProfile(activeProfileId)} />
-        </div>
-        {profileLoading ? (
+        <DashboardHeader backLink={`?${backSearchParams}`} showLiveVisitors={false} />
+        {profileLoading && !activeProfile ? (
           <Loader />
         ) : (
           <UserDetails
@@ -355,6 +346,8 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
   // Profiles list view
   return (
     <>
+      <DashboardHeader showLiveVisitors />
+      {profilesLoading && !_isEmpty(profiles) ? <LoadingBar /> : null}
       <UsersFilter
         profileType={profileTypeFilter}
         onProfileTypeChange={(type) => {

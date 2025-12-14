@@ -22,6 +22,7 @@ interface ButtonProps extends React.ComponentPropsWithoutRef<typeof HeadlessButt
   focus?: boolean
   noBorder?: boolean
   title?: string
+  ghost?: boolean
 }
 
 const Button = ({
@@ -43,6 +44,7 @@ const Button = ({
   noBorder,
   focus = true,
   disabled,
+  ghost,
   ...props
 }: ButtonProps) => (
   <HeadlessButton
@@ -59,6 +61,8 @@ const Button = ({
         'border-transparent bg-red-500 text-gray-50 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700': danger,
         'border-1 border-red-600 text-red-500 hover:bg-red-500 hover:text-white dark:border-red-500 dark:text-red-200 dark:hover:bg-red-600':
           semiDanger,
+        'border-transparent bg-transparent text-gray-700 hover:border-gray-300 hover:bg-white dark:text-gray-200 dark:hover:border-slate-700/80 dark:hover:bg-slate-800':
+          ghost,
         'border-none text-gray-700 focus:border-none focus:ring-0 focus:ring-offset-0 dark:text-white': noBorder,
         'px-2.5 py-1.5 text-xs': small,
         'px-2.5 py-1.5 text-sm': semiSmall,

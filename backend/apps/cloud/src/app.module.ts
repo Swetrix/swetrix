@@ -21,6 +21,7 @@ import { PingModule } from './ping/ping.module'
 import { MarketplaceModule } from './marketplace/marketplace.module'
 import { AlertModule } from './alert/alert.module'
 import { GoalModule } from './goal/goal.module'
+import { ExperimentModule } from './experiment/experiment.module'
 import { FeatureFlagModule } from './feature-flag/feature-flag.module'
 import { AiModule } from './ai/ai.module'
 import { getI18nConfig } from './configs'
@@ -81,6 +82,7 @@ const modules = [
   MarketplaceModule,
   AlertModule,
   GoalModule,
+  ExperimentModule,
   FeatureFlagModule,
   AiModule,
   AuthModule,

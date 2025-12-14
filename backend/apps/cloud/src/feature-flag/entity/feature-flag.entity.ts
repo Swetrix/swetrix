@@ -9,14 +9,10 @@ import {
 } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 import { Project } from '../../project/entity/project.entity'
-import {
-  FeatureFlagType,
-  TargetingRule,
-  EvaluatableFeatureFlag,
-} from '../evaluation'
+import { FeatureFlagType, TargetingRule } from '../evaluation'
 
 // Re-export types for backward compatibility
-export { FeatureFlagType, TargetingRule, EvaluatableFeatureFlag }
+export { FeatureFlagType, TargetingRule }
 
 @Entity()
 @Unique(['project', 'key'])
@@ -60,6 +56,10 @@ export class FeatureFlag {
   @ManyToOne(() => Project, project => project.featureFlags)
   @JoinColumn()
   project: Project
+
+  @ApiProperty()
+  @Column('varchar', { length: 36, nullable: true })
+  experimentId: string | null
 
   @ApiProperty()
   @CreateDateColumn()

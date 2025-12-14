@@ -37,6 +37,7 @@ import {
   type FeatureFlagStats,
   type FeatureFlagProfile,
 } from '~/api'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { Badge } from '~/ui/Badge'
@@ -782,100 +783,106 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   }
 
   return (
-    <div className='mt-4'>
-      {isLoading && !_isEmpty(flags) ? <LoadingBar /> : null}
-      {_isEmpty(flags) ? (
-        <div className='mt-5 rounded-xl bg-gray-700 p-5'>
-          <div className='flex items-center text-gray-50'>
-            <FlagIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
-            <p className='text-3xl font-bold'>{t('featureFlags.title')}</p>
-          </div>
-          <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('featureFlags.description')}</p>
-          <Button
-            onClick={handleNewFlag}
-            className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
-            secondary
-            large
-          >
-            {t('featureFlags.add')}
-          </Button>
-        </div>
-      ) : (
-        <>
-          {/* Header with filter and add button */}
-          <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='relative'>
-              <SearchIcon className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400' strokeWidth={1.5} />
-              <input
-                type='text'
-                placeholder={t('featureFlags.filterFlags')}
-                value={filterQuery}
-                onChange={handleSearchChange}
-                className='w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
-              />
+    <>
+      <DashboardHeader showLiveVisitors />
+      <div className='mt-4'>
+        {isLoading && !_isEmpty(flags) ? <LoadingBar /> : null}
+        {_isEmpty(flags) ? (
+          <div className='mt-5 rounded-xl bg-gray-700 p-5'>
+            <div className='flex items-center text-gray-50'>
+              <FlagIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+              <p className='text-3xl font-bold'>{t('featureFlags.title')}</p>
             </div>
-            <Button onClick={handleNewFlag} primary regular>
-              <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
-              {t('featureFlags.addFlag')}
+            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('featureFlags.description')}</p>
+            <Button
+              onClick={handleNewFlag}
+              className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
+              secondary
+              large
+            >
+              {t('featureFlags.add')}
             </Button>
           </div>
-
-          {/* Flags list */}
-          <ul className='mt-4'>
-            {_map(flags, (flag) => {
-              const profiles = flagProfiles[flag.id] || []
-              const profilesTotal = flagProfilesTotal[flag.id] || 0
-              const canLoadMore = profiles.length < profilesTotal
-
-              return (
-                <FeatureFlagRow
-                  key={flag.id}
-                  flag={flag}
-                  stats={flagStats[flag.id] || null}
-                  statsLoading={statsLoading[flag.id] || false}
-                  isExpanded={expandedFlagId === flag.id}
-                  profiles={profiles}
-                  profilesLoading={profilesLoading[flag.id] || false}
-                  canLoadMoreProfiles={canLoadMore}
-                  resultFilter={flagResultFilters[flag.id] ?? true}
-                  onDelete={handleDeleteFlag}
-                  onEdit={handleEditFlag}
-                  onToggle={handleToggleFlag}
-                  onToggleExpand={handleToggleExpand}
-                  onLoadMoreProfiles={handleLoadMoreProfiles}
-                  onResultFilterChange={handleResultFilterChange}
-                  timeFormat={timeFormat}
+        ) : (
+          <>
+            {/* Header with filter and add button */}
+            <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+              <div className='relative'>
+                <SearchIcon
+                  className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400'
+                  strokeWidth={1.5}
                 />
-              )
-            })}
-          </ul>
+                <input
+                  type='text'
+                  placeholder={t('featureFlags.filterFlags')}
+                  value={filterQuery}
+                  onChange={handleSearchChange}
+                  className='w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
+                />
+              </div>
+              <Button onClick={handleNewFlag} primary regular>
+                <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
+                {t('featureFlags.addFlag')}
+              </Button>
+            </div>
 
-          {flags.length === 0 && filterQuery ? (
-            <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
-              {t('featureFlags.noFlagsMatchFilter')}
-            </p>
-          ) : null}
-        </>
-      )}
-      {pageAmount > 1 ? (
-        <Pagination
-          className='mt-4'
-          page={page}
-          pageAmount={pageAmount}
-          setPage={setPage}
-          total={total}
-          pageSize={DEFAULT_FEATURE_FLAGS_TAKE}
+            {/* Flags list */}
+            <ul className='mt-4'>
+              {_map(flags, (flag) => {
+                const profiles = flagProfiles[flag.id] || []
+                const profilesTotal = flagProfilesTotal[flag.id] || 0
+                const canLoadMore = profiles.length < profilesTotal
+
+                return (
+                  <FeatureFlagRow
+                    key={flag.id}
+                    flag={flag}
+                    stats={flagStats[flag.id] || null}
+                    statsLoading={statsLoading[flag.id] || false}
+                    isExpanded={expandedFlagId === flag.id}
+                    profiles={profiles}
+                    profilesLoading={profilesLoading[flag.id] || false}
+                    canLoadMoreProfiles={canLoadMore}
+                    resultFilter={flagResultFilters[flag.id] ?? true}
+                    onDelete={handleDeleteFlag}
+                    onEdit={handleEditFlag}
+                    onToggle={handleToggleFlag}
+                    onToggleExpand={handleToggleExpand}
+                    onLoadMoreProfiles={handleLoadMoreProfiles}
+                    onResultFilterChange={handleResultFilterChange}
+                    timeFormat={timeFormat}
+                  />
+                )
+              })}
+            </ul>
+
+            {flags.length === 0 && filterQuery ? (
+              <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
+                {t('featureFlags.noFlagsMatchFilter')}
+              </p>
+            ) : null}
+          </>
+        )}
+        {pageAmount > 1 ? (
+          <Pagination
+            className='mt-4'
+            page={page}
+            pageAmount={pageAmount}
+            setPage={setPage}
+            total={total}
+            pageSize={DEFAULT_FEATURE_FLAGS_TAKE}
+          />
+        ) : null}
+
+        <FeatureFlagSettingsModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSuccess={handleModalSuccess}
+          projectId={id}
+          flagId={editingFlagId}
         />
-      ) : null}
-
-      <FeatureFlagSettingsModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSuccess={handleModalSuccess}
-        projectId={id}
-        flagId={editingFlagId}
-      />
-    </div>
+      </div>
+    </>
   )
 }
 
