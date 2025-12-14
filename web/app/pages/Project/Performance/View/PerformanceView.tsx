@@ -4,7 +4,6 @@ import _find from 'lodash/find'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
-import _some from 'lodash/some'
 import { EyeIcon, PercentIcon } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -298,11 +297,6 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     [t],
   )
 
-  const checkIfAllMetricsAreDisabled = useMemo(
-    () => !_some({ activeChartMetrics }, (value) => value),
-    [activeChartMetrics],
-  )
-
   const loadAnalytics = async () => {
     if (!project) return
 
@@ -414,7 +408,9 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
         let newTimebucket = timeBucket
 
         if (period === 'all' && !_isEmpty(dataPerf.timeBucket)) {
-          newTimebucket = dataPerf.timeBucket?.includes(timeBucket) ? timeBucket : (dataPerf.timeBucket?.[0] as string)
+          newTimebucket = dataPerf.timeBucket?.includes(timeBucket as TimeBucket)
+            ? timeBucket
+            : (dataPerf.timeBucket?.[0] as TimeBucket)
           const newSearchParams = new URLSearchParams(searchParams.toString())
           newSearchParams.set('timeBucket', newTimebucket)
           setSearchParams(newSearchParams)
@@ -490,7 +486,12 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
 
   // Show no events if data is empty
   if (isPanelsDataEmpty) {
-    return <NoEvents filters={filters} />
+    return (
+      <>
+        <DashboardHeader />
+        <NoEvents filters={filters} />
+      </>
+    )
   }
 
   const ChartTypeSwitcher = ({ type, onSwitch }: { type: string; onSwitch: (type: 'line' | 'bar') => void }) => {
@@ -589,7 +590,7 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
               activePeriodCompare={activePeriodCompare}
             />
           ) : null}
-          {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData) ? (
+          {activeChartMetrics && !_isEmpty(chartData) ? (
             <div onContextMenu={(e) => handleChartContextMenu(e, chartData?.x)} className='relative'>
               <PerformanceChart
                 chart={chartData}

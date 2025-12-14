@@ -736,11 +736,6 @@ const TrafficView = ({
     return <Loader />
   }
 
-  // Show no events if data is empty
-  if (isPanelsDataEmpty) {
-    return <NoEvents filters={filters} />
-  }
-
   const headerRightContent = (
     <TrafficHeaderActions
       projectViews={projectViews}
@@ -758,6 +753,16 @@ const TrafficView = ({
       panelsData={panelsData}
     />
   )
+
+  // Show no events if data is empty
+  if (isPanelsDataEmpty) {
+    return (
+      <>
+        <DashboardHeader rightContent={headerRightContent} />
+        <NoEvents filters={filters} />
+      </>
+    )
+  }
 
   const ChartTypeSwitcher = ({ type, onSwitch }: { type: string; onSwitch: (type: 'line' | 'bar') => void }) => {
     if (type === chartTypes.bar) {

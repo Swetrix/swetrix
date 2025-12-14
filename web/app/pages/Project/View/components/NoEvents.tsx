@@ -19,7 +19,7 @@ const NoEvents = ({ filters }: NoEventsProps) => {
 
   if (_isEmpty(filters)) {
     return (
-      <div className='mt-5 flex flex-col py-6 sm:px-6 lg:px-8'>
+      <div className='mt-5 flex min-h-[78vh] flex-col py-6 sm:px-6 lg:px-8'>
         <div className='mx-auto w-full max-w-7xl'>
           <Text as='h2' size='4xl' weight='semibold' className='my-3 text-center leading-tight'>
             {t('project.noEvTitle')}
@@ -37,7 +37,7 @@ const NoEvents = ({ filters }: NoEventsProps) => {
       <div className='mt-4'>
         <Filters tnMapping={tnMapping} />
       </div>
-      <div className='mt-5 flex flex-col py-6 sm:px-6 lg:px-8'>
+      <div className='mt-5 flex min-h-[78vh] flex-col py-6 sm:px-6 lg:px-8'>
         <div className='mx-auto w-full max-w-7xl'>
           <Text as='h2' size='4xl' weight='semibold' className='my-3 text-center leading-tight'>
             {t('project.noEvTitle')}
