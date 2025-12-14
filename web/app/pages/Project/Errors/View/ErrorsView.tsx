@@ -774,7 +774,7 @@ const ErrorsView = () => {
           disabled={errorStatusUpdating}
           onClick={markErrorAsResolved}
           className={cx(
-            'rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-50 dark:hover:bg-slate-600',
+            'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
             {
               'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
               'animate-pulse cursor-not-allowed': errorStatusUpdating,
@@ -789,7 +789,7 @@ const ErrorsView = () => {
           disabled={errorStatusUpdating}
           onClick={markErrorAsActive}
           className={cx(
-            'rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-50 dark:hover:bg-slate-600',
+            'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
             {
               'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
               'animate-pulse cursor-not-allowed': errorStatusUpdating,
