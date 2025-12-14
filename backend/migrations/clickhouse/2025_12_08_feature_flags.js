@@ -1,7 +1,6 @@
 const { queriesRunner, dbName } = require('./setup')
 
 const queries = [
-  // Create feature_flag_evaluations table for tracking flag evaluations
   `CREATE TABLE IF NOT EXISTS ${dbName}.feature_flag_evaluations
   (
     pid FixedString(12),

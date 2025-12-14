@@ -1,7 +1,7 @@
 const { queriesRunner, dbName } = require('./setup')
 
 const queries = [
-  // Create experiment_exposures table for tracking which variant each user sees
+  // Experiment exposures table for tracking which variant each user sees
   `CREATE TABLE IF NOT EXISTS ${dbName}.experiment_exposures
   (
     pid FixedString(12),

@@ -163,6 +163,48 @@ const CLICKHOUSE_INIT_QUERIES = [
   ORDER BY (pid, psid)
   PARTITION BY toYYYYMM(firstSeen);`,
 
+  // Session duration table
+  `CREATE TABLE IF NOT EXISTS ${dbName}.sessions
+  (
+    psid UInt64,
+    pid FixedString(12),
+    profileId Nullable(String),
+    firstSeen DateTime('UTC'),
+    lastSeen DateTime('UTC')
+  )
+  ENGINE = ReplacingMergeTree(lastSeen)
+  ORDER BY (pid, psid)
+  PARTITION BY toYYYYMM(firstSeen);`,
+
+  // Feature flag evaluations table
+  `CREATE TABLE IF NOT EXISTS ${dbName}.feature_flag_evaluations
+  (
+    pid FixedString(12),
+    flagId String,
+    flagKey String,
+    result UInt8,
+    profileId String,
+    created DateTime('UTC')
+  )
+  ENGINE = MergeTree()
+  PARTITION BY toYYYYMM(created)
+  ORDER BY (pid, flagId, created)
+  TTL created + INTERVAL 1 YEAR;`,
+
+  // Experiment exposures table for tracking which variant each user sees
+  `CREATE TABLE IF NOT EXISTS ${dbName}.experiment_exposures
+  (
+    pid FixedString(12),
+    experimentId String,
+    variantKey String,
+    profileId String,
+    created DateTime('UTC')
+  )
+  ENGINE = MergeTree()
+  PARTITION BY toYYYYMM(created)
+  ORDER BY (pid, experimentId, created)
+  TTL created + INTERVAL 1 YEAR;`,
+
   // The CAPTCHA data table
   `CREATE TABLE IF NOT EXISTS ${dbName}.captcha
   (
