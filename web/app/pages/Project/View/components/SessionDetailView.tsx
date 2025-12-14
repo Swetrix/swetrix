@@ -3,17 +3,7 @@ import _capitalize from 'lodash/capitalize'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
-import {
-  GlobeIcon,
-  MonitorIcon,
-  SmartphoneIcon,
-  TabletIcon,
-  ClockIcon,
-  MapPinIcon,
-  LanguagesIcon,
-  LinkIcon,
-  TagIcon,
-} from 'lucide-react'
+import { GlobeIcon, MonitorIcon, SmartphoneIcon, TabletIcon, ClockIcon, LinkIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -54,13 +44,10 @@ interface SessionDetailViewProps {
   dataNames: Record<string, string>
 }
 
-// Info Row Component
-const InfoRow = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) => (
-  <div className='flex items-center justify-between border-b border-gray-100 py-2.5 last:border-0 dark:border-slate-700/50'>
-    <span className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'>
-      {icon}
-      {label}
-    </span>
+// Info Row Component for Location & Device
+const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  <div className='flex items-center justify-between border-b border-gray-100 py-2 last:border-0 dark:border-slate-700/50'>
+    <span className='text-sm text-gray-600 dark:text-gray-400'>{label}</span>
     <span className='flex items-center gap-1.5 text-sm font-medium text-gray-900 dark:text-white'>{value}</span>
   </div>
 )
@@ -157,20 +144,20 @@ export const SessionDetailView = ({
   }
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-5'>
       {/* Main Content - Two Column Layout */}
-      <div className='flex flex-col gap-6 lg:flex-row'>
+      <div className='flex flex-col gap-5 lg:flex-row'>
         {/* Left Column - Session Details */}
         <div className='space-y-4 lg:w-[380px]'>
-          {/* Session Info Card */}
+          {/* Session Details Card */}
           <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+            {/* Session Info */}
             <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
               {t('project.sessionInfo')}
             </h3>
             <div>
               {/* Session Duration */}
               <InfoRow
-                icon={<ClockIcon className='h-4 w-4' />}
                 label={t('dashboard.sessionDuration')}
                 value={
                   details.isLive ? (
@@ -179,7 +166,10 @@ export const SessionDetailView = ({
                       {t('dashboard.live').toUpperCase()}
                     </span>
                   ) : sessionDuration > 0 ? (
-                    getStringFromTime(getTimeFromSeconds(sessionDuration))
+                    <>
+                      <ClockIcon className='h-4 w-4' />
+                      {getStringFromTime(getTimeFromSeconds(sessionDuration))}
+                    </>
                   ) : (
                     'N/A'
                   )
@@ -187,54 +177,56 @@ export const SessionDetailView = ({
               />
               {/* Referrer */}
               <InfoRow
-                icon={<LinkIcon className='h-4 w-4' />}
                 label={t('project.mapping.ref')}
                 value={
                   details.ref ? (
-                    <span title={_size(details.ref) > 25 ? details.ref : undefined}>
-                      {_truncate(details.ref, { length: 25 })}
-                    </span>
+                    <>
+                      <LinkIcon className='h-4 w-4' />
+                      <span title={_size(details.ref) > 25 ? details.ref : undefined}>
+                        {_truncate(details.ref, { length: 25 })}
+                      </span>
+                    </>
                   ) : (
                     t('project.directNone')
                   )
                 }
               />
             </div>
-          </div>
 
-          {/* Location & Device Card */}
-          <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
-            <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
+            {/* Location & Device */}
+            <h3 className='mt-5 mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
               {t('project.locationAndDevice')}
             </h3>
             <div>
               <InfoRow
-                icon={<MapPinIcon className='h-4 w-4' />}
                 label={t('project.mapping.cc')}
                 value={details.cc ? <CCRow size={16} cc={details.cc} language={language} /> : '-'}
               />
-              {details.rg ? (
-                <InfoRow icon={<MapPinIcon className='h-4 w-4' />} label={t('project.mapping.rg')} value={details.rg} />
-              ) : null}
-              {details.ct ? (
-                <InfoRow icon={<MapPinIcon className='h-4 w-4' />} label={t('project.mapping.ct')} value={details.ct} />
-              ) : null}
+              {details.rg ? <InfoRow label={t('project.mapping.rg')} value={details.rg} /> : null}
+              {details.ct ? <InfoRow label={t('project.mapping.ct')} value={details.ct} /> : null}
               <InfoRow
-                icon={<LanguagesIcon className='h-4 w-4' />}
                 label={t('project.mapping.lc')}
                 value={details.lc ? getLocaleDisplayName(details.lc, language) : '-'}
               />
               <InfoRow
-                icon={<DeviceIcon device={details.dv} />}
                 label={t('project.mapping.dv')}
-                value={details.dv ? _capitalize(details.dv) : '-'}
+                value={
+                  details.dv ? (
+                    <>
+                      <DeviceIcon device={details.dv} />
+                      {_capitalize(details.dv)}
+                    </>
+                  ) : (
+                    '-'
+                  )
+                }
               />
               <InfoRow
-                icon={<BrowserIcon browser={details.br} />}
                 label={t('project.mapping.br')}
                 value={
                   details.br ? (
                     <>
+                      <BrowserIcon browser={details.br} />
                       {details.br}
                       {details.brv ? ` v${details.brv}` : ''}
                     </>
@@ -244,11 +236,11 @@ export const SessionDetailView = ({
                 }
               />
               <InfoRow
-                icon={<OSIcon os={details.os} theme={theme} />}
                 label={t('project.mapping.os')}
                 value={
                   details.os ? (
                     <>
+                      <OSIcon os={details.os} theme={theme} />
                       {details.os}
                       {details.osv ? ` v${details.osv}` : ''}
                     </>
@@ -258,33 +250,23 @@ export const SessionDetailView = ({
                 }
               />
             </div>
-          </div>
 
-          {/* UTM Campaigns Card */}
-          {details.so || details.me || details.ca || details.te || details.co ? (
-            <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
-              <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
-                {t('project.campaigns')}
-              </h3>
-              <div>
-                {details.so ? (
-                  <InfoRow icon={<TagIcon className='h-4 w-4' />} label={t('project.mapping.so')} value={details.so} />
-                ) : null}
-                {details.me ? (
-                  <InfoRow icon={<TagIcon className='h-4 w-4' />} label={t('project.mapping.me')} value={details.me} />
-                ) : null}
-                {details.ca ? (
-                  <InfoRow icon={<TagIcon className='h-4 w-4' />} label={t('project.mapping.ca')} value={details.ca} />
-                ) : null}
-                {details.te ? (
-                  <InfoRow icon={<TagIcon className='h-4 w-4' />} label={t('project.mapping.te')} value={details.te} />
-                ) : null}
-                {details.co ? (
-                  <InfoRow icon={<TagIcon className='h-4 w-4' />} label={t('project.mapping.co')} value={details.co} />
-                ) : null}
-              </div>
-            </div>
-          ) : null}
+            {/* UTM Campaigns */}
+            {details.so || details.me || details.ca || details.te || details.co ? (
+              <>
+                <h3 className='mt-5 mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
+                  {t('project.campaigns')}
+                </h3>
+                <div>
+                  {details.so ? <InfoRow label={t('project.mapping.so')} value={details.so} /> : null}
+                  {details.me ? <InfoRow label={t('project.mapping.me')} value={details.me} /> : null}
+                  {details.ca ? <InfoRow label={t('project.mapping.ca')} value={details.ca} /> : null}
+                  {details.te ? <InfoRow label={t('project.mapping.te')} value={details.te} /> : null}
+                  {details.co ? <InfoRow label={t('project.mapping.co')} value={details.co} /> : null}
+                </div>
+              </>
+            ) : null}
+          </div>
         </div>
 
         {/* Right Column - Chart */}

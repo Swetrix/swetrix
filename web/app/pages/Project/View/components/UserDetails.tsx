@@ -242,7 +242,7 @@ export const UserDetails = ({
       </div>
 
       {/* Main Content - Two Column Layout */}
-      <div className='flex flex-col gap-6 lg:flex-row'>
+      <div className='flex flex-col gap-5 lg:flex-row'>
         {/* Left Column - Stats & Location/Device & Activity Calendar */}
         <div className='space-y-4 lg:w-[380px]'>
           {/* Stats Card */}
