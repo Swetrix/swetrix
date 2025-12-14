@@ -114,7 +114,6 @@ import { ProjectViewIdsDto } from './dto/project-view-ids.dto'
 import { OrganisationService } from '../organisation/organisation.service'
 import { Organisation } from '../organisation/entity/organisation.entity'
 import { ProjectOrganisationDto } from './dto/project-organisation.dto'
-import { ProjectExtraService } from './project-extra.service'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -137,7 +136,6 @@ export class ProjectController {
     private readonly mailerService: MailerService,
     private readonly projectsViewsRepository: ProjectsViewsRepository,
     private readonly organisationService: OrganisationService,
-    private readonly projectExtraService: ProjectExtraService,
   ) {}
 
   @ApiBearerAuth()
@@ -145,11 +143,6 @@ export class ProjectController {
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'search', required: false, type: String })
-  @ApiQuery({
-    name: 'mode',
-    required: false,
-    type: String,
-  })
   @ApiQuery({
     name: 'timeFrame',
     required: false,
@@ -167,30 +160,17 @@ export class ProjectController {
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
     @Query('search') search?: string,
-    @Query('mode')
-    mode?:
-      | 'default'
-      | 'high-traffic'
-      | 'low-traffic'
-      | 'performance'
-      | 'lost-traffic',
     @Query('period')
     period: '1h' | '1d' | '7d' | '4w' | '3M' | '12M' | '24M' | 'all' = '7d',
-    @Query('use-hostname-navigation')
-    useHostnameNavigation: string = 'false',
     @Query('sort')
     sort?: 'alpha_asc' | 'alpha_desc' | 'date_asc' | 'date_desc',
   ): Promise<Pagination<Project> | Project[] | object> {
-    const isHostnameNavigationEnabled = useHostnameNavigation === 'true'
-
     this.logger.log(
       {
         userId,
         take,
         skip,
-        mode,
         timeFrame: period,
-        useHostnameNavigation,
         sort,
       },
       'GET /project',
@@ -204,47 +184,17 @@ export class ProjectController {
       )
     }
 
-    if (!mode || mode === 'default') {
-      let paginated
-
-      if (isHostnameNavigationEnabled) {
-        paginated = await this.projectExtraService.paginateHostnameNavigation(
-          {
-            take,
-            skip,
-            period,
-            sort,
-          },
-          userId,
-          search,
-        )
-      } else {
-        paginated = await this.projectService.paginate(
-          {
-            take,
-            skip,
-          },
-          userId,
-          search,
-          sort,
-        )
-      }
-
-      return this.projectService.processDefaultResults(paginated, userId)
-    }
-
-    return this.projectExtraService.paginateByTraffic(
+    const paginated = await this.projectService.paginate(
       {
         take,
         skip,
-        mode,
-        period,
-        sort,
       },
       userId,
       search,
-      isHostnameNavigationEnabled,
+      sort,
     )
+
+    return this.projectService.processDefaultResults(paginated, userId)
   }
 
   @ApiBearerAuth()

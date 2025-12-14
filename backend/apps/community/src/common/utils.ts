@@ -1210,22 +1210,6 @@ const unpinProjectClickhouse = async (
   })
 }
 
-const isProjectPinnedClickhouse = async (
-  visitorId: string,
-  projectId: string,
-): Promise<boolean> => {
-  const query = `SELECT 1 FROM pinned_project WHERE visitorId = {visitorId:String} AND projectId = {projectId:FixedString(12)} LIMIT 1;`
-
-  const { data } = await clickhouse
-    .query({
-      query,
-      query_params: { visitorId, projectId },
-    })
-    .then(resultSet => resultSet.json())
-
-  return !_isEmpty(data)
-}
-
 export {
   checkRateLimit,
   createProjectClickhouse,
@@ -1274,5 +1258,4 @@ export {
   getPinnedProjectsClickhouse,
   pinProjectClickhouse,
   unpinProjectClickhouse,
-  isProjectPinnedClickhouse,
 }

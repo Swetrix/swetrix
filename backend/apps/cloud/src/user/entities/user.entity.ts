@@ -221,23 +221,10 @@ export const DEFAULT_TIMEZONE = 'Etc/GMT'
 
 export const TRIAL_DURATION = 14 // days
 
-export enum FeatureFlag {
-  'dashboard-period-selector' = 'dashboard-period-selector',
-  'dashboard-analytics-tabs' = 'dashboard-analytics-tabs',
-  'dashboard-hostname-cards' = 'dashboard-hostname-cards',
-}
-
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string
-
-  @Column({
-    type: 'set',
-    enum: FeatureFlag,
-    default: [],
-  })
-  featureFlags: FeatureFlag[]
 
   @Column({
     type: 'enum',

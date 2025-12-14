@@ -3,7 +3,6 @@ import _find from 'lodash/find'
 import _isNumber from 'lodash/isNumber'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
-import _round from 'lodash/round'
 import _size from 'lodash/size'
 import { Settings2Icon, PinIcon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
@@ -12,9 +11,7 @@ import { Link } from 'react-router'
 import { toast } from 'sonner'
 
 import { acceptProjectShare, pinProject, unpinProject } from '~/api'
-import useFeatureFlag from '~/hooks/useFeatureFlag'
 import { OverallObject, Project } from '~/lib/models/Project'
-import { FeatureFlag } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
 import { Badge, BadgeProps } from '~/ui/Badge'
 import Spin from '~/ui/icons/Spin'
@@ -24,7 +21,6 @@ import { nFormatter, calculateRelativePercentage } from '~/utils/generic'
 import routes from '~/utils/routes'
 
 import Sparkline from './Sparkline'
-import { DASHBOARD_TABS } from './Tabs'
 
 // Detect if device supports hover (i.e., not a touch-only device)
 const useIsTouchDevice = () => {
@@ -48,7 +44,6 @@ interface ProjectCardProps {
   overallStats?: OverallObject
   project: Project
   activePeriod: string
-  activeTab: (typeof DASHBOARD_TABS)[number]['id']
   viewMode: 'grid' | 'list'
   refetchProjects: () => Promise<void>
 }
@@ -122,14 +117,11 @@ export const ProjectCard = ({
   project,
   overallStats,
   activePeriod,
-  activeTab,
   viewMode,
   refetchProjects,
 }: ProjectCardProps) => {
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
-  const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
-  const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
 
   const { user, mergeUser } = useAuth()
   const isTouchDevice = useIsTouchDevice()
@@ -257,16 +249,10 @@ export const ProjectCard = ({
   const searchParams = useMemo(() => {
     const params = new URLSearchParams()
 
-    if (showPeriodSelector) {
-      params.set('period', activePeriod)
-    }
-
-    if (isHostnameNavigationEnabled) {
-      params.set('host', encodeURIComponent(project.name))
-    }
+    params.set('period', activePeriod)
 
     return params.toString()
-  }, [showPeriodSelector, activePeriod, isHostnameNavigationEnabled, project.name])
+  }, [activePeriod])
 
   // Determine if action buttons should always be visible
   // Show on touch devices, or when project is pinned
@@ -335,31 +321,16 @@ export const ProjectCard = ({
         </div>
       </div>
       <div className={cx('relative z-10 flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4')}>
-        {isHostnameNavigationEnabled ? (
-          <MiniCard
-            labelTKey='dashboard.pageviews'
-            // @ts-expect-error
-            total={project?.trafficStats?.visits}
-            percChange={
-              activeTab === 'performance'
-                ? // @ts-expect-error
-                  _round(project?.trafficStats?.percentageChange, 2)
-                : undefined
-            }
-            hasData={project?.isDataExists || project?.isErrorDataExists || project?.isCaptchaDataExists}
-          />
-        ) : (
-          <MiniCard
-            labelTKey='dashboard.pageviews'
-            total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
-            percChange={
-              live === 'N/A'
-                ? 0
-                : calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)
-            }
-            hasData={project?.isDataExists || project?.isErrorDataExists || project?.isCaptchaDataExists}
-          />
-        )}
+        <MiniCard
+          labelTKey='dashboard.pageviews'
+          total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
+          percChange={
+            live === 'N/A'
+              ? 0
+              : calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)
+          }
+          hasData={project?.isDataExists || project?.isErrorDataExists || project?.isCaptchaDataExists}
+        />
         <MiniCard
           labelTKey='dashboard.liveVisitors'
           total={live}

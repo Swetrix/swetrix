@@ -1,22 +1,18 @@
 import { FolderPlusIcon } from '@heroicons/react/24/outline'
 import { FolderInputIcon } from 'lucide-react'
-import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Text } from '~/ui/Text'
 
-import { DASHBOARD_TABS } from './Tabs'
-
 interface NoProjectsProps {
   onClick: () => void
-  activeTab: (typeof DASHBOARD_TABS)[number]['id']
   search: string
 }
 
-export const NoProjects = ({ onClick, activeTab, search }: NoProjectsProps) => {
+export const NoProjects = ({ onClick, search }: NoProjectsProps) => {
   const { t } = useTranslation('common')
 
-  if (activeTab !== 'default' || search) {
+  if (search) {
     return (
       <div className='mt-5 flex flex-col py-6 sm:px-6 lg:px-8'>
         <div className='mx-auto w-full max-w-6xl'>

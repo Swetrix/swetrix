@@ -164,24 +164,6 @@
     "details": "Details",
     "unknown": "Unknown"
   },
-  "swetrixFeatureFlags": {
-    "title": "Feature Flags",
-    "description": "Enable or disable experimental features to try out new functionality before it's fully released. Feature flags allow you to test new features and provide feedback.",
-    "updated": "Feature flags updated successfully",
-    "error": "Failed to update feature flags",
-    "dashboard-period-selector": {
-      "title": "Dashboard Period Selector",
-      "description": "Enables the period selector in the dashboard, allowing you to see the number of pageviews for different periods (if this feature flag is disabled, the default period is {{defaultPeriod}} days)."
-    },
-    "dashboard-analytics-tabs": {
-      "title": "Dashboard Analytics Tabs",
-      "description": "Enables analytics tabs in the dashboard, providing different views of your data such as high / low traffic sites, abandoned projects, and more."
-    },
-    "dashboard-hostname-cards": {
-      "title": "Dashboard Hostname-based navigation",
-      "description": "Replaces traditional project-based navigation with hostname-based navigation - instead of seeing individual projects, you see the hostnames from the analytics data instead. This is useful if you have a lot of websites and don't want to create a project for each one, so you can create one project and collect all the data in it."
-    }
-  },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
     "description": "Deliver a flawless experience to your users, and we will let you know if your site is fast enough.",
@@ -850,12 +832,9 @@
     "sortAlphaDesc": "Z to A",
     "sortDateAsc": "Oldest first",
     "sortDateDesc": "Newest first",
-    "pageviewsDesc": "Most pageviews",
-    "pageviewsAsc": "Least pageviews",
     "page": "Page",
     "event": "Event",
     "noProjectsForCriteria": "No projects found for the selected criteria",
-    "lastVisitDesc": "Recently visited first",
     "captcha": "CAPTCHA",
     "newProject": "New project",
     "newFunnel": "New funnel",

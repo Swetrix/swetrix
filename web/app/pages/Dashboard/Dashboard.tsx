@@ -16,10 +16,8 @@ import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import { withAuthentication, auth } from '~/hoc/protected'
 import useBreakpoint from '~/hooks/useBreakpoint'
 import useDebounce from '~/hooks/useDebounce'
-import useFeatureFlag from '~/hooks/useFeatureFlag'
 import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL, tbPeriodPairs } from '~/lib/constants'
 import { Overall, Project } from '~/lib/models/Project'
-import { FeatureFlag } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
@@ -35,7 +33,6 @@ import { NoProjects } from './NoProjects'
 import { PeriodSelector } from './PeriodSelector'
 import { ProjectCard, ProjectCardSkeleton } from './ProjectCard'
 import { SortSelector, SORT_OPTIONS } from './SortSelector'
-import { DASHBOARD_TABS, Tabs } from './Tabs'
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
 
@@ -51,9 +48,6 @@ const Dashboard = () => {
   const { viewMode: defaultViewMode } = useLoaderData<any>()
   const { user, isLoading: authLoading } = useAuth()
   const navigate = useNavigate()
-  const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
-  const showTabs = useFeatureFlag(FeatureFlag['dashboard-analytics-tabs'])
-  const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
   const [searchParams, setSearchParams] = useSearchParams()
 
   const { t } = useTranslation('common')
@@ -92,12 +86,6 @@ const Dashboard = () => {
   const [liveStats, setLiveStats] = useState<Record<string, number>>({})
   const [overallStats, setOverallStats] = useState<Overall>({})
 
-  const [activeTab, setActiveTab] = useState<(typeof DASHBOARD_TABS)[number]['id']>(() => {
-    const tabParam = searchParams.get('tab')
-    return tabParam && DASHBOARD_TABS.some((tab) => tab.id === tabParam)
-      ? (tabParam as (typeof DASHBOARD_TABS)[number]['id'])
-      : DASHBOARD_TABS[0].id
-  })
   const [activePeriod, setActivePeriod] = useState(() => {
     const periodParam = searchParams.get('period')
     return periodParam || '7d'
@@ -159,12 +147,6 @@ const Dashboard = () => {
     setPageSize(size)
     setPage(1)
     updateURL({ pageSize: size.toString(), page: '1' })
-  }
-
-  const handleTabChange = (newTab: (typeof DASHBOARD_TABS)[number]['id']) => {
-    setActiveTab(newTab)
-    setPage(1)
-    updateURL({ tab: newTab, page: '1' })
   }
 
   const handlePeriodChange = (period: string) => {
@@ -267,33 +249,17 @@ const Dashboard = () => {
   }
 
   const refetchProjects = async () => {
-    await loadProjects(
-      pageSize,
-      (page - 1) * pageSize,
-      debouncedSearch,
-      activeTab,
-      activePeriod,
-      isHostnameNavigationEnabled,
-      sortBy,
-    )
+    await loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activePeriod, sortBy)
   }
 
-  const loadProjects = async (
-    take: number,
-    skip: number,
-    search?: string,
-    tab?: string,
-    period?: string,
-    isHostnameNavigationEnabled?: boolean,
-    sort?: string,
-  ) => {
+  const loadProjects = async (take: number, skip: number, search?: string, period?: string, sort?: string) => {
     if (isLoading) {
       return
     }
     setIsLoading(true)
 
     try {
-      const result = await getProjects(take, skip, search, tab, period, isHostnameNavigationEnabled, sort)
+      const result = await getProjects(take, skip, search, period, sort)
       setProjects(result.results)
       setPaginationTotal(result.total)
     } catch (reason: any) {
@@ -316,18 +282,10 @@ const Dashboard = () => {
       return
     }
 
-    loadProjects(
-      pageSize,
-      (page - 1) * pageSize,
-      debouncedSearch,
-      activeTab,
-      activePeriod,
-      isHostnameNavigationEnabled,
-      sortBy,
-    )
+    loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activePeriod, sortBy)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, debouncedSearch, activeTab, activePeriod, isHostnameNavigationEnabled, authLoading, sortBy])
+  }, [page, pageSize, debouncedSearch, activePeriod, authLoading, sortBy])
 
   // Set up interval for live visitors
   useEffect(() => {
@@ -344,7 +302,7 @@ const Dashboard = () => {
     }
 
     const updateOverallStats = async (projectIds: string[]) => {
-      if (!projectIds.length || isHostnameNavigationEnabled) return
+      if (!projectIds.length) return
 
       try {
         const timeBucket = tbPeriodPairs(t).find((p) => p.period === activePeriod)?.tbs[0] || ''
@@ -375,7 +333,7 @@ const Dashboard = () => {
     const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [projects, activePeriod, isHostnameNavigationEnabled, t]) // Reset interval when projects change
+  }, [projects, activePeriod, t]) // Reset interval when projects change
 
   if (error && isLoading === false) {
     return (
@@ -425,7 +383,7 @@ const Dashboard = () => {
         <DashboardLockedBanner />
         <div className='flex flex-col'>
           <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
-            <div className={cx('flex flex-wrap justify-between gap-2', showTabs ? 'mb-2' : 'mb-4')}>
+            <div className='mb-4 flex flex-wrap justify-between gap-2'>
               <div className='flex items-end justify-between'>
                 <Text as='h2' size='3xl' weight='bold' className='mt-2 flex items-baseline gap-2'>
                   <span>{t('titles.dashboard')}</span>
@@ -489,21 +447,16 @@ const Dashboard = () => {
                 ) : null}
               </div>
               <div className='flex flex-wrap items-center gap-2'>
-                {activeTab === 'lost-traffic' ? null : showPeriodSelector ? (
-                  <PeriodSelector
-                    activePeriod={activePeriod}
-                    setActivePeriod={handlePeriodChange}
-                    isLoading={isLoading === null || isLoading}
-                  />
-                ) : null}
-                {['high-traffic', 'low-traffic', 'performance'].includes(activeTab) ? null : (
-                  <SortSelector
-                    activeTab={activeTab}
-                    activeSort={sortBy}
-                    setActiveSort={handleSortChange}
-                    isLoading={isLoading === null || isLoading}
-                  />
-                )}
+                <PeriodSelector
+                  activePeriod={activePeriod}
+                  setActivePeriod={handlePeriodChange}
+                  isLoading={isLoading === null || isLoading}
+                />
+                <SortSelector
+                  activeSort={sortBy}
+                  setActiveSort={handleSortChange}
+                  isLoading={isLoading === null || isLoading}
+                />
                 <div className='hidden lg:block'>
                   {viewMode === DASHBOARD_VIEW.GRID ? (
                     <button
@@ -561,21 +514,6 @@ const Dashboard = () => {
                 </div>
               </div>
             ) : null}
-            {showTabs ? (
-              <Tabs
-                activeTab={activeTab}
-                setActiveTab={(tab) => {
-                  if (typeof tab === 'function') {
-                    const newTab = tab(activeTab)
-                    handleTabChange(newTab)
-                  } else {
-                    handleTabChange(tab)
-                  }
-                }}
-                isLoading={isLoading === null || isLoading}
-                className='mb-4'
-              />
-            ) : null}
             {isLoading || isLoading === null ? (
               <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
                 <ProjectCardSkeleton viewMode={_viewMode} />
@@ -591,7 +529,7 @@ const Dashboard = () => {
                 {() => (
                   <>
                     {_isEmpty(projects) ? (
-                      <NoProjects search={debouncedSearch} activeTab={activeTab} onClick={onNewProject} />
+                      <NoProjects search={debouncedSearch} onClick={onNewProject} />
                     ) : (
                       <div
                         className={cx(
@@ -606,12 +544,11 @@ const Dashboard = () => {
                             live={liveStats[project.id] ?? (_isEmpty(liveStats) ? null : 'N/A')}
                             overallStats={overallStats[project.id]}
                             activePeriod={activePeriod}
-                            activeTab={activeTab}
                             viewMode={_viewMode}
                             refetchProjects={refetchProjects}
                           />
                         ))}
-                        {_size(projects) % 12 !== 0 && activeTab === 'default' ? (
+                        {_size(projects) % 12 !== 0 ? (
                           <AddProject sitesCount={_size(projects)} onClick={onNewProject} viewMode={_viewMode} />
                         ) : null}
                       </div>

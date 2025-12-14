@@ -42,7 +42,6 @@ import {
   User,
   MAX_EMAIL_REQUESTS,
   PlanCode,
-  FeatureFlag,
   OnboardingStep,
 } from './entities/user.entity'
 import { isDevelopment, PRODUCTION_ORIGIN } from '../common/constants'
@@ -111,15 +110,6 @@ export class UserController {
       user: sanitizedUser,
       totalMonthlyEvents,
     }
-  }
-
-  @ApiBearerAuth()
-  @Put('/feature-flags')
-  async setFeatureFlags(
-    @CurrentUserId() userId: string,
-    @Body('featureFlags') featureFlags: FeatureFlag[],
-  ) {
-    await this.userService.update(userId, { featureFlags })
   }
 
   @ApiBearerAuth()

@@ -22,12 +22,6 @@ enum PlanCode {
   '10m' = '10m',
 }
 
-export enum FeatureFlag {
-  'dashboard-period-selector' = 'dashboard-period-selector',
-  'dashboard-analytics-tabs' = 'dashboard-analytics-tabs',
-  'dashboard-hostname-cards' = 'dashboard-hostname-cards',
-}
-
 enum OnboardingStep {
   WELCOME = 'welcome',
   CREATE_PROJECT = 'create_project',
@@ -39,7 +33,6 @@ enum OnboardingStep {
 export interface User {
   id: string
   planCode: PlanCode
-  featureFlags: FeatureFlag[]
   nickname: string
   email: string
   isActive: boolean

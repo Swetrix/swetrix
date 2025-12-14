@@ -210,12 +210,6 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
       }
       break
 
-    case routes.feature_flags:
-      result = {
-        title: t('titles.featureFlags'),
-      }
-      break
-
     default:
       break
   }

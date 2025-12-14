@@ -24,7 +24,7 @@ import {
 } from '~/lib/models/Project'
 import { Stats } from '~/lib/models/Stats'
 import { Subscriber } from '~/lib/models/Subscriber'
-import { User, FeatureFlag } from '~/lib/models/User'
+import { User } from '~/lib/models/User'
 import { Filter, ProjectViewCustomEvent } from '~/pages/Project/View/interfaces/traffic'
 import { getAccessToken, setAccessToken } from '~/utils/accessToken'
 import { logout } from '~/utils/auth'
@@ -257,19 +257,9 @@ export const verifyShare = ({ path, id }: { path: string; id: string }) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getProjects = (
-  take = 0,
-  skip = 0,
-  search = '',
-  mode = 'default',
-  period = '7d',
-  useHostnameNavigation = false,
-  sort = 'alpha_asc',
-) =>
+export const getProjects = (take = 0, skip = 0, search = '', period = '7d', sort = 'alpha_asc') =>
   api
-    .get(
-      `/project?take=${take}&skip=${skip}&search=${search}&mode=${mode}&period=${period}&use-hostname-navigation=${useHostnameNavigation}&sort=${sort}`,
-    )
+    .get(`/project?take=${take}&skip=${skip}&search=${search}&period=${period}&sort=${sort}`)
     .then(
       (
         response,
@@ -2171,14 +2161,6 @@ export const updateErrorStatus = (pid: string, status: 'resolved' | 'active', ei
   api
     .patch('log/error-status', { pid, eid, eids, status })
     .then((response): any => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const setFeatureFlags = (featureFlags: FeatureFlag[]) =>
-  api
-    .put('/user/feature-flags', { featureFlags })
-    .then((response): User => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
