@@ -292,7 +292,7 @@ const Signup = () => {
               value={form.email}
               onChange={handleInput}
               error={beenSubmitted ? errors.email : ''}
-              placeholder='you@company.com'
+              placeholder='name@company.com'
             />
             <Input
               name='password'
