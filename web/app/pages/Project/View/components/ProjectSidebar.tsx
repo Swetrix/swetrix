@@ -221,7 +221,7 @@ const CollapsibleGroup: React.FC<{
               <Tooltip
                 key={tab.id}
                 text={hintText}
-                delay={1000}
+                delay={750}
                 tooltipNode={
                   <Link
                     to={tabUrl}
@@ -447,7 +447,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
               return (
                 <Tooltip
                   text={t('dashboard.askAiHint')}
-                  delay={1000}
+                  delay={750}
                   className='w-full'
                   tooltipNode={
                     <Link
