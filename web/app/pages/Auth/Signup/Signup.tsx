@@ -241,7 +241,7 @@ const Signup = () => {
   return (
     <div className='flex min-h-min-footer bg-gray-50 dark:bg-slate-900'>
       {/* Left side - Form */}
-      <div className='flex w-full flex-col justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:w-1/2 lg:px-12 xl:px-24 dark:bg-slate-900'>
+      <div className='flex w-full flex-col justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:w-3/5 lg:px-12 xl:px-24 dark:bg-slate-900'>
         <div className='mx-auto w-full max-w-md'>
           {/* Header */}
           <div className='mb-8'>
@@ -415,7 +415,7 @@ const Signup = () => {
       </div>
 
       {/* Right side - Visual showcase */}
-      <div className='relative hidden overflow-hidden bg-linear-to-br from-slate-800 via-slate-900 to-slate-950 lg:flex lg:w-1/2 lg:flex-col lg:justify-between dark:from-slate-900 dark:via-slate-950 dark:to-black'>
+      <div className='relative hidden overflow-hidden bg-linear-to-br from-slate-800 via-slate-900 to-slate-950 lg:flex lg:w-2/5 lg:flex-col lg:justify-between dark:from-slate-900 dark:via-slate-950 dark:to-black'>
         {/* Decorative gradient orbs */}
         <div className='absolute -top-24 -right-24 size-96 rounded-full bg-indigo-500/20 blur-3xl' />
         <div className='absolute -bottom-24 -left-24 size-96 rounded-full bg-slate-500/20 blur-3xl' />
