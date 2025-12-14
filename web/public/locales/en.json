@@ -588,7 +588,13 @@
       "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
       "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
       "6digitCode": "6-digit authentication code",
-      "notAMember": "Not a member? <url>Start a {{amount}} day free trial</url>"
+      "notAMember": "Not a member? <url>Start a {{amount}} day free trial</url>",
+      "welcomeBack": "Welcome back! Please enter your details.",
+      "dashboardAwaits": "Your analytics dashboard awaits",
+      "trustedByThousands": "Privacy-focused analytics trusted by thousands of developers and businesses worldwide.",
+      "secureAuth": "Secure authentication",
+      "secureAuthDesc": "Two-factor authentication adds an extra layer of security to your account",
+      "testimonial": "\"Swetrix has been a game changer for our analytics. They've always been on top of feature requests and have been friendly every step of the way.\""
     },
     "signup": {
       "button": "Sign up",
@@ -598,7 +604,19 @@
       "trial": "Start your free {{amount}} day trial",
       "noCC": "No credit card required.",
       "alreadyAMember": "Already a member? <url>Sign in</url>",
-      "createAnAccount": "Create an account"
+      "createAnAccount": "Create an account",
+      "insightsInMinutes": "Get better website insights in minutes",
+      "testimonial": "\"Swetrix changed everything — clean dashboard, instant understanding of user behavior, and features that actually matter.\"",
+      "features": {
+        "realTimeAnalytics": "Real-time analytics",
+        "realTimeAnalyticsDesc": "See your visitors as they happen.",
+        "eventTracking": "Event tracking",
+        "eventTrackingDesc": "Track custom events and journeys.",
+        "privacyFirst": "Privacy-first",
+        "privacyFirstDesc": "No cookies used, fully open source.",
+        "intuitive": "Intuitive",
+        "intuitiveDesc": "Easy to use, no need to be a data scientist."
+      }
     },
     "verification": {
       "success": "Your email has been successfully verified!",
