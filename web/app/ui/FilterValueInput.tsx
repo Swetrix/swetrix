@@ -67,8 +67,7 @@ export const filterCategoryIcons: Record<string, ReactNode> = {
   dv: <TabletSmartphoneIcon className='size-4' strokeWidth={1.5} />,
 }
 
-// Device icon mapping
-export const deviceIconMapping: Record<string, ReactNode> = {
+const deviceIconMapping: Record<string, ReactNode> = {
   desktop: <MonitorIcon className='size-4' strokeWidth={1.5} />,
   mobile: <SmartphoneIcon className='size-4' strokeWidth={1.5} />,
   tablet: <TabletIcon className='size-4' strokeWidth={1.5} />,
@@ -79,7 +78,7 @@ export const deviceIconMapping: Record<string, ReactNode> = {
 }
 
 // Special separator for combined version values (e.g., "Chrome|||120.5")
-export const VERSION_SEPARATOR = '|||'
+const VERSION_SEPARATOR = '|||'
 
 // Helper to create combined version value
 export const createVersionValue = (parent: string, version: string) => `${parent}${VERSION_SEPARATOR}${version}`
@@ -91,7 +90,7 @@ export const parseVersionValue = (value: string): { parent: string; version: str
   return { parent, version }
 }
 
-export interface FilterValueInputProps {
+interface FilterValueInputProps {
   items: string[]
   value: string
   onChange: (value: string) => void

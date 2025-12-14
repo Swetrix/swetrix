@@ -323,14 +323,3 @@ export class ExperimentResultsDto {
   })
   timeBucket?: string[]
 }
-
-export class ExperimentStatsDto {
-  @ApiProperty()
-  exposures: number
-
-  @ApiProperty()
-  conversions: number
-
-  @ApiProperty()
-  conversionRate: number
-}

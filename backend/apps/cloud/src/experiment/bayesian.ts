@@ -5,7 +5,7 @@
  * the probability of each variant being the best.
  */
 
-export interface VariantData {
+interface VariantData {
   key: string
   exposures: number
   conversions: number
@@ -183,98 +183,4 @@ export function calculateBayesianProbabilities(
   }
 
   return probabilities
-}
-
-/**
- * Calculate credible interval for a variant's conversion rate
- *
- * @param conversions - Number of conversions
- * @param exposures - Number of exposures
- * @param credibleLevel - Credible level (default: 0.95 for 95%)
- * @returns [lower, upper] bounds of the credible interval
- */
-export function calculateCredibleInterval(
-  conversions: number,
-  exposures: number,
-  credibleLevel: number = 0.95,
-): [number, number] {
-  if (exposures === 0) {
-    return [0, 1]
-  }
-
-  const alpha = conversions + 1
-  const beta = exposures - conversions + 1
-
-  // Use numerical approximation for Beta distribution quantiles
-  // Sample many times and find percentiles
-  const samples: number[] = []
-  const random = mulberry32(
-    seedFromVariants([{ key: 'v', exposures, conversions }], 10000),
-  )
-  for (let i = 0; i < 10000; i++) {
-    samples.push(sampleBeta(alpha, beta, random))
-  }
-  samples.sort((a, b) => a - b)
-
-  const lowerIdx = Math.floor(((1 - credibleLevel) / 2) * samples.length)
-  const upperIdx = Math.floor(((1 + credibleLevel) / 2) * samples.length) - 1
-
-  return [samples[lowerIdx], samples[upperIdx]]
-}
-
-/**
- * Calculate the expected lift of test variant over control
- *
- * @param controlConversions - Control variant conversions
- * @param controlExposures - Control variant exposures
- * @param testConversions - Test variant conversions
- * @param testExposures - Test variant exposures
- * @param simulations - Number of Monte Carlo simulations
- * @returns Expected relative improvement (e.g., 0.15 for 15% improvement)
- */
-export function calculateExpectedLift(
-  controlConversions: number,
-  controlExposures: number,
-  testConversions: number,
-  testExposures: number,
-  simulations: number = 10000,
-): number {
-  if (controlExposures === 0 || testExposures === 0) {
-    return 0
-  }
-
-  const controlAlpha = controlConversions + 1
-  const controlBeta = controlExposures - controlConversions + 1
-  const testAlpha = testConversions + 1
-  const testBeta = testExposures - testConversions + 1
-
-  let totalLift = 0
-  const random = mulberry32(
-    seedFromVariants(
-      [
-        {
-          key: 'c',
-          exposures: controlExposures,
-          conversions: controlConversions,
-        },
-        {
-          key: 't',
-          exposures: testExposures,
-          conversions: testConversions,
-        },
-      ],
-      simulations,
-    ),
-  )
-
-  for (let i = 0; i < simulations; i++) {
-    const controlRate = sampleBeta(controlAlpha, controlBeta, random)
-    const testRate = sampleBeta(testAlpha, testBeta, random)
-
-    if (controlRate > 0) {
-      totalLift += (testRate - controlRate) / controlRate
-    }
-  }
-
-  return totalLift / simulations
 }

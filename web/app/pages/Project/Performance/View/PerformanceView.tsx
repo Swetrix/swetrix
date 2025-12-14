@@ -18,8 +18,8 @@ import { CountryEntry } from '~/lib/models/Entry'
 import { OverallPerformanceObject } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
 import CCRow from '~/pages/Project/View/components/CCRow'
-import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import { PerformanceMetricCards } from '~/pages/Project/View/components/MetricCards'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
@@ -36,6 +36,7 @@ import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjec
 import { useTheme } from '~/providers/ThemeProvider'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 
 const InteractiveMap = lazy(() => import('~/pages/Project/View/components/InteractiveMap'))
@@ -174,7 +175,7 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     closeAnnotationModal,
     handleChartContextMenu,
     closeContextMenu,
-  } = useAnnotations({ allowedToManage })
+  } = useAnnotations()
   const {
     t,
     i18n: { language },
@@ -545,6 +546,7 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
   return (
     <>
       <DashboardHeader />
+      {dataLoading && !isPanelsDataEmpty ? <LoadingBar /> : null}
       <div className={cx('pt-2', { hidden: isPanelsDataEmpty || analyticsLoading })}>
         <div className='relative overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
           <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>

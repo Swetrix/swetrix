@@ -1384,7 +1384,6 @@ const ViewProjectContent = () => {
                         <TrafficView
                           tnMapping={tnMapping}
                           customMetrics={customMetrics}
-                          onCustomMetric={onCustomMetric}
                           onRemoveCustomMetric={onRemoveCustomMetric}
                           resetCustomMetrics={resetCustomMetrics}
                           mode={mode}

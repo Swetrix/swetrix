@@ -21,6 +21,7 @@ import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useAuth } from '~/providers/AuthProvider'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
 import { nLocaleFormatter } from '~/utils/generic'
 import routes from '~/utils/routes'
@@ -29,8 +30,7 @@ const FunnelsView = () => {
   const { id, project, mergeProject, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const { isAuthenticated } = useAuth()
-  const { timezone, period, dateRange, activePeriod, periodPairs, updatePeriod, refCalendar, funnelsRefreshTrigger } =
-    useViewProjectContext()
+  const { timezone, period, dateRange, periodPairs, funnelsRefreshTrigger } = useViewProjectContext()
 
   // Filter periods to only include those valid for funnels
   const timeBucketSelectorItems = useMemo(() => {
@@ -39,7 +39,7 @@ const FunnelsView = () => {
     })
   }, [periodPairs])
   const { t } = useTranslation('common')
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
 
   const isMountedRef = useRef(true)
 
@@ -216,19 +216,6 @@ const FunnelsView = () => {
     }
   }, [funnelAnalytics])
 
-  const refreshStats = async (_isManual: boolean = true) => {
-    if (!dataLoading) {
-      await loadFunnelsData()
-    }
-  }
-
-  const resetDateRange = () => {
-    const newSearchParams = new URLSearchParams(searchParams.toString())
-    newSearchParams.delete('from')
-    newSearchParams.delete('to')
-    setSearchParams(newSearchParams)
-  }
-
   // Load funnels data when activeFunnel changes
   useEffect(() => {
     if (!project) return
@@ -266,6 +253,7 @@ const FunnelsView = () => {
             </Text>
           }
         />
+        {dataLoading && funnelAnalytics ? <LoadingBar /> : null}
 
         {/* Funnel Chart */}
         <div

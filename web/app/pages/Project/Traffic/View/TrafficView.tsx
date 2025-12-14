@@ -28,16 +28,16 @@ import { CountryEntry, Entry } from '~/lib/models/Entry'
 import { OverallObject } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
 import CCRow from '~/pages/Project/View/components/CCRow'
-import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
 import CustomMetrics from '~/pages/Project/View/components/CustomMetrics'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import { MetricCard, MetricCards } from '~/pages/Project/View/components/MetricCards'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
-import WaitingForAnEvent from '~/pages/Project/View/components/WaitingForAnEvent'
 import RefRow from '~/pages/Project/View/components/RefRow'
 import { TrafficChart } from '~/pages/Project/View/components/TrafficChart'
 import UserFlow from '~/pages/Project/View/components/UserFlow'
+import WaitingForAnEvent from '~/pages/Project/View/components/WaitingForAnEvent'
 import {
   Customs,
   TrafficMeta,
@@ -61,6 +61,7 @@ import { useTheme } from '~/providers/ThemeProvider'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import { periodToCompareDate } from '~/utils/compareConvertDate'
 import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
@@ -83,7 +84,6 @@ type KeywordEntry = Entry & { impressions: number; position: number; ctr: number
 interface TrafficViewProps {
   tnMapping: Record<string, string>
   customMetrics: ProjectViewCustomEvent[]
-  onCustomMetric: (metrics: ProjectViewCustomEvent[]) => void
   onRemoveCustomMetric: (metricId: string) => void
   resetCustomMetrics: () => void
   mode: 'periodical' | 'cumulative'
@@ -94,7 +94,6 @@ interface TrafficViewProps {
 const TrafficView = ({
   tnMapping,
   customMetrics,
-  onCustomMetric,
   onRemoveCustomMetric,
   resetCustomMetrics,
   mode,
@@ -151,7 +150,7 @@ const TrafficView = ({
     closeAnnotationModal,
     handleChartContextMenu,
     closeContextMenu,
-  } = useAnnotations({ allowedToManage })
+  } = useAnnotations()
 
   // Traffic-specific state
   const [dataLoading, setDataLoading] = useState(false)
@@ -756,6 +755,7 @@ const TrafficView = ({
   return (
     <>
       <DashboardHeader rightContent={headerRightContent} />
+      {dataLoading && !isPanelsDataEmpty ? <LoadingBar /> : null}
       <div className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}>
         <div className='relative overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
           <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>

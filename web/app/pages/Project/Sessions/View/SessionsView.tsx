@@ -18,6 +18,7 @@ import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import Spin from '~/ui/icons/Spin'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import routes from '~/utils/routes'
 
 const SESSIONS_TAKE = 30
@@ -235,15 +236,6 @@ const SessionsView = ({ tnMapping, chartType, rotateXAxis }: SessionsViewProps) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionsRefreshTrigger])
 
-  const refreshStats = () => {
-    if (activePSID) {
-      loadSession(activePSID)
-    } else {
-      setSessionsSkip(0)
-      loadSessions(0, true)
-    }
-  }
-
   if (error && sessionsLoading === false) {
     return (
       <div className='bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
@@ -302,6 +294,7 @@ const SessionsView = ({ tnMapping, chartType, rotateXAxis }: SessionsViewProps) 
   return (
     <>
       <DashboardHeader showLiveVisitors />
+      {sessionsLoading && !_isEmpty(sessions) ? <LoadingBar /> : null}
       <div className='mt-4'>
         {!_isEmpty(sessions) ? <Filters tnMapping={tnMapping} /> : null}
         {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) ? <Loader /> : null}

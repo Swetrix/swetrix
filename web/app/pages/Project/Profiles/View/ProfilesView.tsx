@@ -15,6 +15,7 @@ import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 
 const SESSIONS_TAKE = 30
 
@@ -310,17 +311,6 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profilesRefreshTrigger])
 
-  // Handle refresh - exposed via ref or can be called from parent
-  const handleRefresh = async () => {
-    if (activeProfileId) {
-      await loadProfile(activeProfileId)
-      return
-    }
-
-    setProfilesSkip(0)
-    loadProfiles(0, true)
-  }
-
   // Profile detail view
   if (activeProfileId) {
     const backSearchParams = (() => {
@@ -357,6 +347,7 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
   return (
     <>
       <DashboardHeader showLiveVisitors />
+      {profilesLoading && !_isEmpty(profiles) ? <LoadingBar /> : null}
       <UsersFilter
         profileType={profileTypeFilter}
         onProfileTypeChange={(type) => {

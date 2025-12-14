@@ -1,5 +1,4 @@
 import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline'
-import { clsx as cx } from 'clsx'
 import _findKey from 'lodash/findKey'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'

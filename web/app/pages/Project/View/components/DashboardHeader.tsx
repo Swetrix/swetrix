@@ -6,7 +6,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
-import { MAX_MONTHS_IN_PAST, PERIOD_PAIRS_COMPARE } from '~/lib/constants'
+import { MAX_MONTHS_IN_PAST, PERIOD_PAIRS_COMPARE, TBPeriodPairsProps } from '~/lib/constants'
 import { useAuth } from '~/providers/AuthProvider'
 import DatePicker from '~/ui/Datepicker'
 import Dropdown from '~/ui/Dropdown'
@@ -25,7 +25,7 @@ interface DashboardHeaderProps {
   showSearchButton?: boolean
   showPeriodSelector?: boolean
   hideTimeBucket?: boolean
-  timeBucketSelectorItems?: { period: string; label: string; tbs: string[] }[]
+  timeBucketSelectorItems?: TBPeriodPairsProps[]
 
   // Back button link (when provided, shows a back button on the far left)
   backLink?: string
@@ -38,7 +38,7 @@ interface DashboardHeaderProps {
   rightContent?: React.ReactNode
 }
 
-export const DashboardHeader = ({
+const DashboardHeader = ({
   showLiveVisitors = true,
   showRefreshButton = true,
   showSearchButton = true,

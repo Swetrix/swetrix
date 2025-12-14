@@ -773,7 +773,7 @@ export const getError = (
       throw error.response
     })
 
-export interface ErrorOverviewStats {
+interface ErrorOverviewStats {
   totalErrors: number
   uniqueErrors: number
   affectedSessions: number
@@ -781,7 +781,7 @@ export interface ErrorOverviewStats {
   errorRate: number
 }
 
-export interface MostFrequentError {
+interface MostFrequentError {
   eid: string
   name: string
   message: string
@@ -790,7 +790,7 @@ export interface MostFrequentError {
   lastSeen: string
 }
 
-export interface ErrorOverviewChart {
+interface ErrorOverviewChart {
   x: string[]
   occurrences: number[]
   affectedUsers: number[]
@@ -1467,7 +1467,7 @@ export interface FeatureFlagProfile {
 
 export const DEFAULT_FEATURE_FLAG_PROFILES_TAKE = 15
 
-export type FeatureFlagResultFilter = 'all' | 'true' | 'false'
+type FeatureFlagResultFilter = 'all' | 'true' | 'false'
 
 export const getFeatureFlagProfiles = (
   flagId: string,
@@ -1567,7 +1567,7 @@ export interface ExperimentResults {
   timeBucket?: string[]
 }
 
-export interface CreateExperiment {
+interface CreateExperiment {
   pid: string
   name: string
   description?: string
@@ -2238,6 +2238,7 @@ export const getGSCKeywords = (
         response,
       ): {
         keywords: { name: string; count: number; impressions: number; position: number; ctr: number }[]
+        notConnected?: boolean
       } => response.data,
     )
     .catch((error) => {

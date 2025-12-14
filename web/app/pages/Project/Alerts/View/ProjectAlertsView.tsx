@@ -21,6 +21,7 @@ import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { Badge, type BadgeProps } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import routes from '~/utils/routes'
@@ -394,6 +395,7 @@ const ProjectAlerts = () => {
 
   return (
     <>
+      {isLoading && !_isEmpty(alerts) ? <LoadingBar /> : null}
       <div className='mt-4'>
         {_isEmpty(alerts) ? (
           <div className='mt-5 rounded-xl bg-gray-700 p-5'>

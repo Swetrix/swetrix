@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
 import { isSelfhosted, MARKETPLACE_URL } from '~/lib/constants'
-import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import Dropdown from '~/ui/Dropdown'
 import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
@@ -41,7 +40,7 @@ interface TrafficHeaderActionsProps {
   panelsData: any
 }
 
-export const TrafficHeaderActions = ({
+const TrafficHeaderActions = ({
   projectViews,
   projectViewsLoading,
   projectViewDeleting,
@@ -58,7 +57,6 @@ export const TrafficHeaderActions = ({
   panelsData,
 }: TrafficHeaderActionsProps) => {
   const { t } = useTranslation('common')
-  const { id } = useCurrentProject()
   const [searchParams, setSearchParams] = useSearchParams()
 
   return (
