@@ -82,6 +82,7 @@ import AddAViewModal from './components/AddAViewModal'
 import { ChartManagerProvider } from './components/ChartManager'
 const CaptchaView = lazy(() => import('./components/CaptchaView'))
 import LockedDashboard from './components/LockedDashboard'
+import PasswordRequiredModal from './components/PasswordRequiredModal'
 import ProjectSidebar, { MobileSidebarTrigger } from './components/ProjectSidebar'
 import SearchFilters from './components/SearchFilters'
 import { Filter, ProjectView, ProjectViewCustomEvent } from './interfaces/traffic'
@@ -222,7 +223,16 @@ export const useViewProjectContext = () => {
 }
 
 const ViewProjectContent = () => {
-  const { id, project, preferences, updatePreferences, allowedToManage, liveVisitors } = useCurrentProject()
+  const {
+    id,
+    project,
+    preferences,
+    updatePreferences,
+    allowedToManage,
+    liveVisitors,
+    isPasswordRequired,
+    submitPassword,
+  } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
 
   const { theme, setTheme } = useTheme()
@@ -1019,6 +1029,70 @@ const ViewProjectContent = () => {
       refCalendarCompare,
     ],
   )
+
+  // Show password modal over a skeleton dashboard when password is required
+  if (isPasswordRequired) {
+    return (
+      <>
+        {!isEmbedded ? <Header /> : null}
+        <div
+          className={cx('flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900', {
+            'min-h-including-header': !isEmbedded,
+            'min-h-screen': isEmbedded,
+          })}
+        >
+          <div className='relative flex flex-1'>
+            {/* Real Sidebar */}
+            <ProjectSidebar
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={() => {}}
+              projectId={id}
+              projectName=''
+              dataLoading={false}
+              searchParams={searchParams}
+              allowedToManage={false}
+              className='hidden md:flex'
+            />
+
+            {/* Skeleton Main Content */}
+            <div className='flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8'>
+              {/* Skeleton header */}
+              <div className='mb-6 flex items-center justify-between'>
+                <div className='h-8 w-48 animate-pulse rounded bg-gray-200 dark:bg-slate-700' />
+                <div className='flex gap-2'>
+                  <div className='h-10 w-24 animate-pulse rounded bg-gray-200 dark:bg-slate-700' />
+                  <div className='h-10 w-32 animate-pulse rounded bg-gray-200 dark:bg-slate-700' />
+                </div>
+              </div>
+
+              {/* Skeleton metric cards */}
+              <div className='mb-6 grid grid-cols-2 gap-4 md:grid-cols-4'>
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className='h-24 animate-pulse rounded-lg bg-gray-200 dark:bg-slate-700' />
+                ))}
+              </div>
+
+              {/* Skeleton chart */}
+              <div className='mb-6 h-80 animate-pulse rounded-lg bg-gray-200 dark:bg-slate-700' />
+
+              {/* Skeleton panels */}
+              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className='h-48 animate-pulse rounded-lg bg-gray-200 dark:bg-slate-700' />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {!isEmbedded ? <Footer /> : null}
+        </div>
+
+        {/* Password Modal */}
+        <PasswordRequiredModal isOpen={isPasswordRequired} onSubmit={submitPassword} />
+      </>
+    )
+  }
 
   if (authLoading || !project) {
     return (

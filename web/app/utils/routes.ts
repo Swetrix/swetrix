@@ -26,7 +26,6 @@ const routes = Object.freeze({
   transfer_reject: '/project/transfer/cancel',
   socialised: '/socialised',
   gsc_connected: '/gsc-connected',
-  project_protected_password: '/projects/:pid/password',
   open: '/open',
   ref: '/ref/:id',
   blog: '/blog',
