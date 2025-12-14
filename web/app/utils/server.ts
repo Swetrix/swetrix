@@ -222,8 +222,6 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
 
   // organisation, project_settings, project titles are set dynamically
 
-  // todo: create_alert, alert_settings
-
   result.prefixLessTitle = result.title
   result.title += ` ${TITLE_SUFFIX}`
 
