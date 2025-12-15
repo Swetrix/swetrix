@@ -308,7 +308,7 @@ const SessionsView = ({ tnMapping, chartType, rotateXAxis }: SessionsViewProps) 
             title={t('project.loadMore')}
             onClick={() => loadSessions()}
             className={cx(
-              'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+              'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
               {
                 'cursor-not-allowed opacity-50': sessionsLoading || sessionsLoading === null,
                 hidden: sessionsLoading && _isEmpty(sessions),

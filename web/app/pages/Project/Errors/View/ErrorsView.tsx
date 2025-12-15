@@ -790,7 +790,7 @@ const ErrorsView = () => {
           disabled={errorStatusUpdating}
           onClick={markErrorAsResolved}
           className={cx(
-            'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+            'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
             {
               'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
               'animate-pulse cursor-not-allowed': errorStatusUpdating,
@@ -805,7 +805,7 @@ const ErrorsView = () => {
           disabled={errorStatusUpdating}
           onClick={markErrorAsActive}
           className={cx(
-            'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+            'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
             {
               'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
               'animate-pulse cursor-not-allowed': errorStatusUpdating,
@@ -1070,7 +1070,7 @@ const ErrorsView = () => {
           />
         )
       }}
-      buttonClassName='rounded-md border border-transparent p-2 transition-all hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+      buttonClassName='rounded-md border border-transparent p-2 transition-all hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
       selectItemClassName='p-0'
       keyExtractor={(pair) => pair.id}
       onSelect={({ id: pairID }) => {
@@ -1158,7 +1158,7 @@ const ErrorsView = () => {
                 title={t('project.loadMore')}
                 onClick={() => loadErrors()}
                 className={cx(
-                  'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                  'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                   {
                     'cursor-not-allowed opacity-50': errorsLoading,
                   },

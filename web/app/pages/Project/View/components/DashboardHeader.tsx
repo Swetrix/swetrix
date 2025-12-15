@@ -143,7 +143,7 @@ const DashboardHeader = ({
                 setShowFiltersSearch(true)
               }}
               className={cx(
-                'relative rounded-md border border-transparent p-2 text-sm font-medium transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                'relative rounded-md border border-transparent p-2 text-sm font-medium transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                 {
                   'cursor-not-allowed opacity-50': authLoading || dataLoading,
                 },

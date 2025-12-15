@@ -773,7 +773,7 @@ const TrafficView = ({
           type='button'
           title={t('project.lineChart')}
           onClick={() => onSwitch('line')}
-          className='rounded-md border border-transparent bg-gray-50 p-2 text-sm font-medium transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+          className='rounded-md border border-transparent bg-gray-50 p-2 text-sm font-medium transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
         >
           <ChartLineIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
         </button>
@@ -785,7 +785,7 @@ const TrafficView = ({
         type='button'
         title={t('project.barChart')}
         onClick={() => onSwitch('bar')}
-        className='rounded-md border border-transparent bg-gray-50 p-2 text-sm font-medium transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+        className='rounded-md border border-transparent bg-gray-50 p-2 text-sm font-medium transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
       >
         <ChartColumnBigIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
       </button>

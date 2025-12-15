@@ -847,7 +847,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                         key={idx}
                         type='button'
                         onClick={() => handleQuickAction(prompt)}
-                        className='relative rounded-md border border-gray-300 bg-gray-50 p-2 transition-colors hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                        className='relative rounded-md border border-gray-300 bg-gray-50 p-2 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
                       >
                         <Text as='span' size='sm'>
                           {prompt}

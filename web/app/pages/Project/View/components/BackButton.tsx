@@ -22,7 +22,7 @@ export const BackButton = ({ to, onClick, className }: BackButtonProps) => {
   const { t } = useTranslation('common')
 
   const buttonClasses = cn(
-    'rounded-md border border-transparent p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+    'rounded-md border border-transparent p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
     className,
   )
 
