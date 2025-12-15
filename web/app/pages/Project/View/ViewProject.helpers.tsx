@@ -12,12 +12,14 @@ import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
+import _orderBy from 'lodash/orderBy'
 import _reduce from 'lodash/reduce'
 import _replace from 'lodash/replace'
 import _round from 'lodash/round'
 import _size from 'lodash/size'
 import _split from 'lodash/split'
 import _startsWith from 'lodash/startsWith'
+import _sum from 'lodash/sum'
 import _toNumber from 'lodash/toNumber'
 import _toString from 'lodash/toString'
 import {
@@ -852,6 +854,145 @@ const getSettings = (
           }
         : undefined,
     bindto: '#dataChart',
+  }
+}
+
+// Stacked bar chart for custom events
+const getSettingsCustomEventsStacked = (
+  chart: { x: string[]; events: Record<string, Array<number | string>> } | undefined,
+  timeBucket: string,
+  rotateXAxis: boolean,
+  timeFormat: string,
+): ChartOptions => {
+  if (!chart || _isEmpty(chart.x) || _isEmpty(chart.events)) {
+    return {}
+  }
+
+  const eventTotals = _map(_keys(chart.events), (id) => ({
+    id,
+    total: _sum(_map(chart.events[id] || [], (v) => Number(v) || 0)),
+  }))
+  const eventIds = _map(_orderBy(eventTotals, 'total', 'desc'), 'id') as string[]
+
+  const columns: any[] = [['x', ..._map(chart.x, (el) => dayjs(el).toDate())]]
+  eventIds.forEach((id) => {
+    columns.push([id, ...(chart.events[id] || [])])
+  })
+
+  const types: Record<string, any> = _reduce(
+    eventIds,
+    (acc: Record<string, any>, id: string) => {
+      acc[id] = bar()
+      return acc
+    },
+    {},
+  )
+
+  const colors: Record<string, string> = _reduce(
+    eventIds,
+    (acc: Record<string, string>, id: string) => {
+      acc[id] = stringToColour(id)
+      return acc
+    },
+    {},
+  )
+
+  // Calculate optimal Y axis ticks based on all event series
+  const allYValues: number[] = []
+  eventIds.forEach((id) => {
+    allYValues.push(..._map(chart.events[id] || [], (v) => Number(v) || 0))
+  })
+  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+
+  return {
+    data: {
+      x: 'x',
+      columns,
+      types,
+      colors,
+      groups: [eventIds],
+      // Keep stack order stable (avoid per-x sorting)
+      order: null,
+    },
+    grid: {
+      y: {
+        show: true,
+      },
+    },
+    axis: {
+      x: {
+        clipPath: false,
+        tick: {
+          fit: true,
+          rotate: rotateXAxis ? 45 : 0,
+          format:
+            // @ts-expect-error
+            timeFormat === TimeFormat['24-hour']
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+        },
+        localtime: timeFormat === TimeFormat['24-hour'],
+        type: 'timeseries',
+      },
+      y: {
+        tick: {
+          format: (d: number) => nFormatter(d, 1),
+          values: optimalTicks,
+        },
+        show: true,
+        inner: true,
+      },
+    },
+    tooltip: {
+      contents: (item: any, _: any, __: any, color: any) => {
+        if (_isEmpty(item)) {
+          return ''
+        }
+
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+          <li class='font-semibold'>${
+            timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
+          }</li>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          ${_map(
+            item,
+            (el: { id: string; index: number; name: string; value: string; x: Date }) => `
+            <li class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <span>${el.name}</span>
+              </div>
+              <span class='pl-4'>${nFormatter(Number(el.value) || 0, 1)}</span>
+            </li>
+            `,
+          ).join('')}`
+      },
+    },
+    transition: {
+      duration: 200,
+    },
+    resize: {
+      auto: true,
+      timer: false,
+    },
+    legend: {
+      position: 'bottom',
+      item: {
+        tile: {
+          type: 'circle',
+          width: 10,
+          r: 3,
+        },
+      },
+    },
+    bar: {
+      linearGradient: false,
+      radius: {
+        ratio: 0.15,
+      },
+    },
   }
 }
 
@@ -1980,6 +2121,7 @@ export {
   typeNameMapping,
   noRegionPeriods,
   getSettings,
+  getSettingsCustomEventsStacked,
   onCSVExportClick,
   CHART_METRICS_MAPPING,
   CHART_METRICS_MAPPING_PERF,

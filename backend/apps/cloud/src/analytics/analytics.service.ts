@@ -4179,6 +4179,7 @@ export class AnalyticsService {
     filtersQuery: string,
     paramsData: any,
     safeTimezone: string,
+    customEvents?: string[],
   ): Promise<object | void> {
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
@@ -4186,6 +4187,10 @@ export class AnalyticsService {
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), {timezone:String})`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), {timezone:String})`
+    const customEventsFilter =
+      customEvents && customEvents.length > 0
+        ? 'AND ev IN {customEvents:Array(String)}'
+        : ''
 
     const query = `
       SELECT
@@ -4200,6 +4205,7 @@ export class AnalyticsService {
           pid = {pid:FixedString(12)}
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
+          ${customEventsFilter}
       ) as subquery
       GROUP BY ${groupBy}, ev
       ORDER BY ${groupBy}
@@ -4208,7 +4214,11 @@ export class AnalyticsService {
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { ...paramsData.params, timezone: safeTimezone },
+        query_params: {
+          ...paramsData.params,
+          timezone: safeTimezone,
+          customEvents: customEvents || [],
+        },
       })
       .then(resultSet => resultSet.json<CustomsCHAggregatedResponse>())
 

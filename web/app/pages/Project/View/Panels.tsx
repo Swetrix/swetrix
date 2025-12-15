@@ -2,6 +2,7 @@ import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
+import type { ChartOptions } from 'billboard.js'
 import cx from 'clsx'
 import _ceil from 'lodash/ceil'
 import _floor from 'lodash/floor'
@@ -23,8 +24,10 @@ import React, { memo, useState, useEffect, useMemo, Fragment, useRef } from 'rea
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps, useNavigate } from 'react-router'
 
+import { getProjectDataCustomEvents } from '~/api'
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
+import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import Button from '~/ui/Button'
 import Dropdown from '~/ui/Dropdown'
 import Sort from '~/ui/icons/Sort'
@@ -34,9 +37,10 @@ import { Text } from '~/ui/Text'
 import { nFormatter, getLocaleDisplayName } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
+import { MainChart } from './components/MainChart'
 import { Customs, Filter } from './interfaces/traffic'
 import { useViewProjectContext } from './ViewProject'
-import { typeNameMapping } from './ViewProject.helpers'
+import { getFormatDate, getSettingsCustomEventsStacked, typeNameMapping } from './ViewProject.helpers'
 
 const ENTRIES_PER_PANEL = 8
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
@@ -46,6 +50,7 @@ interface PanelContainerProps {
   children?: React.ReactNode
   icon?: React.ReactNode
   type: string
+  hideHeader?: boolean
   tabs?: Array<
     | {
         id: string
@@ -67,6 +72,7 @@ const PanelContainer = ({
   children,
   icon,
   type,
+  hideHeader,
   tabs,
   onTabChange,
   activeTabId,
@@ -78,79 +84,83 @@ const PanelContainer = ({
   return (
     <div
       className={cx(
-        'overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pt-5 pb-3 dark:border-slate-800/60 dark:bg-slate-800/25',
+        'overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-800/25',
+        hideHeader ? 'pt-3' : 'pt-5',
         {
           'col-span-full sm:col-span-2': type === 'metadata' || type === 'customEvents',
         },
       )}
     >
-      <div className='mb-2 flex items-center justify-between gap-4'>
-        <Text as='h3' size='lg' weight='semibold' className='flex items-center leading-6 whitespace-nowrap'>
-          {icon ? <span className='mr-1'>{icon}</span> : null}
-          {name}
-        </Text>
-        <div className='scrollbar-thin flex items-center gap-2.5 overflow-x-auto'>
-          {tabs && onTabChange ? (
-            <>
-              {tabs.map((tab, index) => {
-                if (Array.isArray(tab)) {
-                  const dropdownTabs = tab
-                  const activeDropdownTab = dropdownTabs.find((t) => t.id === activeTabId)
-                  const dropdownTitle = activeDropdownTab
-                    ? activeDropdownTab.label
-                    : dropdownPlaceholder || t('project.campaigns')
+      {!hideHeader ? (
+        <div className='mb-2 flex items-center justify-between gap-4'>
+          <Text as='h3' size='lg' weight='semibold' className='flex items-center leading-6 whitespace-nowrap'>
+            {icon ? <span className='mr-1'>{icon}</span> : null}
+            {name}
+          </Text>
+          <div className='scrollbar-thin flex items-center gap-2.5 overflow-x-auto'>
+            {tabs && onTabChange ? (
+              <>
+                {tabs.map((tab, index) => {
+                  if (Array.isArray(tab)) {
+                    const dropdownTabs = tab
+                    const activeDropdownTab = dropdownTabs.find((t) => t.id === activeTabId)
+                    const dropdownTitle = activeDropdownTab
+                      ? activeDropdownTab.label
+                      : dropdownPlaceholder || t('project.campaigns')
 
+                    return (
+                      <Dropdown
+                        key={`dropdown-${index}`}
+                        title={dropdownTitle}
+                        items={dropdownTabs}
+                        labelExtractor={(item) => item.label}
+                        keyExtractor={(item) => item.id}
+                        onSelect={(item) => {
+                          onTabChange(item.id)
+                        }}
+                        buttonClassName={cx(
+                          'relative border-b-2 px-0 md:px-0 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                          {
+                            'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': dropdownTabs.some(
+                              (t) => t.id === activeTabId,
+                            ),
+                            'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                              !dropdownTabs.some((t) => t.id === activeTabId),
+                          },
+                        )}
+                        headless
+                        chevron='mini'
+                      />
+                    )
+                  }
+
+                  // Regular tab button
                   return (
-                    <Dropdown
-                      key={`dropdown-${index}`}
-                      title={dropdownTitle}
-                      items={dropdownTabs}
-                      labelExtractor={(item) => item.label}
-                      keyExtractor={(item) => item.id}
-                      onSelect={(item) => {
-                        onTabChange(item.id)
+                    <button
+                      key={tab.id}
+                      type='button'
+                      onClick={() => {
+                        onTabChange(tab.id)
                       }}
-                      buttonClassName={cx(
-                        'relative border-b-2 px-0 md:px-0 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                      className={cx(
+                        'relative border-b-2 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
                         {
-                          'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': dropdownTabs.some(
-                            (t) => t.id === activeTabId,
-                          ),
+                          'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
+                            activeTabId === tab.id,
                           'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                            !dropdownTabs.some((t) => t.id === activeTabId),
+                            activeTabId !== tab.id,
                         },
                       )}
-                      headless
-                      chevron='mini'
-                    />
+                    >
+                      {tab.label}
+                    </button>
                   )
-                }
-
-                // Regular tab button
-                return (
-                  <button
-                    key={tab.id}
-                    type='button'
-                    onClick={() => {
-                      onTabChange(tab.id)
-                    }}
-                    className={cx(
-                      'relative border-b-2 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
-                      {
-                        'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': activeTabId === tab.id,
-                        'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                          activeTabId !== tab.id,
-                      },
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                )
-              })}
-            </>
-          ) : null}
+                })}
+              </>
+            ) : null}
+          </div>
         </div>
-      </div>
+      ) : null}
       <div className='relative flex h-[19.6rem] flex-col overflow-auto'>{children}</div>
       {onDetailsClick ? (
         <div className='mt-2 flex items-center justify-center'>
@@ -379,17 +389,44 @@ function sortDesc<T>(obj: T, sortByKeys?: boolean): T {
 
 const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, getFilterLink }: CustomEventsProps) => {
   const { t } = useTranslation('common')
+  const { id } = useCurrentProject()
+  const projectPassword = useProjectPassword(id)
+  const { timeBucket, timezone, period, dateRange, timeFormat, rotateXAxis } = useViewProjectContext()
+
   const [detailsOpened, setDetailsOpened] = useState(false)
   const [activeEvents, setActiveEvents] = useState<any>({})
   const [loadingEvents, setLoadingEvents] = useState<any>({})
   const [eventsMetadata, setEventsMetadata] = useState<any>({})
   const [eventsData, setEventsData] = useState<any>(customs)
   const [triggerEventWhenFiltersChange, setTriggerEventWhenFiltersChange] = useState<string | null>(null)
+  const [stackedChartLoading, setStackedChartLoading] = useState(false)
+  const [stackedChart, setStackedChart] = useState<{
+    x: string[]
+    events: Record<string, Array<number | string>>
+  } | null>(null)
 
   const keys = _keys(eventsData)
   const keysToDisplay = useMemo(() => _slice(keys, 0, ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
 
   const uniques = _sum(chartData.uniques)
+  const totalCustomEvents = useMemo(
+    () => _sum(_map(Object.values(eventsData || {}), (v) => Number(v) || 0)),
+    [eventsData],
+  )
+  const topEventsForChart = useMemo(() => {
+    if (_isEmpty(customs)) {
+      return []
+    }
+
+    const sorted = _orderBy(
+      _map(_toPairs(customs), ([event, count]) => ({ event, count: Number(count) || 0 })),
+      'count',
+      'desc',
+    )
+
+    return _map(_slice(sorted, 0, 15), 'event') as string[]
+  }, [customs])
+
   const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
@@ -405,6 +442,59 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
       sortByDescend: false,
     })
   }, [customs])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadStackedChart = async () => {
+      if (!id || _isEmpty(topEventsForChart)) {
+        setStackedChart(null)
+        return
+      }
+
+      setStackedChartLoading(true)
+
+      try {
+        const isCustomPeriod = period === 'custom' && dateRange
+        const from = isCustomPeriod ? getFormatDate(dateRange![0]) : ''
+        const to = isCustomPeriod ? getFormatDate(dateRange![1]) : ''
+        const periodValue = isCustomPeriod ? '' : period
+
+        const data = await getProjectDataCustomEvents(
+          id,
+          timeBucket,
+          periodValue,
+          filters,
+          from,
+          to,
+          timezone,
+          topEventsForChart,
+          projectPassword,
+        )
+
+        if (cancelled) {
+          return
+        }
+
+        setStackedChart(data?.chart || null)
+      } catch (reason) {
+        console.error('[ERROR](CustomEvents) Failed to load stacked custom events chart', reason)
+        if (!cancelled) {
+          setStackedChart(null)
+        }
+      } finally {
+        if (!cancelled) {
+          setStackedChartLoading(false)
+        }
+      }
+    }
+
+    loadStackedChart()
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, timeBucket, period, dateRange, timezone, projectPassword, filters, topEventsForChart])
 
   useEffect(() => {
     setEventsMetadata({})
@@ -525,7 +615,7 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
                 sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
               />
             </th>
-            <th className='w-[30%] sm:w-1/6'>
+            <th className='w-[40%] pr-2 sm:w-2/6'>
               <p
                 className='flex cursor-pointer items-center justify-end hover:opacity-90'
                 onClick={() => onSortBy('quantity')}
@@ -537,19 +627,6 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
                   sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
                 />
                 &nbsp;&nbsp;
-              </p>
-            </th>
-            <th className='w-[30%] pr-2 sm:w-1/6'>
-              <p
-                className='flex cursor-pointer items-center justify-end hover:opacity-90'
-                onClick={() => onSortBy('conversion')}
-              >
-                {t('project.conversion')}
-                <Sort
-                  className='ml-1'
-                  sortByAscend={sort.label === 'conversion' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'conversion' ? sort.sortByDescend : null}
-                />
               </p>
             </th>
           </tr>
@@ -574,7 +651,7 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
                     onClick={toggleDetails(ev)}
                   >
                     {loadingEvents[ev] ? (
-                      <Spin className='!m-0.5' />
+                      <Spin className='m-0.5!' />
                     ) : activeEvents[ev] ? (
                       <ChevronUpIcon className='size-5 text-gray-500 dark:text-gray-300' />
                     ) : (
@@ -588,17 +665,23 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
                   />
                   <div className='ml-2 h-4 w-4 group-hover:hidden peer-hover:block' />
                 </td>
-                <td className='w-[30%] py-1 text-right sm:w-1/6'>
-                  {eventsData[ev]}
-                  &nbsp;&nbsp;
-                </td>
-                <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>
-                  {uniques === 0 ? 100 : _round((eventsData[ev] / uniques) * 100, 2)}%
+                <td className='w-[40%] py-1 pr-2 text-right sm:w-2/6'>
+                  <span className='inline-flex items-center justify-end'>
+                    <Text size='sm' weight='medium'>
+                      {eventsData[ev]}
+                    </Text>
+                    <Text size='sm' colour='muted' className='mx-2'>
+                      |
+                    </Text>
+                    <Text size='sm' colour='muted'>
+                      {totalCustomEvents === 0 ? 0 : _round((eventsData[ev] / totalCustomEvents) * 100, 0)}%
+                    </Text>
+                  </span>
                 </td>
               </tr>
               {activeEvents[ev] && !loadingEvents[ev] ? (
                 <tr>
-                  <td className='pl-9' colSpan={3}>
+                  <td className='pl-9' colSpan={2}>
                     <KVTableContainer
                       data={eventsMetadata[ev]}
                       uniques={uniques}
@@ -634,11 +717,8 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
           <Text size='sm' weight='medium' colour='muted' className='w-4/6'>
             {t('project.event')}
           </Text>
-          <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
+          <Text size='sm' weight='medium' colour='muted' className='w-2/6 text-right'>
             {t('project.quantity')}
-          </Text>
-          <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
-            {t('project.conversion')}
           </Text>
         </div>
 
@@ -651,9 +731,9 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
             ),
             (item) => {
               const ev = item.key
-              const perc = uniques === 0 ? 100 : _round((eventsData[ev] / uniques) * 100, 2)
               const maxValue = Math.max(...(Object.values(eventsData) as number[]))
               const link = _getFilterLink(null, ev)
+              const perc = totalCustomEvents === 0 ? 0 : _round((eventsData[ev] / totalCustomEvents) * 100, 0)
 
               return (
                 <div
@@ -680,13 +760,14 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
                     />
                     <div className='ml-2 h-4 w-4 group-hover:hidden' />
                   </div>
-                  <div className='relative z-10 w-1/6 text-right'>
+                  <div className='relative z-10 flex w-2/6 items-center justify-end text-right'>
                     <Text size='sm' weight='medium'>
                       {eventsData[ev]}
                     </Text>
-                  </div>
-                  <div className='relative z-10 w-1/6 text-right'>
-                    <Text size='sm' weight='medium'>
+                    <Text size='sm' colour='muted' className='mx-2'>
+                      |
+                    </Text>
+                    <Text size='sm' colour='muted'>
                       {perc}%
                     </Text>
                   </div>
@@ -698,7 +779,7 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
         <Modal
           onClose={onModalClose}
           isOpened={detailsOpened}
-          title={t('project.customEv')}
+          title={t('dashboard.events')}
           message={<CustomEventsTable />}
           size='large'
         />
@@ -706,10 +787,58 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
     )
   }
 
+  const stackedChartOptions: ChartOptions = useMemo(() => {
+    if (!stackedChart || _isEmpty(stackedChart.events)) {
+      return {}
+    }
+
+    return getSettingsCustomEventsStacked(stackedChart, timeBucket, rotateXAxis, timeFormat)
+  }, [stackedChart, timeBucket, rotateXAxis, timeFormat])
+
+  const renderStackedChart = () => {
+    const hasChartData = !!stackedChart && !_isEmpty(stackedChart.events)
+
+    // Only show loader on initial load (no prior chart yet).
+    if (stackedChartLoading && !hasChartData) {
+      return (
+        <div className='flex h-full items-center justify-center'>
+          <Spin className='m-0.5!' />
+        </div>
+      )
+    }
+
+    if (!hasChartData) {
+      return (
+        <Text as='p' size='base' colour='secondary' className='mt-1'>
+          {t('project.noData')}
+        </Text>
+      )
+    }
+
+    return (
+      <MainChart
+        chartId='custom-events-stacked-chart'
+        options={stackedChartOptions}
+        className='custom-events-stacked-chart h-full w-full'
+        deps={[stackedChart, timeBucket, rotateXAxis, timeFormat]}
+      />
+    )
+  }
+
   return (
-    <PanelContainer name={t('project.customEv')} type='customEvents' onDetailsClick={() => setDetailsOpened(true)}>
-      {renderContent()}
-    </PanelContainer>
+    <div className='col-span-full grid grid-cols-1 gap-3 sm:col-span-2 lg:grid-cols-[0.35fr_0.65fr]'>
+      <PanelContainer
+        name={t('dashboard.events')}
+        type='customEventsList'
+        onDetailsClick={() => setDetailsOpened(true)}
+      >
+        {renderContent()}
+      </PanelContainer>
+
+      <PanelContainer name={t('dashboard.events')} type='customEventsChart' hideHeader>
+        {renderStackedChart()}
+      </PanelContainer>
+    </div>
   )
 }
 
@@ -1979,7 +2108,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                   . {t('project.page')} {page + 1} / {totalPages}
                 </span>
               </div>
-              <div className='flex w-[4.5rem] justify-between'>
+              <div className='flex w-18 justify-between'>
                 <Button
                   className={cx(
                     'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',

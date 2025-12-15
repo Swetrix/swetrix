@@ -80,6 +80,12 @@ body.dark .bb-ygrid {
   stroke-width: 1.5 !important;
 }
 
+/* Custom events stacked chart: remove outlines (dynamic series) */
+.custom-events-stacked-chart .bb-bar {
+  fill-opacity: 0.85 !important;
+  stroke-width: 0 !important;
+}
+
 .bb-target-unique .bb-bar {
   stroke: var(--color-blue-600) !important;
 }

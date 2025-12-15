@@ -1401,6 +1401,23 @@ export class AnalyticsController {
 
     const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
+    // customEvents comes as a JSON.stringified array from the frontend
+    let customEventsList: string[] = []
+    try {
+      const parsed = JSON.parse(customEvents || '[]')
+      customEventsList = Array.isArray(parsed) ? parsed : []
+    } catch {
+      customEventsList = []
+    }
+
+    if (customEventsList.length === 0) {
+      return {
+        chart: {},
+        appliedFilters: parsedFilters,
+        timeBucket: timeBucketForAllTime,
+      }
+    }
+
     const result: any = await this.analyticsService.groupCustomEVByTimeBucket(
       newTimeBucket,
       groupFrom,
@@ -1408,27 +1425,8 @@ export class AnalyticsController {
       filtersQuery,
       paramsData,
       safeTimezone,
+      customEventsList,
     )
-
-    let customEventss = customEvents
-
-    if (filters) {
-      try {
-        customEventss = JSON.parse(customEvents)
-      } catch {
-        //
-      }
-    }
-
-    if (customEventss.length > 0) {
-      for (const key in result.chart.events) {
-        if (!customEventss.includes(key)) {
-          delete result.chart.events[key]
-        }
-      }
-    } else {
-      result.chart = {}
-    }
 
     return {
       ...result,
