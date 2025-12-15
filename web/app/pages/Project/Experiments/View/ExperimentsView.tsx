@@ -320,9 +320,8 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     }
     isLoadingRef.current = true
 
-    // Only toggle global loading UI when we don't already have cached data
-    const didShowLoading = showLoading && (!experiments || experiments.length === 0)
-    if (didShowLoading) {
+    // `showLoading` means "show either initial Loader or refresh LoadingBar".
+    if (showLoading) {
       setIsLoading(true)
     }
 
@@ -339,7 +338,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
       }
     } finally {
       isLoadingRef.current = false
-      if (isMountedRef.current && didShowLoading) {
+      if (isMountedRef.current && showLoading) {
         setIsLoading(false)
       }
     }
@@ -360,8 +359,8 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
         return
       }
 
-      // Silent refresh - don't show loading state since we already have data
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, false)
+      // Refresh list (show LoadingBar if we already have data)
+      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experimentsRefreshTrigger, viewingResultsId, page])
@@ -370,7 +369,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   useEffect(() => {
     if (!viewingResultsId && shouldRefreshListOnReturn) {
       setShouldRefreshListOnReturn(false)
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, false)
+      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewingResultsId, shouldRefreshListOnReturn, page])
@@ -439,7 +438,8 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     setViewingResultsId(experimentId)
   }
 
-  if (error && isLoading === false) {
+  // Only show the big error state if we have no cached data to display.
+  if (error && isLoading === false && _isEmpty(experiments)) {
     return (
       <div className='bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
         <div className='mx-auto max-w-max'>
@@ -477,7 +477,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   }
 
   // Show Loader only on initial load (no existing data)
-  if ((isLoading || isLoading === null) && _isEmpty(experiments)) {
+  if ((isLoading === null || isLoading) && _isEmpty(experiments)) {
     return (
       <div className='mt-4'>
         <Loader />

@@ -116,6 +116,7 @@ interface ViewProjectContextType {
   experimentsRefreshTrigger: number
   featureFlagsRefreshTrigger: number
   sessionsRefreshTrigger: number
+  errorsRefreshTrigger: number
   performanceRefreshTrigger: number
   trafficRefreshTrigger: number
   funnelsRefreshTrigger: number
@@ -176,6 +177,7 @@ const defaultViewProjectContext: ViewProjectContextType = {
   experimentsRefreshTrigger: 0,
   featureFlagsRefreshTrigger: 0,
   sessionsRefreshTrigger: 0,
+  errorsRefreshTrigger: 0,
   performanceRefreshTrigger: 0,
   trafficRefreshTrigger: 0,
   funnelsRefreshTrigger: 0,
@@ -271,6 +273,7 @@ const ViewProjectContent = () => {
   const [experimentsRefreshTrigger, setExperimentsRefreshTrigger] = useState(0)
   const [featureFlagsRefreshTrigger, setFeatureFlagsRefreshTrigger] = useState(0)
   const [sessionsRefreshTrigger, setSessionsRefreshTrigger] = useState(0)
+  const [errorsRefreshTrigger, setErrorsRefreshTrigger] = useState(0)
   const [performanceRefreshTrigger, setPerformanceRefreshTrigger] = useState(0)
   const [trafficRefreshTrigger, setTrafficRefreshTrigger] = useState(0)
   const [funnelsRefreshTrigger, setFunnelsRefreshTrigger] = useState(0)
@@ -685,6 +688,11 @@ const ViewProjectContent = () => {
           return
         }
 
+        if (activeTab === PROJECT_TABS.errors) {
+          setErrorsRefreshTrigger((prev) => prev + 1)
+          return
+        }
+
         if (activeTab === PROJECT_TABS.performance) {
           setPerformanceRefreshTrigger((prev) => prev + 1)
           return
@@ -940,6 +948,7 @@ const ViewProjectContent = () => {
       experimentsRefreshTrigger,
       featureFlagsRefreshTrigger,
       sessionsRefreshTrigger,
+      errorsRefreshTrigger,
       performanceRefreshTrigger,
       trafficRefreshTrigger,
       funnelsRefreshTrigger,
@@ -999,6 +1008,7 @@ const ViewProjectContent = () => {
       experimentsRefreshTrigger,
       featureFlagsRefreshTrigger,
       sessionsRefreshTrigger,
+      errorsRefreshTrigger,
       performanceRefreshTrigger,
       trafficRefreshTrigger,
       funnelsRefreshTrigger,

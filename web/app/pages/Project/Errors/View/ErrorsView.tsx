@@ -395,7 +395,8 @@ const ERRORS_TAKE = 30
 const ErrorsView = () => {
   const { id, allowedToManage, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
-  const { timeBucket, timeFormat, period, dateRange, timezone, filters, size } = useViewProjectContext()
+  const { errorsRefreshTrigger, timeBucket, timeFormat, period, dateRange, timezone, filters, size } =
+    useViewProjectContext()
   const {
     t,
     i18n: { language },
@@ -672,6 +673,21 @@ const ErrorsView = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, dateRange, timeBucket, activeEID, filters])
 
+  // Handle refresh trigger (list + detail)
+  useEffect(() => {
+    if (errorsRefreshTrigger <= 0) return
+
+    if (activeEID) {
+      loadError(activeEID)
+      return
+    }
+
+    setErrorsSkip(0)
+    loadErrors(0, true)
+    loadOverview()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [errorsRefreshTrigger])
+
   const chartOptions = useMemo(() => {
     if (!overview?.chart || !overview.chart.x || overview.chart.x.length === 0) return null
     return getErrorTrendsChartSettings(overview.chart, timeBucket, timeFormat, chartTypes.line, {
@@ -804,6 +820,7 @@ const ErrorsView = () => {
       <div>
         {/* Loading bar for refreshes */}
         {errorLoading && activeError ? <LoadingBar /> : null}
+        {errorsLoading && !_isEmpty(errors) ? <LoadingBar /> : null}
 
         <DashboardHeader
           backLink={`?${pureSearchParams}`}
