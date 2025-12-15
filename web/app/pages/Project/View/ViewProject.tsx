@@ -1045,12 +1045,7 @@ const ViewProjectContent = () => {
     return (
       <>
         {!isEmbedded ? <Header /> : null}
-        <div
-          className={cx('flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900', {
-            'min-h-including-header': !isEmbedded,
-            'min-h-screen': isEmbedded,
-          })}
-        >
+        <div className='flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900'>
           <div className='relative flex flex-1'>
             {/* Real Sidebar */}
             <ProjectSidebar
@@ -1279,89 +1274,92 @@ const ViewProjectContent = () => {
                   </AnimatePresence>
 
                   {isEmbedded ? null : (
-                    <div className='mt-4 flex w-full items-center justify-between gap-2'>
-                      <Dropdown
-                        items={whitelist}
-                        buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-slate-900 dark:text-gray-50'
-                        title={
-                          <span className='inline-flex items-center'>
-                            <Flag
-                              className='mr-2 rounded-xs'
-                              country={languageFlag[language]}
-                              size={16}
-                              alt={languages[language]}
-                            />
-                            {languages[language]}
-                          </span>
-                        }
-                        labelExtractor={(lng: string) => (
-                          <div className='flex items-center'>
-                            <Flag
-                              className='mr-2 rounded-xs'
-                              country={languageFlag[lng]}
-                              size={16}
-                              alt={languageFlag[lng]}
-                            />
-                            {languages[lng]}
-                          </div>
-                        )}
-                        onSelect={(lng: string) => {
-                          changeLanguage(lng)
-                        }}
-                        headless
-                      />
-                      <div className='flex items-center gap-2'>
-                        <button
-                          type='button'
-                          onClick={() => setIsHotkeysHelpOpened(true)}
-                          aria-label={t('modals.shortcuts.title')}
-                          className='relative rounded-md border border-transparent bg-gray-50 p-2 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-                        >
-                          <KeyboardIcon className='h-6 w-6 text-slate-700 dark:text-gray-200' />
-                        </button>
+                    <>
+                      <div className='flex-1' />
+                      <div className='mt-4 flex w-full items-center justify-between gap-2'>
                         <Dropdown
+                          items={whitelist}
+                          buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-slate-900 dark:text-gray-50'
                           title={
-                            <span className='flex items-center justify-center'>
-                              <span className='sr-only'>{t('header.switchTheme')}</span>
-                              {theme === 'dark' ? (
-                                <SunIcon className='h-6 w-6 text-gray-200' aria-hidden='true' />
-                              ) : (
-                                <MoonIcon className='h-6 w-6 text-slate-700' aria-hidden='true' />
-                              )}
+                            <span className='inline-flex items-center'>
+                              <Flag
+                                className='mr-2 rounded-xs'
+                                country={languageFlag[language]}
+                                size={16}
+                                alt={languages[language]}
+                              />
+                              {languages[language]}
                             </span>
                           }
-                          items={[
-                            { key: 'light', label: t('header.light'), icon: SunIcon },
-                            { key: 'dark', label: t('header.dark'), icon: MoonIcon },
-                          ]}
-                          keyExtractor={(item) => item.key}
-                          labelExtractor={(item) => (
-                            <div
-                              className={cx('flex w-full items-center', {
-                                'light:text-indigo-600': item.key === 'light',
-                                'dark:text-indigo-400': item.key === 'dark',
-                              })}
-                            >
-                              <item.icon
-                                className={cx('mr-2 h-5 w-5', {
-                                  'dark:text-gray-300': item.key === 'light',
-                                  'light:text-gray-400': item.key === 'dark',
-                                })}
-                                aria-hidden='true'
+                          labelExtractor={(lng: string) => (
+                            <div className='flex items-center'>
+                              <Flag
+                                className='mr-2 rounded-xs'
+                                country={languageFlag[lng]}
+                                size={16}
+                                alt={languageFlag[lng]}
                               />
-                              {item.label}
+                              {languages[lng]}
                             </div>
                           )}
-                          onSelect={(item) => setTheme(item.key as 'light' | 'dark')}
-                          className='flex'
-                          chevron={null}
+                          onSelect={(lng: string) => {
+                            changeLanguage(lng)
+                          }}
                           headless
-                          buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 md:px-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-                          menuItemsClassName='top-5'
-                          selectItemClassName='font-semibold'
                         />
+                        <div className='flex items-center gap-2'>
+                          <button
+                            type='button'
+                            onClick={() => setIsHotkeysHelpOpened(true)}
+                            aria-label={t('modals.shortcuts.title')}
+                            className='relative rounded-md border border-transparent bg-gray-50 p-2 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                          >
+                            <KeyboardIcon className='h-6 w-6 text-slate-700 dark:text-gray-200' />
+                          </button>
+                          <Dropdown
+                            title={
+                              <span className='flex items-center justify-center'>
+                                <span className='sr-only'>{t('header.switchTheme')}</span>
+                                {theme === 'dark' ? (
+                                  <SunIcon className='h-6 w-6 text-gray-200' aria-hidden='true' />
+                                ) : (
+                                  <MoonIcon className='h-6 w-6 text-slate-700' aria-hidden='true' />
+                                )}
+                              </span>
+                            }
+                            items={[
+                              { key: 'light', label: t('header.light'), icon: SunIcon },
+                              { key: 'dark', label: t('header.dark'), icon: MoonIcon },
+                            ]}
+                            keyExtractor={(item) => item.key}
+                            labelExtractor={(item) => (
+                              <div
+                                className={cx('flex w-full items-center', {
+                                  'light:text-indigo-600': item.key === 'light',
+                                  'dark:text-indigo-400': item.key === 'dark',
+                                })}
+                              >
+                                <item.icon
+                                  className={cx('mr-2 h-5 w-5', {
+                                    'dark:text-gray-300': item.key === 'light',
+                                    'light:text-gray-400': item.key === 'dark',
+                                  })}
+                                  aria-hidden='true'
+                                />
+                                {item.label}
+                              </div>
+                            )}
+                            onSelect={(item) => setTheme(item.key as 'light' | 'dark')}
+                            className='flex'
+                            chevron={null}
+                            headless
+                            buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 md:px-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                            menuItemsClassName='top-5'
+                            selectItemClassName='font-semibold'
+                          />
+                        </div>
                       </div>
-                    </div>
+                    </>
                   )}
                 </div>
               </div>
