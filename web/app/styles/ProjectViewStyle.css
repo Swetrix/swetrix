@@ -110,6 +110,17 @@ body.dark .bb-ygrid {
   stroke: var(--color-red-400) !important;
 }
 
+/* Revenue chart styling */
+.bb-target-revenue .bb-bar {
+  stroke: #ea580c !important;
+  fill-opacity: 0.85 !important;
+}
+
+.bb-target-refundsAmount .bb-bar {
+  stroke: #ea580c !important;
+  fill-opacity: 1 !important; /* keep rgba() fill visible (don't multiply by .bb-bar opacity) */
+}
+
 .bb-target-dns .bb-bar {
   stroke: #ec4319 !important;
 }

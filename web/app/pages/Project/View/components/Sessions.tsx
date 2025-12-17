@@ -26,6 +26,19 @@ dayjs.extend(relativeTime)
 const ONLINE_THRESHOLD_MINUTES = 5
 const RECENTLY_ACTIVE_THRESHOLD_MINUTES = 30
 
+// Currency symbols
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  CAD: 'CA$',
+  AUD: 'A$',
+}
+
+const getCurrencySymbol = (currency?: string) => {
+  return CURRENCY_SYMBOLS[currency || 'USD'] || CURRENCY_SYMBOLS.USD
+}
+
 type OnlineStatus = 'online' | 'recently_active' | 'offline'
 
 const getOnlineStatus = (lastActivity: string): OnlineStatus => {
@@ -49,6 +62,7 @@ interface SessionsProps {
   timeFormat: '12-hour' | '24-hour'
   hideNewReturnBadge?: boolean
   hideUserDetails?: boolean
+  currency?: string
 }
 
 interface SessionProps {
@@ -56,6 +70,7 @@ interface SessionProps {
   timeFormat: '12-hour' | '24-hour'
   hideNewReturnBadge?: boolean
   hideUserDetails?: boolean
+  currency?: string
 }
 
 const Separator = () => (
@@ -64,7 +79,8 @@ const Separator = () => (
   </svg>
 )
 
-const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails }: SessionProps) => {
+const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, currency }: SessionProps) => {
+  const currencySymbol = getCurrencySymbol(currency)
   const {
     t,
     i18n: { language },
@@ -192,6 +208,19 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails }: S
               <span className='mr-2 flex items-center' title={t('dashboard.pageviews')}>
                 <FileTextIcon className='mr-1 size-4' strokeWidth={1.5} /> {session.pageviews}
               </span>
+              {session.revenue != null && session.revenue !== 0 ? (
+                <span
+                  className={cx('mr-2 flex items-center', {
+                    'text-amber-600 dark:text-amber-500': session.revenue > 0,
+                    'text-orange-600 dark:text-orange-500': session.revenue < 0,
+                  })}
+                  title={t('dashboard.revenue')}
+                >
+                  {session.revenue < 0 ? '-' : ''}
+                  {currencySymbol}
+                  {Math.abs(session.revenue).toFixed(2)}
+                </span>
+              ) : null}
               {session.customEvents > 0 ? (
                 <span className='mr-2 flex items-center' title={t('dashboard.events')}>
                   <MousePointerClickIcon className='mr-1 size-4' strokeWidth={1.5} /> {session.customEvents}
@@ -211,6 +240,19 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails }: S
               <span className='flex items-center' title={t('dashboard.xPageviews', { x: session.pageviews })}>
                 <FileTextIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.pageviews}
               </span>
+              {session.revenue != null && session.revenue !== 0 ? (
+                <span
+                  className={cx('flex items-center', {
+                    'text-amber-600 dark:text-amber-500': session.revenue > 0,
+                    'text-orange-600 dark:text-orange-500': session.revenue < 0,
+                  })}
+                  title={`${session.revenue < 0 ? '-' : ''}${currencySymbol}${Math.abs(session.revenue).toFixed(2)}`}
+                >
+                  {session.revenue < 0 ? '-' : ''}
+                  {currencySymbol}
+                  {Math.abs(session.revenue).toFixed(2)}
+                </span>
+              ) : null}
               {session.customEvents > 0 ? (
                 <span className='flex items-center' title={t('dashboard.xCustomEvents', { x: session.customEvents })}>
                   <MousePointerClickIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.customEvents}
@@ -234,7 +276,13 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails }: S
   )
 }
 
-export const Sessions: React.FC<SessionsProps> = ({ sessions, timeFormat, hideNewReturnBadge, hideUserDetails }) => {
+export const Sessions: React.FC<SessionsProps> = ({
+  sessions,
+  timeFormat,
+  hideNewReturnBadge,
+  hideUserDetails,
+  currency,
+}) => {
   return (
     <ClientOnly
       fallback={
@@ -252,6 +300,7 @@ export const Sessions: React.FC<SessionsProps> = ({ sessions, timeFormat, hideNe
               timeFormat={timeFormat}
               hideNewReturnBadge={hideNewReturnBadge}
               hideUserDetails={hideUserDetails}
+              currency={currency}
             />
           ))}
         </ul>

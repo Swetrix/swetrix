@@ -75,6 +75,7 @@ import FunnelsView from '../Funnels/View'
 import GoalsView from '../Goals/View'
 import PerformanceView from '../Performance/View/PerformanceView'
 import ProfilesView from '../Profiles/View'
+// Revenue dashboard removed - revenue data is displayed in TrafficView, Pageflow, and Profile details
 import SessionsView from '../Sessions/View/SessionsView'
 import TrafficView from '../Traffic/View/TrafficView'
 

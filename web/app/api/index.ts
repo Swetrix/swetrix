@@ -2431,3 +2431,96 @@ export const deleteAIChat = async (pid: string, chatId: string): Promise<{ succe
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
     })
 }
+
+// Revenue API
+export interface RevenueStatus {
+  connected: boolean
+  provider?: string
+  currency?: string
+  lastSyncAt?: string
+}
+
+export interface RevenueStats {
+  totalRevenue: number
+  salesCount: number
+  refundsCount: number
+  refundsAmount: number
+  averageOrderValue: number
+  currency: string
+  mrr: number
+  revenueChange: number
+}
+
+export interface RevenueChart {
+  x: string[]
+  revenue: number[]
+  salesCount: number[]
+  refundsAmount: number[]
+}
+
+export const getRevenueStatus = async (pid: string): Promise<RevenueStatus> => {
+  return api
+    .get(`project/${pid}/revenue/status`)
+    .then((response): RevenueStatus => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const connectPaddleRevenue = async (
+  pid: string,
+  apiKey: string,
+  currency: string = 'USD',
+): Promise<{ success: boolean }> => {
+  return api
+    .post(`project/${pid}/revenue/connect`, { apiKey, currency })
+    .then((response): { success: boolean } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const disconnectPaddleRevenue = async (pid: string): Promise<void> => {
+  return api
+    .delete(`project/${pid}/revenue/disconnect`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const syncRevenue = async (pid: string): Promise<{ success: boolean; transactionsSynced: number }> => {
+  return api
+    .post(`project/${pid}/revenue/sync`)
+    .then((response): { success: boolean; transactionsSynced: number } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const updateRevenueCurrency = async (pid: string, currency: string): Promise<{ success: boolean }> => {
+  return api
+    .post(`project/${pid}/revenue/currency`, { currency })
+    .then((response): { success: boolean } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}
+
+export const getRevenueData = async (
+  pid: string,
+  period: string,
+  from?: string,
+  to?: string,
+  timezone?: string,
+  timeBucket?: string,
+): Promise<{ stats: RevenueStats; chart: RevenueChart }> => {
+  return api
+    .get('log/revenue', {
+      params: { pid, period, from, to, timezone, timeBucket },
+    })
+    .then((response): { stats: RevenueStats; chart: RevenueChart } => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })
+}

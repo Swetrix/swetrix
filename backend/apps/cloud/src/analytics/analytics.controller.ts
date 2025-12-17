@@ -97,6 +97,17 @@ import { LiveVisitorsDto } from './dto/live-visitors.dto'
 import { GetHeartbeatStatsDto } from './dto/get-heartbeat-stats'
 import { GetKeywordsDto } from './dto/get-keywords.dto'
 import { GSCService } from '../project/gsc.service'
+import {
+  GetProfileIdDto,
+  GetSessionIdDto,
+  LogPaymentDto,
+} from '../revenue/dto/payment-log.dto'
+import { RevenueService } from '../revenue/revenue.service'
+import {
+  RevenueType,
+  RevenueStatus,
+  RevenueProvider,
+} from '../revenue/interfaces/revenue.interface'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -204,6 +215,7 @@ export class AnalyticsController {
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
     private readonly gscService: GSCService,
+    private readonly revenueService: RevenueService,
   ) {}
 
   @ApiBearerAuth()
@@ -2289,5 +2301,134 @@ export class AnalyticsController {
     )
 
     return { ...result, appliedFilters, timeBucket: timeBucketForAllTime }
+  }
+
+  // Revenue attribution endpoints
+
+  @Post('profile-id')
+  @Public()
+  async getOrCreateProfileId(
+    @Body() dto: GetProfileIdDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ profileId: string | null }> {
+    const { 'user-agent': userAgent } = headers
+    const { pid } = dto
+
+    try {
+      const ip = getIPFromHeaders(headers, true) || reqIP || ''
+
+      const profileId = await this.analyticsService.generateProfileId(
+        pid,
+        userAgent,
+        ip,
+      )
+
+      return { profileId }
+    } catch (error) {
+      this.logger.error({ error, pid }, 'Error generating profile ID')
+      return { profileId: null }
+    }
+  }
+
+  @Post('session-id')
+  @Public()
+  async getOrCreateSessionId(
+    @Body() dto: GetSessionIdDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ sessionId: string | null }> {
+    const { 'user-agent': userAgent } = headers
+    const { pid } = dto
+
+    try {
+      const ip = getIPFromHeaders(headers, true) || reqIP || ''
+
+      const { psid } = await this.analyticsService.getSessionId(
+        pid,
+        userAgent,
+        ip,
+      )
+
+      // If no session exists, generate one
+      if (!psid) {
+        const [, newPsid] =
+          await this.analyticsService.generateAndStoreSessionId(
+            pid,
+            userAgent,
+            ip,
+          )
+        return { sessionId: newPsid }
+      }
+
+      return { sessionId: psid }
+    } catch (error) {
+      this.logger.error({ error, pid }, 'Error generating session ID')
+      return { sessionId: null }
+    }
+  }
+
+  @Post('payment')
+  @Public()
+  async logPayment(
+    @Body() dto: LogPaymentDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ success: boolean }> {
+    const { 'user-agent': userAgent, origin } = headers
+
+    try {
+      const ip = getIPFromHeaders(headers, true) || reqIP || ''
+
+      // Validate the project exists
+      await this.analyticsService.validate({ pid: dto.pid } as any, origin, ip)
+
+      // Generate profileId and sessionId if not provided
+      let profileId = dto.profileId
+      let sessionId = dto.sessionId
+
+      if (!profileId) {
+        profileId = await this.analyticsService.generateProfileId(
+          dto.pid,
+          userAgent,
+          ip,
+        )
+      }
+
+      if (!sessionId) {
+        const { psid } = await this.analyticsService.getSessionId(
+          dto.pid,
+          userAgent,
+          ip,
+        )
+        sessionId = psid || undefined
+      }
+
+      // Insert the payment event into ClickHouse
+      await this.revenueService.insertTransaction({
+        pid: dto.pid,
+        transactionId: dto.transactionId || `manual_${Date.now()}`,
+        provider: RevenueProvider.PADDLE, // Default to paddle for now
+        type: RevenueType.SALE,
+        status: RevenueStatus.COMPLETED,
+        amount: dto.amount || 0,
+        originalAmount: dto.amount || 0,
+        originalCurrency: dto.currency || 'USD',
+        currency: dto.currency || 'USD',
+        profileId: profileId || null,
+        sessionId: sessionId || null,
+        customerEmail: null,
+        productId: null,
+        productName: null,
+        metadata: dto.metadata || {},
+        created: new Date(),
+        syncedAt: new Date(),
+      })
+
+      return { success: true }
+    } catch (error) {
+      this.logger.error({ error, pid: dto.pid }, 'Error logging payment')
+      return { success: false }
+    }
   }
 }

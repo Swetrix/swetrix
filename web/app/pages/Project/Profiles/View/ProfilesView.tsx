@@ -337,6 +337,7 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
               }
             }}
             canLoadMoreSessions={canLoadMoreProfileSessions}
+            currency={project?.revenueCurrency}
           />
         )}
       </>

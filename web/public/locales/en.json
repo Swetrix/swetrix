@@ -887,6 +887,8 @@
     "xPageviews": "{{x}} pageviews",
     "xCustomEvents": "{{x}} custom events",
     "xErrors": "{{x}} errors",
+    "sales": "Sales",
+    "xSales": "{{x}} sales",
     "events": "Events",
     "alerts": "Alerts",
     "alertsDesc": "Automated alerts is a powerful tool that notifies you when some events occur on your website.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram, Slack or Discord.",
@@ -909,6 +911,9 @@
     "experimentsHint": "Run A/B tests to optimize your website.",
     "featureFlagsHint": "Toggle features for specific user cohorts.",
     "captchaHint": "Protect your forms with privacy-focused CAPTCHA.",
+    "revenue": "Revenue",
+    "refunds": "Refunds",
+    "revenueHint": "Track sales, refunds and revenue from your payment providers.",
     "webAnalytics": "Web analytics",
     "productAnalytics": "Product analytics",
     "revenueAnalytics": "Revenue analytics",
@@ -1511,7 +1516,32 @@
         "people": "People",
         "annotations": "Annotations",
         "danger": "Danger zone",
-        "integrations": "Integrations"
+        "integrations": "Integrations",
+        "revenue": "Revenue"
+      },
+      "revenue": {
+        "title": "Revenue Tracking",
+        "description": "Connect your payment provider to track revenue and attribute sales to marketing channels.",
+        "connectPaddle": "Connect Paddle",
+        "connectPaddleDesc": "Enter your Paddle API key to start tracking revenue. We will automatically sync transactions from your Paddle account.",
+        "paddleDocsLink": "Learn how to get your Paddle API key",
+        "apiKey": "API Key",
+        "apiKeyHint": "Your Paddle API key for read-only access to transactions.",
+        "apiKeyRequired": "API key is required",
+        "currency": "Reporting Currency",
+        "currencyHint": "All revenue will be converted and displayed in this currency.",
+        "currencyUpdated": "Reporting currency updated",
+        "connected": "Revenue tracking connected",
+        "connectedTo": "Connected to {{provider}}",
+        "disconnected": "Revenue tracking disconnected",
+        "synced": "Synced {{count}} transactions",
+        "syncNow": "Sync now",
+        "lastSync": "Last synced: {{date}}",
+        "attribution": {
+          "title": "Revenue Attribution",
+          "description": "Pass visitor and session IDs to your payment provider to attribute revenue to marketing channels.",
+          "paddleExample": "Paddle Checkout Integration:"
+        }
       },
       "captcha": {
         "title": "CAPTCHA Integration",
@@ -1665,6 +1695,28 @@
       "conversionRateShort": "{{x}}% conversion rate",
       "startShort": "Start",
       "endShort": "End"
+    },
+    "revenue": {
+      "title": "Revenue Analytics",
+      "revenue": "Revenue",
+      "notConfigured": "Revenue tracking not configured",
+      "notConfiguredDesc": "Connect your payment provider in project settings to start tracking revenue.",
+      "configureRevenue": "Configure Revenue Tracking",
+      "sync": "Sync",
+      "synced": "Synced {{count}} transactions",
+      "lastSync": "Last sync: {{date}}",
+      "totalRevenue": "Total Revenue",
+      "salesCount": "Sales",
+      "averageOrderValue": "Avg Order",
+      "mrr": "MRR",
+      "refunds": "Refunds",
+      "refundsLabel": "refunds",
+      "revenueOverTime": "Revenue Over Time",
+      "recentTransactions": "Recent Transactions",
+      "noTransactions": "No transactions found for this period.",
+      "byProduct": "Revenue by Product",
+      "noProducts": "No product data available.",
+      "sales": "sales"
     }
   },
   "billing": {

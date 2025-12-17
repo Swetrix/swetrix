@@ -11,6 +11,7 @@ import {
   SmartphoneIcon,
   TabletIcon,
   GlobeIcon,
+  DollarSignIcon,
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -36,6 +37,7 @@ interface UserDetailsProps {
   chartType: string
   onLoadMoreSessions: () => void
   canLoadMoreSessions: boolean
+  currency?: string
 }
 
 // Activity Calendar Component
@@ -200,6 +202,7 @@ export const UserDetails = ({
   chartType,
   onLoadMoreSessions,
   canLoadMoreSessions,
+  currency,
 }: UserDetailsProps) => {
   const {
     t,
@@ -278,6 +281,17 @@ export const UserDetails = ({
                 label={t('project.lastSeen')}
                 value={formatDate(details.lastSeen)}
               />
+              {details.totalRevenue !== undefined && details.totalRevenue > 0 ? (
+                <StatItem
+                  icon={<DollarSignIcon className='h-3.5 w-3.5 text-green-500' />}
+                  label={t('dashboard.revenue')}
+                  value={new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: details.revenueCurrency || 'USD',
+                    minimumFractionDigits: 2,
+                  }).format(details.totalRevenue)}
+                />
+              ) : null}
             </div>
           </div>
 
@@ -379,7 +393,13 @@ export const UserDetails = ({
               <p className='py-4 text-center text-sm text-gray-400'>{t('project.noSessions')}</p>
             ) : (
               <>
-                <Sessions sessions={sessions} timeFormat={timeFormat} hideNewReturnBadge hideUserDetails />
+                <Sessions
+                  sessions={sessions}
+                  timeFormat={timeFormat}
+                  hideNewReturnBadge
+                  hideUserDetails
+                  currency={currency}
+                />
                 {canLoadMoreSessions ? (
                   <Button
                     onClick={onLoadMoreSessions}

@@ -59,6 +59,8 @@ import { getRandomTip } from '../common/utils'
 import { AppLoggerService } from '../logger/logger.service'
 import { DiscordService } from '../integrations/discord/discord.service'
 import { SlackService } from '../integrations/slack/slack.service'
+import { RevenueService } from '../revenue/revenue.service'
+import { PaddleAdapter } from '../revenue/adapters/paddle.adapter'
 
 dayjs.extend(utc)
 
@@ -323,6 +325,8 @@ export class TaskManagerService {
     private readonly slackService: SlackService,
     private readonly saltService: SaltService,
     private readonly goalService: GoalService,
+    private readonly revenueService: RevenueService,
+    private readonly paddleAdapter: PaddleAdapter,
   ) {}
 
   /**
@@ -1074,6 +1078,57 @@ export class TaskManagerService {
   @Cron(CronExpression.EVERY_HOUR)
   async regenerateGlobalSalts() {
     await this.saltService.regenerateExpiredSalts()
+  }
+
+  // Sync revenue data from payment providers every 30 minutes
+  @Cron(CronExpression.EVERY_30_MINUTES)
+  async syncRevenueData() {
+    // Find all projects with Paddle connected
+    const projects = await this.projectService.find({
+      where: {
+        paddleApiKeyEnc: Not(IsNull()),
+        admin: {
+          planCode: Not(PlanCode.none),
+          dashboardBlockReason: IsNull(),
+        },
+      },
+      relations: ['admin'],
+    })
+
+    if (_isEmpty(projects)) {
+      return
+    }
+
+    const promises = _map(projects, async project => {
+      try {
+        const apiKey = this.revenueService.getPaddleApiKey(project)
+        if (!apiKey) {
+          this.logger.warn(
+            `[CRON WORKER](syncRevenueData) Failed to decrypt Paddle API key for project ${project.id}`,
+          )
+          return
+        }
+
+        await this.paddleAdapter.syncTransactions(
+          project.id,
+          apiKey,
+          project.revenueCurrency || 'USD',
+          project.revenueLastSyncAt || undefined,
+        )
+
+        await this.revenueService.updateLastSyncAt(project.id)
+      } catch (error) {
+        this.logger.error(
+          `[CRON WORKER](syncRevenueData) Error syncing project ${project.id}: ${error}`,
+        )
+      }
+    })
+
+    await Promise.allSettled(promises).catch(reason => {
+      this.logger.error(
+        `[CRON WORKER](syncRevenueData) Error occured: ${reason}`,
+      )
+    })
   }
 
   // EVERY SUNDAY AT 2:30 AM

@@ -181,7 +181,7 @@ export interface IOverallPerformance {
 }
 
 export interface IPageflow {
-  type: 'pageview' | 'event'
+  type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
   value: string
   created: string
   metadata?: [string, string][]
