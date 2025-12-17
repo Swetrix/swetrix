@@ -11,6 +11,7 @@ import {
   IPageViewPayload,
   FeatureFlagsOptions,
   ExperimentOptions,
+  TrackPaymentOptions,
 } from './Lib.js'
 
 export let LIB_INSTANCE: Lib | null = null
@@ -263,6 +264,89 @@ export function clearExperimentsCache(): void {
   LIB_INSTANCE.clearExperimentsCache()
 }
 
+/**
+ * Gets the anonymous profile ID for the current visitor.
+ * If profileId was set via init options, returns that.
+ * Otherwise, requests server to generate one from IP/UA hash.
+ *
+ * This ID can be used for revenue attribution with payment providers like Paddle.
+ *
+ * @returns A promise that resolves to the profile ID string, or null on error.
+ *
+ * @example
+ * ```typescript
+ * const profileId = await getProfileId()
+ *
+ * // Pass to Paddle Checkout for revenue attribution
+ * Paddle.Checkout.open({
+ *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+ *   customData: {
+ *     swetrix_profile_id: profileId,
+ *     swetrix_session_id: await getSessionId()
+ *   }
+ * })
+ * ```
+ */
+export async function getProfileId(): Promise<string | null> {
+  if (!LIB_INSTANCE) return null
+
+  return LIB_INSTANCE.getProfileId()
+}
+
+/**
+ * Gets the current session ID for the visitor.
+ * Session IDs are generated server-side based on IP and user agent.
+ *
+ * This ID can be used for revenue attribution with payment providers like Paddle.
+ *
+ * @returns A promise that resolves to the session ID string, or null on error.
+ *
+ * @example
+ * ```typescript
+ * const sessionId = await getSessionId()
+ *
+ * // Pass to Paddle Checkout for revenue attribution
+ * Paddle.Checkout.open({
+ *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+ *   customData: {
+ *     swetrix_profile_id: await getProfileId(),
+ *     swetrix_session_id: sessionId
+ *   }
+ * })
+ * ```
+ */
+export async function getSessionId(): Promise<string | null> {
+  if (!LIB_INSTANCE) return null
+
+  return LIB_INSTANCE.getSessionId()
+}
+
+/**
+ * Track a payment event for revenue attribution.
+ * Use this when you want to manually log a payment event without relying on
+ * automatic sync from payment providers.
+ *
+ * @param options - Payment event options.
+ * @returns A promise that resolves to true if the event was logged successfully.
+ *
+ * @example
+ * ```typescript
+ * // Log a payment event after a successful purchase
+ * await trackPayment({
+ *   profileId: await getProfileId(),
+ *   sessionId: await getSessionId(),
+ *   amount: 29.99,
+ *   currency: 'USD',
+ *   transactionId: 'txn_123456'
+ * })
+ * ```
+ */
+export async function trackPayment(options?: TrackPaymentOptions): Promise<boolean> {
+  if (!LIB_INSTANCE) return false
+
+  return LIB_INSTANCE.trackPayment(options)
+}
+
 export {
   LibOptions,
   TrackEventOptions,
@@ -274,4 +358,5 @@ export {
   IPageViewPayload,
   FeatureFlagsOptions,
   ExperimentOptions,
+  TrackPaymentOptions,
 }

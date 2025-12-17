@@ -216,6 +216,41 @@ export interface PageViewsOptions {
   callback?: (payload: IPageViewPayload) => Partial<IPageViewPayload> | boolean
 }
 
+/**
+ * Options for tracking payment events.
+ */
+export interface TrackPaymentOptions {
+  /**
+   * Optional profile ID for attribution. If not provided, it will be generated server-side.
+   */
+  profileId?: string
+
+  /**
+   * Optional session ID for attribution. If not provided, it will be generated server-side.
+   */
+  sessionId?: string
+
+  /**
+   * Optional transaction ID from your payment provider.
+   */
+  transactionId?: string
+
+  /**
+   * Payment amount.
+   */
+  amount?: number
+
+  /**
+   * Currency code (ISO 4217), e.g., 'USD', 'EUR'.
+   */
+  currency?: string
+
+  /**
+   * Additional metadata for the payment event.
+   */
+  metadata?: Record<string, string | number | boolean>
+}
+
 export const defaultActions = {
   stop() {},
 }
@@ -591,6 +626,162 @@ export class Lib {
    */
   clearExperimentsCache(): void {
     this.cachedData = null
+  }
+
+  /**
+   * Gets the anonymous profile ID for the current visitor.
+   * If profileId was set via init options, returns that.
+   * Otherwise, requests server to generate one from IP/UA hash.
+   *
+   * This ID can be used for revenue attribution with payment providers.
+   *
+   * @returns A promise that resolves to the profile ID string, or null on error.
+   *
+   * @example
+   * ```typescript
+   * const profileId = await swetrix.getProfileId()
+   *
+   * // Pass to Paddle Checkout for revenue attribution
+   * Paddle.Checkout.open({
+   *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+   *   customData: {
+   *     swetrix_profile_id: profileId,
+   *     swetrix_session_id: await swetrix.getSessionId()
+   *   }
+   * })
+   * ```
+   */
+  async getProfileId(): Promise<string | null> {
+    // If profileId is already set in options, return it
+    if (this.options?.profileId) {
+      return this.options.profileId
+    }
+
+    if (!isInBrowser()) {
+      return null
+    }
+
+    try {
+      const apiBase = this.getApiBase()
+      const response = await fetch(`${apiBase}/log/profile-id`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ pid: this.projectID }),
+      })
+
+      if (!response.ok) {
+        return null
+      }
+
+      const data = (await response.json()) as { profileId: string | null }
+      return data.profileId
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Gets the current session ID for the visitor.
+   * Session IDs are generated server-side based on IP and user agent.
+   *
+   * This ID can be used for revenue attribution with payment providers.
+   *
+   * @returns A promise that resolves to the session ID string, or null on error.
+   *
+   * @example
+   * ```typescript
+   * const sessionId = await swetrix.getSessionId()
+   *
+   * // Pass to Paddle Checkout for revenue attribution
+   * Paddle.Checkout.open({
+   *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+   *   customData: {
+   *     swetrix_profile_id: await swetrix.getProfileId(),
+   *     swetrix_session_id: sessionId
+   *   }
+   * })
+   * ```
+   */
+  async getSessionId(): Promise<string | null> {
+    if (!isInBrowser()) {
+      return null
+    }
+
+    try {
+      const apiBase = this.getApiBase()
+      const response = await fetch(`${apiBase}/log/session-id`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ pid: this.projectID }),
+      })
+
+      if (!response.ok) {
+        return null
+      }
+
+      const data = (await response.json()) as { sessionId: string | null }
+      return data.sessionId
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Track a payment event for revenue attribution.
+   * Use this when you want to manually log a payment event without relying on
+   * automatic sync from payment providers.
+   *
+   * @param options - Payment event options.
+   * @returns A promise that resolves to true if the event was logged successfully.
+   *
+   * @example
+   * ```typescript
+   * // Log a payment event after a successful purchase
+   * await swetrix.trackPayment({
+   *   profileId: await swetrix.getProfileId(),
+   *   sessionId: await swetrix.getSessionId(),
+   *   amount: 29.99,
+   *   currency: 'USD',
+   *   transactionId: 'txn_123456'
+   * })
+   * ```
+   */
+  async trackPayment(options?: TrackPaymentOptions): Promise<boolean> {
+    if (!isInBrowser()) {
+      return false
+    }
+
+    try {
+      const apiBase = this.getApiBase()
+      const response = await fetch(`${apiBase}/log/payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pid: this.projectID,
+          profileId: options?.profileId ?? this.options?.profileId,
+          sessionId: options?.sessionId,
+          transactionId: options?.transactionId,
+          amount: options?.amount,
+          currency: options?.currency,
+          metadata: options?.metadata,
+        }),
+      })
+
+      if (!response.ok) {
+        return false
+      }
+
+      const data = (await response.json()) as { success: boolean }
+      return data.success
+    } catch {
+      return false
+    }
   }
 
   /**
