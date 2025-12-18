@@ -2467,20 +2467,32 @@ export const getRevenueStatus = async (pid: string): Promise<RevenueStatus> => {
     })
 }
 
-export const connectPaddleRevenue = async (
+export type RevenueProvider = 'stripe' | 'paddle'
+
+export const connectRevenue = async (
   pid: string,
+  provider: RevenueProvider,
   apiKey: string,
   currency: string = 'USD',
 ): Promise<{ success: boolean }> => {
   return api
-    .post(`project/${pid}/revenue/connect`, { apiKey, currency })
+    .post(`project/${pid}/revenue/connect`, { provider, apiKey, currency })
     .then((response): { success: boolean } => response.data)
     .catch((error) => {
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
     })
 }
 
-export const disconnectPaddleRevenue = async (pid: string): Promise<void> => {
+// Keep backward compatibility
+export const connectPaddleRevenue = async (
+  pid: string,
+  apiKey: string,
+  currency: string = 'USD',
+): Promise<{ success: boolean }> => {
+  return connectRevenue(pid, 'paddle', apiKey, currency)
+}
+
+export const disconnectRevenue = async (pid: string): Promise<void> => {
   return api
     .delete(`project/${pid}/revenue/disconnect`)
     .then((response) => response.data)
@@ -2488,6 +2500,9 @@ export const disconnectPaddleRevenue = async (pid: string): Promise<void> => {
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
     })
 }
+
+// Keep backward compatibility
+export const disconnectPaddleRevenue = disconnectRevenue
 
 export const syncRevenue = async (pid: string): Promise<{ success: boolean; transactionsSynced: number }> => {
   return api

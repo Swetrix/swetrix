@@ -7,7 +7,6 @@ import {
   Param,
   Body,
   NotFoundException,
-  ForbiddenException,
   BadRequestException,
 } from '@nestjs/common'
 import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
@@ -23,10 +22,9 @@ import { Auth } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { RevenueService } from './revenue.service'
 import { PaddleAdapter } from './adapters/paddle.adapter'
-import {
-  ConnectPaddleDto,
-  UpdateRevenueCurrencyDto,
-} from './dto/connect-paddle.dto'
+import { StripeAdapter } from './adapters/stripe.adapter'
+import { UpdateRevenueCurrencyDto } from './dto/connect-paddle.dto'
+import { ConnectRevenueDto } from './dto/connect-revenue.dto'
 import { GetRevenueDto, GetRevenueTransactionsDto } from './dto/get-revenue.dto'
 import {
   RevenueStatsDto,
@@ -35,6 +33,7 @@ import {
   RevenueBreakdownDto,
   RevenueStatusDto,
 } from './dto/revenue-stats.dto'
+import { STRIPE_REQUIRED_PERMISSIONS } from './interfaces/revenue.interface'
 
 @ApiTags('Revenue')
 @Controller('project')
@@ -42,6 +41,7 @@ export class RevenueController {
   constructor(
     private readonly revenueService: RevenueService,
     private readonly paddleAdapter: PaddleAdapter,
+    private readonly stripeAdapter: StripeAdapter,
     private readonly projectService: ProjectService,
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
@@ -72,10 +72,10 @@ export class RevenueController {
   @Post('/:pid/revenue/connect')
   @Auth()
   @ApiResponse({ status: 201 })
-  async connectPaddle(
+  async connectRevenue(
     @CurrentUserId() userId: string,
     @Param('pid') pid: string,
-    @Body() dto: ConnectPaddleDto,
+    @Body() dto: ConnectRevenueDto,
   ) {
     this.logger.log({ userId, pid }, 'POST /project/:pid/revenue/connect')
 
@@ -91,18 +91,43 @@ export class RevenueController {
       'You are not allowed to manage revenue settings for this project',
     )
 
-    // Validate API key with Paddle
-    const isValid = await this.paddleAdapter.validateApiKey(dto.apiKey)
+    const currency = dto.currency || 'USD'
+
+    if (dto.provider === 'paddle') {
+      // Validate API key with Paddle
+      const isValid = await this.paddleAdapter.validateApiKey(dto.apiKey)
+      if (!isValid) {
+        throw new BadRequestException(
+          'Invalid Paddle API key. Please check your key and try again.',
+        )
+      }
+
+      const result = await this.revenueService.connectPaddle(
+        pid,
+        dto.apiKey,
+        currency,
+      )
+
+      if (!result.success) {
+        throw new BadRequestException(result.message)
+      }
+
+      return { success: true }
+    }
+
+    // Stripe
+    const isValid = await this.stripeAdapter.validateApiKey(dto.apiKey)
     if (!isValid) {
       throw new BadRequestException(
-        'Invalid Paddle API key. Please check your key and try again.',
+        'Invalid Stripe restricted API key. Please check your key and try again.',
       )
     }
 
-    const result = await this.revenueService.connectPaddle(
+    const result = await this.revenueService.connectStripe(
       pid,
       dto.apiKey,
-      dto.currency || 'USD',
+      currency,
+      STRIPE_REQUIRED_PERMISSIONS,
     )
 
     if (!result.success) {
@@ -116,7 +141,7 @@ export class RevenueController {
   @Delete('/:pid/revenue/disconnect')
   @Auth()
   @ApiResponse({ status: 204 })
-  async disconnectPaddle(
+  async disconnectRevenue(
     @CurrentUserId() userId: string,
     @Param('pid') pid: string,
   ) {
@@ -134,7 +159,7 @@ export class RevenueController {
       'You are not allowed to manage revenue settings for this project',
     )
 
-    await this.revenueService.disconnectPaddle(pid)
+    await this.revenueService.disconnectRevenue(pid)
   }
 
   @ApiBearerAuth()
@@ -188,19 +213,41 @@ export class RevenueController {
       'You are not allowed to manage revenue settings for this project',
     )
 
-    if (!project.paddleApiKeyEnc) {
-      throw new BadRequestException('Paddle is not connected to this project')
+    const currency = project.revenueCurrency || 'USD'
+
+    if (!project.paddleApiKeyEnc && !project.stripeApiKeyEnc) {
+      throw new BadRequestException(
+        'Revenue tracking is not connected to this project',
+      )
     }
 
-    const apiKey = this.revenueService.getPaddleApiKey(project)
+    if (project.paddleApiKeyEnc) {
+      const apiKey = this.revenueService.getPaddleApiKey(project)
+      if (!apiKey) {
+        throw new BadRequestException('Failed to decrypt Paddle API key')
+      }
+
+      const count = await this.paddleAdapter.syncTransactions(
+        pid,
+        apiKey,
+        currency,
+        project.revenueLastSyncAt || undefined,
+      )
+
+      await this.revenueService.updateLastSyncAt(pid)
+      return { success: true, transactionsSynced: count }
+    }
+
+    // Stripe
+    const apiKey = this.revenueService.getStripeApiKey(project)
     if (!apiKey) {
-      throw new BadRequestException('Failed to decrypt Paddle API key')
+      throw new BadRequestException('Failed to decrypt Stripe API key')
     }
 
-    const count = await this.paddleAdapter.syncTransactions(
+    const count = await this.stripeAdapter.syncTransactions(
       pid,
       apiKey,
-      project.revenueCurrency || 'USD',
+      currency,
       project.revenueLastSyncAt || undefined,
     )
 
@@ -241,7 +288,7 @@ export class RevenueAnalyticsController {
 
     this.projectService.allowedToView(project, userId)
 
-    if (!project.paddleApiKeyEnc) {
+    if (!project.paddleApiKeyEnc && !project.stripeApiKeyEnc) {
       throw new BadRequestException(
         'Revenue tracking is not configured for this project',
       )

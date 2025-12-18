@@ -73,8 +73,10 @@ export class RevenueService {
 
       await this.projectRepository.update(projectId, {
         paddleApiKeyEnc: encryptedKey,
+        stripeApiKeyEnc: null,
         revenueCurrency: currency,
         paddleApiKeyPermissions: JSON.stringify(PADDLE_REQUIRED_PERMISSIONS),
+        stripeApiKeyPermissions: null,
         revenueLastSyncAt: null,
       })
 
@@ -82,6 +84,31 @@ export class RevenueService {
     } catch (error) {
       this.logger.error({ error, projectId }, 'Failed to connect Paddle')
       return { success: false, message: 'Failed to save Paddle configuration' }
+    }
+  }
+
+  async connectStripe(
+    projectId: string,
+    apiKey: string,
+    currency: string = 'USD',
+    permissions: string[] = [],
+  ): Promise<{ success: boolean; message?: string }> {
+    try {
+      const encryptedKey = this.encrypt(apiKey)
+
+      await this.projectRepository.update(projectId, {
+        stripeApiKeyEnc: encryptedKey,
+        paddleApiKeyEnc: null,
+        revenueCurrency: currency,
+        stripeApiKeyPermissions: JSON.stringify(permissions),
+        paddleApiKeyPermissions: null,
+        revenueLastSyncAt: null,
+      })
+
+      return { success: true }
+    } catch (error) {
+      this.logger.error({ error, projectId }, 'Failed to connect Stripe')
+      return { success: false, message: 'Failed to save Stripe configuration' }
     }
   }
 
@@ -93,16 +120,38 @@ export class RevenueService {
     })
   }
 
+  async disconnectStripe(projectId: string): Promise<void> {
+    await this.projectRepository.update(projectId, {
+      stripeApiKeyEnc: null,
+      stripeApiKeyPermissions: null,
+      revenueLastSyncAt: null,
+    })
+  }
+
+  async disconnectRevenue(projectId: string): Promise<void> {
+    await this.projectRepository.update(projectId, {
+      paddleApiKeyEnc: null,
+      paddleApiKeyPermissions: null,
+      stripeApiKeyEnc: null,
+      stripeApiKeyPermissions: null,
+      revenueLastSyncAt: null,
+    })
+  }
+
   async getRevenueStatus(project: Project): Promise<{
     connected: boolean
     provider?: string
     currency?: string
     lastSyncAt?: string
   }> {
-    const connected = !!project.paddleApiKeyEnc
+    const connected = !!project.paddleApiKeyEnc || !!project.stripeApiKeyEnc
     return {
       connected,
-      provider: connected ? 'paddle' : undefined,
+      provider: connected
+        ? project.paddleApiKeyEnc
+          ? 'paddle'
+          : 'stripe'
+        : undefined,
       currency: project.revenueCurrency || undefined,
       lastSyncAt: project.revenueLastSyncAt?.toISOString() || undefined,
     }
@@ -120,6 +169,17 @@ export class RevenueService {
     }
     try {
       return this.decrypt(project.paddleApiKeyEnc)
+    } catch {
+      return null
+    }
+  }
+
+  getStripeApiKey(project: Project): string | null {
+    if (!project.stripeApiKeyEnc) {
+      return null
+    }
+    try {
+      return this.decrypt(project.stripeApiKeyEnc)
     } catch {
       return null
     }

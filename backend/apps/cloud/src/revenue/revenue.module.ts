@@ -11,6 +11,7 @@ import {
   RevenueAnalyticsController,
 } from './revenue.controller'
 import { PaddleAdapter } from './adapters/paddle.adapter'
+import { StripeAdapter } from './adapters/stripe.adapter'
 
 @Module({
   imports: [
@@ -19,8 +20,8 @@ import { PaddleAdapter } from './adapters/paddle.adapter'
     AppLoggerModule,
     forwardRef(() => AnalyticsModule),
   ],
-  providers: [RevenueService, PaddleAdapter],
-  exports: [RevenueService, PaddleAdapter],
+  providers: [RevenueService, PaddleAdapter, StripeAdapter],
+  exports: [RevenueService, PaddleAdapter, StripeAdapter],
   controllers: [RevenueController, RevenueAnalyticsController],
 })
 export class RevenueModule {}

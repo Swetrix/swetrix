@@ -1,6 +1,8 @@
 export enum RevenueProvider {
-  PADDLE = 'paddle',
   STRIPE = 'stripe',
+  POLAR = 'polar',
+  LEMONSQUEEZY = 'lemonsqueezy',
+  PADDLE = 'paddle',
 }
 
 export enum RevenueType {
@@ -72,3 +74,15 @@ export const PADDLE_REQUIRED_PERMISSIONS = [
 
 // TODO: Change to vendors.paddle.com when merging to main
 export const PADDLE_API_KEY_CREATE_URL = `https://sandbox-vendors.paddle.com/authentication-v2`
+
+// Stripe restricted key permissions (rak_*) that we request
+export const STRIPE_REQUIRED_PERMISSIONS = [
+  'rak_charge_read',
+  'rak_subscription_read',
+  'rak_customer_read',
+  'rak_payment_intent_read',
+  'rak_checkout_session_read',
+  'rak_invoice_read',
+  'rak_webhook_write',
+  'rak_product_read',
+]

@@ -182,6 +182,12 @@ export class Project {
   @Column('text', { nullable: true, default: null })
   paddleApiKeyPermissions: string | null
 
+  @Column('text', { nullable: true, default: null })
+  stripeApiKeyEnc: string | null
+
+  @Column('text', { nullable: true, default: null })
+  stripeApiKeyPermissions: string | null
+
   @Column('datetime', { nullable: true, default: null })
   revenueLastSyncAt: Date | null
 }
