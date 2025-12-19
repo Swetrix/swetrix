@@ -18,6 +18,7 @@ import {
   RevenueTransactionDto,
   RevenueBreakdownDto,
 } from './dto/revenue-stats.dto'
+import { deriveKey } from '../common/utils'
 
 const timeBucketConversion: Record<string, string> = {
   minute: 'toStartOfMinute',
@@ -36,8 +37,7 @@ export class RevenueService {
     private readonly projectRepository: Repository<Project>,
     private readonly logger: AppLoggerService,
   ) {
-    // Use a 32-byte key from JWT_ACCESS_TOKEN_SECRET
-    const secret = process.env.JWT_ACCESS_TOKEN_SECRET || 'default-secret-key'
+    const secret = deriveKey('revenue', 32)
     this.encryptionKey = crypto.scryptSync(secret, 'revenue-salt', 32)
   }
 
