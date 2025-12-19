@@ -191,7 +191,7 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
 
     seriesKeys.forEach((key, idx) => {
       columns.push([key, ...chart.data[key]!])
-      types[key] = getChartType(chart.chartType)
+      types[key] = getChartType(chart.chartType) as any
       colors[key] = CHART_COLORS[idx % CHART_COLORS.length]
     })
 

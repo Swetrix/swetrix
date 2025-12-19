@@ -209,6 +209,7 @@ export interface Project {
   role?: Role
   gscPropertyUri?: string | null
   isPinned?: boolean
+  revenueCurrency?: string
 }
 
 export interface Extension {

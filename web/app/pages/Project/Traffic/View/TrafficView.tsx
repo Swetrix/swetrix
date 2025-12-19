@@ -885,11 +885,13 @@ const TrafficView = ({
               header={t('project.metricVis')}
               items={
                 isActiveCompare
-                  ? _filter(chartMetrics, (el) => !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id))
+                  ? _filter(chartMetrics, (el) => !!el && !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id))
                   : chartMetrics
               }
               title={[<EyeIcon key='eye-icon' aria-label={t('project.metricVis')} className='h-5 w-5' />]}
               labelExtractor={(pair) => {
+                if (!pair) return null
+
                 const { label, id: pairID, active, conflicts } = pair
 
                 const conflicted = isConflicted(conflicts)
@@ -929,8 +931,11 @@ const TrafficView = ({
               }}
               buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
               selectItemClassName='p-0'
-              keyExtractor={(pair) => pair.id}
-              onSelect={({ id: pairID, conflicts }, e) => {
+              keyExtractor={(pair) => pair?.id || ''}
+              onSelect={(pair, e) => {
+                if (!pair) return
+
+                const { id: pairID, conflicts } = pair
                 e?.stopPropagation()
                 e?.preventDefault()
 

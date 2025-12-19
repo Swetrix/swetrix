@@ -2433,14 +2433,14 @@ export const deleteAIChat = async (pid: string, chatId: string): Promise<{ succe
 }
 
 // Revenue API
-export interface RevenueStatus {
+interface RevenueStatus {
   connected: boolean
   provider?: string
   currency?: string
   lastSyncAt?: string
 }
 
-export interface RevenueStats {
+interface RevenueStats {
   totalRevenue: number
   salesCount: number
   refundsCount: number
@@ -2451,7 +2451,7 @@ export interface RevenueStats {
   revenueChange: number
 }
 
-export interface RevenueChart {
+interface RevenueChart {
   x: string[]
   revenue: number[]
   salesCount: number[]
@@ -2483,31 +2483,10 @@ export const connectRevenue = async (
     })
 }
 
-// Keep backward compatibility
-export const connectPaddleRevenue = async (
-  pid: string,
-  apiKey: string,
-  currency: string = 'USD',
-): Promise<{ success: boolean }> => {
-  return connectRevenue(pid, 'paddle', apiKey, currency)
-}
-
 export const disconnectRevenue = async (pid: string): Promise<void> => {
   return api
     .delete(`project/${pid}/revenue/disconnect`)
     .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
-}
-
-// Keep backward compatibility
-export const disconnectPaddleRevenue = disconnectRevenue
-
-export const syncRevenue = async (pid: string): Promise<{ success: boolean; transactionsSynced: number }> => {
-  return api
-    .post(`project/${pid}/revenue/sync`)
-    .then((response): { success: boolean; transactionsSynced: number } => response.data)
     .catch((error) => {
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
     })

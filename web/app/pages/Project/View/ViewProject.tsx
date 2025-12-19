@@ -288,8 +288,9 @@ const ViewProjectContent = () => {
     [CHART_METRICS_MAPPING.trendlines]: false,
     [CHART_METRICS_MAPPING.cumulativeMode]: false,
     [CHART_METRICS_MAPPING.customEvents]: false,
+    [CHART_METRICS_MAPPING.revenue]: false,
     ...(preferences.metricsVisualisation || {}),
-  })
+  } as Record<keyof typeof CHART_METRICS_MAPPING, boolean>)
   const [customMetrics, setCustomMetrics] = useState<ProjectViewCustomEvent[]>([])
   const filters = useMemo<Filter[]>(() => {
     return parseFilters(searchParams)

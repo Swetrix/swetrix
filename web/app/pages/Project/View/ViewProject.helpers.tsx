@@ -903,7 +903,6 @@ const getSettings = (
           // - revenue: solid orange stroke (handled by CSS)
           // - refunds: dashed orange stroke + light fill
           // - when refunds value is 0, remove stroke to avoid "cap" lines
-          // @ts-expect-error
           const chart = this as any
 
           if (chart?.$ && chart.$.bar?.bars) {
