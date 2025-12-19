@@ -4246,16 +4246,34 @@ export class AnalyticsService {
     }
 
     return _map(pages, (page: IPageflow) => {
-      if (!page.metadata) {
-        return page
+      const processedMetadata = page.metadata
+        ? _map(page.metadata, ([key, value]: [string, string]) => ({
+            key,
+            value,
+          }))
+        : undefined
+
+      // For sale and refund events, extract amount and currency from metadata
+      if (
+        (page.type === 'sale' || page.type === 'refund') &&
+        processedMetadata
+      ) {
+        const amountEntry = processedMetadata.find(m => m.key === 'amount')
+        const currencyEntry = processedMetadata.find(m => m.key === 'currency')
+
+        return {
+          ...page,
+          metadata: processedMetadata.filter(
+            m => m.key !== 'amount' && m.key !== 'currency',
+          ),
+          amount: amountEntry ? parseFloat(amountEntry.value) : undefined,
+          currency: currencyEntry ? currencyEntry.value : undefined,
+        }
       }
 
       return {
         ...page,
-        metadata: _map(page.metadata, ([key, value]: [string, string]) => ({
-          key,
-          value,
-        })),
+        metadata: processedMetadata,
       }
     })
   }
@@ -4269,56 +4287,93 @@ export class AnalyticsService {
       WITH events_with_meta AS (
         SELECT
           'pageview' AS type,
-          pg AS value,
+          toString(pg) AS value,
           toTimeZone(analytics.created, {timezone:String}) AS created,
           pid,
-          psid,
+          toString(analytics.psid) AS psid,
           groupArrayIf(tuple(meta.key, meta.value), notEmpty(meta.key) AND notEmpty(meta.value)) AS metadata
         FROM analytics
         LEFT ARRAY JOIN meta.key, meta.value
         WHERE
           pid = {pid:FixedString(12)}
           AND analytics.psid IS NOT NULL
-          AND CAST(analytics.psid AS String) = {psid:String}
+          AND toString(analytics.psid) = {psid:String}
         GROUP BY type, value, created, pid, psid
 
         UNION ALL
 
         SELECT
           'event' AS type,
-          ev AS value,
+          toString(ev) AS value,
           toTimeZone(customEV.created, {timezone:String}) AS created,
           pid,
-          psid,
+          toString(customEV.psid) AS psid,
           groupArrayIf(tuple(meta.key, meta.value), notEmpty(meta.key) AND notEmpty(meta.value)) AS metadata
         FROM customEV
         LEFT ARRAY JOIN meta.key, meta.value
         WHERE
           pid = {pid:FixedString(12)}
           AND customEV.psid IS NOT NULL
-          AND CAST(customEV.psid AS String) = {psid:String}
+          AND toString(customEV.psid) = {psid:String}
         GROUP BY type, value, created, pid, psid
         
         UNION ALL
 
         SELECT
           'error' AS type,
-          errors.name AS value,
+          toString(errors.name) AS value,
           toTimeZone(errors.created, {timezone:String}) AS created,
           pid,
-          psid,
+          toString(errors.psid) AS psid,
           [
             tuple('message', COALESCE(errors.message, '')),
-            tuple('lineno', CAST(COALESCE(errors.lineno, 0), 'String')),
-            tuple('colno', CAST(COALESCE(errors.colno, 0), 'String')),
+            tuple('lineno', toString(COALESCE(errors.lineno, 0))),
+            tuple('colno', toString(COALESCE(errors.colno, 0))),
             tuple('filename', COALESCE(errors.filename, ''))
           ] AS metadata
         FROM errors
         WHERE
           pid = {pid:FixedString(12)}
           AND errors.psid IS NOT NULL
-          AND CAST(errors.psid AS String) = {psid:String}
+          AND toString(errors.psid) = {psid:String}
         GROUP BY type, value, created, pid, psid, errors.message, errors.lineno, errors.colno, errors.filename
+
+        UNION ALL
+
+        SELECT
+          type,
+          COALESCE(toString(product_name), toString(product_id), if(type = 'refund', 'Refund', 'Sale')) AS value,
+          toTimeZone(created, {timezone:String}) AS created,
+          pid,
+          toString(session_id) AS psid,
+          [
+            tuple('amount', toString(amount)),
+            tuple('currency', toString(currency)),
+            tuple('transaction_id', toString(transaction_id)),
+            tuple('status', toString(status)),
+            tuple('provider', toString(provider))
+          ] AS metadata
+        FROM (
+          SELECT
+            argMax(type, synced_at) AS type,
+            argMax(product_name, synced_at) AS product_name,
+            argMax(product_id, synced_at) AS product_id,
+            argMax(created, synced_at) AS created,
+            pid,
+            session_id,
+            argMax(amount, synced_at) AS amount,
+            argMax(currency, synced_at) AS currency,
+            transaction_id,
+            argMax(status, synced_at) AS status,
+            argMax(provider, synced_at) AS provider
+          FROM revenue
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND session_id IS NOT NULL
+            AND toString(session_id) = {psid:String}
+            AND type IN ('sale', 'refund')
+          GROUP BY pid, session_id, transaction_id
+        )
       )
 
       SELECT
@@ -4336,7 +4391,8 @@ export class AnalyticsService {
       FROM analytics
       WHERE
         pid = {pid:FixedString(12)}
-        AND CAST(psid, 'String') = {psid:String}
+        AND psid IS NOT NULL
+        AND toString(psid) = {psid:String}
       ORDER BY created ASC
       LIMIT 1;
     `
@@ -4347,7 +4403,8 @@ export class AnalyticsService {
       FROM sessions FINAL
       WHERE
         pid = {pid:FixedString(12)}
-        AND CAST(psid, 'String') = {psid:String}
+        AND psid IS NOT NULL
+        AND toString(psid) = {psid:String}
     `
 
     const paramsData = {
@@ -4394,7 +4451,8 @@ export class AnalyticsService {
         FROM analytics
         WHERE
           pid = {pid:FixedString(12)}
-          AND CAST(psid, 'String') = {psid:String}
+          AND psid IS NOT NULL
+          AND toString(psid) = {psid:String}
         LIMIT 1;
       `
 
@@ -4433,7 +4491,7 @@ export class AnalyticsService {
         timeBucket,
         from,
         to,
-        "AND psid IS NOT NULL AND CAST(psid, 'String') = {psid:String}",
+        'AND psid IS NOT NULL AND toString(psid) = {psid:String}',
         {
           params: {
             ...paramsData.params,
@@ -4542,6 +4600,26 @@ export class AnalyticsService {
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
+      revenue_totals AS (
+        SELECT
+          psidCasted,
+          pid,
+          sum(CASE WHEN type = 'sale' THEN amount ELSE 0 END) - sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as revenue,
+          sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as refunds
+        FROM (
+          SELECT
+            CAST(session_id, 'String') AS psidCasted,
+            pid,
+            argMax(type, synced_at) AS type,
+            argMax(amount, synced_at) AS amount
+          FROM revenue
+          WHERE pid = {pid:FixedString(12)} AND session_id IS NOT NULL
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            AND type IN ('sale', 'refund')
+          GROUP BY psidCasted, pid, transaction_id
+        )
+        GROUP BY psidCasted, pid
+      ),
       session_duration_agg AS (
         SELECT 
           CAST(psid, 'String') AS psidCasted, 
@@ -4570,6 +4648,8 @@ export class AnalyticsService {
         COALESCE(pc.count, 0) AS pageviews,
         COALESCE(ec.count, 0) AS customEvents,
         COALESCE(errc.count, 0) AS errors,
+        toFloat64(COALESCE(rt.revenue, toDecimal64(0, 4))) AS revenue,
+        toFloat64(COALESCE(rt.refunds, toDecimal64(0, 4))) AS refunds,
         dsf.sessionStart,
         dsf.lastActivity,
         if(dateDiff('second', dsf.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
@@ -4581,6 +4661,7 @@ export class AnalyticsService {
       LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
       LEFT JOIN event_counts ec ON dsf.psidCasted = ec.psidCasted AND dsf.pid = ec.pid
       LEFT JOIN error_counts errc ON dsf.psidCasted = errc.psidCasted AND dsf.pid = errc.pid
+      LEFT JOIN revenue_totals rt ON dsf.psidCasted = rt.psidCasted AND dsf.pid = rt.pid
       LEFT JOIN session_duration_agg sda ON dsf.psidCasted = sda.psidCasted AND dsf.pid = sda.pid
       LEFT JOIN first_session_per_profile fsp ON sda.profileId = fsp.profileId
       WHERE dsf.psidCasted IS NOT NULL
@@ -4758,6 +4839,24 @@ export class AnalyticsService {
         AND profileId = {profileId:String}
     `
 
+    // Query for total revenue from profile (only sales, not refunds)
+    const queryRevenue = `
+      SELECT
+        sum(amount) AS totalRevenue,
+        any(currency) AS revenueCurrency
+      FROM (
+        SELECT
+          argMax(amount, synced_at) AS amount,
+          argMax(currency, synced_at) AS currency
+        FROM revenue
+        WHERE pid = {pid:FixedString(12)}
+          AND profile_id = {profileId:String}
+          AND type = 'sale'
+          AND status = 'completed'
+        GROUP BY transaction_id
+      )
+    `
+
     const params = { pid, profileId }
 
     const [
@@ -4766,6 +4865,7 @@ export class AnalyticsService {
       pageviewsResult,
       eventsResult,
       detailsResult,
+      revenueResult,
     ] = await Promise.all([
       clickhouse
         .query({ query: querySessionCount, query_params: params })
@@ -4782,6 +4882,9 @@ export class AnalyticsService {
       clickhouse
         .query({ query: queryDetails, query_params: params })
         .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryRevenue, query_params: params })
+        .then(resultSet => resultSet.json()),
     ])
 
     const sessionCount = (sessionCountResult.data[0] || {}) as Record<
@@ -4792,6 +4895,7 @@ export class AnalyticsService {
     const pageviews = (pageviewsResult.data[0] || {}) as Record<string, any>
     const events = (eventsResult.data[0] || {}) as Record<string, any>
     const details = (detailsResult.data[0] || {}) as Record<string, any>
+    const revenue = (revenueResult.data[0] || {}) as Record<string, any>
 
     return {
       profileId,
@@ -4802,6 +4906,8 @@ export class AnalyticsService {
       firstSeen: sessionCount.firstSeen,
       lastSeen: sessionCount.lastSeen,
       avgDuration: avgDuration.avgDuration || 0,
+      totalRevenue: revenue.totalRevenue || 0,
+      revenueCurrency: revenue.revenueCurrency || null,
       ...details,
     }
   }

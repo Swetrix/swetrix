@@ -75,6 +75,7 @@ import FunnelsView from '../Funnels/View'
 import GoalsView from '../Goals/View'
 import PerformanceView from '../Performance/View/PerformanceView'
 import ProfilesView from '../Profiles/View'
+// Revenue dashboard removed - revenue data is displayed in TrafficView, Pageflow, and Profile details
 import SessionsView from '../Sessions/View/SessionsView'
 import TrafficView from '../Traffic/View/TrafficView'
 
@@ -287,8 +288,9 @@ const ViewProjectContent = () => {
     [CHART_METRICS_MAPPING.trendlines]: false,
     [CHART_METRICS_MAPPING.cumulativeMode]: false,
     [CHART_METRICS_MAPPING.customEvents]: false,
+    [CHART_METRICS_MAPPING.revenue]: false,
     ...(preferences.metricsVisualisation || {}),
-  })
+  } as Record<keyof typeof CHART_METRICS_MAPPING, boolean>)
   const [customMetrics, setCustomMetrics] = useState<ProjectViewCustomEvent[]>([])
   const filters = useMemo<Filter[]>(() => {
     return parseFilters(searchParams)

@@ -299,26 +299,32 @@ const getProjectsClickhouse = async (
   search: string = null,
   sort: 'alpha_asc' | 'alpha_desc' | 'date_asc' | 'date_desc' = 'alpha_asc',
 ): Promise<Project[]> => {
-  let orderBy = 'ORDER BY created ASC'
+  // Build the secondary ORDER BY based on sort parameter
+  let secondaryOrderBy = 'p.name ASC'
 
   if (sort === 'alpha_asc') {
-    orderBy = 'ORDER BY name ASC'
+    secondaryOrderBy = 'p.name ASC'
   } else if (sort === 'alpha_desc') {
-    orderBy = 'ORDER BY name DESC'
+    secondaryOrderBy = 'p.name DESC'
   } else if (sort === 'date_asc') {
-    orderBy = 'ORDER BY created ASC'
+    secondaryOrderBy = 'p.created ASC'
   } else if (sort === 'date_desc') {
-    orderBy = 'ORDER BY created DESC'
+    secondaryOrderBy = 'p.created DESC'
   }
+
+  // Always sort pinned projects first, then apply the requested sort
+  const orderBy = `ORDER BY isPinned DESC, ${secondaryOrderBy}`
 
   if (search) {
     const query = `
         SELECT
-          *
-        FROM project
+          p.*,
+          CASE WHEN pp.projectId IS NOT NULL THEN 1 ELSE 0 END AS isPinned
+        FROM project p
+        LEFT JOIN pinned_project pp ON pp.projectId = p.id AND pp.visitorId = {adminId:FixedString(36)}
         WHERE
-          adminId = {adminId:FixedString(36)}
-          AND (name ILIKE {search:String} OR id ILIKE {search:String})
+          p.adminId = {adminId:FixedString(36)}
+          AND (p.name ILIKE {search:String} OR p.id ILIKE {search:String})
         ${orderBy}
       `
 
@@ -335,7 +341,15 @@ const getProjectsClickhouse = async (
     return data
   }
 
-  const query = `SELECT * FROM project WHERE adminId = {adminId:FixedString(36)} ${orderBy};`
+  const query = `
+    SELECT
+      p.*,
+      CASE WHEN pp.projectId IS NOT NULL THEN 1 ELSE 0 END AS isPinned
+    FROM project p
+    LEFT JOIN pinned_project pp ON pp.projectId = p.id AND pp.visitorId = {adminId:FixedString(36)}
+    WHERE p.adminId = {adminId:FixedString(36)}
+    ${orderBy};
+  `
 
   const { data } = await clickhouse
     .query({

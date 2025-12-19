@@ -17,6 +17,7 @@ import _reduce from 'lodash/reduce'
 import _replace from 'lodash/replace'
 import _round from 'lodash/round'
 import _size from 'lodash/size'
+import _some from 'lodash/some'
 import _split from 'lodash/split'
 import _startsWith from 'lodash/startsWith'
 import _sum from 'lodash/sum'
@@ -232,6 +233,7 @@ const CHART_METRICS_MAPPING = {
   sessionDuration: 'sessionDuration',
   customEvents: 'customEvents',
   cumulativeMode: 'cumulativeMode',
+  revenue: 'revenue',
 } as const
 
 const CHART_METRICS_MAPPING_PERF = {
@@ -321,6 +323,18 @@ const getColumns = (
 
     if (compareChart?.sdur) {
       columns.push(['sessionDurationCompare', ...compareChart.sdur])
+    }
+  }
+
+  // Revenue data (if available) - revenue as bars with refunds stacked on top
+  if (activeChartMetrics.revenue && chart.revenue) {
+    columns.push(['revenue', ...chart.revenue])
+    // Add refundsAmount if available for stacked bar display
+    if (chart.refundsAmount) {
+      const hasAnyRefunds = _some(chart.refundsAmount, (v) => Number(v || 0) > 0)
+      if (hasAnyRefunds) {
+        columns.push(['refundsAmount', ...chart.refundsAmount])
+      }
     }
   }
 
@@ -617,6 +631,9 @@ const getSettings = (
         trendlineTotal: spline(),
         sessionDuration: chartType === chartTypes.line ? spline() : bar(),
         sessionDurationCompare: chartType === chartTypes.line ? spline() : bar(),
+        // Revenue is always bars (stacked with refunds)
+        revenue: bar(),
+        refundsAmount: bar(),
       },
       colors: {
         unique: '#2563EB',
@@ -630,13 +647,22 @@ const getSettings = (
         trendlineTotal: '#eba14b',
         sessionDuration: '#c945ed',
         sessionDurationCompare: 'rgba(201, 69, 237, 0.4)',
+        revenue: '#ea580c', // orange-600 for net revenue
+        refundsAmount: 'rgba(234, 88, 12, 0.25)', // light orange fill for refunds overlay
         ...customEventsColors,
       },
+      // Stack revenue and refundsAmount together
+      groups: activeChartMetrics.revenue ? [['revenue', 'refundsAmount']] : undefined,
+      // Prevent billboard/c3 from auto-reordering stacked series
+      // (we need refunds stacked on top of revenue consistently)
+      order: activeChartMetrics.revenue ? null : undefined,
       // @ts-expect-error
       regions,
       axes: {
         bounce: 'y2',
         sessionDuration: 'y2',
+        revenue: 'y2',
+        refundsAmount: 'y2',
       },
     },
     grid: {
@@ -679,12 +705,14 @@ const getSettings = (
         inner: true,
       },
       y2: {
-        show: activeChartMetrics.bounce || activeChartMetrics.sessionDuration,
+        show: activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.revenue,
         tick: {
           // @ts-expect-error
           format: activeChartMetrics.bounce
             ? (d: string) => `${d}%`
-            : (d: string) => getStringFromTime(getTimeFromSeconds(d)),
+            : activeChartMetrics.revenue
+              ? (d: number) => `$${nFormatter(d, 1)}`
+              : (d: string) => getStringFromTime(getTimeFromSeconds(d)),
         },
         min: activeChartMetrics.bounce ? 10 : undefined,
         max: activeChartMetrics.bounce ? 100 : undefined,
@@ -722,6 +750,31 @@ const getSettings = (
 
             if (el.id === 'trendlineUnique' || el.id === 'trendlineTotal') {
               return ''
+            }
+
+            // Format revenue and refunds as currency
+            if (el.id === 'revenue') {
+              return `
+              <li class='flex justify-between'>
+                <div class='flex justify-items-start'>
+                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style='background-color:${color(el.id)}'></div>
+                  <span>${el.name}</span>
+                </div>
+                <span class='pl-4'>$${nFormatter(Number(el.value) || 0, 2)}</span>
+              </li>
+              `
+            }
+
+            if (el.id === 'refundsAmount') {
+              return `
+              <li class='flex justify-between'>
+                <div class='flex justify-items-start'>
+                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style='background-color:rgba(234,88,12,0.25);border:1.5px dashed #ea580c'></div>
+                  <span>${el.name}</span>
+                </div>
+                <span class='pl-4'>$${nFormatter(Number(el.value) || 0, 2)}</span>
+              </li>
+              `
             }
 
             return `
@@ -833,17 +886,56 @@ const getSettings = (
           r: 3,
         },
       },
-      hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare'],
+      hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare', 'refundsAmount'],
     },
     area: {
       linearGradient: true,
     },
     bar: {
-      linearGradient: true,
+      linearGradient: !activeChartMetrics.revenue, // Disable gradient when revenue is shown
       radius: {
         ratio: 0.15,
       },
     },
+    onrendered: activeChartMetrics.revenue
+      ? function () {
+          // Revenue chart styling:
+          // - revenue: solid orange stroke (handled by CSS)
+          // - refunds: dashed orange stroke + light fill
+          // - when refunds value is 0, remove stroke to avoid "cap" lines
+          const chart = this as any
+
+          if (chart?.$ && chart.$.bar?.bars) {
+            chart.$.bar.bars.each(function (this: SVGPathElement, d: any) {
+              const value = Number(d?.value || 0)
+
+              if (d?.id === 'refundsAmount') {
+                if (value > 0) {
+                  this.style.stroke = '#ea580c'
+                  this.style.strokeWidth = '1.5px'
+                  this.style.strokeDasharray = '6,4'
+                  this.style.display = ''
+                } else {
+                  this.style.strokeDasharray = ''
+                  this.style.strokeWidth = '0'
+                  this.style.stroke = 'none'
+                  this.style.display = 'none'
+                }
+              } else if (d?.id === 'revenue') {
+                if (value === 0) {
+                  this.style.strokeWidth = '0'
+                  this.style.stroke = 'none'
+                  this.style.display = 'none'
+                } else {
+                  this.style.strokeWidth = '1.5px'
+                  this.style.stroke = '#ea580c'
+                  this.style.display = ''
+                }
+              }
+            })
+          }
+        }
+      : undefined,
     zoom:
       onZoom && enableZoom !== false
         ? {

@@ -4,7 +4,16 @@ import _map from 'lodash/map'
 import _size from 'lodash/size'
 import _toUpper from 'lodash/toUpper'
 import _truncate from 'lodash/truncate'
-import { BugIcon, ChevronDownIcon, CircleIcon, FileTextIcon, MousePointerClickIcon, TagIcon } from 'lucide-react'
+import {
+  BugIcon,
+  ChevronDownIcon,
+  CircleIcon,
+  DollarSignIcon,
+  FileTextIcon,
+  MousePointerClickIcon,
+  RotateCcwIcon,
+  TagIcon,
+} from 'lucide-react'
 import React, { useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
@@ -17,10 +26,12 @@ interface Metadata {
 
 interface PageflowProps {
   pages: {
-    type: 'pageview' | 'event' | 'error'
+    type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
     value: string
     created: string
     metadata?: Metadata[]
+    amount?: number
+    currency?: string
   }[]
   timeFormat: '12-hour' | '24-hour'
   zoomedTimeRange?: [Date, Date] | null
@@ -30,12 +41,14 @@ interface PageflowProps {
 interface PageflowItemProps {
   value: string
   created: string
-  type: 'pageview' | 'event' | 'error'
+  type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
   metadata?: Metadata[]
   displayCreated: string
   timeDuration: number | null
   isLastEvent: boolean
   t: TFunction
+  amount?: number
+  currency?: string
 }
 
 const MetadataPanel = ({ metadata, t }: { metadata: Metadata[]; t: TFunction }) => {
@@ -115,6 +128,8 @@ const PageflowItem = ({
   timeDuration,
   isLastEvent,
   t,
+  amount,
+  currency,
 }: PageflowItemProps) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const hasMetadata = metadata && metadata.length > 0
@@ -138,8 +153,10 @@ const PageflowItem = ({
           <div>
             <span
               className={cn('flex h-8 w-8 items-center justify-center rounded-full', {
-                'bg-slate-400 dark:bg-slate-800': type !== 'error',
+                'bg-slate-400 dark:bg-slate-800': type === 'pageview' || type === 'event',
                 'bg-red-400 dark:bg-red-800': type === 'error',
+                'bg-green-500 dark:bg-green-700': type === 'sale',
+                'bg-orange-500 dark:bg-orange-700': type === 'refund',
               })}
             >
               {type === 'pageview' ? (
@@ -150,6 +167,12 @@ const PageflowItem = ({
               ) : null}
               {type === 'error' ? (
                 <BugIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+              ) : null}
+              {type === 'sale' ? (
+                <DollarSignIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+              ) : null}
+              {type === 'refund' ? (
+                <RotateCcwIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
               ) : null}
             </span>
           </div>
@@ -173,19 +196,37 @@ const PageflowItem = ({
                     : undefined
                 }
               >
-                <Trans
-                  t={t}
-                  i18nKey={
-                    type === 'pageview' ? 'project.pageviewX' : type === 'event' ? 'project.eventX' : 'project.errorX'
-                  }
-                  components={{
-                    value: <span className='ml-1 font-medium text-gray-900 dark:text-gray-50' />,
-                    span: <span />,
-                  }}
-                  values={{
-                    x: value || _toUpper(t('common.notSet')),
-                  }}
-                />
+                {type === 'sale' || type === 'refund' ? (
+                  <span className='flex items-center'>
+                    <span
+                      className={cn('font-semibold', {
+                        'text-green-600 dark:text-green-400': type === 'sale',
+                        'text-orange-600 dark:text-orange-400': type === 'refund',
+                      })}
+                    >
+                      {type === 'refund' ? '-' : ''}
+                      {new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: currency || 'USD',
+                      }).format(Math.abs(amount || 0))}
+                    </span>
+                    {value ? <span className='ml-2 text-gray-500 dark:text-gray-400'>({value})</span> : null}
+                  </span>
+                ) : (
+                  <Trans
+                    t={t}
+                    i18nKey={
+                      type === 'pageview' ? 'project.pageviewX' : type === 'event' ? 'project.eventX' : 'project.errorX'
+                    }
+                    components={{
+                      value: <span className='ml-1 font-medium text-gray-900 dark:text-gray-50' />,
+                      span: <span />,
+                    }}
+                    values={{
+                      x: value || _toUpper(t('common.notSet')),
+                    }}
+                  />
+                )}
                 {hasMetadata ? (
                   <span className='ml-2 inline-flex shrink-0 items-center gap-0.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-400'>
                     <TagIcon className='h-2.5 w-2.5' />
@@ -295,7 +336,7 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0 }: Pagef
   return (
     <div className='flow-root'>
       <ul className='-mb-8'>
-        {_map(filteredPages, ({ value, created, type, metadata }, index) => {
+        {_map(filteredPages, ({ value, created, type, metadata, amount, currency }, index) => {
           const displayCreated = new Date(created).toLocaleDateString(language, {
             day: 'numeric',
             month: 'short',
@@ -319,6 +360,8 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0 }: Pagef
               timeDuration={timeDuration}
               isLastEvent={isLastEvent}
               t={t}
+              amount={amount}
+              currency={currency}
             />
           )
         })}

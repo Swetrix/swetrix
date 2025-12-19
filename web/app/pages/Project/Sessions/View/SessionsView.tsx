@@ -301,7 +301,7 @@ const SessionsView = ({ tnMapping, chartType, rotateXAxis }: SessionsViewProps) 
         {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) ? (
           <NoEvents filters={filters} />
         ) : null}
-        <Sessions sessions={sessions} timeFormat={timeFormat} />
+        <Sessions sessions={sessions} timeFormat={timeFormat} currency={project?.revenueCurrency} />
         {canLoadMoreSessions ? (
           <button
             type='button'

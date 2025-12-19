@@ -59,6 +59,9 @@ import { getRandomTip } from '../common/utils'
 import { AppLoggerService } from '../logger/logger.service'
 import { DiscordService } from '../integrations/discord/discord.service'
 import { SlackService } from '../integrations/slack/slack.service'
+import { RevenueService } from '../revenue/revenue.service'
+import { PaddleAdapter } from '../revenue/adapters/paddle.adapter'
+import { StripeAdapter } from '../revenue/adapters/stripe.adapter'
 
 dayjs.extend(utc)
 
@@ -323,6 +326,9 @@ export class TaskManagerService {
     private readonly slackService: SlackService,
     private readonly saltService: SaltService,
     private readonly goalService: GoalService,
+    private readonly revenueService: RevenueService,
+    private readonly paddleAdapter: PaddleAdapter,
+    private readonly stripeAdapter: StripeAdapter,
   ) {}
 
   /**
@@ -1074,6 +1080,83 @@ export class TaskManagerService {
   @Cron(CronExpression.EVERY_HOUR)
   async regenerateGlobalSalts() {
     await this.saltService.regenerateExpiredSalts()
+  }
+
+  // Sync revenue data from payment providers every 30 minutes
+  @Cron(CronExpression.EVERY_30_MINUTES)
+  async syncRevenueData() {
+    // Find all projects with Paddle or Stripe connected
+    const projects = await this.projectService.find({
+      where: [
+        {
+          paddleApiKeyEnc: Not(IsNull()),
+          admin: {
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
+        },
+        {
+          stripeApiKeyEnc: Not(IsNull()),
+          admin: {
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
+        },
+      ],
+      relations: ['admin'],
+    })
+
+    if (_isEmpty(projects)) {
+      return
+    }
+
+    const promises = _map(projects, async project => {
+      try {
+        if (project.paddleApiKeyEnc) {
+          const apiKey = this.revenueService.getPaddleApiKey(project)
+          if (!apiKey) {
+            this.logger.warn(
+              `[CRON WORKER](syncRevenueData) Failed to decrypt Paddle API key for project ${project.id}`,
+            )
+            return
+          }
+
+          await this.paddleAdapter.syncTransactions(
+            project.id,
+            apiKey,
+            project.revenueCurrency || 'USD',
+            project.revenueLastSyncAt || undefined,
+          )
+        } else if (project.stripeApiKeyEnc) {
+          const apiKey = this.revenueService.getStripeApiKey(project)
+          if (!apiKey) {
+            this.logger.warn(
+              `[CRON WORKER](syncRevenueData) Failed to decrypt Stripe API key for project ${project.id}`,
+            )
+            return
+          }
+
+          await this.stripeAdapter.syncTransactions(
+            project.id,
+            apiKey,
+            project.revenueCurrency || 'USD',
+            project.revenueLastSyncAt || undefined,
+          )
+        }
+
+        await this.revenueService.updateLastSyncAt(project.id)
+      } catch (error) {
+        this.logger.error(
+          `[CRON WORKER](syncRevenueData) Error syncing project ${project.id}: ${error}`,
+        )
+      }
+    })
+
+    await Promise.allSettled(promises).catch(reason => {
+      this.logger.error(
+        `[CRON WORKER](syncRevenueData) Error occured: ${reason}`,
+      )
+    })
   }
 
   // EVERY SUNDAY AT 2:30 AM
@@ -1838,59 +1921,68 @@ export class TaskManagerService {
     // a bit more than 2 months ago
     const nineWeeksAgo = dayjs.utc().subtract(9, 'w').format('YYYY-MM-DD')
 
-    const promises = _map(users, async user => {
+    await mapLimit(users, REPORTS_USERS_CONCURRENCY, async user => {
       const { id, projects } = user
 
-      if (_isEmpty(projects) || _isNull(projects)) {
-        return
-      }
+      try {
+        if (_isEmpty(projects) || _isNull(projects)) {
+          return
+        }
 
-      const pidsStringified = _map(projects, p => `'${p.id}'`).join(',')
-      // No need to check for performance activity because it's not tracked without tracking analytics
-      const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
-      const queryCaptcha = `SELECT count() FROM captcha WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
-      const queryCustomEvents = `SELECT count() FROM customEV WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
+        const pids = _map(projects, p => p.id)
+        const queryParams = {
+          pids,
+          nineWeeksAgo,
+          now,
+        }
 
-      const { data: analyticsResult } = await clickhouse
-        .query({
-          query: queryAnalytics,
+        // No need to check for performance activity because it's not tracked without tracking analytics
+        const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryCaptcha = `SELECT count() FROM captcha WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryCustomEvents = `SELECT count() FROM customEV WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+
+        const { data: analyticsResult } = await clickhouse
+          .query({
+            query: queryAnalytics,
+            query_params: queryParams,
+          })
+          .then(resultSet => resultSet.json<{ 'count()': number }>())
+
+        if (analyticsResult[0]['count()'] > 0) {
+          return
+        }
+
+        const { data: captchaResult } = await clickhouse
+          .query({
+            query: queryCaptcha,
+            query_params: queryParams,
+          })
+          .then(resultSet => resultSet.json<{ 'count()': number }>())
+
+        if (captchaResult[0]['count()'] > 0) {
+          return
+        }
+
+        const { data: customEventsResult } = await clickhouse
+          .query({
+            query: queryCustomEvents,
+            query_params: queryParams,
+          })
+          .then(resultSet => resultSet.json<{ 'count()': number }>())
+
+        if (customEventsResult[0]['count()'] > 0) {
+          return
+        }
+
+        await this.userService.update(id, {
+          reportFrequency: ReportFrequency.NEVER,
         })
-        .then(resultSet => resultSet.json<{ 'count()': number }>())
-
-      if (analyticsResult[0]['count()'] > 0) {
-        return
+      } catch (reason) {
+        this.logger.error(
+          '[CRON WORKER](disableReportsForInactiveUsers) Error occured:',
+          reason,
+        )
       }
-
-      const { data: captchaResult } = await clickhouse
-        .query({
-          query: queryCaptcha,
-        })
-        .then(resultSet => resultSet.json<{ 'count()': number }>())
-
-      if (captchaResult[0]['count()'] > 0) {
-        return
-      }
-
-      const { data: customEventsResult } = await clickhouse
-        .query({
-          query: queryCustomEvents,
-        })
-        .then(resultSet => resultSet.json<{ 'count()': number }>())
-
-      if (customEventsResult[0]['count()'] > 0) {
-        return
-      }
-
-      await this.userService.update(id, {
-        reportFrequency: ReportFrequency.NEVER,
-      })
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        '[CRON WORKER](disableReportsForInactiveUsers) Error occured:',
-        reason,
-      )
     })
   }
 

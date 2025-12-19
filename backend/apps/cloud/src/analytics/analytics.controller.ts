@@ -97,6 +97,7 @@ import { LiveVisitorsDto } from './dto/live-visitors.dto'
 import { GetHeartbeatStatsDto } from './dto/get-heartbeat-stats'
 import { GetKeywordsDto } from './dto/get-keywords.dto'
 import { GSCService } from '../project/gsc.service'
+import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -2289,5 +2290,70 @@ export class AnalyticsController {
     )
 
     return { ...result, appliedFilters, timeBucket: timeBucketForAllTime }
+  }
+
+  // Revenue attribution endpoints
+
+  @Post('profile-id')
+  @Public()
+  async getOrCreateProfileId(
+    @Body() dto: GetProfileIdDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ profileId: string | null }> {
+    const { 'user-agent': userAgent } = headers
+    const { pid } = dto
+
+    try {
+      const ip = getIPFromHeaders(headers, true) || reqIP || ''
+
+      const profileId = await this.analyticsService.generateProfileId(
+        pid,
+        userAgent,
+        ip,
+      )
+
+      return { profileId }
+    } catch (error) {
+      this.logger.error({ error, pid }, 'Error generating profile ID')
+      return { profileId: null }
+    }
+  }
+
+  @Post('session-id')
+  @Public()
+  async getOrCreateSessionId(
+    @Body() dto: GetSessionIdDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ sessionId: string | null }> {
+    const { 'user-agent': userAgent } = headers
+    const { pid } = dto
+
+    try {
+      const ip = getIPFromHeaders(headers, true) || reqIP || ''
+
+      const { psid } = await this.analyticsService.getSessionId(
+        pid,
+        userAgent,
+        ip,
+      )
+
+      // If no session exists, generate one
+      if (!psid) {
+        const [, newPsid] =
+          await this.analyticsService.generateAndStoreSessionId(
+            pid,
+            userAgent,
+            ip,
+          )
+        return { sessionId: newPsid }
+      }
+
+      return { sessionId: psid }
+    } catch (error) {
+      this.logger.error({ error, pid }, 'Error generating session ID')
+      return { sessionId: null }
+    }
   }
 }

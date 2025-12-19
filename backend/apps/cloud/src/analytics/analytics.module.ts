@@ -9,6 +9,7 @@ import { Salt } from './entities/salt.entity'
 import { UserModule } from '../user/user.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
+import { RevenueModule } from '../revenue/revenue.module'
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ProjectModule } from '../project/project.module'
     forwardRef(() => UserModule),
     AppLoggerModule,
     ProjectModule,
+    forwardRef(() => RevenueModule),
   ],
   providers: [AnalyticsService, SaltService, HeartbeatGateway],
   exports: [AnalyticsService, SaltService],

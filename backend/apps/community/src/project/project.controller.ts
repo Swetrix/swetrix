@@ -198,23 +198,34 @@ export class ProjectController {
 
     let combinedProjects = _map(combinedProjectsMap, p => p)
 
-    if (sort) {
-      combinedProjects = [...combinedProjects].sort((a: any, b: any) => {
-        if (sort === 'alpha_asc') {
-          return (a.name || '').localeCompare(b.name || '')
-        }
-        if (sort === 'alpha_desc') {
-          return (b.name || '').localeCompare(a.name || '')
-        }
-        if (sort === 'date_asc') {
-          return (a.created || '').localeCompare(b.created || '')
-        }
-        if (sort === 'date_desc') {
-          return (b.created || '').localeCompare(a.created || '')
-        }
-        return 0
-      })
-    }
+    // Get pinned project IDs to mark shared projects as pinned too
+    const pinnedProjectIds = await getPinnedProjectsClickhouse(userId)
+
+    // Always sort by pinned first, then by the requested sort criteria
+    combinedProjects = [...combinedProjects].sort((a: any, b: any) => {
+      // First, sort by pinned status (pinned projects first)
+      const aIsPinned = a.isPinned || _includes(pinnedProjectIds, a.id)
+      const bIsPinned = b.isPinned || _includes(pinnedProjectIds, b.id)
+
+      if (aIsPinned && !bIsPinned) return -1
+      if (!aIsPinned && bIsPinned) return 1
+
+      // Then apply the secondary sort
+      if (sort === 'alpha_asc') {
+        return (a.name || '').localeCompare(b.name || '')
+      }
+      if (sort === 'alpha_desc') {
+        return (b.name || '').localeCompare(a.name || '')
+      }
+      if (sort === 'date_asc') {
+        return (a.created || '').localeCompare(b.created || '')
+      }
+      if (sort === 'date_desc') {
+        return (b.created || '').localeCompare(a.created || '')
+      }
+      // Default to alphabetical ascending
+      return (a.name || '').localeCompare(b.name || '')
+    })
 
     const pidsWithData =
       await this.projectService.getPIDsWhereAnalyticsDataExists(
@@ -286,30 +297,17 @@ export class ProjectController {
         funnels: funnelsMap[project.id],
         isDataExists: _includes(pidsWithData, project?.id),
         isErrorDataExists: _includes(pidsWithErrorData, project?.id),
+        isPinned: project.isPinned || _includes(pinnedProjectIds, project?.id),
         role,
         isLocked: false,
         isAccessConfirmed,
       }
     })
 
-    // Get pinned projects
-    const pinnedProjectIds = await getPinnedProjectsClickhouse(userId)
-
-    // Add isPinned flag to results
-    const resultsWithPinned = _map(results, project => ({
-      ...project,
-      isPinned: _includes(pinnedProjectIds, project?.id),
-    }))
-
-    // Sort pinned projects first
-    resultsWithPinned.sort((a: any, b: any) => {
-      if (a.isPinned && !b.isPinned) return -1
-      if (!a.isPinned && b.isPinned) return 1
-      return 0
-    })
+    // Pinned projects are already sorted at the combined sort step above
 
     return {
-      results: resultsWithPinned,
+      results,
       page_total: _size(combinedProjects),
       total: _size(combinedProjects),
     }

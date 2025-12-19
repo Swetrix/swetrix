@@ -100,6 +100,8 @@ export interface Session {
   pageviews: number
   customEvents: number
   errors: number
+  revenue?: number
+  refunds?: number
   created: string
   isLive: 1 | 0
   sdur?: number
@@ -164,6 +166,8 @@ export interface ProfileDetails extends Profile {
     errors: number[]
   }
   timeBucket?: string
+  totalRevenue?: number
+  revenueCurrency?: string
 }
 
 export interface AnalyticsFunnel {
@@ -205,6 +209,7 @@ export interface Project {
   role?: Role
   gscPropertyUri?: string | null
   isPinned?: boolean
+  revenueCurrency?: string
 }
 
 export interface Extension {

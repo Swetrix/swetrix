@@ -37,8 +37,8 @@ const Sparkline = memo(({ chart, className }: SparklineProps) => {
           x: [0, 0],
           y: [0, 1],
           stops: [
-            [0, 'rgba(99, 102, 241, 0.3)'],
-            [1, 'rgba(99, 102, 241, 0.05)'],
+            [0, 'rgba(99, 102, 241, 0.3)', 1],
+            [1, 'rgba(99, 102, 241, 0.05)', 1],
           ],
         },
       },

@@ -713,7 +713,7 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
 
     return (
       <>
-        <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-white px-1 py-1 dark:bg-slate-800/25'>
+        <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-transparent px-1 py-1'>
           <Text size='sm' weight='medium' colour='muted' className='w-4/6'>
             {t('project.event')}
           </Text>
@@ -1117,7 +1117,7 @@ const MetadataKeyPanel = ({
 
       return (
         <>
-          <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-white px-1 py-1 dark:bg-slate-800/25'>
+          <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-transparent px-1 py-1'>
             <Text size='sm' weight='medium' colour='muted' className='w-2/6'>
               {t('project.key')}
             </Text>
@@ -1198,7 +1198,7 @@ const MetadataKeyPanel = ({
 
     return (
       <>
-        <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-white px-1 py-1 dark:bg-slate-800/25'>
+        <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-transparent px-1 py-1'>
           <Text size='sm' weight='medium' colour='muted' className='w-4/6'>
             {t('project.value')}
           </Text>
@@ -1730,7 +1730,7 @@ const Panel = ({
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       ) : (
         <>
-          <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-white px-1 py-1 dark:bg-slate-800/25'>
+          <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-transparent px-1 py-1'>
             <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>
               {tnMapping[activeTabId as keyof typeof tnMapping]}
             </span>

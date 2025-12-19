@@ -27,9 +27,7 @@ const DangerZone = ({ setShowTransfer, setShowReset, setShowDelete, isDeleting, 
               <div className='text-sm font-medium text-gray-900 dark:text-gray-50'>
                 {t('project.settings.transfer')}
               </div>
-              <p className='mt-0.5 text-sm text-gray-500 dark:text-gray-400'>
-                {t('project.settings.transferShort', { defaultValue: 'Transfer ownership to another user.' })}
-              </p>
+              <p className='mt-0.5 text-sm text-gray-500 dark:text-gray-400'>{t('project.settings.transferShort')}</p>
               <div className='mt-3'>
                 <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
                   {t('project.settings.transfer')}
@@ -44,9 +42,7 @@ const DangerZone = ({ setShowTransfer, setShowReset, setShowDelete, isDeleting, 
             <RotateCcw className='mt-0.5 h-5 w-5 text-orange-600 dark:text-orange-400' />
             <div className='ml-3 flex-1'>
               <div className='text-sm font-medium text-gray-900 dark:text-gray-50'>{t('project.settings.reset')}</div>
-              <p className='mt-0.5 text-sm text-gray-500 dark:text-gray-400'>
-                {t('project.settings.resetShort', { defaultValue: 'Clear analytics data. Keep project settings.' })}
-              </p>
+              <p className='mt-0.5 text-sm text-gray-500 dark:text-gray-400'>{t('project.settings.resetShort')}</p>
               <div className='mt-3'>
                 <Button onClick={() => !setResetting && setShowReset(true)} loading={isDeleting} semiDanger semiSmall>
                   {t('project.settings.reset')}
@@ -61,9 +57,7 @@ const DangerZone = ({ setShowTransfer, setShowReset, setShowDelete, isDeleting, 
             <Trash2Icon className='mt-0.5 h-5 w-5 text-red-700 dark:text-red-500' strokeWidth={1.5} />
             <div className='ml-3 flex-1'>
               <div className='text-sm font-medium text-gray-900 dark:text-gray-50'>{t('project.settings.delete')}</div>
-              <p className='mt-0.5 text-sm text-gray-500 dark:text-gray-400'>
-                {t('project.settings.deleteShort', { defaultValue: 'Permanently delete the project and all data.' })}
-              </p>
+              <p className='mt-0.5 text-sm text-gray-500 dark:text-gray-400'>{t('project.settings.deleteShort')}</p>
               <div className='mt-3'>
                 <Button onClick={() => !isDeleting && setShowDelete(true)} loading={isDeleting} danger semiSmall>
                   {t('project.settings.delete')}

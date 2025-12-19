@@ -22,6 +22,7 @@ import {
   PuzzleIcon,
   StickyNoteIcon,
   ShieldCheckIcon,
+  DollarSignIcon,
 } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -73,6 +74,7 @@ import People from './People'
 import AccessSettings from './tabs/AccessSettings'
 import DangerZone from './tabs/DangerZone'
 import General from './tabs/General'
+import Revenue from './tabs/Revenue'
 import Shields from './tabs/Shields'
 
 const MAX_NAME_LENGTH = 50
@@ -324,6 +326,7 @@ const ProjectSettings = () => {
     | 'access'
     | 'captcha'
     | 'integrations'
+    | 'revenue'
     | 'emails'
     | 'people'
     | 'annotations'
@@ -345,6 +348,12 @@ const ProjectSettings = () => {
           id: 'integrations',
           label: t('project.settings.tabs.integrations'),
           icon: PuzzleIcon,
+          visible: !isSelfhosted,
+        },
+        {
+          id: 'revenue',
+          label: t('project.settings.tabs.revenue'),
+          icon: DollarSignIcon,
           visible: !isSelfhosted,
         },
         { id: 'emails', label: t('project.settings.tabs.emails'), icon: MailIcon, visible: !isSelfhosted },
@@ -1092,6 +1101,8 @@ const ProjectSettings = () => {
                 </div>
               </div>
             ) : null}
+
+            {activeTab === 'revenue' ? <Revenue projectId={id} /> : null}
 
             {activeTab === 'danger' ? (
               <DangerZone

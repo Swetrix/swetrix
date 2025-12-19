@@ -21,6 +21,8 @@ import {
   getCustomEventsMetadata,
   getPropertyMetadata,
   getGSCKeywords,
+  getRevenueData,
+  getRevenueStatus,
 } from '~/api'
 import { useAnnotations } from '~/hooks/useAnnotations'
 import { TRAFFIC_PANELS_ORDER, chartTypes, PERIOD_PAIRS_COMPARE, isSelfhosted, type TimeBucket } from '~/lib/constants'
@@ -178,6 +180,7 @@ const TrafficView = ({
   const [overallCompare, setOverallCompare] = useState<Partial<OverallObject>>({})
   const [dataChartCompare, setDataChartCompare] = useState<any>({})
   const [customEventsChartData, setCustomEventsChartData] = useState<any>({})
+  const [isRevenueConnected, setIsRevenueConnected] = useState(false)
 
   // Chart metrics state
   const [activeChartMetrics, setActiveChartMetrics] = useState({
@@ -189,6 +192,7 @@ const TrafficView = ({
     [CHART_METRICS_MAPPING.trendlines]: false,
     [CHART_METRICS_MAPPING.cumulativeMode]: false,
     [CHART_METRICS_MAPPING.customEvents]: false,
+    [CHART_METRICS_MAPPING.revenue]: false,
   })
   const [activeChartMetricsCustomEvents, setActiveChartMetricsCustomEvents] = useState<string[]>([])
 
@@ -224,6 +228,26 @@ const TrafficView = ({
     }
   }, [])
 
+  // Fetch revenue status
+  useEffect(() => {
+    const fetchRevenueStatus = async () => {
+      if (!id || isSelfhosted) {
+        return
+      }
+
+      try {
+        const status = await getRevenueStatus(id)
+        if (isMountedRef.current) {
+          setIsRevenueConnected(status.connected)
+        }
+      } catch (error) {
+        console.error('[ERROR] (fetchRevenueStatus) Fetching revenue status failed', error)
+      }
+    }
+
+    fetchRevenueStatus()
+  }, [id])
+
   // Version data mapping for browser/OS versions
   const createVersionDataMapping = useMemo(() => {
     const browserDataSource = panelsData.data?.brv
@@ -256,51 +280,60 @@ const TrafficView = ({
   }, [panelsData.data?.brv, panelsData.data?.osv])
 
   const chartMetrics = useMemo(
-    () => [
-      {
-        id: CHART_METRICS_MAPPING.unique,
-        label: t('dashboard.sessions'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.unique],
-      },
-      {
-        id: CHART_METRICS_MAPPING.views,
-        label: t('project.showAll'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.views],
-      },
-      {
-        id: CHART_METRICS_MAPPING.sessionDuration,
-        label: t('dashboard.sessionDuration'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
-        conflicts: [CHART_METRICS_MAPPING.bounce],
-      },
-      {
-        id: CHART_METRICS_MAPPING.bounce,
-        label: t('dashboard.bounceRate'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.bounce],
-        conflicts: [CHART_METRICS_MAPPING.sessionDuration],
-      },
-      {
-        id: CHART_METRICS_MAPPING.viewsPerUnique,
-        label: t('dashboard.viewsPerUnique'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.viewsPerUnique],
-      },
-      {
-        id: CHART_METRICS_MAPPING.trendlines,
-        label: t('dashboard.trendlines'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.trendlines],
-      },
-      {
-        id: CHART_METRICS_MAPPING.cumulativeMode,
-        label: t('dashboard.cumulativeMode'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode],
-      },
-      {
-        id: CHART_METRICS_MAPPING.customEvents,
-        label: t('project.customEv'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.customEvents],
-      },
-    ],
-    [t, activeChartMetrics],
+    () =>
+      [
+        {
+          id: CHART_METRICS_MAPPING.unique,
+          label: t('dashboard.sessions'),
+          active: activeChartMetrics[CHART_METRICS_MAPPING.unique],
+        },
+        {
+          id: CHART_METRICS_MAPPING.views,
+          label: t('project.showAll'),
+          active: activeChartMetrics[CHART_METRICS_MAPPING.views],
+        },
+        !isSelfhosted && isRevenueConnected
+          ? {
+              id: CHART_METRICS_MAPPING.revenue,
+              label: t('dashboard.revenue'),
+              active: activeChartMetrics[CHART_METRICS_MAPPING.revenue],
+              conflicts: [CHART_METRICS_MAPPING.bounce, CHART_METRICS_MAPPING.sessionDuration],
+            }
+          : null,
+        {
+          id: CHART_METRICS_MAPPING.sessionDuration,
+          label: t('dashboard.sessionDuration'),
+          active: activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
+          conflicts: [CHART_METRICS_MAPPING.bounce, CHART_METRICS_MAPPING.revenue],
+        },
+        {
+          id: CHART_METRICS_MAPPING.bounce,
+          label: t('dashboard.bounceRate'),
+          active: activeChartMetrics[CHART_METRICS_MAPPING.bounce],
+          conflicts: [CHART_METRICS_MAPPING.sessionDuration, CHART_METRICS_MAPPING.revenue],
+        },
+        {
+          id: CHART_METRICS_MAPPING.viewsPerUnique,
+          label: t('dashboard.viewsPerUnique'),
+          active: activeChartMetrics[CHART_METRICS_MAPPING.viewsPerUnique],
+        },
+        {
+          id: CHART_METRICS_MAPPING.trendlines,
+          label: t('dashboard.trendlines'),
+          active: activeChartMetrics[CHART_METRICS_MAPPING.trendlines],
+        },
+        {
+          id: CHART_METRICS_MAPPING.cumulativeMode,
+          label: t('dashboard.cumulativeMode'),
+          active: activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode],
+        },
+        {
+          id: CHART_METRICS_MAPPING.customEvents,
+          label: t('project.customEv'),
+          active: activeChartMetrics[CHART_METRICS_MAPPING.customEvents],
+        },
+      ].filter(Boolean),
+    [t, activeChartMetrics, isRevenueConnected],
   )
 
   const chartMetricsCustomEvents = useMemo(() => {
@@ -334,6 +367,8 @@ const TrafficView = ({
       trendlineUnique: t('project.trendlineUnique'),
       occurrences: t('project.occurrences'),
       sessionDuration: t('dashboard.sessionDuration'),
+      revenue: t('dashboard.revenue'),
+      refundsAmount: t('dashboard.refunds'),
       ...dataNamesCustomEvents,
     }),
     [t, dataNamesCustomEvents],
@@ -567,7 +602,75 @@ const TrafficView = ({
         if (_isEmpty(params)) {
           setIsPanelsDataEmpty(true)
         } else {
-          setChartData(chart as any)
+          // Fetch revenue data if revenue metric is enabled and not selfhosted
+          let revenueData: number[] = []
+          let refundsData: number[] = []
+          if (activeChartMetrics.revenue && !isSelfhosted && isRevenueConnected) {
+            try {
+              const revResult = await getRevenueData(
+                id,
+                period === 'custom' ? 'custom' : period,
+                period === 'custom' && dateRange ? getFormatDate(dateRange[0]) : undefined,
+                period === 'custom' && dateRange ? getFormatDate(dateRange[1]) : undefined,
+                timezone,
+                timeBucket,
+              )
+              const revChart = revResult?.chart
+              const revX = revChart?.x || []
+              const revY = revChart?.revenue || []
+              const revRefunds = revChart?.refundsAmount || []
+
+              // Align revenue series to the main traffic chart x-axis to avoid empty/invalid renders
+              if (Array.isArray(chart?.x) && chart.x.length > 0) {
+                if (
+                  Array.isArray(revX) &&
+                  revX.length === chart.x.length &&
+                  revX[0] === chart.x[0] &&
+                  revX[revX.length - 1] === chart.x[chart.x.length - 1]
+                ) {
+                  revenueData = revY.map((v) => Number(v ?? 0))
+                  refundsData = revRefunds.map((v) => Number(v ?? 0))
+                } else if (Array.isArray(revX) && revX.length > 0) {
+                  const byX = new Map<string, number>()
+                  const refundsByX = new Map<string, number>()
+                  for (let i = 0; i < revX.length; i += 1) {
+                    byX.set(revX[i], Number(revY[i] ?? 0))
+                    refundsByX.set(revX[i], Number(revRefunds[i] ?? 0))
+                  }
+                  revenueData = chart.x.map((x: string) => Number(byX.get(x) ?? 0))
+                  refundsData = chart.x.map((x: string) => Number(refundsByX.get(x) ?? 0))
+
+                  // Fallback: if mapping produced all zeros but arrays match length, use index-based mapping
+                  if (revenueData.every((v) => v === 0) && revY.length === chart.x.length) {
+                    console.warn(
+                      '[Revenue] Key-based mapping failed, falling back to index-based alignment. Data may be misaligned.',
+                    )
+                    revenueData = revY.map((v) => Number(v ?? 0))
+                    refundsData = revRefunds.map((v) => Number(v ?? 0))
+                  }
+                } else {
+                  revenueData = revY.map((v) => Number(v ?? 0))
+                  refundsData = revRefunds.map((v) => Number(v ?? 0))
+                }
+              } else {
+                revenueData = revY.map((v) => Number(v ?? 0))
+                refundsData = revRefunds.map((v) => Number(v ?? 0))
+              }
+            } catch {
+              // Revenue data not available, continue without it
+              revenueData = []
+              refundsData = []
+            }
+          }
+
+          // Merge revenue data with chart
+          const chartWithRevenue = {
+            ...chart,
+            revenue: revenueData,
+            refundsAmount: refundsData,
+          }
+
+          setChartData(chartWithRevenue as any)
 
           setPanelsData({
             types: _keys(params),
@@ -686,6 +789,8 @@ const TrafficView = ({
     loadAnalytics()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    activeChartMetrics.revenue,
+    isRevenueConnected,
     mode,
     customMetrics,
     filters,
@@ -803,11 +908,13 @@ const TrafficView = ({
               header={t('project.metricVis')}
               items={
                 isActiveCompare
-                  ? _filter(chartMetrics, (el) => !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id))
+                  ? _filter(chartMetrics, (el) => !!el && !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id))
                   : chartMetrics
               }
               title={[<EyeIcon key='eye-icon' aria-label={t('project.metricVis')} className='h-5 w-5' />]}
               labelExtractor={(pair) => {
+                if (!pair) return null
+
                 const { label, id: pairID, active, conflicts } = pair
 
                 const conflicted = isConflicted(conflicts)
@@ -847,8 +954,11 @@ const TrafficView = ({
               }}
               buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
               selectItemClassName='p-0'
-              keyExtractor={(pair) => pair.id}
-              onSelect={({ id: pairID, conflicts }, e) => {
+              keyExtractor={(pair) => pair?.id || ''}
+              onSelect={(pair, e) => {
+                if (!pair) return
+
+                const { id: pairID, conflicts } = pair
                 e?.stopPropagation()
                 e?.preventDefault()
 

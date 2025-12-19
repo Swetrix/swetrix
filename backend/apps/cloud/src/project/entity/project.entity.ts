@@ -171,4 +171,23 @@ export class Project {
 
   @Column('varchar', { nullable: true, default: null, length: 256 })
   gscAccountEmail: string | null
+
+  // Revenue / Payment provider integration
+  @Column('text', { nullable: true, default: null })
+  paddleApiKeyEnc: string | null
+
+  @Column('varchar', { nullable: true, default: null, length: 3 })
+  revenueCurrency: string | null
+
+  @Column('text', { nullable: true, default: null })
+  paddleApiKeyPermissions: string | null
+
+  @Column('text', { nullable: true, default: null })
+  stripeApiKeyEnc: string | null
+
+  @Column('text', { nullable: true, default: null })
+  stripeApiKeyPermissions: string | null
+
+  @Column('datetime', { nullable: true, default: null })
+  revenueLastSyncAt: Date | null
 }
