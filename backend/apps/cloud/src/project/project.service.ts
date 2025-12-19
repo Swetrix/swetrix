@@ -449,12 +449,21 @@ export class ProjectService {
         'organisationUser.id',
         'organisationUser.email',
       ])
+      .addSelect(
+        'CASE WHEN pinnedProject.id IS NOT NULL THEN 1 ELSE 0 END',
+        'isPinned',
+      )
       .leftJoin('project.admin', 'admin')
       .leftJoin('project.share', 'share')
       .leftJoin('share.user', 'sharedUser')
       .leftJoin('project.organisation', 'organisation')
       .leftJoin('organisation.members', 'organisationMembers')
       .leftJoin('organisationMembers.user', 'organisationUser')
+      .leftJoin(
+        PinnedProject,
+        'pinnedProject',
+        'pinnedProject.projectId = project.id AND pinnedProject.userId = :userId',
+      )
       .where(
         new Brackets(qb => {
           qb.where('project.adminId = :userId')
@@ -474,22 +483,25 @@ export class ProjectService {
         .setParameter('search', search ? `%${search.trim()}%` : '')
     }
 
-    // Add sorting based on options.sort
+    // Always sort pinned projects first, then apply the requested sort
+    queryBuilder.orderBy('isPinned', 'DESC')
+
+    // Add secondary sorting based on options.sort
     switch (sort) {
       case 'alpha_asc':
-        queryBuilder.orderBy('project.name', 'ASC')
+        queryBuilder.addOrderBy('project.name', 'ASC')
         break
       case 'alpha_desc':
-        queryBuilder.orderBy('project.name', 'DESC')
+        queryBuilder.addOrderBy('project.name', 'DESC')
         break
       case 'date_asc':
-        queryBuilder.orderBy('project.created', 'ASC')
+        queryBuilder.addOrderBy('project.created', 'ASC')
         break
       case 'date_desc':
-        queryBuilder.orderBy('project.created', 'DESC')
+        queryBuilder.addOrderBy('project.created', 'DESC')
         break
       default:
-        queryBuilder.orderBy('project.name', 'ASC')
+        queryBuilder.addOrderBy('project.name', 'ASC')
     }
 
     queryBuilder.skip(options.skip || 0).take(options.take || 100)
@@ -1692,12 +1704,7 @@ export class ProjectService {
       }
     })
 
-    // Sort pinned projects first
-    paginated.results.sort((a: any, b: any) => {
-      if (a.isPinned && !b.isPinned) return -1
-      if (!a.isPinned && b.isPinned) return 1
-      return 0
-    })
+    // Pinned projects are already sorted at the database level in paginate()
 
     return paginated
   }
