@@ -263,6 +263,63 @@ export function clearExperimentsCache(): void {
   LIB_INSTANCE.clearExperimentsCache()
 }
 
+/**
+ * Gets the anonymous profile ID for the current visitor.
+ * If profileId was set via init options, returns that.
+ * Otherwise, requests server to generate one from IP/UA hash.
+ *
+ * This ID can be used for revenue attribution with payment providers like Paddle.
+ *
+ * @returns A promise that resolves to the profile ID string, or null on error.
+ *
+ * @example
+ * ```typescript
+ * const profileId = await getProfileId()
+ *
+ * // Pass to Paddle Checkout for revenue attribution
+ * Paddle.Checkout.open({
+ *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+ *   customData: {
+ *     swetrix_profile_id: profileId,
+ *     swetrix_session_id: await getSessionId()
+ *   }
+ * })
+ * ```
+ */
+export async function getProfileId(): Promise<string | null> {
+  if (!LIB_INSTANCE) return null
+
+  return LIB_INSTANCE.getProfileId()
+}
+
+/**
+ * Gets the current session ID for the visitor.
+ * Session IDs are generated server-side based on IP and user agent.
+ *
+ * This ID can be used for revenue attribution with payment providers like Paddle.
+ *
+ * @returns A promise that resolves to the session ID string, or null on error.
+ *
+ * @example
+ * ```typescript
+ * const sessionId = await getSessionId()
+ *
+ * // Pass to Paddle Checkout for revenue attribution
+ * Paddle.Checkout.open({
+ *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+ *   customData: {
+ *     swetrix_profile_id: await getProfileId(),
+ *     swetrix_session_id: sessionId
+ *   }
+ * })
+ * ```
+ */
+export async function getSessionId(): Promise<string | null> {
+  if (!LIB_INSTANCE) return null
+
+  return LIB_INSTANCE.getSessionId()
+}
+
 export {
   LibOptions,
   TrackEventOptions,

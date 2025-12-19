@@ -594,6 +594,108 @@ export class Lib {
   }
 
   /**
+   * Gets the anonymous profile ID for the current visitor.
+   * If profileId was set via init options, returns that.
+   * Otherwise, requests server to generate one from IP/UA hash.
+   *
+   * This ID can be used for revenue attribution with payment providers.
+   *
+   * @returns A promise that resolves to the profile ID string, or null on error.
+   *
+   * @example
+   * ```typescript
+   * const profileId = await swetrix.getProfileId()
+   *
+   * // Pass to Paddle Checkout for revenue attribution
+   * Paddle.Checkout.open({
+   *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+   *   customData: {
+   *     swetrix_profile_id: profileId,
+   *     swetrix_session_id: await swetrix.getSessionId()
+   *   }
+   * })
+   * ```
+   */
+  async getProfileId(): Promise<string | null> {
+    // If profileId is already set in options, return it
+    if (this.options?.profileId) {
+      return this.options.profileId
+    }
+
+    if (!isInBrowser()) {
+      return null
+    }
+
+    try {
+      const apiBase = this.getApiBase()
+      const response = await fetch(`${apiBase}/log/profile-id`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ pid: this.projectID }),
+      })
+
+      if (!response.ok) {
+        return null
+      }
+
+      const data = (await response.json()) as { profileId: string | null }
+      return data.profileId
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Gets the current session ID for the visitor.
+   * Session IDs are generated server-side based on IP and user agent.
+   *
+   * This ID can be used for revenue attribution with payment providers.
+   *
+   * @returns A promise that resolves to the session ID string, or null on error.
+   *
+   * @example
+   * ```typescript
+   * const sessionId = await swetrix.getSessionId()
+   *
+   * // Pass to Paddle Checkout for revenue attribution
+   * Paddle.Checkout.open({
+   *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+   *   customData: {
+   *     swetrix_profile_id: await swetrix.getProfileId(),
+   *     swetrix_session_id: sessionId
+   *   }
+   * })
+   * ```
+   */
+  async getSessionId(): Promise<string | null> {
+    if (!isInBrowser()) {
+      return null
+    }
+
+    try {
+      const apiBase = this.getApiBase()
+      const response = await fetch(`${apiBase}/log/session-id`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ pid: this.projectID }),
+      })
+
+      if (!response.ok) {
+        return null
+      }
+
+      const data = (await response.json()) as { sessionId: string | null }
+      return data.sessionId
+    } catch {
+      return null
+    }
+  }
+
+  /**
    * Gets the API base URL (without /log suffix).
    */
   private getApiBase(): string {
