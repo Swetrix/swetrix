@@ -6,6 +6,7 @@ import { AppLoggerModule } from '../logger/logger.module'
 import { AnalyticsModule } from '../analytics/analytics.module'
 import { Project } from '../project/entity/project.entity'
 import { RevenueService } from './revenue.service'
+import { CurrencyService } from './currency.service'
 import {
   RevenueController,
   RevenueAnalyticsController,
@@ -20,8 +21,8 @@ import { StripeAdapter } from './adapters/stripe.adapter'
     AppLoggerModule,
     forwardRef(() => AnalyticsModule),
   ],
-  providers: [RevenueService, PaddleAdapter, StripeAdapter],
-  exports: [RevenueService, PaddleAdapter, StripeAdapter],
+  providers: [RevenueService, CurrencyService, PaddleAdapter, StripeAdapter],
+  exports: [RevenueService, CurrencyService, PaddleAdapter, StripeAdapter],
   controllers: [RevenueController, RevenueAnalyticsController],
 })
 export class RevenueModule {}

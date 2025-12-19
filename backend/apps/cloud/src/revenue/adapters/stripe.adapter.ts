@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { AppLoggerService } from '../../logger/logger.service'
 import { RevenueService } from '../revenue.service'
+import { CurrencyService } from '../currency.service'
 import {
   RevenueProvider,
   RevenueStatus,
@@ -61,6 +62,7 @@ export class StripeAdapter {
   constructor(
     private readonly logger: AppLoggerService,
     private readonly revenueService: RevenueService,
+    private readonly currencyService: CurrencyService,
   ) {}
 
   async validateApiKey(apiKey: string): Promise<boolean> {
@@ -209,7 +211,7 @@ export class StripeAdapter {
         : intent.amount) / 100
     const originalCurrency = (intent.currency || '').toUpperCase()
 
-    const amount = this.convertCurrency(
+    const amount = await this.currencyService.convert(
       originalAmount,
       originalCurrency,
       targetCurrency,
@@ -274,7 +276,7 @@ export class StripeAdapter {
     const originalAmount = refund.amount / 100
     const originalCurrency = (refund.currency || '').toUpperCase()
 
-    const amount = this.convertCurrency(
+    const amount = await this.currencyService.convert(
       originalAmount,
       originalCurrency,
       targetCurrency,
@@ -317,30 +319,5 @@ export class StripeAdapter {
     }
 
     await this.revenueService.insertTransaction(revenueTransaction)
-  }
-
-  private convertCurrency(
-    amount: number,
-    fromCurrency: string,
-    toCurrency: string,
-  ): number {
-    if (fromCurrency === toCurrency) {
-      return amount
-    }
-
-    const rates: Record<string, number> = {
-      USD: 1,
-      EUR: 1.08,
-      GBP: 1.27,
-      CAD: 0.74,
-      AUD: 0.66,
-      JPY: 0.0067,
-    }
-
-    const fromRate = rates[fromCurrency] || 1
-    const toRate = rates[toCurrency] || 1
-
-    const usdAmount = amount * fromRate
-    return usdAmount / toRate
   }
 }
