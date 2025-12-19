@@ -245,7 +245,7 @@ export const getLowestPossibleTimeBucket = (
   return _head(tbMap.tb)
 }
 
-const EXCLUDE_NULL_FOR = ['so', 'me', 'ca', 'te', 'co']
+const EXCLUDE_NULL_FOR = ['so', 'me', 'ca', 'te', 'co', 'rg', 'ct']
 
 const generateParamsQuery = (
   col: string,
@@ -283,11 +283,11 @@ const generateParamsQuery = (
       return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
     }
 
-    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'errors') {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'captcha') {
