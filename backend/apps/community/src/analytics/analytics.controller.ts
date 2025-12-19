@@ -23,6 +23,7 @@ import {
   Ip,
   ForbiddenException,
   Response,
+  Header,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 
@@ -87,7 +88,7 @@ const DEFAULT_MEASURE = 'median'
 
 // Silent 200 response for bots
 // https://github.com/Swetrix/swetrix/issues/371
-const BOT_RESPONSE = { message: 'Bot traffic detected, opinion rejected :D' }
+const BOT_RESPONSE = { message: 'Bot traffic detected, request is ignored' }
 
 const ONLINE_VISITORS_WINDOW_MINUTES = 5 // minutes
 
@@ -1054,7 +1055,7 @@ export class AnalyticsController {
       profileId,
     )
 
-    if (unique && logDTO.unique) {
+    if (!unique && logDTO.unique) {
       throw new ForbiddenException(
         'The event was not saved because it was not unique while unique only param is provided',
       )
@@ -1157,6 +1158,7 @@ export class AnalyticsController {
   // Fallback for logging pageviews for users with JavaScript disabled
   // Returns 1x1 transparent gif
   @Get('noscript')
+  @Header('Cross-Origin-Resource-Policy', 'cross-origin')
   @Public()
   async noscript(
     @Query() data: NoscriptDto,
