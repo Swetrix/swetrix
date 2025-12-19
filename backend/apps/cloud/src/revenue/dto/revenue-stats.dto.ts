@@ -65,16 +65,19 @@ export class RevenueTransactionDto {
   @ApiProperty({ description: 'Original currency' })
   originalCurrency: string
 
-  @ApiProperty({ description: 'Customer email (if available)' })
+  @ApiProperty({
+    description: 'Customer email (if available)',
+    required: false,
+  })
   customerEmail?: string
 
-  @ApiProperty({ description: 'Product name (if available)' })
+  @ApiProperty({ description: 'Product name (if available)', required: false })
   productName?: string
 
-  @ApiProperty({ description: 'Profile ID for attribution' })
+  @ApiProperty({ description: 'Profile ID for attribution', required: false })
   profileId?: string
 
-  @ApiProperty({ description: 'Session ID for attribution' })
+  @ApiProperty({ description: 'Session ID for attribution', required: false })
   sessionId?: string
 
   @ApiProperty({ description: 'Transaction date' })
