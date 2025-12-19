@@ -1,20 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsNotEmpty, IsString, IsOptional, IsNumber } from 'class-validator'
 
-export class GetProfileIdDto {
-  @ApiProperty({ description: 'Project ID' })
-  @IsNotEmpty()
-  @IsString()
-  pid: string
-}
-
-export class GetSessionIdDto {
-  @ApiProperty({ description: 'Project ID' })
-  @IsNotEmpty()
-  @IsString()
-  pid: string
-}
-
 export class LogPaymentDto {
   @ApiProperty({ description: 'Project ID' })
   @IsNotEmpty()
