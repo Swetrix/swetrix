@@ -13,6 +13,8 @@ import {
   HttpException,
   HttpStatus,
   ParseIntPipe,
+  Ip,
+  Headers,
 } from '@nestjs/common'
 import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import _isEmpty from 'lodash/isEmpty'
@@ -41,6 +43,8 @@ import {
 } from './dto/goal.dto'
 import { GoalService } from './goal.service'
 import { clickhouse } from '../common/integrations/clickhouse'
+import { getIPFromHeaders } from '../common/utils'
+import { trackCustom } from '../common/analytics'
 
 const GOALS_MAXIMUM = 50 // Maximum goals per project
 
@@ -139,8 +143,12 @@ export class GoalController {
   async createGoal(
     @Body() goalDto: CreateGoalDto,
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ) {
     this.logger.log({ uid, pid: goalDto.pid }, 'POST /goal')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const user = await this.userService.findOne({
       where: { id: uid },
@@ -204,6 +212,10 @@ export class GoalController {
 
       const newGoal = await this.goalService.create(goal)
 
+      trackCustom(ip, headers['user-agent'], {
+        ev: 'GOAL_CREATED',
+      })
+
       return {
         ..._omit(newGoal, ['project']),
         pid: goalDto.pid,
@@ -265,8 +277,15 @@ export class GoalController {
   @Delete('/:id')
   @Auth()
   @ApiResponse({ status: 204, description: 'Empty body' })
-  async deleteGoal(@Param('id') id: string, @CurrentUserId() uid: string) {
+  async deleteGoal(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ) {
     this.logger.log({ id, uid }, 'DELETE /goal/:id')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const goal = await this.goalService.findOneWithRelations(id)
 
@@ -281,6 +300,10 @@ export class GoalController {
     )
 
     await this.goalService.delete(id)
+
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'GOAL_DELETED',
+    })
   }
 
   private buildGoalMatchCondition(

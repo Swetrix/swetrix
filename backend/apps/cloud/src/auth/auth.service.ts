@@ -47,6 +47,7 @@ import { TelegramService } from '../integrations/telegram/telegram.service'
 import { SSOProviders } from './dtos'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 import { UserGithubDTO } from '../user/dto/user-github.dto'
+import { trackCustom } from '../common/analytics'
 
 const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`
@@ -658,7 +659,17 @@ export class AuthService {
       if (!user) {
         const referrerId = await this.getReferrerId(refCode)
 
-        return await this.registerUserGoogle(sub, email, referrerId)
+        const data = await this.registerUserGoogle(sub, email, referrerId)
+
+        trackCustom(ip, headers['user-agent'], {
+          ev: 'SIGNUP',
+          meta: {
+            method: 'google',
+            isReferred: !!referrerId,
+          },
+        })
+
+        return data
       }
 
       return await this.handleExistingUserGoogle(user, headers, ip)
@@ -1054,7 +1065,17 @@ export class AuthService {
       if (!user) {
         const referrerId = await this.getReferrerId(refCode)
 
-        return await this.registerUserGithub(id, email, referrerId)
+        const data = await this.registerUserGithub(id, email, referrerId)
+
+        trackCustom(ip, headers['user-agent'], {
+          ev: 'SIGNUP',
+          meta: {
+            method: 'github',
+            isReferred: !!referrerId,
+          },
+        })
+
+        return data
       }
 
       return await this.handleExistingUserGithub(user, headers, ip)

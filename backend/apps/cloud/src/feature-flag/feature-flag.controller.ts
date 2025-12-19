@@ -58,6 +58,7 @@ import {
   checkRateLimit,
 } from '../common/utils'
 import { getExperimentVariant } from './evaluation'
+import { trackCustom } from '../common/analytics'
 
 const FEATURE_FLAGS_MAXIMUM = 50 // Maximum feature flags per project
 
@@ -151,8 +152,11 @@ export class FeatureFlagController {
   async createFeatureFlag(
     @Body() flagDto: CreateFeatureFlagDto,
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ) {
     this.logger.log({ uid, pid: flagDto.pid }, 'POST /feature-flag')
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const user = await this.userService.findOne({
       where: { id: uid },
@@ -227,6 +231,10 @@ export class FeatureFlagController {
       flag.project = project
 
       const newFlag = await this.featureFlagService.create(flag)
+
+      trackCustom(ip, headers['user-agent'], {
+        ev: 'FEATURE_FLAG_CREATED',
+      })
 
       return {
         ..._omit(newFlag, ['project']),
@@ -503,8 +511,11 @@ export class FeatureFlagController {
   async deleteFeatureFlag(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ) {
     this.logger.log({ id, uid }, 'DELETE /feature-flag/:id')
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const flag = await this.featureFlagService.findOneWithRelations(id)
 
@@ -519,6 +530,10 @@ export class FeatureFlagController {
     )
 
     await this.featureFlagService.delete(id)
+
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'FEATURE_FLAG_DELETED',
+    })
   }
 
   @ApiBearerAuth()

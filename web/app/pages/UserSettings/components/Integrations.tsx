@@ -14,6 +14,7 @@ import Discord from '~/ui/icons/Discord'
 import Slack from '~/ui/icons/Slack'
 import Telegram from '~/ui/icons/Telegram'
 import Input from '~/ui/Input'
+import { trackCustom } from '~/utils/analytics'
 
 const getAvailableIntegrations = (
   t: typeof i18next.t,
@@ -126,6 +127,10 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         },
       )
     }
+
+    trackCustom('INTEGRATION_ADDED', {
+      integration: key,
+    })
   }
 
   const getIntegrationStatus = (key: string) => {
@@ -225,6 +230,10 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         },
       )
     }
+
+    trackCustom('INTEGRATION_REMOVED', {
+      integration: key,
+    })
   }
 
   if (integrationConfigurating) {

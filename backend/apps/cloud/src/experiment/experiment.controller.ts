@@ -64,6 +64,7 @@ import {
 } from '../feature-flag/entity/feature-flag.entity'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { calculateBayesianProbabilities } from './bayesian'
+import { trackCustom } from '../common/analytics'
 
 const EXPERIMENTS_MAXIMUM = 20 // Maximum experiments per project
 
@@ -317,6 +318,10 @@ export class ExperimentController {
 
       const newExperiment = await this.experimentService.create(experiment)
 
+      trackCustom(ip, headers['user-agent'], {
+        ev: 'EXPERIMENT_CREATED',
+      })
+
       if (existingFeatureFlag) {
         await this.featureFlagService.update(existingFeatureFlag.id, {
           experimentId: newExperiment.id,
@@ -557,6 +562,10 @@ export class ExperimentController {
     }
 
     await this.experimentService.delete(id)
+
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'EXPERIMENT_DELETED',
+    })
   }
 
   @ApiBearerAuth()

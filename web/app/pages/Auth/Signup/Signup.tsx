@@ -21,7 +21,6 @@ import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { setAccessToken } from '~/utils/accessToken'
-import { trackCustom } from '~/utils/analytics'
 import { deleteCookie, getCookie } from '~/utils/cookie'
 import { cn, delay, openBrowserWindow } from '~/utils/generic'
 import { setRefreshToken } from '~/utils/refreshToken'
@@ -140,9 +139,6 @@ const Signup = () => {
       setRefreshToken(refreshToken)
       setIsLoading(false)
 
-      trackCustom('SIGNUP', {
-        from: 'Signup page',
-      })
       navigate(routes.onboarding)
     } catch (reason) {
       toast.error((reason as { message?: string })?.message || t('apiNotifications.somethingWentWrong'))

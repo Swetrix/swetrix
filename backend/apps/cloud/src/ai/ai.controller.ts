@@ -36,14 +36,15 @@ import {
   GetRecentChatsQueryDto,
   GetAllChatsQueryDto,
 } from './dto/chat.dto'
+import { trackCustom } from '../common/analytics'
 
 // Rate limit constants for AI endpoints
-const AI_CHAT_RATE_LIMIT = 30 // requests per hour for authenticated users
-const AI_CHAT_RATE_LIMIT_UNAUTH = 10 // requests per hour for unauthenticated users
+const AI_CHAT_RATE_LIMIT = 50 // requests per hour for authenticated users
+const AI_CHAT_RATE_LIMIT_UNAUTH = 20 // requests per hour for unauthenticated users
 const AI_CHAT_RATE_LIMIT_TIMEOUT = 3600 // 1 hour
 
-const AI_READ_RATE_LIMIT = 100 // requests per hour for read operations
-const AI_READ_RATE_LIMIT_UNAUTH = 30 // requests per hour for unauthenticated users
+const AI_READ_RATE_LIMIT = 200 // requests per hour for read operations
+const AI_READ_RATE_LIMIT_UNAUTH = 50 // requests per hour for unauthenticated users
 
 @ApiTags('AI')
 @Controller(['ai', 'v1/ai'])
@@ -231,6 +232,15 @@ export class AiController {
               },
               'AI stream finish event',
             )
+            trackCustom(ip, headers['user-agent'], {
+              ev: 'AI_CHAT_STREAM_FINISHED',
+              meta: {
+                finishReason: part.finishReason,
+                promptTokens: part.usage.promptTokens,
+                completionTokens: part.usage.completionTokens,
+                totalTokens: part.usage.totalTokens,
+              },
+            })
           } else if (part.type === 'step-finish') {
             this.logger.log(
               {
@@ -518,6 +528,10 @@ export class AiController {
       name: createChatDto.name,
     })
 
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'AI_CHAT_CREATED',
+    })
+
     return {
       id: chat.id,
       name: chat.name,
@@ -637,6 +651,10 @@ export class AiController {
     }
 
     await this.aiChatService.delete(chatId)
+
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'AI_CHAT_DELETED',
+    })
 
     return { success: true }
   }

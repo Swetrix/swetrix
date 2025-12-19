@@ -173,10 +173,6 @@ const Onboarding = () => {
       setProject(newProject)
       await updateUserStep('setup_tracking')
       setCurrentStep(2)
-
-      trackCustom('PROJECT_CREATED', {
-        from: 'onboarding',
-      })
     } catch (reason) {
       toast.error(typeof reason === 'string' ? reason : 'Failed to create project')
     } finally {
@@ -184,7 +180,7 @@ const Onboarding = () => {
     }
   }
 
-  const handleCompleteOnboarding = async (skipped = false) => {
+  const handleCompleteOnboarding = async (skipped: boolean) => {
     try {
       await completeOnboarding()
       await loadUser()
@@ -599,7 +595,7 @@ const Onboarding = () => {
                   >
                     {t('common.goBack')}
                   </Button>
-                  <Button onClick={handleCompleteOnboarding} primary large>
+                  <Button onClick={() => handleCompleteOnboarding(false)} primary large>
                     {t('onboarding.finishOnboarding')}
                   </Button>
                 </div>

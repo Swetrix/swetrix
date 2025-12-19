@@ -39,7 +39,6 @@ import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
 import TimezonePicker from '~/ui/TimezonePicker'
-import { trackCustom } from '~/utils/analytics'
 import { getCookie, setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
@@ -313,9 +312,6 @@ const UserSettings = () => {
       await deleteUser(deletionFeedback)
       logout()
       toast.success(t('apiNotifications.accountDeleted'))
-      trackCustom('ACCOUNT_DELETED', {
-        reason_stated: deletionFeedback ? 'true' : 'false',
-      })
       navigate(routes.main)
     } catch (reason: any) {
       toast.error(t(`apiNotifications.${reason}`, 'apiNotifications.somethingWentWrong'))

@@ -56,6 +56,7 @@ import {
   AuthenticationGuard,
 } from './guards'
 import { ProjectService } from '../project/project.service'
+import { trackCustom } from '../common/analytics'
 
 const OAUTH_RATE_LIMIT = 15
 
@@ -122,6 +123,14 @@ export class AuthController {
       body.password,
       referrerID,
     )
+
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'SIGNUP',
+      meta: {
+        method: 'email',
+        isReferred: !!referrerID,
+      },
+    })
 
     const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)
 

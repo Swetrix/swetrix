@@ -13,6 +13,8 @@ import {
   HttpException,
   HttpStatus,
   ParseIntPipe,
+  Ip,
+  Headers,
 } from '@nestjs/common'
 import { In } from 'typeorm'
 import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
@@ -36,6 +38,8 @@ import {
   QueryTime,
 } from './dto/alert.dto'
 import { AlertService } from './alert.service'
+import { getIPFromHeaders } from '../common/utils'
+import { trackCustom } from '../common/analytics'
 
 const ALERTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxAlerts
 
@@ -117,8 +121,12 @@ export class AlertController {
   async createAlert(
     @Body() alertDTO: CreateAlertDTO,
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ) {
     this.logger.log({ uid }, 'POST /alert')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const user = await this.userService.findOne({
       where: { id: uid },
@@ -212,6 +220,16 @@ export class AlertController {
 
       await this.projectService.create(project)
 
+      trackCustom(ip, headers['user-agent'], {
+        ev: 'ALERT_CREATED',
+        meta: {
+          metric: alertDTO.queryMetric,
+          condition: alertDTO.queryCondition,
+          value: alertDTO.queryValue,
+          time: alertDTO.queryTime,
+        },
+      })
+
       return {
         ...newAlert,
         pid: alertDTO.pid,
@@ -303,8 +321,15 @@ export class AlertController {
   @Delete('/:id')
   @Auth()
   @ApiResponse({ status: 204, description: 'Empty body' })
-  async deleteAlert(@Param('id') id: string, @CurrentUserId() uid: string) {
+  async deleteAlert(
+    @Param('id') id: string,
+    @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ) {
     this.logger.log({ id, uid }, 'DELETE /alert/:id')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const alert = await this.alertService.findOneWithRelations(id)
 
@@ -319,5 +344,9 @@ export class AlertController {
     )
 
     await this.alertService.delete(id)
+
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'ALERT_DELETED',
+    })
   }
 }

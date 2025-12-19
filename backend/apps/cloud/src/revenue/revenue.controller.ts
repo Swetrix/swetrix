@@ -8,6 +8,8 @@ import {
   Body,
   NotFoundException,
   BadRequestException,
+  Ip,
+  Headers,
 } from '@nestjs/common'
 import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import _isEmpty from 'lodash/isEmpty'
@@ -34,6 +36,8 @@ import {
   RevenueStatusDto,
 } from './dto/revenue-stats.dto'
 import { STRIPE_REQUIRED_PERMISSIONS } from './interfaces/revenue.interface'
+import { trackCustom } from '../common/analytics'
+import { getIPFromHeaders } from '../common/utils'
 
 @ApiTags('Revenue')
 @Controller('project')
@@ -76,7 +80,11 @@ export class RevenueController {
     @CurrentUserId() userId: string,
     @Param('pid') pid: string,
     @Body() dto: ConnectRevenueDto,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ) {
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
     this.logger.log({ userId, pid }, 'POST /project/:pid/revenue/connect')
 
     const project = await this.projectService.getFullProject(pid)
@@ -134,6 +142,13 @@ export class RevenueController {
       throw new BadRequestException(result.message)
     }
 
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'REVENUE_SETUP',
+      meta: {
+        provider: dto.provider,
+      },
+    })
+
     return { success: true }
   }
 
@@ -144,8 +159,12 @@ export class RevenueController {
   async disconnectRevenue(
     @CurrentUserId() userId: string,
     @Param('pid') pid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ) {
     this.logger.log({ userId, pid }, 'DELETE /project/:pid/revenue/disconnect')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const project = await this.projectService.getFullProject(pid)
 
@@ -160,6 +179,10 @@ export class RevenueController {
     )
 
     await this.revenueService.disconnectRevenue(pid)
+
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'REVENUE_DISCONNECTED',
+    })
   }
 
   @ApiBearerAuth()
@@ -223,70 +246,6 @@ export class RevenueController {
     }
 
     return { success: true }
-  }
-
-  @ApiBearerAuth()
-  @Post('/:pid/revenue/sync')
-  @Auth()
-  async syncRevenue(
-    @CurrentUserId() userId: string,
-    @Param('pid') pid: string,
-  ) {
-    this.logger.log({ userId, pid }, 'POST /project/:pid/revenue/sync')
-
-    const project = await this.projectService.getFullProject(pid)
-
-    if (_isEmpty(project)) {
-      throw new NotFoundException('Project not found')
-    }
-
-    this.projectService.allowedToManage(
-      project,
-      userId,
-      'You are not allowed to manage revenue settings for this project',
-    )
-
-    const currency = project.revenueCurrency || 'USD'
-
-    if (!project.paddleApiKeyEnc && !project.stripeApiKeyEnc) {
-      throw new BadRequestException(
-        'Revenue tracking is not connected to this project',
-      )
-    }
-
-    if (project.paddleApiKeyEnc) {
-      const apiKey = this.revenueService.getPaddleApiKey(project)
-      if (!apiKey) {
-        throw new BadRequestException('Failed to decrypt Paddle API key')
-      }
-
-      const count = await this.paddleAdapter.syncTransactions(
-        pid,
-        apiKey,
-        currency,
-        project.revenueLastSyncAt || undefined,
-      )
-
-      await this.revenueService.updateLastSyncAt(pid)
-      return { success: true, transactionsSynced: count }
-    }
-
-    // Stripe
-    const apiKey = this.revenueService.getStripeApiKey(project)
-    if (!apiKey) {
-      throw new BadRequestException('Failed to decrypt Stripe API key')
-    }
-
-    const count = await this.stripeAdapter.syncTransactions(
-      pid,
-      apiKey,
-      currency,
-      project.revenueLastSyncAt || undefined,
-    )
-
-    await this.revenueService.updateLastSyncAt(pid)
-
-    return { success: true, transactionsSynced: count }
   }
 }
 

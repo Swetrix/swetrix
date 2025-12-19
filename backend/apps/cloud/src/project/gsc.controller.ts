@@ -8,6 +8,8 @@ import {
   UseGuards,
   BadRequestException,
   HttpCode,
+  Ip,
+  Headers,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 
@@ -16,6 +18,8 @@ import { Auth } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { GSCService } from './gsc.service'
 import { ProjectService } from './project.service'
+import { trackCustom } from '../common/analytics'
+import { getIPFromHeaders } from '../common/utils'
 
 @ApiTags('Project - Google Search Console')
 @UseGuards(AuthenticationGuard)
@@ -31,12 +35,22 @@ export class GSCController {
   async processGSCToken(
     @Body() body: { code: string; state: string },
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ) {
+    const ip = getIPFromHeaders(headers) || requestIp || ''
     const { code, state } = body
+
     if (!code || !state) {
       throw new BadRequestException('Invalid GSC token parameters')
     }
+
     const { pid } = await this.gscService.handleOAuthCallback(uid, code, state)
+
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'GSC_CONNECTED',
+    })
+
     return { pid }
   }
 
@@ -85,9 +99,20 @@ export class GSCController {
   @Delete(':pid/disconnect')
   @Auth()
   @HttpCode(204)
-  async disconnect(@Param('pid') pid: string, @CurrentUserId() uid: string) {
+  async disconnect(
+    @Param('pid') pid: string,
+    @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ) {
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
     const project = await this.projectService.getRedisProject(pid)
     this.projectService.allowedToManage(project, uid)
     await this.gscService.disconnect(pid)
+
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'GSC_DISCONNECTED',
+    })
   }
 }

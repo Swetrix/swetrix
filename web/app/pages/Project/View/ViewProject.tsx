@@ -62,6 +62,7 @@ import { useTheme } from '~/providers/ThemeProvider'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
+import { trackCustom } from '~/utils/analytics'
 import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
@@ -650,6 +651,7 @@ const ViewProjectContent = () => {
     const newSearchParams = new URLSearchParams(searchParams.toString())
     newSearchParams.set('tab', key)
     setSearchParams(newSearchParams)
+    trackCustom('DASHBOARD_TAB_CHANGED', { tab: key })
   }
 
   const refreshStats = useCallback(
@@ -1049,7 +1051,6 @@ const ViewProjectContent = () => {
         {!isEmbedded ? <Header /> : null}
         <div className='flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900'>
           <div className='relative flex flex-1'>
-            {/* Real Sidebar */}
             <ProjectSidebar
               tabs={tabs}
               activeTab={activeTab}
@@ -1062,7 +1063,6 @@ const ViewProjectContent = () => {
               className='hidden md:flex'
             />
 
-            {/* Skeleton Main Content */}
             <div className='flex flex-1 flex-col px-4 py-2 sm:px-6 lg:px-8'>
               {/* Skeleton header */}
               <div className='mb-6 flex items-center justify-between'>

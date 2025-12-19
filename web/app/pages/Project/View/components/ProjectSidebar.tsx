@@ -15,6 +15,7 @@ import { Link, LinkProps } from 'react-router'
 import { PROJECT_TABS } from '~/lib/constants'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
+import { trackCustom } from '~/utils/analytics'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
@@ -273,6 +274,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     setIsCollapsed((prev) => {
       const newValue = !prev
       localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(newValue))
+      trackCustom('SIDEBAR_COLLAPSED', { collapsed: newValue })
       return newValue
     })
   }, [])
@@ -400,7 +402,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       <div className='flex-1 overflow-y-auto px-2 py-3'>
         {/* Ask AI - standalone tab above groups */}
         {askAiTab ? (
-          <div className='mb-3'>
+          <div className='mb-1'>
             {(() => {
               const isCurrent = askAiTab.id === activeTab
               const TabIcon = askAiTab.icon

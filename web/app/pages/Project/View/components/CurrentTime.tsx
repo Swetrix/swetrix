@@ -28,9 +28,11 @@ const CurrentTime = () => {
       <Tooltip
         text={
           <div className='flex flex-col'>
-            <Text weight='semibold'>{t('project.timezoneX', { timezone })}</Text>
+            <Text className='text-gray-50' weight='semibold' size='xs'>
+              {t('project.timezoneX', { timezone })}
+            </Text>
             {isEmbedded ? null : (
-              <Text size='xs' colour='muted'>
+              <Text size='xs' colour='secondary' className='mt-1 text-gray-200'>
                 {isAuthenticated ? t('project.changeInSettings') : t('project.signInToChange')}
               </Text>
             )}

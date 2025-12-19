@@ -24,7 +24,6 @@ import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
-import { trackCustom } from '~/utils/analytics'
 import { setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
 
@@ -210,9 +209,6 @@ const Dashboard = () => {
       await createProject({
         name: newProjectName || DEFAULT_PROJECT_NAME,
         organisationId: newProjectOrganisationId,
-      })
-      trackCustom('PROJECT_CREATED', {
-        from: 'dashboard-modal',
       })
 
       await refetchProjects()

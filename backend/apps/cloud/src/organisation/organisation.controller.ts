@@ -40,6 +40,7 @@ import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity'
 import { isDevelopment, PRODUCTION_ORIGIN } from '../common/constants'
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
+import { trackCustom } from '../common/analytics'
 
 const ORGANISATION_INVITE_EXPIRE = 7 * 24 // 7 days in hours
 
@@ -127,8 +128,12 @@ export class OrganisationController {
   async create(
     @Body() createOrgDTO: CreateOrganisationDTO,
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ): Promise<Organisation> {
     this.logger.log({ uid, createOrgDTO }, 'POST /organisation')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const user = await this.userService.findOne({ where: { id: uid } })
 
@@ -141,6 +146,10 @@ export class OrganisationController {
       user,
       organisation,
       confirmed: true,
+    })
+
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'ORGANISATION_CREATED',
     })
 
     return organisation
@@ -342,8 +351,15 @@ export class OrganisationController {
   @Delete('/:orgId')
   @ApiResponse({ status: 200, type: Organisation })
   @Auth(true)
-  async delete(@Param('orgId') orgId: string, @CurrentUserId() userId: string) {
+  async delete(
+    @Param('orgId') orgId: string,
+    @CurrentUserId() userId: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ) {
     this.logger.log({ orgId, userId }, 'DELETE /organisation/:orgId')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const isOwner = await this.organisationService.isOrganisationOwner(
       orgId,
@@ -364,6 +380,10 @@ export class OrganisationController {
         organisation: { id: orgId },
       })
       await this.organisationService.delete(orgId)
+
+      trackCustom(ip, headers['user-agent'], {
+        ev: 'ORGANISATION_DELETED',
+      })
     } catch (reason) {
       console.error('[ERROR] Failed to delete organisation:', reason)
       throw new BadRequestException('Failed to delete organisation')

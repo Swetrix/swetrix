@@ -178,5 +178,7 @@ export const trackCustom = (ev: string, meta?: Swetrix.TrackEventOptions['meta']
   Swetrix.track({
     ev,
     meta,
+  }).catch((reason) => {
+    console.error('Failed to track custom event:', reason)
   })
 }

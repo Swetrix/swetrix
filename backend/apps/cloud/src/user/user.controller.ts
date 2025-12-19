@@ -66,6 +66,7 @@ import {
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { ReportFrequency } from '../project/enums'
 import { OrganisationService } from '../organisation/organisation.service'
+import { trackCustom } from '../common/analytics'
 
 dayjs.extend(utc)
 
@@ -200,19 +201,33 @@ export class UserController {
 
     await this.userService.update(userId, { apiKey })
 
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'API_KEY_GENERATED',
+    })
+
     return { apiKey }
   }
 
   @ApiBearerAuth()
   @Delete('/api-key')
-  async deleteApiKey(@CurrentUserId() userId: string): Promise<void> {
+  async deleteApiKey(
+    @CurrentUserId() userId: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ): Promise<void> {
     this.logger.log({ userId }, 'DELETE /user/api-key')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const user = await this.userService.findOne({ where: { id: userId } })
 
     if (_isNull(user.apiKey)) {
       throw new ConflictException("You don't have an API key")
     }
+
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'API_KEY_DELETED',
+    })
 
     await this.userService.update(userId, { apiKey: null })
   }
@@ -223,8 +238,12 @@ export class UserController {
   async deleteSelf(
     @CurrentUserId() id: string,
     @Body() deleteSelfDTO: DeleteSelfDTO,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ): Promise<any> {
     this.logger.log({ id }, 'DELETE /user')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const user = await this.userService.findOne({
       where: { id },
@@ -285,6 +304,13 @@ export class UserController {
       )
       this.logger.error('DeleteSelfDTO: ', deleteSelfDTO)
     }
+
+    trackCustom(ip, headers['user-agent'], {
+      ev: 'ACCOUNT_DELETED',
+      meta: {
+        reason_stated: !!deleteSelfDTO.feedback,
+      },
+    })
 
     return 'accountDeleted'
   }
