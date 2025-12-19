@@ -1,5 +1,5 @@
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
-import { ChevronRightIcon } from '@heroicons/react/24/outline'
+import { ChevronRightIcon, CircleStackIcon } from '@heroicons/react/24/outline'
 import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
 import type { ChartOptions } from 'billboard.js'
@@ -44,6 +44,17 @@ import { getFormatDate, getSettingsCustomEventsStacked, typeNameMapping } from '
 
 const ENTRIES_PER_PANEL = 8
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
+
+const PanelEmptyState = ({ message }: { message: string }) => (
+  <div className='flex flex-col items-center justify-center py-8 text-center'>
+    <div className='mb-3 flex size-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800'>
+      <CircleStackIcon className='size-5 text-gray-400 dark:text-slate-500' />
+    </div>
+    <Text as='p' size='sm' colour='secondary'>
+      {message}
+    </Text>
+  </div>
+)
 
 interface PanelContainerProps {
   name: React.ReactNode
@@ -347,11 +358,7 @@ const KVTableContainer = ({ data, uniques, displayKeyAsHeader, onClick }: KVTabl
   }, [data, uniques])
 
   if (_isEmpty(data)) {
-    return (
-      <Text as='p' size='base' colour='secondary' className='mb-2'>
-        {t('project.noData')}
-      </Text>
-    )
+    return <PanelEmptyState message={t('project.noData')} />
   }
 
   return _map(processed, (value, key) => {
@@ -704,11 +711,7 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
 
   const renderContent = () => {
     if (_isEmpty(eventsData)) {
-      return (
-        <Text as='p' size='base' colour='secondary' className='mt-1'>
-          {t('project.noParamData')}
-        </Text>
-      )
+      return <PanelEmptyState message={t('project.noParamData')} />
     }
 
     return (
@@ -808,11 +811,7 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
     }
 
     if (!hasChartData) {
-      return (
-        <Text as='p' size='base' colour='secondary' className='mt-1'>
-          {t('project.noData')}
-        </Text>
-      )
+      return <PanelEmptyState message={t('project.noData')} />
     }
 
     return (
@@ -1080,19 +1079,11 @@ const MetadataKeyPanel = ({
 
   const renderContent = () => {
     if (_isEmpty(metadataKeys)) {
-      return (
-        <Text as='p' size='base' colour='secondary' className='mt-1'>
-          {t('project.noParamData')}
-        </Text>
-      )
+      return <PanelEmptyState message={t('project.noParamData')} />
     }
 
     if (!activeKey) {
-      return (
-        <Text as='p' size='base' colour='secondary' className='mt-1'>
-          {t('project.selectKey')}
-        </Text>
-      )
+      return <PanelEmptyState message={t('project.selectKey')} />
     }
 
     if (loading) {
@@ -1104,11 +1095,7 @@ const MetadataKeyPanel = ({
     }
 
     if (_isEmpty(valuesData) && (mode === 'property' || _isEmpty(rawMetadata))) {
-      return (
-        <Text as='p' size='base' colour='secondary' className='mt-1'>
-          {t('project.noData')}
-        </Text>
-      )
+      return <PanelEmptyState message={t('project.noData')} />
     }
 
     if (mode === 'customEvent') {
@@ -1727,7 +1714,7 @@ const Panel = ({
       {customRenderer ? (
         customRenderer()
       ) : _isEmpty(data) ? (
-        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+        <PanelEmptyState message={t('project.noParamData')} />
       ) : (
         <>
           <div className='sticky top-0 z-10 mb-1 flex items-center justify-between bg-transparent px-1 py-1'>
