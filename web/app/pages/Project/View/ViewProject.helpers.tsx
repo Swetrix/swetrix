@@ -908,15 +908,30 @@ const getSettings = (
 
           if (chart?.$ && chart.$.bar?.bars) {
             chart.$.bar.bars.each(function (this: SVGPathElement, d: any) {
-              if (d?.id === 'refundsAmount' && Number(d?.value || 0) > 0) {
-                this.style.stroke = '#ea580c'
-                this.style.strokeWidth = '1.5px'
-                this.style.strokeDasharray = '6,4'
-              } else if (d?.id === 'refundsAmount') {
-                // Avoid a dashed "cap" on top of revenue when refunds are 0.
-                this.style.strokeDasharray = ''
-                this.style.strokeWidth = '0'
-                this.style.stroke = 'none'
+              const value = Number(d?.value || 0)
+
+              if (d?.id === 'refundsAmount') {
+                if (value > 0) {
+                  this.style.stroke = '#ea580c'
+                  this.style.strokeWidth = '1.5px'
+                  this.style.strokeDasharray = '6,4'
+                  this.style.display = ''
+                } else {
+                  this.style.strokeDasharray = ''
+                  this.style.strokeWidth = '0'
+                  this.style.stroke = 'none'
+                  this.style.display = 'none'
+                }
+              } else if (d?.id === 'revenue') {
+                if (value === 0) {
+                  this.style.strokeWidth = '0'
+                  this.style.stroke = 'none'
+                  this.style.display = 'none'
+                } else {
+                  this.style.strokeWidth = '1.5px'
+                  this.style.stroke = '#ea580c'
+                  this.style.display = ''
+                }
               }
             })
           }

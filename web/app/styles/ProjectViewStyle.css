@@ -77,7 +77,7 @@ body.dark .bb-ygrid {
 
 .bb-bar {
   fill-opacity: 0.3;
-  stroke-width: 1.5 !important;
+  stroke-width: 1.5;
 }
 
 /* Custom events stacked chart: remove outlines (dynamic series) */
@@ -112,12 +112,12 @@ body.dark .bb-ygrid {
 
 /* Revenue chart styling */
 .bb-target-revenue .bb-bar {
-  stroke: #ea580c !important;
+  stroke: #ea580c;
   fill-opacity: 0.85 !important;
 }
 
 .bb-target-refundsAmount .bb-bar {
-  stroke: #ea580c !important;
+  stroke: #ea580c;
   fill-opacity: 1 !important; /* keep rgba() fill visible (don't multiply by .bb-bar opacity) */
 }
 
