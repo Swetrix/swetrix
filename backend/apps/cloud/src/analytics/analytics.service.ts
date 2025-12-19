@@ -4341,25 +4341,39 @@ export class AnalyticsService {
         UNION ALL
 
         SELECT
-          revenue.type AS type,
-          COALESCE(toString(revenue.product_name), toString(revenue.product_id), if(revenue.type = 'refund', 'Refund', 'Sale')) AS value,
-          toTimeZone(revenue.created, {timezone:String}) AS created,
+          type,
+          COALESCE(toString(product_name), toString(product_id), if(type = 'refund', 'Refund', 'Sale')) AS value,
+          toTimeZone(created, {timezone:String}) AS created,
           pid,
-          toString(revenue.session_id) AS psid,
+          toString(session_id) AS psid,
           [
-            tuple('amount', toString(revenue.amount)),
-            tuple('currency', toString(revenue.currency)),
-            tuple('transaction_id', toString(revenue.transaction_id)),
-            tuple('status', toString(revenue.status)),
-            tuple('provider', toString(revenue.provider))
+            tuple('amount', toString(amount)),
+            tuple('currency', toString(currency)),
+            tuple('transaction_id', toString(transaction_id)),
+            tuple('status', toString(status)),
+            tuple('provider', toString(provider))
           ] AS metadata
-        FROM revenue
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND revenue.session_id IS NOT NULL
-          AND toString(revenue.session_id) = {psid:String}
-          AND revenue.type IN ('sale', 'refund')
-        GROUP BY type, value, created, pid, psid, revenue.product_name, revenue.product_id, revenue.amount, revenue.currency, revenue.transaction_id, revenue.status, revenue.provider
+        FROM (
+          SELECT
+            argMax(type, synced_at) AS type,
+            argMax(product_name, synced_at) AS product_name,
+            argMax(product_id, synced_at) AS product_id,
+            argMax(created, synced_at) AS created,
+            pid,
+            session_id,
+            argMax(amount, synced_at) AS amount,
+            argMax(currency, synced_at) AS currency,
+            transaction_id,
+            argMax(status, synced_at) AS status,
+            argMax(provider, synced_at) AS provider
+          FROM revenue
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND session_id IS NOT NULL
+            AND toString(session_id) = {psid:String}
+            AND type IN ('sale', 'refund')
+          GROUP BY pid, session_id, transaction_id
+        )
       )
 
       SELECT
@@ -4588,14 +4602,22 @@ export class AnalyticsService {
       ),
       revenue_totals AS (
         SELECT
-          CAST(session_id, 'String') AS psidCasted,
+          psidCasted,
           pid,
           sum(CASE WHEN type = 'sale' THEN amount ELSE 0 END) - sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as revenue,
           sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as refunds
-        FROM revenue
-        WHERE pid = {pid:FixedString(12)} AND session_id IS NOT NULL
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-          AND type IN ('sale', 'refund')
+        FROM (
+          SELECT
+            CAST(session_id, 'String') AS psidCasted,
+            pid,
+            argMax(type, synced_at) AS type,
+            argMax(amount, synced_at) AS amount
+          FROM revenue
+          WHERE pid = {pid:FixedString(12)} AND session_id IS NOT NULL
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            AND type IN ('sale', 'refund')
+          GROUP BY psidCasted, pid, transaction_id
+        )
         GROUP BY psidCasted, pid
       ),
       session_duration_agg AS (
@@ -4822,11 +4844,17 @@ export class AnalyticsService {
       SELECT
         sum(amount) AS totalRevenue,
         any(currency) AS revenueCurrency
-      FROM revenue
-      WHERE pid = {pid:FixedString(12)}
-        AND profile_id = {profileId:String}
-        AND type = 'sale'
-        AND status = 'completed'
+      FROM (
+        SELECT
+          argMax(amount, synced_at) AS amount,
+          argMax(currency, synced_at) AS currency
+        FROM revenue
+        WHERE pid = {pid:FixedString(12)}
+          AND profile_id = {profileId:String}
+          AND type = 'sale'
+          AND status = 'completed'
+        GROUP BY transaction_id
+      )
     `
 
     const params = { pid, profileId }

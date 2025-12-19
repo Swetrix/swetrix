@@ -160,6 +160,7 @@ export class RevenueService {
   async updateCurrency(projectId: string, currency: string): Promise<void> {
     await this.projectRepository.update(projectId, {
       revenueCurrency: currency,
+      revenueLastSyncAt: null, // Reset sync so all transactions are re-converted
     })
   }
 
@@ -563,11 +564,91 @@ export class RevenueService {
         resultSet.json<{ name: string; revenue: number; count: number }>(),
       )
 
-    // For source and country, we'd need to join with analytics table
-    // For now, return empty arrays - these will be populated when we have attribution
+    // By source
+    const bySourceQuery = `
+      SELECT
+        COALESCE(a.so, 'Direct') as name,
+        sum(r.amount) as revenue,
+        count(r.amount) as count
+      FROM (
+        SELECT
+          session_id,
+          argMax(amount, synced_at) as amount
+        FROM revenue
+        WHERE pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND type = 'sale'
+          AND session_id IS NOT NULL
+        GROUP BY session_id, transaction_id
+      ) AS r
+      JOIN (
+        SELECT
+          psid,
+          argMin(so, created) as so
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND psid IS NOT NULL
+        GROUP BY psid
+      ) AS a ON r.session_id = toString(a.psid)
+      GROUP BY name
+      ORDER BY revenue DESC
+      LIMIT 10
+    `
+
+    const { data: bySourceData } = await clickhouse
+      .query({ query: bySourceQuery, query_params: params })
+      .then(resultSet =>
+        resultSet.json<{ name: string; revenue: number; count: number }>(),
+      )
+
+    // By country
+    const byCountryQuery = `
+      SELECT
+        COALESCE(a.cc, 'Unknown') as name,
+        sum(r.amount) as revenue,
+        count(r.amount) as count
+      FROM (
+        SELECT
+          session_id,
+          argMax(amount, synced_at) as amount
+        FROM revenue
+        WHERE pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND type = 'sale'
+          AND session_id IS NOT NULL
+        GROUP BY session_id, transaction_id
+      ) AS r
+      JOIN (
+        SELECT
+          psid,
+          argMin(cc, created) as cc
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND psid IS NOT NULL
+        GROUP BY psid
+      ) AS a ON r.session_id = toString(a.psid)
+      GROUP BY name
+      ORDER BY revenue DESC
+      LIMIT 10
+    `
+
+    const { data: byCountryData } = await clickhouse
+      .query({ query: byCountryQuery, query_params: params })
+      .then(resultSet =>
+        resultSet.json<{ name: string; revenue: number; count: number }>(),
+      )
+
     return {
-      bySource: [],
-      byCountry: [],
+      bySource: bySourceData.map(row => ({
+        name: row.name,
+        revenue: _round(row.revenue, 2),
+        count: row.count,
+      })),
+      byCountry: byCountryData.map(row => ({
+        name: row.name,
+        revenue: _round(row.revenue, 2),
+        count: row.count,
+      })),
       byProduct: byProductData.map(row => ({
         name: row.name,
         revenue: _round(row.revenue, 2),

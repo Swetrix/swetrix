@@ -98,7 +98,6 @@ import { GetHeartbeatStatsDto } from './dto/get-heartbeat-stats'
 import { GetKeywordsDto } from './dto/get-keywords.dto'
 import { GSCService } from '../project/gsc.service'
 import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
-import { RevenueService } from '../revenue/revenue.service'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -206,7 +205,6 @@ export class AnalyticsController {
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
     private readonly gscService: GSCService,
-    private readonly revenueService: RevenueService,
   ) {}
 
   @ApiBearerAuth()

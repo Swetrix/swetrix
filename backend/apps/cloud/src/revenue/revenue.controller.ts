@@ -189,6 +189,36 @@ export class RevenueController {
 
     await this.revenueService.updateCurrency(pid, dto.currency)
 
+    // Trigger immediate re-sync
+    try {
+      if (project.paddleApiKeyEnc) {
+        const apiKey = this.revenueService.getPaddleApiKey(project)
+        if (apiKey) {
+          await this.paddleAdapter.syncTransactions(
+            pid,
+            apiKey,
+            dto.currency,
+            undefined, // Full re-sync
+          )
+          await this.revenueService.updateLastSyncAt(pid)
+        }
+      } else if (project.stripeApiKeyEnc) {
+        const apiKey = this.revenueService.getStripeApiKey(project)
+        if (apiKey) {
+          await this.stripeAdapter.syncTransactions(
+            pid,
+            apiKey,
+            dto.currency,
+            undefined, // Full re-sync
+          )
+          await this.revenueService.updateLastSyncAt(pid)
+        }
+      }
+    } catch (error) {
+      this.logger.error({ error, pid }, 'Failed to trigger re-sync after currency update')
+      // Don't throw here, as currency was updated successfully
+    }
+
     return { success: true }
   }
 

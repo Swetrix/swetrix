@@ -77,8 +77,7 @@ interface PaddleListResponse<T> {
 
 @Injectable()
 export class PaddleAdapter {
-  // TODO: Change to api.paddle.com when merging to main
-  private readonly baseUrl = 'https://sandbox-api.paddle.com'
+  private readonly baseUrl = 'https://api.paddle.com'
 
   constructor(
     private readonly logger: AppLoggerService,
