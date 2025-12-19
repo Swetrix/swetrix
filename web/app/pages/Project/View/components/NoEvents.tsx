@@ -1,3 +1,4 @@
+import { FunnelIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
 import _isEmpty from 'lodash/isEmpty'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -16,36 +17,29 @@ interface NoEventsProps {
 const NoEvents = ({ filters }: NoEventsProps) => {
   const { t } = useTranslation('common')
   const tnMapping = typeNameMapping(t)
-
-  if (_isEmpty(filters)) {
-    return (
-      <div className='mt-5 flex min-h-[78vh] flex-col py-6 sm:px-6 lg:px-8'>
-        <div className='mx-auto w-full max-w-7xl'>
-          <Text as='h2' size='4xl' weight='semibold' className='my-3 text-center leading-tight'>
-            {t('project.noEvTitle')}
-          </Text>
-          <Text as='h3' size='2xl' className='mb-8 text-center leading-snug'>
-            {t('project.noEvContent')}
-          </Text>
-        </div>
-      </div>
-    )
-  }
+  const hasFilters = !_isEmpty(filters)
 
   return (
     <>
-      <div className='mt-4'>
-        <Filters tnMapping={tnMapping} />
-      </div>
-      <div className='mt-5 flex min-h-[78vh] flex-col py-6 sm:px-6 lg:px-8'>
-        <div className='mx-auto w-full max-w-7xl'>
-          <Text as='h2' size='4xl' weight='semibold' className='my-3 text-center leading-tight'>
-            {t('project.noEvTitle')}
-          </Text>
-          <Text as='h3' size='2xl' className='mb-8 text-center leading-snug'>
-            {t('project.noEventsFiltersDesc')}
-          </Text>
+      {hasFilters && (
+        <div className='mt-4'>
+          <Filters tnMapping={tnMapping} />
         </div>
+      )}
+      <div className='mx-auto w-full max-w-2xl py-16 text-center'>
+        <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800'>
+          {hasFilters ? (
+            <FunnelIcon className='size-7 text-gray-400 dark:text-slate-500' />
+          ) : (
+            <CalendarDaysIcon className='size-7 text-gray-400 dark:text-slate-500' />
+          )}
+        </div>
+        <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
+          {t('project.noEvTitle')}
+        </Text>
+        <Text as='p' size='sm' colour='secondary' className='mx-auto mt-2 max-w-md'>
+          {hasFilters ? t('project.noEventsFiltersDesc') : t('project.noEvContent')}
+        </Text>
       </div>
     </>
   )
