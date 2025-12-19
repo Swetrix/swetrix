@@ -621,6 +621,9 @@ const TrafficView = ({
 
                   // Fallback: if mapping produced all zeros but arrays match length, use index-based mapping
                   if (revenueData.every((v) => v === 0) && revY.length === chart.x.length) {
+                    console.warn(
+                      '[Revenue] Key-based mapping failed, falling back to index-based alignment. Data may be misaligned.',
+                    )
                     revenueData = revY.map((v) => Number(v ?? 0))
                     refundsData = revRefunds.map((v) => Number(v ?? 0))
                   }

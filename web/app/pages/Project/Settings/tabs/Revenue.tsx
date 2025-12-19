@@ -155,6 +155,7 @@ const Revenue = ({ projectId }: Props) => {
     try {
       await updateRevenueCurrency(projectId, selectedCurrency)
       toast.success(t('project.settings.revenue.currencyUpdated'))
+      setStatus((prev) => (prev ? { ...prev, currency: selectedCurrency } : prev))
     } catch (error: any) {
       toast.error(typeof error === 'string' ? error : t('apiNotifications.somethingWentWrong'))
     } finally {
