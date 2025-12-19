@@ -30,6 +30,7 @@ import {
   panelIconMapping,
   CHART_METRICS_MAPPING_PERF,
   CHART_MEASURES_MAPPING_PERF,
+  getDeviceRowMapper,
 } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -122,11 +123,6 @@ const periodToCompareDate = [
   },
 ]
 
-// Device row mapper
-const getDeviceRowMapper = (activeTabId: string, theme: string, t: any) => {
-  return (entry: { name: string }) => entry.name || t('project.unknown')
-}
-
 interface PerformanceViewProps {
   tnMapping: Record<string, string>
 }
@@ -157,6 +153,7 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     shouldEnableZoom,
     // Filter functions from context
     getFilterLink,
+    getVersionFilterLink,
   } = useViewProjectContext()
 
   // Annotations hook
@@ -201,7 +198,7 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
   const [activeTabs, setActiveTabs] = useState<{
     location: 'cc' | 'rg' | 'ct' | 'map'
     page: 'pg' | 'host'
-    device: 'br' | 'dv'
+    device: 'br' | 'os' | 'dv'
   }>({
     location: 'cc',
     page: 'pg',
@@ -299,6 +296,25 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     }),
     [t],
   )
+
+  // Version data mapping for browser/OS versions
+  const createVersionDataMapping = useMemo(() => {
+    const browserDataSource = panelsData.data?.brv
+
+    const browserVersions: { [key: string]: { name: string; count: number }[] } = {}
+
+    if (browserDataSource) {
+      browserDataSource.forEach((entry: any) => {
+        const { br, name, count } = entry
+        if (!browserVersions[br]) {
+          browserVersions[br] = []
+        }
+        browserVersions[br].push({ name, count })
+      })
+    }
+
+    return { browserVersions }
+  }, [panelsData.data?.brv])
 
   const loadAnalytics = async () => {
     if (!project) return
@@ -754,6 +770,8 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
                       data={panelsData.data[activeTabs.device]}
                       rowMapper={getDeviceRowMapper(activeTabs.device, theme, t)}
                       capitalize={activeTabs.device === 'dv'}
+                      versionData={activeTabs.device === 'br' ? createVersionDataMapping.browserVersions : undefined}
+                      getVersionFilterLink={(parent, version) => getVersionFilterLink(parent, version, 'br')}
                       // @ts-expect-error
                       valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                       valuesHeaderName={t('project.loadTime')}
