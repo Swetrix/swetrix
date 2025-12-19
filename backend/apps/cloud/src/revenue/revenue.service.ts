@@ -403,14 +403,6 @@ export class RevenueService {
 
     const filtersSql = filters.length ? `WHERE ${filters.join(' AND ')}` : ''
 
-    if (type) {
-      // handled above
-    }
-
-    if (status) {
-      // handled above
-    }
-
     // Get total count
     const countQuery = `
       SELECT count(*) as total
