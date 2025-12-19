@@ -433,6 +433,11 @@ const InteractiveMapCore = ({
             cursor: 'default',
             outline: 'none',
             zIndex: 1,
+            ...(isFullscreen
+              ? {
+                  minHeight: '100vh',
+                }
+              : {}),
           }}
           attributionControl={false}
           zoomControl={false}
