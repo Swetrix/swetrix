@@ -199,11 +199,11 @@ const InteractiveMapCore = ({
       return scaleQuantize<string>().domain([minValue, maxValue]).range(perfColors)
     }
 
-    // Traffic (default): teal gradient for a fresh, modern look
+    // Traffic (default): blue/indigo gradient to match site color scheme
     return scalePow<string>()
       .exponent(0.4)
       .domain([0, maxValue])
-      .range(['hsla(168, 70%, 45%, 0.15)', 'hsla(168, 75%, 40%, 0.9)'])
+      .range(['hsla(220, 70%, 55%, 0.12)', 'hsla(224, 75%, 50%, 0.9)'])
   }, [data, regionData, mapView, isErrorsTab, isPerformanceTab])
 
   const findDataForFeature = useCallback(
@@ -271,8 +271,8 @@ const InteractiveMapCore = ({
         mouseover: (e: any) => {
           const resultNow = findDataForFeature(feature)
           const hasData = (resultNow?.data?.count || 0) > 0
-          // Use teal for data, neutral gray for no data
-          const borderHoverColour = theme === 'dark' ? '#14b8a6' : '#0d9488' // teal-500/600
+          // Use blue/indigo for data, neutral gray for no data
+          const borderHoverColour = theme === 'dark' ? '#818cf8' : '#4f46e5' // indigo-400/600
           const borderNeutralHoverColour = theme === 'dark' ? '#64748b' : '#94a3b8' // slate-500/400
           const pathLayer = layer as unknown as Path
           const canSetStyle = typeof (pathLayer as any).setStyle === 'function'
@@ -386,9 +386,9 @@ const InteractiveMapCore = ({
             onClick={() => onFullscreenToggle(true)}
             aria-label='Fullscreen'
             title='Fullscreen'
-            className='rounded-md bg-white/80 p-1.5 text-gray-700 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:text-gray-900 hover:shadow-md dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+            className='rounded-md border border-gray-300 bg-gray-50 p-1.5 text-gray-700 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
           >
-            <ArrowsPointingOutIcon className='size-5' />
+            <ArrowsPointingOutIcon className='size-4' />
           </button>
         </div>
       ) : null}
@@ -472,7 +472,7 @@ const InteractiveMapCore = ({
             <span>{tooltipContent.name}</span>
           </div>
           <div className='mt-0.5'>
-            <span className='font-bold text-teal-600 dark:text-teal-400'>
+            <span className='font-bold text-indigo-600 dark:text-indigo-400'>
               {isTrafficTab || isErrorsTab
                 ? nFormatter(tooltipContent.count, 1)
                 : getStringFromTime(getTimeFromSeconds(tooltipContent.count), true)}
@@ -503,7 +503,7 @@ const InteractiveMap = ({
       fallback={
         <div className='relative flex h-full w-full items-center justify-center'>
           <div className='flex flex-col items-center gap-2'>
-            <div className='h-8 w-8 animate-spin rounded-full border-2 border-teal-400 border-t-transparent'></div>
+            <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent'></div>
             <span className='text-sm text-neutral-600 dark:text-neutral-300'>{t('project.loadingMapData')}</span>
           </div>
         </div>

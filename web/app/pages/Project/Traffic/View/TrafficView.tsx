@@ -912,7 +912,7 @@ const TrafficView = ({
           fallback={
             <div className='flex h-full flex-1 items-center justify-center'>
               <div className='flex flex-col items-center gap-2'>
-                <div className='h-8 w-8 animate-spin rounded-full border-2 border-teal-400 border-t-transparent' />
+                <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent' />
                 <span className='text-sm text-neutral-600 dark:text-neutral-300'>Loading map...</span>
               </div>
             </div>
@@ -1127,7 +1127,7 @@ const TrafficView = ({
                                   fallback={
                                     <div className='flex h-full items-center justify-center'>
                                       <div className='flex flex-col items-center gap-2'>
-                                        <div className='h-8 w-8 animate-spin rounded-full border-2 border-teal-400 border-t-transparent'></div>
+                                        <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent'></div>
                                         <span className='text-sm text-neutral-600 dark:text-neutral-300'>
                                           Loading map...
                                         </span>
