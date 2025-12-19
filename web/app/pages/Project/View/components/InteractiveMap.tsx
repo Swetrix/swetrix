@@ -271,8 +271,15 @@ const InteractiveMapCore = ({
         mouseover: (e: any) => {
           const resultNow = findDataForFeature(feature)
           const hasData = (resultNow?.data?.count || 0) > 0
-          // Use blue/indigo for data, neutral gray for no data
-          const borderHoverColour = theme === 'dark' ? '#818cf8' : '#4f46e5' // indigo-400/600
+          // Use contextual colors based on tab: indigo for traffic, neutral for performance (to not clash with green-red), red-ish for errors
+          let borderHoverColour: string
+          if (isPerformanceTab) {
+            borderHoverColour = theme === 'dark' ? '#e2e8f0' : '#334155' // slate-200/700 - neutral for green-red palette
+          } else if (isErrorsTab) {
+            borderHoverColour = theme === 'dark' ? '#f87171' : '#dc2626' // red-400/600
+          } else {
+            borderHoverColour = theme === 'dark' ? '#818cf8' : '#4f46e5' // indigo-400/600 for traffic
+          }
           const borderNeutralHoverColour = theme === 'dark' ? '#64748b' : '#94a3b8' // slate-500/400
           const pathLayer = layer as unknown as Path
           const canSetStyle = typeof (pathLayer as any).setStyle === 'function'
