@@ -16,7 +16,7 @@ export class ConnectRevenueDto {
 
   @ApiProperty({
     description:
-      'API key for the selected provider. Stripe: rk_live_* or rk_test_*. Paddle: pdl_live_*, pdl_test_* or pdl_sdbx_*.',
+      'API key for the selected provider. Stripe: rk_live_*. Paddle: pdl_live_*.',
     examples: {
       stripe: { value: 'rk_live_xxxxxxxxxxxxxxxx' },
       paddle: { value: 'pdl_live_xxxxxxxxxxxxxxxx' },

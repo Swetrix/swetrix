@@ -9,14 +9,13 @@ import {
 
 export class ConnectPaddleDto {
   @ApiProperty({
-    description: 'Paddle API key (pdl_live_*, pdl_test_* or pdl_sdbx_*)',
+    description: 'Paddle API key (pdl_live_*)',
     example: 'pdl_live_xxxxxxxxxxxxxxxx',
   })
   @IsNotEmpty()
   @IsString()
-  @Matches(/^pdl_(live|test|sdbx)_/, {
-    message:
-      'Invalid Paddle API key format. Key should start with pdl_live_ or pdl_test_',
+  @Matches(/^pdl_live_/, {
+    message: 'Invalid Paddle API key format. Key should start with pdl_live_',
   })
   apiKey: string
 
