@@ -1,4 +1,5 @@
-import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline'
+import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import cx from 'clsx'
 import { scalePow, scaleQuantize } from 'd3-scale'
 import { Feature, GeoJsonObject } from 'geojson'
 import { Layer, Path } from 'leaflet'
@@ -14,7 +15,6 @@ import { Entry } from '~/lib/models/Entry'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
 import Spin from '~/ui/icons/Spin'
-import Modal from '~/ui/Modal'
 import { getTimeFromSeconds, getStringFromTime, nFormatter } from '~/utils/generic'
 import { loadCountriesGeoData, loadRegionsGeoData } from '~/utils/geoData'
 
@@ -26,9 +26,19 @@ interface InteractiveMapProps {
   onClick: (type: 'cc' | 'rg', key: string) => void
   total: number
   showFullscreenToggle?: boolean
+  onFullscreenToggle?: (isFullscreen: boolean) => void
+  isFullscreen?: boolean
 }
 
-const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenToggle = true }: InteractiveMapProps) => {
+const InteractiveMapCore = ({
+  data,
+  regionData,
+  onClick,
+  total,
+  showFullscreenToggle = true,
+  onFullscreenToggle,
+  isFullscreen = false,
+}: InteractiveMapProps) => {
   const { t } = useTranslation('common')
   const { activeTab, dataLoading } = useViewProjectContext()
   const { theme } = useTheme()
@@ -46,7 +56,6 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
   const tooltipRef = useRef<HTMLDivElement | null>(null)
   const rafRef = useRef<number | null>(null)
   const mousePosRef = useRef({ x: 0, y: 0 })
-  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false)
   const [geoJsonKey, setGeoJsonKey] = useState(0)
 
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -84,6 +93,23 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
       if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
     }
   }, [])
+
+  // Handle Escape key to close fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen && onFullscreenToggle) {
+        onFullscreenToggle(false)
+      }
+    }
+
+    if (isFullscreen) {
+      document.addEventListener('keydown', handleKeyDown)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isFullscreen, onFullscreenToggle])
 
   const repositionTooltip = useCallback((x: number, y: number) => {
     mousePosRef.current = { x, y }
@@ -151,33 +177,33 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
       return scalePow<string>()
         .exponent(0.4)
         .domain([0, maxValue])
-        .range(['hsla(0, 75%, 50%, 0.08)', 'hsla(0, 75%, 45%, 0.85)'])
+        .range(['hsla(0, 60%, 55%, 0.15)', 'hsla(0, 70%, 50%, 0.9)'])
     }
 
     // Performance: discrete, darker Tailwind palette with 80% opacity -> blue (fast) to warm (slow)
     if (isPerformanceTab) {
       if (minValue === maxValue) {
-        const singleColor = 'rgba(29, 78, 216, 0.8)' // blue-700 @ 80%
+        const singleColor = 'rgba(34, 197, 94, 0.85)' // green-500 @ 85%
         return () => singleColor
       }
       const perfColors = [
-        'rgba(29, 78, 216, 0.8)', // blue-700 @ 80%
-        'rgba(37, 99, 235, 0.8)', // blue-600 @ 80%
-        'rgba(59, 130, 246, 0.8)', // blue-500 @ 80%
-        'rgba(217, 119, 6, 0.8)', // amber-600 @ 80%
-        'rgba(234, 88, 12, 0.8)', // orange-600 @ 80%
-        'rgba(220, 38, 38, 0.8)', // red-600 @ 80%
-        'rgba(185, 28, 28, 0.8)', // red-700 @ 80%
-        'rgba(153, 27, 27, 0.8)', // red-800 @ 80%
+        'rgba(34, 197, 94, 0.85)', // green-500 @ 85% (fast)
+        'rgba(74, 222, 128, 0.85)', // green-400 @ 85%
+        'rgba(163, 230, 53, 0.85)', // lime-400 @ 85%
+        'rgba(250, 204, 21, 0.85)', // yellow-400 @ 85%
+        'rgba(251, 146, 60, 0.85)', // orange-400 @ 85%
+        'rgba(239, 68, 68, 0.85)', // red-500 @ 85%
+        'rgba(220, 38, 38, 0.85)', // red-600 @ 85%
+        'rgba(185, 28, 28, 0.85)', // red-700 @ 85% (slow)
       ]
       return scaleQuantize<string>().domain([minValue, maxValue]).range(perfColors)
     }
 
-    // Traffic (default): light to saturated blue with power easing
+    // Traffic (default): teal gradient for a fresh, modern look
     return scalePow<string>()
       .exponent(0.4)
       .domain([0, maxValue])
-      .range(['hsla(220, 70%, 50%, 0.05)', 'hsla(220, 70%, 50%, 0.8)'])
+      .range(['hsla(168, 70%, 45%, 0.15)', 'hsla(168, 75%, 40%, 0.9)'])
   }, [data, regionData, mapView, isErrorsTab, isPerformanceTab])
 
   const findDataForFeature = useCallback(
@@ -218,16 +244,19 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
       const result = findDataForFeature(feature)
       const metricValue = result?.data?.count || 0
 
-      const fill = metricValue > 0 ? colorScale(metricValue) : 'rgba(180, 180, 180, 0.3)'
+      // No-data countries: subtle, muted gray that blends with the background
+      const noDataFill = theme === 'dark' ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.6)'
+      const fill = metricValue > 0 ? colorScale(metricValue) : noDataFill
 
-      const borderBaseColour = theme === 'dark' ? '#475569' : '#cbd5e1'
+      // Borders: very subtle, almost invisible for cleaner look
+      const borderBaseColour = theme === 'dark' ? 'rgba(71, 85, 105, 0.4)' : 'rgba(148, 163, 184, 0.35)'
 
       return {
         color: borderBaseColour,
-        weight: mapView === 'regions' ? 0.8 : 0.5,
+        weight: mapView === 'regions' ? 0.6 : 0.4,
         fill: true,
         fillColor: fill,
-        fillOpacity: metricValue > 0 ? 0.7 : 0.3,
+        fillOpacity: metricValue > 0 ? 0.85 : 0.4,
         opacity: 1,
         smoothFactor: mapView === 'regions' ? 1 : 0.3,
         className: 'transition-[stroke,stroke-width,fill-opacity] duration-200 ease-out',
@@ -242,8 +271,9 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
         mouseover: (e: any) => {
           const resultNow = findDataForFeature(feature)
           const hasData = (resultNow?.data?.count || 0) > 0
-          const borderHoverColour = theme === 'dark' ? '#1d4ed8' : '#60a5fa'
-          const borderNeutralHoverColour = '#94a3b8' // slate-400
+          // Use teal for data, neutral gray for no data
+          const borderHoverColour = theme === 'dark' ? '#14b8a6' : '#0d9488' // teal-500/600
+          const borderNeutralHoverColour = theme === 'dark' ? '#64748b' : '#94a3b8' // slate-500/400
           const pathLayer = layer as unknown as Path
           const canSetStyle = typeof (pathLayer as any).setStyle === 'function'
           if (canSetStyle) {
@@ -342,20 +372,39 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
   )
 
   return (
-    <div className='relative h-full w-full' onMouseMove={handleMouseMove}>
-      {showFullscreenToggle ? (
-        <div className='absolute top-0.5 right-0.5 z-20'>
+    <div
+      className={cx('relative h-full w-full', {
+        'bg-slate-100 dark:bg-slate-950': isFullscreen,
+      })}
+      onMouseMove={handleMouseMove}
+    >
+      {/* Fullscreen toggle button (expand) */}
+      {showFullscreenToggle && !isFullscreen && onFullscreenToggle ? (
+        <div className='absolute top-1 right-1 z-20'>
           <button
             type='button'
-            onClick={() => setIsFullscreenOpen(true)}
+            onClick={() => onFullscreenToggle(true)}
             aria-label='Fullscreen'
             title='Fullscreen'
-            className='rounded-md p-1.5 text-gray-800 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+            className='rounded-md bg-white/80 p-1.5 text-gray-700 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:text-gray-900 hover:shadow-md dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
           >
             <ArrowsPointingOutIcon className='size-5' />
           </button>
         </div>
       ) : null}
+
+      {/* Exit fullscreen button */}
+      {isFullscreen && onFullscreenToggle ? (
+        <button
+          type='button'
+          onClick={() => onFullscreenToggle(false)}
+          className='absolute top-3 left-3 z-50 flex items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+        >
+          <XMarkIcon className='mr-1.5 h-4 w-4' />
+          {t('common.close')}
+        </button>
+      ) : null}
+
       {dataLoading || isGeoDataLoading ? (
         <div className='absolute inset-0 z-10 flex items-center justify-center rounded-md bg-slate-900/20 backdrop-blur-sm'>
           <div className='flex flex-col items-center gap-2'>
@@ -370,7 +419,7 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
           center={[40, 3]}
           minZoom={1}
           maxZoom={8}
-          zoom={showFullscreenToggle ? 1 : 2}
+          zoom={isFullscreen ? 2 : 1}
           style={{
             height: '100%',
             background: 'transparent',
@@ -415,65 +464,38 @@ const InteractiveMapCore = ({ data, regionData, onClick, total, showFullscreenTo
       {tooltipContent ? (
         <div
           ref={tooltipRef}
-          className='pointer-events-none fixed z-50 rounded-md border bg-gray-100 p-2 text-sm text-gray-900 shadow-lg dark:bg-slate-900 dark:text-white'
+          className='pointer-events-none fixed z-50 rounded-md border border-gray-200 bg-white/95 p-2 text-sm text-gray-900 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 dark:text-white'
           style={{ left: 0, top: 0, transform: 'translate(-50%, -100%)' }}
         >
-          <div className='flex items-center gap-1 font-medium'>
+          <div className='flex items-center gap-1.5 font-medium'>
             <Flag className='rounded-xs' country={tooltipContent.code} size={18} alt='' aria-hidden='true' />
             <span>{tooltipContent.name}</span>
           </div>
-          <div>
-            <span className='font-bold text-blue-600 dark:text-blue-400'>
+          <div className='mt-0.5'>
+            <span className='font-bold text-teal-600 dark:text-teal-400'>
               {isTrafficTab || isErrorsTab
                 ? nFormatter(tooltipContent.count, 1)
                 : getStringFromTime(getTimeFromSeconds(tooltipContent.count), true)}
             </span>{' '}
-            <span className='text-gray-600 dark:text-gray-300'>
+            <span className='text-gray-500 dark:text-gray-400'>
               ({tooltipContent.percentage.toFixed(1)}%)
               {isTrafficTab ? ' visitors' : isErrorsTab ? ' occurrences' : ' avg load time'}
             </span>
           </div>
         </div>
       ) : null}
-
-      <Modal
-        isOpened={isFullscreenOpen}
-        onClose={() => setIsFullscreenOpen(false)}
-        closeText={t('common.close')}
-        size='large'
-        overflowVisible
-        message={
-          <div className='h-[70vh] w-full'>
-            <ClientOnly
-              fallback={
-                <div className='relative flex h-full w-full items-center justify-center'>
-                  <div className='flex flex-col items-center gap-2'>
-                    <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
-                    <span className='text-sm text-neutral-600 dark:text-neutral-300'>
-                      {t('project.loadingMapData')}
-                    </span>
-                  </div>
-                </div>
-              }
-            >
-              {() => (
-                <InteractiveMapCore
-                  data={data}
-                  regionData={regionData}
-                  onClick={onClick}
-                  total={total}
-                  showFullscreenToggle={false}
-                />
-              )}
-            </ClientOnly>
-          </div>
-        }
-      />
     </div>
   )
 }
 
-const InteractiveMap = ({ data, regionData, onClick, total }: InteractiveMapProps) => {
+const InteractiveMap = ({
+  data,
+  regionData,
+  onClick,
+  total,
+  onFullscreenToggle,
+  isFullscreen,
+}: InteractiveMapProps) => {
   const { t } = useTranslation('common')
 
   return (
@@ -481,13 +503,22 @@ const InteractiveMap = ({ data, regionData, onClick, total }: InteractiveMapProp
       fallback={
         <div className='relative flex h-full w-full items-center justify-center'>
           <div className='flex flex-col items-center gap-2'>
-            <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
+            <div className='h-8 w-8 animate-spin rounded-full border-2 border-teal-400 border-t-transparent'></div>
             <span className='text-sm text-neutral-600 dark:text-neutral-300'>{t('project.loadingMapData')}</span>
           </div>
         </div>
       }
     >
-      {() => <InteractiveMapCore data={data} regionData={regionData} onClick={onClick} total={total} />}
+      {() => (
+        <InteractiveMapCore
+          data={data}
+          regionData={regionData}
+          onClick={onClick}
+          total={total}
+          onFullscreenToggle={onFullscreenToggle}
+          isFullscreen={isFullscreen}
+        />
+      )}
     </ClientOnly>
   )
 }

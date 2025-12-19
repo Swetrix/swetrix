@@ -208,6 +208,9 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     device: 'br',
   })
 
+  // Map fullscreen state
+  const [isMapFullscreen, setIsMapFullscreen] = useState(false)
+
   const isMountedRef = useRef(true)
 
   // Cleanup on unmount
@@ -544,6 +547,40 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     )
   }
 
+  // Fullscreen map view - takes over the entire content area
+  if (isMapFullscreen) {
+    const countryData = panelsData.data?.cc || []
+    const regionData = panelsData.data?.rg || []
+    const total = countryData.reduce((acc: number, curr: any) => acc + curr.count, 0)
+
+    return (
+      <div className='-mx-4 -my-2 flex h-full min-h-[calc(100vh-8rem)] flex-col sm:-mx-6 lg:-mx-8'>
+        <Suspense
+          fallback={
+            <div className='flex h-full flex-1 items-center justify-center'>
+              <div className='flex flex-col items-center gap-2'>
+                <div className='h-8 w-8 animate-spin rounded-full border-2 border-teal-400 border-t-transparent' />
+                <span className='text-sm text-neutral-600 dark:text-neutral-300'>Loading map...</span>
+              </div>
+            </div>
+          }
+        >
+          <InteractiveMap
+            data={countryData}
+            regionData={regionData}
+            total={total}
+            onClick={(type, key) => {
+              const link = getFilterLink(type, key)
+              navigate(link)
+            }}
+            onFullscreenToggle={setIsMapFullscreen}
+            isFullscreen={true}
+          />
+        </Suspense>
+      </div>
+    )
+  }
+
   return (
     <>
       <DashboardHeader />
@@ -663,7 +700,7 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
                                   fallback={
                                     <div className='flex h-full items-center justify-center'>
                                       <div className='flex flex-col items-center gap-2'>
-                                        <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
+                                        <div className='h-8 w-8 animate-spin rounded-full border-2 border-teal-400 border-t-transparent'></div>
                                         <span className='text-sm text-neutral-600 dark:text-neutral-300'>
                                           Loading map...
                                         </span>
@@ -679,6 +716,8 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
                                       const link = getFilterLink(type, key)
                                       navigate(link)
                                     }}
+                                    onFullscreenToggle={setIsMapFullscreen}
+                                    isFullscreen={false}
                                   />
                                 </Suspense>
                               )
