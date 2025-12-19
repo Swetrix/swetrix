@@ -1,7 +1,5 @@
 export enum RevenueProvider {
   STRIPE = 'stripe',
-  POLAR = 'polar',
-  LEMONSQUEEZY = 'lemonsqueezy',
   PADDLE = 'paddle',
 }
 
