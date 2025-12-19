@@ -35,33 +35,6 @@ export interface RevenueTransaction {
   syncedAt: Date
 }
 
-export interface RevenueStats {
-  totalRevenue: number
-  salesCount: number
-  refundsCount: number
-  refundsAmount: number
-  averageOrderValue: number
-  currency: string
-}
-
-export interface RevenueChartData {
-  x: string[]
-  revenue: number[]
-  salesCount: number[]
-  refundsAmount: number[]
-}
-
-export interface RevenueBreakdown {
-  bySource: { name: string; revenue: number; count: number }[]
-  byCountry: { name: string; revenue: number; count: number }[]
-  byProduct: { name: string; revenue: number; count: number }[]
-}
-
-export interface PaddleApiKey {
-  permissions: string[]
-  createdAt: Date
-}
-
 export const PADDLE_REQUIRED_PERMISSIONS = [
   'transaction.read',
   'subscription.read',
@@ -69,9 +42,6 @@ export const PADDLE_REQUIRED_PERMISSIONS = [
   'product.read',
   'price.read',
 ]
-
-// TODO: Change to vendors.paddle.com when merging to main
-export const PADDLE_API_KEY_CREATE_URL = `https://sandbox-vendors.paddle.com/authentication-v2`
 
 // Stripe restricted key permissions (rak_*) that we request
 export const STRIPE_REQUIRED_PERMISSIONS = [

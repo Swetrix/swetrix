@@ -60,7 +60,10 @@ export class CurrencyService {
     return amountInUsd / toRateInUsd
   }
 
-  private async getRates(): Promise<Record<string, Record<string, number>> | null> {
+  private async getRates(): Promise<Record<
+    string,
+    Record<string, number>
+  > | null> {
     try {
       const cached = await redis.get(this.CACHE_KEY)
       if (cached) {

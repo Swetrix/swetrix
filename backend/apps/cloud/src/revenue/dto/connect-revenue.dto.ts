@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty, IsOptional, IsString, Length, IsIn } from 'class-validator'
 
-export type RevenueProviderDto = 'stripe' | 'paddle'
+type RevenueProviderDto = 'stripe' | 'paddle'
 
 export class ConnectRevenueDto {
   @ApiProperty({

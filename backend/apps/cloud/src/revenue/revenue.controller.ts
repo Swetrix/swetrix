@@ -215,7 +215,10 @@ export class RevenueController {
         }
       }
     } catch (error) {
-      this.logger.error({ error, pid }, 'Failed to trigger re-sync after currency update')
+      this.logger.error(
+        { error, pid },
+        'Failed to trigger re-sync after currency update',
+      )
       // Don't throw here, as currency was updated successfully
     }
 

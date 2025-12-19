@@ -1924,65 +1924,65 @@ export class TaskManagerService {
     await mapLimit(users, REPORTS_USERS_CONCURRENCY, async user => {
       const { id, projects } = user
 
-      if (_isEmpty(projects) || _isNull(projects)) {
-        return
-      }
+      try {
+        if (_isEmpty(projects) || _isNull(projects)) {
+          return
+        }
 
-      const pids = _map(projects, p => p.id)
-      const queryParams = {
-        pids,
-        nineWeeksAgo,
-        now,
-      }
+        const pids = _map(projects, p => p.id)
+        const queryParams = {
+          pids,
+          nineWeeksAgo,
+          now,
+        }
 
-      // No need to check for performance activity because it's not tracked without tracking analytics
-      const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
-      const queryCaptcha = `SELECT count() FROM captcha WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
-      const queryCustomEvents = `SELECT count() FROM customEV WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        // No need to check for performance activity because it's not tracked without tracking analytics
+        const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryCaptcha = `SELECT count() FROM captcha WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryCustomEvents = `SELECT count() FROM customEV WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
 
-      const { data: analyticsResult } = await clickhouse
-        .query({
-          query: queryAnalytics,
-          query_params: queryParams,
+        const { data: analyticsResult } = await clickhouse
+          .query({
+            query: queryAnalytics,
+            query_params: queryParams,
+          })
+          .then(resultSet => resultSet.json<{ 'count()': number }>())
+
+        if (analyticsResult[0]['count()'] > 0) {
+          return
+        }
+
+        const { data: captchaResult } = await clickhouse
+          .query({
+            query: queryCaptcha,
+            query_params: queryParams,
+          })
+          .then(resultSet => resultSet.json<{ 'count()': number }>())
+
+        if (captchaResult[0]['count()'] > 0) {
+          return
+        }
+
+        const { data: customEventsResult } = await clickhouse
+          .query({
+            query: queryCustomEvents,
+            query_params: queryParams,
+          })
+          .then(resultSet => resultSet.json<{ 'count()': number }>())
+
+        if (customEventsResult[0]['count()'] > 0) {
+          return
+        }
+
+        await this.userService.update(id, {
+          reportFrequency: ReportFrequency.NEVER,
         })
-        .then(resultSet => resultSet.json<{ 'count()': number }>())
-
-      if (analyticsResult[0]['count()'] > 0) {
-        return
+      } catch (reason) {
+        this.logger.error(
+          '[CRON WORKER](disableReportsForInactiveUsers) Error occured:',
+          reason,
+        )
       }
-
-      const { data: captchaResult } = await clickhouse
-        .query({
-          query: queryCaptcha,
-          query_params: queryParams,
-        })
-        .then(resultSet => resultSet.json<{ 'count()': number }>())
-
-      if (captchaResult[0]['count()'] > 0) {
-        return
-      }
-
-      const { data: customEventsResult } = await clickhouse
-        .query({
-          query: queryCustomEvents,
-          query_params: queryParams,
-        })
-        .then(resultSet => resultSet.json<{ 'count()': number }>())
-
-      if (customEventsResult[0]['count()'] > 0) {
-        return
-      }
-
-      await this.userService.update(id, {
-        reportFrequency: ReportFrequency.NEVER,
-      })
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        '[CRON WORKER](disableReportsForInactiveUsers) Error occured:',
-        reason,
-      )
     })
   }
 
