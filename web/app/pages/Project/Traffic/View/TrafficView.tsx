@@ -179,7 +179,6 @@ const TrafficView = ({
   const [overallCompare, setOverallCompare] = useState<Partial<OverallObject>>({})
   const [dataChartCompare, setDataChartCompare] = useState<any>({})
   const [customEventsChartData, setCustomEventsChartData] = useState<any>({})
-  const [revenueChartData, setRevenueChartData] = useState<number[]>([])
 
   // Chart metrics state
   const [activeChartMetrics, setActiveChartMetrics] = useState({
@@ -641,7 +640,6 @@ const TrafficView = ({
               refundsData = []
             }
           }
-          setRevenueChartData(revenueData)
 
           // Merge revenue data with chart
           const chartWithRevenue = {
