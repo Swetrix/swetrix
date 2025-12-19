@@ -11,7 +11,6 @@ import {
   IPageViewPayload,
   FeatureFlagsOptions,
   ExperimentOptions,
-  TrackPaymentOptions,
 } from './Lib.js'
 
 export let LIB_INSTANCE: Lib | null = null
@@ -321,32 +320,6 @@ export async function getSessionId(): Promise<string | null> {
   return LIB_INSTANCE.getSessionId()
 }
 
-/**
- * Track a payment event for revenue attribution.
- * Use this when you want to manually log a payment event without relying on
- * automatic sync from payment providers.
- *
- * @param options - Payment event options.
- * @returns A promise that resolves to true if the event was logged successfully.
- *
- * @example
- * ```typescript
- * // Log a payment event after a successful purchase
- * await trackPayment({
- *   profileId: await getProfileId(),
- *   sessionId: await getSessionId(),
- *   amount: 29.99,
- *   currency: 'USD',
- *   transactionId: 'txn_123456'
- * })
- * ```
- */
-export async function trackPayment(options?: TrackPaymentOptions): Promise<boolean> {
-  if (!LIB_INSTANCE) return false
-
-  return LIB_INSTANCE.trackPayment(options)
-}
-
 export {
   LibOptions,
   TrackEventOptions,
@@ -358,5 +331,4 @@ export {
   IPageViewPayload,
   FeatureFlagsOptions,
   ExperimentOptions,
-  TrackPaymentOptions,
 }

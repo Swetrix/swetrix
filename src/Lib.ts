@@ -216,41 +216,6 @@ export interface PageViewsOptions {
   callback?: (payload: IPageViewPayload) => Partial<IPageViewPayload> | boolean
 }
 
-/**
- * Options for tracking payment events.
- */
-export interface TrackPaymentOptions {
-  /**
-   * Optional profile ID for attribution. If not provided, it will be generated server-side.
-   */
-  profileId?: string
-
-  /**
-   * Optional session ID for attribution. If not provided, it will be generated server-side.
-   */
-  sessionId?: string
-
-  /**
-   * Optional transaction ID from your payment provider.
-   */
-  transactionId?: string
-
-  /**
-   * Payment amount.
-   */
-  amount?: number
-
-  /**
-   * Currency code (ISO 4217), e.g., 'USD', 'EUR'.
-   */
-  currency?: string
-
-  /**
-   * Additional metadata for the payment event.
-   */
-  metadata?: Record<string, string | number | boolean>
-}
-
 export const defaultActions = {
   stop() {},
 }
@@ -727,60 +692,6 @@ export class Lib {
       return data.sessionId
     } catch {
       return null
-    }
-  }
-
-  /**
-   * Track a payment event for revenue attribution.
-   * Use this when you want to manually log a payment event without relying on
-   * automatic sync from payment providers.
-   *
-   * @param options - Payment event options.
-   * @returns A promise that resolves to true if the event was logged successfully.
-   *
-   * @example
-   * ```typescript
-   * // Log a payment event after a successful purchase
-   * await swetrix.trackPayment({
-   *   profileId: await swetrix.getProfileId(),
-   *   sessionId: await swetrix.getSessionId(),
-   *   amount: 29.99,
-   *   currency: 'USD',
-   *   transactionId: 'txn_123456'
-   * })
-   * ```
-   */
-  async trackPayment(options?: TrackPaymentOptions): Promise<boolean> {
-    if (!isInBrowser()) {
-      return false
-    }
-
-    try {
-      const apiBase = this.getApiBase()
-      const response = await fetch(`${apiBase}/log/payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          pid: this.projectID,
-          profileId: options?.profileId ?? this.options?.profileId,
-          sessionId: options?.sessionId,
-          transactionId: options?.transactionId,
-          amount: options?.amount,
-          currency: options?.currency,
-          metadata: options?.metadata,
-        }),
-      })
-
-      if (!response.ok) {
-        return false
-      }
-
-      const data = (await response.json()) as { success: boolean }
-      return data.success
-    } catch {
-      return false
     }
   }
 
