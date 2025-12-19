@@ -22,6 +22,7 @@ import {
   getPropertyMetadata,
   getGSCKeywords,
   getRevenueData,
+  getRevenueStatus,
 } from '~/api'
 import { useAnnotations } from '~/hooks/useAnnotations'
 import { TRAFFIC_PANELS_ORDER, chartTypes, PERIOD_PAIRS_COMPARE, isSelfhosted, type TimeBucket } from '~/lib/constants'
@@ -179,6 +180,7 @@ const TrafficView = ({
   const [overallCompare, setOverallCompare] = useState<Partial<OverallObject>>({})
   const [dataChartCompare, setDataChartCompare] = useState<any>({})
   const [customEventsChartData, setCustomEventsChartData] = useState<any>({})
+  const [isRevenueConnected, setIsRevenueConnected] = useState(false)
 
   // Chart metrics state
   const [activeChartMetrics, setActiveChartMetrics] = useState({
@@ -226,6 +228,26 @@ const TrafficView = ({
     }
   }, [])
 
+  // Fetch revenue status
+  useEffect(() => {
+    const fetchRevenueStatus = async () => {
+      if (!id || isSelfhosted) {
+        return
+      }
+
+      try {
+        const status = await getRevenueStatus(id)
+        if (isMountedRef.current) {
+          setIsRevenueConnected(status.connected)
+        }
+      } catch (error) {
+        console.error('[ERROR] (fetchRevenueStatus) Fetching revenue status failed', error)
+      }
+    }
+
+    fetchRevenueStatus()
+  }, [id])
+
   // Version data mapping for browser/OS versions
   const createVersionDataMapping = useMemo(() => {
     const browserDataSource = panelsData.data?.brv
@@ -270,7 +292,7 @@ const TrafficView = ({
           label: t('project.showAll'),
           active: activeChartMetrics[CHART_METRICS_MAPPING.views],
         },
-        !isSelfhosted
+        !isSelfhosted && isRevenueConnected
           ? {
               id: CHART_METRICS_MAPPING.revenue,
               label: t('dashboard.revenue'),
@@ -311,7 +333,7 @@ const TrafficView = ({
           active: activeChartMetrics[CHART_METRICS_MAPPING.customEvents],
         },
       ].filter(Boolean),
-    [t, activeChartMetrics],
+    [t, activeChartMetrics, isRevenueConnected],
   )
 
   const chartMetricsCustomEvents = useMemo(() => {
@@ -583,7 +605,7 @@ const TrafficView = ({
           // Fetch revenue data if revenue metric is enabled and not selfhosted
           let revenueData: number[] = []
           let refundsData: number[] = []
-          if (activeChartMetrics.revenue && !isSelfhosted) {
+          if (activeChartMetrics.revenue && !isSelfhosted && isRevenueConnected) {
             try {
               const revResult = await getRevenueData(
                 id,
@@ -768,6 +790,7 @@ const TrafficView = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeChartMetrics.revenue,
+    isRevenueConnected,
     mode,
     customMetrics,
     filters,
