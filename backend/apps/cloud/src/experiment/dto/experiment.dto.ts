@@ -6,7 +6,6 @@ import {
   IsArray,
   ValidateNested,
   IsBoolean,
-  IsNumber,
   IsInt,
   Min,
   Max,
@@ -136,7 +135,9 @@ export class CreateExperimentDto {
 
   @ApiProperty({ type: [ExperimentVariantDto] })
   @IsArray()
-  @ArrayMaxSize(20, { message: 'An experiment cannot have more than 20 variants' })
+  @ArrayMaxSize(20, {
+    message: 'An experiment cannot have more than 20 variants',
+  })
   @ValidateNested({ each: true })
   @Type(() => ExperimentVariantDto)
   variants: ExperimentVariantDto[]
@@ -211,7 +212,9 @@ export class UpdateExperimentDto {
   @ApiPropertyOptional({ type: [ExperimentVariantDto] })
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(20, { message: 'An experiment cannot have more than 20 variants' })
+  @ArrayMaxSize(20, {
+    message: 'An experiment cannot have more than 20 variants',
+  })
   @ValidateNested({ each: true })
   @Type(() => ExperimentVariantDto)
   variants?: ExperimentVariantDto[]

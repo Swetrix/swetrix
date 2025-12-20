@@ -49,7 +49,9 @@ export class TwoFactorAuthController {
     // Prevent re-issuing a new secret while 2FA is already enabled (would allow secret rotation
     // using only a pre-2FA access token).
     if (user.isTwoFactorAuthenticationEnabled) {
-      throw new BadRequestException('Two-factor authentication is already enabled')
+      throw new BadRequestException(
+        'Two-factor authentication is already enabled',
+      )
     }
 
     return this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(user)
@@ -79,11 +81,15 @@ export class TwoFactorAuthController {
     }
 
     if (user.isTwoFactorAuthenticationEnabled) {
-      throw new BadRequestException('Two-factor authentication is already enabled')
+      throw new BadRequestException(
+        'Two-factor authentication is already enabled',
+      )
     }
 
     if (!user.twoFactorAuthenticationSecret) {
-      throw new BadRequestException('Two-factor authentication is not initialised')
+      throw new BadRequestException(
+        'Two-factor authentication is not initialised',
+      )
     }
 
     const isCodeValid =

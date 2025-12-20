@@ -353,7 +353,7 @@ const InteractiveMapCore = ({
         },
       })
     },
-    [findDataForFeature, total, onClick, mapView, theme, handleStyle, repositionTooltip],
+    [findDataForFeature, total, onClick, mapView, theme, handleStyle, repositionTooltip, isErrorsTab, isPerformanceTab],
   )
 
   const MapEventHandler = () => {

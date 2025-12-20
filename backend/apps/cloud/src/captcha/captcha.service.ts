@@ -59,10 +59,7 @@ const getChallengeCacheKey = (challenge: string): string => {
 const signCaptchaCiphertext = (ciphertext: string, key: string): string => {
   // NOTE: Encryption alone (CryptoJS.Rabbit) is malleable; we add an HMAC to
   // prevent token tampering and replay-bypass via ciphertext bitflips.
-  return crypto
-    .createHmac('sha256', key)
-    .update(ciphertext)
-    .digest('base64url')
+  return crypto.createHmac('sha256', key).update(ciphertext).digest('base64url')
 }
 
 const timingSafeEqualString = (a: string, b: string): boolean => {
@@ -204,8 +201,14 @@ export class CaptchaService {
       pid,
     }
 
-    const ciphertext = encryptString(JSON.stringify(token), project.captchaSecretKey)
-    const signature = signCaptchaCiphertext(ciphertext, project.captchaSecretKey)
+    const ciphertext = encryptString(
+      JSON.stringify(token),
+      project.captchaSecretKey,
+    )
+    const signature = signCaptchaCiphertext(
+      ciphertext,
+      project.captchaSecretKey,
+    )
 
     // Token format: <ciphertext>.<hmac_sha256(ciphertext)>
     return `${ciphertext}.${signature}`

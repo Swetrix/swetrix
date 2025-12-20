@@ -237,11 +237,6 @@ export class StripeAdapter {
     const sessionId =
       metadata.swetrix_session_id || chargeMeta.swetrix_session_id || null
 
-    const customer =
-      intent.customer && typeof intent.customer !== 'string'
-        ? intent.customer
-        : null
-
     const productName =
       invoice?.lines?.data?.[0]?.description || intent.description || null
 

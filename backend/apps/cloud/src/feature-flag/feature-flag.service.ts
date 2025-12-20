@@ -42,10 +42,7 @@ export class FeatureFlagService {
       )
     }
 
-    queryBuilder
-      .orderBy('flag.key', 'ASC')
-      .take(safeTake)
-      .skip(safeSkip)
+    queryBuilder.orderBy('flag.key', 'ASC').take(safeTake).skip(safeSkip)
 
     const [results, total] = await queryBuilder.getManyAndCount()
 

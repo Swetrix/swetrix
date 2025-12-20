@@ -38,11 +38,11 @@ const GOALS_MAXIMUM = 50 // Maximum goals per project
 const timeBucketConversion: Record<string, string> = Object.assign(
   Object.create(null),
   {
-  minute: 'toStartOfMinute',
-  hour: 'toStartOfHour',
-  day: 'toStartOfDay',
-  month: 'toStartOfMonth',
-  year: 'toStartOfYear',
+    minute: 'toStartOfMinute',
+    hour: 'toStartOfHour',
+    day: 'toStartOfDay',
+    month: 'toStartOfMonth',
+    year: 'toStartOfYear',
   },
 )
 
@@ -567,10 +567,12 @@ export class GoalController {
     )
 
     const table = goal.type === GoalType.CUSTOM_EVENT ? 'customEV' : 'analytics'
-    const timeBucketFunc =
-      Object.prototype.hasOwnProperty.call(timeBucketConversion, resolvedTimeBucket)
-        ? timeBucketConversion[resolvedTimeBucket]
-        : 'toStartOfDay'
+    const timeBucketFunc = Object.prototype.hasOwnProperty.call(
+      timeBucketConversion,
+      resolvedTimeBucket,
+    )
+      ? timeBucketConversion[resolvedTimeBucket]
+      : 'toStartOfDay'
     const [selector, groupBy] = this.getGroupSubquery(resolvedTimeBucket)
 
     const { condition: matchCondition, params: matchParams } =

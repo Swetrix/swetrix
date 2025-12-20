@@ -154,7 +154,10 @@ const getArticlesMetaData = async () => {
       }),
     )
 
-    return _sortBy(_filter(articles, a => !!a), ['_date']).reverse()
+    return _sortBy(
+      _filter(articles, a => !!a),
+      ['_date'],
+    ).reverse()
   } catch {
     return null
   }
@@ -210,7 +213,9 @@ export class BlogService {
     let dirents: any[]
 
     try {
-      const dirPath = category ? resolveBlogPostsPath(category) : BLOG_POSTS_BASE
+      const dirPath = category
+        ? resolveBlogPostsPath(category)
+        : BLOG_POSTS_BASE
       dirents = await fs.readdir(dirPath, { withFileTypes: true })
     } catch (reason) {
       this.logger.warn(

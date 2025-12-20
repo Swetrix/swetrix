@@ -79,8 +79,6 @@ const MAX_PAGES_IN_FUNNEL = 10
 
 const TRAFFIC_SPIKE_ALLOWED_PERCENTAGE = 0.3
 
-const BLOG_POSTS_ROOT = 'blog-posts/posts'
-
 const BLOG_POSTS_PATH = isDevelopment
   ? path.join(__dirname, '../../../..', 'blog-posts', 'posts')
   : path.join(__dirname, '../..', 'blog-posts', 'posts')
@@ -216,7 +214,6 @@ export {
   MAX_PAGES_IN_FUNNEL,
   MAX_FUNNELS,
   ALL_COLUMNS,
-  BLOG_POSTS_ROOT,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
   AFFILIATE_CUT,
   PID_REGEX,

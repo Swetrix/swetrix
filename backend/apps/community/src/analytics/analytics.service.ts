@@ -303,7 +303,8 @@ export enum DataType {
 }
 
 const isValidOrigin = (origins: string[], origin: string) => {
-  const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const escapeRegex = (str: string) =>
+    str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
   for (let i = 0; i < _size(origins); ++i) {
     const allowedOrigin = origins[i]
@@ -4094,7 +4095,12 @@ export class AnalyticsService {
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { ...paramsData.params, timezone: safeTimezone, take, skip },
+        query_params: {
+          ...paramsData.params,
+          timezone: safeTimezone,
+          take,
+          skip,
+        },
       })
       .then(resultSet => resultSet.json())
 
@@ -4159,7 +4165,12 @@ export class AnalyticsService {
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { ...paramsData.params, timezone: safeTimezone, take, skip },
+        query_params: {
+          ...paramsData.params,
+          timezone: safeTimezone,
+          take,
+          skip,
+        },
       })
       .then(resultSet => resultSet.json())
 

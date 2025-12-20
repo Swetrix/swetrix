@@ -254,7 +254,9 @@ export default function App() {
         />
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.REMIX_ENV = ${JSON.stringify(REMIX_ENV).replace(/</g, '\\u003c').replace(/\u2028|\u2029/g, '')}`,
+            __html: `window.REMIX_ENV = ${JSON.stringify(REMIX_ENV)
+              .replace(/</g, '\\u003c')
+              .replace(/\u2028|\u2029/g, '')}`,
           }}
         />
       </head>

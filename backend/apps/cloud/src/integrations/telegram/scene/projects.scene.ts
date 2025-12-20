@@ -91,7 +91,9 @@ export class ProjectsScene {
     const safeProjectName = this.telegramService.escapeTelegramMarkdown(
       project.name,
     )
-    const safeProjectId = this.telegramService.escapeTelegramMarkdown(project.id)
+    const safeProjectId = this.telegramService.escapeTelegramMarkdown(
+      project.id,
+    )
 
     const text =
       `📊 *${safeProjectName}*` +
