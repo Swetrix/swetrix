@@ -20,8 +20,6 @@ import { TimeBucketType } from '../analytics/dto/getData.dto'
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
-// Allowed column names for filters to prevent SQL injection
-// Allowed column names for filters to prevent SQL injection
 const ALLOWED_FILTER_COLUMNS = new Set([
   'pg',
   'cc',
