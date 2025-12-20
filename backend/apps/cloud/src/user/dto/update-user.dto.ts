@@ -33,7 +33,7 @@ export class UpdateUserProfileDTO {
 
   @ApiProperty({ required: false, nullable: true })
   @Matches(
-    /^https:\/\/discord\.com\/api\/webhooks\/\d{17,20}\/[a-zA-Z0-9_-]+$/,
+    /^https:\/\/(?:[a-zA-Z0-9-]+\.)*discord\.com\/api\/webhooks\/\d{17,20}\/[a-zA-Z0-9_-]+$/,
     {
       message: 'Invalid Discord Webhook URL',
     },

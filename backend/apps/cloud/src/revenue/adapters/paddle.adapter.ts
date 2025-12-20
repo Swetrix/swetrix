@@ -78,6 +78,7 @@ interface PaddleListResponse<T> {
 @Injectable()
 export class PaddleAdapter {
   private readonly baseUrl = 'https://api.paddle.com'
+  private readonly PADDLE_REQUEST_TIMEOUT = 20000
 
   constructor(
     private readonly logger: AppLoggerService,
@@ -85,9 +86,18 @@ export class PaddleAdapter {
     private readonly currencyService: CurrencyService,
   ) {}
 
-  async validateApiKey(apiKey: string): Promise<boolean> {
+  async validateApiKey(
+    apiKey: string,
+    timeoutMs = this.PADDLE_REQUEST_TIMEOUT,
+  ): Promise<boolean> {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => {
+      controller.abort()
+    }, timeoutMs)
+
     try {
       const response = await fetch(`${this.baseUrl}/event-types`, {
+        signal: controller.signal,
         headers: {
           Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
@@ -96,8 +106,14 @@ export class PaddleAdapter {
 
       return response.ok
     } catch (error) {
-      this.logger.error({ error }, 'Failed to validate Paddle API key')
+      if (error.name === 'AbortError') {
+        this.logger.error('Paddle API request timed out')
+      } else {
+        this.logger.error({ error }, 'Failed to validate Paddle API key')
+      }
       return false
+    } finally {
+      clearTimeout(timeout)
     }
   }
 
@@ -179,15 +195,34 @@ export class PaddleAdapter {
         params.append('after', cursor)
       }
 
-      const response = await fetch(
-        `${this.baseUrl}/transactions?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
+      const controller = new AbortController()
+      const timeout = setTimeout(() => {
+        controller.abort()
+      }, this.PADDLE_REQUEST_TIMEOUT)
+
+      let response: Response
+      try {
+        response = await fetch(
+          `${this.baseUrl}/transactions?${params.toString()}`,
+          {
+            signal: controller.signal,
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
           },
-        },
-      )
+        )
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          this.logger.error(
+            'Paddle API request timed out fetching transactions',
+          )
+          throw new Error('Paddle API request timed out')
+        }
+        throw error
+      } finally {
+        clearTimeout(timeout)
+      }
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -237,15 +272,32 @@ export class PaddleAdapter {
         params.append('after', cursor)
       }
 
-      const response = await fetch(
-        `${this.baseUrl}/adjustments?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
+      const controller = new AbortController()
+      const timeout = setTimeout(() => {
+        controller.abort()
+      }, this.PADDLE_REQUEST_TIMEOUT)
+
+      let response: Response
+      try {
+        response = await fetch(
+          `${this.baseUrl}/adjustments?${params.toString()}`,
+          {
+            signal: controller.signal,
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
           },
-        },
-      )
+        )
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          this.logger.error('Paddle API request timed out fetching adjustments')
+          throw new Error('Paddle API request timed out')
+        }
+        throw error
+      } finally {
+        clearTimeout(timeout)
+      }
 
       if (!response.ok) {
         const errorText = await response.text()

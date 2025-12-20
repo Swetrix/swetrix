@@ -923,7 +923,6 @@ export class ExperimentController {
           e.pid = {pid:FixedString(12)}
           AND e.experimentId = {experimentId:String}
           AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
-          AND c.profileId IS NOT NULL
           AND c.created BETWEEN {groupFrom:String} AND {groupTo:String}
           AND c.created >= e.created
           AND ${matchCondition}
@@ -1006,10 +1005,16 @@ export class ExperimentController {
 
     const totalExposures = _sum(variantResults.map(v => v.exposures))
     const totalConversions = _sum(variantResults.map(v => v.conversions))
-    const highestProbVariant = variantResults.reduce((a, b) =>
-      a.probabilityOfBeingBest > b.probabilityOfBeingBest ? a : b,
-    )
-    const hasWinner = highestProbVariant.probabilityOfBeingBest >= 95
+
+    let highestProbVariant: VariantResultDto | null = null
+    let hasWinner = false
+
+    if (variantResults.length > 0) {
+      highestProbVariant = variantResults.reduce((a, b) =>
+        a.probabilityOfBeingBest > b.probabilityOfBeingBest ? a : b,
+      )
+      hasWinner = highestProbVariant.probabilityOfBeingBest >= 95
+    }
 
     let chart:
       | { x: string[]; winProbability: Record<string, number[]> }
@@ -1036,7 +1041,8 @@ export class ExperimentController {
       totalExposures,
       totalConversions,
       hasWinner,
-      winnerKey: hasWinner ? highestProbVariant.key : null,
+      winnerKey:
+        hasWinner && highestProbVariant ? highestProbVariant.key : null,
       confidenceLevel: 95,
       chart,
       timeBucket: allowedTimeBucketForPeriodAll,
@@ -1164,7 +1170,6 @@ export class ExperimentController {
             e.pid = {pid:FixedString(12)}
             AND e.experimentId = {experimentId:String}
             AND e.created BETWEEN {groupFrom:String} AND {groupTo:String}
-            AND c.profileId IS NOT NULL
             AND c.created BETWEEN {groupFrom:String} AND {groupTo:String}
             AND c.created >= e.created
             AND ${matchCondition}

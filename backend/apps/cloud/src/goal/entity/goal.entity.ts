@@ -17,7 +17,6 @@ export enum GoalType {
 export enum GoalMatchType {
   EXACT = 'exact',
   CONTAINS = 'contains',
-  REGEX = 'regex',
 }
 
 export interface MetadataFilter {

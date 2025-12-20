@@ -4338,12 +4338,22 @@ export class AnalyticsService {
         const amountEntry = processedMetadata.find(m => m.key === 'amount')
         const currencyEntry = processedMetadata.find(m => m.key === 'currency')
 
+        let amount: number | undefined
+
+        if (amountEntry) {
+          const parsedAmount = parseFloat(amountEntry.value)
+
+          if (Number.isFinite(parsedAmount) && parsedAmount >= 0) {
+            amount = parsedAmount
+          }
+        }
+
         return {
           ...page,
           metadata: processedMetadata.filter(
             m => m.key !== 'amount' && m.key !== 'currency',
           ),
-          amount: amountEntry ? parseFloat(amountEntry.value) : undefined,
+          amount,
           currency: currencyEntry ? currencyEntry.value : undefined,
         }
       }

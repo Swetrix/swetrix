@@ -25,7 +25,7 @@ import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { RevenueService } from './revenue.service'
 import { PaddleAdapter } from './adapters/paddle.adapter'
 import { StripeAdapter } from './adapters/stripe.adapter'
-import { UpdateRevenueCurrencyDto } from './dto/connect-paddle.dto'
+import { UpdateRevenueCurrencyDto } from './dto/update-revenue-currency.dto'
 import { ConnectRevenueDto } from './dto/connect-revenue.dto'
 import { GetRevenueDto, GetRevenueTransactionsDto } from './dto/get-revenue.dto'
 import {

@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindManyOptions, FindOneOptions, Repository, ILike } from 'typeorm'
+import {
+  FindManyOptions,
+  FindOneOptions,
+  Repository,
+  ILike,
+  UpdateResult,
+  DeleteResult,
+} from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Goal } from './entity/goal.entity'
 
@@ -26,15 +33,16 @@ export class GoalService {
         ? Math.min(Math.max(options.skip, 0), 50_000)
         : 0
 
-    let finalWhere: FindManyOptions<Goal>['where'] = where
+    const normalizedWhere = Array.isArray(where) ? where : [where ?? {}]
+    let finalWhere: FindManyOptions<Goal>['where'] = normalizedWhere
 
     if (search && search.trim()) {
       const searchPattern = `%${search.trim()}%`
       // Use array of where conditions for OR with the base where conditions
-      finalWhere = [
-        { ...where, name: ILike(searchPattern) },
-        { ...where, value: ILike(searchPattern) },
-      ]
+      finalWhere = normalizedWhere.flatMap(condition => [
+        { ...condition, name: ILike(searchPattern) },
+        { ...condition, value: ILike(searchPattern) },
+      ])
     }
 
     const [results, total] = await this.goalsRepository.findAndCount({
@@ -83,11 +91,11 @@ export class GoalService {
     return this.goalsRepository.save(goalData)
   }
 
-  async update(id: string, goalData: Partial<Goal>): Promise<any> {
+  async update(id: string, goalData: Partial<Goal>): Promise<UpdateResult> {
     return this.goalsRepository.update(id, goalData)
   }
 
-  async delete(id: string): Promise<any> {
+  async delete(id: string): Promise<DeleteResult> {
     return this.goalsRepository.delete(id)
   }
 }

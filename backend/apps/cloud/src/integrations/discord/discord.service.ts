@@ -19,7 +19,7 @@ export class DiscordService extends WebhookAbcService {
       const host = url.hostname.toLowerCase()
       if (
         url.protocol !== 'https:' ||
-        host !== 'discord.com' ||
+        (host !== 'discord.com' && !host.endsWith('.discord.com')) ||
         !url.pathname.startsWith('/api/webhooks/')
       ) {
         this.logger.warn('Refusing to send Discord webhook: invalid URL')
