@@ -48,9 +48,11 @@ export class GetProfileDto {
   period?: string
 
   @ApiProperty({ required: false })
+  @IsOptional()
   from?: string
 
   @ApiProperty({ required: false })
+  @IsOptional()
   to?: string
 }
 
