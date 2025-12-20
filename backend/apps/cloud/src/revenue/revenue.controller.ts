@@ -120,6 +120,13 @@ export class RevenueController {
         throw new BadRequestException(result.message)
       }
 
+      trackCustom(ip, headers['user-agent'], {
+        ev: 'REVENUE_SETUP',
+        meta: {
+          provider: 'paddle',
+        },
+      })
+
       return { success: true }
     }
 
@@ -145,7 +152,7 @@ export class RevenueController {
     trackCustom(ip, headers['user-agent'], {
       ev: 'REVENUE_SETUP',
       meta: {
-        provider: dto.provider,
+        provider: 'stripe',
       },
     })
 
