@@ -385,10 +385,20 @@ export class RevenueAnalyticsController {
   ): Promise<RevenueBreakdownDto> {
     this.logger.log({ userId, ...dto }, 'GET /log/revenue/breakdown')
 
-    const project = await this.projectService.getFullProject(dto.pid)
+    const project = await this.projectService.getFullProject(
+      dto.pid,
+      undefined,
+      ['stripeApiKeyEnc', 'paddleApiKeyEnc'],
+    )
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')
+    }
+
+    if (!project.paddleApiKeyEnc && !project.stripeApiKeyEnc) {
+      throw new BadRequestException(
+        'Revenue tracking is not configured for this project',
+      )
     }
 
     this.projectService.allowedToView(project, userId)
