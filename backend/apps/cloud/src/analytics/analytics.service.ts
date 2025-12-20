@@ -1852,12 +1852,25 @@ export class AnalyticsService {
 
           if (customEVFilterApplied) {
             queryAll = `
+              WITH analytics_counts AS (
+                SELECT
+                  count(*) AS all,
+                  count(DISTINCT psid) AS unique,
+                  count(DISTINCT profileId) AS users
+                FROM customEV
+                WHERE
+                  pid = {pid:FixedString(12)}
+                  ${filtersQuery}
+              ),
+              duration_avg AS (
+                SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+                FROM sessions FINAL
+                WHERE pid = {pid:FixedString(12)}
+              )
               SELECT
-                count(*) AS all
-              FROM customEV
-              WHERE
-                pid = {pid:FixedString(12)}
-                ${filtersQuery}
+                analytics_counts.*,
+                duration_avg.sdur
+              FROM analytics_counts, duration_avg
             `
           }
 
@@ -1999,20 +2012,64 @@ export class AnalyticsService {
 
         if (customEVFilterApplied) {
           queryCurrent = `
-            SELECT 1 AS sortOrder, count(*) AS all
-            FROM customEV
-            WHERE
-              pid = {pid:FixedString(12)}
-              AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
-              ${filtersQuery}
+            WITH analytics_counts AS (
+              SELECT
+                1 AS sortOrder,
+                count(*) AS all,
+                count(DISTINCT psid) AS unique,
+                count(DISTINCT profileId) AS users
+              FROM customEV
+              WHERE
+                pid = {pid:FixedString(12)}
+                AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
+                ${filtersQuery}
+            ),
+            duration_avg AS (
+              SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+              FROM sessions FINAL
+              WHERE pid = {pid:FixedString(12)}
+              AND psid IN (
+                SELECT DISTINCT psid
+                FROM customEV
+                WHERE pid = {pid:FixedString(12)}
+                AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
+                ${filtersQuery}
+              )
+            )
+            SELECT
+              analytics_counts.*,
+              duration_avg.sdur
+            FROM analytics_counts, duration_avg
           `
           queryPrevious = `
-            SELECT 2 AS sortOrder, count(*) AS all
-            FROM customEV
-            WHERE
-              pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
-              ${filtersQuery}
+            WITH analytics_counts AS (
+              SELECT
+                2 AS sortOrder,
+                count(*) AS all,
+                count(DISTINCT psid) AS unique,
+                count(DISTINCT profileId) AS users
+              FROM customEV
+              WHERE
+                pid = {pid:FixedString(12)}
+                AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
+                ${filtersQuery}
+            ),
+            duration_avg AS (
+              SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+              FROM sessions FINAL
+              WHERE pid = {pid:FixedString(12)}
+              AND psid IN (
+                SELECT DISTINCT psid
+                FROM customEV
+                WHERE pid = {pid:FixedString(12)}
+                AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
+                ${filtersQuery}
+              )
+            )
+            SELECT
+              analytics_counts.*,
+              duration_avg.sdur
+            FROM analytics_counts, duration_avg
           `
         }
 
