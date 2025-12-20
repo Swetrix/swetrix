@@ -158,8 +158,19 @@ const sentryIgnoreErrors: (string | RegExp)[] = [
   'HttpException', // at the moment, these are either rate-limiting or payment required errors, so no need to track them
 ]
 
-const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = Number(JWT_REFRESH_TOKEN_LIFETIME)
-const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)
+const parseLifetimeSeconds = (value: unknown, fallback: number) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
+}
+
+const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = parseLifetimeSeconds(
+  JWT_REFRESH_TOKEN_LIFETIME,
+  60 * 60 * 24 * 30,
+)
+const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = parseLifetimeSeconds(
+  JWT_ACCESS_TOKEN_LIFETIME,
+  60 * 30,
+)
 
 const MAX_FUNNELS = 100
 

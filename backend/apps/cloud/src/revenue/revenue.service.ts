@@ -418,7 +418,6 @@ export class RevenueService {
           argMax(currency, synced_at) as currency,
           argMax(original_amount, synced_at) as original_amount,
           argMax(original_currency, synced_at) as original_currency,
-          argMax(customer_email, synced_at) as customer_email,
           argMax(product_name, synced_at) as product_name,
           argMax(profile_id, synced_at) as profile_id,
           argMax(session_id, synced_at) as session_id,
@@ -446,7 +445,6 @@ export class RevenueService {
         currency,
         original_amount,
         original_currency,
-        customer_email,
         product_name,
         profile_id,
         session_id,
@@ -462,7 +460,6 @@ export class RevenueService {
           argMax(currency, synced_at) as currency,
           argMax(original_amount, synced_at) as original_amount,
           argMax(original_currency, synced_at) as original_currency,
-          argMax(customer_email, synced_at) as customer_email,
           argMax(product_name, synced_at) as product_name,
           argMax(profile_id, synced_at) as profile_id,
           argMax(session_id, synced_at) as session_id,
@@ -493,7 +490,6 @@ export class RevenueService {
           currency: string
           original_amount: number
           original_currency: string
-          customer_email: string | null
           product_name: string | null
           profile_id: string | null
           session_id: string | null
@@ -510,7 +506,6 @@ export class RevenueService {
       currency: row.currency,
       originalAmount: _round(row.original_amount, 2),
       originalCurrency: row.original_currency,
-      customerEmail: row.customer_email || undefined,
       productName: row.product_name || undefined,
       profileId: row.profile_id || undefined,
       sessionId: row.session_id || undefined,
@@ -681,7 +676,6 @@ export class RevenueService {
           currency: transaction.currency,
           profile_id: transaction.profileId || null,
           session_id: transaction.sessionId || null,
-          customer_email: transaction.customerEmail || null,
           product_id: transaction.productId || null,
           product_name: transaction.productName || null,
           metadata: JSON.stringify(transaction.metadata || {}),

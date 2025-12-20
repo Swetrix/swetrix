@@ -23,17 +23,21 @@ export class AiChatService {
     userId: string | null,
     limit: number = 5,
   ): Promise<AiChat[]> {
+    // Do not return stored chats to unauthenticated users.
+    // (Public project analytics may be viewable, but chats contain user prompts and context.)
+    if (!userId) {
+      return []
+    }
+
     const queryBuilder = this.aiChatRepository
       .createQueryBuilder('chat')
       .where('chat.projectId = :projectId', { projectId })
       .orderBy('chat.updated', 'DESC')
       .take(limit)
 
-    if (userId) {
-      queryBuilder.andWhere('(chat.userId = :userId OR chat.userId IS NULL)', {
-        userId,
-      })
-    }
+    queryBuilder.andWhere('(chat.userId = :userId OR chat.userId IS NULL)', {
+      userId,
+    })
 
     return queryBuilder.getMany()
   }
@@ -44,6 +48,11 @@ export class AiChatService {
     skip: number = 0,
     take: number = 20,
   ): Promise<{ chats: AiChat[]; total: number }> {
+    // Do not return stored chats to unauthenticated users.
+    if (!userId) {
+      return { chats: [], total: 0 }
+    }
+
     const queryBuilder = this.aiChatRepository
       .createQueryBuilder('chat')
       .where('chat.projectId = :projectId', { projectId })
@@ -51,11 +60,9 @@ export class AiChatService {
       .skip(skip)
       .take(take)
 
-    if (userId) {
-      queryBuilder.andWhere('(chat.userId = :userId OR chat.userId IS NULL)', {
-        userId,
-      })
-    }
+    queryBuilder.andWhere('(chat.userId = :userId OR chat.userId IS NULL)', {
+      userId,
+    })
 
     const [chats, total] = await queryBuilder.getManyAndCount()
     return { chats, total }
@@ -119,18 +126,54 @@ export class AiChatService {
     projectId: string,
     userId: string | null,
   ): Promise<AiChat | null> {
+    // Explicitly require authentication for user-scoped access checks.
+    if (!userId) return null
+
     const queryBuilder = this.aiChatRepository
       .createQueryBuilder('chat')
       .where('chat.id = :chatId', { chatId })
       .andWhere('chat.projectId = :projectId', { projectId })
 
-    if (userId) {
-      queryBuilder.andWhere('(chat.userId = :userId OR chat.userId IS NULL)', {
-        userId,
-      })
-    }
+    queryBuilder.andWhere('(chat.userId = :userId OR chat.userId IS NULL)', {
+      userId,
+    })
 
     return queryBuilder.getOne()
+  }
+
+  /**
+   * Verifies ownership of a chat (authenticated users only).
+   * Used for update/delete operations to prevent modifying shared (NULL owner) chats.
+   */
+  async verifyOwnerAccess(
+    chatId: string,
+    projectId: string,
+    userId: string | null,
+  ): Promise<AiChat | null> {
+    if (!userId) return null
+
+    return this.aiChatRepository
+      .createQueryBuilder('chat')
+      .where('chat.id = :chatId', { chatId })
+      .andWhere('chat.projectId = :projectId', { projectId })
+      .andWhere('chat.userId = :userId', { userId })
+      .getOne()
+  }
+
+  /**
+   * Verifies access to an anonymously-owned chat (userId IS NULL) by chatId+projectId.
+   * This supports share-by-id without allowing listing/enumeration.
+   */
+  async verifyPublicChatAccess(
+    chatId: string,
+    projectId: string,
+  ): Promise<AiChat | null> {
+    return this.aiChatRepository
+      .createQueryBuilder('chat')
+      .where('chat.id = :chatId', { chatId })
+      .andWhere('chat.projectId = :projectId', { projectId })
+      .andWhere('chat.userId IS NULL')
+      .getOne()
   }
 
   /**

@@ -1,6 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import crypto from 'crypto'
+import net from 'net'
 import { Reader, CityResponse } from 'maxmind'
 import { HttpException } from '@nestjs/common'
 import timezones from 'countries-and-timezones'
@@ -34,10 +35,29 @@ export const deriveKey = (
   purpose: 'refresh-token' | 'access-token' | 'gsc-token' | 'revenue',
   length = 32,
 ) => {
-  const base = Buffer.from(process.env.SECRET_KEY_BASE || '', 'utf8')
+  const baseStr = process.env.SECRET_KEY_BASE
+
+  // Security footgun: if SECRET_KEY_BASE is missing, token secrets become
+  // predictable across deployments. Fail closed outside dev/test.
+  if (!baseStr) {
+    const env = process.env.NODE_ENV
+    if (env === 'development' || env === 'test') {
+      return crypto
+        .createHash('sha256')
+        .update(`dev:${purpose}`)
+        .digest('hex')
+        .substring(0, length * 2)
+    }
+
+    throw new Error(
+      'SECRET_KEY_BASE environment variable is not set. This would make derived secrets predictable.',
+    )
+  }
+
+  const base = Buffer.from(baseStr, 'utf8')
   const info = Buffer.from(purpose, 'utf8')
   return Buffer.from(
-    crypto.hkdfSync('sha256', base, '', info, length),
+    crypto.hkdfSync('sha256', base, Buffer.alloc(0), info, length),
   ).toString('hex')
 }
 
@@ -80,6 +100,24 @@ const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
 const getRateLimitHash = (ipOrApiKey: string, salt = '') =>
   `rl:${hash(`${ipOrApiKey}${salt}`)}`
 
+const REDIS_INCR_WITH_EXPIRE_LUA = `
+local current = redis.call("INCR", KEYS[1])
+if tonumber(current) == 1 then
+  redis.call("EXPIRE", KEYS[1], ARGV[1])
+end
+return current
+`
+
+const incrWithExpiry = async (key: string, expiresInSeconds: number) => {
+  const res = await redis.eval(
+    REDIS_INCR_WITH_EXPIRE_LUA,
+    1,
+    key,
+    String(expiresInSeconds),
+  )
+  return Number(res)
+}
+
 export const getRandomTip = (language = 'en'): string => {
   return _sample(marketingTips[language])
 }
@@ -116,12 +154,10 @@ export const checkRateLimit = async (
   }
 
   const rlHash = getRateLimitHash(key, action)
-  const rlCount = _toNumber(await redis.get(rlHash)) || 0
-
-  if (rlCount >= reqAmount) {
+  const rlCount = await incrWithExpiry(rlHash, reqTimeout)
+  if (rlCount > reqAmount) {
     throw new HttpException('Too many requests, please try again later', 429)
   }
-  await redis.set(rlHash, 1 + rlCount, 'EX', reqTimeout)
 }
 
 const RATE_LIMIT_FOR_API_KEY_TIMEOUT = 60 * 60 // 1 hour
@@ -129,13 +165,15 @@ export const checkRateLimitForApiKey = async (
   apiKey: string,
   reqAmount: number,
 ): Promise<boolean> => {
-  const rlHash = getRateLimitHash(apiKey)
-  const rlCount: number = _toNumber(await redis.get(rlHash)) || 0
+  if (isDevelopment) {
+    return true
+  }
 
-  if (rlCount >= reqAmount) {
+  const rlHash = getRateLimitHash(apiKey)
+  const rlCount = await incrWithExpiry(rlHash, RATE_LIMIT_FOR_API_KEY_TIMEOUT)
+  if (rlCount > reqAmount) {
     throw new HttpException('Too many requests, please try again later', 429)
   }
-  await redis.set(rlHash, 1 + rlCount, 'EX', RATE_LIMIT_FOR_API_KEY_TIMEOUT)
   return true
 }
 
@@ -286,12 +324,34 @@ export const getIPFromHeaders = (
   headers: any,
   tryXClientIPAddress?: boolean,
 ) => {
-  if (tryXClientIPAddress && headers['x-client-ip-address']) {
-    return headers['x-client-ip-address']
+  const normalise = (raw: unknown): string | null => {
+    if (!raw) return null
+    const str = String(raw)
+    const first = str.split(',')[0]?.trim()
+    if (!first) return null
+
+    // Handle bracketed IPv6 like: [::1]:1234
+    const unbracketed = first.replace(/^\[([^\]]+)\](?::\d+)?$/, '$1')
+
+    if (net.isIP(unbracketed)) return unbracketed
+
+    // Handle IPv4 with port like: 203.0.113.1:1234
+    const ipv4PortMatch = unbracketed.match(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/)
+    if (ipv4PortMatch?.[1] && net.isIP(ipv4PortMatch[1])) {
+      return ipv4PortMatch[1]
+    }
+
+    return null
   }
 
-  if (isProxiedByCloudflare && headers['cf-connecting-ip']) {
-    return headers['cf-connecting-ip']
+  if (tryXClientIPAddress) {
+    const ip = normalise(headers?.['x-client-ip-address'])
+    if (ip) return ip
+  }
+
+  if (isProxiedByCloudflare) {
+    const ip = normalise(headers?.['cf-connecting-ip'])
+    if (ip) return ip
   }
 
   // Get IP based on the NGINX configuration
@@ -302,13 +362,7 @@ export const getIPFromHeaders = (
   //   return ip
   // }
 
-  const ip = headers['x-forwarded-for'] || null
-
-  if (!ip) {
-    return null
-  }
-
-  return _split(ip, ',')[0]
+  return normalise(headers?.['x-forwarded-for'])
 }
 
 export const sumArrays = (source: number[], target: number[]) => {

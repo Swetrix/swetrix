@@ -10,6 +10,7 @@ import {
   Min,
   Max,
   MaxLength,
+  Length,
   Matches,
   ArrayMaxSize,
   IsIn,
@@ -53,6 +54,7 @@ export class TargetingRuleDto implements TargetingRule {
 export class CreateFeatureFlagDto {
   @ApiProperty({ description: 'Project ID the flag belongs to' })
   @IsString()
+  @Length(12, 12, { message: 'pid must be exactly 12 characters' })
   pid: string
 
   @ApiProperty({
@@ -171,7 +173,7 @@ export class UpdateFeatureFlagDto {
 export class EvaluateFeatureFlagsDto {
   @ApiProperty({ description: 'Project ID to evaluate flags for' })
   @IsString()
-  @MaxLength(12)
+  @Length(12, 12, { message: 'pid must be exactly 12 characters' })
   pid: string
 
   @ApiPropertyOptional({

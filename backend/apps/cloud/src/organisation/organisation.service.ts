@@ -169,6 +169,9 @@ export class OrganisationService {
     userId: string,
     search?: string,
   ) {
+    const take = Math.min(Math.max(options.take ?? 100, 0), 100)
+    const skip = Math.max(options.skip ?? 0, 0)
+
     const queryBuilder = this.organisationRepository
       .createQueryBuilder('organisation')
       // We do left join twice to avoid the issue with TypeORM where it does not return
@@ -188,8 +191,8 @@ export class OrganisationService {
         'user.email',
       ])
       .orderBy('organisation.name', 'ASC')
-      .take(options.take || 100)
-      .skip(options.skip || 0)
+      .take(take)
+      .skip(skip)
 
     if (userId) {
       queryBuilder.andWhere('userFilter.id = :userId', {

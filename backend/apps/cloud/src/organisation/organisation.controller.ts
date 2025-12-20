@@ -168,7 +168,7 @@ export class OrganisationController {
     @Ip() reqIP,
   ): Promise<Organisation> {
     this.logger.log(
-      { userId, orgId, inviteDTO },
+      { userId, orgId, role: inviteDTO?.role },
       'POST /organisation/:orgId/invite',
     )
 
@@ -189,6 +189,10 @@ export class OrganisationController {
     }
 
     this.organisationService.validateManageAccess(organisation, userId)
+
+    if (inviteDTO.role === OrganisationRole.owner) {
+      throw new BadRequestException('You cannot invite a member as an owner')
+    }
 
     const invitee = await this.userService.findOne({
       where: { email: inviteDTO.email },
@@ -229,14 +233,16 @@ export class OrganisationController {
       })
 
       const actionToken = await this.actionTokensService.createForUser(
-        user,
+        invitee,
         ActionTokenType.ORGANISATION_INVITE,
         membership.id,
       )
 
-      const url = `${
-        isDevelopment ? headers.origin : PRODUCTION_ORIGIN
-      }/organisation/invite/${actionToken.id}`
+      const origin =
+        isDevelopment && typeof headers?.origin === 'string'
+          ? headers.origin
+          : PRODUCTION_ORIGIN
+      const url = `${origin}/organisation/invite/${actionToken.id}`
 
       await this.mailerService.sendEmail(
         invitee.email,
@@ -255,10 +261,11 @@ export class OrganisationController {
         relations: ['members', 'members.user'],
       })
     } catch (reason) {
-      console.error(
-        `[ERROR] Could not invite to organisation (orgId: ${organisation.id}, invitee ID: ${invitee.id}): ${reason}`,
+      this.logger.error(
+        { orgId: organisation?.id, inviteeId: invitee?.id, reason },
+        'Could not invite member to organisation',
       )
-      throw new BadRequestException(reason)
+      throw new BadRequestException('Failed to invite member to organisation')
     }
   }
 
@@ -419,6 +426,7 @@ export class OrganisationController {
       await this.organisationService.update(orgId, {
         name: _trim(updateOrgDTO.name),
       })
+      return this.organisationService.findOne({ where: { id: orgId } })
     } catch (reason) {
       console.error('[ERROR] Failed to update organisation:', reason)
       throw new BadRequestException('Failed to update organisation')

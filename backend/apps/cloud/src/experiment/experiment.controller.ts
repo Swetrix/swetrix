@@ -13,6 +13,7 @@ import {
   HttpException,
   HttpStatus,
   ParseIntPipe,
+  HttpCode,
   Headers,
   Ip,
 } from '@nestjs/common'
@@ -67,6 +68,7 @@ import { calculateBayesianProbabilities } from './bayesian'
 import { trackCustom } from '../common/analytics'
 
 const EXPERIMENTS_MAXIMUM = 20 // Maximum experiments per project
+const FEATURE_FLAG_KEY_REGEX = /^[a-zA-Z0-9_-]+$/
 
 @ApiTags('Experiment')
 @Controller(['experiment', 'v1/experiment'])
@@ -105,8 +107,12 @@ export class ExperimentController {
 
     this.projectService.allowedToView(project, userId)
 
+    const safeTake =
+      typeof take === 'number' ? Math.min(Math.max(take, 1), 200) : undefined
+    const safeSkip = typeof skip === 'number' ? Math.max(skip, 0) : undefined
+
     const result = await this.experimentService.paginate(
-      { take, skip },
+      { take: safeTake, skip: safeSkip },
       projectId,
     )
 
@@ -527,6 +533,7 @@ export class ExperimentController {
   @Auth()
   @ApiResponse({ status: 204, description: 'Empty body' })
   @ApiOperation({ summary: 'Delete an experiment' })
+  @HttpCode(204)
   async deleteExperiment(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
@@ -617,6 +624,12 @@ export class ExperimentController {
         const flagKey =
           experiment.featureFlagKey?.trim() ||
           `experiment_${experiment.id.replace(/-/g, '_').substring(0, 20)}`
+
+        if (!FEATURE_FLAG_KEY_REGEX.test(flagKey)) {
+          throw new BadRequestException(
+            'Feature flag key must contain only alphanumeric characters, underscores, and hyphens',
+          )
+        }
 
         const existingFlag = await this.featureFlagService.findOne({
           where: { key: flagKey, project: { id: experiment.project.id } },

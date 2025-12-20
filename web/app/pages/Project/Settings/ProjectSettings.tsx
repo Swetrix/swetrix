@@ -882,7 +882,25 @@ const ProjectSettings = () => {
                         onClick={async () => {
                           try {
                             const { url } = await generateGSCAuthURL(id)
-                            window.location.href = url
+                            const safeUrl = (() => {
+                              try {
+                                const parsed = new URL(url)
+                                if (parsed.protocol !== 'https:') return null
+                                if (parsed.username || parsed.password) return null
+                                // Google OAuth consent screen
+                                if (parsed.hostname !== 'accounts.google.com') return null
+                                return parsed.toString()
+                              } catch {
+                                return null
+                              }
+                            })()
+
+                            if (!safeUrl) {
+                              toast.error(t('apiNotifications.somethingWentWrong'))
+                              return
+                            }
+
+                            window.location.href = safeUrl
                           } catch (reason: any) {
                             toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
                           }

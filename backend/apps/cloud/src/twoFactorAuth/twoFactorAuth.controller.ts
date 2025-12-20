@@ -42,6 +42,16 @@ export class TwoFactorAuthController {
   async register(@CurrentUserId() id: string) {
     const user = await this.userService.findOne({ where: { id } })
 
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    // Prevent re-issuing a new secret while 2FA is already enabled (would allow secret rotation
+    // using only a pre-2FA access token).
+    if (user.isTwoFactorAuthenticationEnabled) {
+      throw new BadRequestException('Two-factor authentication is already enabled')
+    }
+
     return this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(user)
   }
 
@@ -55,7 +65,7 @@ export class TwoFactorAuthController {
     @Headers() headers,
     @Ip() reqIP,
   ) {
-    this.logger.log({ body }, 'POST /2fa/enable')
+    this.logger.log({}, 'POST /2fa/enable')
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
     await checkRateLimit(ip, '2fa-enable', 5, 1800)
@@ -63,6 +73,18 @@ export class TwoFactorAuthController {
 
     const user = await this.userService.findOne({ where: { id } })
     const { twoFactorAuthenticationCode } = body
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    if (user.isTwoFactorAuthenticationEnabled) {
+      throw new BadRequestException('Two-factor authentication is already enabled')
+    }
+
+    if (!user.twoFactorAuthenticationSecret) {
+      throw new BadRequestException('Two-factor authentication is not initialised')
+    }
 
     const isCodeValid =
       this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
@@ -103,7 +125,7 @@ export class TwoFactorAuthController {
     @Headers() headers,
     @Ip() reqIP,
   ) {
-    this.logger.log({ body }, 'POST /2fa/disable')
+    this.logger.log({}, 'POST /2fa/disable')
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
     await checkRateLimit(ip, '2fa-disable', 5, 1800)
@@ -112,12 +134,19 @@ export class TwoFactorAuthController {
     const user = await this.userService.findOne({ where: { id } })
     const { twoFactorAuthenticationCode } = body
 
-    const isCodeValid =
-      user.twoFactorRecoveryCode === twoFactorAuthenticationCode ||
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    const isRecoveryCodeValid =
+      !!user.twoFactorRecoveryCode &&
+      user.twoFactorRecoveryCode === twoFactorAuthenticationCode
+    const isTotpValid =
       this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         twoFactorAuthenticationCode,
         user,
       )
+    const isCodeValid = isRecoveryCodeValid || isTotpValid
 
     if (!isCodeValid) {
       throw new BadRequestException('Wrong authentication code')
@@ -143,20 +172,32 @@ export class TwoFactorAuthController {
     @Headers() headers,
     @Ip() reqIP,
   ) {
-    this.logger.log({ body }, 'POST /2fa/authenticate')
+    this.logger.log({}, 'POST /2fa/authenticate')
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
     await checkRateLimit(ip, '2fa-auth', 10, 1800)
+    await checkRateLimit(id, '2fa-auth', 10, 1800)
 
     const user = await this.userService.findOne({ where: { id } })
     const { twoFactorAuthenticationCode } = body
 
-    const isCodeValid =
-      user.twoFactorRecoveryCode === twoFactorAuthenticationCode ||
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    if (!user.isTwoFactorAuthenticationEnabled) {
+      throw new BadRequestException('Two-factor authentication is not enabled')
+    }
+
+    const isRecoveryCodeValid =
+      !!user.twoFactorRecoveryCode &&
+      user.twoFactorRecoveryCode === twoFactorAuthenticationCode
+    const isTotpValid =
       this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
         twoFactorAuthenticationCode,
         user,
       )
+    const isCodeValid = isRecoveryCodeValid || isTotpValid
 
     if (!isCodeValid) {
       throw new BadRequestException('Wrong authentication code')

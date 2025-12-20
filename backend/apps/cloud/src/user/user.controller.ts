@@ -30,7 +30,6 @@ import _pick from 'lodash/pick'
 import _round from 'lodash/round'
 import { randomUUID } from 'crypto'
 import { HttpService } from '@nestjs/axios'
-import { catchError, firstValueFrom, map, of } from 'rxjs'
 
 import { Markup } from 'telegraf'
 
@@ -45,7 +44,6 @@ import {
   OnboardingStep,
 } from './entities/user.entity'
 import { isDevelopment, PRODUCTION_ORIGIN } from '../common/constants'
-import { clickhouse } from '../common/integrations/clickhouse'
 import { AuthenticationGuard } from '../auth/guards/authentication.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { IChangePlanDTO } from './dto/change-plan.dto'
@@ -71,6 +69,7 @@ import { trackCustom } from '../common/analytics'
 dayjs.extend(utc)
 
 const UNPAID_PLANS = [PlanCode.free, PlanCode.trial, PlanCode.none]
+const ORGANISATION_INVITE_EXPIRE_HOURS = 7 * 24 // 7 days
 
 @ApiTags('User')
 @Controller('user')
@@ -261,33 +260,20 @@ export class UserController {
 
     try {
       if (!_isEmpty(user.projects)) {
-        const pidArray = user.projects.map(el => el.id)
-        const queries = [
-          'ALTER TABLE analytics DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE customEV DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE performance DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE errors DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE error_statuses DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE captcha DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-        ]
-        await this.projectService.deleteMultiple(user.projects.map(el => el.id))
-        const promises = _map(queries, async query =>
-          clickhouse.command({
-            query,
-            query_params: { pids: pidArray },
-          }),
+        await this.projectService.update(
+          { admin: { id } },
+          { isArchived: true },
         )
-        await Promise.all(promises)
       }
-      await this.actionTokensService.deleteMultiple(`userId="${id}"`)
+      await this.actionTokensService.deleteMultiple({ user: { id } })
       await this.userService.deleteAllRefreshTokens(id)
-      await this.projectService.deleteMultipleShare(`userId="${id}"`)
+      await this.projectService.deleteMultipleShare({ user: { id } })
       await this.organisationService.deleteMemberships({
         user: {
           id,
         },
       })
-      await this.userService.delete(id)
+      await this.userService.softDelete(id)
     } catch (reason) {
       this.logger.error(reason)
       throw new BadRequestException('accountDeleteError')
@@ -413,16 +399,29 @@ export class UserController {
   ) {
     this.logger.log({ uid, actionId }, 'DELETE /user/organisation/:actionId')
 
-    let isActionToken = false
-
     const actionToken = await this.actionTokensService.getActionToken(actionId)
 
-    if (actionToken) {
-      isActionToken = true
+    if (
+      !actionToken ||
+      actionToken.action !== ActionTokenType.ORGANISATION_INVITE ||
+      !actionToken.newValue
+    ) {
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
+    }
+
+    const tokenAgeMs =
+      Date.now() - new Date(actionToken.created as any).getTime()
+    if (tokenAgeMs > ORGANISATION_INVITE_EXPIRE_HOURS * 60 * 60 * 1000) {
+      await this.actionTokensService.delete(actionId)
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
     }
 
     const membership = await this.organisationService.findOneMembership({
-      where: { id: actionToken?.newValue || actionId },
+      where: { id: actionToken.newValue },
       relations: ['user'],
       select: {
         id: true,
@@ -444,11 +443,15 @@ export class UserController {
       )
     }
 
+    if (actionToken.user?.id && actionToken.user.id !== membership.user.id) {
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
+    }
+
     await this.organisationService.deleteMembership(membership.id)
 
-    if (isActionToken) {
-      await this.actionTokensService.delete(actionId)
-    }
+    await this.actionTokensService.delete(actionId)
   }
 
   @ApiBearerAuth()
@@ -461,16 +464,29 @@ export class UserController {
   ): Promise<any> {
     this.logger.log({ uid, actionId }, 'POST /user/organisation/:actionId')
 
-    let isActionToken = false
-
     const actionToken = await this.actionTokensService.getActionToken(actionId)
 
-    if (actionToken) {
-      isActionToken = true
+    if (
+      !actionToken ||
+      actionToken.action !== ActionTokenType.ORGANISATION_INVITE ||
+      !actionToken.newValue
+    ) {
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
+    }
+
+    const tokenAgeMs =
+      Date.now() - new Date(actionToken.created as any).getTime()
+    if (tokenAgeMs > ORGANISATION_INVITE_EXPIRE_HOURS * 60 * 60 * 1000) {
+      await this.actionTokensService.delete(actionId)
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
     }
 
     const membership = await this.organisationService.findOneMembership({
-      where: { id: actionToken?.newValue || actionId },
+      where: { id: actionToken.newValue },
       relations: ['user', 'organisation'],
       select: {
         id: true,
@@ -495,13 +511,17 @@ export class UserController {
       )
     }
 
+    if (actionToken.user?.id && actionToken.user.id !== membership.user.id) {
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
+    }
+
     await this.organisationService.updateMembership(membership.id, {
       confirmed: true,
     })
 
-    if (isActionToken) {
-      await this.actionTokensService.delete(actionId)
-    }
+    await this.actionTokensService.delete(actionId)
 
     await this.organisationService.deleteOrganisationProjectsFromRedis(
       membership.organisation.id,
@@ -628,7 +648,7 @@ export class UserController {
           isTelegramChatIdConfirmed: false,
         })
 
-        this.telegramService.addMessage(
+        await this.telegramService.addMessage(
           userDTO.telegramChatId,
           'Please confirm your Telegram chat ID',
           Markup.inlineKeyboard([
@@ -643,49 +663,13 @@ export class UserController {
         )
       }
 
-      if (userDTO.slackWebhookUrl) {
-        const slackWebhookResponse = await firstValueFrom(
-          this.httpService.get<string>(userDTO.slackWebhookUrl).pipe(
-            map(response => response.data),
-            catchError(error => {
-              if (error.response && error.response.data) {
-                return of(error.response.data)
-              }
-
-              return of('Error occurred, but no response data was returned')
-            }),
-          ),
-        )
-
-        if (slackWebhookResponse === 'invalid_token') {
-          throw new ConflictException('Invalid Slack URL.')
-        }
-      } else if (userDTO.slackWebhookUrl === null) {
+      if (userDTO.slackWebhookUrl === null) {
         await this.userService.update(id, {
           slackWebhookUrl: null,
         })
       }
 
-      if (userDTO.discordWebhookUrl) {
-        const discordWebhookResponse = await firstValueFrom(
-          this.httpService
-            .get<{ code?: number }>(userDTO.discordWebhookUrl)
-            .pipe(
-              map(response => response.data),
-              catchError(error => {
-                if (error.response && error.response.data) {
-                  return of(error.response.data)
-                }
-
-                return of('Error occurred, but no response data was returned')
-              }),
-            ),
-        )
-
-        if (discordWebhookResponse.code === 50027) {
-          throw new ConflictException('Invalid Discord URL.')
-        }
-      } else if (userDTO.discordWebhookUrl === null) {
+      if (userDTO.discordWebhookUrl === null) {
         await this.userService.update(id, {
           discordWebhookUrl: null,
         })

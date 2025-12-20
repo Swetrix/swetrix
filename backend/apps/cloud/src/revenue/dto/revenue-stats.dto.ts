@@ -65,12 +65,6 @@ export class RevenueTransactionDto {
   @ApiProperty({ description: 'Original currency' })
   originalCurrency: string
 
-  @ApiProperty({
-    description: 'Customer email (if available)',
-    required: false,
-  })
-  customerEmail?: string
-
   @ApiProperty({ description: 'Product name (if available)', required: false })
   productName?: string
 

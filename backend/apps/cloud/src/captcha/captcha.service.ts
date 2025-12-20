@@ -56,17 +56,38 @@ const getChallengeCacheKey = (challenge: string): string => {
   return `pow_challenge:${challenge}`
 }
 
+const signCaptchaCiphertext = (ciphertext: string, key: string): string => {
+  // NOTE: Encryption alone (CryptoJS.Rabbit) is malleable; we add an HMAC to
+  // prevent token tampering and replay-bypass via ciphertext bitflips.
+  return crypto
+    .createHmac('sha256', key)
+    .update(ciphertext)
+    .digest('base64url')
+}
+
+const timingSafeEqualString = (a: string, b: string): boolean => {
+  try {
+    const aBuf = Buffer.from(a)
+    const bBuf = Buffer.from(b)
+    if (aBuf.length !== bBuf.length) return false
+    return crypto.timingSafeEqual(aBuf, bBuf)
+  } catch {
+    return false
+  }
+}
+
 const isTokenAlreadyUsed = async (token: string): Promise<boolean> => {
   const captchaKey = getRedisCaptchaKey(token)
-  const key = await redis.get(captchaKey)
+  const setResult = await redis.set(
+    captchaKey,
+    '1',
+    'EX',
+    CAPTCHA_TOKEN_LIFETIME / 1000,
+    'NX',
+  )
 
-  if (key) {
-    return true
-  }
-
-  await redis.set(captchaKey, '1', 'EX', CAPTCHA_TOKEN_LIFETIME / 1000)
-
-  return false
+  // ioredis returns null when key already exists (i.e. token already used)
+  return setResult === null
 }
 
 @Injectable()
@@ -183,7 +204,11 @@ export class CaptchaService {
       pid,
     }
 
-    return encryptString(JSON.stringify(token), project.captchaSecretKey)
+    const ciphertext = encryptString(JSON.stringify(token), project.captchaSecretKey)
+    const signature = signCaptchaCiphertext(ciphertext, project.captchaSecretKey)
+
+    // Token format: <ciphertext>.<hmac_sha256(ciphertext)>
+    return `${ciphertext}.${signature}`
   }
 
   async validateToken(token: string, secretKey: string) {
@@ -207,10 +232,39 @@ export class CaptchaService {
     }
 
     try {
-      const decrypted = decryptString(token, secretKey)
+      const parts = token.split('.')
+
+      if (parts.length !== 2) {
+        throw new BadRequestException('Invalid token format')
+      }
+
+      const [ciphertext, providedSignature] = parts
+      const expectedSignature = signCaptchaCiphertext(ciphertext, secretKey)
+
+      if (!timingSafeEqualString(providedSignature, expectedSignature)) {
+        throw new BadRequestException('Invalid token signature')
+      }
+
+      const decrypted = decryptString(ciphertext, secretKey)
       parsed = JSON.parse(decrypted)
     } catch {
       throw new BadRequestException('Could not decrypt token')
+    }
+
+    if (
+      !parsed ||
+      typeof parsed !== 'object' ||
+      typeof parsed.pid !== 'string' ||
+      typeof parsed.challenge !== 'string' ||
+      typeof parsed.timestamp !== 'number' ||
+      !Number.isFinite(parsed.timestamp)
+    ) {
+      throw new BadRequestException('Invalid token payload')
+    }
+
+    // Guard against obviously invalid pid values to reduce accidental misuse.
+    if (!isDummyPID(parsed.pid) && !isValidPID(parsed.pid)) {
+      throw new BadRequestException('Invalid token payload')
     }
 
     if (dayjs().unix() * 1000 - parsed.timestamp > CAPTCHA_TOKEN_LIFETIME) {

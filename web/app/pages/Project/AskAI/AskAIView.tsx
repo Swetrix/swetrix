@@ -131,6 +131,11 @@ const renderMarkdown = (content: string): string => {
       pre: ['class'],
       span: ['class'],
     },
+    allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+    allowedSchemesByTag: {
+      img: ['http', 'https'],
+    },
+    allowProtocolRelative: false,
   })
 }
 

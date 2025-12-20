@@ -78,7 +78,30 @@ const Socialisations = () => {
     try {
       const { uuid, auth_url: authUrl, expires_in: expiresIn } = await generateSSOAuthURL(provider)
 
-      authWindow.location = authUrl
+      const safeAuthUrl = (() => {
+        try {
+          const parsed = new URL(authUrl)
+          if (parsed.username || parsed.password) return null
+
+          // Only allow expected OAuth endpoints here (no OIDC option in this UI today, but keep it future-proof).
+          if (parsed.protocol !== 'https:') return null
+          if (provider === SSO_PROVIDERS.GOOGLE && parsed.hostname !== 'accounts.google.com') return null
+          if (provider === SSO_PROVIDERS.GITHUB && parsed.hostname !== 'github.com') return null
+
+          return parsed.toString()
+        } catch {
+          return null
+        }
+      })()
+
+      if (!safeAuthUrl) {
+        toast.error(t('apiNotifications.socialisationGenericError'))
+        setIsLoading(false)
+        authWindow.close()
+        return
+      }
+
+      authWindow.location.href = safeAuthUrl
 
       // Closing the authorisation window after the session expires
       setTimeout(authWindow.close, expiresIn)

@@ -17,6 +17,15 @@ export class GoalService {
     relations?: Array<string>,
     search?: string,
   ): Promise<Pagination<Goal>> {
+    const take =
+      typeof options.take === 'number' && Number.isFinite(options.take)
+        ? Math.min(Math.max(options.take, 1), 250)
+        : 100
+    const skip =
+      typeof options.skip === 'number' && Number.isFinite(options.skip)
+        ? Math.min(Math.max(options.skip, 0), 50_000)
+        : 0
+
     let finalWhere: FindManyOptions<Goal>['where'] = where
 
     if (search && search.trim()) {
@@ -29,8 +38,8 @@ export class GoalService {
     }
 
     const [results, total] = await this.goalsRepository.findAndCount({
-      take: options.take || 100,
-      skip: options.skip || 0,
+      take,
+      skip,
       where: finalWhere,
       order: {
         name: 'ASC',

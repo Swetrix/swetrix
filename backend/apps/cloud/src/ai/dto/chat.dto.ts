@@ -9,8 +9,14 @@ import {
   IsInt,
   Min,
   Max,
+  ArrayMaxSize,
+  MaxLength,
 } from 'class-validator'
 import { Type, Transform } from 'class-transformer'
+
+const MAX_MESSAGES_PER_CHAT = 50
+const MAX_MESSAGE_LENGTH = 5000
+const MAX_CHAT_NAME_LENGTH = 200
 
 export class ChatMessageDto {
   @ApiProperty({
@@ -26,6 +32,7 @@ export class ChatMessageDto {
   })
   @IsNotEmpty()
   @IsString()
+  @MaxLength(MAX_MESSAGE_LENGTH)
   content: string
 }
 
@@ -35,6 +42,7 @@ export class ChatDto {
     description: 'Array of chat messages',
   })
   @IsArray()
+  @ArrayMaxSize(MAX_MESSAGES_PER_CHAT)
   @ValidateNested({ each: true })
   @Type(() => ChatMessageDto)
   messages: ChatMessageDto[]
@@ -62,6 +70,7 @@ export class CreateChatDto {
     description: 'Array of chat messages',
   })
   @IsArray()
+  @ArrayMaxSize(MAX_MESSAGES_PER_CHAT)
   @ValidateNested({ each: true })
   @Type(() => ChatMessageDto)
   messages: ChatMessageDto[]
@@ -72,6 +81,7 @@ export class CreateChatDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(MAX_CHAT_NAME_LENGTH)
   name?: string
 }
 
@@ -83,6 +93,7 @@ export class UpdateChatDto {
   })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(MAX_MESSAGES_PER_CHAT)
   @ValidateNested({ each: true })
   @Type(() => ChatMessageDto)
   messages?: ChatMessageDto[]
@@ -93,6 +104,7 @@ export class UpdateChatDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(MAX_CHAT_NAME_LENGTH)
   name?: string
 }
 

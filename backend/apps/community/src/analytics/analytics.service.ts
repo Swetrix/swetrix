@@ -303,6 +303,8 @@ export enum DataType {
 }
 
 const isValidOrigin = (origins: string[], origin: string) => {
+  const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
   for (let i = 0; i < _size(origins); ++i) {
     const allowedOrigin = origins[i]
 
@@ -313,8 +315,10 @@ const isValidOrigin = (origins: string[], origin: string) => {
 
     // Check if the allowedOrigin contains a wildcard
     if (_includes(allowedOrigin, '*')) {
-      // Escape the wildcard character for use in a regular expression
-      const wildcardRegex = new RegExp(allowedOrigin.replace(/\*/g, '.*'))
+      // Convert wildcard host pattern into a safe, anchored regex.
+      // Example: "*.example.com" -> /^.*\.example\.com$/i
+      const parts = allowedOrigin.split('*').map(escapeRegex)
+      const wildcardRegex = new RegExp(`^${parts.join('.*')}$`, 'i')
 
       // Check if the origin matches the wildcard pattern
       if (wildcardRegex.test(origin)) {
@@ -906,6 +910,8 @@ export class AnalyticsService {
     let parsed = []
     let query = ''
     let customEVFilterApplied = false
+    const allowTagFilters =
+      dataType === DataType.ANALYTICS || dataType === DataType.ERRORS
 
     if (filters === '""' || _isEmpty(filters)) {
       return [query, params, parsed, customEVFilterApplied]
@@ -953,8 +959,8 @@ export class AnalyticsService {
         } else if (
           !_includes(SUPPORTED_COLUMNS, column) &&
           column !== 'refn' &&
-          !_includes(TRAFFIC_METAKEY_COLUMNS, column) &&
-          !_startsWith(column, 'tag:key:') &&
+          !(allowTagFilters && _includes(TRAFFIC_METAKEY_COLUMNS, column)) &&
+          !(allowTagFilters && _startsWith(column, 'tag:key:')) &&
           column !== 'entryPage' &&
           column !== 'exitPage'
         ) {
@@ -1060,7 +1066,10 @@ export class AnalyticsService {
         }
 
         // when we want to filter meta.value for a specific meta.key
-        if (_startsWith(column, 'ev:key:') || _startsWith(column, 'tag:key:')) {
+        if (
+          _startsWith(column, 'ev:key:') ||
+          (allowTagFilters && _startsWith(column, 'tag:key:'))
+        ) {
           const key = column.replace(/^ev:key:/, '').replace(/^tag:key:/, '')
           const keyParam = `qfk_${col}_${f}`
           params[keyParam] = key
@@ -1079,12 +1088,15 @@ export class AnalyticsService {
 
         // meta.key filters for page properties and custom event metadata
         // e.g. article "author" (property)
-        if (column === 'ev:key' || column === 'tag:key') {
+        if (column === 'ev:key' || (allowTagFilters && column === 'tag:key')) {
           sqlColumn = 'meta.key'
           isArrayDataset = true
           // meta.value filters for page properties and custom event metadata
           // e.g. "Andrii" ("author" value)
-        } else if (column === 'ev:value' || column === 'tag:value') {
+        } else if (
+          column === 'ev:value' ||
+          (allowTagFilters && column === 'tag:value')
+        ) {
           sqlColumn = 'meta.value'
           isArrayDataset = true
         }
@@ -3716,12 +3728,18 @@ export class AnalyticsService {
     })
   }
 
-  getSafeNumber(value: number | undefined, defaultValue: number): number {
-    if (typeof value === 'undefined' || Number.isNaN(value)) {
+  getSafeNumber(value: any, defaultValue: number): number {
+    if (typeof value === 'undefined' || value === null || value === '') {
       return defaultValue
     }
 
-    return value
+    const n = typeof value === 'number' ? value : Number(value)
+
+    if (!Number.isFinite(n)) {
+      return defaultValue
+    }
+
+    return Math.max(0, Math.trunc(n))
   }
 
   processPageflow(pages: IPageflow[]) {
@@ -4069,14 +4087,14 @@ export class AnalyticsService {
       LEFT JOIN first_session_per_profile fsp ON sda.profileId = fsp.profileId
       WHERE dsf.psidCasted IS NOT NULL
       ORDER BY dsf.sessionStart DESC
-      LIMIT ${take}
-      OFFSET ${skip}
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32}
     `
 
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { ...paramsData.params, timezone: safeTimezone },
+        query_params: { ...paramsData.params, timezone: safeTimezone, take, skip },
       })
       .then(resultSet => resultSet.json())
 
@@ -4134,14 +4152,14 @@ export class AnalyticsService {
       }
       GROUP BY errors.eid, status.status
       ORDER BY last_seen DESC
-      LIMIT ${take}
-      OFFSET ${skip};
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32};
     `
 
     const { data } = await clickhouse
       .query({
         query,
-        query_params: { ...paramsData.params, timezone: safeTimezone },
+        query_params: { ...paramsData.params, timezone: safeTimezone, take, skip },
       })
       .then(resultSet => resultSet.json())
 
@@ -4506,11 +4524,11 @@ export class AnalyticsService {
         AND errors.created BETWEEN {groupFrom:String} AND {groupTo:String}
       GROUP BY errors.psid
       ORDER BY lastErrorAt DESC
-      LIMIT ${take}
-      OFFSET ${skip}
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32}
     `
 
-    const params = { pid, eid, groupFrom, groupTo }
+    const params = { pid, eid, groupFrom, groupTo, take, skip }
 
     const [countResult, sessionsResult] = await Promise.all([
       clickhouse

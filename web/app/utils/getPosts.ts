@@ -1,5 +1,6 @@
 import _isEmpty from 'lodash/isEmpty'
 import { marked, type Tokens } from 'marked'
+import sanitizeHtml from 'sanitize-html'
 
 import { getBlogPost, getBlogPostWithCategory } from '~/api'
 
@@ -9,7 +10,14 @@ import { extractTableOfContents, ensureHeaderIds, generateSlug, renderTocAsHtml 
 const renderer = new marked.Renderer()
 
 renderer.link = ({ href, text }: Tokens.Link) => {
-  const url = new URL(href, 'https://swetrix.com')
+  let url: URL
+
+  try {
+    url = new URL(href, 'https://swetrix.com')
+  } catch {
+    // If the href is invalid, render plain text to avoid breaking post rendering.
+    return text
+  }
 
   if (url.hostname !== 'swetrix.com') {
     url.searchParams.set('utm_source', 'swetrix.com')
@@ -247,6 +255,80 @@ export async function getPost(slug: string, category?: string, tryStandalone?: b
     const ctaHtml = renderDitchGoogleCta()
     html = html.replace(new RegExp(ctaDitchGooglePlaceholder, 'gi'), ctaHtml)
   }
+
+  // Sanitize generated HTML before sending it to the client to prevent stored XSS
+  // (CMS content, table-of-contents placeholder, and CTA placeholders).
+  html = sanitizeHtml(html, {
+    allowedTags: [
+      // Document structure
+      'p',
+      'br',
+      'hr',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      // Text formatting
+      'strong',
+      'em',
+      's',
+      'del',
+      'blockquote',
+      'pre',
+      'code',
+      // Lists
+      'ul',
+      'ol',
+      'li',
+      // Links / media
+      'a',
+      'img',
+      // Tables
+      'table',
+      'thead',
+      'tbody',
+      'tr',
+      'th',
+      'td',
+      // Layout used by CTAs / alerts / icons
+      'div',
+      'span',
+      // Inline SVG used by our generated HTML snippets
+      'svg',
+      'path',
+    ],
+    allowedAttributes: {
+      '*': ['class', 'id', 'role', 'aria-label', 'aria-hidden'],
+      a: ['href', 'target', 'rel', 'referrerpolicy', 'title'],
+      img: ['src', 'alt', 'title', 'width', 'height', 'loading'],
+      th: ['colspan', 'rowspan'],
+      td: ['colspan', 'rowspan'],
+      svg: [
+        'class',
+        'xmlns',
+        'viewBox',
+        'fill',
+        'stroke',
+        'stroke-width',
+        'stroke-linecap',
+        'stroke-linejoin',
+        'role',
+        'aria-label',
+      ],
+      path: ['d', 'fill', 'fill-rule', 'clip-rule'],
+    },
+    // Keep it tight: no javascript: URLs, no data: URLs (especially for <img>),
+    // but allow relative links and hash fragments.
+    allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+    allowedSchemesByTag: {
+      img: ['http', 'https'],
+    },
+    allowProtocolRelative: false,
+    // Avoid CSS injection; we only rely on Tailwind classes.
+    allowedStyles: {},
+  })
 
   return {
     slug,

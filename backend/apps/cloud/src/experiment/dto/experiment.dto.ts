@@ -7,12 +7,14 @@ import {
   ValidateNested,
   IsBoolean,
   IsNumber,
+  IsInt,
   Min,
   Max,
   MaxLength,
   IsUUID,
   IsNotEmpty,
   Matches,
+  ArrayMaxSize,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import {
@@ -23,15 +25,23 @@ import {
 } from '../entity/experiment.entity'
 import { PID_REGEX } from '../../common/constants'
 
+const KEY_REGEX = /^[a-zA-Z0-9_-]+$/
+
 export class ExperimentVariantDto {
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(100)
   name: string
 
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(100)
+  @Matches(KEY_REGEX, {
+    message:
+      'Variant key must contain only alphanumeric characters, underscores, and hyphens',
+  })
   key: string
 
   @ApiPropertyOptional()
@@ -41,7 +51,7 @@ export class ExperimentVariantDto {
   description?: string
 
   @ApiProperty()
-  @IsNumber()
+  @IsInt()
   @Min(0)
   @Max(100)
   rolloutPercentage: number
@@ -62,6 +72,7 @@ export class CreateExperimentDto {
 
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(100)
   name: string
 
@@ -107,6 +118,10 @@ export class CreateExperimentDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
+  @Matches(KEY_REGEX, {
+    message:
+      'Feature flag key must contain only alphanumeric characters, underscores, and hyphens',
+  })
   featureFlagKey?: string
 
   @ApiPropertyOptional()
@@ -121,6 +136,7 @@ export class CreateExperimentDto {
 
   @ApiProperty({ type: [ExperimentVariantDto] })
   @IsArray()
+  @ArrayMaxSize(20, { message: 'An experiment cannot have more than 20 variants' })
   @ValidateNested({ each: true })
   @Type(() => ExperimentVariantDto)
   variants: ExperimentVariantDto[]
@@ -130,6 +146,7 @@ export class UpdateExperimentDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   @MaxLength(100)
   name?: string
 
@@ -175,6 +192,10 @@ export class UpdateExperimentDto {
   @IsOptional()
   @IsString()
   @MaxLength(100)
+  @Matches(KEY_REGEX, {
+    message:
+      'Feature flag key must contain only alphanumeric characters, underscores, and hyphens',
+  })
   featureFlagKey?: string
 
   @ApiPropertyOptional()
@@ -190,6 +211,7 @@ export class UpdateExperimentDto {
   @ApiPropertyOptional({ type: [ExperimentVariantDto] })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(20, { message: 'An experiment cannot have more than 20 variants' })
   @ValidateNested({ each: true })
   @Type(() => ExperimentVariantDto)
   variants?: ExperimentVariantDto[]

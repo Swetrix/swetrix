@@ -226,7 +226,6 @@ export class AuthController {
   @Post('reset-password')
   public async requestResetPassword(
     @Body() body: RequestResetPasswordDto,
-    @I18n() i18n: I18nContext,
     @Headers() headers: Record<string, string>,
     @Ip() requestIp: string,
   ): Promise<void> {
@@ -237,11 +236,10 @@ export class AuthController {
 
     const user = await this.userService.findUser(body.email)
 
-    if (!user) {
-      throw new ConflictException(i18n.t('auth.accountNotExists'))
+    // Do not reveal whether the account exists (prevents account enumeration).
+    if (user) {
+      await this.authService.sendResetPasswordEmail(user.id, user.email)
     }
-
-    await this.authService.sendResetPasswordEmail(user.id, user.email)
   }
 
   @ApiOperation({ summary: 'Reset a password' })

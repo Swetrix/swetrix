@@ -51,6 +51,7 @@ import {
 } from '../common/utils'
 
 const FEATURE_FLAGS_MAXIMUM = 50 // Maximum feature flags per project
+const FEATURE_FLAGS_PAGINATION_MAX_TAKE = 100
 
 @ApiTags('Feature Flag')
 @Controller(['feature-flag', 'v1/feature-flag'])
@@ -87,8 +88,15 @@ export class FeatureFlagController {
 
     this.projectService.allowedToView(project, userId)
 
+    const safeTake =
+      typeof take === 'number' && Number.isFinite(take)
+        ? Math.min(Math.max(take, 0), FEATURE_FLAGS_PAGINATION_MAX_TAKE)
+        : undefined
+    const safeSkip =
+      typeof skip === 'number' && Number.isFinite(skip) ? Math.max(skip, 0) : 0
+
     const result = await this.featureFlagService.paginate(
-      { take, skip },
+      { take: safeTake, skip: safeSkip },
       projectId,
       search,
     )
@@ -208,6 +216,8 @@ export class FeatureFlagController {
   ) {
     this.logger.log({ pid: evaluateDto.pid }, 'POST /feature-flag/evaluate')
 
+    // Public endpoint: only use proxy-provided headers (see getIPFromHeaders),
+    // fallback to Nest's derived IP. This mitigates rate-limit bypass/data pollution.
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await checkRateLimit(ip, 'feature-flag-evaluate', 100, 1800)

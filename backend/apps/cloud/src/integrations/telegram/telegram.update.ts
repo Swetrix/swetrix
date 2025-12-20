@@ -13,7 +13,9 @@ export class TelegramUpdate {
   }
 
   @Action(/link-account:confirm:(.+)/)
-  async onLinkAccountConfirm(@Ctx() context: Context & { match: unknown }) {
+  async onLinkAccountConfirm(
+    @Ctx() context: Context & { match: RegExpExecArray },
+  ) {
     await context.answerCbQuery()
     await this.telegramService.confirmLinkAccount(
       context.match[1] as string,
@@ -24,9 +26,14 @@ export class TelegramUpdate {
   }
 
   @Action(/link-account:cancel:(.+)/)
-  async onLinkAccountCancel(@Ctx() context: Context & { match: unknown }) {
+  async onLinkAccountCancel(
+    @Ctx() context: Context & { match: RegExpExecArray },
+  ) {
     await context.answerCbQuery()
-    await this.telegramService.cancelLinkAccount(context.match[1] as string)
+    await this.telegramService.cancelLinkAccount(
+      context.match[1] as string,
+      context.from.id,
+    )
     await context.editMessageText('Your account has not been linked.')
     await context.scene.leave()
   }

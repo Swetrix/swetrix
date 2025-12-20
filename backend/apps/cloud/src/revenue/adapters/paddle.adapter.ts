@@ -310,7 +310,6 @@ export class PaddleAdapter {
       currency: targetCurrency,
       profileId,
       sessionId,
-      customerEmail: null, // Would need to fetch customer to get email
       productId,
       productName,
       metadata: transaction.custom_data || {},
@@ -347,7 +346,6 @@ export class PaddleAdapter {
       currency: targetCurrency,
       profileId: null,
       sessionId: null,
-      customerEmail: null,
       productId: null,
       productName: adjustment.reason || 'Refund',
       metadata: { originalTransactionId: adjustment.transaction_id },

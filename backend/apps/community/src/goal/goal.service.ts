@@ -119,8 +119,14 @@ export class GoalService {
     projectId: string,
     search?: string,
   ): Promise<Pagination<Goal>> {
-    const take = options.take || 100
-    const skip = options.skip || 0
+    const take =
+      typeof options.take === 'number' && Number.isFinite(options.take)
+        ? Math.min(Math.max(options.take, 1), 250)
+        : 100
+    const skip =
+      typeof options.skip === 'number' && Number.isFinite(options.skip)
+        ? Math.min(Math.max(options.skip, 0), 50_000)
+        : 0
 
     let searchCondition = ''
     const queryParams: Record<string, any> = { projectId, take, skip }

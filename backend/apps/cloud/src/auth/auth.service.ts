@@ -60,6 +60,11 @@ const OAUTH_REDIRECT_URL = isDevelopment
   ? 'http://localhost:3000/socialised'
   : `${PRODUCTION_ORIGIN}/socialised`
 
+// Action-token TTLs (in minutes)
+const EMAIL_VERIFICATION_TOKEN_TTL_MINUTES = 60 * 24 // 24 hours
+const PASSWORD_RESET_TOKEN_TTL_MINUTES = 60 // 1 hour
+const EMAIL_CHANGE_TOKEN_TTL_MINUTES = 60 * 24 // 24 hours
+
 const { GITHUB_OAUTH2_CLIENT_ID } = process.env
 const { GITHUB_OAUTH2_CLIENT_SECRET } = process.env
 
@@ -101,18 +106,38 @@ export class AuthService {
     const firstFiveChars = sha1Hash.slice(0, 5)
     const lastChars = sha1Hash.slice(5)
 
-    const response = await axios.get(
-      `https://api.pwnedpasswords.com/range/${firstFiveChars}`,
-    )
-
-    if (response.status !== 200) {
-      console.error(
-        `[ERROR][AuthService -> checkIfLeaked]: Failed to get pwned passwords for ${firstFiveChars}: ${response.status}`,
+    try {
+      const response = await axios.get(
+        `https://api.pwnedpasswords.com/range/${firstFiveChars}`,
+        {
+          timeout: 5000,
+          headers: {
+            // Helps against traffic analysis; supported by HIBP.
+            'Add-Padding': 'true',
+            'User-Agent': 'Swetrix',
+          },
+        },
       )
+
+      if (response.status !== 200) {
+        console.error(
+          `[ERROR][AuthService -> checkIfLeaked]: Failed to get pwned passwords for ${firstFiveChars}: ${response.status}`,
+        )
+        return false
+      }
+
+      // Response lines look like: "<HASH_SUFFIX>:<COUNT>"
+      const needle = `${lastChars}:`
+      return String(response.data)
+        .split('\n')
+        .some(line => line.startsWith(needle))
+    } catch (error) {
+      console.error(
+        `[ERROR][AuthService -> checkIfLeaked]: ${error} (prefix ${firstFiveChars})`,
+      )
+      // Fail safe: do not block signup on network errors.
       return false
     }
-
-    return response.data.includes(lastChars)
   }
 
   public async hashPassword(password: string): Promise<string> {
@@ -278,6 +303,14 @@ export class AuthService {
       actionToken &&
       actionToken.action === ActionTokenType.EMAIL_VERIFICATION
     ) {
+      const createdAt = dayjs(actionToken.created as unknown as Date)
+      if (
+        createdAt.isValid() &&
+        dayjs().diff(createdAt, 'minute') > EMAIL_VERIFICATION_TOKEN_TTL_MINUTES
+      ) {
+        await this.actionTokensService.deleteActionToken(actionToken.id)
+        return null
+      }
       return actionToken
     }
 
@@ -316,6 +349,14 @@ export class AuthService {
     const actionToken = await this.actionTokensService.findActionToken(token)
 
     if (actionToken && actionToken.action === ActionTokenType.PASSWORD_RESET) {
+      const createdAt = dayjs(actionToken.created as unknown as Date)
+      if (
+        createdAt.isValid() &&
+        dayjs().diff(createdAt, 'minute') > PASSWORD_RESET_TOKEN_TTL_MINUTES
+      ) {
+        await this.actionTokensService.deleteActionToken(actionToken.id)
+        return null
+      }
       return actionToken
     }
 
@@ -394,6 +435,14 @@ export class AuthService {
     const actionToken = await this.actionTokensService.findActionToken(token)
 
     if (actionToken && actionToken.action === ActionTokenType.EMAIL_CHANGE) {
+      const createdAt = dayjs(actionToken.created as unknown as Date)
+      if (
+        createdAt.isValid() &&
+        dayjs().diff(createdAt, 'minute') > EMAIL_CHANGE_TOKEN_TTL_MINUTES
+      ) {
+        await this.actionTokensService.deleteActionToken(actionToken.id)
+        return null
+      }
       return actionToken
     }
 
@@ -632,6 +681,8 @@ export class AuthService {
     provider: SSOProviders,
     refCode?: string,
   ) {
+    this.assertSSOProviderMatchesHash(provider, ssoHash)
+
     if (provider === SSOProviders.GOOGLE) {
       return this.authenticateGoogle(ssoHash, headers, ip, refCode)
     }
@@ -650,6 +701,13 @@ export class AuthService {
     refCode?: string,
   ) {
     const { sub, email } = await this.processHash(ssoHash)
+
+    if (!sub || typeof sub !== 'string') {
+      throw new BadRequestException('Invalid Google authentication session')
+    }
+    if (!email || typeof email !== 'string') {
+      throw new BadRequestException('Invalid Google authentication session')
+    }
 
     try {
       const user = await this.userService.findOne({
@@ -719,6 +777,26 @@ export class AuthService {
     throw new BadRequestException('Unknown SSO provider supplied')
   }
 
+  private assertSSOProviderMatchesHash(
+    provider: SSOProviders,
+    ssoHash: string,
+  ): SSOProviders {
+    const derivedProvider = getSSOSessionProvider(ssoHash)
+
+    if (
+      derivedProvider !== SSOProviders.GOOGLE &&
+      derivedProvider !== SSOProviders.GITHUB
+    ) {
+      throw new BadRequestException('Invalid SSO session identifier')
+    }
+
+    if (provider !== derivedProvider) {
+      throw new BadRequestException('SSO provider does not match session hash')
+    }
+
+    return derivedProvider
+  }
+
   async processGoogleToken(token: string, ssoHash: string) {
     let tokenInfo
 
@@ -749,6 +827,8 @@ export class AuthService {
     ssoHash: string,
     provider: SSOProviders,
   ) {
+    this.assertSSOProviderMatchesHash(provider, ssoHash)
+
     if (provider === SSOProviders.GOOGLE) {
       return this.linkGoogleAccount(userId, ssoHash)
     }
@@ -1056,6 +1136,13 @@ export class AuthService {
     refCode?: string,
   ) {
     const { id, email } = await this.processHash(ssoHash)
+
+    if (typeof id !== 'number' || !Number.isFinite(id)) {
+      throw new BadRequestException('Invalid Github authentication session')
+    }
+    if (!email || typeof email !== 'string') {
+      throw new BadRequestException('Invalid Github authentication session')
+    }
 
     try {
       const user = await this.userService.findOne({

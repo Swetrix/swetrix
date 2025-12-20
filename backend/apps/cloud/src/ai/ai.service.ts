@@ -165,11 +165,15 @@ export class AiService {
   > {
     const systemPrompt = this.buildSystemPrompt(project, timezone)
 
+    const last = messages[messages.length - 1]?.content as unknown
+    const lastMessagePreview =
+      typeof last === 'string' ? last.slice(0, 100) : undefined
+
     this.logger.log(
       {
         pid: project.id,
         messageCount: messages.length,
-        lastMessage: messages[messages.length - 1]?.content?.slice(0, 100),
+        lastMessage: lastMessagePreview,
         timezone,
       },
       'AI chat request',

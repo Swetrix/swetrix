@@ -48,12 +48,32 @@ import { trackCustom } from '../common/analytics'
 
 const GOALS_MAXIMUM = 50 // Maximum goals per project
 
-const timeBucketConversion: Record<string, string> = {
+const timeBucketConversion: Record<string, string> = Object.assign(
+  Object.create(null),
+  {
   minute: 'toStartOfMinute',
   hour: 'toStartOfHour',
   day: 'toStartOfDay',
   month: 'toStartOfMonth',
   year: 'toStartOfYear',
+  },
+)
+
+const DEFAULT_TAKE = 100
+const MAX_TAKE = 250
+const MAX_SKIP = 50_000
+
+const clampPagination = (take?: number, skip?: number) => {
+  const safeTake =
+    typeof take === 'number' && Number.isFinite(take)
+      ? Math.min(Math.max(take, 1), MAX_TAKE)
+      : DEFAULT_TAKE
+  const safeSkip =
+    typeof skip === 'number' && Number.isFinite(skip)
+      ? Math.min(Math.max(skip, 0), MAX_SKIP)
+      : 0
+
+  return { take: safeTake, skip: safeSkip }
 }
 
 @ApiTags('Goal')
@@ -120,8 +140,10 @@ export class GoalController {
 
     this.projectService.allowedToView(project, userId)
 
+    const { take: safeTake, skip: safeSkip } = clampPagination(take, skip)
+
     const result = await this.goalService.paginate(
-      { take, skip },
+      { take: safeTake, skip: safeSkip },
       { project: { id: projectId } },
       ['project'],
       search,
@@ -625,7 +647,9 @@ export class GoalController {
 
     const table = goal.type === GoalType.CUSTOM_EVENT ? 'customEV' : 'analytics'
     const timeBucketFunc =
-      timeBucketConversion[resolvedTimeBucket] || 'toStartOfDay'
+      Object.prototype.hasOwnProperty.call(timeBucketConversion, resolvedTimeBucket)
+        ? timeBucketConversion[resolvedTimeBucket]
+        : 'toStartOfDay'
     const [selector, groupBy] = this.getGroupSubquery(resolvedTimeBucket)
 
     const { condition: matchCondition, params: matchParams } =

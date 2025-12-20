@@ -846,7 +846,6 @@ export class ProjectController {
   })
   @ApiResponse({ status: 200 })
   @Auth()
-  @Auth()
   async deletePartially(
     @Param('pid') pid: string,
     @Query('from') from: string,
@@ -957,7 +956,6 @@ export class ProjectController {
   @Delete('/reset-filters/:pid')
   @ApiResponse({ status: 200 })
   @Auth()
-  @Auth()
   async resetFilters(
     @Param('pid') pid: string,
     @Query('type') type: string,
@@ -980,7 +978,12 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid)
 
-    const filters = JSON.parse(rawFilters)
+    let filters
+    try {
+      filters = JSON.parse(rawFilters)
+    } catch {
+      throw new BadRequestException('The provided filters are incorrect')
+    }
 
     await this.projectService.deleteByFilters(pid, type, filters)
   }
@@ -1072,7 +1075,7 @@ export class ProjectController {
 
       // TODO: Implement link expiration
       const actionToken = await this.actionTokensService.createForUser(
-        user,
+        invitee,
         ActionTokenType.PROJECT_SHARE,
         share.id,
       )
@@ -1179,16 +1182,18 @@ export class ProjectController {
 
       const share = await this.projectService.findOneShare({
         where: { id: shareId },
+        relations: ['user'],
       })
-      share.confirmed = true
 
       if (_isEmpty(share)) {
         throw new BadRequestException('The provided share ID is not valid')
       }
 
-      // if (share.user?.id !== user.id) {
-      //   throw new BadRequestException('You are not allowed to manage this share')
-      // }
+      if (share.user?.id !== actionToken.user?.id) {
+        throw new ForbiddenException('You are not allowed to manage this share')
+      }
+
+      share.confirmed = true
 
       await this.projectService.updateShare(shareId, share)
       await this.actionTokensService.delete(tokenID)
@@ -1590,7 +1595,7 @@ export class ProjectController {
     }
 
     try {
-      await this.projectService.deleteMultipleShare(`project = "${id}"`)
+      await this.projectService.deleteMultipleShare({ project: { id } })
       await this.projectService.delete(id)
     } catch (reason) {
       this.logger.error(reason)
@@ -1641,10 +1646,15 @@ export class ProjectController {
   @ApiResponse({ status: 200 })
   async getOgImage(
     @Param('id') id: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
     @Res() res: Response,
   ): Promise<any> {
     // TODO: Cache the generated image in the filesystem (or CDN) for 1 day and return it instead of generating it again
     this.logger.log({ id }, 'GET /project/ogimage/:id')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+    await checkRateLimit(ip, 'project-ogimage', 100, 60 * 60)
 
     if (!isValidPID(id)) {
       throw new BadRequestException(

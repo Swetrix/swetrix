@@ -13,10 +13,17 @@ export class BotDetectionGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    this.reflector.get(IS_BOT_DETECTION_ENABLED, context.getHandler())
+    const enabled = this.reflector.getAllAndOverride<boolean>(
+      IS_BOT_DETECTION_ENABLED,
+      [context.getHandler(), context.getClass()],
+    )
+
+    if (!enabled) {
+      return true
+    }
 
     const { headers } = context.switchToHttp().getRequest()
-    const { 'user-agent': userAgent } = headers
+    const userAgent = String(headers?.['user-agent'] ?? '')
 
     if (isbot(userAgent)) {
       throw new ForbiddenException('Bot traffic is ignored')

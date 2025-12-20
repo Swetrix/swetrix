@@ -14,6 +14,7 @@ import {
   Repository,
 } from 'typeorm'
 import axios from 'axios'
+import crypto from 'crypto'
 import CryptoJS from 'crypto-js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -155,6 +156,10 @@ export class UserService {
     return this.usersRepository.delete(id)
   }
 
+  async softDelete(id: string): Promise<any> {
+    return this.usersRepository.softDelete(id)
+  }
+
   async count(options?: FindManyOptions<User>): Promise<number> {
     return this.usersRepository.count(options)
   }
@@ -172,6 +177,10 @@ export class UserService {
       'twoFactorRecoveryCode',
       'twoFactorAuthenticationSecret',
     ])
+  }
+
+  private hashRefreshToken(refreshToken: string) {
+    return crypto.createHash('sha256').update(refreshToken).digest('hex')
   }
 
   findOne(options: FindOneOptions<User> = {}): Promise<User> {
@@ -249,25 +258,29 @@ export class UserService {
   }
 
   public async saveRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = this.hashRefreshToken(refreshToken)
     return this.refreshTokenRepository.save({
       userId,
-      refreshToken,
+      refreshToken: hashedRefreshToken,
     })
   }
 
   public async findRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = this.hashRefreshToken(refreshToken)
     return this.refreshTokenRepository.findOne({
-      where: {
-        userId,
-        refreshToken,
-      },
+      // Backward-compatible: support legacy plaintext tokens while migrating.
+      where: [
+        { userId, refreshToken },
+        { userId, refreshToken: hashedRefreshToken },
+      ],
     })
   }
 
   public async deleteRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = this.hashRefreshToken(refreshToken)
     await this.refreshTokenRepository.delete({
       userId,
-      refreshToken,
+      refreshToken: In([refreshToken, hashedRefreshToken]),
     })
   }
 

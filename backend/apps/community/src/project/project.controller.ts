@@ -297,7 +297,7 @@ export class ProjectController {
         funnels: funnelsMap[project.id],
         isDataExists: _includes(pidsWithData, project?.id),
         isErrorDataExists: _includes(pidsWithErrorData, project?.id),
-        isPinned: project.isPinned || _includes(pinnedProjectIds, project?.id),
+        isPinned: _includes(pinnedProjectIds, project?.id),
         role,
         isLocked: false,
         isAccessConfirmed,
@@ -444,12 +444,6 @@ export class ProjectController {
       )
     }
 
-    if (project.adminId !== userId) {
-      throw new BadRequestException(
-        'You are not allowed to manage this project',
-      )
-    }
-
     const id = randomUUID()
 
     await this.mailerService.sendEmail(
@@ -566,10 +560,12 @@ export class ProjectController {
 
     try {
       await clickhouse.command({
-        query: `ALTER TABLE analytics DELETE WHERE pid='${id}'`,
+        query: `ALTER TABLE analytics DELETE WHERE pid={pid:FixedString(12)}`,
+        query_params: { pid: id },
       })
       await clickhouse.command({
-        query: `ALTER TABLE customEV DELETE WHERE pid='${id}'`,
+        query: `ALTER TABLE customEV DELETE WHERE pid={pid:FixedString(12)}`,
+        query_params: { pid: id },
       })
       return 'Project reset successfully'
     } catch (e) {
@@ -881,7 +877,6 @@ export class ProjectController {
     type: 'string',
   })
   @ApiResponse({ status: 200 })
-  @Auth()
   @Auth(true)
   async deletePartially(
     @Param('pid') pid: string,
@@ -950,10 +945,12 @@ export class ProjectController {
     try {
       await deleteProjectSharesByProjectClickhouse(id)
       await clickhouse.command({
-        query: `ALTER TABLE analytics DELETE WHERE pid='${id}'`,
+        query: `ALTER TABLE analytics DELETE WHERE pid={pid:FixedString(12)}`,
+        query_params: { pid: id },
       })
       await clickhouse.command({
-        query: `ALTER TABLE customEV DELETE WHERE pid='${id}'`,
+        query: `ALTER TABLE customEV DELETE WHERE pid={pid:FixedString(12)}`,
+        query_params: { pid: id },
       })
       await deleteProjectRedis(id)
       return 'Project deleted successfully'
@@ -1125,8 +1122,11 @@ export class ProjectController {
         : true
 
     return this.projectService.formatFromClickhouse({
-      ..._omit(project, ['passwordHash']),
-      share,
+      ..._omit(project, [
+        'passwordHash',
+        role !== 'owner' && role !== 'admin' && 'share',
+      ]),
+      share: role === 'owner' || role === 'admin' ? share : undefined,
       funnels: this.projectService.formatFunnelsFromClickhouse(funnels),
       isDataExists,
       isErrorDataExists,

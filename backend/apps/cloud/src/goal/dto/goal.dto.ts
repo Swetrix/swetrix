@@ -9,6 +9,7 @@ import {
   IsBoolean,
   IsNotEmpty,
   IsIn,
+  ArrayMaxSize,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 import { GoalType, GoalMatchType, MetadataFilter } from '../entity/goal.entity'
@@ -20,11 +21,13 @@ export class MetadataFilterDto implements MetadataFilter {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   key: string
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(500)
   value: string
 }
 
@@ -64,6 +67,7 @@ export class CreateGoalDto {
     description: 'Optional metadata filters',
   })
   @IsArray()
+  @ArrayMaxSize(20)
   @ValidateNested({ each: true })
   @Type(() => MetadataFilterDto)
   @IsOptional()
@@ -103,6 +107,7 @@ export class UpdateGoalDto {
     description: 'Optional metadata filters',
   })
   @IsArray()
+  @ArrayMaxSize(20)
   @ValidateNested({ each: true })
   @Type(() => MetadataFilterDto)
   @IsOptional()

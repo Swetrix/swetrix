@@ -106,7 +106,40 @@ const Signin = () => {
         expires_in: expiresIn,
       } = await generateSSOAuthURL(provider, `${window.location.origin}${routes.socialised}`)
 
-      authWindow.location = authUrl
+      const safeAuthUrl = (() => {
+        try {
+          const parsed = new URL(authUrl)
+          if (parsed.username || parsed.password) return null
+
+          // Prefer HTTPS for all providers; allow HTTP only for localhost-based OIDC in dev.
+          if (
+            parsed.protocol !== 'https:' &&
+            !(
+              provider === 'openid-connect' &&
+              parsed.protocol === 'http:' &&
+              (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1' || parsed.hostname === '::1')
+            )
+          ) {
+            return null
+          }
+
+          if (provider === 'google' && parsed.hostname !== 'accounts.google.com') return null
+          if (provider === 'github' && parsed.hostname !== 'github.com') return null
+
+          return parsed.toString()
+        } catch {
+          return null
+        }
+      })()
+
+      if (!safeAuthUrl) {
+        toast.error(t('apiNotifications.socialisationAuthGenericError'))
+        setIsLoading(false)
+        authWindow.close()
+        return
+      }
+
+      authWindow.location.href = safeAuthUrl
 
       // Closing the authorisation window after the session expires
       setTimeout(authWindow.close, expiresIn)

@@ -27,7 +27,6 @@ export interface RevenueTransaction {
   currency: string
   profileId?: string | null
   sessionId?: string | null
-  customerEmail?: string | null
   productId?: string | null
   productName?: string | null
   metadata?: Record<string, unknown>

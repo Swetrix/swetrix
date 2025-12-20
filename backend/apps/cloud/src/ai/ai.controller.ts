@@ -71,7 +71,7 @@ export class AiController {
     this.logger.log({ uid, pid }, 'POST /ai/:pid/chat')
 
     // Apply rate limiting based on authentication status
-    const ip = getIPFromHeaders(headers)
+    const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
         uid,
@@ -120,6 +120,11 @@ export class AiController {
       res.setHeader('X-Accel-Buffering', 'no')
       res.flushHeaders()
 
+      let clientClosed = false
+      res.on('close', () => {
+        clientClosed = true
+      })
+
       // Convert messages to CoreMessage format, filtering out empty messages
       const messages = chatDto.messages
         .filter(m => m.content && m.content.trim().length > 0)
@@ -155,6 +160,10 @@ export class AiController {
       let textDeltaCount = 0
       try {
         for await (const part of result.fullStream) {
+          if (clientClosed) {
+            break
+          }
+
           this.logger.debug(
             { pid, partType: part.type },
             'AI stream part received',
@@ -235,10 +244,10 @@ export class AiController {
             trackCustom(ip, headers['user-agent'], {
               ev: 'AI_CHAT_STREAM_FINISHED',
               meta: {
-                finishReason: part.finishReason,
-                promptTokens: part.usage.promptTokens,
-                completionTokens: part.usage.completionTokens,
-                totalTokens: part.usage.totalTokens,
+                finishReason: (part as any)?.finishReason,
+                promptTokens: (part as any)?.usage?.promptTokens ?? 0,
+                completionTokens: (part as any)?.usage?.completionTokens ?? 0,
+                totalTokens: (part as any)?.usage?.totalTokens ?? 0,
               },
             })
           } else if (part.type === 'step-finish') {
@@ -321,7 +330,7 @@ export class AiController {
     this.logger.log({ uid, pid }, 'GET /ai/:pid/chats')
 
     // Apply rate limiting based on authentication status
-    const ip = getIPFromHeaders(headers)
+    const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
         uid,
@@ -345,6 +354,11 @@ export class AiController {
     }
 
     this.projectService.allowedToView(project, uid)
+
+    // Do not expose stored chat history to unauthenticated users (even on public projects).
+    if (!uid) {
+      return []
+    }
 
     const chats = await this.aiChatService.findRecentByProject(
       pid,
@@ -374,7 +388,7 @@ export class AiController {
     this.logger.log({ uid, pid }, 'GET /ai/:pid/chats/all')
 
     // Apply rate limiting based on authentication status
-    const ip = getIPFromHeaders(headers)
+    const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
         uid,
@@ -398,6 +412,11 @@ export class AiController {
     }
 
     this.projectService.allowedToView(project, uid)
+
+    // Do not expose stored chat history to unauthenticated users (even on public projects).
+    if (!uid) {
+      return { chats: [], total: 0 }
+    }
 
     const result = await this.aiChatService.findAllByProject(
       pid,
@@ -431,7 +450,7 @@ export class AiController {
     this.logger.log({ uid, pid, chatId }, 'GET /ai/:pid/chats/:chatId')
 
     // Apply rate limiting based on authentication status
-    const ip = getIPFromHeaders(headers)
+    const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
         uid,
@@ -459,14 +478,19 @@ export class AiController {
 
     let chat
 
-    // For public projects, anyone who can view the project can access any chat
-    // For private projects, users can only access their own chats
+    // For public projects:
+    // - unauthenticated users may access only anonymously-owned chats (userId IS NULL) by ID
+    // - authenticated users may access their own chats (plus shared anonymous chats)
+    // For private projects:
+    // - authenticated users may access only their own chats
     if (project.public) {
-      // Public project: verify chat belongs to project only
-      chat = await this.aiChatService.verifyProjectAccess(chatId, pid)
+      if (!uid) {
+        chat = await this.aiChatService.verifyPublicChatAccess(chatId, pid)
+      } else {
+        chat = await this.aiChatService.verifyAccess(chatId, pid, uid)
+      }
     } else {
-      // Private project: verify user owns the chat
-      chat = await this.aiChatService.verifyAccess(chatId, pid, uid)
+      chat = await this.aiChatService.verifyOwnerAccess(chatId, pid, uid)
     }
 
     if (!chat) {
@@ -496,7 +520,7 @@ export class AiController {
     this.logger.log({ uid, pid }, 'POST /ai/:pid/chats')
 
     // Apply rate limiting based on authentication status
-    const ip = getIPFromHeaders(headers)
+    const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
         uid,
@@ -556,7 +580,7 @@ export class AiController {
     this.logger.log({ uid, pid, chatId }, 'POST /ai/:pid/chats/:chatId')
 
     // Apply rate limiting based on authentication status
-    const ip = getIPFromHeaders(headers)
+    const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
         uid,
@@ -581,7 +605,12 @@ export class AiController {
 
     this.projectService.allowedToView(project, uid)
 
-    const existingChat = await this.aiChatService.verifyAccess(chatId, pid, uid)
+    // Updates require authentication and chat ownership.
+    const existingChat = await this.aiChatService.verifyOwnerAccess(
+      chatId,
+      pid,
+      uid,
+    )
 
     if (!existingChat) {
       throw new NotFoundException('Chat not found')
@@ -619,7 +648,7 @@ export class AiController {
     this.logger.log({ uid, pid, chatId }, 'DELETE /ai/:pid/chats/:chatId')
 
     // Apply rate limiting based on authentication status
-    const ip = getIPFromHeaders(headers)
+    const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
         uid,
@@ -644,7 +673,12 @@ export class AiController {
 
     this.projectService.allowedToView(project, uid)
 
-    const existingChat = await this.aiChatService.verifyAccess(chatId, pid, uid)
+    // Deletes require authentication and chat ownership.
+    const existingChat = await this.aiChatService.verifyOwnerAccess(
+      chatId,
+      pid,
+      uid,
+    )
 
     if (!existingChat) {
       throw new NotFoundException('Chat not found')

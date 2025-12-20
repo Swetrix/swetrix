@@ -29,6 +29,14 @@ const CAPTCHA_GENERATE_RL_TIMEOUT = 60 // 1 minute
 // Rate limit: 100 requests per project per minute for challenge generation
 const CAPTCHA_GENERATE_RL_REQUESTS_PID = 100
 
+// Rate limit: verification attempts per IP per minute
+const CAPTCHA_VERIFY_RL_REQUESTS_IP = 60
+const CAPTCHA_VERIFY_RL_TIMEOUT = 60 // 1 minute
+
+// Rate limit: token validations per IP per minute
+const CAPTCHA_VALIDATE_RL_REQUESTS_IP = 120
+const CAPTCHA_VALIDATE_RL_TIMEOUT = 60 // 1 minute
+
 @Controller({
   version: '1',
   path: 'captcha',
@@ -48,10 +56,10 @@ export class CaptchaController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    this.logger.log({ generateDTO }, 'POST /captcha/generate')
-
     const { pid } = generateDTO
     const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    this.logger.log({ pid }, 'POST /captcha/generate')
 
     // Rate limit by IP and PID to prevent abuse
     await checkRateLimit(
@@ -81,9 +89,18 @@ export class CaptchaController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    this.logger.log({ verifyDto }, 'POST /captcha/verify')
-
     const { challenge, nonce, solution, pid } = verifyDto
+
+    this.logger.log({ pid }, 'POST /captcha/verify')
+
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(
+      ip,
+      'captcha-verify',
+      CAPTCHA_VERIFY_RL_REQUESTS_IP,
+      CAPTCHA_VERIFY_RL_TIMEOUT,
+    )
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
@@ -123,8 +140,6 @@ export class CaptchaController {
       timestamp,
     )
 
-    const ip = getIPFromHeaders(headers) || reqIP || ''
-
     try {
       await this.captchaService.logCaptchaPass(pid, headers, timestamp, ip)
     } catch (reason) {
@@ -144,10 +159,26 @@ export class CaptchaController {
 
   @Post('/validate')
   @HttpCode(200)
-  async validateToken(@Body() validateDTO: ValidateDto): Promise<any> {
-    this.logger.log({ validateDTO }, 'POST /captcha/validate')
+  async validateToken(
+    @Body() validateDTO: ValidateDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<any> {
+    // Do NOT log captcha token/secret, as these are sensitive.
+    this.logger.log(
+      { hasToken: !!validateDTO?.token, hasSecret: !!validateDTO?.secret },
+      'POST /captcha/validate',
+    )
 
     const { token, secret } = validateDTO
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(
+      ip,
+      'captcha-validate',
+      CAPTCHA_VALIDATE_RL_REQUESTS_IP,
+      CAPTCHA_VALIDATE_RL_TIMEOUT,
+    )
 
     return {
       success: true,

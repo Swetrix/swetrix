@@ -24,7 +24,7 @@ export class UpdateUserProfileDTO {
 
   @ApiProperty({ required: false, nullable: true })
   @Matches(
-    /^https:\/\/hooks\.slack\.com\/services\/T[a-zA-Z0-9_]{8,10}\/B[a-zA-Z0-9_]{8,10}\/[a-zA-Z0-9_]{24}$/,
+    /^https:\/\/hooks\.slack\.com\/services\/T[a-zA-Z0-9]{8,11}\/B[a-zA-Z0-9]{8,11}\/[a-zA-Z0-9]{24}$/,
     { message: 'Invalid Slack Webhook URL' },
   )
   @IsString()
@@ -32,9 +32,12 @@ export class UpdateUserProfileDTO {
   slackWebhookUrl?: string | null
 
   @ApiProperty({ required: false, nullable: true })
-  @Matches(/^https:\/\/discord\.com\/api\/webhooks\/\d+\/[A-Za-z0-9_-]+$/, {
-    message: 'Invalid Discord Webhook URL',
-  })
+  @Matches(
+    /^https:\/\/discord\.com\/api\/webhooks\/\d{17,20}\/[a-zA-Z0-9_-]+$/,
+    {
+      message: 'Invalid Discord Webhook URL',
+    },
+  )
   @IsString()
   @IsOptional()
   discordWebhookUrl?: string | null

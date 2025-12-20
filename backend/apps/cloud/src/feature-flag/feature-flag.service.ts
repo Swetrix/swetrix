@@ -20,6 +20,15 @@ export class FeatureFlagService {
     projectId: string,
     search?: string,
   ): Promise<Pagination<FeatureFlag>> {
+    const safeTake =
+      typeof options.take === 'number' && Number.isFinite(options.take)
+        ? Math.min(Math.max(options.take, 0), 100)
+        : 100
+    const safeSkip =
+      typeof options.skip === 'number' && Number.isFinite(options.skip)
+        ? Math.max(options.skip, 0)
+        : 0
+
     const queryBuilder = this.featureFlagRepository
       .createQueryBuilder('flag')
       .leftJoinAndSelect('flag.project', 'project')
@@ -35,8 +44,8 @@ export class FeatureFlagService {
 
     queryBuilder
       .orderBy('flag.key', 'ASC')
-      .take(options.take || 100)
-      .skip(options.skip || 0)
+      .take(safeTake)
+      .skip(safeSkip)
 
     const [results, total] = await queryBuilder.getManyAndCount()
 

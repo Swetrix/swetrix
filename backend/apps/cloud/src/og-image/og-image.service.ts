@@ -143,6 +143,17 @@ const getCompiledHTML = (title: string, styles: string) => {
 const WIDTH = 1200
 const HEIGHT = 630
 
+const safeDecodeURIComponent = (value: string): string => {
+  // Query params are typically already decoded by the framework.
+  // We still attempt a decode to handle double-encoded inputs, but we must not
+  // throw (e.g. "100% free" would throw in decodeURIComponent).
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
 export const browserArgs = [
   '--autoplay-policy=user-gesture-required',
   '--disable-background-networking',
@@ -251,7 +262,7 @@ export class OgImageService implements OnModuleDestroy {
   }
 
   async getOgImage(title: string) {
-    const decodedTitle = decodeURIComponent(title)
+    const decodedTitle = safeDecodeURIComponent(title)
 
     if (decodedTitle.length > 255) {
       throw new BadRequestException('Title is too long')
@@ -267,6 +278,18 @@ export class OgImageService implements OnModuleDestroy {
       page.setDefaultTimeout(PUPPETEER_PROTOCOL_TIMEOUT)
       page.setDefaultNavigationTimeout(PUPPETEER_PROTOCOL_TIMEOUT)
       try {
+        await page.setJavaScriptEnabled(false)
+        await page.setRequestInterception(true)
+        page.on('request', req => {
+          const url = req.url()
+          // `setContent()` uses about:blank internally; the logo is a data: URL.
+          if (url === 'about:blank' || url.startsWith('data:')) {
+            void req.continue()
+            return
+          }
+          void req.abort()
+        })
+
         await page.setContent(html, { waitUntil: 'domcontentloaded' })
         const image = await page.screenshot({
           type: 'jpeg',

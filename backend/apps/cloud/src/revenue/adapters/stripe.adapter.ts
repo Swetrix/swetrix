@@ -257,7 +257,6 @@ export class StripeAdapter {
       currency: targetCurrency,
       profileId,
       sessionId,
-      customerEmail: customer?.email || null,
       productId: null,
       productName,
       metadata,
@@ -304,7 +303,6 @@ export class StripeAdapter {
       currency: targetCurrency,
       profileId,
       sessionId,
-      customerEmail: null,
       productId: null,
       productName: 'Refund',
       metadata: {

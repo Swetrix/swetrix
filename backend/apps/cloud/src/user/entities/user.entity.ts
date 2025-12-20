@@ -5,6 +5,7 @@ import {
   OneToMany,
   BeforeUpdate,
   JoinTable,
+  DeleteDateColumn,
 } from 'typeorm'
 import { ActionToken } from '../../action-tokens/action-token.entity'
 import { Project } from '../../project/entity/project.entity'
@@ -470,4 +471,7 @@ export class User {
 
   @OneToMany(() => OrganisationMember, membership => membership.user)
   organisationMemberships: OrganisationMember[]
+
+  @DeleteDateColumn()
+  deletedAt: Date
 }

@@ -82,7 +82,14 @@ export class FeatureFlagService {
   }
 
   async findOne(id: string): Promise<FeatureFlag | null> {
-    const query = `SELECT * FROM feature_flag WHERE id = {id:String}`
+    // If the underlying ClickHouse table ever accumulates duplicate rows for the same id
+    // (e.g. due to ingestion or merge behaviour), ensure we pick a deterministic row.
+    const query = `
+      SELECT * FROM feature_flag
+      WHERE id = {id:String}
+      ORDER BY created DESC
+      LIMIT 1
+    `
 
     const { data } = await clickhouse
       .query({
@@ -103,6 +110,8 @@ export class FeatureFlagService {
       SELECT * FROM feature_flag 
       WHERE projectId = {projectId:FixedString(12)} 
       AND key = {key:String}
+      ORDER BY created DESC
+      LIMIT 1
     `
 
     const { data } = await clickhouse
@@ -163,8 +172,16 @@ export class FeatureFlagService {
     projectId: string,
     search?: string,
   ): Promise<Pagination<FeatureFlag>> {
-    const take = options.take || 100
-    const skip = options.skip || 0
+    // ClickHouse expects UInt32 for LIMIT/OFFSET in these queries; clamp to avoid
+    // user-provided negatives causing query failures (and potential 500s).
+    const take =
+      typeof options.take === 'number' && Number.isFinite(options.take)
+        ? Math.min(Math.max(options.take, 0), 100)
+        : 100
+    const skip =
+      typeof options.skip === 'number' && Number.isFinite(options.skip)
+        ? Math.max(options.skip, 0)
+        : 0
 
     const searchCondition = search?.trim()
       ? `AND (lower(key) LIKE {search:String} OR lower(description) LIKE {search:String})`

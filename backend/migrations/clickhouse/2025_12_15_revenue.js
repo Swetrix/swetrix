@@ -15,7 +15,6 @@ const queries = [
     currency LowCardinality(String),
     profile_id Nullable(String) CODEC(ZSTD(3)),
     session_id Nullable(String) CODEC(ZSTD(3)),
-    customer_email Nullable(String) CODEC(ZSTD(3)),
     product_id Nullable(String) CODEC(ZSTD(3)),
     product_name Nullable(String) CODEC(ZSTD(3)),
     metadata String DEFAULT '{}' CODEC(ZSTD(3)),
