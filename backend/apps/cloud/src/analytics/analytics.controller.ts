@@ -2339,17 +2339,6 @@ export class AnalyticsController {
         ip,
       )
 
-      // If no session exists, generate one
-      if (!psid) {
-        const [, newPsid] =
-          await this.analyticsService.generateAndStoreSessionId(
-            pid,
-            userAgent,
-            ip,
-          )
-        return { sessionId: newPsid }
-      }
-
       return { sessionId: psid }
     } catch (error) {
       this.logger.error({ error, pid }, 'Error generating session ID')
