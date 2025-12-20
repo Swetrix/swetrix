@@ -1580,9 +1580,9 @@ export class AnalyticsService {
         // Bounce Rate
         bounceRate: _round(current.bounceRate || 0, 1),
         previousBounceRate: _round(previous.bounceRate || 0, 1),
-        // For bounce rate, lower is better, so we invert the change
+        // For bounce rate, lower is better, so we subtract current from previous
         bounceRateChange: _round(
-          (current.bounceRate || 0) - (previous.bounceRate || 0),
+          (previous.bounceRate || 0) - (current.bounceRate || 0),
           1,
         ),
       }
