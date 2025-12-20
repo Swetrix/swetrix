@@ -67,7 +67,7 @@ import { GetSessionDto } from './dto/get-session.dto'
 import { ErrorDto } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDto } from './dto/get-error.dto'
-import { GetErrorOverviewDto } from './dto/get-error-overview.dto'
+import { GetErrorOverviewDto, GetErrorOverviewOptions } from './dto/get-error-overview.dto'
 import { PatchStatusDto } from './dto/patch-status.dto'
 import {
   customEventTransformer,
@@ -1750,11 +1750,16 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    let parsedOptions: { showResolved?: boolean } = {}
-    try {
-      parsedOptions = JSON.parse(options || '{}')
-    } catch {
-      // Ignore parse errors
+    let parsedOptions: GetErrorOverviewOptions = {}
+
+    if (typeof options === 'string') {
+      try {
+        parsedOptions = JSON.parse(options)
+      } catch {
+        // Ignore parse errors
+      }
+    } else {
+      parsedOptions = options || {}
     }
 
     let newTimeBucket = timeBucket

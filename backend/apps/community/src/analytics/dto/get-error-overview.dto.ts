@@ -1,6 +1,10 @@
 import { PickType, ApiProperty } from '@nestjs/swagger'
 import { GetDataDto } from './getData.dto'
 
+export interface GetErrorOverviewOptions {
+  showResolved?: boolean
+}
+
 export class GetErrorOverviewDto extends PickType(GetDataDto, [
   'pid',
   'period',
@@ -15,6 +19,7 @@ export class GetErrorOverviewDto extends PickType(GetDataDto, [
       showResolved: true,
     },
     description: 'Errors list options',
+    required: false,
   })
-  options?: string
+  options?: GetErrorOverviewOptions
 }
