@@ -387,7 +387,7 @@ const ProjectAlertsSettings = ({
           </Text>
         }
       />
-      <form className='w-full py-4' onSubmit={handleSubmit}>
+      <form className='w-full pb-4' onSubmit={handleSubmit}>
         {!authLoading && !isIntegrationLinked ? (
           <div className='mt-2 flex items-center rounded-sm bg-blue-50 px-5 py-3 text-base whitespace-pre-wrap dark:bg-slate-800 dark:text-gray-50'>
             <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
