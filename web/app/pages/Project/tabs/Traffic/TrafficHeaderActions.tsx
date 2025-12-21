@@ -10,9 +10,8 @@ import Dropdown from '~/ui/Dropdown'
 import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 
-import { Filter, ProjectView, ProjectViewCustomEvent } from '../../View/interfaces/traffic'
-
 import { getFiltersUrlParams } from '../../View/components/SearchFilters'
+import { Filter, ProjectView, ProjectViewCustomEvent } from '../../View/interfaces/traffic'
 
 interface ExportType {
   label: string

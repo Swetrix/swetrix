@@ -7,10 +7,10 @@ import { useSearchParams } from 'react-router'
 
 import { getProfiles, getProfile, getProfileSessions } from '~/api'
 import { Profile, ProfileDetails, Session } from '~/lib/models/Project'
-import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { UserDetails } from '~/pages/Project/tabs/Profiles/UserDetails'
 import { Users, UsersFilter } from '~/pages/Project/tabs/Profiles/Users'
+import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
+import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
@@ -19,11 +19,7 @@ import LoadingBar from '~/ui/LoadingBar'
 
 const SESSIONS_TAKE = 30
 
-interface ProfilesViewProps {
-  chartType: string
-}
-
-const ProfilesView = ({ chartType }: ProfilesViewProps) => {
+const ProfilesView = () => {
   const { id, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const { timezone, period, dateRange, filters, timeFormat, profilesRefreshTrigger } = useViewProjectContext()
@@ -330,7 +326,6 @@ const ProfilesView = ({ chartType }: ProfilesViewProps) => {
             sessions={profileSessions}
             sessionsLoading={profileSessionsLoading}
             timeFormat={timeFormat}
-            chartType={chartType}
             onLoadMoreSessions={() => {
               if (activeProfileId) {
                 loadProfileSessionsData(activeProfileId)

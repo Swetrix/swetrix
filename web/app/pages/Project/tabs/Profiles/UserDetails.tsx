@@ -34,7 +34,6 @@ interface UserDetailsProps {
   sessions: Session[]
   sessionsLoading: boolean | null
   timeFormat: '12-hour' | '24-hour'
-  chartType: string
   onLoadMoreSessions: () => void
   canLoadMoreSessions: boolean
   currency?: string
@@ -199,7 +198,6 @@ export const UserDetails = ({
   sessions,
   sessionsLoading,
   timeFormat,
-  chartType,
   onLoadMoreSessions,
   canLoadMoreSessions,
   currency,

@@ -124,9 +124,7 @@ const AlertRow = ({
             <div
               className={cx(
                 'flex size-9 shrink-0 items-center justify-center rounded-lg',
-                active
-                  ? 'bg-gray-100 dark:bg-slate-700/50'
-                  : 'bg-gray-100/50 opacity-60 dark:bg-slate-700/30',
+                active ? 'bg-gray-100 dark:bg-slate-700/50' : 'bg-gray-100/50 opacity-60 dark:bg-slate-700/30',
               )}
             >
               <MetricIcon className={cx('size-4', metricIconClass, !active && 'opacity-50')} strokeWidth={1.5} />
@@ -137,12 +135,12 @@ const AlertRow = ({
                 <Text as='span' weight='semibold' truncate className={cx(!active && 'opacity-60')}>
                   {name}
                 </Text>
-                {!active && (
+                {!active ? (
                   <span className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500 dark:bg-slate-700 dark:text-gray-400'>
                     <BellOffIcon className='size-3' strokeWidth={1.5} />
                     {t('alert.disabled')}
                   </span>
-                )}
+                ) : null}
               </div>
               <div className='mt-0.5 flex items-center gap-2'>
                 <Badge

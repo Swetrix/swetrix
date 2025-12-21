@@ -40,7 +40,6 @@ interface SessionDetailViewProps {
   } | null
   sessionLoading: boolean
   timeFormat: '12-hour' | '24-hour'
-  chartType: string
   rotateXAxis: boolean
   dataNames: Record<string, string>
 }

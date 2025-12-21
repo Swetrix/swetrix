@@ -8,11 +8,11 @@ import { Link, useSearchParams } from 'react-router'
 
 import { getSessions, getSession } from '~/api'
 import { Session, SessionDetails as SessionDetailsType } from '~/lib/models/Project'
+import { SessionDetailView } from '~/pages/Project/tabs/Sessions/SessionDetailView'
+import { Sessions } from '~/pages/Project/tabs/Sessions/Sessions'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
-import { SessionDetailView } from '~/pages/Project/tabs/Sessions/SessionDetailView'
-import { Sessions } from '~/pages/Project/tabs/Sessions/Sessions'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
@@ -44,11 +44,10 @@ interface ActiveSession {
 
 interface SessionsViewProps {
   tnMapping: Record<string, string>
-  chartType: string
   rotateXAxis: boolean
 }
 
-const SessionsView = ({ tnMapping, chartType, rotateXAxis }: SessionsViewProps) => {
+const SessionsView = ({ tnMapping, rotateXAxis }: SessionsViewProps) => {
   const { id, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const { sessionsRefreshTrigger, timezone, period, dateRange, filters, timeFormat } = useViewProjectContext()
@@ -282,7 +281,6 @@ const SessionsView = ({ tnMapping, chartType, rotateXAxis }: SessionsViewProps) 
           activeSession={activeSession}
           sessionLoading={sessionLoading}
           timeFormat={timeFormat}
-          chartType={chartType}
           rotateXAxis={rotateXAxis}
           dataNames={dataNames}
         />
