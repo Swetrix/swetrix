@@ -4458,7 +4458,7 @@ export class AnalyticsService {
             pid = {pid:FixedString(12)}
             AND session_id IS NOT NULL
             AND toString(session_id) = {psid:String}
-            AND type IN ('sale', 'refund')
+            AND revenue.type IN ('sale', 'refund')
           GROUP BY pid, session_id, transaction_id
         )
       )
@@ -4702,7 +4702,7 @@ export class AnalyticsService {
           FROM revenue
           WHERE pid = {pid:FixedString(12)} AND session_id IS NOT NULL
             AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-            AND type IN ('sale', 'refund')
+            AND revenue.type IN ('sale', 'refund')
           GROUP BY psidCasted, pid, transaction_id
         )
         GROUP BY psidCasted, pid
