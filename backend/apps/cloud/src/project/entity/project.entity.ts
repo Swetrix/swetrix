@@ -63,7 +63,7 @@ export class Project {
   // CAPTCHA secret key - if set, CAPTCHA is enabled for this project
   @ApiProperty()
   @Column('varchar', { default: null, length: CAPTCHA_SECRET_KEY_LENGTH })
-  captchaSecretKey: string
+  captchaSecretKey: string | null
 
   // CAPTCHA PoW difficulty (number of leading zeros required in hash)
   // Default is 4 (~65k iterations, ~1-2 seconds on average devices)
