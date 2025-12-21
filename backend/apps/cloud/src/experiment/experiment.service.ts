@@ -112,4 +112,30 @@ export class ExperimentService {
       where: { experiment: { id: experimentId } },
     })
   }
+
+  async recreateVariants(
+    experiment: Experiment,
+    variantsData: Partial<ExperimentVariant>[],
+  ): Promise<void> {
+    await this.experimentRepository.manager.transaction(
+      async transactionalEntityManager => {
+        await transactionalEntityManager.delete(ExperimentVariant, {
+          experiment: { id: experiment.id },
+        })
+
+        const variants = variantsData.map(v => {
+          const variant = new ExperimentVariant()
+          variant.name = v.name
+          variant.key = v.key
+          variant.description = v.description || null
+          variant.rolloutPercentage = v.rolloutPercentage
+          variant.isControl = v.isControl
+          variant.experiment = experiment
+          return variant
+        })
+
+        await transactionalEntityManager.save(ExperimentVariant, variants)
+      },
+    )
+  }
 }

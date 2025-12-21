@@ -426,18 +426,10 @@ export class ExperimentController {
         )
       }
 
-      await this.experimentService.deleteVariantsByExperiment(id)
-
-      for (const v of experimentDto.variants) {
-        const variant = new ExperimentVariant()
-        variant.name = v.name
-        variant.key = v.key
-        variant.description = v.description || null
-        variant.rolloutPercentage = v.rolloutPercentage
-        variant.isControl = v.isControl
-        variant.experiment = experiment
-        await this.experimentService.createVariant(variant)
-      }
+      await this.experimentService.recreateVariants(
+        experiment,
+        experimentDto.variants,
+      )
     }
 
     const exposureTrigger =

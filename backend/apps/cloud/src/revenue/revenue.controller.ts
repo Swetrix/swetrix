@@ -353,6 +353,12 @@ export class RevenueAnalyticsController {
 
     this.projectService.allowedToView(project, userId)
 
+    if (!project.paddleApiKeyEnc && !project.stripeApiKeyEnc) {
+      throw new BadRequestException(
+        'Revenue tracking is not configured for this project',
+      )
+    }
+
     const safeTimezone = this.analyticsService.getSafeTimezone(dto.timezone)
     const timeBucket = getLowestPossibleTimeBucket(dto.period, dto.from, dto.to)
 
@@ -385,23 +391,19 @@ export class RevenueAnalyticsController {
   ): Promise<RevenueBreakdownDto> {
     this.logger.log({ userId, ...dto }, 'GET /log/revenue/breakdown')
 
-    const project = await this.projectService.getFullProject(
-      dto.pid,
-      undefined,
-      ['stripeApiKeyEnc', 'paddleApiKeyEnc'],
-    )
+    const project = await this.projectService.getFullProject(dto.pid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')
     }
+
+    this.projectService.allowedToView(project, userId)
 
     if (!project.paddleApiKeyEnc && !project.stripeApiKeyEnc) {
       throw new BadRequestException(
         'Revenue tracking is not configured for this project',
       )
     }
-
-    this.projectService.allowedToView(project, userId)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(dto.timezone)
     const timeBucket = getLowestPossibleTimeBucket(dto.period, dto.from, dto.to)
