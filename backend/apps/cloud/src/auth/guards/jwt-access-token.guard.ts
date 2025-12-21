@@ -32,7 +32,13 @@ export class JwtAccessTokenGuard extends AuthGuard('jwt-access-token') {
       [context.getHandler(), context.getClass()],
     )
 
-    if (isOptionalAuth) return user
+    if (isOptionalAuth) {
+      if (err) {
+        return super.handleRequest(err, user, info, context, status)
+      }
+
+      return user
+    }
 
     return super.handleRequest(err, user, info, context, status)
   }
