@@ -1441,8 +1441,6 @@
     },
     "unknownHost": "Unknown host",
     "noData": "No data to display",
-    "noLiveVisitorsHint": "Live visitors will appear here when they're browsing your site",
-    "clickToViewSession": "Click a visitor to view their session",
     "overview": "Overview",
     "weeklyStats": "Weekly stats",
     "statsFor": "Stats for",
