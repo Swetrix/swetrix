@@ -68,6 +68,7 @@ import {
 import { clickhouse } from '../common/integrations/clickhouse'
 import { calculateBayesianProbabilities } from './bayesian'
 import { trackCustom } from '../common/analytics'
+import { Pagination } from '../common/pagination'
 
 const EXPERIMENTS_MAXIMUM = 20 // Maximum experiments per project
 const FEATURE_FLAG_KEY_REGEX = /^[a-zA-Z0-9_-]+$/
