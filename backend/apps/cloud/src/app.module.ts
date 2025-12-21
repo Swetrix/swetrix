@@ -18,7 +18,6 @@ import { TaskManagerModule } from './task-manager/task-manager.module'
 import { BlogModule } from './blog/blog.module'
 import { WebhookModule } from './webhook/webhook.module'
 import { PingModule } from './ping/ping.module'
-import { MarketplaceModule } from './marketplace/marketplace.module'
 import { AlertModule } from './alert/alert.module'
 import { GoalModule } from './goal/goal.module'
 import { ExperimentModule } from './experiment/experiment.module'
@@ -80,7 +79,6 @@ const modules = [
   AnalyticsModule,
   WebhookModule,
   PingModule,
-  MarketplaceModule,
   AlertModule,
   GoalModule,
   ExperimentModule,

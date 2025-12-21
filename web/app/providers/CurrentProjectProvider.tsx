@@ -4,15 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
-import { checkPassword, getInstalledExtensions, getLiveVisitors, getProject } from '~/api'
-import {
-  isSelfhosted,
-  LIVE_VISITORS_UPDATE_INTERVAL,
-  LS_PROJECTS_PROTECTED_KEY,
-  Period,
-  TimeBucket,
-} from '~/lib/constants'
-import { Extension, type Project } from '~/lib/models/Project'
+import { checkPassword, getLiveVisitors, getProject } from '~/api'
+import { LIVE_VISITORS_UPDATE_INTERVAL, LS_PROJECTS_PROTECTED_KEY, Period, TimeBucket } from '~/lib/constants'
+import { type Project } from '~/lib/models/Project'
 import { getItemJSON, removeItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
@@ -25,7 +19,6 @@ interface CurrentProjectContextType {
   id: string
   project: Project | null
   preferences: ProjectPreferences
-  extensions: Extension[]
   allowedToManage: boolean
   updatePreferences: (prefs: ProjectPreferences) => void
   mergeProject: (project: Partial<Project>) => void
@@ -225,28 +218,8 @@ const useLiveVisitors = (project: Project | null) => {
 
 export const CurrentProjectProvider = ({ children, id }: CurrentProjectProviderProps) => {
   const { project, mergeProject, isPasswordRequired, submitPassword } = useProject(id)
-  const { isAuthenticated } = useAuth()
   const { preferences, updatePreferences } = useProjectPreferences(id)
-  const [extensions, setExtensions] = useState<Extension[]>([])
   const { liveVisitors, updateLiveVisitors } = useLiveVisitors(project)
-
-  useEffect(() => {
-    if (!project || isSelfhosted || !isAuthenticated) {
-      return
-    }
-
-    const abortController = new AbortController()
-
-    getInstalledExtensions(100, 0, { signal: abortController.signal })
-      .then(({ extensions }) => {
-        setExtensions(extensions)
-      })
-      .catch((reason) => {
-        console.error('[ERROR] (CurrentProjectProvider -> getInstalledExtensions)', reason)
-      })
-
-    return () => abortController.abort()
-  }, [project, isAuthenticated])
 
   return (
     <CurrentProjectContext.Provider
@@ -255,7 +228,6 @@ export const CurrentProjectProvider = ({ children, id }: CurrentProjectProviderP
         project,
         preferences,
         updatePreferences,
-        extensions,
         mergeProject,
         allowedToManage: project?.role === 'owner' || project?.role === 'admin',
         liveVisitors,

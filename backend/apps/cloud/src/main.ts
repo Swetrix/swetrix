@@ -25,7 +25,6 @@ async function bootstrap() {
   if (isDevelopment) {
     const config = new DocumentBuilder()
       .setTitle('Swetrix API')
-      .setDescription('Swetrix Analytics & Marketplace API')
       .setVersion(process.env.npm_package_version)
       .addBearerAuth()
       .build()

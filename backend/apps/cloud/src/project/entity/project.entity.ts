@@ -1,11 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryColumn,
-  ManyToOne,
-  OneToMany,
-  JoinTable,
-} from 'typeorm'
+import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
 import { Alert } from '../../alert/entity/alert.entity'
@@ -14,7 +7,6 @@ import { FeatureFlag } from '../../feature-flag/entity/feature-flag.entity'
 import { Goal } from '../../goal/entity/goal.entity'
 import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
-import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'
 import { ProjectSubscriber } from './project-subscriber.entity'
 import { Funnel } from './funnel.entity'
 import { Annotation } from './annotation.entity'
@@ -101,13 +93,6 @@ export class Project {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date
-
-  @OneToMany(
-    () => ExtensionToProject,
-    extensionToProject => extensionToProject.project,
-  )
-  @JoinTable()
-  extensions: ExtensionToProject[]
 
   @OneToMany(() => ProjectSubscriber, subscriber => subscriber.project, {
     cascade: true,

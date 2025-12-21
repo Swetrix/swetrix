@@ -54,7 +54,6 @@ We've been building Swetrix since 2021 with a goal to make web analytics simple 
 - **Error tracking**: capture client‑side errors with details and aggregated views.
 - **Shareable analytics**: public or password‑protected dashboards; invite teammates with roles, or manage access with organisations.
 - **Data portability**: export to CSV and access data via our [developer API](https://docs.swetrix.com/statistics-api).
-- **Extensible (Cloud)**: extensions marketplace to enhance dashboards and workflows.
 - **Alerts & notifications (Cloud)**: get notified on thresholds via Slack, Telegram or Discord.
 - Open source and self‑hostable, with a fully managed EU‑hosted Cloud option.
 
@@ -75,8 +74,8 @@ Prefer to run it yourself? Swetrix Community Edition (CE) ships the same core an
 
 Cloud vs Community Edition
 
-|                                                                          | Swetrix Cloud                                                                                                                                                                     | Swetrix Community Edition                                                                                                                                       |
-| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|                                                                              | Swetrix Cloud                                                                                                                                                                     | Swetrix Community Edition                                                                                                                                       |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Infrastructure management**                                                | ✅ It's easy to get started with Swetrix Cloud - you can set up tracking in a matter of minutes. We manage server maintenance, upgrades, security for you.                        | ⚠️ You are responsible for managing servers, installs, upgrades, scaling and backups.                                                                           |
 | **Core analytics (traffic, events, sessions, funnels, performance, errors)** | ✅ Included                                                                                                                                                                       | ✅ Included                                                                                                                                                     |
 | **Teams & sharing**                                                          | ✅ Organisations to manage multiple projects and users with permissions setup; invite people to your projects directly, or share a public or password protected link with people. | ⚠️ Only direct project invites, password protected links and public projects are supported.                                                                     |

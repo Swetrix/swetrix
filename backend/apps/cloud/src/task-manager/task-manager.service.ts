@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { IsNull, LessThan, In, Not, Between, MoreThan, Like } from 'typeorm'
+import { IsNull, LessThan, In, Not, Between } from 'typeorm'
 import { ConfigService } from '@nestjs/config'
 import Paypal from '@paypal/payouts-sdk'
 import dayjs from 'dayjs'
@@ -17,8 +17,6 @@ import _filter from 'lodash/filter'
 
 import { AlertService } from '../alert/alert.service'
 import { QueryCondition, QueryMetric, QueryTime } from '../alert/dto/alert.dto'
-import { ExtensionsService } from '../marketplace/extensions/extensions.service'
-import { Extension } from '../marketplace/extensions/entities/extension.entity'
 import { ReportFrequency } from '../project/enums'
 import { TelegramService } from '../integrations/telegram/telegram.service'
 import { MailerService } from '../mailer/mailer.service'
@@ -322,7 +320,6 @@ export class TaskManagerService {
     private readonly projectService: ProjectService,
     private readonly actionTokensService: ActionTokensService,
     private readonly alertService: AlertService,
-    private readonly extensionsService: ExtensionsService,
     private readonly logger: AppLoggerService,
     private readonly telegramService: TelegramService,
     private readonly payoutsService: PayoutsService,
@@ -1833,109 +1830,6 @@ export class TaskManagerService {
         )
       }
     }
-  }
-
-  @Cron('0 * * * *')
-  async handleNewExtensions() {
-    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-    const newExtensions = await this.extensionsService.find({
-      where: {
-        createdAt: MoreThan(twoWeeksAgo),
-      },
-    })
-
-    const newExtensionsPromise = _map(newExtensions, async extension => {
-      if (!extension.tags.includes('New')) {
-        extension.tags.push('New')
-        await this.extensionsService.save(extension)
-      }
-    })
-
-    await Promise.allSettled(newExtensionsPromise).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleNewExtensions) Error occured: ${reason}`,
-      )
-    })
-
-    const oldExtensions = await this.extensionsService.find({
-      where: {
-        createdAt: LessThan(twoWeeksAgo),
-        tags: Like('%New%'),
-      },
-    })
-
-    const oldExtensionsPromise = _map(oldExtensions, async extension => {
-      extension.tags = extension.tags.filter(tag => tag !== 'New')
-      await this.extensionsService.save(extension)
-    })
-
-    await Promise.allSettled(oldExtensionsPromise).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleNewExtensions) Error occured: ${reason}`,
-      )
-    })
-  }
-
-  @Cron('0 * * * *')
-  async handleTrendingExtensions() {
-    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-    const extensions = await this.extensionsService.find({
-      where: {
-        createdAt: MoreThan(twoWeeksAgo),
-      },
-    })
-
-    const promises = _map(extensions, async extension => {
-      const currentInstalls =
-        await this.extensionsService.getExtensionInstallCount(extension.id)
-      const twoWeeksBeforeInstalls =
-        await this.extensionsService.getExtensionInstallCount(
-          extension.id,
-          twoWeeksAgo,
-        )
-
-      if (
-        currentInstalls > twoWeeksBeforeInstalls * 2 &&
-        currentInstalls > 0.9 * (await this.getAverageInstalls(extensions))
-      ) {
-        if (!extension.tags.includes('Trending')) {
-          extension.tags.push('Trending')
-          await this.extensionsService.save(extension)
-        }
-      } else if (extension.tags.includes('Trending')) {
-        extension.tags = extension.tags.filter(tag => tag !== 'Trending')
-        await this.extensionsService.save(extension)
-      }
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleTrendingExtensions) Error occured: ${reason}`,
-      )
-    })
-  }
-
-  private async getAverageInstalls(
-    extensions: Extension[],
-    twoWeeksAgo?: Date,
-  ) {
-    let totalInstalls = 0
-
-    const promises = _map(extensions, async extension => {
-      totalInstalls += await this.extensionsService.getExtensionInstallCount(
-        extension.id,
-        twoWeeksAgo,
-      )
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](getAverageInstalls) Error occured: ${reason}`,
-      )
-      return 0
-    })
-
-    return totalInstalls / extensions.length
   }
 
   @Cron(CronExpression.EVERY_5_SECONDS)

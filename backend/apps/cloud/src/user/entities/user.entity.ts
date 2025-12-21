@@ -9,12 +9,7 @@ import {
 import { ActionToken } from '../../action-tokens/action-token.entity'
 import { Project } from '../../project/entity/project.entity'
 import { ProjectShare } from '../../project/entity/project-share.entity'
-import { Extension } from '../../marketplace/extensions/entities/extension.entity'
-import { ExtensionToUser } from '../../marketplace/extensions/entities/extension-to-user.entity'
 import { Payout } from '../../payouts/entities/payouts.entity'
-import { Comment } from '../../marketplace/comments/entities/comment.entity'
-import { CommentReply } from '../../marketplace/comments/entities/comment-reply.entity'
-import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
 import { RefreshToken } from './refresh-token.entity'
 import { OrganisationMember } from '../../organisation/entity/organisation-member.entity'
 
@@ -352,9 +347,6 @@ export class User {
   @OneToMany(() => ActionToken, actionToken => actionToken.user)
   actionTokens: ActionToken[]
 
-  @OneToMany(() => Extension, extension => extension.owner)
-  ownedExtensions: Extension[]
-
   @Column({
     type: 'enum',
     enum: BillingFrequency,
@@ -447,22 +439,6 @@ export class User {
 
   @Column({ default: false })
   registeredWithGithub: boolean
-
-  @OneToMany(() => ExtensionToUser, extensionToUser => extensionToUser.user)
-  @JoinTable()
-  extensions: ExtensionToUser[]
-
-  @OneToMany(() => Comment, comment => comment.user)
-  @JoinTable()
-  comments: Comment[]
-
-  @OneToMany(() => CommentReply, comment => comment.user)
-  @JoinTable()
-  commentReplies: CommentReply[]
-
-  @OneToMany(() => Complaint, complaint => complaint.user)
-  @JoinTable()
-  complaints: Complaint[]
 
   @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
   @JoinTable()

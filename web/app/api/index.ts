@@ -14,7 +14,6 @@ import {
   Overall,
   LiveStats,
   Funnel,
-  Extension,
   SwetrixError,
   SwetrixErrorDetails,
   SessionDetails,
@@ -1138,21 +1137,6 @@ export const deleteApiKey = () =>
   api
     .delete('user/api-key')
     .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getInstalledExtensions = (limit = 100, offset = 0, config?: AxiosRequestConfig) =>
-  api
-    .get(`/extensions/installed?limit=${limit}&offset=${offset}`, config)
-    .then(
-      (
-        response,
-      ): {
-        count: number
-        extensions: Extension[]
-      } => response.data,
-    )
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

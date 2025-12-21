@@ -1,7 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AlertModule } from '../alert/alert.module'
-import { ExtensionsModule } from '../marketplace/extensions/extensions.module'
 import { TelegramService } from '../integrations/telegram/telegram.service'
 import { TaskManagerService } from './task-manager.service'
 import { MailerModule } from '../mailer/mailer.module'
@@ -25,7 +24,6 @@ import { RevenueModule } from '../revenue/revenue.module'
     ActionTokensModule,
     AlertModule,
     forwardRef(() => AnalyticsModule),
-    ExtensionsModule,
     AppLoggerModule,
     TypeOrmModule.forFeature([Message]),
     PayoutsModule,

@@ -536,7 +536,6 @@
     "whyUseSwetrix": "Why use <swetrix>Swetrix</swetrix> if there is <competitor></competitor>?",
     "competitiveFeatures": {
       "perf": "Performance monitoring",
-      "ext": "Custom extensions",
       "gdpr": "GDPR-compatible",
       "usfl": "User flow",
       "funnels": "Funnels",

@@ -211,27 +211,3 @@ export interface Project {
   isPinned?: boolean
   revenueCurrency?: string
 }
-
-export interface Extension {
-  id: string
-  name: string
-  description: string
-  version: string
-  status: string
-  price: number
-  mainImage: string
-  additionalImages: string[]
-  fileURL: string
-  companyLink: string | null
-  createdAt: string
-  updatedAt: string
-  tags: string[]
-  owner: {
-    nickname: string
-  }
-  category: {
-    id: number
-    name: string
-  }
-  usersQuantity: number
-}
