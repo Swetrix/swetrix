@@ -1,6 +1,8 @@
 import { ChartOptions } from 'billboard.js'
 import React, { useMemo } from 'react'
 
+import { chartTypes } from '~/lib/constants'
+
 import { getSettingsSession } from '../ViewProject.helpers'
 
 import { MainChart } from './MainChart'
@@ -15,7 +17,6 @@ interface SessionChartProps {
   timeBucket?: string
   timeFormat: string
   rotateXAxis: boolean
-  chartType: string
   dataNames: any
   onZoom?: (domain: [Date, Date] | null) => void
   className?: string
@@ -26,18 +27,19 @@ export const SessionChart = ({
   timeBucket,
   timeFormat,
   rotateXAxis,
-  chartType,
   dataNames,
   onZoom,
   className,
 }: SessionChartProps) => {
   const options: ChartOptions = useMemo(() => {
-    return getSettingsSession(chart, timeBucket as string, timeFormat, rotateXAxis, chartType, onZoom)
-  }, [chart, timeBucket, timeFormat, rotateXAxis, chartType, onZoom])
+    // Session inspector chart is always rendered as a line/area chart,
+    // regardless of the user's global chart type preference.
+    return getSettingsSession(chart, timeBucket as string, timeFormat, rotateXAxis, chartTypes.line, onZoom)
+  }, [chart, timeBucket, timeFormat, rotateXAxis, onZoom])
 
   const deps = useMemo(
-    () => [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames, onZoom],
-    [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames, onZoom],
+    () => [chart, timeBucket, timeFormat, rotateXAxis, dataNames, onZoom],
+    [chart, timeBucket, timeFormat, rotateXAxis, dataNames, onZoom],
   )
 
   return (
@@ -45,7 +47,7 @@ export const SessionChart = ({
       chartId='session-chart'
       options={options}
       dataNames={dataNames}
-      className={className || 'mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible'}
+      className={className || 'mt-5 h-80 md:mt-0 [&_svg]:overflow-visible!'}
       deps={deps}
     />
   )

@@ -369,14 +369,14 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   const sidebarContent = (
     <aside
       className={cn(
-        'sticky top-2 flex shrink-0 flex-col self-start overflow-hidden rounded-lg border border-gray-200 bg-white transition-all duration-300 ease-in-out dark:border-slate-800/60 dark:bg-slate-800/25',
+        'sticky top-2 flex shrink-0 flex-col self-start overflow-hidden rounded-lg border border-gray-300 bg-white transition-all duration-300 ease-in-out dark:border-slate-800/60 dark:bg-slate-800/25',
         isMobileOpen ? 'h-screen w-64' : isScrolled ? 'h-[calc(100vh-1.5rem)]' : 'h-[calc(100vh-60px-1rem)]',
         isCollapsed && !isMobileOpen ? 'w-14' : 'w-56',
         className,
       )}
     >
       {/* Project name at the top */}
-      <div className='sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 dark:border-slate-800/60 dark:bg-slate-800/25'>
+      <div className='sticky top-0 z-10 flex items-center justify-between border-b border-gray-300 bg-white px-4 py-2 dark:border-slate-800/60 dark:bg-slate-800/25'>
         {isCollapsed && !isMobileOpen ? (
           <Tooltip
             text={projectName}
@@ -503,7 +503,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       </div>
 
       {/* Bottom section: Collapse button + Settings */}
-      <div className='sticky bottom-0 flex flex-col gap-0.5 border-t border-gray-200 bg-white px-2 py-2 dark:border-slate-800/60 dark:bg-slate-800/25'>
+      <div className='sticky bottom-0 flex flex-col gap-0.5 border-t border-gray-300 bg-white px-2 py-2 dark:border-slate-800/60 dark:bg-slate-800/25'>
         {/* Collapse/Expand button - hide on mobile */}
         {!isMobileOpen ? (
           <button

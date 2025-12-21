@@ -363,7 +363,7 @@ export const ErrorDetails = ({
         {/* Left Column - Summary */}
         <div className='space-y-4 lg:w-[380px]'>
           {/* Stats Card */}
-          <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+          <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
             <div className='grid grid-cols-2 gap-y-5 sm:grid-cols-3 lg:grid-cols-2'>
               <StatItem
                 icon={<HashIcon className='h-3.5 w-3.5' />}
@@ -384,7 +384,7 @@ export const ErrorDetails = ({
           </div>
 
           {/* Metadata Card */}
-          <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+          <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
             <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
               {t('project.metadata')}
             </h3>
@@ -457,7 +457,7 @@ export const ErrorDetails = ({
         <div className='flex-1 space-y-4'>
           {/* Stack Trace */}
           {details.stackTrace ? (
-            <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+            <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
               <div className='mb-3 flex items-center justify-between gap-3'>
                 <h3 className='text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
                   {t('project.stackTraceXFrames', { x: stackTraceLines.length })}
@@ -530,7 +530,7 @@ export const ErrorDetails = ({
           ) : null}
 
           {/* Affected Sessions */}
-          <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+          <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
             <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
               {t('project.affectedSessionsList')} {sessionsTotal > 0 ? `(${sessionsTotal})` : ''}
             </h3>

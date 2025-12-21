@@ -90,7 +90,6 @@ export const SessionDetailView = ({
   activeSession,
   sessionLoading,
   timeFormat,
-  chartType,
   rotateXAxis,
   dataNames,
 }: SessionDetailViewProps) => {
@@ -150,7 +149,7 @@ export const SessionDetailView = ({
         {/* Left Column - Session Details */}
         <div className='space-y-4 lg:w-[380px]'>
           {/* Session Details Card */}
-          <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+          <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
             {/* Session Info */}
             <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
               {t('project.sessionInfo')}
@@ -272,7 +271,7 @@ export const SessionDetailView = ({
         {/* Right Column - Chart */}
         <div className='flex-1'>
           {!_isEmpty(activeSession?.chart) ? (
-            <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+            <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
               <div className='mb-3 flex items-center justify-between'>
                 <h3 className='text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
                   {t('project.sessionActivity')}
@@ -291,7 +290,6 @@ export const SessionDetailView = ({
                 timeBucket={activeSession?.timeBucket}
                 timeFormat={timeFormat}
                 rotateXAxis={rotateXAxis}
-                chartType={chartType}
                 dataNames={dataNames}
                 onZoom={setZoomedTimeRange}
                 className='h-[300px] [&_svg]:overflow-visible!'
@@ -302,7 +300,7 @@ export const SessionDetailView = ({
       </div>
 
       {/* Pageflow Section - Full Width Below */}
-      <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+      <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
         <h3 className='mb-4 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
           {t('project.pageflow')}
         </h3>

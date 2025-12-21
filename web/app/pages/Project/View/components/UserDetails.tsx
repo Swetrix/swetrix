@@ -249,7 +249,7 @@ export const UserDetails = ({
         {/* Left Column - Stats & Location/Device & Activity Calendar */}
         <div className='space-y-4 lg:w-[380px]'>
           {/* Stats Card */}
-          <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+          <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
             <div className='grid grid-cols-2 gap-y-5'>
               <StatItem
                 icon={<FileTextIcon className='h-3.5 w-3.5' />}
@@ -296,7 +296,7 @@ export const UserDetails = ({
           </div>
 
           {/* Location & Device Card */}
-          <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+          <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
             <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
               {t('project.locationAndDevice')}
             </h3>
@@ -355,7 +355,7 @@ export const UserDetails = ({
           </div>
 
           {/* Activity Calendar Card */}
-          <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+          <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
             <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
               {t('project.activityCalendar')}
             </h3>
@@ -366,7 +366,7 @@ export const UserDetails = ({
         {/* Right Column - Chart & Sessions */}
         <div className='flex-1 space-y-4'>
           {details.chart && !_isEmpty(details.chart.x) ? (
-            <div className='max-h-max rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+            <div className='max-h-max rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
               <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
                 {t('dashboard.pageviews')}
               </h3>
@@ -375,7 +375,6 @@ export const UserDetails = ({
                 timeBucket={details.timeBucket}
                 timeFormat={timeFormat}
                 rotateXAxis={false}
-                chartType={chartType}
                 dataNames={dataNames}
                 className='h-[300px] [&_svg]:overflow-visible!'
               />
@@ -383,7 +382,7 @@ export const UserDetails = ({
           ) : null}
 
           {/* Sessions */}
-          <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+          <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
             <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
               {t('project.userSessions')}
             </h3>
