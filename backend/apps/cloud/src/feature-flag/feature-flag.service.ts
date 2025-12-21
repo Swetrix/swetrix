@@ -5,6 +5,7 @@ import {
   FindOneOptions,
   Repository,
   EntityManager,
+  DeleteResult,
 } from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { FeatureFlag } from './entity/feature-flag.entity'
@@ -111,7 +112,7 @@ export class FeatureFlagService {
     return repository.update(id, flagData)
   }
 
-  async delete(id: string): Promise<any> {
+  async delete(id: string): Promise<DeleteResult> {
     return this.featureFlagRepository.delete(id)
   }
 
