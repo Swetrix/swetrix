@@ -6,6 +6,7 @@ import {
   Repository,
   EntityManager,
   DeleteResult,
+  UpdateResult,
 } from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { FeatureFlag } from './entity/feature-flag.entity'
@@ -105,7 +106,7 @@ export class FeatureFlagService {
     id: string,
     flagData: Partial<FeatureFlag>,
     manager?: EntityManager,
-  ): Promise<any> {
+  ): Promise<UpdateResult> {
     const repository = manager
       ? manager.getRepository(FeatureFlag)
       : this.featureFlagRepository
