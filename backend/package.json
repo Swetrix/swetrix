@@ -64,7 +64,6 @@
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "form-data": "^4.0.5",
     "front-matter": "^4.0.2",
     "googleapis": "^166.0.0",
     "handlebars": "^4.7.8",
