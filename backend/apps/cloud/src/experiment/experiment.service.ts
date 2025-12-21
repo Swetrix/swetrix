@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
+import { FindManyOptions, FindOneOptions, Repository, EntityManager } from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Experiment } from './entity/experiment.entity'
 import { ExperimentVariant } from './entity/experiment-variant.entity'
@@ -72,12 +72,25 @@ export class ExperimentService {
     })
   }
 
-  async create(experimentData: Partial<Experiment>): Promise<Experiment> {
-    return this.experimentRepository.save(experimentData)
+  async create(
+    experimentData: Partial<Experiment>,
+    manager?: EntityManager,
+  ): Promise<Experiment> {
+    const repository = manager
+      ? manager.getRepository(Experiment)
+      : this.experimentRepository
+    return repository.save(experimentData)
   }
 
-  async update(id: string, experimentData: Partial<Experiment>): Promise<any> {
-    return this.experimentRepository.update(id, experimentData)
+  async update(
+    id: string,
+    experimentData: Partial<Experiment>,
+    manager?: EntityManager,
+  ): Promise<any> {
+    const repository = manager
+      ? manager.getRepository(Experiment)
+      : this.experimentRepository
+    return repository.update(id, experimentData)
   }
 
   async delete(id: string): Promise<any> {
@@ -116,26 +129,33 @@ export class ExperimentService {
   async recreateVariants(
     experiment: Experiment,
     variantsData: Partial<ExperimentVariant>[],
+    manager?: EntityManager,
   ): Promise<void> {
-    await this.experimentRepository.manager.transaction(
-      async transactionalEntityManager => {
-        await transactionalEntityManager.delete(ExperimentVariant, {
-          experiment: { id: experiment.id },
-        })
+    const runInTransaction = async (
+      transactionalEntityManager: EntityManager,
+    ) => {
+      await transactionalEntityManager.delete(ExperimentVariant, {
+        experiment: { id: experiment.id },
+      })
 
-        const variants = variantsData.map(v => {
-          const variant = new ExperimentVariant()
-          variant.name = v.name
-          variant.key = v.key
-          variant.description = v.description || null
-          variant.rolloutPercentage = v.rolloutPercentage
-          variant.isControl = v.isControl
-          variant.experiment = experiment
-          return variant
-        })
+      const variants = variantsData.map(v => {
+        const variant = new ExperimentVariant()
+        variant.name = v.name
+        variant.key = v.key
+        variant.description = v.description || null
+        variant.rolloutPercentage = v.rolloutPercentage
+        variant.isControl = v.isControl
+        variant.experiment = experiment
+        return variant
+      })
 
-        await transactionalEntityManager.save(ExperimentVariant, variants)
-      },
-    )
+      await transactionalEntityManager.save(ExperimentVariant, variants)
+    }
+
+    if (manager) {
+      await runInTransaction(manager)
+    } else {
+      await this.experimentRepository.manager.transaction(runInTransaction)
+    }
   }
 }

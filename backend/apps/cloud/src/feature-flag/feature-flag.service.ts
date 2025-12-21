@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
+import { FindManyOptions, FindOneOptions, Repository, EntityManager } from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { FeatureFlag } from './entity/feature-flag.entity'
 import {
@@ -85,12 +85,25 @@ export class FeatureFlagService {
     })
   }
 
-  async create(flagData: Partial<FeatureFlag>): Promise<FeatureFlag> {
-    return this.featureFlagRepository.save(flagData)
+  async create(
+    flagData: Partial<FeatureFlag>,
+    manager?: EntityManager,
+  ): Promise<FeatureFlag> {
+    const repository = manager
+      ? manager.getRepository(FeatureFlag)
+      : this.featureFlagRepository
+    return repository.save(flagData)
   }
 
-  async update(id: string, flagData: Partial<FeatureFlag>): Promise<any> {
-    return this.featureFlagRepository.update(id, flagData)
+  async update(
+    id: string,
+    flagData: Partial<FeatureFlag>,
+    manager?: EntityManager,
+  ): Promise<any> {
+    const repository = manager
+      ? manager.getRepository(FeatureFlag)
+      : this.featureFlagRepository
+    return repository.update(id, flagData)
   }
 
   async delete(id: string): Promise<any> {

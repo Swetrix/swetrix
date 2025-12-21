@@ -29,6 +29,7 @@ import _omit from 'lodash/omit'
 import _pick from 'lodash/pick'
 import _round from 'lodash/round'
 import _sum from 'lodash/sum'
+import { DataSource } from 'typeorm'
 
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
@@ -82,6 +83,7 @@ export class ExperimentController {
     private readonly analyticsService: AnalyticsService,
     private readonly goalService: GoalService,
     private readonly featureFlagService: FeatureFlagService,
+    private readonly dataSource: DataSource,
   ) {}
 
   @ApiBearerAuth()
@@ -117,15 +119,21 @@ export class ExperimentController {
       projectId,
     )
 
-    // @ts-expect-error
-    result.results = _map(result.results, experiment => ({
-      ..._omit(experiment, ['project', 'goal', 'featureFlag']),
-      pid: projectId,
-      goalId: experiment.goal?.id || null,
-      featureFlagId: experiment.featureFlag?.id || null,
-    }))
+    const mappedResults: ExperimentDto[] = _map(
+      result.results,
+      experiment =>
+        ({
+          ..._omit(experiment, ['project', 'goal', 'featureFlag']),
+          pid: projectId,
+          goalId: experiment.goal?.id || null,
+          featureFlagId: experiment.featureFlag?.id || null,
+        }) as ExperimentDto,
+    )
 
-    return result
+    return new Pagination<ExperimentDto>({
+      results: mappedResults,
+      total: result.total,
+    })
   }
 
   @ApiBearerAuth()
@@ -323,17 +331,30 @@ export class ExperimentController {
         return variant
       })
 
-      const newExperiment = await this.experimentService.create(experiment)
+      const newExperiment = await this.dataSource.transaction(
+        async transactionalEntityManager => {
+          const createdExperiment = await this.experimentService.create(
+            experiment,
+            transactionalEntityManager,
+          )
+
+          if (existingFeatureFlag) {
+            await this.featureFlagService.update(
+              existingFeatureFlag.id,
+              {
+                experimentId: createdExperiment.id,
+              },
+              transactionalEntityManager,
+            )
+          }
+
+          return createdExperiment
+        },
+      )
 
       trackCustom(ip, headers['user-agent'], {
         ev: 'EXPERIMENT_CREATED',
       })
-
-      if (existingFeatureFlag) {
-        await this.featureFlagService.update(existingFeatureFlag.id, {
-          experimentId: newExperiment.id,
-        })
-      }
 
       return {
         ..._omit(newExperiment, ['project', 'goal', 'featureFlag']),
@@ -404,108 +425,123 @@ export class ExperimentController {
       }
     }
 
-    if (experimentDto.variants) {
-      if (experimentDto.variants.length < 2) {
-        throw new BadRequestException(
-          'An experiment must have at least 2 variants',
-        )
-      }
-
-      const controlVariants = experimentDto.variants.filter(v => v.isControl)
-      if (controlVariants.length !== 1) {
-        throw new BadRequestException(
-          'An experiment must have exactly one control variant',
-        )
-      }
-
-      const totalPercentage = _sum(
-        experimentDto.variants.map(v => v.rolloutPercentage),
-      )
-      if (totalPercentage !== 100) {
-        throw new BadRequestException(
-          'Variant rollout percentages must sum to 100',
-        )
-      }
-
-      await this.experimentService.recreateVariants(
-        experiment,
-        experimentDto.variants,
-      )
-    }
-
-    const exposureTrigger =
-      experimentDto.exposureTrigger ?? experiment.exposureTrigger
-    const customEventName =
-      experimentDto.customEventName ?? experiment.customEventName
-    if (
-      exposureTrigger === ExposureTrigger.CUSTOM_EVENT &&
-      !customEventName?.trim()
-    ) {
-      throw new BadRequestException(
-        'Custom event name is required when using custom event exposure trigger',
-      )
-    }
-
-    let featureFlag = experiment.featureFlag
-    if (
-      experimentDto.featureFlagMode !== undefined &&
-      experimentDto.featureFlagMode !== experiment.featureFlagMode
-    ) {
-      if (experimentDto.featureFlagMode === FeatureFlagMode.LINK) {
-        if (!experimentDto.existingFeatureFlagId) {
+    await this.dataSource.transaction(async transactionalEntityManager => {
+      if (experimentDto.variants) {
+        if (experimentDto.variants.length < 2) {
           throw new BadRequestException(
-            'Feature flag ID is required when linking an existing flag',
+            'An experiment must have at least 2 variants',
           )
         }
-        const existingFlag = await this.featureFlagService.findOne({
-          where: {
-            id: experimentDto.existingFeatureFlagId,
-            project: { id: experiment.project.id },
-          },
-        })
-        if (!existingFlag) {
-          throw new NotFoundException('Feature flag not found')
-        }
-        if (existingFlag.experimentId && existingFlag.experimentId !== id) {
+
+        const controlVariants = experimentDto.variants.filter(v => v.isControl)
+        if (controlVariants.length !== 1) {
           throw new BadRequestException(
-            'This feature flag is already linked to another experiment',
+            'An experiment must have exactly one control variant',
           )
         }
-        if (experiment.featureFlag) {
-          await this.featureFlagService.update(experiment.featureFlag.id, {
-            experimentId: null,
+
+        const totalPercentage = _sum(
+          experimentDto.variants.map(v => v.rolloutPercentage),
+        )
+        if (totalPercentage !== 100) {
+          throw new BadRequestException(
+            'Variant rollout percentages must sum to 100',
+          )
+        }
+
+        await this.experimentService.recreateVariants(
+          experiment,
+          experimentDto.variants,
+          transactionalEntityManager,
+        )
+      }
+
+      const exposureTrigger =
+        experimentDto.exposureTrigger ?? experiment.exposureTrigger
+      const customEventName =
+        experimentDto.customEventName ?? experiment.customEventName
+      if (
+        exposureTrigger === ExposureTrigger.CUSTOM_EVENT &&
+        !customEventName?.trim()
+      ) {
+        throw new BadRequestException(
+          'Custom event name is required when using custom event exposure trigger',
+        )
+      }
+
+      let featureFlag = experiment.featureFlag
+      if (
+        experimentDto.featureFlagMode !== undefined &&
+        experimentDto.featureFlagMode !== experiment.featureFlagMode
+      ) {
+        if (experimentDto.featureFlagMode === FeatureFlagMode.LINK) {
+          if (!experimentDto.existingFeatureFlagId) {
+            throw new BadRequestException(
+              'Feature flag ID is required when linking an existing flag',
+            )
+          }
+          const existingFlag = await this.featureFlagService.findOne({
+            where: {
+              id: experimentDto.existingFeatureFlagId,
+              project: { id: experiment.project.id },
+            },
           })
+          if (!existingFlag) {
+            throw new NotFoundException('Feature flag not found')
+          }
+          if (existingFlag.experimentId && existingFlag.experimentId !== id) {
+            throw new BadRequestException(
+              'This feature flag is already linked to another experiment',
+            )
+          }
+          if (experiment.featureFlag) {
+            await this.featureFlagService.update(
+              experiment.featureFlag.id,
+              {
+                experimentId: null,
+              },
+              transactionalEntityManager,
+            )
+          }
+          await this.featureFlagService.update(
+            existingFlag.id,
+            {
+              experimentId: id,
+            },
+            transactionalEntityManager,
+          )
+          featureFlag = existingFlag
         }
-        await this.featureFlagService.update(existingFlag.id, {
-          experimentId: id,
-        })
-        featureFlag = existingFlag
       }
-    }
 
-    const updatePayload: Partial<Experiment> = {
-      ..._pick(experimentDto, [
-        'name',
-        'description',
-        'hypothesis',
-        'exposureTrigger',
-        'customEventName',
-        'multipleVariantHandling',
-        'filterInternalUsers',
-        'featureFlagMode',
-        'featureFlagKey',
-      ]),
-      goal,
-      featureFlag,
-    }
-
-    Object.keys(updatePayload).forEach(key => {
-      if (updatePayload[key] === undefined) {
-        delete updatePayload[key]
+      const updatePayload: Partial<Experiment> = {
+        ..._pick(experimentDto, [
+          'name',
+          'description',
+          'hypothesis',
+          'exposureTrigger',
+          'customEventName',
+          'multipleVariantHandling',
+          'filterInternalUsers',
+          'featureFlagMode',
+          'featureFlagKey',
+        ]),
+        goal,
+        featureFlag,
       }
+
+      Object.keys(updatePayload).forEach(key => {
+        if (updatePayload[key] === undefined) {
+          delete updatePayload[key]
+        }
+      })
+
+      await this.experimentService.update(
+        id,
+        updatePayload,
+        transactionalEntityManager,
+      )
     })
-
-    await this.experimentService.update(id, updatePayload)
 
     const updatedExperiment =
       await this.experimentService.findOneWithRelations(id)
@@ -611,51 +647,74 @@ export class ExperimentController {
       )
     }
 
-    let featureFlag = experiment.featureFlag
-    if (!featureFlag) {
-      if (experiment.featureFlagMode === FeatureFlagMode.CREATE) {
-        const flagKey =
-          experiment.featureFlagKey?.trim() ||
-          `experiment_${experiment.id.replace(/-/g, '_').substring(0, 20)}`
+    try {
+      await this.dataSource.transaction(async transactionalEntityManager => {
+        let featureFlag = experiment.featureFlag
+        if (!featureFlag) {
+          if (experiment.featureFlagMode === FeatureFlagMode.CREATE) {
+            const flagKey =
+              experiment.featureFlagKey?.trim() ||
+              `experiment_${experiment.id.replace(/-/g, '_').substring(0, 20)}`
 
-        if (!FEATURE_FLAG_KEY_REGEX.test(flagKey)) {
-          throw new BadRequestException(
-            'Feature flag key must contain only alphanumeric characters, underscores, and hyphens',
+            if (!FEATURE_FLAG_KEY_REGEX.test(flagKey)) {
+              throw new BadRequestException(
+                'Feature flag key must contain only alphanumeric characters, underscores, and hyphens',
+              )
+            }
+
+            const existingFlag = await this.featureFlagService.findOne({
+              where: { key: flagKey, project: { id: experiment.project.id } },
+            })
+            if (existingFlag) {
+              throw new BadRequestException(
+                `Feature flag with key "${flagKey}" already exists`,
+              )
+            }
+
+            featureFlag = new FeatureFlag()
+            featureFlag.key = flagKey
+            featureFlag.description = `Feature flag for experiment: ${experiment.name}`
+            featureFlag.flagType = FeatureFlagType.ROLLOUT
+            featureFlag.rolloutPercentage = 100
+            featureFlag.enabled = true
+            featureFlag.project = experiment.project
+            featureFlag.experimentId = experiment.id
+            featureFlag = await this.featureFlagService.create(
+              featureFlag,
+              transactionalEntityManager,
+            )
+          } else {
+            throw new BadRequestException(
+              'No feature flag linked to this experiment. Please link a feature flag first.',
+            )
+          }
+        } else {
+          await this.featureFlagService.update(
+            featureFlag.id,
+            { enabled: true },
+            transactionalEntityManager,
           )
         }
 
-        const existingFlag = await this.featureFlagService.findOne({
-          where: { key: flagKey, project: { id: experiment.project.id } },
-        })
-        if (existingFlag) {
-          throw new BadRequestException(
-            `Feature flag with key "${flagKey}" already exists`,
-          )
-        }
-
-        featureFlag = new FeatureFlag()
-        featureFlag.key = flagKey
-        featureFlag.description = `Feature flag for experiment: ${experiment.name}`
-        featureFlag.flagType = FeatureFlagType.ROLLOUT
-        featureFlag.rolloutPercentage = 100
-        featureFlag.enabled = true
-        featureFlag.project = experiment.project
-        featureFlag.experimentId = experiment.id
-        featureFlag = await this.featureFlagService.create(featureFlag)
-      } else {
-        throw new BadRequestException(
-          'No feature flag linked to this experiment. Please link a feature flag first.',
+        await this.experimentService.update(
+          id,
+          {
+            status: ExperimentStatus.RUNNING,
+            startedAt: new Date(),
+            featureFlag,
+          },
+          transactionalEntityManager,
         )
-      }
-    } else {
-      await this.featureFlagService.update(featureFlag.id, { enabled: true })
-    }
+      })
+    } catch (reason) {
+      this.logger.error({ reason, id }, 'Error while starting experiment')
 
-    await this.experimentService.update(id, {
-      status: ExperimentStatus.RUNNING,
-      startedAt: new Date(),
-      featureFlag,
-    })
+      if (reason instanceof HttpException) {
+        throw reason
+      }
+
+      throw new BadRequestException('Error occurred while starting experiment')
+    }
 
     const updatedExperiment =
       await this.experimentService.findOneWithRelations(id)
