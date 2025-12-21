@@ -509,8 +509,20 @@
       "description": "Be the first to know when something happens on your website. Get notified via Telegram, Slack or Discord when specific events occur."
     },
     "events": {
-      "title": "Custom events",
-      "description": "Track user interactions like sales, signups or clicks in real time. Get detailed insights into how users use your website."
+      "title": "Custom events & goals",
+      "description": "Track user interactions like sales, signups or clicks in real time. Set conversion goals to measure success and get detailed insights into how users engage with your website."
+    },
+    "revenue": {
+      "title": "Revenue analytics",
+      "description": "Connect your payment provider (Stripe, Paddle) and discover which marketing channels drive paying customers. Identify customer segments with highest LTV and understand patterns that influence purchase decisions."
+    },
+    "featureFlags": {
+      "title": "Feature flags",
+      "description": "Ship features safely with instant rollouts and rollbacks. Target specific user segments with boolean or percentage-based flags and track how each flag performs."
+    },
+    "experiments": {
+      "title": "A/B testing & experiments",
+      "description": "Run data-driven experiments to optimise conversions. Compare variants with statistical confidence, track exposures and measure the real impact of your changes."
     },
     "timeToDitchGoogleAnalytics": "It's time <colour>to ditch</colour> Google Analytics.",
     "whyDitch": "Tired of the frustration, complexity and privacy issues of Google Analytics? We were too. That's why we built Swetrix - the ethical, open source and fully cookieless alternative.",
@@ -1429,6 +1441,8 @@
     },
     "unknownHost": "Unknown host",
     "noData": "No data to display",
+    "noLiveVisitorsHint": "Live visitors will appear here when they're browsing your site",
+    "clickToViewSession": "Click a visitor to view their session",
     "overview": "Overview",
     "weeklyStats": "Weekly stats",
     "statsFor": "Stats for",
