@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { IsNull, LessThan, In, Not, Between } from 'typeorm'
 import { ConfigService } from '@nestjs/config'
-import Paypal from '@paypal/payouts-sdk'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import _isEmpty from 'lodash/isEmpty'
@@ -28,10 +27,8 @@ import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
 import { SaltService } from '../analytics/salt.service'
 import { TimeBucketType } from '../analytics/dto/getData.dto'
-import { PayoutsService } from '../payouts/payouts.service'
 import { GoalService } from '../goal/goal.service'
 import { Goal, GoalType, GoalMatchType } from '../goal/entity/goal.entity'
-import { PayoutStatus } from '../payouts/entities/payouts.entity'
 import {
   ACCOUNT_PLANS,
   PlanCode,
@@ -46,10 +43,7 @@ import {
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   JWT_REFRESH_TOKEN_LIFETIME,
-  PAYPAL_CLIENT_ID,
-  PAYPAL_CLIENT_SECRET,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
-  isDevelopment,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { CHPlanUsage } from './interfaces'
@@ -66,16 +60,6 @@ import { PaddleAdapter } from '../revenue/adapters/paddle.adapter'
 import { StripeAdapter } from '../revenue/adapters/stripe.adapter'
 
 dayjs.extend(utc)
-
-let paypalClient
-
-if (PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET) {
-  const environment = new Paypal.core.SandboxEnvironment(
-    PAYPAL_CLIENT_ID,
-    PAYPAL_CLIENT_SECRET,
-  )
-  paypalClient = new Paypal.core.PayPalHttpClient(environment)
-}
 
 const getQueryTime = (time: QueryTime): number => {
   if (time === QueryTime.LAST_15_MINUTES) return 15 * 60
@@ -322,7 +306,6 @@ export class TaskManagerService {
     private readonly alertService: AlertService,
     private readonly logger: AppLoggerService,
     private readonly telegramService: TelegramService,
-    private readonly payoutsService: PayoutsService,
     private readonly configService: ConfigService,
     private readonly discordService: DiscordService,
     private readonly slackService: SlackService,
@@ -1962,113 +1945,5 @@ export class TaskManagerService {
     }
 
     await this.userService.deleteRefreshTokensWhere(where)
-  }
-
-  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
-  async payReferrers() {
-    if (isDevelopment || !paypalClient) {
-      return
-    }
-
-    const payoutsToProcess = await this.payoutsService.find({
-      where: {
-        status: PayoutStatus.processing,
-      },
-      relations: ['user'],
-    })
-
-    if (_isEmpty(payoutsToProcess)) {
-      return
-    }
-
-    // A map of emails to pay and their amounts
-    const payouts: Record<string, { amount: number; payoutsIds: string[] }> =
-      Object.create(null)
-
-    for (let i = 0; i < _size(payoutsToProcess); ++i) {
-      const key = payoutsToProcess[i].user.paypalPaymentsEmail
-
-      if (!key) {
-        continue
-      }
-
-      if (!payouts[key]) {
-        payouts[key] = {
-          amount: 0,
-          payoutsIds: [],
-        }
-      }
-
-      payouts[key].amount += _toNumber(payoutsToProcess[i].amount)
-      payouts[key].payoutsIds.push(payoutsToProcess[i].id)
-    }
-
-    const requestBody = {
-      sender_batch_header: {
-        recipient_type: 'EMAIL',
-        email_message: 'Swetrix referral program payout.',
-        note: 'Swetrix referral program payout.',
-      },
-      items: _reduce(
-        payouts,
-        (acc, value: any, key) => {
-          acc.push({
-            recipient_type: 'EMAIL',
-            amount: {
-              value: value.amount.toFixed(2),
-              currency: 'USD',
-            },
-            receiver: key,
-            note: `Your Swetrix $${value.amount.toFixed(2)} payout.`,
-          })
-
-          return acc
-        },
-        [],
-      ),
-    }
-
-    // Send the request to PayPal
-    const request = new Paypal.payouts.PayoutsPostRequest()
-    request.requestBody(requestBody)
-
-    const response = await paypalClient.execute(request)
-
-    if (response.statusCode !== 201) {
-      console.error(
-        `[CRON](payReferrers) An error occured while executing a request to pay referrers: ${JSON.stringify(
-          response,
-          null,
-          2,
-        )}`,
-      )
-      console.error(`Payouts: ${JSON.stringify(payouts, null, 2)}`)
-
-      // Update the payouts in the DB
-      await this.payoutsService.update(
-        {
-          where: {
-            id: In(_map(payoutsToProcess, 'id')),
-          },
-        },
-        {
-          status: PayoutStatus.suspended,
-        },
-      )
-      return
-    }
-
-    // Update the payouts in the DB
-    await this.payoutsService.update(
-      {
-        where: {
-          id: In(_map(payoutsToProcess, 'id')),
-        },
-      },
-      {
-        status: PayoutStatus.paid,
-        transactionId: response.result?.batch_header?.payout_batch_id,
-      },
-    )
   }
 }

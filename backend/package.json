@@ -45,7 +45,6 @@
     "@nestjs/terminus": "^11.0.0",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.9",
-    "@paypal/payouts-sdk": "^1.1.1",
     "@sentry/cli": "^2.58.2",
     "@sentry/nestjs": "^10.27.0",
     "@sentry/profiling-node": "^10.27.0",

@@ -12,7 +12,7 @@ import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
 import OIDCAuth from '~/components/OIDCAuth'
 import { withAuthentication, auth } from '~/hoc/protected'
-import { isSelfhosted, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
+import { isSelfhosted, TRIAL_DAYS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -21,7 +21,6 @@ import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
 import { setAccessToken, removeAccessToken } from '~/utils/accessToken'
-import { deleteCookie, getCookie } from '~/utils/cookie'
 import { cn, delay, openBrowserWindow } from '~/utils/generic'
 import { setRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
 import routes from '~/utils/routes'
@@ -144,18 +143,12 @@ const Signin = () => {
       // Closing the authorisation window after the session expires
       setTimeout(authWindow.close, expiresIn)
 
-      const refCode = getCookie(REFERRAL_COOKIE) as string
-
       while (true) {
         await delay(HASH_CHECK_FREQUENCY)
 
         try {
-          const { accessToken, refreshToken, user, totalMonthlyEvents } = await getJWTBySSOHash(uuid, provider, refCode)
+          const { accessToken, refreshToken, user, totalMonthlyEvents } = await getJWTBySSOHash(uuid, provider)
           authWindow.close()
-
-          if (refCode) {
-            deleteCookie(REFERRAL_COOKIE)
-          }
 
           if (user.isTwoFactorAuthenticationEnabled) {
             setAccessToken(accessToken, true)

@@ -67,7 +67,10 @@ import { GetSessionDto } from './dto/get-session.dto'
 import { ErrorDto } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDto } from './dto/get-error.dto'
-import { GetErrorOverviewDto, GetErrorOverviewOptions } from './dto/get-error-overview.dto'
+import {
+  GetErrorOverviewDto,
+  GetErrorOverviewOptions,
+} from './dto/get-error-overview.dto'
 import { PatchStatusDto } from './dto/patch-status.dto'
 import {
   customEventTransformer,

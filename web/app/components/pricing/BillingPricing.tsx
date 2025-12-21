@@ -15,7 +15,6 @@ import {
   CURRENCIES,
   CONTACT_EMAIL,
   PLAN_LIMITS,
-  REFERRAL_DISCOUNT_CODE,
   STANDARD_PLANS,
   PURCHASABLE_LEGACY_PLANS,
   paddleLanguageMapping,
@@ -157,10 +156,6 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
       return
     }
 
-    const discountMayBeApplied =
-      user.referrerID && (user.planCode === 'trial' || user.planCode === 'none') && !user.cancellationEffectiveDate
-    const coupon = discountMayBeApplied ? REFERRAL_DISCOUNT_CODE : undefined
-
     window.Paddle.Checkout.open({
       product: billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
       email: user.email,
@@ -169,7 +164,6 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
       title: tier.name,
       displayModeTheme: theme,
       country: metainfo.country,
-      coupon,
     })
   }
 

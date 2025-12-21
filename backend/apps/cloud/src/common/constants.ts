@@ -4,8 +4,7 @@ import _toNumber from 'lodash/toNumber'
 import 'dotenv/config'
 import { deriveKey, hash } from './utils'
 
-const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, EMAIL_ACTION_ENCRYPTION_KEY } =
-  process.env
+const { EMAIL_ACTION_ENCRYPTION_KEY } = process.env
 
 const redis = new Redis(
   _toNumber(process.env.REDIS_PORT),
@@ -62,8 +61,6 @@ const redisUserUsageinfoCacheTimeout = 300
 
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
 const UNIQUE_SESSION_LIFE_TIME = 1800
-
-const AFFILIATE_CUT = 0.2
 
 // send email warning when 85% of events in tier are used
 const SEND_WARNING_AT_PERC = 85
@@ -207,14 +204,11 @@ export {
   PERFORMANCE_COLUMNS,
   sentryIgnoreErrors,
   isProxiedByCloudflare,
-  PAYPAL_CLIENT_ID,
-  PAYPAL_CLIENT_SECRET,
   BLOG_POSTS_PATH,
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,
   MAX_FUNNELS,
   ALL_COLUMNS,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
-  AFFILIATE_CUT,
   PID_REGEX,
 }

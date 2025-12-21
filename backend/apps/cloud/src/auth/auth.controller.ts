@@ -116,19 +116,15 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.passwordSameAsEmail'))
     }
 
-    const referrerID = await this.authService.getReferrerId(body.refCode)
-
     const newUser = await this.authService.createUnverifiedUser(
       body.email,
       body.password,
-      referrerID,
     )
 
     trackCustom(ip, headers['user-agent'], {
       ev: 'SIGNUP',
       meta: {
         method: 'email',
-        isReferred: !!referrerID,
       },
     })
 
@@ -491,15 +487,9 @@ export class AuthController {
   ): Promise<any> {
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const { hash, provider, refCode } = body
+    const { hash, provider } = body
 
-    return this.authService.authenticateSSO(
-      hash,
-      headers,
-      ip,
-      provider,
-      refCode,
-    )
+    return this.authService.authenticateSSO(hash, headers, ip, provider)
   }
 
   @ApiBearerAuth()

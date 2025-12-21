@@ -7,7 +7,6 @@ import { MailerModule } from '../mailer/mailer.module'
 import { UserModule } from '../user/user.module'
 import { ProjectModule } from '../project/project.module'
 import { AnalyticsModule } from '../analytics/analytics.module'
-import { PayoutsModule } from '../payouts/payouts.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { Message } from '../integrations/telegram/entities/message.entity'
@@ -26,7 +25,6 @@ import { RevenueModule } from '../revenue/revenue.module'
     forwardRef(() => AnalyticsModule),
     AppLoggerModule,
     TypeOrmModule.forFeature([Message]),
-    PayoutsModule,
     DiscordModule,
     SlackModule,
     GoalModule,

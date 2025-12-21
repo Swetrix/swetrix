@@ -9,7 +9,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { MessageSquareTextIcon, MonitorIcon, UserRoundIcon, MousePointerClickIcon } from 'lucide-react'
+import { MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
 import React, { useState, useEffect, memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -48,7 +48,6 @@ import NoOrganisations from './components/NoOrganisations'
 import NoSharedProjects from './components/NoSharedProjects'
 import Organisations from './components/Organisations'
 import ProjectList from './components/ProjectList'
-import Referral from './components/Referral'
 import Socialisations from './components/Socialisations'
 import TwoFA from './components/TwoFA'
 
@@ -58,7 +57,6 @@ const timeFormatArray = _map(TimeFormat, (key) => key)
 
 const TAB_MAPPING = {
   ACCOUNT: 'account',
-  REFERRALS: 'referrals',
   INTERFACE: 'interface',
   COMMUNICATIONS: 'communications',
 }
@@ -94,11 +92,6 @@ const getTabs = (t: typeof i18next.t) => {
       id: TAB_MAPPING.INTERFACE,
       label: 'Interface settings',
       icon: MonitorIcon,
-    },
-    {
-      id: TAB_MAPPING.REFERRALS,
-      label: t('profileSettings.referral.title'),
-      icon: MousePointerClickIcon,
     },
   ]
 }
@@ -805,20 +798,6 @@ const UserSettings = () => {
                           ) : null}
                         </>
                       ) : null}
-                    </>
-                  )
-                }
-
-                if (activeTab === TAB_MAPPING.REFERRALS) {
-                  return (
-                    <>
-                      <h3
-                        id='socialisations'
-                        className='flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'
-                      >
-                        {t('profileSettings.referral.title')}
-                      </h3>
-                      <Referral />
                     </>
                   )
                 }

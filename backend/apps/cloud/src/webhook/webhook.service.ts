@@ -11,11 +11,8 @@ import _includes from 'lodash/includes'
 import _keys from 'lodash/keys'
 import _isArray from 'lodash/isArray'
 import { AppLoggerService } from '../logger/logger.service'
-import { PayoutsService } from '../payouts/payouts.service'
 import { ProjectService } from '../project/project.service'
 import { UserService } from '../user/user.service'
-import { PayoutStatus } from '../payouts/entities/payouts.entity'
-import { User } from '../user/entities/user.entity'
 import { ReportFrequency } from '../project/enums'
 
 const PADDLE_PUB_KEY = `-----BEGIN PUBLIC KEY-----
@@ -50,7 +47,6 @@ const validator = new Validator()
 export class WebhookService {
   constructor(
     private readonly logger: AppLoggerService,
-    private readonly payoutsService: PayoutsService,
     private readonly userService: UserService,
     private readonly projectService: ProjectService,
   ) {}
@@ -103,35 +99,6 @@ export class WebhookService {
     if (!_includes(paddleWhitelistIPs, reqIP)) {
       throw new ForbiddenException('You have no access to this endpoint')
     }
-  }
-
-  async addPayoutForUser(
-    referrer: User,
-    referralId: string,
-    amount: number,
-    currency: string,
-  ): Promise<any> {
-    return this.payoutsService.create({
-      amount,
-      currency,
-      referralId,
-      user: referrer,
-    })
-  }
-
-  async setReferralPayoutsToProcessing(
-    referralId: string,
-    referrer: User,
-  ): Promise<any> {
-    return this.payoutsService.update(
-      {
-        referralId,
-        user: referrer,
-      },
-      {
-        status: PayoutStatus.processing,
-      },
-    )
   }
 
   async verifySNSRequest(payload: any): Promise<void> {

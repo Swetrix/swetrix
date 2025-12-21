@@ -206,13 +206,6 @@ export const generateRecoveryCode = () =>
     capitalization: 'uppercase',
   })
 
-export const generateRefCode = () =>
-  randomstring.generate({
-    length: 8,
-    charset: 'alphanumeric',
-    capitalization: 'uppercase',
-  })
-
 export const millisecondsToSeconds = (milliseconds: number) =>
   milliseconds / 1000
 

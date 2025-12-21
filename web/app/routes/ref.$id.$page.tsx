@@ -1,25 +1,20 @@
 import type { LoaderFunctionArgs } from 'react-router'
 import { redirect } from 'react-router'
 
-import { isSelfhosted, REFERRAL_COOKIE, REFERRAL_COOKIE_DAYS } from '~/lib/constants'
-import { generateCookieString } from '~/utils/cookie'
+import { isSelfhosted } from '~/lib/constants'
 
-// This route sets the affiliate cookie ($id) and redirects to page specified at $page
 export async function loader({ params }: LoaderFunctionArgs) {
   if (isSelfhosted) {
     return redirect('/login', 302)
   }
 
-  const { id, page } = params
+  const { page } = params
 
   const init = {
     status: 302,
-    headers: {
-      'Set-Cookie': generateCookieString(REFERRAL_COOKIE, id as string, REFERRAL_COOKIE_DAYS * 24 * 60 * 60),
-    },
   }
 
-  const redirectPath = page === 'index' ? '/#core-analytics' : `/${page}`
+  const redirectPath = page === 'index' ? '/' : `/${page}`
 
   return redirect(redirectPath, init)
 }

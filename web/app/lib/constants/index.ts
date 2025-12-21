@@ -279,7 +279,6 @@ export const TWITTER_USERNAME = '@swetrix'
 export const DISCORD_URL = 'https://discord.gg/ZVK8Tw2E8j'
 export const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
 export const MAIN_URL = 'https://swetrix.com'
-export const REF_URL_PREFIX = `${MAIN_URL}/ref/`
 export const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 export const BOOK_A_CALL_URL = 'https://cal.com/swetrix'
 export const PERFORMANCE_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=performance'
@@ -287,15 +286,6 @@ export const ERROR_TRACKING_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=errors'
 export const DOCS_URL = 'https://docs.swetrix.com'
 export const INTEGRATIONS_URL = 'https://docs.swetrix.com/integrations'
 export const ERROR_TRACKING_DOCS_URL = 'https://docs.swetrix.com/error-tracking'
-export const DOCS_REFERRAL_PROGRAM_URL = `${DOCS_URL}/affiliate/about`
-
-// Referral program
-export const REFERRAL_COOKIE = 'affiliate'
-export const REFERRAL_COOKIE_DAYS = 30
-export const REFERRAL_DISCOUNT = 20
-export const REFERRAL_PENDING_PAYOUT_DAYS = 30
-export const REFERRAL_CUT = 0.2
-export const REFERRAL_DISCOUNT_CODE = 'REFERRAL_DISCOUNT'
 
 export const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
 
@@ -475,20 +465,6 @@ export const CURRENCIES: ICurrencies = {
   EUR,
   USD,
   GBP,
-}
-
-export const MERCHANT_FEE = '5% + 50¢'
-
-// Paddle fee is 5% + 50¢
-const calculatePriceAfterFees = (price: number): number => {
-  const fee = 0.05 * price + 0.5
-  return price - fee
-}
-
-export const calculateReferralCut = (originalTierPrice: number): number => {
-  const priceAfterFees = calculatePriceAfterFees(originalTierPrice)
-  const referralCut = REFERRAL_CUT * priceAfterFees
-  return referralCut
 }
 
 export const BillingFrequency = {

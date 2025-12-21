@@ -11,7 +11,7 @@ import { generateSSOAuthURL, getJWTBySSOHash, signup } from '~/api'
 import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
 import OIDCAuth from '~/components/OIDCAuth'
-import { HAVE_I_BEEN_PWNED_URL, isSelfhosted, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
+import { HAVE_I_BEEN_PWNED_URL, isSelfhosted, TRIAL_DAYS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -21,7 +21,6 @@ import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { setAccessToken } from '~/utils/accessToken'
-import { deleteCookie, getCookie } from '~/utils/cookie'
 import { cn, delay, openBrowserWindow } from '~/utils/generic'
 import { setRefreshToken } from '~/utils/refreshToken'
 import routes from '~/utils/routes'
@@ -120,18 +119,11 @@ const Signup = () => {
     try {
       const { dontRemember } = data
 
-      const refCode = getCookie(REFERRAL_COOKIE)
-
       const { user, accessToken, refreshToken } = await signup({
         email: data.email,
         password: data.password,
         checkIfLeaked: data.checkIfLeaked,
-        refCode: refCode || undefined,
       })
-
-      if (refCode) {
-        deleteCookie(REFERRAL_COOKIE)
-      }
 
       setUser(user)
       setIsAuthenticated(true)
@@ -196,18 +188,12 @@ const Signup = () => {
       // Closing the authorisation window after the session expires
       setTimeout(authWindow.close, expiresIn)
 
-      const refCode = getCookie(REFERRAL_COOKIE) as string
-
       while (true) {
         await delay(HASH_CHECK_FREQUENCY)
 
         try {
-          const { accessToken, refreshToken, user, totalMonthlyEvents } = await getJWTBySSOHash(uuid, provider, refCode)
+          const { accessToken, refreshToken, user, totalMonthlyEvents } = await getJWTBySSOHash(uuid, provider)
           authWindow.close()
-
-          if (refCode) {
-            deleteCookie(REFERRAL_COOKIE)
-          }
 
           if (user.isTwoFactorAuthenticationEnabled) {
             setAccessToken(accessToken, true)

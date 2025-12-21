@@ -110,7 +110,7 @@ export const login = (credentials: { email: string; password: string }) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const signup = (data: { email: string; password: string; refCode?: string; checkIfLeaked?: boolean }) =>
+export const signup = (data: { email: string; password: string; checkIfLeaked?: boolean }) =>
   api
     .post('v1/auth/register', data)
     .then((response): Auth => response.data)
@@ -150,52 +150,6 @@ export const setShowLiveVisitorsInTitle = (show: boolean) =>
   api
     .put('/user/live-visitors', { show })
     .then((response): Partial<User> => response.data)
-    .catch((error) => {
-      const errorsArray = error.response.data.message
-      if (_isArray(errorsArray)) {
-        throw errorsArray
-      }
-      throw new Error(errorsArray)
-    })
-
-export const generateRefCode = () =>
-  api
-    .post('/user/generate-ref-code')
-    .then((response): Partial<User> => response.data)
-    .catch((error) => {
-      const errorsArray = error.response.data.message
-      if (_isArray(errorsArray)) {
-        throw errorsArray
-      }
-      throw new Error(errorsArray)
-    })
-
-export const getPayoutsInfo = () =>
-  api
-    .get('/user/payouts/info')
-    .then(
-      (
-        response,
-      ): {
-        trials: number
-        subscribers: number
-        paid: number
-        nextPayout: number
-        pending: number
-      } => response.data,
-    )
-    .catch((error) => {
-      const errorsArray = error.response.data.message
-      if (_isArray(errorsArray)) {
-        throw errorsArray
-      }
-      throw new Error(errorsArray)
-    })
-
-export const getReferrals = () =>
-  api
-    .get('/user/referrals')
-    .then((response): Partial<User>[] => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
       if (_isArray(errorsArray)) {
@@ -1892,13 +1846,13 @@ export const generateSSOAuthURL = async (provider: SSOProvider, redirectUrl?: st
     })
 }
 
-export const getJWTBySSOHash = async (hash: string, provider: SSOProvider, refCode?: string) => {
+export const getJWTBySSOHash = async (hash: string, provider: SSOProvider) => {
   let axiosPost
 
   if (provider === 'openid-connect') {
     axiosPost = api.post('v1/auth/oidc/hash', { hash })
   } else {
-    axiosPost = api.post('v1/auth/sso/hash', { hash, provider, refCode })
+    axiosPost = api.post('v1/auth/sso/hash', { hash, provider })
   }
 
   return axiosPost
@@ -2064,14 +2018,6 @@ export const resetFilters = (pid: string, type: string, filters: string[]) =>
 export const receiveLoginNotification = (receiveLoginNotifications: boolean) =>
   api
     .post('user/recieve-login-notifications', { receiveLoginNotifications })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw error
-    })
-
-export const setPaypalEmail = (paypalPaymentsEmail: string | null) =>
-  api
-    .patch('user/set-paypal-email', { paypalPaymentsEmail })
     .then((response) => response.data)
     .catch((error) => {
       throw error

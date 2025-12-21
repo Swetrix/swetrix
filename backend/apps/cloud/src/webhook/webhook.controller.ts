@@ -13,7 +13,6 @@ import _find from 'lodash/find'
 
 import { ProjectService } from '../project/project.service'
 import { getIPFromHeaders } from '../common/utils'
-import { AFFILIATE_CUT } from '../common/constants'
 import {
   ACCOUNT_PLANS,
   BillingFrequency,
@@ -218,11 +217,7 @@ export class WebhookController {
       }
 
       case 'subscription_payment_succeeded': {
-        const {
-          subscription_id: subID,
-          balance_earnings: balanceEarnings,
-          balance_currency: balanceCurrency,
-        } = body
+        const { subscription_id: subID } = body
 
         const subscriber = await this.userService.findOne({
           where: { subID },
@@ -248,34 +243,6 @@ export class WebhookController {
           })
           await this.projectService.clearProjectsRedisCacheBySubId(subID)
         }
-
-        // That user was not referred by anyone
-        if (!subscriber.referrerID) {
-          return
-        }
-
-        const referrer = await this.userService.findOne({
-          where: { id: subscriber.referrerID },
-        })
-
-        if (!referrer) {
-          this.logger.error(
-            `[subscription_payment_succeeded] Cannot find the referrer with ID: ${subscriber.referrerID}`,
-          )
-          return
-        }
-
-        await this.webhookService.setReferralPayoutsToProcessing(
-          subscriber.id,
-          referrer,
-        )
-
-        await this.webhookService.addPayoutForUser(
-          referrer,
-          subscriber.id,
-          Number(balanceEarnings) * AFFILIATE_CUT,
-          balanceCurrency,
-        )
 
         break
       }

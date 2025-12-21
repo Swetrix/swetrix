@@ -13,7 +13,6 @@ import {
   ConflictException,
   Headers,
   Ip,
-  Patch,
   NotFoundException,
 } from '@nestjs/common'
 import { Request } from 'express'
@@ -59,7 +58,6 @@ import {
   checkRateLimit,
   getGeoDetails,
   getIPFromHeaders,
-  generateRefCode,
 } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { ReportFrequency } from '../project/enums'
@@ -139,40 +137,6 @@ export class UserController {
     )
 
     return this.userService.update(userId, { receiveLoginNotifications })
-  }
-
-  @ApiBearerAuth()
-  @Patch('/set-paypal-email')
-  async setPaypalEmail(
-    @CurrentUserId() userId: string,
-    @Body('paypalPaymentsEmail') paypalPaymentsEmail: string,
-    @Headers() headers,
-    @Ip() reqIP,
-  ): Promise<User> {
-    this.logger.log(
-      { userId, paypalPaymentsEmail },
-      'PATCH /user/set-paypal-email',
-    )
-
-    const ip = getIPFromHeaders(headers) || reqIP || ''
-
-    await checkRateLimit(ip, 'set-paypal-email', 10, 3600)
-    await checkRateLimit(userId, 'set-paypal-email', 10, 3600)
-
-    const user = await this.userService.findOne({ where: { id: userId } })
-
-    if (!user) {
-      throw new BadRequestException('User not found')
-    }
-
-    await this.mailerService.sendEmail(
-      user.email,
-      LetterTemplate.PayPalEmailUpdate,
-    )
-
-    return this.userService.update(userId, {
-      paypalPaymentsEmail: paypalPaymentsEmail || null,
-    })
   }
 
   @ApiBearerAuth()
@@ -688,7 +652,6 @@ export class UserController {
         'timezone',
         'theme',
         'showLiveVisitorsInTitle',
-        'paypalPaymentsEmail',
         'slackWebhookUrl',
         'discordWebhookUrl',
         'telegramChatId',
@@ -713,62 +676,6 @@ export class UserController {
       return this.userService.omitSensitiveData(updatedUser)
     } catch (reason) {
       throw new BadRequestException(reason.message)
-    }
-  }
-
-  @ApiBearerAuth()
-  @Get('referrals')
-  async getReferralsList(@CurrentUserId() id: string): Promise<any> {
-    this.logger.log({ id }, 'GET /user/referrals')
-
-    const user = await this.userService.findOne({ where: { id } })
-
-    if (!user) {
-      throw new BadRequestException('User not found')
-    }
-
-    return this.userService.getReferralsList(user)
-  }
-
-  @ApiBearerAuth()
-  @Get('payouts/info')
-  async getPayoutsInfo(@CurrentUserId() id: string): Promise<any> {
-    this.logger.log({ id }, 'GET /user/payouts/info')
-
-    const user = await this.userService.findOne({ where: { id } })
-
-    if (!user) {
-      throw new BadRequestException('User not found')
-    }
-
-    return this.userService.getPayoutsInfo(user)
-  }
-
-  @ApiBearerAuth()
-  @Post('generate-ref-code')
-  async generateRefCode(@CurrentUserId() id: string): Promise<any> {
-    this.logger.log({ id }, 'POST /user/generate-ref-code')
-
-    const user = await this.userService.findOne({ where: { id } })
-
-    if (!user) {
-      throw new BadRequestException('User not found')
-    }
-
-    if (user.refCode) {
-      throw new BadRequestException('Referral code already exists')
-    }
-
-    let refCode = generateRefCode()
-
-    while (!(await this.userService.isRefCodeUnique(refCode))) {
-      refCode = generateRefCode()
-    }
-
-    await this.userService.update(id, { refCode })
-
-    return {
-      refCode,
     }
   }
 

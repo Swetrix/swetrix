@@ -171,14 +171,12 @@ export class AuthService {
   public async createUnverifiedUser(
     email: string,
     password: string,
-    referrerID?: string,
   ): Promise<User> {
     const hashedPassword = await this.hashPassword(password)
 
     const user = await this.userService.createUser({
       email,
       password: hashedPassword, // Using the password field is incorrect.
-      referrerID,
     })
 
     await this.sendVerificationEmail(user.id, user.email)
@@ -569,7 +567,7 @@ export class AuthService {
     }
   }
 
-  async registerUserGoogle(sub: string, email: string, referrerId?: string) {
+  async registerUserGoogle(sub: string, email: string) {
     const query: UserGoogleDTO = {
       googleId: sub,
       trialEndDate: dayjs
@@ -580,7 +578,6 @@ export class AuthService {
       isActive: true,
       emailRequests: 0,
       email,
-      referrerId,
     }
 
     const userWithSameEmail = await this.userService.findOne({
@@ -647,48 +644,20 @@ export class AuthService {
     return payload
   }
 
-  async getReferrerId(refCode?: string): Promise<string | undefined> {
-    if (!refCode) {
-      return undefined
-    }
-
-    try {
-      let referrerID
-
-      if (refCode) {
-        const referrer = await this.userService.findOne({
-          where: { refCode },
-        })
-
-        if (referrer) {
-          referrerID = referrer.id
-        }
-      }
-
-      return referrerID
-    } catch (reason) {
-      console.error(
-        `[ERROR][AuthService -> getReferrerId]: ${reason} - ${refCode}`,
-      )
-      return undefined
-    }
-  }
-
   async authenticateSSO(
     ssoHash: string,
     headers: Record<string, string>,
     ip: string,
     provider: SSOProviders,
-    refCode?: string,
   ) {
     this.assertSSOProviderMatchesHash(provider, ssoHash)
 
     if (provider === SSOProviders.GOOGLE) {
-      return this.authenticateGoogle(ssoHash, headers, ip, refCode)
+      return this.authenticateGoogle(ssoHash, headers, ip)
     }
 
     if (provider === SSOProviders.GITHUB) {
-      return this.authenticateGithub(ssoHash, headers, ip, refCode)
+      return this.authenticateGithub(ssoHash, headers, ip)
     }
 
     throw new BadRequestException('Unknown SSO provider supplied')
@@ -698,7 +667,6 @@ export class AuthService {
     ssoHash: string,
     headers: Record<string, string>,
     ip: string,
-    refCode?: string,
   ) {
     const { sub, email } = await this.processHash(ssoHash)
 
@@ -715,15 +683,12 @@ export class AuthService {
       })
 
       if (!user) {
-        const referrerId = await this.getReferrerId(refCode)
-
-        const data = await this.registerUserGoogle(sub, email, referrerId)
+        const data = await this.registerUserGoogle(sub, email)
 
         trackCustom(ip, headers['user-agent'], {
           ev: 'SIGNUP',
           meta: {
             method: 'google',
-            isReferred: !!referrerId,
           },
         })
 
@@ -1002,7 +967,7 @@ export class AuthService {
     )
   }
 
-  async registerUserGithub(id: number, email: string, referrerId?: string) {
+  async registerUserGithub(id: number, email: string) {
     const query: UserGithubDTO = {
       githubId: id,
       trialEndDate: dayjs
@@ -1013,7 +978,6 @@ export class AuthService {
       isActive: true,
       emailRequests: 0,
       email,
-      referrerId,
     }
 
     const userWithSameEmail = await this.userService.findOne({
@@ -1133,7 +1097,6 @@ export class AuthService {
     ssoHash: string,
     headers: Record<string, string>,
     ip: string,
-    refCode?: string,
   ) {
     const { id, email } = await this.processHash(ssoHash)
 
@@ -1150,15 +1113,12 @@ export class AuthService {
       })
 
       if (!user) {
-        const referrerId = await this.getReferrerId(refCode)
-
-        const data = await this.registerUserGithub(id, email, referrerId)
+        const data = await this.registerUserGithub(id, email)
 
         trackCustom(ip, headers['user-agent'], {
           ev: 'SIGNUP',
           meta: {
             method: 'github',
-            isReferred: !!referrerId,
           },
         })
 

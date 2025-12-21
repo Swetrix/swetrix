@@ -14,7 +14,6 @@ export enum LetterTemplate {
   TrialEndsTomorrow = 'trial-ends-tomorrow',
   ProjectSubscriberInvitation = 'project-subscriber-invitation',
   ProjectTransfer = 'project-transfer',
-  PayPalEmailUpdate = 'paypal-email-update',
   UsageOverLimit = 'usage-over-limit',
   DashboardLockedExceedingLimits = 'dashboard-locked-exceeding-limits',
   DashboardLockedPaymentFailure = 'dashboard-locked-payment-failure',
