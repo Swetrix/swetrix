@@ -270,6 +270,17 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     return false
   })
 
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 40)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   const toggleCollapsed = useCallback(() => {
     setIsCollapsed((prev) => {
       const newValue = !prev
@@ -358,13 +369,14 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   const sidebarContent = (
     <aside
       className={cn(
-        'sticky top-0 flex h-screen shrink-0 flex-col self-start border-r border-gray-200 bg-white transition-all duration-200 dark:border-slate-800 dark:bg-slate-900',
-        isMobileOpen ? 'w-64' : isCollapsed ? 'w-14' : 'w-56',
+        'sticky top-2 flex shrink-0 flex-col self-start overflow-hidden rounded-lg border border-gray-200 bg-white transition-all duration-300 ease-in-out dark:border-slate-800/60 dark:bg-slate-800/25',
+        isMobileOpen ? 'h-screen w-64' : isScrolled ? 'h-[calc(100vh-1.5rem)]' : 'h-[calc(100vh-60px-1rem)]',
+        isCollapsed && !isMobileOpen ? 'w-14' : 'w-56',
         className,
       )}
     >
       {/* Project name at the top */}
-      <div className='sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 dark:border-slate-800 dark:bg-slate-900'>
+      <div className='sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 dark:border-slate-800/60 dark:bg-slate-800/25'>
         {isCollapsed && !isMobileOpen ? (
           <Tooltip
             text={projectName}
@@ -491,7 +503,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       </div>
 
       {/* Bottom section: Collapse button + Settings */}
-      <div className='sticky bottom-0 flex flex-col gap-0.5 border-t border-gray-200 bg-white px-2 py-2 dark:border-slate-800 dark:bg-slate-900'>
+      <div className='sticky bottom-0 flex flex-col gap-0.5 border-t border-gray-200 bg-white px-2 py-2 dark:border-slate-800/60 dark:bg-slate-800/25'>
         {/* Collapse/Expand button - hide on mobile */}
         {!isMobileOpen ? (
           <button
