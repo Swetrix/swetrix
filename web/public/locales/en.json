@@ -950,6 +950,8 @@
   },
   "alert": {
     "create": "Create an alert",
+    "totalCount": "{{count}} alert(s)",
+    "disabled": "Disabled",
     "customEvent": "Custom event name",
     "newErrorsOnly": "Alert on new errors only",
     "newErrorsOnlyHint": "If enabled, an alert will be triggered only for the first occurrence of a specific error.",

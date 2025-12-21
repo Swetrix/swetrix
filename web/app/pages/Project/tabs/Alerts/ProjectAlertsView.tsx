@@ -5,7 +5,19 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 import _values from 'lodash/values'
-import { Settings2Icon, Trash2Icon, BellRingIcon, DollarSignIcon, TriangleAlertIcon, BellPlusIcon } from 'lucide-react'
+import {
+  PencilIcon,
+  Trash2Icon,
+  BellRingIcon,
+  TriangleAlertIcon,
+  PlusIcon,
+  EyeIcon,
+  MousePointerClickIcon,
+  UsersIcon,
+  AlertCircleIcon,
+  FileTextIcon,
+  BellOffIcon,
+} from 'lucide-react'
 import { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
@@ -23,51 +35,26 @@ import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
+import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 import ProjectAlertsSettings from './ProjectAlertsSettings'
-
-const Separator = ({ className }: { className?: string }) => (
-  <svg viewBox='0 0 2 2' className={cx('h-0.5 w-0.5 flex-none fill-gray-400', className)}>
-    <circle cx={1} cy={1} r={1} />
-  </svg>
-)
 
 const NoNotificationChannelSet = () => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='rounded-lg bg-yellow-100 ring-1 ring-yellow-600/20 ring-inset dark:bg-yellow-400/10 dark:text-yellow-500 dark:ring-yellow-400/20'>
-      <div className='mx-auto max-w-7xl px-3 py-3 sm:px-6 lg:px-8'>
-        <div className='flex flex-wrap items-center justify-between'>
-          <div className='flex flex-1 items-center'>
-            <span className='flex rounded-lg bg-yellow-500 p-2 dark:bg-yellow-600'>
-              <TriangleAlertIcon className='h-6 w-6 text-white' aria-hidden='true' />
-            </span>
-            <p className='ml-3 font-medium text-slate-900 dark:text-gray-50'>{t('alert.noNotificationChannel')}</p>
-          </div>
-          <div className='order-3 mt-2 w-full shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
-            <Link
-              to={routes.user_settings}
-              className='cursor-pointer rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-gray-50 transition-colors duration-200 hover:bg-slate-700 dark:hover:bg-slate-900'
-            >
-              {t('common.fixIt')}
-            </Link>
-          </div>
-        </div>
-      </div>
+    <div className='mb-4 flex items-center gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 dark:border-yellow-500/20 dark:bg-yellow-500/10'>
+      <TriangleAlertIcon className='size-5 shrink-0 text-yellow-600 dark:text-yellow-500' strokeWidth={1.5} />
+      <p className='flex-1 text-sm text-yellow-800 dark:text-yellow-200'>{t('alert.noNotificationChannel')}</p>
+      <Link
+        to={routes.user_settings}
+        className='shrink-0 rounded-md bg-yellow-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-yellow-700 dark:bg-yellow-600 dark:hover:bg-yellow-500'
+      >
+        {t('common.fixIt')}
+      </Link>
     </div>
   )
-}
-
-interface AlertCardProps {
-  id: string
-  name: string
-  queryMetric: (typeof QUERY_METRIC)[keyof typeof QUERY_METRIC]
-  lastTriggered: string | null
-  deleteAlert: (id: string) => void
-  openAlert: (id: string) => void
-  queryMetricTMapping: any
 }
 
 const COLOUR_QUERY_METRIC_MAPPING: Record<(typeof QUERY_METRIC)[keyof typeof QUERY_METRIC], BadgeProps['colour']> = {
@@ -78,67 +65,134 @@ const COLOUR_QUERY_METRIC_MAPPING: Record<(typeof QUERY_METRIC)[keyof typeof QUE
   [QUERY_METRIC.ERRORS]: 'red',
 }
 
-const AlertCard = ({
+const METRIC_ICON_MAPPING: Record<
+  (typeof QUERY_METRIC)[keyof typeof QUERY_METRIC],
+  { icon: React.ElementType; className: string }
+> = {
+  [QUERY_METRIC.PAGE_VIEWS]: { icon: FileTextIcon, className: 'text-yellow-500' },
+  [QUERY_METRIC.UNIQUE_PAGE_VIEWS]: { icon: EyeIcon, className: 'text-indigo-500' },
+  [QUERY_METRIC.ONLINE_USERS]: { icon: UsersIcon, className: 'text-sky-500' },
+  [QUERY_METRIC.CUSTOM_EVENTS]: { icon: MousePointerClickIcon, className: 'text-green-500' },
+  [QUERY_METRIC.ERRORS]: { icon: AlertCircleIcon, className: 'text-red-500' },
+}
+
+interface AlertRowProps {
+  id: string
+  name: string
+  active: boolean
+  queryMetric: (typeof QUERY_METRIC)[keyof typeof QUERY_METRIC]
+  lastTriggered: string | null
+  deleteAlert: (id: string) => void
+  openAlert: (id: string) => void
+  queryMetricTMapping: any
+}
+
+const AlertRow = ({
   id,
   name,
+  active,
   queryMetric,
   lastTriggered,
   openAlert,
   deleteAlert,
   queryMetricTMapping,
-}: AlertCardProps) => {
+}: AlertRowProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
+  const MetricIcon = METRIC_ICON_MAPPING[queryMetric]?.icon || FileTextIcon
+  const metricIconClass = METRIC_ICON_MAPPING[queryMetric]?.className || 'text-gray-500'
+
+  const lastTriggeredText = lastTriggered
+    ? language === 'en'
+      ? dayjs(lastTriggered).locale(language).format('MMM D, YYYY')
+      : dayjs(lastTriggered).locale(language).format('D MMM, YYYY')
+    : null
+
   return (
     <>
       <li
         onClick={() => openAlert(id)}
-        className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'
+        className='group relative mb-3 cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'
       >
-        <div className='px-4 py-4'>
-          <div className='flex items-start justify-between'>
-            <div>
-              <p className='text-lg text-slate-900 dark:text-gray-50'>
-                <span className='text-base font-semibold'>{name}</span>
-                <Separator className='mx-2 inline-block align-middle' />
-                <Badge colour={COLOUR_QUERY_METRIC_MAPPING[queryMetric]} label={queryMetricTMapping[queryMetric]} />
-              </p>
-              <p className='mt-1 text-sm text-slate-900 dark:text-gray-50'>
-                {lastTriggered
-                  ? t('alert.lastTriggeredOn', {
-                      date:
-                        language === 'en'
-                          ? dayjs(lastTriggered).locale(language).format('MMMM D, YYYY')
-                          : dayjs(lastTriggered).locale(language).format('D MMMM, YYYY'),
-                    })
-                  : t('alert.notYetTriggered')}
-              </p>
+        <div className='flex items-center justify-between gap-4 px-4 py-3 sm:px-5'>
+          {/* Left section: Icon + Name + Badge */}
+          <div className='flex min-w-0 flex-1 items-center gap-3'>
+            <div
+              className={cx(
+                'flex size-9 shrink-0 items-center justify-center rounded-lg',
+                active
+                  ? 'bg-gray-100 dark:bg-slate-700/50'
+                  : 'bg-gray-100/50 opacity-60 dark:bg-slate-700/30',
+              )}
+            >
+              <MetricIcon className={cx('size-4', metricIconClass, !active && 'opacity-50')} strokeWidth={1.5} />
             </div>
+
+            <div className='min-w-0 flex-1'>
+              <div className='flex items-center gap-2'>
+                <Text as='span' weight='semibold' truncate className={cx(!active && 'opacity-60')}>
+                  {name}
+                </Text>
+                {!active && (
+                  <span className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500 dark:bg-slate-700 dark:text-gray-400'>
+                    <BellOffIcon className='size-3' strokeWidth={1.5} />
+                    {t('alert.disabled')}
+                  </span>
+                )}
+              </div>
+              <div className='mt-0.5 flex items-center gap-2'>
+                <Badge
+                  colour={COLOUR_QUERY_METRIC_MAPPING[queryMetric]}
+                  label={queryMetricTMapping[queryMetric]}
+                  className='text-[10px]'
+                />
+                {/* Mobile: Show last triggered */}
+                <Text as='span' size='xs' colour='muted' className='sm:hidden'>
+                  {lastTriggeredText ? `• ${lastTriggeredText}` : `• ${t('alert.never')}`}
+                </Text>
+              </div>
+            </div>
+          </div>
+
+          {/* Right section: Last triggered + Actions */}
+          <div className='flex shrink-0 items-center gap-3'>
+            {/* Desktop: Last triggered */}
+            <div className='hidden text-right sm:block'>
+              <Text as='p' size='xs' colour='muted'>
+                {t('alert.lastTriggered')}
+              </Text>
+              <Text as='p' size='sm' colour={lastTriggeredText ? 'primary' : 'muted'}>
+                {lastTriggeredText || t('alert.never')}
+              </Text>
+            </div>
+
+            {/* Action buttons */}
             <div className='flex items-center gap-1'>
               <button
+                type='button'
                 onClick={(e) => {
                   e.stopPropagation()
                   openAlert(id)
                 }}
-                aria-label={t('common.settings')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                aria-label={t('common.edit')}
+                className='rounded-md border border-transparent p-1.5 text-gray-500 transition-colors hover:border-gray-300 hover:bg-white hover:text-gray-700 dark:text-slate-400 hover:dark:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300'
               >
-                <Settings2Icon className='size-5' strokeWidth={1.5} />
+                <PencilIcon className='size-4' strokeWidth={1.5} />
               </button>
-
               <button
+                type='button'
                 onClick={(e) => {
                   e.stopPropagation()
                   setShowDeleteModal(true)
                 }}
                 aria-label={t('common.delete')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                className='rounded-md border border-transparent p-1.5 text-gray-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 hover:dark:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400'
               >
-                <Trash2Icon className='size-5' strokeWidth={1.5} />
+                <Trash2Icon className='size-4' strokeWidth={1.5} />
               </button>
             </div>
           </div>
@@ -156,39 +210,6 @@ const AlertCard = ({
         isOpened={showDeleteModal}
       />
     </>
-  )
-}
-
-interface AddAlertProps {
-  handleNewAlert: () => void
-  isLimitReached: boolean
-}
-
-const AddAlert = ({ handleNewAlert, isLimitReached }: AddAlertProps) => {
-  const { t } = useTranslation()
-
-  return (
-    <li
-      onClick={handleNewAlert}
-      className='group flex h-auto min-h-[120px] cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 transition-colors hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
-    >
-      <div>
-        {isLimitReached ? (
-          <DollarSignIcon
-            className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
-            strokeWidth={1}
-          />
-        ) : (
-          <BellPlusIcon
-            className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
-            strokeWidth={1}
-          />
-        )}
-        <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
-          {t('alert.add')}
-        </span>
-      </div>
-    </li>
   )
 }
 
@@ -306,10 +327,12 @@ const ProjectAlerts = () => {
     loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
   }
 
-  const onDelete = async (id: string) => {
+  const onDelete = async (alertId: string) => {
     try {
-      await deleteAlertApi(id)
+      await deleteAlertApi(alertId)
       toast.success(t('alertsSettings.alertDeleted'))
+      // Reload alerts after deletion
+      loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
     } catch (reason: any) {
       toast.error(reason?.response?.data?.message || reason?.message || 'Something went wrong')
     }
@@ -411,16 +434,28 @@ const ProjectAlerts = () => {
               secondary
               large
             >
-              {isLimitReached ? <DollarSignIcon className='mr-1 h-5 w-5' strokeWidth={1.5} /> : null}
               {t('alert.add')}
             </Button>
           </div>
         ) : (
           <>
             {!isIntegrationLinked ? <NoNotificationChannelSet /> : null}
-            <ul className='mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3'>
+
+            {/* Header with add button */}
+            <div className='mb-4 flex items-center justify-between'>
+              <Text as='p' size='sm' colour='muted'>
+                {t('alert.totalCount', { count: total })}
+              </Text>
+              <Button onClick={handleNewAlert} primary regular>
+                <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
+                {t('alert.add')}
+              </Button>
+            </div>
+
+            {/* Alerts list */}
+            <ul>
               {_map(alerts, (alert) => (
-                <AlertCard
+                <AlertRow
                   key={alert.id}
                   {...alert}
                   openAlert={openAlert}
@@ -428,7 +463,6 @@ const ProjectAlerts = () => {
                   queryMetricTMapping={queryMetricTMapping}
                 />
               ))}
-              <AddAlert handleNewAlert={handleNewAlert} isLimitReached={isLimitReached} />
             </ul>
           </>
         )}
