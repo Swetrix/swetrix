@@ -38,6 +38,7 @@ import {
   AnalyticsService,
   getLowestPossibleTimeBucket,
 } from '../analytics/analytics.service'
+import { TimeBucketType } from '../analytics/dto/getData.dto'
 import { Auth } from '../auth/decorators'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
@@ -790,7 +791,7 @@ export class ExperimentController {
     @CurrentUserId() userId: string,
     @Param('id') id: string,
     @Query('period') period: string,
-    @Query('timeBucket') timeBucketParam?: string,
+    @Query('timeBucket') timeBucketParam?: TimeBucketType,
     @Query('from') from?: string,
     @Query('to') to?: string,
     @Query('timezone') timezone?: string,
@@ -815,7 +816,7 @@ export class ExperimentController {
 
     let timeBucket =
       timeBucketParam || getLowestPossibleTimeBucket(period, from, to)
-    let allowedTimeBucketForPeriodAll: string[] | undefined
+    let allowedTimeBucketForPeriodAll: TimeBucketType[] | undefined
     let diff: number | undefined
 
     if (period === 'all') {
@@ -826,7 +827,7 @@ export class ExperimentController {
 
       diff = res.diff
 
-      timeBucket = res.timeBucket.includes(timeBucket as any)
+      timeBucket = res.timeBucket.includes(timeBucket)
         ? timeBucket
         : res.timeBucket[0]
       allowedTimeBucketForPeriodAll = res.timeBucket
@@ -836,7 +837,7 @@ export class ExperimentController {
       this.analyticsService.getGroupFromTo(
         from,
         to,
-        timeBucket as any,
+        timeBucket,
         period,
         safeTimezone,
         diff,
@@ -1015,7 +1016,7 @@ export class ExperimentController {
     try {
       chart = await this.generateExperimentChart(
         experiment,
-        timeBucket as any,
+        timeBucket,
         groupFrom,
         groupTo,
         groupFromUTC,
@@ -1046,7 +1047,7 @@ export class ExperimentController {
    */
   private async generateExperimentChart(
     experiment: Experiment,
-    timeBucket: string,
+    timeBucket: TimeBucketType,
     groupFrom: string,
     groupTo: string,
     groupFromUTC: string,
@@ -1054,7 +1055,7 @@ export class ExperimentController {
     safeTimezone: string,
   ): Promise<{ x: string[]; winProbability: Record<string, number[]> }> {
     const { xShifted } = this.analyticsService.generateXAxis(
-      timeBucket as any,
+      timeBucket,
       groupFrom,
       groupTo,
       safeTimezone,

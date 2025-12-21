@@ -301,13 +301,13 @@ export class RevenueAnalyticsController {
     const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
       dto.from,
       dto.to,
-      timeBucket as any,
+      timeBucket,
       dto.period,
       safeTimezone,
     )
 
     const { xShifted } = this.analyticsService.generateXAxis(
-      timeBucket as any,
+      timeBucket,
       groupFromUTC,
       groupToUTC,
       safeTimezone,
@@ -365,7 +365,7 @@ export class RevenueAnalyticsController {
     const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
       dto.from,
       dto.to,
-      timeBucket as any,
+      timeBucket,
       dto.period,
       safeTimezone,
     )
@@ -411,7 +411,7 @@ export class RevenueAnalyticsController {
     const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
       dto.from,
       dto.to,
-      timeBucket as any,
+      timeBucket,
       dto.period,
       safeTimezone,
     )

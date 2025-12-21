@@ -6,8 +6,10 @@ import {
   IsInt,
   Min,
   Max,
+  IsEnum,
 } from 'class-validator'
 import { Type } from 'class-transformer'
+import { TimeBucketType } from '../../analytics/dto/getData.dto'
 
 export class GetRevenueDto {
   @ApiProperty({ description: 'Project ID' })
@@ -35,10 +37,13 @@ export class GetRevenueDto {
   @IsString()
   timezone?: string
 
-  @ApiPropertyOptional({ description: 'Time bucket for chart data' })
+  @ApiPropertyOptional({
+    description: 'Time bucket for chart data',
+    enum: TimeBucketType,
+  })
   @IsOptional()
-  @IsString()
-  timeBucket?: string
+  @IsEnum(TimeBucketType)
+  timeBucket?: TimeBucketType
 }
 
 export class GetRevenueTransactionsDto extends GetRevenueDto {
