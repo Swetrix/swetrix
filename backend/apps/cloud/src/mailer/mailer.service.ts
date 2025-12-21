@@ -138,6 +138,13 @@ handlebars.registerHelper('greater', function greater(v1, v2, options) {
   return options.inverse(this)
 })
 
+handlebars.registerHelper('less', function less(v1, v2, options) {
+  if (v1 < v2) {
+    return options.fn(this)
+  }
+  return options.inverse(this)
+})
+
 @Injectable()
 export class MailerService {
   constructor(
