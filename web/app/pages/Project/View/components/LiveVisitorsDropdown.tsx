@@ -96,13 +96,13 @@ const LiveVisitorsDropdown = () => {
             </div>
             <div className='scrollbar-thin max-h-[200px] overflow-y-auto px-2'>
               {isLoading ? (
-                <p className='mt-2 flex items-center py-2 text-sm text-gray-900 dark:text-gray-50'>
+                <p className='flex items-center py-2 text-sm text-gray-900 dark:text-gray-50'>
                   <Spin className='ml-0' />
 
                   {t('common.loading')}
                 </p>
               ) : liveInfo.length === 0 ? (
-                <p className='mt-2 py-2 text-sm text-gray-900 dark:text-gray-50'>{t('project.noData')}</p>
+                <p className='py-2 text-sm text-gray-900 dark:text-gray-50'>{t('project.noData')}</p>
               ) : (
                 <div className='table w-full border-separate border-spacing-y-2'>
                   <div className='table-row-group'>
