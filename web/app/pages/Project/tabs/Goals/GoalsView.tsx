@@ -276,7 +276,7 @@ const GoalRow = ({
 
   return (
     <>
-      <li className='relative mb-3 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/25 dark:bg-slate-800/70'>
+      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/25 dark:bg-slate-800/70'>
         {/* Main row - clickable to expand */}
         <div
           onClick={() => onToggleExpand(goal.id)}
@@ -681,7 +681,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
       <div>
         {isLoading && !_isEmpty(goals) ? <LoadingBar /> : null}
         {_isEmpty(goals) ? (
-          <div className='mt-5 rounded-xl bg-gray-700 p-5'>
+          <div className='mt-5 rounded-lg bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
               <TargetIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
               <p className='text-3xl font-bold'>{t('goals.title')}</p>

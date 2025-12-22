@@ -43,7 +43,7 @@ export const CaptchaChart = ({
   }
 
   return (
-    <div className='overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
+    <div className='overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
       <MainChart
         chartId='captcha-chart'
         options={options}

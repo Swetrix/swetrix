@@ -66,24 +66,8 @@ interface ProjectSidebarProps {
   dataLoading?: boolean
   searchParams: URLSearchParams
   allowedToManage?: boolean
-  // Mobile-specific props
   isMobileOpen?: boolean
   onMobileClose?: () => void
-}
-
-const TAB_HINT_KEYS: Record<string, string> = {
-  ai: 'dashboard.askAiHint',
-  traffic: 'dashboard.trafficHint',
-  performance: 'dashboard.performanceHint',
-  funnels: 'dashboard.funnelsHint',
-  alerts: 'dashboard.alertsHint',
-  profiles: 'dashboard.profilesHint',
-  sessions: 'dashboard.sessionsHint',
-  errors: 'dashboard.errorsHint',
-  goals: 'dashboard.goalsHint',
-  experiments: 'dashboard.experimentsHint',
-  featureFlags: 'dashboard.featureFlagsHint',
-  captcha: 'dashboard.captchaHint',
 }
 
 const CollapsibleGroup: React.FC<{
@@ -96,7 +80,6 @@ const CollapsibleGroup: React.FC<{
   isCollapsed?: boolean
   onMobileClose?: () => void
 }> = ({ group, activeTab, onTabChange, projectId, dataLoading, searchParams, isCollapsed, onMobileClose }) => {
-  const { t } = useTranslation('common')
   const [isExpanded, setIsExpanded] = useState(true)
 
   const hasActiveTab = useMemo(() => {
@@ -109,7 +92,6 @@ const CollapsibleGroup: React.FC<{
     }
   }, [hasActiveTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // When collapsed, render tabs without group header
   if (isCollapsed) {
     return (
       <div className='mb-1'>
@@ -215,32 +197,23 @@ const CollapsibleGroup: React.FC<{
                 ? routes.project_settings.replace(':id', projectId)
                 : { search: newSearchParams.toString() }
 
-            const hintKey = TAB_HINT_KEYS[tab.id]
-            const hintText = hintKey ? t(hintKey) : undefined
-
             return (
-              <Tooltip
+              <Link
                 key={tab.id}
-                text={hintText}
-                delay={750}
-                tooltipNode={
-                  <Link
-                    to={tabUrl}
-                    onClick={handleClick}
-                    className={cn('group flex items-center gap-1.5 rounded-md px-2.5 py-2 transition-colors', {
-                      'bg-gray-100 dark:bg-slate-800': isCurrent,
-                      'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
-                      'cursor-wait': dataLoading && tab.id !== 'settings',
-                    })}
-                    aria-current={isCurrent ? 'page' : undefined}
-                  >
-                    <TabIcon className={cn('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
-                    <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
-                      {tab.label}
-                    </Text>
-                  </Link>
-                }
-              />
+                to={tabUrl}
+                onClick={handleClick}
+                className={cn('group flex items-center gap-1.5 rounded-md px-2.5 py-2 transition-colors', {
+                  'bg-gray-100 dark:bg-slate-800': isCurrent,
+                  'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
+                  'cursor-wait': dataLoading && tab.id !== 'settings',
+                })}
+                aria-current={isCurrent ? 'page' : undefined}
+              >
+                <TabIcon className={cn('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
+                <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
+                  {tab.label}
+                </Text>
+              </Link>
             )
           })}
         </nav>
@@ -299,7 +272,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
 
     if (isMobileOpen) {
       document.addEventListener('keydown', handleEscape)
-      document.body.style.overflow = 'hidden'
+      requestAnimationFrame(() => {
+        document.body.style.overflow = 'hidden'
+      })
     }
 
     return () => {
@@ -369,14 +344,18 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   const sidebarContent = (
     <aside
       className={cn(
-        'sticky top-2 flex shrink-0 flex-col self-start overflow-hidden rounded-lg border border-gray-300 bg-white transition-all duration-300 ease-in-out dark:border-slate-800/60 dark:bg-slate-800/25',
-        isMobileOpen ? 'h-screen w-64' : isScrolled ? 'h-[calc(100vh-1.5rem)]' : 'h-[calc(100vh-60px-1rem)]',
-        isCollapsed && !isMobileOpen ? 'w-14' : 'w-56',
+        'sticky top-2 flex shrink-0 flex-col self-start overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-800/25',
+        isMobileOpen
+          ? 'h-screen w-64'
+          : cn(
+              'transition-[width,height] duration-300 ease-in-out',
+              isScrolled ? 'h-[calc(100vh-1.5rem)]' : 'h-[calc(100vh-60px-1rem)]',
+              isCollapsed ? 'w-14' : 'w-56',
+            ),
         className,
       )}
     >
-      {/* Project name at the top */}
-      <div className='sticky top-0 z-10 flex items-center justify-between border-b border-gray-300 bg-white px-4 py-2 dark:border-slate-800/60 dark:bg-slate-800/25'>
+      <div className='sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 dark:border-slate-800/60 dark:bg-slate-800/25'>
         {isCollapsed && !isMobileOpen ? (
           <Tooltip
             text={projectName}
@@ -397,7 +376,6 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             }
           />
         )}
-        {/* Close button for mobile */}
         {isMobileOpen ? (
           <button
             type='button'
@@ -410,9 +388,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         ) : null}
       </div>
 
-      {/* Tabs area */}
       <div className='flex-1 overflow-y-auto px-2 py-3'>
-        {/* Ask AI - standalone tab above groups */}
         {askAiTab ? (
           <div className='mb-1'>
             {(() => {
@@ -459,29 +435,22 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
               }
 
               return (
-                <Tooltip
-                  text={t('dashboard.askAiHint')}
-                  delay={750}
-                  className='w-full'
-                  tooltipNode={
-                    <Link
-                      to={{ search: newSearchParams.toString() }}
-                      onClick={handleClick}
-                      className={cn('group flex items-center gap-2 rounded-md px-2.5 py-2 transition-colors', {
-                        'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
-                          isCurrent,
-                        'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
-                        'cursor-wait': dataLoading,
-                      })}
-                      aria-current={isCurrent ? 'page' : undefined}
-                    >
-                      <TabIcon className={cn('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
-                      <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
-                        {askAiTab.label}
-                      </Text>
-                    </Link>
-                  }
-                />
+                <Link
+                  to={{ search: newSearchParams.toString() }}
+                  onClick={handleClick}
+                  className={cn('group flex items-center gap-2 rounded-md px-2.5 py-2 transition-colors', {
+                    'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
+                      isCurrent,
+                    'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
+                    'cursor-wait': dataLoading,
+                  })}
+                  aria-current={isCurrent ? 'page' : undefined}
+                >
+                  <TabIcon className={cn('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
+                  <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
+                    {askAiTab.label}
+                  </Text>
+                </Link>
               )
             })()}
           </div>
@@ -502,9 +471,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         ))}
       </div>
 
-      {/* Bottom section: Collapse button + Settings */}
-      <div className='sticky bottom-0 flex flex-col gap-0.5 border-t border-gray-300 bg-white px-2 py-2 dark:border-slate-800/60 dark:bg-slate-800/25'>
-        {/* Collapse/Expand button - hide on mobile */}
+      <div className='sticky bottom-0 flex flex-col gap-0.5 border-t border-gray-200 bg-white px-2 py-2 dark:border-slate-800/60 dark:bg-slate-800/25'>
         {!isMobileOpen ? (
           <button
             type='button'
@@ -527,7 +494,6 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
           </button>
         ) : null}
 
-        {/* Settings - always show if user is allowed to manage */}
         {allowedToManage ? (
           <Link
             to={routes.project_settings.replace(':id', projectId)}
@@ -551,23 +517,18 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     </aside>
   )
 
-  // Mobile: render with overlay
   if (isMobileOpen) {
     return (
       <div className='fixed inset-0 z-50 md:hidden'>
-        {/* Overlay */}
-        <div className='absolute inset-0 bg-black/50 transition-opacity' onClick={onMobileClose} aria-hidden='true' />
-        {/* Sidebar panel */}
+        <div className='animate-fade-in absolute inset-0 bg-black/50' onClick={onMobileClose} aria-hidden='true' />
         <div className='animate-slide-in-left relative h-full w-fit'>{sidebarContent}</div>
       </div>
     )
   }
 
-  // Desktop: render normally
   return sidebarContent
 }
 
-// Mobile trigger button component
 interface MobileSidebarTriggerProps {
   onClick: () => void
   activeTabLabel?: string
@@ -581,7 +542,7 @@ export const MobileSidebarTrigger: React.FC<MobileSidebarTriggerProps> = ({ onCl
       <button
         type='button'
         onClick={onClick}
-        className='flex items-center justify-center rounded-md border border-gray-300 bg-white p-2 text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700'
+        className='flex items-center justify-center rounded-md border border-gray-300 p-2 text-gray-700 transition-all ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
         aria-label={t('common.openMenu')}
       >
         <MenuIcon className='h-5 w-5' strokeWidth={1.5} />

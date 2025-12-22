@@ -6,9 +6,9 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
 import { getProfiles, getProfile, getProfileSessions } from '~/api'
-import { Profile, ProfileDetails, Session } from '~/lib/models/Project'
-import { UserDetails } from '~/pages/Project/tabs/Profiles/UserDetails'
-import { Users, UsersFilter } from '~/pages/Project/tabs/Profiles/Users'
+import { Profile, ProfileDetails as ProfileDetailsType, Session } from '~/lib/models/Project'
+import { ProfileDetails } from '~/pages/Project/tabs/Profiles/ProfileDetails'
+import { Profiles, ProfilesFilter } from '~/pages/Project/tabs/Profiles/Profiles'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
@@ -31,7 +31,7 @@ const ProfilesView = () => {
   const [canLoadMoreProfiles, setCanLoadMoreProfiles] = useState(false)
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [profilesLoading, setProfilesLoading] = useState<boolean | null>(null)
-  const [activeProfile, setActiveProfile] = useState<ProfileDetails | null>(null)
+  const [activeProfile, setActiveProfile] = useState<ProfileDetailsType | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
   const [profileSessions, setProfileSessions] = useState<Session[]>([])
   const [profileSessionsLoading, setProfileSessionsLoading] = useState<boolean | null>(null)
@@ -321,7 +321,7 @@ const ProfilesView = () => {
         {profileLoading && !activeProfile ? (
           <Loader />
         ) : (
-          <UserDetails
+          <ProfileDetails
             details={activeProfile}
             sessions={profileSessions}
             sessionsLoading={profileSessionsLoading}
@@ -344,7 +344,7 @@ const ProfilesView = () => {
     <>
       <DashboardHeader showLiveVisitors />
       {profilesLoading && !_isEmpty(profiles) ? <LoadingBar /> : null}
-      <UsersFilter
+      <ProfilesFilter
         profileType={profileTypeFilter}
         onProfileTypeChange={(type) => {
           setProfileTypeFilter(type)
@@ -355,7 +355,7 @@ const ProfilesView = () => {
       {typeof profilesLoading === 'boolean' && !profilesLoading && _isEmpty(profiles) ? (
         <NoEvents filters={filters} />
       ) : null}
-      <Users profiles={profiles} timeFormat={timeFormat} />
+      <Profiles profiles={profiles} timeFormat={timeFormat} />
       {canLoadMoreProfiles ? (
         <button
           type='button'

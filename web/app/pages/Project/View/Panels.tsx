@@ -95,7 +95,7 @@ const PanelContainer = ({
   return (
     <div
       className={cx(
-        'overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-800/25',
+        'overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-800/25',
         hideHeader ? 'pt-3' : 'pt-5',
         {
           'col-span-full sm:col-span-2': type === 'metadata' || type === 'customEvents',
@@ -135,7 +135,7 @@ const PanelContainer = ({
                             'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': dropdownTabs.some(
                               (t) => t.id === activeTabId,
                             ),
-                            'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                            'border-transparent text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
                               !dropdownTabs.some((t) => t.id === activeTabId),
                           },
                         )}
@@ -158,7 +158,7 @@ const PanelContainer = ({
                         {
                           'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
                             activeTabId === tab.id,
-                          'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                          'border-transparent text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
                             activeTabId !== tab.id,
                         },
                       )}
@@ -176,7 +176,7 @@ const PanelContainer = ({
       {onDetailsClick ? (
         <div className='mt-2 flex items-center justify-center'>
           <Button
-            className='max-w-max border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+            className='max-w-max border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-200 hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
             type='button'
             onClick={onDetailsClick}
           >
@@ -653,7 +653,7 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
               >
                 <td className='flex items-center py-1 text-left'>
                   <button
-                    className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                    className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-200 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
                     type='button'
                     onClick={toggleDetails(ev)}
                   >
@@ -1471,7 +1471,7 @@ const DetailsTable = ({
           placeholder={t('project.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className='w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
+          className='w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
         />
       </div>
       <div ref={parentRef} className='max-h-[500px] overflow-y-auto'>
@@ -2098,7 +2098,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
               <div className='flex w-18 justify-between'>
                 <Button
                   className={cx(
-                    'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
+                    'border border-gray-200 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                     {
                       'cursor-not-allowed opacity-50': !canGoPrev(),
                       'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
@@ -2113,7 +2113,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                 </Button>
                 <Button
                   className={cx(
-                    'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
+                    'border border-gray-200 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                     {
                       'cursor-not-allowed opacity-50': !canGoNext(),
                       'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),

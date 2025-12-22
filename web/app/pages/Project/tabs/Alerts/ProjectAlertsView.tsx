@@ -14,7 +14,7 @@ import {
   EyeIcon,
   MousePointerClickIcon,
   UsersIcon,
-  AlertCircleIcon,
+  BugIcon,
   FileTextIcon,
   BellOffIcon,
 } from 'lucide-react'
@@ -73,7 +73,7 @@ const METRIC_ICON_MAPPING: Record<
   [QUERY_METRIC.UNIQUE_PAGE_VIEWS]: { icon: EyeIcon, className: 'text-indigo-500' },
   [QUERY_METRIC.ONLINE_USERS]: { icon: UsersIcon, className: 'text-sky-500' },
   [QUERY_METRIC.CUSTOM_EVENTS]: { icon: MousePointerClickIcon, className: 'text-green-500' },
-  [QUERY_METRIC.ERRORS]: { icon: AlertCircleIcon, className: 'text-red-500' },
+  [QUERY_METRIC.ERRORS]: { icon: BugIcon, className: 'text-red-500' },
 }
 
 interface AlertRowProps {
@@ -116,7 +116,7 @@ const AlertRow = ({
     <>
       <li
         onClick={() => openAlert(id)}
-        className='group relative mb-3 cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'
+        className='group relative mb-3 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'
       >
         <div className='flex items-center justify-between gap-4 px-4 py-3 sm:px-5'>
           {/* Left section: Icon + Name + Badge */}
@@ -384,7 +384,7 @@ const ProjectAlerts = () => {
   // Show signup prompt for non-owners or unauthenticated users
   if (!canManageAlerts) {
     return (
-      <div className='mt-5 rounded-xl bg-gray-700 p-5'>
+      <div className='mt-5 rounded-lg bg-gray-700 p-5'>
         <div className='flex items-center text-gray-50'>
           <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
           <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
@@ -420,7 +420,7 @@ const ProjectAlerts = () => {
       {isLoading && !_isEmpty(alerts) ? <LoadingBar /> : null}
       <div className='mt-4'>
         {_isEmpty(alerts) ? (
-          <div className='mt-5 rounded-xl bg-gray-700 p-5'>
+          <div className='mt-5 rounded-lg bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
               <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
               <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>

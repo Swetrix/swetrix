@@ -283,7 +283,7 @@ const ThoughtProcess = ({
         onClick={onToggle}
         className='group flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
       >
-        <span className='flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 dark:border-gray-600'>
+        <span className='flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 dark:border-gray-600'>
           {isActivelyThinking ? (
             <Loader2Icon className='h-3 w-3 animate-spin' />
           ) : (
@@ -311,7 +311,6 @@ const ThoughtProcess = ({
   )
 }
 
-// Compact tool call badge (PostHog style)
 const ToolCallBadge = ({ toolName, isLoading = false }: { toolName: string; isLoading?: boolean }) => {
   const { label, icon: Icon } = getToolInfo(toolName)
 
@@ -369,7 +368,6 @@ const AssistantMessage = ({ message, isStreaming }: { message: Message; isStream
 
   return (
     <div className='group'>
-      {/* Show reasoning/thinking in collapsible section */}
       <ThoughtProcess
         reasoning={message.reasoning}
         isStreaming={isStreaming}
@@ -377,7 +375,6 @@ const AssistantMessage = ({ message, isStreaming }: { message: Message; isStream
         isExpanded={isThoughtExpanded}
         onToggle={handleToggle}
       />
-      {/* Show tool calls as compact badges (PostHog style) */}
       {message.toolCalls && message.toolCalls.length > 0 ? (
         <div className='mb-3 flex flex-wrap gap-2'>
           {_map(message.toolCalls, (call, idx) => (
@@ -407,7 +404,7 @@ const ScrollToBottomButton = ({ isAtBottom, scrollToBottom }: { isAtBottom: bool
     <button
       type='button'
       onClick={scrollToBottom}
-      className='absolute bottom-4 left-1/2 z-10 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 transition-all hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+      className='absolute bottom-4 left-1/2 z-10 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition-all hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
       aria-label='Scroll to bottom'
     >
       <ArrowDownIcon className='h-4 w-4' />
@@ -785,7 +782,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             <button
               type='button'
               onClick={handleNewChat}
-              className='flex items-center gap-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-white hover:text-gray-900 dark:text-gray-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-white'
+              className='flex items-center gap-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-200 hover:bg-white hover:text-gray-900 dark:text-gray-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-white'
               aria-label={t('askAi.newChat')}
             >
               <ArrowLeftIcon className='h-4 w-4' />
@@ -793,7 +790,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             <button
               type='button'
               onClick={handleCopyLink}
-              className='flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700'
+              className='flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700'
             >
               <LinkIcon className='h-4 w-4' />
               <span>{t('askAi.copyLink')}</span>
@@ -852,7 +849,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                         key={idx}
                         type='button'
                         onClick={() => handleQuickAction(prompt)}
-                        className='relative rounded-md border border-gray-300 bg-gray-50 p-2 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                        className='relative rounded-md border border-gray-200 bg-gray-50 p-2 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
                       >
                         <Text as='span' size='sm'>
                           {prompt}
@@ -863,7 +860,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
                   {/* Input Area (centered for empty state) */}
                   <div className='w-full max-w-2xl'>
-                    <div className='rounded-lg border border-gray-300 bg-white dark:border-slate-800/60 dark:bg-slate-800/25'>
+                    <div className='rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-800/25'>
                       <form onSubmit={handleSubmit} className='relative'>
                         <textarea
                           ref={inputRef}
@@ -889,7 +886,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                           <button
                             type='submit'
                             disabled={!input.trim() || isLoading}
-                            className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+                            className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
                           >
                             <SendIcon className='h-3.5 w-3.5' />
                           </button>
@@ -924,9 +921,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
       {/* Input Area (only shown when chat has messages) */}
       {!isEmpty ? (
-        <div className='border-t border-gray-300 bg-gray-50 px-4 py-4 dark:border-slate-800/60 dark:bg-slate-900'>
+        <div className='border-t border-gray-200 bg-gray-50 px-4 py-4 dark:border-slate-800/60 dark:bg-slate-900'>
           <div className='mx-auto max-w-3xl'>
-            <div className='rounded-lg border border-gray-300 bg-white dark:border-slate-800/60 dark:bg-slate-800/25'>
+            <div className='rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-800/25'>
               <form onSubmit={handleSubmit} className='relative'>
                 <textarea
                   ref={inputRef}
@@ -964,7 +961,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                       <button
                         type='submit'
                         disabled={!input.trim()}
-                        className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+                        className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
                       >
                         <SendIcon className='h-3.5 w-3.5' />
                       </button>
@@ -1031,7 +1028,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 {_map(allChats, (chat) => (
                   <div
                     key={chat.id}
-                    className='flex items-center justify-between rounded-lg border border-gray-300 bg-white px-4 py-3 transition-colors hover:bg-gray-50 dark:border-slate-800/60 dark:bg-slate-800/25 hover:dark:bg-slate-700'
+                    className='flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 transition-colors hover:bg-gray-50 dark:border-slate-800/60 dark:bg-slate-800/25 hover:dark:bg-slate-700'
                   >
                     <button
                       type='button'
@@ -1066,7 +1063,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     type='button'
                     onClick={() => loadAllChats(allChats.length)}
                     disabled={isLoadingChats}
-                    className='flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+                    className='flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
                   >
                     {isLoadingChats ? <Loader2Icon className='h-4 w-4 animate-spin' /> : null}
                     Load more

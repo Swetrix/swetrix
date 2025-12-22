@@ -18,8 +18,6 @@ import LoadingBar from '~/ui/LoadingBar'
 import CCRow from '../../View/components/CCRow'
 import DashboardHeader from '../../View/components/DashboardHeader'
 import Filters from '../../View/components/Filters'
-import NoEvents from '../../View/components/NoEvents'
-import WaitingForAnEvent from '../../View/components/WaitingForAnEvent'
 import { Filter } from '../../View/interfaces/traffic'
 import { Panel } from '../../View/Panels'
 import { parseFilters } from '../../View/utils/filters'
@@ -27,6 +25,8 @@ import { ViewProjectContext } from '../../View/ViewProject'
 import { deviceIconMapping } from '../../View/ViewProject.helpers'
 
 import { CaptchaChart } from './CaptchaChart'
+import NoCaptchaEvents from './NoCaptchaEvents'
+import WaitingForCaptchaEvent from './WaitingForCaptchaEvent'
 
 const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
 
@@ -38,7 +38,7 @@ const panelIconMapping: Record<string, React.ReactNode> = {
   os: <MonitorCog className={iconClassName} strokeWidth={1.5} />,
 }
 
-const typeNameMapping = (t: any) => ({
+export const captchaTypeNameMapping = (t: any) => ({
   cc: t('project.mapping.cc'),
   dv: t('project.mapping.dv'),
   br: t('project.mapping.br'),
@@ -79,7 +79,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
     return parseFilters(searchParams)
   }, [searchParams])
 
-  const tnMapping = typeNameMapping(t)
+  const tnMapping = captchaTypeNameMapping(t)
   const [ref] = useSize() as any
 
   const getFormatDate = (date: Date) => {
@@ -178,7 +178,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
 
   // Show waiting state if project has no captcha data yet
   if (!_isEmpty(project) && !project?.isCaptchaDataExists) {
-    return <WaitingForAnEvent />
+    return <WaitingForCaptchaEvent />
   }
 
   // Show Loader only on initial load (no existing data)
@@ -187,7 +187,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   }
 
   if (isPanelsDataEmpty && !dataLoading) {
-    return <NoEvents filters={filters} />
+    return <NoCaptchaEvents filters={filters} />
   }
 
   return (

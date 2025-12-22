@@ -36,11 +36,20 @@
 }
 
 @keyframes slide-in-left {
-  0% {
-    transform: translateX(-100%);
+  from {
+    transform: translate3d(-100%, 0, 0);
   }
-  100% {
-    transform: translateX(0);
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -51,7 +60,13 @@
   }
 
   .animate-slide-in-left {
-    animation: slide-in-left 0.2s ease-out;
+    animation: slide-in-left 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.15s ease-out;
+    will-change: opacity;
   }
 
   .antialiased {

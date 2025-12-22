@@ -19,7 +19,6 @@ import CCRow from '../../View/components/CCRow'
 
 dayjs.extend(relativeTime)
 
-// Time thresholds for online status (in minutes)
 const ONLINE_THRESHOLD_MINUTES = 5
 const RECENTLY_ACTIVE_THRESHOLD_MINUTES = 30
 
@@ -46,7 +45,7 @@ interface UsersProps {
   timeFormat: '12-hour' | '24-hour'
 }
 
-interface UserRowProps {
+interface ProfileRowProps {
   profile: ProfileType
   timeFormat: '12-hour' | '24-hour'
 }
@@ -57,7 +56,7 @@ const Separator = () => (
   </svg>
 )
 
-const UserRow = ({ profile, timeFormat }: UserRowProps) => {
+const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
   const {
     t,
     i18n: { language },
@@ -90,11 +89,10 @@ const UserRow = ({ profile, timeFormat }: UserRowProps) => {
 
   return (
     <Link to={{ search: params.toString() }}>
-      <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'>
-        <div className='flex min-w-0 gap-x-4'>
-          {/* Avatar with online status indicator */}
+      <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'>
+        <div className='flex min-w-0 gap-x-3'>
           <div className='relative shrink-0'>
-            <ProfileAvatar profileId={profile.profileId} size={40} />
+            <ProfileAvatar className='mt-1' profileId={profile.profileId} size={40} />
             {onlineStatus === 'offline' ? null : (
               <Tooltip
                 text={t('project.lastSeenAgo', { time: lastSeenAgo })}
@@ -118,7 +116,7 @@ const UserRow = ({ profile, timeFormat }: UserRowProps) => {
               {profile.isIdentified ? <Badge label={t('project.identified')} colour='indigo' className='ml-2' /> : null}
             </p>
             <p className='mt-1 flex flex-wrap items-center gap-x-2 text-xs leading-5 text-gray-500 dark:text-gray-300'>
-              <span className='flex'>
+              <span className='flex items-center'>
                 {profile.cc ? <CCRow size={18} cc={profile.cc} language={language} /> : t('project.unknownCountry')}
               </span>
               <Separator />
@@ -181,12 +179,12 @@ const UserRow = ({ profile, timeFormat }: UserRowProps) => {
   )
 }
 
-interface UsersFilterProps {
+interface ProfilesFilterProps {
   profileType: 'all' | 'anonymous' | 'identified'
   onProfileTypeChange: (type: 'all' | 'anonymous' | 'identified') => void
 }
 
-export const UsersFilter: React.FC<UsersFilterProps> = ({ profileType, onProfileTypeChange }) => {
+export const ProfilesFilter: React.FC<ProfilesFilterProps> = ({ profileType, onProfileTypeChange }) => {
   const { t } = useTranslation('common')
 
   const filterButtonClass = (isActive: boolean) =>
@@ -224,7 +222,7 @@ export const UsersFilter: React.FC<UsersFilterProps> = ({ profileType, onProfile
   )
 }
 
-export const Users: React.FC<UsersProps> = ({ profiles, timeFormat }) => {
+export const Profiles: React.FC<UsersProps> = ({ profiles, timeFormat }) => {
   return (
     <ClientOnly
       fallback={
@@ -236,7 +234,7 @@ export const Users: React.FC<UsersProps> = ({ profiles, timeFormat }) => {
       {() => (
         <ul className='mt-4'>
           {_map(profiles, (profile) => (
-            <UserRow key={profile.profileId} profile={profile} timeFormat={timeFormat} />
+            <ProfileRow key={profile.profileId} profile={profile} timeFormat={timeFormat} />
           ))}
         </ul>
       )}

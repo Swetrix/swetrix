@@ -60,7 +60,6 @@ const ExperimentSettingsModal = ({
   const [featureFlags, setFeatureFlags] = useState<ProjectFeatureFlag[]>([])
   const [featureFlagsLoading, setFeatureFlagsLoading] = useState(false)
 
-  // Form state
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [featureFlagKey, setFeatureFlagKey] = useState('')
@@ -68,7 +67,6 @@ const ExperimentSettingsModal = ({
   const [goalDirection, setGoalDirection] = useState<GoalDirection>('increase')
   const [variants, setVariants] = useState<ExperimentVariant[]>(defaultVariants)
 
-  // Advanced settings
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [exposureTrigger, setExposureTrigger] = useState<ExposureTrigger>('feature_flag')
   const [customEventName, setCustomEventName] = useState('')
@@ -76,10 +74,8 @@ const ExperimentSettingsModal = ({
   const [featureFlagMode, setFeatureFlagMode] = useState<FeatureFlagMode>('create')
   const [existingFeatureFlagId, setExistingFeatureFlagId] = useState('')
 
-  // Error state
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Auto-generate feature flag key from name
   const suggestedFlagKey = useMemo(() => {
     if (!name.trim()) return ''
     return name
@@ -121,7 +117,6 @@ const ExperimentSettingsModal = ({
       setFeatureFlagMode(experiment.featureFlagMode || 'create')
       setExistingFeatureFlagId(experiment.featureFlagId || '')
 
-      // Show advanced if non-default values are set
       if (
         experiment.exposureTrigger === 'custom_event' ||
         experiment.multipleVariantHandling === 'first_exposure' ||
@@ -270,7 +265,6 @@ const ExperimentSettingsModal = ({
     }
   }
 
-  // Helper to distribute percentages evenly across variants
   const distributePercentages = (variantsList: ExperimentVariant[]): ExperimentVariant[] => {
     const count = variantsList.length
     const basePercentage = Math.floor(100 / count)
@@ -290,7 +284,6 @@ const ExperimentSettingsModal = ({
       rolloutPercentage: 0,
       isControl: false,
     }
-    // Add the new variant and redistribute percentages evenly
     const newVariants = distributePercentages([...variants, newVariant])
     setVariants(newVariants)
     if (errors.variants) {
@@ -304,7 +297,6 @@ const ExperimentSettingsModal = ({
   const handleRemoveVariant = (index: number) => {
     if (variants.length <= 2) return
     const filteredVariants = variants.filter((_, i) => i !== index)
-    // Redistribute percentages evenly after removal
     const newVariants = distributePercentages(filteredVariants)
     setVariants(newVariants)
     if (errors.variants) {
@@ -376,7 +368,6 @@ const ExperimentSettingsModal = ({
             ) : (
               <form onSubmit={handleSubmit}>
                 <div className='px-6 pt-5 pb-4'>
-                  {/* Header */}
                   <div className='flex items-center justify-between'>
                     <DialogTitle className='text-lg font-semibold text-gray-900 dark:text-gray-50'>
                       {isEditing ? t('experiments.edit') : t('experiments.create')}
@@ -391,7 +382,6 @@ const ExperimentSettingsModal = ({
                   </div>
 
                   <div className='mt-5 space-y-5'>
-                    {/* Basic Info */}
                     <div className='space-y-3'>
                       <Input
                         label={t('experiments.name')}
@@ -424,7 +414,6 @@ const ExperimentSettingsModal = ({
                       />
                     </div>
 
-                    {/* Feature Flag Key */}
                     {featureFlagMode === 'create' ? (
                       <div>
                         <div className='flex items-center gap-1.5'>
@@ -449,7 +438,6 @@ const ExperimentSettingsModal = ({
                       </div>
                     ) : null}
 
-                    {/* Variants */}
                     <div>
                       <div className='mb-2 flex items-center justify-between'>
                         <div className='flex items-center gap-1.5'>
@@ -487,7 +475,6 @@ const ExperimentSettingsModal = ({
                                 : 'border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800',
                             )}
                           >
-                            {/* Variant letter badge */}
                             <div
                               className={cx(
                                 'flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-semibold',
@@ -499,7 +486,6 @@ const ExperimentSettingsModal = ({
                               {String.fromCharCode(65 + index)}
                             </div>
 
-                            {/* Name & Key */}
                             <div className='flex flex-1 gap-2'>
                               <input
                                 type='text'
@@ -523,7 +509,6 @@ const ExperimentSettingsModal = ({
                               />
                             </div>
 
-                            {/* Percentage */}
                             <div className='flex items-center gap-1'>
                               <input
                                 type='text'
@@ -541,7 +526,6 @@ const ExperimentSettingsModal = ({
                               </Text>
                             </div>
 
-                            {/* Control toggle */}
                             <label className='flex shrink-0 cursor-pointer items-center gap-1.5'>
                               <input
                                 type='radio'
@@ -555,7 +539,6 @@ const ExperimentSettingsModal = ({
                               </Text>
                             </label>
 
-                            {/* Remove button */}
                             {variants.length > 2 ? (
                               <button
                                 type='button'
@@ -590,7 +573,6 @@ const ExperimentSettingsModal = ({
                       </div>
                     </div>
 
-                    {/* Success Metric */}
                     <div>
                       <div className='flex items-center gap-1.5'>
                         <Text as='label' size='sm' weight='medium' className='text-gray-700 dark:text-gray-200'>
@@ -662,7 +644,6 @@ const ExperimentSettingsModal = ({
                       ) : null}
                     </div>
 
-                    {/* Advanced Settings */}
                     <div className='border-t border-gray-200 pt-4 dark:border-slate-700'>
                       <button
                         type='button'
@@ -679,7 +660,6 @@ const ExperimentSettingsModal = ({
 
                       {showAdvanced ? (
                         <div className='mt-4 space-y-4'>
-                          {/* Feature flag mode */}
                           <div>
                             <div className='flex items-center gap-1.5'>
                               <Text as='label' size='sm' weight='medium' className='text-gray-700 dark:text-gray-200'>
@@ -745,7 +725,6 @@ const ExperimentSettingsModal = ({
                             </div>
                           ) : null}
 
-                          {/* Exposure trigger */}
                           <div>
                             <div className='flex items-center gap-1.5'>
                               <Text as='label' size='sm' weight='medium' className='text-gray-700 dark:text-gray-200'>
@@ -794,7 +773,6 @@ const ExperimentSettingsModal = ({
                             ) : null}
                           </div>
 
-                          {/* Multiple variant handling */}
                           <div>
                             <div className='flex items-center gap-1.5'>
                               <Text as='label' size='sm' weight='medium' className='text-gray-700 dark:text-gray-200'>
@@ -848,7 +826,6 @@ const ExperimentSettingsModal = ({
                   </div>
                 </div>
 
-                {/* Footer */}
                 <div className='flex justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-slate-700'>
                   <Button type='button' onClick={onClose} secondary regular>
                     {t('common.cancel')}

@@ -50,7 +50,6 @@ import { nFormatter } from '~/utils/generic'
 
 import ExperimentSettingsModal from './ExperimentSettingsModal'
 
-// Variant colors for the chart
 const VARIANT_COLORS = [
   '#6366f1', // indigo-500
   '#22c55e', // green-500
@@ -70,11 +69,9 @@ interface ExperimentResultsProps {
   to: string
   timezone?: string
   onBack: () => void
-  // When this value changes, results are re-fetched (used by global refresh button)
   refreshTrigger?: number
 }
 
-// Stats card component with large background icon (matching ErrorsView style)
 interface StatCardProps {
   icon: React.ReactNode
   value: string | number
@@ -83,7 +80,7 @@ interface StatCardProps {
 }
 
 const StatCard = memo(({ icon, value, label, subValue }: StatCardProps) => (
-  <div className='relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
+  <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
     <div className='pointer-events-none absolute -bottom-5 -left-5 opacity-10 [&>svg]:size-24'>{icon}</div>
     <div className='relative'>
       <div className='flex items-baseline gap-1.5'>
@@ -105,7 +102,6 @@ const StatCard = memo(({ icon, value, label, subValue }: StatCardProps) => (
 
 StatCard.displayName = 'StatCard'
 
-// Win Probability Time Series Chart component
 const getWinProbabilityChartSettings = (
   chartData: ExperimentChartData,
   variants: ExperimentVariantResult[],
@@ -114,10 +110,8 @@ const getWinProbabilityChartSettings = (
 ): ChartOptions => {
   const xAxisSize = _size(chartData.x)
 
-  // Create columns: x axis + one column per variant
   const columns: any[] = [['x', ..._map(chartData.x, (el) => dayjs(el).toDate())]]
 
-  // Create types and colors for each variant
   const types: Record<string, any> = {}
   const colors: Record<string, string> = {}
   const names: Record<string, string> = {}
@@ -223,7 +217,6 @@ const getWinProbabilityChartSettings = (
   }
 }
 
-// Win Probability Chart Panel
 const WinProbabilityChart = memo(
   ({
     chartData,
@@ -244,7 +237,7 @@ const WinProbabilityChart = memo(
 
     if (!chartOptions) {
       return (
-        <div className='flex h-[220px] items-center justify-center rounded-xl border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
+        <div className='flex h-[220px] items-center justify-center rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
           <Text colour='muted' size='sm'>
             {t('experiments.noDataYet')}
           </Text>
@@ -253,7 +246,7 @@ const WinProbabilityChart = memo(
     }
 
     return (
-      <div className='rounded-xl border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
+      <div className='rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
         <Text as='h3' weight='semibold' size='sm' className='mb-2'>
           {t('experiments.probabilityOfWinning')}
         </Text>
@@ -265,7 +258,6 @@ const WinProbabilityChart = memo(
 
 WinProbabilityChart.displayName = 'WinProbabilityChart'
 
-// Confidence interval visualization (diamond chart like PostHog)
 const ConfidenceBar = memo(
   ({
     improvement,
@@ -276,12 +268,10 @@ const ConfidenceBar = memo(
     probabilityOfWinning: number
     isControl: boolean
   }) => {
-    // Calculate position on the bar (-30% to +30% range)
     const maxRange = 30
     const clampedImprovement = Math.max(-maxRange, Math.min(maxRange, improvement))
     const position = ((clampedImprovement + maxRange) / (maxRange * 2)) * 100
 
-    // Determine color based on improvement and confidence
     const isPositive = improvement > 0
     const isSignificant = probabilityOfWinning >= 95
 
@@ -303,13 +293,10 @@ const ConfidenceBar = memo(
 
     return (
       <div className='relative h-6 w-full'>
-        {/* Background bar */}
         <div className='absolute top-1/2 h-1 w-full -translate-y-1/2 rounded-full bg-gray-100 dark:bg-slate-700' />
 
-        {/* Center line (0%) */}
         <div className='absolute top-1/2 left-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 bg-gray-300 dark:bg-gray-600' />
 
-        {/* Diamond marker */}
         <div className='absolute top-1/2 -translate-x-1/2 -translate-y-1/2' style={{ left: `${position}%` }}>
           <div className={cx('size-3.5 rotate-45 rounded-sm shadow-sm', getColor())} />
         </div>
@@ -320,7 +307,6 @@ const ConfidenceBar = memo(
 
 ConfidenceBar.displayName = 'ConfidenceBar'
 
-// Table header cell
 const TableHeader = ({ children, className }: { children: React.ReactNode; className?: string }) => (
   <th
     className={cx(
@@ -332,18 +318,16 @@ const TableHeader = ({ children, className }: { children: React.ReactNode; class
   </th>
 )
 
-// Table data cell
 const TableCell = ({ children, className }: { children: React.ReactNode; className?: string }) => (
   <td className={cx('px-4 py-4', className)}>{children}</td>
 )
 
-// Exposures table component (like PostHog)
 const ExposuresTable = memo(
   ({ variants, totalExposures }: { variants: ExperimentVariantResult[]; totalExposures: number }) => {
     const { t } = useTranslation()
 
     return (
-      <div className='overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-800/50'>
+      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-800/50'>
         <div className='border-b border-gray-200 px-4 py-3 dark:border-slate-700'>
           <Text weight='semibold' size='sm'>
             {t('experiments.totalExposures')}
@@ -415,7 +399,6 @@ const ExposuresTable = memo(
 
 ExposuresTable.displayName = 'ExposuresTable'
 
-// Metrics results table component (like PostHog)
 const MetricsTable = memo(
   ({
     variants,
@@ -432,7 +415,7 @@ const MetricsTable = memo(
     const testVariants = variants.filter((v) => !v.isControl)
 
     return (
-      <div className='overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-800/50'>
+      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-800/50'>
         <div className='border-b border-gray-200 px-4 py-3 dark:border-slate-700'>
           <div className='flex items-center gap-2'>
             <Text weight='semibold' size='sm'>
@@ -459,7 +442,6 @@ const MetricsTable = memo(
               </tr>
             </thead>
             <tbody className='divide-y divide-gray-200 dark:divide-slate-700'>
-              {/* Control variant */}
               {controlVariant ? (
                 <tr className='hover:bg-gray-50 dark:hover:bg-slate-700/30'>
                   <TableCell>
@@ -502,7 +484,6 @@ const MetricsTable = memo(
                 </tr>
               ) : null}
 
-              {/* Test variants */}
               {_map(testVariants, (variant) => {
                 const isWinner = hasWinner && variant.key === winnerKey
                 const isPositive = variant.improvement > 0
@@ -598,13 +579,12 @@ const MetricsTable = memo(
 
 MetricsTable.displayName = 'MetricsTable'
 
-// Collapsible section component
 const CollapsibleSection = memo(
   ({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen)
 
     return (
-      <div className='overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-800/50'>
+      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-800/50'>
         <button
           type='button'
           onClick={() => setIsOpen(!isOpen)}
@@ -658,11 +638,9 @@ const ExperimentResults = ({
   useEffect(() => {
     const loadData = async () => {
       const hasData = !!experiment && !!results
-      // Avoid flickering: only show the full loader when we don't have any data yet.
       if (!hasData) {
         setIsLoading(true)
       }
-      // Clear previous error on a new attempt; if refresh fails, we keep existing data rendered.
       setError(null)
 
       try {
@@ -676,7 +654,6 @@ const ExperimentResults = ({
           try {
             goalData = await getGoal(experimentData.goalId)
           } catch {
-            // Goal is optional and might have been deleted or be inaccessible.
             goalData = null
           }
         }
@@ -727,7 +704,7 @@ const ExperimentResults = ({
     return (
       <>
         <DashboardHeader onBack={onBack} showLiveVisitors={false} />
-        <div className='rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20'>
+        <div className='rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20'>
           <Text colour='muted'>{error || t('experiments.loadError')}</Text>
         </div>
       </>
@@ -740,7 +717,6 @@ const ExperimentResults = ({
         onBack={onBack}
         showLiveVisitors={false}
         rightContent={
-          // Backend forbids updating running/completed experiments; keep button visible (disabled) to make this explicit.
           <Tooltip
             text={
               results.status === 'running'
@@ -797,10 +773,9 @@ const ExperimentResults = ({
         projectId={experiment.pid}
         experimentId={experiment.id}
       />
-      <div className='mt-4 space-y-6'>
-        {/* Winner announcement */}
+      <div className='space-y-3'>
         {results.hasWinner && results.winnerKey ? (
-          <div className='flex items-center gap-4 rounded-xl border border-green-300 bg-linear-to-r from-green-50 to-emerald-50 p-4 dark:border-green-700 dark:bg-green-900/20'>
+          <div className='flex items-center gap-4 rounded-lg border border-green-300 bg-linear-to-r from-green-50 to-emerald-50 p-4 dark:border-green-700 dark:bg-green-900/20'>
             <div className='flex size-12 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50'>
               <TrophyIcon className='size-6 text-green-600 dark:text-green-400' />
             </div>
@@ -817,9 +792,8 @@ const ExperimentResults = ({
           </div>
         ) : null}
 
-        {/* No data message */}
         {results.totalExposures === 0 ? (
-          <div className='flex items-start gap-4 rounded-xl border border-yellow-300 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20'>
+          <div className='flex items-start gap-4 rounded-lg border border-yellow-300 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20'>
             <div className='flex size-12 shrink-0 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/40'>
               <InfoIcon className='size-6 text-yellow-700 dark:text-yellow-300' strokeWidth={1.5} />
             </div>
@@ -845,14 +819,11 @@ const ExperimentResults = ({
           </div>
         ) : null}
 
-        {/* Chart and Stats Row */}
         <div className='flex flex-col gap-3 lg:flex-row'>
-          {/* Win Probability Chart - Left side */}
           <div className='w-full lg:w-[65%]'>
             <WinProbabilityChart chartData={results.chart} variants={sortedVariants} timeBucket={timeBucket} />
           </div>
 
-          {/* Stats Grid - Right side as 2x2 */}
           <div className='grid w-full grid-cols-2 gap-3 lg:w-[35%]'>
             <StatCard
               icon={<UsersIcon className='text-blue-600' strokeWidth={1.5} />}
@@ -878,13 +849,10 @@ const ExperimentResults = ({
           </div>
         </div>
 
-        {/* Metrics Table */}
         <MetricsTable variants={sortedVariants} winnerKey={results.winnerKey} hasWinner={results.hasWinner} />
 
-        {/* Exposures Table */}
         <ExposuresTable variants={sortedVariants} totalExposures={results.totalExposures} />
 
-        {/* Hypothesis */}
         {experiment.hypothesis ? (
           <CollapsibleSection title={t('experiments.hypothesisLabel')}>
             <Text className='italic' colour='muted'>

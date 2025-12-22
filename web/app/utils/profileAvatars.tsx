@@ -1,6 +1,5 @@
 import Avatar from 'boring-avatars'
 
-// Adjectives and nouns for generating anonymous display names
 const ADJECTIVES = [
   'Amber',
   'Azure',
@@ -163,8 +162,7 @@ const NOUNS = [
   'Zebra',
 ]
 
-// Color palette for boring-avatars
-const AVATAR_COLORS = ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90']
+const AVATAR_COLORS = ['#0a0310', '#49007e', '#ff005b', '#ff7d10', '#ffb238']
 
 /**
  * Generate a deterministic display name from profileId

@@ -111,7 +111,7 @@ const ExperimentRow = ({
 
   return (
     <>
-      <li className='relative mb-3 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/25 dark:bg-slate-800/70'>
+      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/25 dark:bg-slate-800/70'>
         <div className='flex justify-between gap-x-6 px-4 py-4 sm:px-6'>
           <div className='flex min-w-0 gap-x-4'>
             <div className='min-w-0 flex-auto'>
@@ -507,7 +507,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
       <div>
         {isLoading && !_isEmpty(experiments) ? <LoadingBar /> : null}
         {_isEmpty(experiments) ? (
-          <div className='mt-5 rounded-xl bg-gray-700 p-5'>
+          <div className='mt-5 rounded-lg bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
               <FlaskConicalIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
               <p className='text-3xl font-bold'>{t('experiments.title')}</p>

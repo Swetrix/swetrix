@@ -44,7 +44,7 @@ const FunnelCard = ({ funnel, openFunnelSettings, deleteFunnel, loading, allowed
       to={{
         search,
       }}
-      className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'
+      className='min-h-[120px] cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'
     >
       <div className='px-4 py-4'>
         <div className='flex items-center justify-between'>
@@ -119,7 +119,7 @@ const FunnelsList = ({ funnels, openFunnelSettings, deleteFunnel, loading, allow
   const { isAuthenticated } = useAuth()
 
   return (
-    <div role='list' className='mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3'>
+    <div role='list' className='grid grid-cols-1 gap-3 lg:grid-cols-3'>
       {_map(funnels, (funnel) => (
         <FunnelCard
           key={funnel.id}

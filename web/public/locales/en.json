@@ -875,18 +875,6 @@
     "featureFlags": "Feature Flags",
     "featureFlagsDesc": "Feature flags allow you to toggle features for cohorts or individuals.\nTest the impact before rolling out to everyone.",
     "askAi": "Ask AI",
-    "askAiHint": "Get AI-powered insights and answers about your analytics data.",
-    "trafficHint": "Monitor your website visitors, page views, and traffic sources.",
-    "performanceHint": "Analyze page load times and user experience metrics.",
-    "funnelsHint": "Track user conversion through multi-step processes.",
-    "alertsHint": "Set up automated notifications for traffic and event changes.",
-    "profilesHint": "View detailed information about your website visitors.",
-    "sessionsHint": "Explore individual user sessions and their journey.",
-    "errorsHint": "Track and analyze your error data to understand and fix issues.",
-    "goalsHint": "Define and track conversion goals for important user actions.",
-    "experimentsHint": "Run A/B tests to optimize your website.",
-    "featureFlagsHint": "Toggle features for specific user cohorts.",
-    "captchaHint": "Protect your forms with privacy-focused CAPTCHA.",
     "revenue": "Revenue",
     "refunds": "Refunds",
     "revenueHint": "Track sales, refunds and revenue from your payment providers.",
@@ -1166,7 +1154,6 @@
     "featureFlagKeyPlaceholder": "e.g., new-landing-page, betaFeature, ab_test_1",
     "featureFlagKeyHint": "Each experiment is backed by a feature flag. This key will be used to control the experiment in your code.",
     "selectFeatureFlag": "Select a feature flag",
-    "noFeatureFlagsHint": "No available feature flags to link",
     "loadingFeatureFlags": "Loading feature flags...",
     "rollout": "Rollout",
     "metrics": "Metrics",
@@ -1353,6 +1340,10 @@
     "waiting": {
       "title": "No events yet",
       "desc": "You haven't tracked any events yet.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+    },
+    "waitingCaptcha": {
+      "title": "No CAPTCHA events yet",
+      "desc": "You haven't tracked any CAPTCHA events yet.\nSee our <guideurl>integration guide</guideurl> to learn more about how to use it in your application.\n\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
     },
     "waitingError": {
       "title": "No errors yet",

@@ -1,28 +1,18 @@
 import { BugIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { Text } from '~/ui/Text'
-
 const NoErrorDetails = () => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
-      <div className='mx-auto max-w-max'>
-        <main className='sm:flex'>
-          <BugIcon className='mb-2 -ml-1.5 h-12 w-12 sm:m-0 sm:h-20 sm:w-20' />
-          <div className='sm:ml-6'>
-            <div className='sm:border-l sm:border-gray-200 sm:pl-6'>
-              <Text as='h1' size='4xl' weight='bold' className='sm:text-5xl'>
-                {t('project.noErrorDetails')}
-              </Text>
-              <Text as='p' size='base' colour='secondary' className='mt-1 max-w-prose whitespace-pre-line'>
-                {t('project.noErrorDesc')}
-              </Text>
-            </div>
-          </div>
-        </main>
+    <div className='mx-auto w-full max-w-2xl py-16 text-center text-gray-900 dark:text-gray-50'>
+      <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800'>
+        <BugIcon className='size-7 text-gray-700 dark:text-gray-200' strokeWidth={1.5} />
       </div>
+      <h3 className='text-xl font-medium tracking-tight'>{t('project.noErrorDetails')}</h3>
+      <p className='mx-auto mt-2 max-w-md text-sm whitespace-pre-line text-gray-800 dark:text-gray-200'>
+        {t('project.noErrorDesc')}
+      </p>
     </div>
   )
 }

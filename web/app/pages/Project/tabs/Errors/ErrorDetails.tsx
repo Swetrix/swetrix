@@ -27,26 +27,29 @@ interface ErrorDetailsProps {
   projectPassword?: string
 }
 
-// Info Row (matches UserDetails / SessionDetailView style)
 const InfoRow = ({ label, value }: { label: React.ReactNode; value: React.ReactNode }) => (
   <div className='flex items-center justify-between gap-3 border-b border-gray-100 py-2 last:border-0 dark:border-slate-700/50'>
-    <span className='shrink-0 text-sm text-gray-600 dark:text-gray-400'>{label}</span>
-    <span className='min-w-0 truncate text-right text-sm font-medium text-gray-900 dark:text-white'>{value}</span>
+    <Text size='sm' colour='muted' className='shrink-0'>
+      {label}
+    </Text>
+    <Text size='sm' weight='medium' colour='primary' className='min-w-0 text-right' truncate>
+      {value}
+    </Text>
   </div>
 )
 
-// Stat Item Component
 const StatItem = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) => (
   <div>
-    <div className='mb-0.5 flex items-center gap-1.5 text-[10px] font-medium tracking-wide text-gray-600 uppercase dark:text-gray-400'>
+    <Text size='xxs' weight='medium' colour='muted' className='mb-0.5 flex items-center gap-1.5 uppercase'>
       {icon}
       {label}
-    </div>
-    <div className='text-lg font-semibold text-gray-900 dark:text-white'>{value}</div>
+    </Text>
+    <Text size='lg' weight='semibold' colour='primary'>
+      {value}
+    </Text>
   </div>
 )
 
-// Browser Icon Component
 const BrowserIcon = ({ browser }: { browser: string | null }) => {
   if (!browser) return null
 
@@ -57,7 +60,6 @@ const BrowserIcon = ({ browser }: { browser: string | null }) => {
   return <img src={logoUrl} className='h-4 w-4' alt='' />
 }
 
-// OS Icon Component
 const OSIcon = ({ os, theme }: { os: string | null; theme: string }) => {
   if (!os) return null
 
@@ -72,7 +74,6 @@ const OSIcon = ({ os, theme }: { os: string | null; theme: string }) => {
   return <img src={`/${logoPath}`} className='h-4 w-4' alt='' />
 }
 
-// Affected Session Row
 interface SessionRowProps {
   session: ErrorAffectedSession
 }
@@ -92,7 +93,8 @@ const SessionRow = ({ session }: SessionRowProps) => {
   const params = new URLSearchParams(location.search)
   params.delete('eid')
   params.set('psid', session.psid)
-  const sessionUrl = `?${params.toString()}&tab=sessions`
+  params.set('tab', 'sessions')
+  const sessionUrl = `?${params.toString()}`
 
   return (
     <Link
@@ -139,7 +141,6 @@ export const ErrorDetails = ({
   const [isCopiedEid, setIsCopiedEid] = useState(false)
   const [isCopiedFile, setIsCopiedFile] = useState(false)
 
-  // Affected sessions state
   const [sessions, setSessions] = useState<ErrorAffectedSession[]>([])
   const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null)
   const [sessionsTotal, setSessionsTotal] = useState(0)
@@ -184,7 +185,6 @@ export const ErrorDetails = ({
     return `${details.filename}${details.lineno ? `:${details.lineno}` : ''}${details.colno ? `:${details.colno}` : ''}`
   }, [details.filename, details.lineno, details.colno])
 
-  // Keep stack trace collapsed by default, but auto-expand very small stacks
   useEffect(() => {
     const shouldExpand = stackTraceLines.length > 0 && stackTraceLines.length <= 8
     setIsStackTraceExpanded(shouldExpand)
@@ -270,7 +270,6 @@ export const ErrorDetails = ({
     [id, details.eid, timeBucket, period, from, to, projectPassword, sessionsLoading, sessionsSkip],
   )
 
-  // Load sessions on mount
   useEffect(() => {
     setSessions([])
     setSessionsSkip(0)
@@ -315,7 +314,6 @@ export const ErrorDetails = ({
     return <p className='block text-slate-800 dark:text-slate-300'>{line}</p>
   }
 
-  // Truncate error message for display
   const errorTitle = details.message ? `${details.name}: ${details.message}` : details.name
   const shouldTruncate = errorTitle.length > 120
   const displayTitle = shouldTruncate ? `${errorTitle.slice(0, 120)}...` : errorTitle
@@ -326,8 +324,7 @@ export const ErrorDetails = ({
 
   return (
     <div className='space-y-6'>
-      {/* Header (matches UserDetails vibe) */}
-      <div className='flex items-start gap-4'>
+      <div className='flex items-start gap-3'>
         <div className='flex size-14 shrink-0 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30'>
           <BugIcon className='size-7 text-red-600 dark:text-red-400' strokeWidth={1.5} />
         </div>
@@ -358,12 +355,9 @@ export const ErrorDetails = ({
         </div>
       </div>
 
-      {/* Main Content - Two Column Layout (matches UserDetails / SessionDetailView) */}
-      <div className='flex flex-col gap-5 lg:flex-row'>
-        {/* Left Column - Summary */}
-        <div className='space-y-4 lg:w-[380px]'>
-          {/* Stats Card */}
-          <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+      <div className='flex flex-col gap-3 lg:flex-row'>
+        <div className='space-y-3 lg:w-[380px]'>
+          <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
             <div className='grid grid-cols-2 gap-y-5 sm:grid-cols-3 lg:grid-cols-2'>
               <StatItem
                 icon={<HashIcon className='h-3.5 w-3.5' />}
@@ -383,11 +377,10 @@ export const ErrorDetails = ({
             </div>
           </div>
 
-          {/* Metadata Card */}
-          <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-            <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
+          <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+            <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
               {t('project.metadata')}
-            </h3>
+            </Text>
             <div>
               {details.filename ? (
                 <InfoRow
@@ -453,15 +446,13 @@ export const ErrorDetails = ({
           </div>
         </div>
 
-        {/* Right Column - Stack Trace & Affected Sessions */}
-        <div className='flex-1 space-y-4'>
-          {/* Stack Trace */}
+        <div className='flex-1 space-y-3'>
           {details.stackTrace ? (
-            <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+            <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
               <div className='mb-3 flex items-center justify-between gap-3'>
-                <h3 className='text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
+                <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
                   {t('project.stackTraceXFrames', { x: stackTraceLines.length })}
-                </h3>
+                </Text>
                 <div className='flex items-center gap-2'>
                   <button
                     type='button'
@@ -529,11 +520,10 @@ export const ErrorDetails = ({
             </div>
           ) : null}
 
-          {/* Affected Sessions */}
-          <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-            <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
+          <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+            <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
               {t('project.affectedSessionsList')} {sessionsTotal > 0 ? `(${sessionsTotal})` : ''}
-            </h3>
+            </Text>
 
             {sessionsLoading && sessions.length === 0 ? (
               <Loader />

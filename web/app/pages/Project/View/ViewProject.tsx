@@ -10,7 +10,6 @@ import {
   SunIcon,
   BugIcon,
   GaugeIcon,
-  UsersIcon,
   UserIcon,
   BellRingIcon,
   ChartNoAxesColumnIcon,
@@ -22,6 +21,7 @@ import {
   SparklesIcon,
   FlagIcon,
   FlaskConicalIcon,
+  FileUser,
 } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext, lazy } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
@@ -539,7 +539,7 @@ const ViewProjectContent = () => {
       {
         id: PROJECT_TABS.sessions,
         label: t('dashboard.sessions'),
-        icon: UsersIcon,
+        icon: FileUser,
       },
       {
         id: PROJECT_TABS.errors,

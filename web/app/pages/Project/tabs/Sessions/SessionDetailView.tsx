@@ -11,6 +11,8 @@ import { BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants
 import { SessionDetails as SessionDetailsType } from '~/lib/models/Project'
 import { useTheme } from '~/providers/ThemeProvider'
 import Loader from '~/ui/Loader'
+import { Text } from '~/ui/Text'
+import Tooltip from '~/ui/Tooltip'
 import { getLocaleDisplayName, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 
 import CCRow from '../../View/components/CCRow'
@@ -44,15 +46,17 @@ interface SessionDetailViewProps {
   dataNames: Record<string, string>
 }
 
-// Info Row Component for Location & Device
 const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <div className='flex items-center justify-between border-b border-gray-100 py-2 last:border-0 dark:border-slate-700/50'>
-    <span className='text-sm text-gray-600 dark:text-gray-400'>{label}</span>
-    <span className='flex items-center gap-1.5 text-sm font-medium text-gray-900 dark:text-white'>{value}</span>
+    <Text size='sm' colour='muted'>
+      {label}
+    </Text>
+    <Text size='sm' weight='medium' colour='primary' className='flex items-center gap-1'>
+      {value}
+    </Text>
   </div>
 )
 
-// Device Icon Component
 const DeviceIcon = ({ device }: { device: string | null }) => {
   const deviceLower = device?.toLowerCase() || ''
   if (deviceLower === 'mobile') return <SmartphoneIcon className='h-4 w-4' />
@@ -60,7 +64,6 @@ const DeviceIcon = ({ device }: { device: string | null }) => {
   return <MonitorIcon className='h-4 w-4' />
 }
 
-// Browser Icon Component
 const BrowserIcon = ({ browser }: { browser: string | null }) => {
   if (!browser) return <GlobeIcon className='h-4 w-4' />
 
@@ -71,7 +74,6 @@ const BrowserIcon = ({ browser }: { browser: string | null }) => {
   return <img src={logoUrl} className='h-4 w-4' alt='' />
 }
 
-// OS Icon Component
 const OSIcon = ({ os, theme }: { os: string | null; theme: string }) => {
   if (!os) return <GlobeIcon className='h-4 w-4' />
 
@@ -100,7 +102,6 @@ export const SessionDetailView = ({
   const { theme } = useTheme()
   const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(null)
 
-  // Calculate session duration from pages if sdur is 0 or not available
   const sessionDuration = useMemo(() => {
     if (!activeSession?.details) return 0
 
@@ -108,7 +109,6 @@ export const SessionDetailView = ({
       return activeSession.details.sdur
     }
 
-    // Fallback: calculate duration from pageview timestamps only
     if (!_isEmpty(activeSession.pages)) {
       const pageviews = activeSession.pages!.filter((p) => p.type === 'pageview')
       if (pageviews.length >= 1) {
@@ -143,19 +143,14 @@ export const SessionDetailView = ({
   }
 
   return (
-    <div className='space-y-5'>
-      {/* Main Content - Two Column Layout */}
-      <div className='flex flex-col gap-5 lg:flex-row'>
-        {/* Left Column - Session Details */}
+    <div className='space-y-3'>
+      <div className='flex flex-col gap-3 lg:flex-row'>
         <div className='space-y-4 lg:w-[380px]'>
-          {/* Session Details Card */}
-          <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-            {/* Session Info */}
-            <h3 className='mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
+          <div className='rounded-lg border border-gray-200 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+            <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
               {t('project.sessionInfo')}
-            </h3>
+            </Text>
             <div>
-              {/* Session Duration */}
               <InfoRow
                 label={t('dashboard.sessionDuration')}
                 value={
@@ -174,17 +169,21 @@ export const SessionDetailView = ({
                   )
                 }
               />
-              {/* Referrer */}
               <InfoRow
                 label={t('project.mapping.ref')}
                 value={
                   details.ref ? (
-                    <>
-                      <LinkIcon className='h-4 w-4' />
-                      <span title={_size(details.ref) > 25 ? details.ref : undefined}>
-                        {_truncate(details.ref, { length: 25 })}
-                      </span>
-                    </>
+                    <Tooltip
+                      text={details.ref}
+                      tooltipNode={
+                        <div className='flex items-center gap-1'>
+                          <LinkIcon className='h-4 w-4' />
+                          <span title={_size(details.ref) > 25 ? details.ref : undefined}>
+                            {_truncate(details.ref, { length: 25 })}
+                          </span>
+                        </div>
+                      }
+                    />
                   ) : (
                     t('project.directNone')
                   )
@@ -192,10 +191,9 @@ export const SessionDetailView = ({
               />
             </div>
 
-            {/* Location & Device */}
-            <h3 className='mt-5 mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
+            <Text as='h3' size='xs' weight='semibold' colour='primary' className='mt-5 mb-2 uppercase' tracking='wide'>
               {t('project.locationAndDevice')}
-            </h3>
+            </Text>
             <div>
               <InfoRow
                 label={t('project.mapping.cc')}
@@ -250,12 +248,11 @@ export const SessionDetailView = ({
               />
             </div>
 
-            {/* UTM Campaigns */}
             {details.so || details.me || details.ca || details.te || details.co ? (
               <>
-                <h3 className='mt-5 mb-3 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
+                <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
                   {t('project.campaigns')}
-                </h3>
+                </Text>
                 <div>
                   {details.so ? <InfoRow label={t('project.mapping.so')} value={details.so} /> : null}
                   {details.me ? <InfoRow label={t('project.mapping.me')} value={details.me} /> : null}
@@ -268,14 +265,13 @@ export const SessionDetailView = ({
           </div>
         </div>
 
-        {/* Right Column - Chart */}
         <div className='flex-1'>
           {!_isEmpty(activeSession?.chart) ? (
-            <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-              <div className='mb-3 flex items-center justify-between'>
-                <h3 className='text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
+            <div className='rounded-lg border border-gray-200 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+              <div className='mb-2 flex items-center justify-between'>
+                <Text as='h3' size='xs' weight='semibold' colour='primary' className='uppercase' tracking='wide'>
                   {t('project.sessionActivity')}
-                </h3>
+                </Text>
                 {zoomedTimeRange ? (
                   <button
                     onClick={resetZoom}
@@ -299,8 +295,7 @@ export const SessionDetailView = ({
         </div>
       </div>
 
-      {/* Pageflow Section - Full Width Below */}
-      <div className='rounded-lg border border-gray-300 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+      <div className='rounded-lg border border-gray-200 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
         <h3 className='mb-4 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
           {t('project.pageflow')}
         </h3>

@@ -3,9 +3,10 @@ import React from 'react'
 import { cn } from '~/utils/generic'
 
 type TextElement = 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'label' | 'div'
-type TextSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
+type TextSize = 'xxs' | 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
 type TextWeight = 'light' | 'normal' | 'medium' | 'semibold' | 'bold'
 type TextColour = 'primary' | 'secondary' | 'muted' | 'success' | 'warning' | 'error' | 'inherit'
+type Tracking = 'tight' | 'normal' | 'wide'
 
 interface TextProps {
   children: React.ReactNode
@@ -13,6 +14,7 @@ interface TextProps {
   size?: TextSize
   weight?: TextWeight
   colour?: TextColour
+  tracking?: Tracking
   truncate?: boolean
   code?: boolean
   className?: string
@@ -20,6 +22,7 @@ interface TextProps {
 }
 
 const sizeClasses: Record<TextSize, string> = {
+  xxs: 'text-[10px]',
   xs: 'text-xs',
   sm: 'text-sm',
   base: 'text-base',
@@ -41,11 +44,17 @@ const weightClasses: Record<TextWeight, string> = {
 const colourClasses: Record<TextColour, string> = {
   primary: 'text-gray-900 dark:text-gray-50',
   secondary: 'text-gray-700 dark:text-gray-200',
-  muted: 'text-gray-500 dark:text-gray-400',
+  muted: 'text-gray-600 dark:text-gray-400',
   success: 'text-green-600 dark:text-green-400',
   warning: 'text-yellow-600 dark:text-yellow-500',
   error: 'text-red-600 dark:text-red-400',
   inherit: '',
+}
+
+const trackingClasses: Record<Tracking, string> = {
+  tight: 'tracking-tight',
+  normal: 'tracking-normal',
+  wide: 'tracking-wide',
 }
 
 export const Text = ({
@@ -54,6 +63,7 @@ export const Text = ({
   size = 'base',
   weight = 'normal',
   colour = 'primary',
+  tracking = 'normal',
   truncate,
   code,
   className,
@@ -64,6 +74,7 @@ export const Text = ({
       sizeClasses[size],
       weightClasses[weight],
       colourClasses[colour],
+      trackingClasses[tracking],
       { truncate },
       code && 'rounded bg-gray-200/80 px-1.5 py-0.5 font-mono dark:bg-slate-700',
       className,

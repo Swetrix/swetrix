@@ -22,11 +22,9 @@ import CCRow from '../../View/components/CCRow'
 dayjs.extend(duration)
 dayjs.extend(relativeTime)
 
-// Time thresholds for online status (in minutes)
 const ONLINE_THRESHOLD_MINUTES = 5
 const RECENTLY_ACTIVE_THRESHOLD_MINUTES = 30
 
-// Currency symbols
 const CURRENCY_SYMBOLS: Record<string, string> = {
   USD: '$',
   EUR: '€',
@@ -95,7 +93,6 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
       sessionDurationString = getStringFromTime(getTimeFromSeconds(session.sdur))
     } else {
       const diffSeconds = dayjs(session.lastActivity).diff(sessionStartTime, 'seconds')
-      // Only set duration string if it's meaningfully positive
       if (diffSeconds > 0) {
         sessionDurationString = getStringFromTime(getTimeFromSeconds(diffSeconds))
       }
@@ -149,13 +146,12 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
 
   return (
     <Link to={{ search: params.toString() }}>
-      <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'>
-        <div className='flex min-w-0 gap-x-4'>
-          {/* Avatar with online status indicator */}
+      <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60'>
+        <div className='flex min-w-0 gap-x-3'>
           {hideUserDetails ? null : (
             <div className='relative shrink-0'>
               {session.profileId ? (
-                <ProfileAvatar profileId={session.profileId} size={40} />
+                <ProfileAvatar className='mt-1' profileId={session.profileId} size={40} />
               ) : (
                 <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 dark:bg-slate-600'>
                   <span className='text-sm font-medium text-gray-500 dark:text-gray-300'>?</span>
@@ -196,7 +192,7 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
               </p>
             )}
             <p className='mt-1 flex flex-wrap items-center gap-x-2 text-xs leading-5 text-gray-500 dark:text-gray-300'>
-              <span className='flex'>
+              <span className='flex items-center'>
                 {session.cc ? <CCRow size={18} cc={session.cc} language={language} /> : t('project.unknownCountry')}
               </span>
               <Separator />
