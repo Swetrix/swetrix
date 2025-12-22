@@ -70,7 +70,6 @@ module.exports = {
         ],
       },
     ],
-    'Extensions SDK': ['ext-sdk-introduction', 'ext-sdk-faq', 'ext-sdk-reference'],
     API: ['api/stats', 'api/events', 'api/admin'],
     CAPTCHA: ['captcha/introduction', 'captcha/client-side-usage', 'captcha/server-side-validation', 'captcha/testing'],
     'Self-hosting': ['selfhosting/how-to', 'selfhosting/configuring'],
