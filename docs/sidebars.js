@@ -23,6 +23,12 @@ module.exports = {
       },
       'troubleshooting',
     ],
+    Features: [
+      'features/revenue-tracking',
+      'features/ask-ai',
+      'features/feature-flags',
+      'features/experiments',
+    ],
     'Site settings': [
       'sitesettings/how-to-access-site-settings',
       'sitesettings/how-to-invite-users-to-your-website',
