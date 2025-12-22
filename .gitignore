@@ -64,3 +64,8 @@ crowdin.yml
 .cache
 web/vite.config.ts.timestamp*
 web/.react-router/
+
+# Docs
+docs/build
+docs/.docusaurus
+docs/.cache-loader
