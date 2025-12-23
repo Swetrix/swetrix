@@ -4577,7 +4577,7 @@ export class AnalyticsService {
 
     const querySessions = `
       SELECT DISTINCT
-        errors.psid as psid,
+        CAST(errors.psid, 'String') as psid,
         any(errors.profileId) as profileId,
         any(analytics.cc) as cc,
         any(analytics.br) as br,
