@@ -241,10 +241,6 @@
         "desc": "Use our API to verify the CAPTCHA response on your server and filter out bots"
       },
       "readDocs": "Read the documentation"
-    },
-    "preview": {
-      "notRobot": "I'm not a robot",
-      "privacyFirst": "Privacy-first verification"
     }
   },
   "marketers": {
@@ -439,20 +435,15 @@
         }
       ]
     },
-    "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
     "slogan": "Turn traffic into insights",
     "description": "Get all the insights you need about your users and website visitors without the hassle of showing cookie banners. Experience intuitive, easy-to-use and GDPR-compliant web analytics without invading the privacy of your visitors.",
     "understandTheirUsers": "<0>{{amount}}</0> people understand their users",
-    "perfect": "It's perfect for <0>marketers</0>, <1>start-ups</1>, <2>small businesses</2> and virtually any type of business!",
-    "trustedBy": "Trusted by governments, NGOs and innovative enterprises",
     "startAXDayFreeTrial": "Start a {{amount}}-day free trial",
     "metric": "Metric",
-    "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
     "coreFeatures": "Only the features you need",
     "heroBenefits": {
       "trial": "Free trial {{days}} days",
       "cookieless": "Cookie-less tracking",
-      "gdpr": "GDPR compliant",
       "dataOwnership": "100% data ownership",
       "openSource": "Open-source",
       "selfHostable": "Self-hostable",
@@ -496,10 +487,6 @@
       "title": "Forget about annoying cookie banners",
       "description": "Swetrix does not use cookies for tracking, so you can forget about all those annoying cookie banners. We collect analytical data anonymously to respect the privacy of your users. We do not collect personal identifiers and do not perform cross-device tracking."
     },
-    "utms": {
-      "title": "Analyse marketing campaigns and newsletters",
-      "description": "Use UTMs to tag your ads, social media posts and email campaigns to see how much traffic they generate and how much revenue they bring in."
-    },
     "funnels": {
       "title": "Funnels and user flows",
       "description": "Track how users get to your site and where they go. Study behaviour, visualise and understand your user journey."
@@ -526,14 +513,9 @@
     },
     "timeToDitchGoogleAnalytics": "It's time <colour>to ditch</colour> Google Analytics.",
     "whyDitch": "Tired of the frustration, complexity and privacy issues of Google Analytics? We were too. That's why we built Swetrix - the ethical, open source and fully cookieless alternative.",
-    "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
-    "whyUs": "Why us",
-    "ourStats": "Our statistics",
-    "statsDesc": "Swetrix is built on users' trust in the service and is also capable of handling thousands of users and websites.",
     "users": "Registered users",
     "websites": "Added websites",
     "pageviews": "Events tracked",
-    "whyUseSwetrix": "Why use <swetrix>Swetrix</swetrix> if there is <competitor></competitor>?",
     "competitiveFeatures": {
       "perf": "Performance monitoring",
       "gdpr": "GDPR-compatible",
@@ -589,7 +571,6 @@
     "signup": {
       "button": "Sign up",
       "tos": "I do accept <tos>Terms and Conditions</tos> and the <pp>Privacy Policy</pp>.",
-      "email": "Email address",
       "create": "Create your account",
       "trial": "Start your free {{amount}} day trial",
       "noCC": "No credit card required.",
@@ -616,12 +597,9 @@
       "authSuccess": "Authentication successful",
       "failed": "Authentication failed",
       "failedDesc": "An error has occurred while authenticating through a third party service, please try again or contact support.",
-      "successDesc": "You are now authenticated through a 3rd party service and can safely close this page if it didn't close automatically.",
-      "orSingUpWith": "or sign up with"
+      "successDesc": "You are now authenticated through a 3rd party service and can safely close this page if it didn't close automatically."
     },
     "common": {
-      "signinInstead": "Sign in instead",
-      "signupInstead": "Sign up instead",
       "password": "Password",
       "noRemember": "Don't remember me.",
       "repeat": "Repeat password",
@@ -639,7 +617,6 @@
       "addedOn": "Added on",
       "continueWithGoogle": "Continue with Google",
       "continueWithGithub": "Continue with Github",
-      "continueWithOIDC": "Continue with OpenID Connect",
       "google": "Google",
       "github": "Github",
       "oidc": "OpenID Connect",
@@ -916,8 +893,6 @@
     "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
     "noNotificationChannel": "You do not have a notification channel set up, please set it up to be notified when one of your alerts is triggered.",
     "lastTriggered": "Last Triggered",
-    "lastTriggeredOn": "Last triggered on {{date}}",
-    "notYetTriggered": "Not yet triggered",
     "never": "Never",
     "qDelete": "Delete the alert?",
     "settingsOf": "Settings of {{name}}",
@@ -953,7 +928,6 @@
     "addGoal": "Add Goal",
     "filterGoals": "Filter goals",
     "noGoalsMatchFilter": "No goals match your filter",
-    "pattern": "Pattern",
     "create": "Create goal",
     "save": "Save",
     "delete": "Delete goal",
@@ -980,17 +954,6 @@
     "filterValue": "Value",
     "noMetadataFilters": "No metadata filters added. Click 'Add filter' to filter by event metadata.",
     "conversions": "Conversions",
-    "uniqueSessions": "Unique sessions",
-    "conversionRate": "Conversion rate",
-    "trend": "Trend",
-    "performance": "Performance",
-    "conversionsOverTime": "Conversions over time",
-    "recentSessions": "Recent converting sessions",
-    "sessionId": "Session ID",
-    "country": "Country",
-    "browser": "Browser",
-    "conversionsCount": "Conversions",
-    "configuration": "Configuration",
     "noData": "No conversion data yet",
     "noChartData": "No chart data available for the selected period"
   },
@@ -1043,7 +1006,6 @@
     "noProfiles": "No profiles have evaluated this flag yet",
     "loadMore": "Load more",
     "xEvaluations": "{{count}} evaluation(s)",
-    "lastEvaluated": "Last evaluated",
     "served": "Served"
   },
   "experiments": {
@@ -1077,23 +1039,16 @@
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "What are you testing?",
     "hypothesisLabel": "Hypothesis",
-    "hypothesisPlaceholder": "e.g., Changing the button to green will increase conversions by 10%",
     "hypothesis": "Hypothesis",
     "goal": "Goal",
-    "selectGoal": "Select a goal",
     "noGoal": "No goal (add later)",
     "loadingGoals": "Loading goals...",
     "noGoalsHint": "Create a goal first to track conversions",
     "needGoal": "Add a goal before starting",
     "variants": "Variants",
-    "variantName": "Variant name",
-    "variantKey": "Variant key",
-    "variantDescription": "Description",
-    "variantDescriptionPlaceholder": "Optional description",
     "control": "Control",
     "addVariant": "Add variant",
     "distributeEvenly": "Distribute evenly",
-    "totalPercentage": "Total percentage",
     "minTwoVariants": "At least 2 variants required",
     "oneControlRequired": "Exactly one control variant required",
     "percentageMustSum100": "Percentages must sum to 100",
@@ -1108,7 +1063,6 @@
     "startedAt": "Started",
     "endedAt": "Ended",
     "exposures": "Exposures",
-    "conversions": "Conversions",
     "conversionRate": "Conversion rate",
     "probabilityOfWinning": "Probability of winning",
     "improvement": "Improvement",
@@ -1122,8 +1076,6 @@
     "noDataYet": "No data yet",
     "noDataDescription": "Start your experiment to begin collecting data. Results will appear here once users are exposed to your variants.",
     "statisticalNote": "Results are calculated using Bayesian statistics. A variant is declared a winner when it has a 95% or higher probability of being the best. Collect more data for more reliable results.",
-    "exposureCriteria": "Exposure criteria",
-    "exposureCriteriaDesc": "Configure when users are considered exposed to the experiment.",
     "exposureTrigger": {
       "default": "Default",
       "defaultDesc": "When a $feature_flag_called event is recorded, a user is considered exposed to the experiment.",
@@ -1132,18 +1084,13 @@
       "eventName": "Custom event name",
       "eventNamePlaceholder": "e.g., page_loaded, checkout_started"
     },
-    "multipleVariantHandling": "Multiple variant handling",
-    "multipleVariantHandlingDesc": "How to handle users exposed to multiple variants",
     "multipleVariantOptions": {
       "exclude": "Exclude from analysis",
       "excludeDesc": "Users exposed to multiple variants will be excluded from the analysis (recommended).",
       "firstExposure": "Use first exposure",
       "firstExposureDesc": "Only count the first variant a user was exposed to."
     },
-    "filterInternalUsers": "Filter out internal and test users",
-    "filterInternalUsersDesc": "Exclude internal team members and test users from experiment results.",
     "featureFlag": "Feature flag & variants",
-    "featureFlagDesc": "Configure the feature flag that controls this experiment.",
     "featureFlagMode": {
       "create": "Create new feature flag",
       "createDesc": "Generate a new feature flag with custom variants for this experiment.",
@@ -1154,12 +1101,7 @@
     "featureFlagKeyPlaceholder": "e.g., new-landing-page, betaFeature, ab_test_1",
     "featureFlagKeyHint": "Each experiment is backed by a feature flag. This key will be used to control the experiment in your code.",
     "selectFeatureFlag": "Select a feature flag",
-    "loadingFeatureFlags": "Loading feature flags...",
-    "rollout": "Rollout",
-    "metrics": "Metrics",
-    "metricsDesc": "Configure how experiment success is measured.",
-    "noFlagKeyConfigured": "No flag key configured",
-    "next": "Next"
+    "loadingFeatureFlags": "Loading feature flags..."
   },
   "error": {
     "status": {
@@ -1719,7 +1661,6 @@
   },
   "billing": {
     "title": "Billing & Plans",
-    "desc": "It is free to get started and use our services.\nIf you need to handle more traffic, you probably need to upgrade your plan.\nBelow is a list of available plans. No hidden fees or other BS, everything is clear and transparent!",
     "update": "Update payment details",
     "nextBillDate": "Next bill date:",
     "nextBillDateIs": "Your next bill date is {{date}}",
@@ -1732,12 +1673,10 @@
     "subscriptionCancelledDescription": "Your subscription is active until {{date}}. After that, you will not be able to access your analytics data. Don't worry, we will still store incoming events and pageviews for your projects in case you change your mind.",
     "planUsage": "Plan usage",
     "usageOverview": "This month you have tracked {{tracked}} events ({{trackedPerc}}%) of the {{maxEvents}} events in your plan.",
-    "breakdown": "Breakdown by the event type:",
     "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
     "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
     "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
     "errors": "Error events: {{quantity}} ({{percentage}}%)",
-    "gotoUsage": "Go to plan usage",
     "confirmNewPlan": "Confirm your new subscription plan",
     "previewLoadingError": "An error occured while loading the pricing preview, please try again later.\nIf the problem persists, please contact us at <mail>{{email}}</mail>.\nYou can still change your plan, but you won't be able to see the pricing preview at the moment, sorry for that.",
     "dueNow": "Due now",
@@ -1751,7 +1690,6 @@
     "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
     "changePlan": "You can change or cancel your subscription plan at any time here.",
     "membersNotification": "Pageviews, custom events and error events are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
-    "xMonthsFree": "{{amount}} months free",
     "trialDescription": "Your free trial includes access to all features and unlimited data collection limits. When your trial ends, you'll need to select a paid plan that matches your usage to continue using Swetrix.",
     "usageWarningHigh": "You've used {{percentage}}% of your monthly event limit. Consider upgrading your plan to avoid service interruption.",
     "usageWarningCritical": "Warning: You've used {{percentage}}% of your monthly event limit! Upgrade now to ensure uninterrupted service.",
@@ -1791,37 +1729,25 @@
   "pricing": {
     "title": "Simple, traffic-based pricing",
     "adv": "Try Swetrix on your website for {{amount}} days - completely free of charge.\nNo credit card required. No strings attached.",
-    "currentPlan": "Current plan",
     "subscribe": "Subscribe",
-    "free": "Free",
     "legacy": "Legacy",
     "legacyDescription": "This plan or pricing is no longer available for new users. It is still available for existing users.",
     "perMonth": "mo",
     "perYear": "yr",
     "yourPlan": "Your plan",
     "downgrade": "Downgrade",
-    "selectPlan": "Select plan:",
     "upgrade": "Upgrade",
-    "whatIncl": "What's included",
     "monthlyBilling": "Monthly",
     "yearlyBilling": "Yearly",
     "switchToMonthly": "Switch to monthly billing",
     "frequency": "Payment frequency",
     "eventsPerMonth": "events / month",
     "switchToYearly": "Switch to yearly billing",
-    "xTrialDaysLeft": "{{amount}} trial days left",
     "trialEnded": "Trial ended",
-    "trialEndsToday": "Trial ends today",
-    "trialEndsTomorrow": "Trial ends tomorrow",
     "overXEvents": "Over {{amount}} events",
     "contactUs": "Contact us",
     "tiers": {
-      "trial": "Free trial",
-      "upToXEVMo": "Up to {{amount}} events per month",
-      "upToXVMo": "Up to {{amount}} visits per month",
       "upToXWebsites": "Add up to {{amount}} websites",
-      "evXPlanIncl": "Everything {{plan}} plan includes",
-      "dataExports": "Unlimited data exports",
       "dataOwnership": "100% data ownership",
       "teamMembers": "Team members",
       "apiAccess": "API access",
@@ -1847,10 +1773,6 @@
       "title": "Book a demo call",
       "desc": "Book a demo with our team to see how Swetrix can solve your problems"
     }
-  },
-  "beta": {
-    "title": "Beta",
-    "description": "This feature is in the Beta phase. Use it with caution as there may be side effects."
   },
   "open": {
     "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
@@ -1917,7 +1839,6 @@
     "profileSettings": "Profile settings",
     "dashboard": "Dashboard",
     "organisations": "Organisations",
-    "docs": "Documentation",
     "billing": "Billing",
     "contact": "Have something to ask?",
     "main": "Turn traffic into insights",
@@ -1928,8 +1849,7 @@
     "errors": "End user error tracking tool to deliver bug-free experiences",
     "forMarketers": "For marketers",
     "forSmbs": "For small businesses",
-    "forStartups": "For startups",
-    "featureFlags": "Feature flags"
+    "forStartups": "For startups"
   },
   "header": {
     "startForFree": "Start for free",
