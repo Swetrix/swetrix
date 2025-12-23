@@ -573,7 +573,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const handleDeleteChat = async (chatId: string) => {
     try {
       await deleteAIChat(projectId, chatId)
-      toast.success(t('askAi.chatDeleted'))
+      toast.success(t('project.askAi.chatDeleted'))
 
       if (chatId === currentChatId) {
         handleNewChat()
@@ -686,7 +686,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
           },
           onError: (err) => {
             console.error('AI chat error:', err)
-            setError(err.message || t('askAi.error'))
+            setError(err.message || t('project.askAi.error'))
             setStreamingMessage(null)
             setIsLoading(false)
             setIsWaitingForResponse(false)
@@ -696,7 +696,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       )
     } catch (err) {
       console.error('AI chat error:', err)
-      setError((err as Error).message || t('askAi.error'))
+      setError((err as Error).message || t('project.askAi.error'))
       setIsLoading(false)
       setIsWaitingForResponse(false)
     }
@@ -744,7 +744,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     const chatParam = currentChatId ? `&chat=${currentChatId}` : ''
     const link = `${baseUrl}?tab=ai${chatParam}`
     navigator.clipboard.writeText(link)
-    toast.success(t('askAi.linkCopied'))
+    toast.success(t('project.askAi.linkCopied'))
   }
 
   // Auto-resize textarea
@@ -783,7 +783,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
               type='button'
               onClick={handleNewChat}
               className='flex items-center gap-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-200 hover:bg-white hover:text-gray-900 dark:text-gray-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-white'
-              aria-label={t('askAi.newChat')}
+              aria-label={t('project.askAi.newChat')}
             >
               <ArrowLeftIcon className='h-4 w-4' />
             </button>
@@ -793,7 +793,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
               className='flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700'
             >
               <LinkIcon className='h-4 w-4' />
-              <span>{t('askAi.copyLink')}</span>
+              <span>{t('project.askAi.copyLink')}</span>
             </button>
           </div>
           <hr className='mt-3 border-gray-200 dark:border-gray-600' />
@@ -836,10 +836,10 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
                   {/* Headline */}
                   <Text as='h1' size='2xl' weight='semibold' colour='primary' className='mb-2'>
-                    {t('askAi.welcomeTitle')}
+                    {t('project.askAi.welcomeTitle')}
                   </Text>
                   <Text as='p' size='base' colour='muted' className='mb-10'>
-                    {t('askAi.welcomeSubtitle')}
+                    {t('project.askAi.welcomeSubtitle')}
                   </Text>
 
                   {/* Suggestion Cards - 2x2 grid above input */}
@@ -867,7 +867,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                           value={input}
                           onChange={(e) => setInput(e.target.value)}
                           onKeyDown={handleKeyDown}
-                          placeholder={t('askAi.placeholder')}
+                          placeholder={t('project.askAi.placeholder')}
                           disabled={isLoading}
                           rows={1}
                           className='w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400'
@@ -893,7 +893,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                         </div>
                       </form>
                     </div>
-                    <p className='mt-2 text-center text-xs text-gray-400 dark:text-gray-500'>{t('askAi.disclaimer')}</p>
+                    <p className='mt-2 text-center text-xs text-gray-400 dark:text-gray-500'>
+                      {t('project.askAi.disclaimer')}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -930,7 +932,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={t('askAi.followUpPlaceholder')}
+                  placeholder={t('project.askAi.followUpPlaceholder')}
                   disabled={isLoading}
                   rows={1}
                   className='w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400'
@@ -970,7 +972,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 </div>
               </form>
             </div>
-            <p className='mt-2 text-center text-xs text-gray-400 dark:text-gray-500'>{t('askAi.disclaimer')}</p>
+            <p className='mt-2 text-center text-xs text-gray-400 dark:text-gray-500'>{t('project.askAi.disclaimer')}</p>
           </div>
         </div>
       ) : null}
@@ -980,7 +982,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         <div className='mx-auto mt-8 w-full max-w-2xl'>
           <div className='flex items-center justify-between'>
             <Text as='h3' size='sm' weight='semibold' colour='primary'>
-              {t('askAi.recentChats')}
+              {t('project.askAi.recentChats')}
             </Text>
             <button
               type='button'
@@ -990,7 +992,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
               }}
               className='text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             >
-              {t('askAi.viewAll')}
+              {t('project.askAi.viewAll')}
             </button>
           </div>
           <div className='mt-4 space-y-3'>
@@ -1002,7 +1004,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 className='group flex w-full items-center justify-between text-left transition-colors'
               >
                 <Text as='span' size='sm' weight='medium' truncate className='group-hover:underline'>
-                  {chat.name || t('askAi.newChat')}
+                  {chat.name || t('project.askAi.newChat')}
                 </Text>
                 <Text as='span' size='sm' weight='medium' colour='muted' className='ml-4 shrink-0'>
                   {formatRelativeTime(chat.updated)}
@@ -1017,12 +1019,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       <Modal
         isOpened={isViewAllModalOpen}
         onClose={() => setIsViewAllModalOpen(false)}
-        title={t('askAi.allChats')}
+        title={t('project.askAi.allChats')}
         size='medium'
         message={
           <div className='mt-2 max-h-96 overflow-y-auto'>
             {_isEmpty(allChats) && !isLoadingChats ? (
-              <p className='py-8 text-center text-gray-500 dark:text-gray-400'>{t('askAi.noChats')}</p>
+              <p className='py-8 text-center text-gray-500 dark:text-gray-400'>{t('project.askAi.noChats')}</p>
             ) : (
               <div className='space-y-2'>
                 {_map(allChats, (chat) => (
@@ -1038,7 +1040,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                       <MessageSquareIcon className='h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500' />
                       <div className='overflow-hidden'>
                         <span className='block truncate text-sm text-gray-900 dark:text-white'>
-                          {chat.name || t('askAi.newChat')}
+                          {chat.name || t('project.askAi.newChat')}
                         </span>
                         <span className='text-xs text-gray-500 dark:text-gray-400'>
                           {formatRelativeTime(chat.updated)}
@@ -1052,7 +1054,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                         setChatToDelete(chat.id)
                       }}
                       className='ml-2 rounded p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-red-500 dark:hover:bg-slate-600 dark:hover:text-red-400'
-                      aria-label={t('askAi.deleteChat')}
+                      aria-label={t('project.askAi.deleteChat')}
                     >
                       <TrashIcon className='h-4 w-4' />
                     </button>
@@ -1085,8 +1087,8 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         isOpened={!!chatToDelete}
         onClose={() => setChatToDelete(null)}
         onSubmit={() => chatToDelete && handleDeleteChat(chatToDelete)}
-        title={t('askAi.deleteChat')}
-        message={t('askAi.deleteChatConfirm')}
+        title={t('project.askAi.deleteChat')}
+        message={t('project.askAi.deleteChatConfirm')}
         submitText={t('common.delete')}
         closeText={t('common.cancel')}
         submitType='danger'
