@@ -71,7 +71,7 @@ const getTabs = (t: typeof i18next.t) => {
       },
       {
         id: TAB_MAPPING.INTERFACE,
-        label: 'Interface settings',
+        label: t('profileSettings.interfaceSettings'),
         icon: MonitorIcon,
       },
     ]
@@ -85,12 +85,12 @@ const getTabs = (t: typeof i18next.t) => {
     },
     {
       id: TAB_MAPPING.COMMUNICATIONS,
-      label: 'Communications',
+      label: t('profileSettings.communications'),
       icon: MessageSquareTextIcon,
     },
     {
       id: TAB_MAPPING.INTERFACE,
-      label: 'Interface settings',
+      label: t('profileSettings.interfaceSettings'),
       icon: MonitorIcon,
     },
   ]

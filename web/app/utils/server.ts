@@ -140,19 +140,19 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
 
     case routes.privacy:
       result = {
-        title: 'Privacy Policy',
+        title: t('titles.privacyPolicy'),
       }
       break
 
     case routes.cookiePolicy:
       result = {
-        title: 'Cookie Policy',
+        title: t('titles.cookiePolicy'),
       }
       break
 
     case routes.terms:
       result = {
-        title: 'Terms and Conditions',
+        title: t('titles.termsAndConditions'),
       }
       break
 
@@ -170,7 +170,7 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
 
     case routes.about:
       result = {
-        title: 'About us',
+        title: t('titles.aboutUs'),
       }
       break
 

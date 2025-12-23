@@ -98,6 +98,7 @@
     "billing": "Billing",
     "pricing": "Pricing",
     "faqs": "FAQs",
+    "loading": "Loading...",
     "accountSettings": "Account settings",
     "liveDemo": "Live demo",
     "dashboard": "Dashboard",
@@ -141,7 +142,6 @@
     "new": "New",
     "all": "All",
     "active": "Active",
-    "loading": "Loading..",
     "edit": "Edit",
     "account": "Account",
     "transferring": "Transferring",
@@ -723,6 +723,8 @@
     "captchaSecretKeyHint": "This is your secret key, it is used to verify the CAPTCHA response on your server. Keep it secret and do not share it with anyone.",
     "showVisitorsInTitle": "Show live visitors in the page title",
     "uiSettings": "UI Settings",
+    "interfaceSettings": "Interface settings",
+    "communications": "Communications",
     "passwordChangeWarningModal": {
       "title": "You're about to change your password",
       "body": "You're about to change your password, this will log you out from all devices (including this one) and you will need to log in again with your new password."
@@ -1656,7 +1658,49 @@
       "deleteChatConfirm": "Are you sure you want to delete this chat?",
       "chatDeleted": "Chat deleted",
       "copyLink": "Copy link to chat",
-      "linkCopied": "Link copied to clipboard"
+      "linkCopied": "Link copied to clipboard",
+      "tools": {
+        "count": "Tools: {{count}}",
+        "getProjectInfo": "Fetched project info",
+        "getData": "Queried analytics",
+        "getGoalStats": "Fetched goals",
+        "getFunnelData": "Loaded funnel",
+        "queryData": "Query data",
+        "goalStats": "Goal stats",
+        "funnelData": "Funnel data"
+      },
+      "capabilities": {
+        "title": "Swetrix AI can:",
+        "queryAnalytics": "Query analytics including pageviews, visitors, and sessions",
+        "goalStatistics": "Goal statistics with conversion rates",
+        "funnelAnalysis": "Funnel analysis showing step-by-step conversions",
+        "performanceMetrics": "Performance metrics like page load times and TTFB",
+        "errorTracking": "Error tracking data and top errors",
+        "trafficPatterns": "Analyze traffic patterns (top pages, countries, browsers, referrers)",
+        "cannotTitle": "Swetrix AI can't:",
+        "cannotBrowse": "Browse the web",
+        "cannotSeeOutside": "See data outside this Swetrix project",
+        "cannotGuarantee": "Guarantee correctness",
+        "cannotModify": "Modify analytics or project settings"
+      },
+      "thinking": "Thinking...",
+      "thought": "Thought",
+      "scrollToBottom": "Scroll to bottom",
+      "suggestions": {
+        "compareVisitors": "Compare visitors this week vs last week",
+        "topTrafficSources": "What are my top traffic sources?",
+        "mobilePerformance": "How does my site perform on mobile?",
+        "deviceTypesChart": "Create a pie chart of most common device types"
+      },
+      "dismiss": "Dismiss",
+      "stop": "Stop",
+      "loadMore": "Load more",
+      "timeFormat": {
+        "justNow": "Just now",
+        "minutes": "{{count}}m",
+        "hours": "{{count}}h",
+        "days": "{{count}}d"
+      }
     }
   },
   "billing": {
@@ -1849,7 +1893,11 @@
     "errors": "End user error tracking tool to deliver bug-free experiences",
     "forMarketers": "For marketers",
     "forSmbs": "For small businesses",
-    "forStartups": "For startups"
+    "forStartups": "For startups",
+    "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy",
+    "termsAndConditions": "Terms and Conditions",
+    "aboutUs": "About us"
   },
   "header": {
     "startForFree": "Start for free",

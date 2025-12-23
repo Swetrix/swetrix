@@ -1,5 +1,6 @@
 import { CheckCircleIcon, XCircleIcon, InformationCircleIcon } from '@heroicons/react/24/solid'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { cn } from '~/utils/generic'
@@ -36,12 +37,14 @@ const iconBgMap: Record<StatusType, string> = {
 }
 
 const StatusPage = ({ loading, type = 'success', title, icon, actions }: StatusPageProps) => {
+  const { t } = useTranslation('common')
+
   if (loading) {
     return (
       <div className='flex min-h-page items-center justify-center bg-gray-50 dark:bg-slate-900'>
         <div className='flex flex-col items-center'>
           <Spin />
-          <span className='sr-only'>Loading...</span>
+          <span className='sr-only'>{t('common.loading')}</span>
         </div>
       </div>
     )
