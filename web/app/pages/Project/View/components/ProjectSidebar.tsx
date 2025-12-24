@@ -8,7 +8,7 @@ import {
   XIcon,
   MenuIcon,
 } from 'lucide-react'
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps } from 'react-router'
 
@@ -21,6 +21,33 @@ import { getFaviconHost } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
 const SIDEBAR_COLLAPSED_KEY = 'project-sidebar-collapsed'
+const SIDEBAR_GROUPS_KEY = 'project-sidebar-groups'
+
+const getGroupExpandedState = (groupId: string): boolean => {
+  if (typeof window === 'undefined') return true
+  try {
+    const stored = localStorage.getItem(SIDEBAR_GROUPS_KEY)
+    if (stored) {
+      const states = JSON.parse(stored)
+      return states[groupId] !== false
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return true
+}
+
+const setGroupExpandedState = (groupId: string, isExpanded: boolean) => {
+  if (typeof window === 'undefined') return
+  try {
+    const stored = localStorage.getItem(SIDEBAR_GROUPS_KEY)
+    const states = stored ? JSON.parse(stored) : {}
+    states[groupId] = isExpanded
+    localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(states))
+  } catch {
+    // Ignore errors
+  }
+}
 
 type ProjectTabKey = keyof typeof PROJECT_TABS | 'settings'
 
@@ -82,17 +109,22 @@ const CollapsibleGroup: React.FC<{
   isCollapsed?: boolean
   onMobileClose?: () => void
 }> = ({ group, activeTab, onTabChange, projectId, dataLoading, searchParams, isCollapsed, onMobileClose }) => {
-  const [isExpanded, setIsExpanded] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(() => getGroupExpandedState(group.id))
 
   const hasActiveTab = useMemo(() => {
     return group.tabs.some((tab) => tab.id === activeTab)
   }, [group.tabs, activeTab])
 
+  const prevHasActiveTab = useRef(hasActiveTab)
+
   React.useEffect(() => {
-    if (hasActiveTab && !isExpanded) {
+    // Only auto-expand when user navigates TO this group (not on initial mount)
+    if (hasActiveTab && !prevHasActiveTab.current && !isExpanded) {
       setIsExpanded(true)
+      setGroupExpandedState(group.id, true)
     }
-  }, [hasActiveTab]) // eslint-disable-line react-hooks/exhaustive-deps
+    prevHasActiveTab.current = hasActiveTab
+  }, [hasActiveTab, group.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isCollapsed) {
     return (
@@ -154,7 +186,11 @@ const CollapsibleGroup: React.FC<{
     <div className='mb-1'>
       <button
         type='button'
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={() => {
+          const newValue = !isExpanded
+          setIsExpanded(newValue)
+          setGroupExpandedState(group.id, newValue)
+        }}
         className='group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800/60'
       >
         <Text as='span' size='xs' colour='secondary' weight='semibold' truncate className='max-w-full'>
