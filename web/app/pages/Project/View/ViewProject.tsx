@@ -76,7 +76,6 @@ import FunnelsView from '../tabs/Funnels/FunnelsView'
 import GoalsView from '../tabs/Goals/GoalsView'
 import PerformanceView from '../tabs/Performance/PerformanceView'
 import ProfilesView from '../tabs/Profiles/ProfilesView'
-// Revenue dashboard removed - revenue data is displayed in TrafficView, Pageflow, and Profile details
 import SessionsView from '../tabs/Sessions/SessionsView'
 import TrafficView from '../tabs/Traffic/TrafficView'
 
@@ -100,7 +99,6 @@ import {
 } from './ViewProject.helpers'
 
 interface ViewProjectContextType {
-  // States
   timezone: string
   dateRange: Date[] | null
   isLoading: boolean
@@ -124,7 +122,6 @@ interface ViewProjectContextType {
   funnelsRefreshTrigger: number
   profilesRefreshTrigger: number
 
-  // Comparison state
   isActiveCompare: boolean
   dateRangeCompare: Date[] | null
   activePeriodCompare: string
@@ -136,27 +133,22 @@ interface ViewProjectContextType {
   periodPairsCompare: { label: string; period: string }[]
   setPeriodPairsCompare: (value: { label: string; period: string }[]) => void
 
-  // Chart state
   chartType: keyof typeof chartTypes
   setChartTypeOnClick: (type: keyof typeof chartTypes) => void
   rotateXAxis: boolean
 
-  // Zoom state
   onMainChartZoom: (domain: [Date, Date] | null) => void
   shouldEnableZoom: boolean
 
-  // Filter functions
   getFilterLink: (column: string, value: string | null) => LinkProps['to']
   getVersionFilterLink: (parent: string | null, version: string | null, panelType: 'br' | 'os') => string
 
-  // Functions
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
   updateTimebucket: (newTimebucket: TimeBucket) => void
   setShowFiltersSearch: (value: boolean) => void
   resetDateRange: () => void
   refreshStats: (isManual?: boolean) => Promise<void>
 
-  // Refs
   refCalendar: React.RefObject<any>
   refCalendarCompare: React.RefObject<any>
 }
@@ -185,7 +177,6 @@ const defaultViewProjectContext: ViewProjectContextType = {
   funnelsRefreshTrigger: 0,
   profilesRefreshTrigger: 0,
 
-  // Comparison state defaults
   isActiveCompare: false,
   dateRangeCompare: null,
   activePeriodCompare: '',
@@ -197,16 +188,13 @@ const defaultViewProjectContext: ViewProjectContextType = {
   periodPairsCompare: [],
   setPeriodPairsCompare: () => {},
 
-  // Chart state defaults
   chartType: chartTypes.line,
   setChartTypeOnClick: () => {},
   rotateXAxis: false,
 
-  // Zoom state defaults
   onMainChartZoom: () => {},
   shouldEnableZoom: true,
 
-  // Filter functions defaults
   getFilterLink: () => ({ search: '' }) as LinkProps['to'],
   getVersionFilterLink: () => '',
 
@@ -928,13 +916,11 @@ const ViewProjectContent = () => {
     updatePeriod(pair)
   })
 
-  // Mobile sidebar handlers
   const openMobileSidebar = useCallback(() => setIsMobileSidebarOpen(true), [])
   const closeMobileSidebar = useCallback(() => setIsMobileSidebarOpen(false), [])
 
   const contextValue = useMemo(
     () => ({
-      // States
       timezone,
       dateRange,
       isLoading: authLoading,
@@ -958,7 +944,6 @@ const ViewProjectContent = () => {
       funnelsRefreshTrigger,
       profilesRefreshTrigger,
 
-      // Comparison state
       isActiveCompare,
       dateRangeCompare,
       activePeriodCompare,
@@ -970,27 +955,22 @@ const ViewProjectContent = () => {
       periodPairsCompare,
       setPeriodPairsCompare,
 
-      // Chart state
       chartType,
       setChartTypeOnClick,
       rotateXAxis,
 
-      // Zoom state
       onMainChartZoom,
       shouldEnableZoom,
 
-      // Filter functions
       getFilterLink,
       getVersionFilterLink,
 
-      // Functions
       updatePeriod,
       updateTimebucket,
       setShowFiltersSearch,
       resetDateRange,
       refreshStats,
 
-      // Refs
       refCalendar,
       refCalendarCompare,
     }),
@@ -1044,7 +1024,6 @@ const ViewProjectContent = () => {
     ],
   )
 
-  // Show password modal over a skeleton dashboard when password is required
   if (isPasswordRequired) {
     return (
       <>

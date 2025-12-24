@@ -67,7 +67,6 @@ const parseCharts = (content: string): { text: string; charts: any[] } => {
   const charts: any[] = []
   let text = content
 
-  // Find all occurrences of {"type":"chart" and extract full JSON objects
   const chartStartPattern = '{"type":"chart"'
   let searchIndex = 0
 
@@ -75,7 +74,6 @@ const parseCharts = (content: string): { text: string; charts: any[] } => {
     const startIndex = text.indexOf(chartStartPattern, searchIndex)
     if (startIndex === -1) break
 
-    // Find the matching closing brace by counting braces
     let braceCount = 0
     let endIndex = -1
 
@@ -92,7 +90,6 @@ const parseCharts = (content: string): { text: string; charts: any[] } => {
     }
 
     if (endIndex === -1) {
-      // No matching brace found, skip this occurrence
       searchIndex = startIndex + chartStartPattern.length
       continue
     }
@@ -103,13 +100,11 @@ const parseCharts = (content: string): { text: string; charts: any[] } => {
       const chartData = JSON.parse(jsonString)
       if (chartData.type === 'chart') {
         charts.push(chartData)
-        // Remove the chart JSON from text
         text = text.substring(0, startIndex) + text.substring(endIndex + 1)
-        // Don't advance searchIndex since we removed content
         continue
       }
     } catch {
-      // Not valid JSON, skip this occurrence
+      // Invalid JSON, skip
     }
 
     searchIndex = startIndex + chartStartPattern.length

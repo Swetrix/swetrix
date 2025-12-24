@@ -23,8 +23,6 @@ export class AiChatService {
     userId: string | null,
     limit: number = 5,
   ): Promise<AiChat[]> {
-    // Do not return stored chats to unauthenticated users.
-    // (Public project analytics may be viewable, but chats contain user prompts and context.)
     if (!userId) {
       return []
     }
@@ -45,7 +43,6 @@ export class AiChatService {
     skip: number = 0,
     take: number = 20,
   ): Promise<{ chats: AiChat[]; total: number }> {
-    // Do not return stored chats to unauthenticated users.
     if (!userId) {
       return { chats: [], total: 0 }
     }
@@ -87,7 +84,6 @@ export class AiChatService {
     if (data.messages) {
       const previousMessages = chat.messages
       chat.messages = data.messages
-      // Update name if not manually set and we have a new first user message
       if (!chat.name || chat.name === this.generateChatName(previousMessages)) {
         chat.name = this.generateChatName(data.messages)
       }
@@ -105,11 +101,9 @@ export class AiChatService {
   }
 
   private generateChatName(messages: ChatMessage[]): string {
-    // Use the first user message as the chat name
     const firstUserMessage = messages.find(m => m.role === 'user')
     if (firstUserMessage) {
       const content = firstUserMessage.content.trim()
-      // Truncate to reasonable length
       return content.length > 100 ? content.slice(0, 97) + '...' : content
     }
     return 'New conversation'
@@ -120,7 +114,6 @@ export class AiChatService {
     projectId: string,
     userId: string | null,
   ): Promise<AiChat | null> {
-    // Explicitly require authentication for user-scoped access checks.
     if (!userId) return null
 
     const queryBuilder = this.aiChatRepository

@@ -38,13 +38,12 @@ import {
 } from './dto/chat.dto'
 import { trackCustom } from '../common/analytics'
 
-// Rate limit constants for AI endpoints
-const AI_CHAT_RATE_LIMIT = 50 // requests per hour for authenticated users
-const AI_CHAT_RATE_LIMIT_UNAUTH = 20 // requests per hour for unauthenticated users
-const AI_CHAT_RATE_LIMIT_TIMEOUT = 3600 // 1 hour
+const AI_CHAT_RATE_LIMIT = 50
+const AI_CHAT_RATE_LIMIT_UNAUTH = 20
+const AI_CHAT_RATE_LIMIT_TIMEOUT = 3600
 
-const AI_READ_RATE_LIMIT = 200 // requests per hour for read operations
-const AI_READ_RATE_LIMIT_UNAUTH = 50 // requests per hour for unauthenticated users
+const AI_READ_RATE_LIMIT = 200
+const AI_READ_RATE_LIMIT_UNAUTH = 50
 
 @ApiTags('AI')
 @Controller(['ai', 'v1/ai'])
@@ -70,7 +69,6 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid }, 'POST /ai/:pid/chat')
 
-    // Apply rate limiting based on authentication status
     const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
@@ -88,7 +86,6 @@ export class AiController {
       )
     }
 
-    // Check if OpenRouter API key is configured
     if (!process.env.OPENROUTER_API_KEY) {
       throw new HttpException(
         'AI features are not configured. Please set OPENROUTER_API_KEY.',
@@ -96,7 +93,6 @@ export class AiController {
       )
     }
 
-    // Get and validate project access
     const project = await this.projectService.getFullProject(pid)
 
     if (_isEmpty(project)) {
@@ -105,7 +101,6 @@ export class AiController {
 
     this.projectService.allowedToView(project, uid)
 
-    // Check billing status
     if (project.admin?.dashboardBlockReason) {
       throw new ForbiddenException(
         'The account that owns this project is currently suspended due to a billing issue.',
@@ -113,7 +108,6 @@ export class AiController {
     }
 
     try {
-      // Set up SSE headers
       res.setHeader('Content-Type', 'text/event-stream')
       res.setHeader('Cache-Control', 'no-cache')
       res.setHeader('Connection', 'keep-alive')
@@ -125,7 +119,6 @@ export class AiController {
         clientClosed = true
       })
 
-      // Convert messages to CoreMessage format, filtering out empty messages
       const messages = chatDto.messages
         .filter(m => m.content && m.content.trim().length > 0)
         .map(m => ({
@@ -145,15 +138,12 @@ export class AiController {
         'Starting AI chat stream',
       )
 
-      // Get streaming response from AI
       const result = await this.aiService.chat(
         project,
         messages,
         chatDto.timezone || 'UTC',
       )
 
-      // Stream the full response including tool calls and reasoning
-      // Wrap in try-catch to handle provider errors gracefully
       let hasContent = false
       let toolCallCount = 0
       let toolResultCount = 0
@@ -182,7 +172,6 @@ export class AiController {
           } else if (part.type === 'tool-call') {
             hasContent = true
             toolCallCount++
-            // Send tool call info for UI feedback
             res.write(
               `data: ${JSON.stringify({
                 type: 'tool-call',
@@ -196,7 +185,6 @@ export class AiController {
             )
           } else if (part.type === 'tool-result') {
             toolResultCount++
-            // Send tool result for transparency (limit result size to avoid huge payloads)
             const resultPreview =
               typeof part.result === 'object'
                 ? JSON.stringify(part.result).slice(0, 1000)
@@ -218,17 +206,14 @@ export class AiController {
             )
           } else if (part.type === 'reasoning') {
             hasContent = true
-            // Stream reasoning/thinking tokens if available
             res.write(
               `data: ${JSON.stringify({ type: 'reasoning', content: part.textDelta })}\n\n`,
             )
           } else if (part.type === 'error') {
-            // Handle errors during streaming (emitted by AI SDK)
             this.logger.error(
               { error: part.error, pid, uid },
               'Error event during AI stream',
             )
-            // Don't end the stream on error events - the provider may continue
             res.write(
               `data: ${JSON.stringify({ type: 'error', content: 'A temporary error occurred, continuing...' })}\n\n`,
             )
@@ -274,13 +259,11 @@ export class AiController {
           'AI stream completed - summary',
         )
       } catch (streamError) {
-        // Handle errors thrown during stream iteration (e.g., malformed provider responses)
         this.logger.error(
           { error: streamError, pid, uid },
           'Exception during AI stream iteration',
         )
 
-        // If we already have some content, send what we have with an error notice
         if (hasContent) {
           res.write(
             `data: ${JSON.stringify({ type: 'error', content: 'The response was interrupted due to a provider error.' })}\n\n`,
@@ -292,7 +275,6 @@ export class AiController {
         }
       }
 
-      // Send done event
       res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`)
       res.end()
 
@@ -300,7 +282,6 @@ export class AiController {
     } catch (error) {
       this.logger.error({ error, pid, uid }, 'Error in AI chat')
 
-      // If headers not sent yet, throw error
       if (!res.headersSent) {
         throw new HttpException(
           'Failed to process AI request',
@@ -308,7 +289,6 @@ export class AiController {
         )
       }
 
-      // If streaming already started, send error event
       res.write(
         `data: ${JSON.stringify({ type: 'error', content: 'An error occurred while processing your request' })}\n\n`,
       )
@@ -329,7 +309,6 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid }, 'GET /ai/:pid/chats')
 
-    // Apply rate limiting based on authentication status
     const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
@@ -387,7 +366,6 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid }, 'GET /ai/:pid/chats/all')
 
-    // Apply rate limiting based on authentication status
     const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
@@ -449,7 +427,6 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid, chatId }, 'GET /ai/:pid/chats/:chatId')
 
-    // Apply rate limiting based on authentication status
     const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
@@ -473,16 +450,10 @@ export class AiController {
       throw new NotFoundException('Project not found')
     }
 
-    // Check if user is allowed to view the project (includes public projects)
     this.projectService.allowedToView(project, uid)
 
     let chat
 
-    // For public projects:
-    // - unauthenticated users may access only anonymously-owned chats (userId IS NULL) by ID
-    // - authenticated users may access their own chats (plus shared anonymous chats)
-    // For private projects:
-    // - authenticated users may access only their own chats
     if (project.public) {
       if (!uid) {
         chat = await this.aiChatService.verifyPublicChatAccess(chatId, pid)
@@ -519,7 +490,6 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid }, 'POST /ai/:pid/chats')
 
-    // Apply rate limiting based on authentication status
     const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
@@ -579,7 +549,6 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid, chatId }, 'POST /ai/:pid/chats/:chatId')
 
-    // Apply rate limiting based on authentication status
     const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
@@ -605,7 +574,6 @@ export class AiController {
 
     this.projectService.allowedToView(project, uid)
 
-    // Updates require authentication and chat ownership.
     const existingChat = await this.aiChatService.verifyOwnerAccess(
       chatId,
       pid,
@@ -647,7 +615,6 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid, chatId }, 'DELETE /ai/:pid/chats/:chatId')
 
-    // Apply rate limiting based on authentication status
     const ip = getIPFromHeaders(headers) || 'unknown'
     if (uid) {
       await checkRateLimit(
@@ -673,7 +640,6 @@ export class AiController {
 
     this.projectService.allowedToView(project, uid)
 
-    // Deletes require authentication and chat ownership.
     const existingChat = await this.aiChatService.verifyOwnerAccess(
       chatId,
       pid,
