@@ -21,11 +21,7 @@ const NoCaptchaEvents = ({ filters }: NoCaptchaEventsProps) => {
 
   return (
     <>
-      {hasFilters ? (
-        <div className='mt-4'>
-          <Filters tnMapping={tnMapping} />
-        </div>
-      ) : null}
+      {hasFilters ? <Filters tnMapping={tnMapping} /> : null}
       <div className='mx-auto w-full max-w-2xl py-16 text-center'>
         <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800'>
           {hasFilters ? (

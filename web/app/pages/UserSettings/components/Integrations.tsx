@@ -14,6 +14,7 @@ import Discord from '~/ui/icons/Discord'
 import Slack from '~/ui/icons/Slack'
 import Telegram from '~/ui/icons/Telegram'
 import Input from '~/ui/Input'
+import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 
 const getAvailableIntegrations = (
@@ -435,21 +436,27 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
               return (
                 <tr key={key} className='hover:bg-gray-50 dark:hover:bg-slate-800/50'>
                   <td className='px-4 py-3 text-sm text-gray-900 dark:text-gray-100'>
-                    <div className='flex items-center gap-3'>
+                    <div className='flex items-center gap-2'>
                       <div className='hidden shrink-0 sm:block'>
-                        <Icon className='size-9' />
+                        <Icon className='size-5' />
                       </div>
                       <span className='font-medium'>{name}</span>
                     </div>
                   </td>
-                  <td className='px-4 py-3 text-sm text-gray-700 dark:text-gray-300'>
+                  <td className='px-4 py-3'>
                     <div className='space-y-1'>
-                      <p className='text-sm text-gray-700 dark:text-gray-300'>{description}</p>
+                      <Text as='p' size='sm' colour='primary'>
+                        {description}
+                      </Text>
                       {id ? (
-                        <p className='text-sm text-gray-900 dark:text-gray-100'>
-                          {t('profileSettings.chatID')}
-                          {`: ${id}`}
-                        </p>
+                        <div className='flex flex-wrap items-center gap-1'>
+                          <Text as='p' size='sm' colour='primary'>
+                            {t('profileSettings.chatID')}:
+                          </Text>
+                          <Text as='p' size='sm' colour='secondary' code>
+                            {id}
+                          </Text>
+                        </div>
                       ) : null}
                     </div>
                   </td>

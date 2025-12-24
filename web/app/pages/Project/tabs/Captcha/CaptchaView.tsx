@@ -196,18 +196,16 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
       <div ref={ref}>
         {dataLoading && hasExistingData ? <LoadingBar /> : null}
         <div>
-          <Filters tnMapping={tnMapping} />
+          <Filters className='mb-3' tnMapping={tnMapping} />
           {chartData ? (
-            <div className='mt-4'>
-              <CaptchaChart
-                chart={chartData}
-                timeBucket={timeBucket}
-                timeFormat={timeFormat}
-                rotateXAxis={rotateXAxis}
-                chartType={chartTypes.line}
-                dataNames={dataNames}
-              />
-            </div>
+            <CaptchaChart
+              chart={chartData}
+              timeBucket={timeBucket}
+              timeFormat={timeFormat}
+              rotateXAxis={rotateXAxis}
+              chartType={chartTypes.line}
+              dataNames={dataNames}
+            />
           ) : null}
           <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
             {!_isEmpty(panelsData.types)

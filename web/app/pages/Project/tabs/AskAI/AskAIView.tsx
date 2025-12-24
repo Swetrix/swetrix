@@ -21,7 +21,7 @@ import {
   LinkIcon,
 } from 'lucide-react'
 import { marked } from 'marked'
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 import sanitizeHtml from 'sanitize-html'
@@ -58,13 +58,11 @@ interface AskAIViewProps {
   projectId: string
 }
 
-// Configure marked for safe rendering
 marked.setOptions({
   breaks: true,
   gfm: true,
 })
 
-// Parse chart JSON from AI response
 const parseCharts = (content: string): { text: string; charts: any[] } => {
   const charts: any[] = []
   let text = content
@@ -120,7 +118,6 @@ const parseCharts = (content: string): { text: string; charts: any[] } => {
   return { text: text.trim(), charts }
 }
 
-// Render markdown safely
 const renderMarkdown = (content: string): string => {
   const html = marked.parse(content) as string
   return sanitizeHtml(html, {
@@ -139,7 +136,6 @@ const renderMarkdown = (content: string): string => {
   })
 }
 
-// Tool name to human-readable description
 const getToolInfo = (
   toolName: string,
   t: any,
@@ -153,15 +149,14 @@ const getToolInfo = (
   return toolMap[toolName] || { label: toolName, icon: InfoIcon }
 }
 
-// Available tools for display
 const getAvailableTools = (t: any) => [
   { id: 'getData', label: t('project.askAi.tools.queryData'), icon: BarChart3Icon },
   { id: 'getGoalStats', label: t('project.askAi.tools.goalStats'), icon: TargetIcon },
   { id: 'getFunnelData', label: t('project.askAi.tools.funnelData'), icon: GitBranchIcon },
 ]
 
-// Tools tooltip content
-const ToolsTooltip = ({ t }: { t: any }) => {
+const ToolsTooltip = () => {
+  const { t } = useTranslation('common')
   const AVAILABLE_TOOLS = getAvailableTools(t)
   return (
     <div className='space-y-1.5 py-1'>
@@ -175,12 +170,12 @@ const ToolsTooltip = ({ t }: { t: any }) => {
   )
 }
 
-// Compact tools indicator with tooltip
-const ToolsIndicator = ({ t }: { t: any }) => {
+const ToolsIndicator = () => {
+  const { t } = useTranslation('common')
   const AVAILABLE_TOOLS = getAvailableTools(t)
   return (
     <Tooltip
-      text={<ToolsTooltip t={t} />}
+      text={<ToolsTooltip />}
       tooltipNode={
         <span className='flex cursor-help items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-300'>
           {t('project.askAi.tools.count', { count: AVAILABLE_TOOLS.length })}
@@ -190,73 +185,77 @@ const ToolsIndicator = ({ t }: { t: any }) => {
   )
 }
 
-// AI Capabilities tooltip content
-const AICapabilitiesTooltip = ({ t }: { t: any }) => (
-  <div className='max-w-sm space-y-3 py-1 text-left'>
-    <div>
-      <p className='mb-1.5 font-semibold text-white'>{t('project.askAi.capabilities.title')}</p>
-      <ul className='space-y-1 text-gray-300'>
-        <li className='flex items-start gap-1.5'>
-          <BarChart3Icon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
-          <span>
-            <strong className='text-white'>{t('project.askAi.capabilities.queryAnalytics')}</strong>
-          </span>
-        </li>
-        <li className='flex items-start gap-1.5'>
-          <TargetIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
-          <span>
-            <strong className='text-white'>{t('project.askAi.capabilities.goalStatistics')}</strong>
-          </span>
-        </li>
-        <li className='flex items-start gap-1.5'>
-          <GitBranchIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
-          <span>
-            <strong className='text-white'>{t('project.askAi.capabilities.funnelAnalysis')}</strong>
-          </span>
-        </li>
-        <li className='flex items-start gap-1.5'>
-          <BarChart3Icon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
-          <span>
-            <strong className='text-white'>{t('project.askAi.capabilities.performanceMetrics')}</strong>
-          </span>
-        </li>
-        <li className='flex items-start gap-1.5'>
-          <AlertCircleIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
-          <span>
-            <strong className='text-white'>{t('project.askAi.capabilities.errorTracking')}</strong>
-          </span>
-        </li>
-        <li className='flex items-start gap-1.5'>
-          <InfoIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
-          <span>{t('project.askAi.capabilities.trafficPatterns')}</span>
-        </li>
-      </ul>
-    </div>
-    <div>
-      <p className='mb-1.5 font-semibold text-white'>{t('project.askAi.capabilities.cannotTitle')}</p>
-      <ul className='space-y-1 text-gray-300'>
-        <li className='flex items-start gap-1.5'>
-          <XIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400' />
-          <span>{t('project.askAi.capabilities.cannotBrowse')}</span>
-        </li>
-        <li className='flex items-start gap-1.5'>
-          <XIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400' />
-          <span>{t('project.askAi.capabilities.cannotSeeOutside')}</span>
-        </li>
-        <li className='flex items-start gap-1.5'>
-          <XIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400' />
-          <span>{t('project.askAi.capabilities.cannotGuarantee')}</span>
-        </li>
-        <li className='flex items-start gap-1.5'>
-          <XIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400' />
-          <span>{t('project.askAi.capabilities.cannotModify')}</span>
-        </li>
-      </ul>
-    </div>
-  </div>
-)
+const AICapabilitiesTooltip = () => {
+  const { t } = useTranslation('common')
 
-const ThinkingIndicator = ({ t }: { t: any }) => {
+  return (
+    <div className='max-w-sm space-y-3 py-1 text-left'>
+      <div>
+        <p className='mb-1.5 font-semibold text-white'>{t('project.askAi.capabilities.title')}</p>
+        <ul className='space-y-1 text-gray-300'>
+          <li className='flex items-start gap-1.5'>
+            <BarChart3Icon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <span>
+              <strong className='text-white'>{t('project.askAi.capabilities.queryAnalytics')}</strong>
+            </span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <TargetIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <span>
+              <strong className='text-white'>{t('project.askAi.capabilities.goalStatistics')}</strong>
+            </span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <GitBranchIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <span>
+              <strong className='text-white'>{t('project.askAi.capabilities.funnelAnalysis')}</strong>
+            </span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <BarChart3Icon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <span>
+              <strong className='text-white'>{t('project.askAi.capabilities.performanceMetrics')}</strong>
+            </span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <AlertCircleIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <span>
+              <strong className='text-white'>{t('project.askAi.capabilities.errorTracking')}</strong>
+            </span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <InfoIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <span>{t('project.askAi.capabilities.trafficPatterns')}</span>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <p className='mb-1.5 font-semibold text-white'>{t('project.askAi.capabilities.cannotTitle')}</p>
+        <ul className='space-y-1 text-gray-300'>
+          <li className='flex items-start gap-1.5'>
+            <XIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400' />
+            <span>{t('project.askAi.capabilities.cannotBrowse')}</span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <XIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400' />
+            <span>{t('project.askAi.capabilities.cannotSeeOutside')}</span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <XIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400' />
+            <span>{t('project.askAi.capabilities.cannotGuarantee')}</span>
+          </li>
+          <li className='flex items-start gap-1.5'>
+            <XIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400' />
+            <span>{t('project.askAi.capabilities.cannotModify')}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+const ThinkingIndicator = () => {
+  const { t } = useTranslation('common')
   return (
     <div className='flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400'>
       <Loader2Icon className='h-4 w-4 animate-spin' />
@@ -271,16 +270,14 @@ const ThoughtProcess = ({
   hasContent,
   isExpanded,
   onToggle,
-  t,
 }: {
   reasoning?: string
   isStreaming?: boolean
   hasContent?: boolean
   isExpanded: boolean
   onToggle: () => void
-  t: any
 }) => {
-  // Show thinking indicator while streaming and collecting reasoning (before content appears)
+  const { t } = useTranslation('common')
   const isActivelyThinking = isStreaming && reasoning && !hasContent
 
   if (!reasoning) return null
@@ -322,7 +319,9 @@ const ThoughtProcess = ({
   )
 }
 
-const ToolCallBadge = ({ toolName, isLoading = false, t }: { toolName: string; isLoading?: boolean; t: any }) => {
+const ToolCallBadge = ({ toolName, isLoading = false }: { toolName: string; isLoading?: boolean }) => {
+  const { t } = useTranslation('common')
+
   const { label, icon: Icon } = getToolInfo(toolName, t)
 
   return (
@@ -339,7 +338,7 @@ const ToolCallBadge = ({ toolName, isLoading = false, t }: { toolName: string; i
 }
 
 const MessageContent = ({ content, isStreaming }: { content: string; isStreaming?: boolean }) => {
-  const { text, charts } = parseCharts(content)
+  const { text, charts } = useMemo(() => parseCharts(content), [content])
 
   return (
     <>
@@ -361,14 +360,11 @@ const MessageContent = ({ content, isStreaming }: { content: string; isStreaming
   )
 }
 
-const AssistantMessage = ({ message, isStreaming, t }: { message: Message; isStreaming?: boolean; t: any }) => {
+const AssistantMessage = ({ message, isStreaming }: { message: Message; isStreaming?: boolean }) => {
   const [userToggled, setUserToggled] = useState(false)
   const [userExpandedState, setUserExpandedState] = useState(false)
   const hasContent = Boolean(message.content && message.content.trim())
 
-  // Determine if thought should be expanded:
-  // - If user has manually toggled, use their preference
-  // - Otherwise, auto-expand while actively thinking (streaming + reasoning + no content yet)
   const isActivelyThinking = Boolean(isStreaming && message.reasoning && !hasContent)
   const isThoughtExpanded = userToggled ? userExpandedState : isActivelyThinking
 
@@ -385,12 +381,11 @@ const AssistantMessage = ({ message, isStreaming, t }: { message: Message; isStr
         hasContent={hasContent}
         isExpanded={isThoughtExpanded}
         onToggle={handleToggle}
-        t={t}
       />
       {message.toolCalls && message.toolCalls.length > 0 ? (
         <div className='mb-3 flex flex-wrap gap-2'>
           {_map(message.toolCalls, (call, idx) => (
-            <ToolCallBadge key={idx} toolName={call.toolName} isLoading={Boolean(isStreaming && !hasContent)} t={t} />
+            <ToolCallBadge key={idx} toolName={call.toolName} isLoading={Boolean(isStreaming && !hasContent)} />
           ))}
         </div>
       ) : null}
@@ -409,15 +404,9 @@ const UserMessage = ({ content }: { content: string }) => {
   )
 }
 
-const ScrollToBottomButton = ({
-  isAtBottom,
-  scrollToBottom,
-  t,
-}: {
-  isAtBottom: boolean
-  scrollToBottom: () => void
-  t: any
-}) => {
+const ScrollToBottomButton = ({ isAtBottom, scrollToBottom }: { isAtBottom: boolean; scrollToBottom: () => void }) => {
+  const { t } = useTranslation('common')
+
   if (isAtBottom) return null
 
   return (
@@ -451,7 +440,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  // Chat history state
   const [currentChatId, setCurrentChatId] = useState<string | null>(null)
   const [recentChats, setRecentChats] = useState<AIChatSummary[]>([])
   const [allChats, setAllChats] = useState<AIChatSummary[]>([])
@@ -461,20 +449,17 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const [chatToDelete, setChatToDelete] = useState<string | null>(null)
   const hasInitializedRef = useRef(false)
 
-  // Stick to bottom hook for chat auto-scroll
   const { scrollRef, contentRef, isAtBottom, scrollToBottom } = useStickToBottom({
     resize: 'smooth',
     initial: 'smooth',
   })
 
-  // Refs to track streaming content
   const streamingContentRef = useRef('')
   const streamingReasoningRef = useRef('')
   const streamingToolCallsRef = useRef<Array<{ toolName: string; args: unknown }>>([])
 
   const generateMessageId = () => `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
-  // Load recent chats
   const loadRecentChats = useCallback(async () => {
     try {
       const chats = await getRecentAIChats(projectId, 3)
@@ -484,7 +469,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     }
   }, [projectId])
 
-  // Load all chats for modal
   const loadAllChats = useCallback(
     async (skip: number = 0) => {
       setIsLoadingChats(true)
@@ -505,7 +489,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     [projectId],
   )
 
-  // Load a specific chat
   const loadChat = useCallback(
     async (chatId: string) => {
       try {
@@ -520,7 +503,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         setCurrentChatId(chatId)
       } catch (err) {
         console.error('Failed to load chat:', err)
-        // If chat not found, clear the param and start fresh
         const newParams = new URLSearchParams(searchParams)
         newParams.delete('chat')
         setSearchParams(newParams)
@@ -529,7 +511,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     [projectId, searchParams, setSearchParams],
   )
 
-  // Save or update chat
   const saveChat = useCallback(
     async (messagesToSave: Message[]) => {
       const apiMessages = messagesToSave
@@ -551,7 +532,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
           newParams.set('chat', chat.id)
           setSearchParams(newParams, { replace: true })
         }
-        // Refresh recent chats
         loadRecentChats()
       } catch (err) {
         console.error('Failed to save chat:', err)
@@ -560,7 +540,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     [projectId, currentChatId, searchParams, setSearchParams, loadRecentChats],
   )
 
-  // Initialize: load chat from URL or load recent chats
   useEffect(() => {
     if (hasInitializedRef.current) return
     hasInitializedRef.current = true
@@ -622,18 +601,15 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     setIsLoading(true)
     setIsWaitingForResponse(true)
 
-    // Reset streaming refs
     streamingContentRef.current = ''
     streamingReasoningRef.current = ''
     streamingToolCallsRef.current = []
 
-    // Create abort controller for cancellation
     abortControllerRef.current = new AbortController()
 
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-      // Filter out messages with empty content and convert to API format
       const messagesToSend = _filter(newMessages, (msg) => msg.content.trim().length > 0).map((msg) => ({
         role: msg.role,
         content: msg.content,
@@ -695,7 +671,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
               }
               setMessages((prev) => {
                 const updatedMessages = [...prev, assistantMessage]
-                // Save chat after completion
                 saveChat(updatedMessages)
                 return updatedMessages
               })
@@ -755,7 +730,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
   const handleQuickAction = (prompt: string) => {
     setInput(prompt)
-    // Focus the input after setting the prompt
     inputRef.current?.focus()
   }
 
@@ -767,7 +741,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     toast.success(t('project.askAi.linkCopied'))
   }
 
-  // Auto-resize textarea
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.style.height = 'auto'
@@ -795,7 +768,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
   return (
     <div className='flex h-[calc(100vh-140px)] min-h-[600px] flex-col bg-gray-50 dark:bg-slate-900'>
-      {/* Action Bar - shown when chat is active */}
       {isChatActive ? (
         <>
           <div className='mx-auto flex w-full max-w-3xl items-center justify-between'>
@@ -820,7 +792,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         </>
       ) : null}
 
-      {/* Error Banner */}
       {error ? (
         <div className='mx-auto w-full max-w-3xl px-4 pt-4'>
           <div className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/20'>
@@ -837,7 +808,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         </div>
       ) : null}
 
-      {/* Messages Area */}
       <div className='relative flex-1 overflow-hidden'>
         <div
           ref={scrollRef}
@@ -849,12 +819,10 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             {isEmpty ? (
               <div className='flex min-h-full flex-col px-4 py-8'>
                 <div className='flex flex-1 flex-col items-center justify-center'>
-                  {/* Logo */}
                   <div className='mb-6'>
                     <SwetrixLogo />
                   </div>
 
-                  {/* Headline */}
                   <Text as='h1' size='2xl' weight='semibold' colour='primary' className='mb-2'>
                     {t('project.askAi.welcomeTitle')}
                   </Text>
@@ -862,7 +830,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     {t('project.askAi.welcomeSubtitle')}
                   </Text>
 
-                  {/* Suggestion Cards - 2x2 grid above input */}
                   <div className='mb-6 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2'>
                     {_map(getSuggestionPrompts(t), (prompt, idx) => (
                       <button
@@ -878,7 +845,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     ))}
                   </div>
 
-                  {/* Input Area (centered for empty state) */}
                   <div className='w-full max-w-2xl'>
                     <div className='rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-800/25'>
                       <form onSubmit={handleSubmit} className='relative'>
@@ -893,15 +859,14 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                           className='w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400'
                         />
                         <div className='flex items-center justify-between border-t border-gray-100 px-3 py-2 dark:border-slate-800'>
-                          {/* Tools indicator */}
                           <div className='flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400'>
                             <Tooltip
-                              text={<AICapabilitiesTooltip t={t} />}
+                              text={<AICapabilitiesTooltip />}
                               tooltipNode={
                                 <InfoIcon className='h-4 w-4 cursor-help text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300' />
                               }
                             />
-                            <ToolsIndicator t={t} />
+                            <ToolsIndicator />
                           </div>
                           <button
                             type='submit'
@@ -925,23 +890,22 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                   msg.role === 'user' ? (
                     <UserMessage key={msg.id} content={msg.content} />
                   ) : (
-                    <AssistantMessage key={msg.id} message={msg} t={t} />
+                    <AssistantMessage key={msg.id} message={msg} />
                   ),
                 )}
                 {isWaitingForResponse ? (
                   <div className='py-2'>
-                    <ThinkingIndicator t={t} />
+                    <ThinkingIndicator />
                   </div>
                 ) : null}
-                {streamingMessage ? <AssistantMessage message={streamingMessage} isStreaming t={t} /> : null}
+                {streamingMessage ? <AssistantMessage message={streamingMessage} isStreaming /> : null}
               </div>
             )}
           </div>
         </div>
-        <ScrollToBottomButton isAtBottom={isAtBottom} scrollToBottom={scrollToBottom} t={t} />
+        <ScrollToBottomButton isAtBottom={isAtBottom} scrollToBottom={scrollToBottom} />
       </div>
 
-      {/* Input Area (only shown when chat has messages) */}
       {!isEmpty ? (
         <div className='border-t border-gray-200 bg-gray-50 px-4 py-4 dark:border-slate-800/60 dark:bg-slate-900'>
           <div className='mx-auto max-w-3xl'>
@@ -958,7 +922,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                   className='w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400'
                 />
                 <div className='flex items-center justify-between border-t border-gray-100 px-3 py-2 dark:border-slate-800'>
-                  {/* Tools indicator */}
                   <div className='flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400'>
                     <Tooltip
                       text={<AICapabilitiesTooltip />}
@@ -968,7 +931,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     />
                     <ToolsIndicator />
                   </div>
-                  {/* Action buttons */}
                   <div className='flex items-center gap-2'>
                     {isLoading ? (
                       <button
@@ -997,7 +959,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         </div>
       ) : null}
 
-      {/* Recent Chats Section - only shown when chat is not active */}
       {!isChatActive && !_isEmpty(recentChats) ? (
         <div className='mx-auto mt-8 w-full max-w-2xl'>
           <div className='flex items-center justify-between'>
@@ -1035,7 +996,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         </div>
       ) : null}
 
-      {/* View All Chats Modal */}
       <Modal
         isOpened={isViewAllModalOpen}
         onClose={() => setIsViewAllModalOpen(false)}
@@ -1102,7 +1062,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         }
       />
 
-      {/* Delete Chat Confirmation Modal */}
       <Modal
         isOpened={!!chatToDelete}
         onClose={() => setChatToDelete(null)}

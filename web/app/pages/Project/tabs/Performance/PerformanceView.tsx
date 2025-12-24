@@ -602,6 +602,7 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
       <DashboardHeader />
       {dataLoading && !isPanelsDataEmpty ? <LoadingBar /> : null}
       <div className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}>
+        {!isPanelsDataEmpty ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
         <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
           <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
             <Dropdown
@@ -662,7 +663,6 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
             </div>
           ) : null}
         </div>
-        {!isPanelsDataEmpty ? <Filters tnMapping={tnMapping} /> : null}
         <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
           {!_isEmpty(panelsData.types)
             ? _map(PERFORMANCE_PANELS_ORDER, (type: keyof typeof tnMapping) => {

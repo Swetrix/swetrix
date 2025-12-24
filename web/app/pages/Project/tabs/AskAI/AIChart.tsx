@@ -5,7 +5,7 @@ import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
-import React, { useMemo } from 'react'
+import React, { useMemo, memo } from 'react'
 
 import BillboardChart from '~/ui/BillboardChart'
 
@@ -25,7 +25,6 @@ interface AIChartProps {
   chart: AIChartData
 }
 
-// Generate nice colors for chart series
 const CHART_COLORS = [
   '#2563EB', // blue-600
   '#16a34a', // green-600
@@ -37,7 +36,6 @@ const CHART_COLORS = [
   '#db2777', // pink-600
 ]
 
-// Calculate optimal Y axis ticks
 const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
   const validData = data.filter((n) => n !== undefined && n !== null && Number.isFinite(n))
 
@@ -109,7 +107,6 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
   const chartOptions = useMemo<ChartOptions>(() => {
     const isPieDonut = isPieOrDonutChart(chart.chartType)
 
-    // For pie/donut charts, check for labels and values
     if (isPieDonut) {
       if (_isEmpty(chart.data) || _isEmpty(chart.data.labels) || _isEmpty(chart.data.values)) {
         return {}
@@ -118,7 +115,6 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
       const labels = chart.data.labels as string[]
       const values = chart.data.values as number[]
 
-      // Build columns for pie/donut: each column is [label, value]
       const columns: any[] = labels.map((label, idx) => [label, values[idx] || 0])
 
       const colors: Record<string, string> = {}
@@ -175,7 +171,6 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
       }
     }
 
-    // For time-series charts (line, bar, area, spline)
     if (_isEmpty(chart.data) || _isEmpty(chart.data.x)) {
       return {}
     }
@@ -183,7 +178,6 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
     const xData = chart.data.x as string[]
     const seriesKeys = _filter(_keys(chart.data), (key) => key !== 'x' && key !== 'labels' && key !== 'values')
 
-    // Build columns
     const columns: any[] = [['x', ..._map(xData, (el) => (dayjs(el).isValid() ? dayjs(el).toDate() : el))]]
 
     const types: Record<string, ReturnType<typeof line | typeof bar | typeof area | typeof spline>> = {}
@@ -195,7 +189,6 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
       colors[key] = CHART_COLORS[idx % CHART_COLORS.length]
     })
 
-    // Calculate optimal Y axis ticks from all series data
     const allYValues: number[] = []
     seriesKeys.forEach((key) => {
       const values = chart.data[key]
@@ -210,7 +203,6 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
 
     const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
-    // Determine if x-axis looks like dates
     const isDateAxis = xData.length > 0 && dayjs(xData[0]).isValid()
 
     return {
@@ -240,7 +232,6 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
             format: isDateAxis
               ? (x: Date) => {
                   const d = dayjs(x)
-                  // Auto-format based on data range
                   if (xData.length <= 24) {
                     return d.format('HH:mm')
                   } else if (xData.length <= 31) {
@@ -306,7 +297,6 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
 
   const isPieDonut = isPieOrDonutChart(chart.chartType)
 
-  // Validate data based on chart type
   if (isPieDonut) {
     if (_isEmpty(chart.data) || _isEmpty(chart.data.labels) || _isEmpty(chart.data.values)) {
       return null
@@ -329,4 +319,7 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
   )
 }
 
-export default AIChart
+// Memoize to prevent re-renders during streaming when chart data hasn't changed
+export default memo(AIChart, (prevProps, nextProps) => {
+  return JSON.stringify(prevProps.chart) === JSON.stringify(nextProps.chart)
+})

@@ -66,7 +66,6 @@ import { getLocaleDisplayName, nFormatter } from '~/utils/generic'
 
 const InteractiveMap = lazy(() => import('~/pages/Project/View/components/InteractiveMap'))
 
-// Calculate optimal Y axis ticks
 const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
   const validData = data.filter((n) => n !== undefined && n !== null && Number.isFinite(n))
 
@@ -112,7 +111,6 @@ const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[
   return ticks
 }
 
-// Chart settings for error trends chart
 const getErrorTrendsChartSettings = (
   chartData: { x: string[]; occurrences: number[]; affectedUsers: number[] },
   timeBucket: string,
@@ -237,7 +235,6 @@ const getErrorTrendsChartSettings = (
   }
 }
 
-// Stat Card Component
 interface StatCardProps {
   icon: React.ReactNode
   value: string | number
@@ -258,7 +255,6 @@ const StatCard = ({ icon, value, label }: StatCardProps) => (
   </div>
 )
 
-// Error Item Component
 interface ErrorItemProps {
   error: SwetrixError
 }
@@ -301,7 +297,6 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
   const params = new URLSearchParams(location.search)
   params.set('eid', error.eid)
 
-  // Truncate long error names/messages
   const maxNameLength = 80
   const maxMessageLength = 150
   const displayName = error.name.length > maxNameLength ? `${error.name.slice(0, maxNameLength)}...` : error.name
@@ -409,31 +404,26 @@ const ErrorsView = () => {
   const tnMapping = typeNameMapping(t)
   const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
 
-  // Error filters state
   const [errorOptions, setErrorOptions] = useState<Record<string, boolean>>({
     [ERROR_FILTERS_MAPPING.showResolved]: false,
   })
 
-  // Overview state
   const [overviewLoading, setOverviewLoading] = useState<boolean | null>(null)
   const [overview, setOverview] = useState<ErrorOverviewResponse | null>(null)
   const isMountedRef = useRef(true)
 
-  // Errors list state
   const [errorsLoading, setErrorsLoading] = useState<boolean | null>(null)
   const [errors, setErrors] = useState<SwetrixError[]>([])
   const [errorsSkip, setErrorsSkip] = useState(0)
   const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(false)
   const errorsRequestIdRef = useRef(0)
 
-  // Error detail state
   const activeEID = useMemo(() => searchParams.get('eid'), [searchParams])
   const prevActiveEIDRef = useRef<string | null>(activeEID)
   const [activeError, setActiveError] = useState<{ details: SwetrixErrorDetails; [key: string]: any } | null>(null)
   const [errorLoading, setErrorLoading] = useState(false)
   const [errorStatusUpdating, setErrorStatusUpdating] = useState(false)
 
-  // Error detail panel tabs
   const [errorsActiveTabs, setErrorsActiveTabs] = useState<{
     location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
     page: 'pg' | 'host'
@@ -444,14 +434,12 @@ const ErrorsView = () => {
     device: 'br',
   })
 
-  // Pure search params (without eid) for back navigation
   const pureSearchParams = useMemo(() => {
     const newSearchParams = new URLSearchParams(searchParams.toString())
     newSearchParams.delete('eid')
     return newSearchParams.toString()
   }, [searchParams])
 
-  // Cleanup on unmount
   useEffect(() => {
     isMountedRef.current = true
     return () => {
@@ -632,7 +620,6 @@ const ErrorsView = () => {
     [],
   )
 
-  // Error filters dropdown items
   const errorFilters = useMemo(() => {
     return [
       {
@@ -697,7 +684,6 @@ const ErrorsView = () => {
 
   const hasErrors = !_isEmpty(errors) || overview?.stats?.totalErrors
 
-  // Filter link helper
   const getFilterLink = useCallback(
     (column: string, value: string | null): LinkProps['to'] => {
       const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
@@ -735,7 +721,6 @@ const ErrorsView = () => {
     [searchParams],
   )
 
-  // Version data mapping for browser/OS versions
   const createVersionDataMapping = useMemo(() => {
     const browserDataSource = activeError?.params?.brv
     const osDataSource = activeError?.params?.osv
@@ -766,7 +751,6 @@ const ErrorsView = () => {
     return { browserVersions, osVersions }
   }, [activeError?.params?.brv, activeError?.params?.osv])
 
-  // Data names for chart
   const dataNames = useMemo(
     () => ({
       occurrences: t('project.totalErrors'),
@@ -775,12 +759,10 @@ const ErrorsView = () => {
     [t],
   )
 
-  // Show waiting for error data state
   if (typeof project?.isErrorDataExists === 'boolean' && !project.isErrorDataExists) {
     return <WaitingForAnError />
   }
 
-  // If viewing error detail
   if (activeEID) {
     const resolveButton =
       allowedToManage && activeError && activeError?.details?.status !== 'resolved' ? (
@@ -817,7 +799,6 @@ const ErrorsView = () => {
 
     return (
       <div>
-        {/* Loading bar for refreshes */}
         {errorLoading && activeError ? <LoadingBar /> : null}
         {errorsLoading && !_isEmpty(errors) ? <LoadingBar /> : null}
 
@@ -829,7 +810,8 @@ const ErrorsView = () => {
           rightContent={resolveButton}
         />
 
-        {/* Error details */}
+        <Filters className='mb-3' tnMapping={tnMapping} />
+
         {activeError?.details ? (
           <ErrorDetails
             details={activeError.details}
@@ -841,7 +823,6 @@ const ErrorsView = () => {
           />
         ) : null}
 
-        {/* Error chart */}
         {activeError?.chart ? (
           <div className='mt-4'>
             <ErrorChart
@@ -855,10 +836,6 @@ const ErrorsView = () => {
           </div>
         ) : null}
 
-        {/* Filters */}
-        <Filters tnMapping={tnMapping} />
-
-        {/* Panels */}
         <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
           {!_isEmpty(activeError?.params)
             ? _map(ERROR_PANELS_ORDER, (type: keyof typeof tnMapping) => {
@@ -1037,10 +1014,8 @@ const ErrorsView = () => {
           {activeError?.metadata ? <MetadataPanel metadata={activeError.metadata} /> : null}
         </div>
 
-        {/* Loading state */}
         {_isEmpty(activeError) && errorLoading ? <Loader /> : null}
 
-        {/* No error details */}
         {!errorLoading && _isEmpty(activeError) ? <NoErrorDetails /> : null}
       </div>
     )
@@ -1084,27 +1059,21 @@ const ErrorsView = () => {
     <div>
       <DashboardHeader showLiveVisitors showSearchButton={false} hideTimeBucket rightContent={filtersDropdown} />
 
-      {/* Loading bar for refreshes */}
       {(overviewLoading || errorsLoading) && (overview || !_isEmpty(errors)) ? <LoadingBar /> : null}
 
-      {/* Filters */}
-      {hasErrors ? <Filters tnMapping={tnMapping} /> : null}
+      {hasErrors ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
 
-      {/* No errors state */}
       {!hasErrors && errorsLoading === false && overviewLoading === false ? <NoEvents filters={filters} /> : null}
 
       {hasErrors ? (
         <>
-          {/* Chart and Stats Row */}
           <div className='flex flex-col gap-2 lg:flex-row'>
-            {/* Error Trends Chart - Left side */}
             {chartOptions && overview?.chart ? (
               <div className='w-full rounded-xl border border-gray-200 bg-white p-4 lg:w-[65%] dark:border-slate-700 dark:bg-slate-800'>
                 <BillboardChart options={chartOptions} className='h-[220px]' />
               </div>
             ) : null}
 
-            {/* Stats Grid - Right side as 2x2 */}
             <div className='grid w-full grid-cols-2 gap-2 lg:w-[35%]'>
               <StatCard
                 icon={<BugIcon className='text-red-600' strokeWidth={1.5} />}
@@ -1129,7 +1098,6 @@ const ErrorsView = () => {
             </div>
           </div>
 
-          {/* Recent Errors List */}
           <div className='mt-4'>
             <Text as='h3' weight='semibold' className='mb-3'>
               {t('project.recentErrors')}
@@ -1150,7 +1118,6 @@ const ErrorsView = () => {
               )}
             </ClientOnly>
 
-            {/* Load more button */}
             {canLoadMoreErrors ? (
               <button
                 type='button'

@@ -269,7 +269,7 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
   return (
     <div
       className={cn(
-        'mt-3 flex items-center justify-between rounded-md border border-gray-300 bg-slate-200 p-1 dark:border-slate-800/50 dark:bg-slate-800/25',
+        'flex items-center justify-between rounded-md border border-gray-300 bg-slate-200 p-1 dark:border-slate-800/50 dark:bg-slate-800/25',
         className,
       )}
     >
