@@ -1542,11 +1542,20 @@ interface CreateExperiment {
 
 export const DEFAULT_EXPERIMENTS_TAKE = 20
 
-export const getProjectExperiments = (projectId: string, take: number = DEFAULT_EXPERIMENTS_TAKE, skip = 0) => {
+export const getProjectExperiments = (
+  projectId: string,
+  take: number = DEFAULT_EXPERIMENTS_TAKE,
+  skip = 0,
+  search?: string,
+) => {
   const params = new URLSearchParams({
     take: String(take),
     skip: String(skip),
   })
+
+  if (search) {
+    params.set('search', search)
+  }
 
   return api
     .get(`/experiment/project/${projectId}?${params.toString()}`)

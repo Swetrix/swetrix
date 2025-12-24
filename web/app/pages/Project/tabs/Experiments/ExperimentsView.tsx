@@ -2,6 +2,7 @@ import { XCircleIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import _debounce from 'lodash/debounce'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import {
@@ -13,8 +14,9 @@ import {
   PauseIcon,
   CheckCircleIcon,
   BarChart3Icon,
+  SearchIcon,
 } from 'lucide-react'
-import { useState, useEffect, useRef, useCallback, memo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
@@ -294,6 +296,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   const [experiments, setExperiments] = useState<Experiment[]>([])
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
+  const [filterQuery, setFilterQuery] = useState('')
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -314,7 +317,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
 
   const pageAmount = Math.ceil(total / DEFAULT_EXPERIMENTS_TAKE)
 
-  const loadExperiments = async (take: number, skip: number, showLoading = true) => {
+  const loadExperiments = async (take: number, skip: number, showLoading = true, search?: string) => {
     if (isLoadingRef.current) {
       return
     }
@@ -326,7 +329,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     }
 
     try {
-      const result = await getProjectExperiments(id, take, skip)
+      const result = await getProjectExperiments(id, take, skip, search)
       if (isMountedRef.current) {
         setExperiments(result.results)
         setTotal(result.total)
@@ -344,8 +347,33 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     }
   }
 
+  const debouncedLoadExperiments = useMemo(
+    () =>
+      _debounce((search: string) => {
+        loadExperiments(DEFAULT_EXPERIMENTS_TAKE, 0, true, search || undefined)
+      }, 300),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [id],
+  )
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      setFilterQuery(value)
+      setPage(1) // Reset to first page when searching
+      debouncedLoadExperiments(value)
+    },
+    [debouncedLoadExperiments],
+  )
+
   useEffect(() => {
-    loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE)
+    return () => {
+      debouncedLoadExperiments.cancel()
+    }
+  }, [debouncedLoadExperiments])
+
+  useEffect(() => {
+    loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
 
@@ -360,7 +388,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
       }
 
       // Refresh list (show LoadingBar if we already have data)
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true)
+      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experimentsRefreshTrigger, viewingResultsId, page])
@@ -369,7 +397,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   useEffect(() => {
     if (!viewingResultsId && shouldRefreshListOnReturn) {
       setShouldRefreshListOnReturn(false)
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true)
+      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewingResultsId, shouldRefreshListOnReturn, page])
@@ -390,15 +418,15 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   }, [])
 
   const handleModalSuccess = useCallback(() => {
-    loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE)
+    loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page])
+  }, [page, filterQuery])
 
   const handleDeleteExperiment = async (experimentId: string) => {
     try {
       await deleteExperimentApi(experimentId)
       toast.success(t('experiments.deleted'))
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE)
+      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
     } catch (reason: any) {
       toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
     }
@@ -408,7 +436,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     try {
       await startExperimentApi(experimentId)
       toast.success(t('experiments.started'))
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE)
+      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
     } catch (reason: any) {
       toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
     }
@@ -418,7 +446,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     try {
       await pauseExperimentApi(experimentId)
       toast.success(t('experiments.paused'))
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE)
+      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
     } catch (reason: any) {
       toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
     }
@@ -428,7 +456,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     try {
       await completeExperimentApi(experimentId)
       toast.success(t('experiments.completed'))
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE)
+      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
     } catch (reason: any) {
       toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
     }
@@ -438,7 +466,6 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     setViewingResultsId(experimentId)
   }
 
-  // Only show the big error state if we have no cached data to display.
   if (error && isLoading === false && _isEmpty(experiments)) {
     return (
       <div className='bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
@@ -476,7 +503,6 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     )
   }
 
-  // Show Loader only on initial load (no existing data)
   if ((isLoading === null || isLoading) && _isEmpty(experiments)) {
     return (
       <div className='mt-4'>
@@ -485,7 +511,6 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     )
   }
 
-  // If viewing results, show the results component
   if (viewingResultsId) {
     return (
       <ExperimentResults
@@ -506,7 +531,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
       <DashboardHeader showLiveVisitors />
       <div>
         {isLoading && !_isEmpty(experiments) ? <LoadingBar /> : null}
-        {_isEmpty(experiments) ? (
+        {_isEmpty(experiments) && !filterQuery ? (
           <div className='mt-5 rounded-lg bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
               <FlaskConicalIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
@@ -524,15 +549,26 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
           </div>
         ) : (
           <>
-            {/* Header with add button */}
-            <div className='mb-4 flex items-center justify-center lg:justify-end'>
+            <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+              <div className='relative'>
+                <SearchIcon
+                  className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400'
+                  strokeWidth={1.5}
+                />
+                <input
+                  type='text'
+                  placeholder={t('experiments.filterExperiments')}
+                  value={filterQuery}
+                  onChange={handleSearchChange}
+                  className='w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-inset focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
+                />
+              </div>
               <Button onClick={handleNewExperiment} primary regular>
                 <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
                 {t('experiments.create')}
               </Button>
             </div>
 
-            {/* Experiments list */}
             <ul className='mt-4'>
               {_map(experiments, (experiment) => (
                 <ExperimentRow
@@ -547,6 +583,12 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
                 />
               ))}
             </ul>
+
+            {_isEmpty(experiments) && filterQuery ? (
+              <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
+                {t('experiments.noExperimentsMatchFilter')}
+              </p>
+            ) : null}
           </>
         )}
         {pageAmount > 1 ? (

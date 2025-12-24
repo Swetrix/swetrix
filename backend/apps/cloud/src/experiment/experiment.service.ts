@@ -22,6 +22,7 @@ export class ExperimentService {
   async paginate(
     options: PaginationOptionsInterface,
     projectId: string,
+    search?: string,
   ): Promise<Pagination<Experiment>> {
     const queryBuilder = this.experimentRepository
       .createQueryBuilder('experiment')
@@ -30,6 +31,14 @@ export class ExperimentService {
       .leftJoinAndSelect('experiment.goal', 'goal')
       .leftJoinAndSelect('experiment.featureFlag', 'featureFlag')
       .where('project.id = :projectId', { projectId })
+
+    if (search && search.trim()) {
+      const searchTerm = `%${search.trim()}%`
+      queryBuilder.andWhere(
+        '(LOWER(experiment.name) LIKE LOWER(:search) OR LOWER(experiment.description) LIKE LOWER(:search))',
+        { search: searchTerm },
+      )
+    }
 
     queryBuilder
       .orderBy('experiment.created', 'DESC')

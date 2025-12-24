@@ -97,9 +97,10 @@ export class ExperimentController {
     @Param('projectId') projectId: string,
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+    @Query('search') search?: string,
   ) {
     this.logger.log(
-      { userId, projectId, take, skip },
+      { userId, projectId, take, skip, search },
       'GET /experiment/project/:projectId',
     )
 
@@ -118,6 +119,7 @@ export class ExperimentController {
     const result = await this.experimentService.paginate(
       { take: safeTake, skip: safeSkip },
       projectId,
+      search,
     )
 
     const mappedResults: ExperimentDto[] = _map(

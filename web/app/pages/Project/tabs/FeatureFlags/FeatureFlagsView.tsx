@@ -787,7 +787,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
       <DashboardHeader showLiveVisitors />
       <div>
         {isLoading && !_isEmpty(flags) ? <LoadingBar /> : null}
-        {_isEmpty(flags) ? (
+        {_isEmpty(flags) && !filterQuery ? (
           <div className='mt-5 rounded-lg bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
               <FlagIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
@@ -817,7 +817,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
                   placeholder={t('featureFlags.filterFlags')}
                   value={filterQuery}
                   onChange={handleSearchChange}
-                  className='w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
+                  className='w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-inset focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
                 />
               </div>
               <Button onClick={handleNewFlag} primary regular>
@@ -856,7 +856,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
               })}
             </ul>
 
-            {flags.length === 0 && filterQuery ? (
+            {_isEmpty(flags) && filterQuery ? (
               <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
                 {t('featureFlags.noFlagsMatchFilter')}
               </p>

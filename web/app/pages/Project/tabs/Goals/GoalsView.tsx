@@ -680,7 +680,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
       <DashboardHeader showLiveVisitors />
       <div>
         {isLoading && !_isEmpty(goals) ? <LoadingBar /> : null}
-        {_isEmpty(goals) ? (
+        {_isEmpty(goals) && !filterQuery ? (
           <div className='mt-5 rounded-lg bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
               <TargetIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
@@ -710,7 +710,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
                   placeholder={t('goals.filterGoals')}
                   value={filterQuery}
                   onChange={(e) => setFilterQuery(e.target.value)}
-                  className='w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
+                  className='w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-inset focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
                 />
               </div>
               <Button onClick={handleNewGoal} primary regular>
@@ -739,7 +739,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
               ))}
             </ul>
 
-            {goals.length === 0 && debouncedSearch ? (
+            {_isEmpty(goals) && filterQuery ? (
               <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
                 {t('goals.noGoalsMatchFilter')}
               </p>
