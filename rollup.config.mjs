@@ -1,30 +1,33 @@
-// import { nodeResolve } from '@rollup/plugin-node-resolve'
 // import commonjs from '@rollup/plugin-commonjs'
-import sourceMaps from 'rollup-plugin-sourcemaps'
-import typescript from 'rollup-plugin-typescript2'
-import { uglify } from '@blaumaus/rollup-plugin-uglify'
 import copy from 'rollup-plugin-copy'
-import pkg from './package.json'
+import typescript from '@rollup/plugin-typescript'
+import terser from '@rollup/plugin-terser'
+import pkg from './package.json' with { type: 'json' }
+import { createRequire } from 'node:module'
 
 const CAPTCHA_PATH = 'src/captcha.ts'
 const CAPTCHA_LOADER_PATH = 'src/captcha-loader.ts'
 const POW_WORKER_PATH = 'src/pow-worker.ts'
 
+const require = createRequire(import.meta.url)
+
 export default [
   {
     input: CAPTCHA_PATH,
     output: [
-      // { file: pkg.main, format: 'cjs' },
-      // { file: pkg.module, format: 'es' },
       {
         file: pkg.captcha,
         format: 'umd',
         name: 'captcha',
+        sourcemap: true,
       },
     ],
     plugins: [
-      typescript(),
-      uglify(),
+      typescript({
+        outDir: './dist',
+        sourceMap: true,
+        tslib: require.resolve('tslib'),
+      }),
 
       // copying assets
       copy({
@@ -33,6 +36,8 @@ export default [
           { src: 'src/pages/*', dest: 'dist/pages' },
         ],
       }),
+      terser(),
+      // commonjs(),
     ],
   },
   {
@@ -42,12 +47,17 @@ export default [
         file: pkg.captchaloader,
         format: 'umd',
         name: 'captcha-loader',
+        sourcemap: true,
       },
     ],
     plugins: [
-      typescript(),
-      sourceMaps(),
-      uglify(),
+      typescript({
+        outDir: './dist',
+        sourceMap: true,
+        tslib: require.resolve('tslib'),
+      }),
+      terser(),
+      // commonjs(),
     ],
   },
   {
@@ -57,11 +67,17 @@ export default [
         file: 'dist/pow-worker.js',
         format: 'iife',
         name: 'powWorker',
+        sourcemap: true,
       },
     ],
     plugins: [
-      typescript(),
-      uglify(),
+      typescript({
+        outDir: './dist',
+        sourceMap: true,
+        tslib: require.resolve('tslib'),
+      }),
+      terser(),
+      // commonjs(),
     ],
   },
 ]

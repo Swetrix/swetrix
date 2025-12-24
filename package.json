@@ -1,15 +1,24 @@
 {
   "name": "@swetrix/captcha",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Swetrix CAPTCHA",
+  "type": "module",
   "captchaloader": "dist/captcha-loader.js",
   "captcha": "dist/captcha.js",
   "esnext": "dist/esnext/index.js",
   "typings": "dist/esnext/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esnext/index.js",
+      "require": "./dist/captcha.cjs.js",
+      "types": "./dist/esnext/index.d.ts",
+      "default": "./dist/captcha.js"
+    }
+  },
   "scripts": {
     "prebuild": "rimraf dist",
     "prepublish": "npm run build",
-    "build": "rollup -c && tsc -p tsconfig.esnext.json",
+    "build": "rollup -c",
     "start": "rollup -c -w",
     "tsc": "tsc -p tsconfig.esnext.json"
   },
@@ -31,17 +40,15 @@
     "url": "https://github.com/Swetrix/swetrix-js/issues"
   },
   "homepage": "https://swetrix.com/docs",
-  "dependencies": {
-    "@types/node": "^20.12.12",
-    "rollup-plugin-copy": "^3.5.0",
-    "tslib": "^2.6.2"
-  },
   "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@types/node": "^22.15.21",
+    "rollup-plugin-copy": "^3.5.0",
+    "tslib": "^2.8.1",
     "@blaumaus/rollup-plugin-uglify": "^7.0.1",
     "rimraf": "^5.0.7",
-    "rollup": "^2.79.1",
-    "rollup-plugin-sourcemaps": "^0.6.3",
-    "rollup-plugin-typescript2": "^0.36.0",
-    "typescript": "^5.4.5"
+    "rollup": "^4.54.0",
+    "typescript": "^5.9.3"
   }
 }

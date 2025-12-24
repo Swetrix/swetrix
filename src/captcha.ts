@@ -1,7 +1,7 @@
 export {}
 
 // @ts-ignore
-const isDevelopment = window.__SWETRIX_CAPTCHA_DEV || false
+const isDevelopment = true // window.__SWETRIX_CAPTCHA_DEV || false
 
 const API_URL = isDevelopment ? 'http://localhost:5005/v1/captcha' : 'https://api.swetrix.com/v1/captcha'
 const WORKER_URL = isDevelopment ? './pow-worker.js' : 'https://cap.swetrix.com/pow-worker.js'
@@ -64,7 +64,7 @@ const sendMessageToLoader = (event: IFRAME_MESSAGE_TYPES, data = {}) => {
 }
 
 /**
- * Sets the provided action visible and the rest hidden
+ * Sets the provided action visible and the rest hidden with smooth transitions
  * @param {*} action checkbox | failure | completed | loading
  */
 const activateAction = (action: ACTION) => {
@@ -81,11 +81,18 @@ const activateAction = (action: ACTION) => {
     loading: document.querySelector('#loading'),
   }
 
-  // Apply hidden class to all actions
-  actions.checkbox?.classList.add('hidden')
-  actions.failure?.classList.add('hidden')
-  actions.completed?.classList.add('hidden')
-  actions.loading?.classList.add('hidden')
+  // Hide all action elements with transitions
+  // Checkbox uses fade-out class for smooth transition
+  if (action !== ACTION.checkbox) {
+    actions.checkbox?.classList.add('fade-out')
+  } else {
+    actions.checkbox?.classList.remove('fade-out')
+  }
+
+  // Loading, failure, completed use .show class for visibility
+  actions.loading?.classList.remove('show')
+  actions.failure?.classList.remove('show')
+  actions.completed?.classList.remove('show')
 
   // Change the status text
   statusDefault?.classList.add('hidden')
@@ -100,14 +107,12 @@ const activateAction = (action: ACTION) => {
     statusDefault?.classList.remove('hidden')
   }
 
-  // Remove hidden class from the provided action
-  actions[action]?.classList.remove('hidden')
-}
-
-const updateProgress = (attempts: number, hashRate: number) => {
-  const progressEl = document.querySelector('#pow-progress')
-  if (progressEl) {
-    progressEl.textContent = `${(attempts / 1000).toFixed(0)}k hashes (${hashRate}/s)`
+  // Show the active action element with animation
+  if (action !== ACTION.checkbox) {
+    // Small delay to ensure CSS transitions work properly
+    requestAnimationFrame(() => {
+      actions[action]?.classList.add('show')
+    })
   }
 }
 
@@ -200,7 +205,6 @@ const solveChallenge = async (challenge: PowChallenge): Promise<void> => {
       const data = event.data
 
       if (data.type === 'progress') {
-        updateProgress((data as PowProgress).attempts, (data as PowProgress).hashRate)
         return
       }
 
@@ -315,16 +319,6 @@ const solveInMainThread = async (challenge: PowChallenge): Promise<void> => {
     }
 
     nonce++
-
-    // Update progress every 10k iterations
-    if (nonce % 10000 === 0) {
-      const elapsed = (Date.now() - startTime) / 1000
-      const hashRate = Math.round(nonce / elapsed)
-      updateProgress(nonce, hashRate)
-
-      // Yield to the main thread to prevent blocking
-      await new Promise((r) => setTimeout(r, 0))
-    }
   }
 
   // Max iterations reached without finding solution
