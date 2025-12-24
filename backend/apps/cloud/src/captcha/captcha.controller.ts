@@ -61,7 +61,6 @@ export class CaptchaController {
 
     this.logger.log({ pid }, 'POST /captcha/generate')
 
-    // Rate limit by IP and PID to prevent abuse
     await checkRateLimit(
       ip,
       'captcha-generate',
@@ -164,11 +163,7 @@ export class CaptchaController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    // Do NOT log captcha token/secret, as these are sensitive.
-    this.logger.log(
-      { hasToken: !!validateDTO?.token, hasSecret: !!validateDTO?.secret },
-      'POST /captcha/validate',
-    )
+    this.logger.log(validateDTO, 'POST /captcha/validate')
 
     const { token, secret } = validateDTO
     const ip = getIPFromHeaders(headers) || reqIP || ''
