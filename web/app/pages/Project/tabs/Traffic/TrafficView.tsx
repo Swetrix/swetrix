@@ -32,6 +32,7 @@ import AnnotationModal from '~/modals/AnnotationModal'
 import CustomEventsSubmenu from '~/pages/Project/tabs/Traffic/CustomEventsSubmenu'
 import CustomMetrics from '~/pages/Project/tabs/Traffic/CustomMetrics'
 import { MetricCard, MetricCards } from '~/pages/Project/tabs/Traffic/MetricCards'
+import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
 import { TrafficChart } from '~/pages/Project/tabs/Traffic/TrafficChart'
 import TrafficHeaderActions from '~/pages/Project/tabs/Traffic/TrafficHeaderActions'
@@ -1221,6 +1222,11 @@ const TrafficView = ({
                           decodedUri = decodeURIComponent(entryName)
                         } catch {
                           // do nothing
+                        }
+
+                        // For page paths (pg tab), show with clickable link
+                        if (panelsActiveTabs.page === 'pg' && project?.websiteUrl) {
+                          return <PageLinkRow pagePath={decodedUri} websiteUrl={project.websiteUrl} />
                         }
 
                         return decodedUri

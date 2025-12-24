@@ -273,6 +273,7 @@ interface Form extends Partial<Project> {
   origins: string | null
   ipBlacklist: string | null
   countryBlacklist: string[]
+  websiteUrl?: string | null
 }
 
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
@@ -296,6 +297,7 @@ const ProjectSettings = () => {
     countryBlacklist: [],
     botsProtectionLevel: 'basic',
     gscPropertyUri: null,
+    websiteUrl: null,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
@@ -303,6 +305,7 @@ const ProjectSettings = () => {
     origins?: string
     ipBlacklist?: string
     password?: string
+    websiteUrl?: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
@@ -453,6 +456,7 @@ const ProjectSettings = () => {
         ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
         origins: _isString(result.origins) ? result.origins : _join(result.origins, ', '),
         countryBlacklist: result.countryBlacklist || [],
+        websiteUrl: result.websiteUrl || null,
       })
     } catch (reason: any) {
       setError(reason)
@@ -591,6 +595,7 @@ const ProjectSettings = () => {
       origins?: string
       ipBlacklist?: string
       password?: string
+      websiteUrl?: string
     } = {}
 
     if (_isEmpty(form.name)) {
@@ -607,6 +612,18 @@ const ProjectSettings = () => {
 
     if (_size(form.ipBlacklist) > MAX_IPBLACKLIST_LENGTH) {
       allErrors.ipBlacklist = t('project.settings.oxCharsError', { amount: MAX_IPBLACKLIST_LENGTH })
+    }
+
+    // Validate websiteUrl if provided
+    if (form.websiteUrl && form.websiteUrl.trim()) {
+      try {
+        const url = new URL(form.websiteUrl.trim())
+        if (!['http:', 'https:'].includes(url.protocol)) {
+          allErrors.websiteUrl = t('project.settings.invalidUrl')
+        }
+      } catch {
+        allErrors.websiteUrl = t('project.settings.invalidUrl')
+      }
     }
 
     const valid = _isEmpty(_keys(allErrors))

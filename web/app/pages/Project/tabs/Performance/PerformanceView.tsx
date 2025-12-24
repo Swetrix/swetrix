@@ -18,6 +18,7 @@ import { OverallPerformanceObject } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
 import { PerformanceChart } from '~/pages/Project/tabs/Performance/PerformanceChart'
 import { PerformanceMetricCards } from '~/pages/Project/tabs/Traffic/MetricCards'
+import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
@@ -810,6 +811,11 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
                           decodedUri = decodeURIComponent(entryName)
                         } catch {
                           // do nothing
+                        }
+
+                        // For page paths (pg tab), show with clickable link
+                        if (activeTabs.page === 'pg' && project?.websiteUrl) {
+                          return <PageLinkRow pagePath={decodedUri} websiteUrl={project.websiteUrl} />
                         }
 
                         return decodedUri

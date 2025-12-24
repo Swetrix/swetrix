@@ -210,4 +210,5 @@ export interface Project {
   gscPropertyUri?: string | null
   isPinned?: boolean
   revenueCurrency?: string
+  websiteUrl?: string | null
 }

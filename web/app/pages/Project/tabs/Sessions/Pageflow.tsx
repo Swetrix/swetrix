@@ -36,6 +36,7 @@ interface PageflowProps {
   timeFormat: '12-hour' | '24-hour'
   zoomedTimeRange?: [Date, Date] | null
   sdur?: number
+  websiteUrl?: string | null
 }
 
 interface PageflowItemProps {
@@ -49,6 +50,7 @@ interface PageflowItemProps {
   t: TFunction
   amount?: number
   currency?: string
+  websiteUrl?: string | null
 }
 
 const MetadataPanel = ({ metadata, t }: { metadata: Metadata[]; t: TFunction }) => {
@@ -130,7 +132,18 @@ const PageflowItem = ({
   t,
   amount,
   currency,
+  websiteUrl,
 }: PageflowItemProps) => {
+  // Construct full URL for pageview links
+  const fullPageUrl = useMemo(() => {
+    if (type !== 'pageview' || !value || !websiteUrl) return null
+    try {
+      const baseUrl = new URL(websiteUrl)
+      return new URL(value, baseUrl.origin).toString()
+    } catch {
+      return null
+    }
+  }, [type, value, websiteUrl])
   const [isExpanded, setIsExpanded] = useState(false)
   const hasMetadata = metadata && metadata.length > 0
 
@@ -219,7 +232,18 @@ const PageflowItem = ({
                       type === 'pageview' ? 'project.pageviewX' : type === 'event' ? 'project.eventX' : 'project.errorX'
                     }
                     components={{
-                      value: <span className='ml-1 font-medium text-gray-900 dark:text-gray-50' />,
+                      value:
+                        fullPageUrl ? (
+                          <a
+                            href={fullPageUrl}
+                            target='_blank'
+                            rel='noopener noreferrer nofollow'
+                            onClick={(e) => e.stopPropagation()}
+                            className='ml-1 font-medium text-gray-900 underline decoration-dashed underline-offset-2 hover:decoration-solid dark:text-gray-50'
+                          />
+                        ) : (
+                          <span className='ml-1 font-medium text-gray-900 dark:text-gray-50' />
+                        ),
                       span: <span />,
                     }}
                     values={{
@@ -274,7 +298,7 @@ const PageflowItem = ({
   )
 }
 
-export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0 }: PageflowProps) => {
+export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0, websiteUrl }: PageflowProps) => {
   const {
     t,
     i18n: { language },
@@ -362,6 +386,7 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0 }: Pagef
               t={t}
               amount={amount}
               currency={currency}
+              websiteUrl={websiteUrl}
             />
           )
         })}

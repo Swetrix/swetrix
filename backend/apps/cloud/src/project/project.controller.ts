@@ -1832,6 +1832,12 @@ export class ProjectController {
       }
     }
 
+    if (projectDTO.websiteUrl !== undefined) {
+      project.websiteUrl = projectDTO.websiteUrl
+        ? _trim(projectDTO.websiteUrl)
+        : null
+    }
+
     await this.projectService.update({ id }, _omit(project, ['share', 'admin']))
 
     await deleteProjectRedis(id)

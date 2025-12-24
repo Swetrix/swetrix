@@ -850,7 +850,6 @@
     "goals": "Goals",
     "goalsDesc": "Conversion goals help you track important user actions on your website.\nDefine pageview goals or custom event goals to measure how many visitors complete specific actions.",
     "experiments": "Experiments",
-    "experimentsDesc": "Run A/B tests to compare variants and find what works best.\nLink experiments to goals and use Bayesian statistics to determine winners.",
     "featureFlags": "Feature Flags",
     "featureFlagsDesc": "Feature flags allow you to toggle features for cohorts or individuals.\nTest the impact before rolling out to everyone.",
     "askAi": "Ask AI",
@@ -1103,7 +1102,9 @@
     "featureFlagKeyPlaceholder": "e.g., new-landing-page, betaFeature, ab_test_1",
     "featureFlagKeyHint": "Each experiment is backed by a feature flag. This key will be used to control the experiment in your code.",
     "selectFeatureFlag": "Select a feature flag",
-    "loadingFeatureFlags": "Loading feature flags..."
+    "loadingFeatureFlags": "Loading feature flags...",
+    "filterExperiments": "Filter experiments",
+    "noExperimentsMatchFilter": "No experiments match your filter"
   },
   "error": {
     "status": {
@@ -1517,6 +1518,10 @@
       "sharableLink": "Sharable link",
       "sharableDesc": "To share your dashboard with others, only available if you make your dashboard public or password protected.",
       "pid": "Project ID",
+      "websiteUrl": "Website URL",
+      "websiteUrlPlaceholder": "https://example.com",
+      "websiteUrlHint": "Optional. Your website URL is used to display a favicon next to your project name and to make page paths clickable in analytics.",
+      "invalidUrl": "Please enter a valid URL (e.g., https://example.com)",
       "origins": "Allowed origins",
       "originsHint": "A list of origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, *.gov.ua",
       "enabled": "Project enabled",

@@ -1029,6 +1029,12 @@ export class ProjectController {
       }
     }
 
+    if (projectDTO.websiteUrl !== undefined) {
+      project.websiteUrl = projectDTO.websiteUrl
+        ? _trim(projectDTO.websiteUrl)
+        : null
+    }
+
     await updateProjectClickhouse(
       this.projectService.formatToClickhouse(project),
     )

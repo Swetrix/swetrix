@@ -1037,6 +1037,7 @@ const ViewProjectContent = () => {
                 onTabChange={() => {}}
                 projectId={id}
                 projectName=''
+                websiteUrl={null}
                 dataLoading={false}
                 searchParams={searchParams}
                 allowedToManage={false}
@@ -1118,6 +1119,7 @@ const ViewProjectContent = () => {
                 onTabChange={setDashboardTab}
                 projectId={id}
                 projectName={project.name}
+                websiteUrl={project.websiteUrl}
                 dataLoading={dataLoading}
                 searchParams={searchParams}
                 allowedToManage={allowedToManage}
@@ -1131,6 +1133,7 @@ const ViewProjectContent = () => {
                   onTabChange={setDashboardTab}
                   projectId={id}
                   projectName={project.name}
+                  websiteUrl={project.websiteUrl}
                   dataLoading={dataLoading}
                   searchParams={searchParams}
                   allowedToManage={allowedToManage}
@@ -1174,6 +1177,7 @@ const ViewProjectContent = () => {
                     onTabChange={setDashboardTab}
                     projectId={id}
                     projectName={project.name}
+                    websiteUrl={project.websiteUrl}
                     dataLoading={dataLoading}
                     searchParams={searchParams}
                     allowedToManage={allowedToManage}
@@ -1186,6 +1190,7 @@ const ViewProjectContent = () => {
                       onTabChange={setDashboardTab}
                       projectId={id}
                       projectName={project.name}
+                      websiteUrl={project.websiteUrl}
                       dataLoading={dataLoading}
                       searchParams={searchParams}
                       allowedToManage={allowedToManage}

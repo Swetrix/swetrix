@@ -283,6 +283,7 @@ const SessionsView = ({ tnMapping, rotateXAxis }: SessionsViewProps) => {
           timeFormat={timeFormat}
           rotateXAxis={rotateXAxis}
           dataNames={dataNames}
+          websiteUrl={project?.websiteUrl}
         />
       </>
     )

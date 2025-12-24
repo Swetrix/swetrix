@@ -175,4 +175,8 @@ export class Project {
 
   @Column('datetime', { nullable: true, default: null })
   revenueLastSyncAt: Date | null
+
+  @ApiProperty()
+  @Column('varchar', { nullable: true, default: null, length: 512 })
+  websiteUrl: string | null
 }

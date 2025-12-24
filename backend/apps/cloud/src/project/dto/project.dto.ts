@@ -5,6 +5,8 @@ import {
   IsEnum,
   IsOptional,
   IsArray,
+  IsUrl,
+  MaxLength,
 } from 'class-validator'
 import { BotsProtectionLevel } from '../entity/project.entity'
 
@@ -72,4 +74,15 @@ export class ProjectDTO {
       "When true, anyone on the internet (including Google) would be able to see the project's Dashboard.",
   })
   public: boolean
+
+  @ApiProperty({
+    example: 'https://example.com',
+    required: false,
+    description:
+      'Optional website URL. Used to display favicon and construct clickable page links.',
+  })
+  @IsOptional()
+  @IsUrl({}, { message: 'websiteUrl must be a valid URL' })
+  @MaxLength(512)
+  websiteUrl?: string | null
 }

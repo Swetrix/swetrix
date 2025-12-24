@@ -17,6 +17,7 @@ import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { trackCustom } from '~/utils/analytics'
 import { cn } from '~/utils/generic'
+import { getFaviconHost } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
 const SIDEBAR_COLLAPSED_KEY = 'project-sidebar-collapsed'
@@ -63,6 +64,7 @@ interface ProjectSidebarProps {
   onTabChange: (tabId: keyof typeof PROJECT_TABS) => void
   projectId: string
   projectName: string
+  websiteUrl?: string | null
   dataLoading?: boolean
   searchParams: URLSearchParams
   allowedToManage?: boolean
@@ -228,6 +230,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   onTabChange,
   projectId,
   projectName,
+  websiteUrl,
   dataLoading,
   searchParams,
   allowedToManage,
@@ -235,6 +238,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   onMobileClose,
   className,
 }) => {
+  const faviconHost = useMemo(() => getFaviconHost(websiteUrl || null), [websiteUrl])
   const { t } = useTranslation('common')
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -360,9 +364,18 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
           <Tooltip
             text={projectName}
             tooltipNode={
-              <Text as='h2' size='lg' weight='semibold' className='text-center'>
-                {projectName.charAt(0).toUpperCase()}
-              </Text>
+              faviconHost ? (
+                <img
+                  className='size-6 shrink-0 rounded-sm'
+                  src={`https://icons.duckduckgo.com/ip3/${faviconHost}.ico`}
+                  loading='lazy'
+                  alt={projectName}
+                />
+              ) : (
+                <Text as='h2' size='lg' weight='semibold' className='text-center'>
+                  {projectName.charAt(0).toUpperCase()}
+                </Text>
+              )
             }
           />
         ) : (
@@ -370,9 +383,20 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             className='max-w-full flex-1'
             text={projectName}
             tooltipNode={
-              <Text as='h2' size='lg' weight='semibold' truncate className='text-left'>
-                {projectName}
-              </Text>
+              <div className='flex min-w-0 items-center gap-1'>
+                {faviconHost ? (
+                  <img
+                    className='size-6 shrink-0 rounded-sm'
+                    src={`https://icons.duckduckgo.com/ip3/${faviconHost}.ico`}
+                    loading='lazy'
+                    alt=''
+                    aria-hidden='true'
+                  />
+                ) : null}
+                <Text as='h2' size='lg' weight='semibold' truncate className='text-left'>
+                  {projectName}
+                </Text>
+              </div>
             }
           />
         )}

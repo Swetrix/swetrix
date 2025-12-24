@@ -44,6 +44,7 @@ interface SessionDetailViewProps {
   timeFormat: '12-hour' | '24-hour'
   rotateXAxis: boolean
   dataNames: Record<string, string>
+  websiteUrl?: string | null
 }
 
 const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
@@ -94,6 +95,7 @@ export const SessionDetailView = ({
   timeFormat,
   rotateXAxis,
   dataNames,
+  websiteUrl,
 }: SessionDetailViewProps) => {
   const {
     t,
@@ -304,6 +306,7 @@ export const SessionDetailView = ({
           timeFormat={timeFormat}
           zoomedTimeRange={zoomedTimeRange}
           sdur={activeSession?.details?.sdur}
+          websiteUrl={websiteUrl}
         />
       </div>
     </div>

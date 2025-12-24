@@ -31,6 +31,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     botsProtectionLevel String CODEC(ZSTD(3)) DEFAULT 'basic',
     passwordHash Nullable(String) CODEC(ZSTD(3)),
     adminId Nullable(String) CODEC(ZSTD(3)),
+    websiteUrl Nullable(String) CODEC(ZSTD(3)),
     created DateTime CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()

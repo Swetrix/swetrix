@@ -18,6 +18,7 @@ import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
 import { nFormatter, calculateRelativePercentage } from '~/utils/generic'
+import { getFaviconHost } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
 import Sparkline from './Sparkline'
@@ -131,7 +132,20 @@ export const ProjectCard = ({
     [project.share, user?.id],
   )
 
-  const { id, name, public: isPublic, active, isTransferring, share, organisation, role, isPinned } = project
+  const {
+    id,
+    name,
+    public: isPublic,
+    active,
+    isTransferring,
+    share,
+    organisation,
+    role,
+    isPinned,
+    websiteUrl,
+  } = project
+
+  const faviconHost = useMemo(() => getFaviconHost(websiteUrl || null), [websiteUrl])
   const [isPinning, setIsPinning] = useState(false)
   const [localIsPinned, setLocalIsPinned] = useState(isPinned)
 
@@ -278,9 +292,20 @@ export const ProjectCard = ({
       ) : null}
       <div className={cx('relative z-10 flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
         <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
-          <Text as='p' size='lg' weight='semibold' truncate>
-            {name}
-          </Text>
+          <div className='flex min-w-0 items-center gap-1'>
+            {faviconHost ? (
+              <img
+                className='size-6 shrink-0 rounded-sm'
+                src={`https://icons.duckduckgo.com/ip3/${faviconHost}.ico`}
+                loading='lazy'
+                alt=''
+                aria-hidden='true'
+              />
+            ) : null}
+            <Text as='p' size='lg' weight='semibold' truncate>
+              {name}
+            </Text>
+          </div>
 
           <div
             className={cx(
