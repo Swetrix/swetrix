@@ -32,12 +32,9 @@ export class AiChatService {
     const queryBuilder = this.aiChatRepository
       .createQueryBuilder('chat')
       .where('chat.projectId = :projectId', { projectId })
+      .andWhere('chat.userId = :userId', { userId })
       .orderBy('chat.updated', 'DESC')
       .take(limit)
-
-    queryBuilder.andWhere('(chat.userId = :userId OR chat.userId IS NULL)', {
-      userId,
-    })
 
     return queryBuilder.getMany()
   }
@@ -56,13 +53,10 @@ export class AiChatService {
     const queryBuilder = this.aiChatRepository
       .createQueryBuilder('chat')
       .where('chat.projectId = :projectId', { projectId })
+      .andWhere('chat.userId = :userId', { userId })
       .orderBy('chat.updated', 'DESC')
       .skip(skip)
       .take(take)
-
-    queryBuilder.andWhere('(chat.userId = :userId OR chat.userId IS NULL)', {
-      userId,
-    })
 
     const [chats, total] = await queryBuilder.getManyAndCount()
     return { chats, total }
