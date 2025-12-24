@@ -17,7 +17,6 @@ flatten(locales)
 
 const dynamicPrefixes = [
   'dashboard.',
-  'common.',
   'profileSettings.',
   'apiNotifications.',
   'experiments.status.',
@@ -46,6 +45,9 @@ const dynamicPrefixes = [
   'project.settings.difficultyLevels.',
 ]
 
+// Exact keys that are dynamically constructed and should be excluded
+const dynamicExactKeys = ['common.is', 'common.isNot', 'common.connected', 'common.notConnected']
+
 function getFiles(dir) {
   let results = []
   const list = fs.readdirSync(dir)
@@ -68,6 +70,10 @@ const fileContents = files.map((f) => fs.readFileSync(f, 'utf8'))
 
 const unusedKeys = allKeys.filter((key) => {
   if (dynamicPrefixes.some((p) => key.startsWith(p))) {
+    return false
+  }
+
+  if (dynamicExactKeys.includes(key)) {
     return false
   }
 
