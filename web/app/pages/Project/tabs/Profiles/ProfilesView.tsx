@@ -17,9 +17,15 @@ import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjec
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 
+import Filters from '../../View/components/Filters'
+
 const SESSIONS_TAKE = 30
 
-const ProfilesView = () => {
+interface ProfilesViewProps {
+  tnMapping: Record<string, string>
+}
+
+const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
   const { id, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const { timezone, period, dateRange, filters, timeFormat, profilesRefreshTrigger } = useViewProjectContext()
@@ -344,6 +350,7 @@ const ProfilesView = () => {
     <>
       <DashboardHeader showLiveVisitors />
       {profilesLoading && !_isEmpty(profiles) ? <LoadingBar /> : null}
+      {!_isEmpty(profiles) ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
       <ProfilesFilter
         profileType={profileTypeFilter}
         onProfileTypeChange={(type) => {

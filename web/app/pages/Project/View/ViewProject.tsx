@@ -1247,7 +1247,7 @@ const ViewProjectContent = () => {
                         {activeTab === PROJECT_TABS.performance ? <PerformanceView tnMapping={tnMapping} /> : null}
                         {activeTab === PROJECT_TABS.funnels ? <FunnelsView /> : null}
                         {activeTab === PROJECT_TABS.alerts ? <ProjectAlertsView /> : null}
-                        {activeTab === PROJECT_TABS.profiles ? <ProfilesView /> : null}
+                        {activeTab === PROJECT_TABS.profiles ? <ProfilesView tnMapping={tnMapping} /> : null}
                         {activeTab === PROJECT_TABS.sessions ? (
                           <SessionsView tnMapping={tnMapping} rotateXAxis={rotateXAxis} />
                         ) : null}
