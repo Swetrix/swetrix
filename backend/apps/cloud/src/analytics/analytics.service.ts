@@ -4796,10 +4796,10 @@ export class AnalyticsService {
           countDistinct(psid) AS sessionsCount,
           min(created) AS firstSeen,
           max(created) AS lastSeen,
-          any(cc) AS cc,
-          any(os) AS os,
-          any(br) AS br,
-          any(dv) AS dv
+          any(cc) AS cc_agg,
+          any(os) AS os_agg,
+          any(br) AS br_agg,
+          any(dv) AS dv_agg
         FROM analytics
         WHERE pid = {pid:FixedString(12)}
           AND profileId IS NOT NULL
@@ -4838,10 +4838,10 @@ export class AnalyticsService {
         COALESCE(perr.errorsCount, 0) AS errorsCount,
         pa.firstSeen AS firstSeen,
         pa.lastSeen AS lastSeen,
-        pa.cc AS cc,
-        pa.os AS os,
-        pa.br AS br,
-        pa.dv AS dv
+        pa.cc_agg AS cc,
+        pa.os_agg AS os,
+        pa.br_agg AS br,
+        pa.dv_agg AS dv
       FROM profile_analytics AS pa
       LEFT JOIN profile_events AS pe ON pa.profileId = pe.profileId
       LEFT JOIN profile_errors AS perr ON pa.profileId = perr.profileId
@@ -5185,9 +5185,9 @@ export class AnalyticsService {
           CAST(psid, 'String') AS psidCasted,
           pid,
           profileId,
-          any(cc) AS cc,
-          any(os) AS os,
-          any(br) AS br,
+          any(cc) AS cc_agg,
+          any(os) AS os_agg,
+          any(br) AS br_agg,
           min(toTimeZone(created, {timezone:String})) AS sessionStart,
           max(toTimeZone(created, {timezone:String})) AS lastActivity
         FROM analytics
@@ -5246,9 +5246,9 @@ export class AnalyticsService {
       )
       SELECT
         ps.psidCasted AS psid,
-        ps.cc,
-        ps.os,
-        ps.br,
+        ps.cc_agg AS cc,
+        ps.os_agg AS os,
+        ps.br_agg AS br,
         COALESCE(pc.count, 0) AS pageviews,
         COALESCE(ec.count, 0) AS customEvents,
         COALESCE(errc.count, 0) AS errors,
