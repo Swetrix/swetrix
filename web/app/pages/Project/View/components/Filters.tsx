@@ -138,7 +138,7 @@ export const Filter = ({
     <span
       title={truncatedFilter === displayFilter ? undefined : displayFilter}
       className={cn(
-        'm-1 inline-flex items-center rounded-md bg-gray-50 py-0.5 pr-1 pl-2.5 text-sm font-medium text-gray-700 dark:bg-slate-800 dark:text-gray-200',
+        'm-1 inline-flex items-center rounded-md border border-gray-200 bg-white py-0.5 pr-1 pl-2.5 text-sm font-medium text-gray-700 dark:border-slate-700/60 dark:bg-slate-800/60 dark:text-gray-200',
         {
           'pr-2': !removable,
         },
@@ -207,7 +207,7 @@ export const Filter = ({
         <Link
           to={createRemoveFilterPath()}
           className={cn(
-            'ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-hidden dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300',
+            'ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:bg-gray-100 focus:text-gray-700 focus:outline-hidden dark:text-gray-400 dark:hover:bg-slate-700 dark:hover:text-gray-200 dark:focus:bg-slate-700 dark:focus:text-gray-200',
             {
               'cursor-wait': dataLoading,
             },
@@ -269,12 +269,12 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
   return (
     <div
       className={cn(
-        'flex items-center justify-between rounded-md border border-gray-300 bg-slate-200 p-1 dark:border-slate-800/50 dark:bg-slate-800/25',
+        'flex items-center justify-between rounded-lg border border-gray-200 bg-white px-2 py-1 dark:border-slate-800/60 dark:bg-slate-800/25',
         className,
       )}
     >
-      <div className='flex items-center'>
-        <FilterIcon className='box-content size-6 shrink-0 px-1 text-gray-700 dark:text-gray-200' strokeWidth={1.5} />
+      <div className='flex min-w-0 flex-1 items-center gap-1'>
+        <FilterIcon className='size-5 shrink-0 text-gray-500 dark:text-gray-400' strokeWidth={1.5} />
         <div className='flex flex-wrap'>
           {_map(filters, (props) => {
             const { column, filter } = props
@@ -290,11 +290,11 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
         to={{
           search: filterlessSearch,
         }}
-        className={cn({
+        className={cn('shrink-0', {
           'cursor-wait': dataLoading,
         })}
       >
-        <XMarkIcon className='box-content size-6 shrink-0 cursor-pointer rounded-md stroke-2 p-1 text-gray-800 hover:bg-slate-100 dark:text-gray-200 dark:hover:bg-slate-800/80' />
+        <XMarkIcon className='size-5 cursor-pointer rounded-md stroke-2 p-0.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-700 dark:hover:text-gray-200' />
       </Link>
     </div>
   )
