@@ -3,7 +3,7 @@ import { isDevelopment } from './constants'
 
 const swetrix = new Swetrix(process.env.SWETRIX_PID, {
   // Same port as in main.ts
-  apiURL: 'http://localhost:5005',
+  apiURL: 'http://localhost:5005/log',
   devMode: isDevelopment,
 })
 
