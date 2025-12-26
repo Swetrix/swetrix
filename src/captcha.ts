@@ -1,7 +1,7 @@
 export {}
 
 // @ts-ignore
-const isDevelopment = true // window.__SWETRIX_CAPTCHA_DEV || false
+const isDevelopment = window.__SWETRIX_CAPTCHA_DEV || false
 
 const API_URL = isDevelopment ? 'http://localhost:5005/v1/captcha' : 'https://api.swetrix.com/v1/captcha'
 const WORKER_URL = isDevelopment ? './pow-worker.js' : 'https://cap.swetrix.com/pow-worker.js'
