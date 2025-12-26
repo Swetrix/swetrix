@@ -68,7 +68,14 @@ export default async function handleRequest(
 
           responseHeaders.set('Content-Type', 'text/html')
           // Prevent HTML from being cached so users always get fresh chunk references after deployments
-          responseHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+          responseHeaders.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
+          responseHeaders.set('Pragma', 'no-cache')
+          responseHeaders.set('Expires', '0')
+          responseHeaders.append('Vary', 'Cookie')
+
+          // Remove headers that might trigger 304 Not Modified
+          responseHeaders.delete('ETag')
+          responseHeaders.delete('Last-Modified')
 
           resolve(
             new Response(stream, {

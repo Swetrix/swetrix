@@ -64,8 +64,11 @@ export const headers: HeadersFunction = () => ({
   'X-Powered-By': 'Mountain Dew',
   // Theme detection headers (browser hints)
   'Accept-CH': 'Sec-CH-Prefers-Color-Scheme',
-  Vary: 'Sec-CH-Prefers-Color-Scheme',
+  Vary: 'Sec-CH-Prefers-Color-Scheme, Cookie',
   'Critical-CH': 'Sec-CH-Prefers-Color-Scheme',
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+  Pragma: 'no-cache',
+  Expires: '0',
 })
 
 export function ErrorBoundary() {
