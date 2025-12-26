@@ -6,7 +6,9 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { google } from 'googleapis'
+import { OAuth2Client } from 'google-auth-library'
+import { searchconsole } from '@googleapis/searchconsole'
+import axios from 'axios'
 import CryptoJS from 'crypto-js'
 
 import { isDevelopment, PRODUCTION_ORIGIN, redis } from '../common/constants'
@@ -48,7 +50,7 @@ export class GSCService {
       )
     }
 
-    return new google.auth.OAuth2(clientId, clientSecret, GSC_REDIRECT_URL)
+    return new OAuth2Client(clientId, clientSecret, GSC_REDIRECT_URL)
   }
 
   async generateConnectURL(uid: string, pid: string): Promise<{ url: string }> {
@@ -96,9 +98,15 @@ export class GSCService {
 
     let accountEmail: string | null = null
     try {
-      const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client })
-      const { data } = await oauth2.userinfo.get({})
-      accountEmail = (data as any)?.email || null
+      const { data } = await axios.get(
+        'https://www.googleapis.com/oauth2/v2/userinfo',
+        {
+          headers: {
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        },
+      )
+      accountEmail = data?.email || null
     } catch {
       //
     }
@@ -234,7 +242,7 @@ export class GSCService {
     pid: string,
   ): Promise<{ siteUrl: string; permissionLevel?: string }[]> {
     const auth = await this.getAuthedClientForPid(pid)
-    const sc = google.searchconsole({ version: 'v1', auth })
+    const sc = searchconsole({ version: 'v1', auth })
     try {
       const { data } = await sc.sites.list({})
       // @ts-ignore
@@ -283,7 +291,7 @@ export class GSCService {
     }
 
     const auth = await this.getAuthedClientForPid(pid)
-    const sc = google.searchconsole({ version: 'v1', auth })
+    const sc = searchconsole({ version: 'v1', auth })
 
     // Dates must be YYYY-MM-DD
     const startDate = dayjs(from).format('YYYY-MM-DD')

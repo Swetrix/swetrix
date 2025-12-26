@@ -10,7 +10,7 @@ import { JwtService } from '@nestjs/jwt'
 import axios from 'axios'
 import { genSalt, hash, compare } from 'bcrypt'
 import { getCountry } from 'countries-and-timezones'
-import { Auth } from 'googleapis'
+import { OAuth2Client } from 'google-auth-library'
 import dayjs from 'dayjs'
 import { UAParser } from '@ua-parser-js/pro-business'
 import _pick from 'lodash/pick'
@@ -70,7 +70,7 @@ const { GITHUB_OAUTH2_CLIENT_SECRET } = process.env
 
 @Injectable()
 export class AuthService {
-  oauth2Client: Auth.OAuth2Client
+  oauth2Client: OAuth2Client
 
   githubOAuthClientID: string
 
@@ -85,7 +85,7 @@ export class AuthService {
     private readonly projectService: ProjectService,
     private readonly telegramService: TelegramService,
   ) {
-    this.oauth2Client = new Auth.OAuth2Client(
+    this.oauth2Client = new OAuth2Client(
       this.configService.get('GOOGLE_OAUTH2_CLIENT_ID'),
       this.configService.get('GOOGLE_OAUTH2_CLIENT_SECRET'),
     )
