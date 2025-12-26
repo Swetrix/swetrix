@@ -46,12 +46,20 @@ import { cn } from '~/utils/generic'
 
 import AIChart from './AIChart'
 
+interface MessagePart {
+  type: 'text' | 'toolCall'
+  text?: string
+  toolName?: string
+  args?: unknown
+}
+
 interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
   reasoning?: string
   toolCalls?: Array<{ toolName: string; args: unknown; completed?: boolean }>
+  parts?: MessagePart[]
 }
 
 interface AskAIViewProps {
@@ -368,6 +376,20 @@ const AssistantMessage = ({ message, isStreaming }: { message: Message; isStream
     setUserExpandedState(!isThoughtExpanded)
   }
 
+  // If we have parts, render them in sequence; otherwise fall back to old behavior
+  const hasParts = message.parts && message.parts.length > 0
+
+  // Determine if a tool call is still loading (it's the last part and we're streaming with no content after it)
+  const isToolCallLoading = (partIndex: number) => {
+    if (!isStreaming || !message.parts) return false
+    const isLastPart = partIndex === message.parts.length - 1
+    const part = message.parts[partIndex]
+    if (part.type !== 'toolCall') return false
+    // Check if there's any text content after this tool call
+    const hasTextAfter = message.parts.slice(partIndex + 1).some((p) => p.type === 'text' && p.text?.trim())
+    return isLastPart || !hasTextAfter
+  }
+
   return (
     <div className='group'>
       <ThoughtProcess
@@ -377,14 +399,43 @@ const AssistantMessage = ({ message, isStreaming }: { message: Message; isStream
         isExpanded={isThoughtExpanded}
         onToggle={handleToggle}
       />
-      {message.toolCalls && message.toolCalls.length > 0 ? (
-        <div className='mb-3 flex flex-wrap gap-2'>
-          {_map(message.toolCalls, (call, idx) => (
-            <ToolCallBadge key={idx} toolName={call.toolName} isLoading={Boolean(isStreaming && !hasContent)} />
-          ))}
-        </div>
-      ) : null}
-      <MessageContent content={message.content} isStreaming={isStreaming} />
+      {hasParts ? (
+        // Render parts in sequence
+        <>
+          {_map(message.parts, (part, idx) => {
+            if (part.type === 'text' && part.text) {
+              const isLastTextPart =
+                idx === message.parts!.length - 1 ||
+                !message.parts!.slice(idx + 1).some((p) => p.type === 'text' && p.text?.trim())
+              return (
+                <div key={idx} className='mb-3'>
+                  <MessageContent content={part.text} isStreaming={isStreaming && isLastTextPart} />
+                </div>
+              )
+            }
+            if (part.type === 'toolCall' && part.toolName) {
+              return (
+                <div key={idx} className='mb-3'>
+                  <ToolCallBadge toolName={part.toolName} isLoading={isToolCallLoading(idx)} />
+                </div>
+              )
+            }
+            return null
+          })}
+        </>
+      ) : (
+        // Fall back to old behavior for messages without parts (e.g., loaded from saved chats)
+        <>
+          {message.toolCalls && message.toolCalls.length > 0 ? (
+            <div className='mb-3 flex flex-wrap gap-2'>
+              {_map(message.toolCalls, (call, idx) => (
+                <ToolCallBadge key={idx} toolName={call.toolName} isLoading={Boolean(isStreaming && !hasContent)} />
+              ))}
+            </div>
+          ) : null}
+          <MessageContent content={message.content} isStreaming={isStreaming} />
+        </>
+      )}
     </div>
   )
 }
@@ -452,6 +503,8 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const streamingContentRef = useRef('')
   const streamingReasoningRef = useRef('')
   const streamingToolCallsRef = useRef<Array<{ toolName: string; args: unknown }>>([])
+  const streamingPartsRef = useRef<MessagePart[]>([])
+  const currentTextPartRef = useRef('')
 
   const generateMessageId = () => `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
@@ -599,6 +652,8 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     streamingContentRef.current = ''
     streamingReasoningRef.current = ''
     streamingToolCallsRef.current = []
+    streamingPartsRef.current = []
+    currentTextPartRef.current = ''
 
     abortControllerRef.current = new AbortController()
 
@@ -618,25 +673,44 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
           onText: (chunk) => {
             setIsWaitingForResponse(false)
             streamingContentRef.current += chunk
+            currentTextPartRef.current += chunk
+
+            // Build current parts for display: completed parts + current text being streamed
+            const displayParts = [...streamingPartsRef.current]
+            if (currentTextPartRef.current) {
+              displayParts.push({ type: 'text', text: currentTextPartRef.current })
+            }
+
             setStreamingMessage({
               id: generateMessageId(),
               role: 'assistant',
               content: streamingContentRef.current,
               reasoning: streamingReasoningRef.current,
               toolCalls: [...streamingToolCallsRef.current],
+              parts: displayParts,
             })
           },
           onToolCall: (toolName, args) => {
             setIsWaitingForResponse(false)
             streamingToolCallsRef.current.push({ toolName, args })
+
+            // Save current accumulated text as a part before adding tool call
+            if (currentTextPartRef.current.trim()) {
+              streamingPartsRef.current.push({ type: 'text', text: currentTextPartRef.current })
+              currentTextPartRef.current = ''
+            }
+            // Add tool call as a part
+            streamingPartsRef.current.push({ type: 'toolCall', toolName, args })
+
             setStreamingMessage((prev) =>
               prev
-                ? { ...prev, toolCalls: [...streamingToolCallsRef.current] }
+                ? { ...prev, toolCalls: [...streamingToolCallsRef.current], parts: [...streamingPartsRef.current] }
                 : {
                     id: generateMessageId(),
                     role: 'assistant',
                     content: '',
                     toolCalls: [...streamingToolCallsRef.current],
+                    parts: [...streamingPartsRef.current],
                   },
             )
           },
@@ -656,6 +730,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
           },
           onComplete: () => {
             const finalContent = streamingContentRef.current
+
+            // Finalize parts: add any remaining text
+            if (currentTextPartRef.current.trim()) {
+              streamingPartsRef.current.push({ type: 'text', text: currentTextPartRef.current })
+            }
+
             if (finalContent.trim() || streamingToolCallsRef.current.length > 0) {
               const assistantMessage: Message = {
                 id: generateMessageId(),
@@ -663,6 +743,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 content: finalContent,
                 reasoning: streamingReasoningRef.current,
                 toolCalls: streamingToolCallsRef.current,
+                parts: streamingPartsRef.current,
               }
               setMessages((prev) => {
                 const updatedMessages = [...prev, assistantMessage]
@@ -698,6 +779,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       setIsLoading(false)
       setIsWaitingForResponse(false)
       const finalContent = streamingContentRef.current
+
+      // Finalize parts: add any remaining text
+      if (currentTextPartRef.current.trim()) {
+        streamingPartsRef.current.push({ type: 'text', text: currentTextPartRef.current })
+      }
+
       if (finalContent.trim()) {
         const assistantMessage: Message = {
           id: generateMessageId(),
@@ -705,6 +792,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
           content: finalContent,
           reasoning: streamingReasoningRef.current,
           toolCalls: streamingToolCallsRef.current,
+          parts: streamingPartsRef.current,
         }
         setMessages((prev) => {
           const updatedMessages = [...prev, assistantMessage]

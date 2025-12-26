@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { createOpenAI } from '@ai-sdk/openai'
-import { streamText, tool, CoreMessage, StreamTextResult } from 'ai'
+import {
+  streamText,
+  tool,
+  ModelMessage,
+  StreamTextResult,
+  stepCountIs,
+} from 'ai'
 import { z } from 'zod'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -63,77 +69,6 @@ const validateTimezoneForSQL = (timezone: string): string => {
   return timezone
 }
 
-/**
- * Custom fetch wrapper that fixes malformed tool_calls in streaming responses.
- * Some OpenAI-compatible providers (like OpenRouter with certain models) return
- * empty strings for the 'type' field in tool_calls instead of 'function'.
- */
-const patchedFetch: typeof fetch = async (input, init) => {
-  const response = await fetch(input, init)
-
-  // Only patch streaming responses
-  if (
-    !response.body ||
-    !response.headers.get('content-type')?.includes('text/event-stream')
-  ) {
-    return response
-  }
-
-  const reader = response.body.getReader()
-  const decoder = new TextDecoder()
-  const encoder = new TextEncoder()
-
-  const stream = new ReadableStream({
-    async start(controller) {
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) {
-          controller.close()
-          break
-        }
-
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
-        const patchedLines = lines.map(line => {
-          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-            try {
-              const jsonStr = line.slice(6)
-              const data = JSON.parse(jsonStr)
-
-              // Fix empty 'type' field in tool_calls
-              if (data.choices) {
-                for (const choice of data.choices) {
-                  if (choice.delta?.tool_calls) {
-                    for (const toolCall of choice.delta.tool_calls) {
-                      if (toolCall.type === '') {
-                        toolCall.type = 'function'
-                      }
-                    }
-                  }
-                }
-              }
-
-              return `data: ${JSON.stringify(data)}`
-            } catch {
-              // If JSON parsing fails, return the original line
-              return line
-            }
-          }
-          return line
-        })
-
-        controller.enqueue(encoder.encode(patchedLines.join('\n')))
-      }
-    },
-  })
-
-  return new Response(stream, {
-    headers: response.headers,
-    status: response.status,
-    statusText: response.statusText,
-  })
-}
-
 @Injectable()
 export class AiService {
   private openrouter: ReturnType<typeof createOpenAI>
@@ -147,13 +82,12 @@ export class AiService {
     this.openrouter = createOpenAI({
       baseURL: OPENROUTER_BASE_URL,
       apiKey: process.env.OPENROUTER_API_KEY,
-      fetch: patchedFetch,
     })
   }
 
   async chat(
     project: Project,
-    messages: CoreMessage[],
+    messages: ModelMessage[],
     timezone: string = 'UTC',
   ): Promise<
     StreamTextResult<
@@ -178,11 +112,11 @@ export class AiService {
     )
 
     const result = streamText({
-      model: this.openrouter('anthropic/claude-haiku-4.5'),
+      model: this.openrouter.chat('anthropic/claude-haiku-4.5'),
       system: systemPrompt,
       messages,
       tools: this.buildTools(project, timezone),
-      maxSteps: 10,
+      stopWhen: stepCountIs(10),
     })
 
     return result
@@ -238,10 +172,10 @@ Supported chart types: "line", "bar", "area", "pie", "donut"
       getProjectInfo: tool({
         description:
           'Get basic information about the current project including name, settings, and available funnels/goals',
-        parameters: z.object({
+        inputSchema: z.object({
           // Empty object schema - no parameters needed
         }),
-        execute: async (_params: Record<string, never>) => {
+        execute: async () => {
           this.logger.log({ pid: project.id }, 'Tool: getProjectInfo called')
 
           try {
@@ -283,7 +217,7 @@ Available columns for filters:
 - ca: campaign
 - lc: locale/language
 - host: hostname`,
-        parameters: z.object({
+        inputSchema: z.object({
           dataType: z
             .enum(['analytics', 'performance', 'captcha', 'errors'])
             .describe('Type of data to query'),
@@ -361,7 +295,7 @@ Available columns for filters:
       getGoalStats: tool({
         description:
           'Get goal conversion statistics including conversions, conversion rate, and trends',
-        parameters: z.object({
+        inputSchema: z.object({
           goalId: z
             .string()
             .optional()
@@ -401,7 +335,7 @@ Available columns for filters:
       getFunnelData: tool({
         description:
           'Get funnel analysis data showing step-by-step conversions',
-        parameters: z.object({
+        inputSchema: z.object({
           funnelId: z.string().describe('Funnel ID to query'),
           period: z.string().optional().describe('Time period (default: 7d)'),
           from: z

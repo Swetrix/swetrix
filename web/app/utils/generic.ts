@@ -66,7 +66,7 @@ export const getTimeFromSeconds = (seconds: any): Time => {
   const _seconds = Math.abs(seconds)
   const h = 0 | (_seconds / 3600)
   const m = 0 | ((_seconds % 3600) / 60)
-  const s = 0 | _seconds % 60
+  const s = 0 | (_seconds % 60)
   const ms = 0 | ((_seconds % 1) * 1000)
 
   return {

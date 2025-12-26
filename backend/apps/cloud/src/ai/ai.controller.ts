@@ -190,10 +190,10 @@ export class AiController {
             hasContent = true
             textDeltaCount++
             res.write(
-              `data: ${JSON.stringify({ type: 'text', content: part.textDelta })}\n\n`,
+              `data: ${JSON.stringify({ type: 'text', content: part.text })}\n\n`,
             )
             this.logger.debug(
-              { pid, textLength: part.textDelta.length },
+              { pid, textLength: part.text.length },
               'AI text delta',
             )
           } else if (part.type === 'tool-call') {
@@ -203,19 +203,19 @@ export class AiController {
               `data: ${JSON.stringify({
                 type: 'tool-call',
                 toolName: part.toolName,
-                args: part.args,
+                args: part.input,
               })}\n\n`,
             )
             this.logger.log(
-              { pid, toolName: part.toolName, args: part.args },
+              { pid, toolName: part.toolName, args: part.input },
               'AI tool call',
             )
           } else if (part.type === 'tool-result') {
             toolResultCount++
             const resultPreview =
-              typeof part.result === 'object'
-                ? JSON.stringify(part.result).slice(0, 1000)
-                : String(part.result).slice(0, 1000)
+              typeof part.output === 'object'
+                ? JSON.stringify(part.output).slice(0, 1000)
+                : String(part.output).slice(0, 1000)
             res.write(
               `data: ${JSON.stringify({
                 type: 'tool-result',
@@ -231,10 +231,10 @@ export class AiController {
               },
               'AI tool result',
             )
-          } else if (part.type === 'reasoning') {
+          } else if (part.type === 'reasoning-delta') {
             hasContent = true
             res.write(
-              `data: ${JSON.stringify({ type: 'reasoning', content: part.textDelta })}\n\n`,
+              `data: ${JSON.stringify({ type: 'reasoning', content: part.text })}\n\n`,
             )
           } else if (part.type === 'error') {
             this.logger.error(
@@ -266,15 +266,41 @@ export class AiController {
                 },
               },
             )
-          } else if (part.type === 'step-finish') {
+          } else if (part.type === 'finish-step') {
             this.logger.log(
               {
                 pid,
-                stepType: (part as any).stepType,
-                finishReason: (part as any).finishReason,
-                isContinued: (part as any).isContinued,
+                finishReason: part.finishReason,
+                usage: part.usage,
               },
-              'AI stream step-finish event',
+              'AI stream finish-step event',
+            )
+          } else if (part.type === 'tool-input-start') {
+            this.logger.log(
+              {
+                pid,
+                toolName: part.toolName,
+              },
+              'AI tool input start',
+            )
+          } else if (part.type === 'tool-input-delta') {
+            this.logger.debug(
+              {
+                pid,
+                deltaLength: part.delta?.length,
+              },
+              'AI tool input delta',
+            )
+          } else if (part.type === 'tool-input-end') {
+            this.logger.log({ pid }, 'AI tool input end')
+          } else if (part.type === 'tool-error') {
+            this.logger.error(
+              {
+                pid,
+                toolName: part.toolName,
+                error: part.error,
+              },
+              'AI tool error',
             )
           }
         }
