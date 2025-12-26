@@ -55,6 +55,12 @@ We've been building Swetrix since 2021 with a goal to make web analytics simple 
 - **Shareable analytics**: public or password‑protected dashboards; invite teammates with roles, or manage access with organisations.
 - **Data portability**: export to CSV and access data via our [developer API](https://docs.swetrix.com/statistics-api).
 - **Alerts & notifications (Cloud)**: get notified on thresholds via Slack, Telegram or Discord.
+- **Feature flags**: manage feature rollouts and conduct safe releases.
+- **Experiments (Cloud)**: run A/B tests and experiments to optimize your site.
+- **Revenue analytics (Cloud)**: track MRR, churn and other financial metrics.
+- **Ask AI (Cloud)**: chat with your data to uncover insights.
+- **Goals**: track specific conversion goals and objectives.
+- **DAU/MAU tracking**: keep an eye on your daily and monthly active users.
 - Open source and self‑hostable, with a fully managed EU‑hosted Cloud option.
 
 ## 🚀 Getting Started
@@ -78,6 +84,7 @@ Cloud vs Community Edition
 | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Infrastructure management**                                                | ✅ It's easy to get started with Swetrix Cloud - you can set up tracking in a matter of minutes. We manage server maintenance, upgrades, security for you.                        | ⚠️ You are responsible for managing servers, installs, upgrades, scaling and backups.                                                                           |
 | **Core analytics (traffic, events, sessions, funnels, performance, errors)** | ✅ Included                                                                                                                                                                       | ✅ Included                                                                                                                                                     |
+| **Advanced features (Revenue, Experiments, AI)**                             | ✅ Included                                                                                                                                                                       | ⚠️ Not included                                                                                                                                                 |
 | **Teams & sharing**                                                          | ✅ Organisations to manage multiple projects and users with permissions setup; invite people to your projects directly, or share a public or password protected link with people. | ⚠️ Only direct project invites, password protected links and public projects are supported.                                                                     |
 | **Alerts & notifications**                                                   | ✅ Yes (Slack/Telegram/Discord)                                                                                                                                                   | ⚠️ Not included                                                                                                                                                 |
 | **Email reports**                                                            | ✅ Yes (weekly/monthly/quarterly)                                                                                                                                                 | ⚠️ Not included                                                                                                                                                 |
