@@ -1850,7 +1850,7 @@
       "navTitle": "Créer un projet",
       "navDesc": "Ajoutez un site web pour commencer à collecter des données d’analyse.",
       "title": "Configurons votre premier projet",
-      "desc": "Nous vous aidons à démarrer avec Swetrix en créant votre premier projet. Vous pourrez configurer votre projet plus en détail après sa création."
+      "desc": "Créez un projet pour commencer à suivre les statistiques de votre site web. Saisissez un nom pour continuer."
     },
     "installTracking": {
       "navTitle": "Installer le script de suivi",
