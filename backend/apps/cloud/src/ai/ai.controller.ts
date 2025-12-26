@@ -55,6 +55,48 @@ export class AiController {
     private readonly logger: AppLoggerService,
   ) {}
 
+  private async applyRateLimit(
+    uid: string | null,
+    headers: Record<string, string>,
+    operation: 'read' | 'write',
+  ): Promise<void> {
+    const ip = getIPFromHeaders(headers) || 'unknown'
+
+    if (operation === 'write') {
+      if (uid) {
+        await checkRateLimit(
+          uid,
+          'ai-chat',
+          AI_CHAT_RATE_LIMIT,
+          AI_CHAT_RATE_LIMIT_TIMEOUT,
+        )
+      } else {
+        await checkRateLimit(
+          ip,
+          'ai-chat-unauth',
+          AI_CHAT_RATE_LIMIT_UNAUTH,
+          AI_CHAT_RATE_LIMIT_TIMEOUT,
+        )
+      }
+    } else {
+      if (uid) {
+        await checkRateLimit(
+          uid,
+          'ai-read',
+          AI_READ_RATE_LIMIT,
+          AI_CHAT_RATE_LIMIT_TIMEOUT,
+        )
+      } else {
+        await checkRateLimit(
+          ip,
+          'ai-read-unauth',
+          AI_READ_RATE_LIMIT_UNAUTH,
+          AI_CHAT_RATE_LIMIT_TIMEOUT,
+        )
+      }
+    }
+  }
+
   @ApiBearerAuth()
   @Post(':pid/chat')
   @Auth(false, true) // Allow optional auth for public projects
@@ -69,22 +111,7 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid }, 'POST /ai/:pid/chat')
 
-    const ip = getIPFromHeaders(headers) || 'unknown'
-    if (uid) {
-      await checkRateLimit(
-        uid,
-        'ai-chat',
-        AI_CHAT_RATE_LIMIT,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    } else {
-      await checkRateLimit(
-        ip,
-        'ai-chat-unauth',
-        AI_CHAT_RATE_LIMIT_UNAUTH,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    }
+    await this.applyRateLimit(uid, headers, 'write')
 
     if (!process.env.OPENROUTER_API_KEY) {
       throw new HttpException(
@@ -226,15 +253,19 @@ export class AiController {
               },
               'AI stream finish event',
             )
-            await trackCustom(ip, headers['user-agent'], {
-              ev: 'AI_CHAT_STREAM_FINISHED',
-              meta: {
-                finishReason: (part as any)?.finishReason,
-                promptTokens: (part as any)?.usage?.promptTokens ?? 0,
-                completionTokens: (part as any)?.usage?.completionTokens ?? 0,
-                totalTokens: (part as any)?.usage?.totalTokens ?? 0,
+            await trackCustom(
+              getIPFromHeaders(headers) || 'unknown',
+              headers['user-agent'],
+              {
+                ev: 'AI_CHAT_STREAM_FINISHED',
+                meta: {
+                  finishReason: (part as any)?.finishReason,
+                  promptTokens: (part as any)?.usage?.promptTokens ?? 0,
+                  completionTokens: (part as any)?.usage?.completionTokens ?? 0,
+                  totalTokens: (part as any)?.usage?.totalTokens ?? 0,
+                },
               },
-            })
+            )
           } else if (part.type === 'step-finish') {
             this.logger.log(
               {
@@ -309,22 +340,7 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid }, 'GET /ai/:pid/chats')
 
-    const ip = getIPFromHeaders(headers) || 'unknown'
-    if (uid) {
-      await checkRateLimit(
-        uid,
-        'ai-read',
-        AI_READ_RATE_LIMIT,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    } else {
-      await checkRateLimit(
-        ip,
-        'ai-read-unauth',
-        AI_READ_RATE_LIMIT_UNAUTH,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    }
+    await this.applyRateLimit(uid, headers, 'read')
 
     const project = await this.projectService.getFullProject(pid)
 
@@ -366,22 +382,7 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid }, 'GET /ai/:pid/chats/all')
 
-    const ip = getIPFromHeaders(headers) || 'unknown'
-    if (uid) {
-      await checkRateLimit(
-        uid,
-        'ai-read',
-        AI_READ_RATE_LIMIT,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    } else {
-      await checkRateLimit(
-        ip,
-        'ai-read-unauth',
-        AI_READ_RATE_LIMIT_UNAUTH,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    }
+    await this.applyRateLimit(uid, headers, 'read')
 
     const project = await this.projectService.getFullProject(pid)
 
@@ -427,22 +428,7 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid, chatId }, 'GET /ai/:pid/chats/:chatId')
 
-    const ip = getIPFromHeaders(headers) || 'unknown'
-    if (uid) {
-      await checkRateLimit(
-        uid,
-        'ai-read',
-        AI_READ_RATE_LIMIT,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    } else {
-      await checkRateLimit(
-        ip,
-        'ai-read-unauth',
-        AI_READ_RATE_LIMIT_UNAUTH,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    }
+    await this.applyRateLimit(uid, headers, 'read')
 
     const project = await this.projectService.getFullProject(pid)
 
@@ -490,22 +476,7 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid }, 'POST /ai/:pid/chats')
 
-    const ip = getIPFromHeaders(headers) || 'unknown'
-    if (uid) {
-      await checkRateLimit(
-        uid,
-        'ai-chat',
-        AI_CHAT_RATE_LIMIT,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    } else {
-      await checkRateLimit(
-        ip,
-        'ai-chat-unauth',
-        AI_CHAT_RATE_LIMIT_UNAUTH,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    }
+    await this.applyRateLimit(uid, headers, 'write')
 
     const project = await this.projectService.getFullProject(pid)
 
@@ -522,9 +493,13 @@ export class AiController {
       name: createChatDto.name,
     })
 
-    await trackCustom(ip, headers['user-agent'], {
-      ev: 'AI_CHAT_CREATED',
-    })
+    await trackCustom(
+      getIPFromHeaders(headers) || 'unknown',
+      headers['user-agent'],
+      {
+        ev: 'AI_CHAT_CREATED',
+      },
+    )
 
     return {
       id: chat.id,
@@ -549,22 +524,7 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid, chatId }, 'POST /ai/:pid/chats/:chatId')
 
-    const ip = getIPFromHeaders(headers) || 'unknown'
-    if (uid) {
-      await checkRateLimit(
-        uid,
-        'ai-chat',
-        AI_CHAT_RATE_LIMIT,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    } else {
-      await checkRateLimit(
-        ip,
-        'ai-chat-unauth',
-        AI_CHAT_RATE_LIMIT_UNAUTH,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    }
+    await this.applyRateLimit(uid, headers, 'write')
 
     const project = await this.projectService.getFullProject(pid)
 
@@ -615,22 +575,7 @@ export class AiController {
   ) {
     this.logger.log({ uid, pid, chatId }, 'DELETE /ai/:pid/chats/:chatId')
 
-    const ip = getIPFromHeaders(headers) || 'unknown'
-    if (uid) {
-      await checkRateLimit(
-        uid,
-        'ai-chat',
-        AI_CHAT_RATE_LIMIT,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    } else {
-      await checkRateLimit(
-        ip,
-        'ai-chat-unauth',
-        AI_CHAT_RATE_LIMIT_UNAUTH,
-        AI_CHAT_RATE_LIMIT_TIMEOUT,
-      )
-    }
+    await this.applyRateLimit(uid, headers, 'write')
 
     const project = await this.projectService.getFullProject(pid)
 
@@ -652,9 +597,13 @@ export class AiController {
 
     await this.aiChatService.delete(chatId)
 
-    await trackCustom(ip, headers['user-agent'], {
-      ev: 'AI_CHAT_DELETED',
-    })
+    await trackCustom(
+      getIPFromHeaders(headers) || 'unknown',
+      headers['user-agent'],
+      {
+        ev: 'AI_CHAT_DELETED',
+      },
+    )
 
     return { success: true }
   }
