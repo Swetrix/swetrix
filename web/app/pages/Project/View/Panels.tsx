@@ -1330,19 +1330,18 @@ interface PanelProps {
   }>
 }
 
-interface DetailsTableProps
-  extends Pick<
-    PanelProps,
-    | 'data'
-    | 'id'
-    | 'valuesHeaderName'
-    | 'activeTabId'
-    | 'capitalize'
-    | 'linkContent'
-    | 'rowMapper'
-    | 'valueMapper'
-    | 'getFilterLink'
-  > {
+interface DetailsTableProps extends Pick<
+  PanelProps,
+  | 'data'
+  | 'id'
+  | 'valuesHeaderName'
+  | 'activeTabId'
+  | 'capitalize'
+  | 'linkContent'
+  | 'rowMapper'
+  | 'valueMapper'
+  | 'getFilterLink'
+> {
   total: number
   closeDetails: () => void
   disableRowClick?: boolean
