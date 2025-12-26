@@ -1330,18 +1330,19 @@ interface PanelProps {
   }>
 }
 
-interface DetailsTableProps extends Pick<
-  PanelProps,
-  | 'data'
-  | 'id'
-  | 'valuesHeaderName'
-  | 'activeTabId'
-  | 'capitalize'
-  | 'linkContent'
-  | 'rowMapper'
-  | 'valueMapper'
-  | 'getFilterLink'
-> {
+interface DetailsTableProps
+  extends Pick<
+    PanelProps,
+    | 'data'
+    | 'id'
+    | 'valuesHeaderName'
+    | 'activeTabId'
+    | 'capitalize'
+    | 'linkContent'
+    | 'rowMapper'
+    | 'valueMapper'
+    | 'getFilterLink'
+  > {
   total: number
   closeDetails: () => void
   disableRowClick?: boolean
@@ -1741,7 +1742,7 @@ const Panel = ({
                 <div key={`${id}-${entryName}-${Object.values(rest).join('-')}`} className='space-y-0.5'>
                   <div
                     className={cx(
-                      'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
+                      'relative flex h-8 items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                       {
                         'group hover:bg-gray-50 hover:dark:bg-slate-800':
                           !hideFilters && !dataLoading && (link || hasVersionsForItem),
