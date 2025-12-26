@@ -1,9 +1,9 @@
 {
   "name": "@swetrix/node",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Swetrix NodeJS server-side tracking module",
   "type": "module",
-  "main": "dist/swetrix.cjs.js",
+  "main": "dist/swetrix.cjs",
   "module": "dist/swetrix.es5.js",
   "esnext": "dist/esnext/index.js",
   "typings": "dist/esnext/index.d.ts",
@@ -11,7 +11,7 @@
     ".": {
       "types": "./dist/esnext/index.d.ts",
       "import": "./dist/swetrix.es5.js",
-      "require": "./dist/swetrix.cjs.js"
+      "require": "./dist/swetrix.cjs"
     }
   },
   "scripts": {
