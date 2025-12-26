@@ -153,10 +153,6 @@ export class UserService {
     return this.usersRepository.delete(id)
   }
 
-  async softDelete(id: string): Promise<any> {
-    return this.usersRepository.softDelete(id)
-  }
-
   async count(options?: FindManyOptions<User>): Promise<number> {
     return this.usersRepository.count(options)
   }

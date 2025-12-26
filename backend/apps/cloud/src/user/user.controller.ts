@@ -237,7 +237,7 @@ export class UserController {
           id,
         },
       })
-      await this.userService.softDelete(id)
+      await this.userService.delete(id)
     } catch (reason) {
       this.logger.error(reason)
       throw new BadRequestException('accountDeleteError')

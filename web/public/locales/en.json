@@ -1850,7 +1850,7 @@
       "navTitle": "Create a project",
       "navDesc": "Add a website to start tracking analytics.",
       "title": "Let's set up your first project",
-      "desc": "We'll help you get started with Swetrix by creating your first project. You will be able to set up your project more thoroughly after you have created it."
+      "desc": "Create a project to start tracking your website's analytics. Enter a name for it to continue."
     },
     "installTracking": {
       "navTitle": "Install tracking script",
