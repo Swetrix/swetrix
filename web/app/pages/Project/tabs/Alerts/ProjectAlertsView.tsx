@@ -336,6 +336,25 @@ const ProjectAlerts = () => {
     }
   }
 
+  if (!canManageAlerts) {
+    return (
+      <div className='mt-5 rounded-lg bg-gray-700 p-5'>
+        <div className='flex items-center text-gray-50'>
+          <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+          <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
+        </div>
+        <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
+        <Link
+          to={routes.signup}
+          className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
+          aria-label={t('titles.signup')}
+        >
+          {t('header.startForFree')}
+        </Link>
+      </div>
+    )
+  }
+
   if (error && isLoading === false) {
     return (
       <div className='bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
@@ -377,26 +396,6 @@ const ProjectAlerts = () => {
     return (
       <div className='mt-4'>
         <Loader />
-      </div>
-    )
-  }
-
-  // Show signup prompt for non-owners or unauthenticated users
-  if (!canManageAlerts) {
-    return (
-      <div className='mt-5 rounded-lg bg-gray-700 p-5'>
-        <div className='flex items-center text-gray-50'>
-          <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
-          <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
-        </div>
-        <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
-        <Link
-          to={routes.signup}
-          className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
-          aria-label={t('titles.signup')}
-        >
-          {t('header.startForFree')}
-        </Link>
       </div>
     )
   }
