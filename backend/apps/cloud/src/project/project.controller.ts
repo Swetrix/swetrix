@@ -278,6 +278,14 @@ export class ProjectController {
       throw new BadRequestException('The provided project ID is incorrect')
     }
 
+    const project = await this.projectService.getFullProject(projectId, userId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, userId)
+
     await this.projectService.unpinProject(userId, projectId)
 
     await trackCustom(ip, headers['user-agent'], {

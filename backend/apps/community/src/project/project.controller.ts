@@ -354,6 +354,14 @@ export class ProjectController {
       throw new BadRequestException('The provided project ID is incorrect')
     }
 
+    const project = await this.projectService.getFullProject(projectId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, userId)
+
     await unpinProjectClickhouse(userId, projectId)
   }
 
