@@ -31,15 +31,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Swetrix/swetrix-js.git"
+    "url": "git+https://github.com/Swetrix/swetrix-captcha.git"
   },
   "author": "Swetrix Ltd <contact@swetrix.com>",
-  "funding": "https://ko-fi.com/andriir",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Swetrix/swetrix-js/issues"
+    "url": "https://github.com/Swetrix/swetrix-captcha/issues"
   },
-  "homepage": "https://swetrix.com/docs",
+  "homepage": "https://swetrix.com/captcha",
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.3.0",
