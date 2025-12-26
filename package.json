@@ -7,6 +7,13 @@
   "module": "dist/swetrix.es5.js",
   "esnext": "dist/esnext/index.js",
   "typings": "dist/esnext/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/esnext/index.d.ts",
+      "import": "./dist/swetrix.es5.js",
+      "require": "./dist/swetrix.cjs.js"
+    }
+  },
   "scripts": {
     "prebuild": "rimraf dist",
     "prepublish": "npm run build",
