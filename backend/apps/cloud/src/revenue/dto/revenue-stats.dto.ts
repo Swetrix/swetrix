@@ -78,17 +78,6 @@ export class RevenueTransactionDto {
   created: string
 }
 
-export class RevenueBreakdownItemDto {
-  @ApiProperty({ description: 'Breakdown category name' })
-  name: string
-
-  @ApiProperty({ description: 'Total revenue' })
-  revenue: number
-
-  @ApiProperty({ description: 'Number of transactions' })
-  count: number
-}
-
 export class RevenueStatusDto {
   @ApiProperty({ description: 'Whether Paddle is connected' })
   connected: boolean
