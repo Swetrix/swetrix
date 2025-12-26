@@ -34,10 +34,15 @@ interface TooltipProps {
   className?: string
   tooltipNode?: React.ReactNode
   delay?: number
+  /**
+   * When true, the tooltip content won't capture hover events,
+   * allowing users to quickly move between trigger elements.
+   */
+  disableHoverableContent?: boolean
 }
 
-const Tooltip = ({ text, className, tooltipNode, delay = 50 }: TooltipProps) => (
-  <TooltipProvider delayDuration={delay}>
+const Tooltip = ({ text, className, tooltipNode, delay = 50, disableHoverableContent }: TooltipProps) => (
+  <TooltipProvider delayDuration={delay} disableHoverableContent={disableHoverableContent}>
     <TooltipRoot>
       <TooltipTrigger className={className}>
         {tooltipNode || (
@@ -47,7 +52,7 @@ const Tooltip = ({ text, className, tooltipNode, delay = 50 }: TooltipProps) => 
           />
         )}
       </TooltipTrigger>
-      <TooltipContent>{text}</TooltipContent>
+      <TooltipContent className={disableHoverableContent ? 'pointer-events-none' : undefined}>{text}</TooltipContent>
     </TooltipRoot>
   </TooltipProvider>
 )
