@@ -232,18 +232,17 @@ const PageflowItem = ({
                       type === 'pageview' ? 'project.pageviewX' : type === 'event' ? 'project.eventX' : 'project.errorX'
                     }
                     components={{
-                      value:
-                        fullPageUrl ? (
-                          <a
-                            href={fullPageUrl}
-                            target='_blank'
-                            rel='noopener noreferrer nofollow'
-                            onClick={(e) => e.stopPropagation()}
-                            className='ml-1 font-medium text-gray-900 underline decoration-dashed underline-offset-2 hover:decoration-solid dark:text-gray-50'
-                          />
-                        ) : (
-                          <span className='ml-1 font-medium text-gray-900 dark:text-gray-50' />
-                        ),
+                      value: fullPageUrl ? (
+                        <a
+                          href={fullPageUrl}
+                          target='_blank'
+                          rel='noopener noreferrer nofollow'
+                          onClick={(e) => e.stopPropagation()}
+                          className='ml-1 font-medium text-gray-900 underline decoration-dashed underline-offset-2 hover:decoration-solid dark:text-gray-50'
+                        />
+                      ) : (
+                        <span className='ml-1 font-medium text-gray-900 dark:text-gray-50' />
+                      ),
                       span: <span />,
                     }}
                     values={{
