@@ -143,6 +143,7 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
 
   const params = new URLSearchParams(location.search)
   params.set('psid', session.psid)
+  params.set('tab', 'sessions')
 
   return (
     <Link to={{ search: params.toString() }}>
