@@ -599,6 +599,7 @@
     "common": {
       "password": "Passwort",
       "noRemember": "Nicht erinnern",
+      "noRememberHint": "Aktivieren Sie dieses Kontrollkästchen, um beim Schließen Ihres Browsers abgemeldet zu werden. Ihre Sitzung wird vorübergehend statt dauerhaft gespeichert.",
       "repeat": "Passwort wiederholen",
       "changePassword": "Passwort ändern",
       "hint": "Länger als {{amount}} Zeichen",

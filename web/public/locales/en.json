@@ -599,6 +599,7 @@
     "common": {
       "password": "Password",
       "noRemember": "Don't remember me.",
+      "noRememberHint": "Check this box to be logged out when you close your browser. Your session will be stored temporarily instead of permanently.",
       "repeat": "Repeat password",
       "changePassword": "Change password",
       "hint": "Longer than {{amount}} chars",

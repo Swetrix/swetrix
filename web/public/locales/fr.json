@@ -599,6 +599,7 @@
     "common": {
       "password": "Mot de passe",
       "noRemember": "Ne pas se souvenir de moi.",
+      "noRememberHint": "Cochez cette case pour être déconnecté(e) lorsque vous fermez votre navigateur. Votre session sera enregistrée temporairement au lieu de manière permanente.",
       "repeat": "Confirmer le mot de passe",
       "changePassword": "Changer le mot de passe",
       "hint": "Plus de {{amount}} caractères",

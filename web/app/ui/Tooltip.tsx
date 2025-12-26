@@ -42,7 +42,7 @@ const Tooltip = ({ text, className, tooltipNode, delay = 50 }: TooltipProps) => 
       <TooltipTrigger className={className}>
         {tooltipNode || (
           <CircleHelpIcon
-            className='h-5 w-5 fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800'
+            className='size-4.5 fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800'
             strokeWidth={1.5}
           />
         )}

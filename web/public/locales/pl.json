@@ -599,6 +599,7 @@
     "common": {
       "password": "Hasło",
       "noRemember": "Nie pamiętaj mnie.",
+      "noRememberHint": "Zaznacz to pole, aby wylogować się po zamknięciu przeglądarki. Twoja sesja zostanie zapisana tymczasowo zamiast na stałe.",
       "repeat": "Powtórz hasło",
       "changePassword": "Zmień hasło",
       "hint": "Dłuższe niż {{amount}} znaków",

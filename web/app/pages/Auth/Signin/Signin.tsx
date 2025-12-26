@@ -20,6 +20,7 @@ import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
+import Tooltip from '~/ui/Tooltip'
 import { setAccessToken, removeAccessToken } from '~/utils/accessToken'
 import { cn, delay, openBrowserWindow } from '~/utils/generic'
 import { setRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
@@ -429,7 +430,12 @@ const Signin = () => {
                   }))
                 }
                 name='dontRemember'
-                label={<Text size='sm'>{t('auth.common.noRemember')}</Text>}
+                label={
+                  <span className='flex items-center gap-1'>
+                    <Text size='sm'>{t('auth.common.noRemember')}</Text>
+                    <Tooltip text={t('auth.common.noRememberHint')} className='relative' />
+                  </span>
+                }
               />
               <Link
                 to={routes.reset_password}
