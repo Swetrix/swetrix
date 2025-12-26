@@ -8,6 +8,7 @@ import { UserService } from '../../../user/user.service'
 import { AnalyticsService } from '../../../analytics/analytics.service'
 import { Context } from '../interface/context.interface'
 import { START_SCENE_ID } from './start.scene'
+import { TelegramService } from '../telegram.service'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -19,6 +20,7 @@ export class ProjectsScene {
     private readonly userService: UserService,
     private readonly projectService: ProjectService,
     private readonly analyticsService: AnalyticsService,
+    private readonly telegramService: TelegramService,
   ) {}
 
   @SceneEnter()
@@ -85,12 +87,20 @@ export class ProjectsScene {
       '7d',
     )
 
+    // Prevent Telegram Markdown injection (project names are user-controlled).
+    const safeProjectName = this.telegramService.escapeTelegramMarkdown(
+      project.name,
+    )
+    const safeProjectId = this.telegramService.escapeTelegramMarkdown(
+      project.id,
+    )
+
     const text =
-      `📊 *${project.name}*` +
+      `📊 *${safeProjectName}*` +
       `\n\n` +
       `*Information*` +
       `\n` +
-      `ID: \`${project.id}\`` +
+      `ID: \`${safeProjectId}\`` +
       `\n` +
       `Active: \`${project.active ? 'yes' : 'no'}\`` +
       `\n` +

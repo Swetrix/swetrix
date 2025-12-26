@@ -114,7 +114,7 @@ import { ProjectViewIdsDto } from './dto/project-view-ids.dto'
 import { OrganisationService } from '../organisation/organisation.service'
 import { Organisation } from '../organisation/entity/organisation.entity'
 import { ProjectOrganisationDto } from './dto/project-organisation.dto'
-import { ProjectExtraService } from './project-extra.service'
+import { trackCustom } from '../common/analytics'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -137,7 +137,6 @@ export class ProjectController {
     private readonly mailerService: MailerService,
     private readonly projectsViewsRepository: ProjectsViewsRepository,
     private readonly organisationService: OrganisationService,
-    private readonly projectExtraService: ProjectExtraService,
   ) {}
 
   @ApiBearerAuth()
@@ -145,11 +144,6 @@ export class ProjectController {
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'search', required: false, type: String })
-  @ApiQuery({
-    name: 'mode',
-    required: false,
-    type: String,
-  })
   @ApiQuery({
     name: 'timeFrame',
     required: false,
@@ -167,30 +161,17 @@ export class ProjectController {
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
     @Query('search') search?: string,
-    @Query('mode')
-    mode?:
-      | 'default'
-      | 'high-traffic'
-      | 'low-traffic'
-      | 'performance'
-      | 'lost-traffic',
     @Query('period')
     period: '1h' | '1d' | '7d' | '4w' | '3M' | '12M' | '24M' | 'all' = '7d',
-    @Query('use-hostname-navigation')
-    useHostnameNavigation: string = 'false',
     @Query('sort')
     sort?: 'alpha_asc' | 'alpha_desc' | 'date_asc' | 'date_desc',
   ): Promise<Pagination<Project> | Project[] | object> {
-    const isHostnameNavigationEnabled = useHostnameNavigation === 'true'
-
     this.logger.log(
       {
         userId,
         take,
         skip,
-        mode,
         timeFrame: period,
-        useHostnameNavigation,
         sort,
       },
       'GET /project',
@@ -204,47 +185,17 @@ export class ProjectController {
       )
     }
 
-    if (!mode || mode === 'default') {
-      let paginated
-
-      if (isHostnameNavigationEnabled) {
-        paginated = await this.projectExtraService.paginateHostnameNavigation(
-          {
-            take,
-            skip,
-            period,
-            sort,
-          },
-          userId,
-          search,
-        )
-      } else {
-        paginated = await this.projectService.paginate(
-          {
-            take,
-            skip,
-          },
-          userId,
-          search,
-          sort,
-        )
-      }
-
-      return this.projectService.processDefaultResults(paginated, userId)
-    }
-
-    return this.projectExtraService.paginateByTraffic(
+    const paginated = await this.projectService.paginate(
       {
         take,
         skip,
-        mode,
-        period,
-        sort,
       },
       userId,
       search,
-      isHostnameNavigationEnabled,
+      sort,
     )
+
+    return this.projectService.processDefaultResults(paginated, userId)
   }
 
   @ApiBearerAuth()
@@ -275,14 +226,85 @@ export class ProjectController {
   }
 
   @ApiBearerAuth()
+  @Post('/:id/pin')
+  @ApiOperation({ summary: 'Pin a project to the top of the dashboard' })
+  @ApiResponse({ status: 200, description: 'Project pinned successfully' })
+  @Auth(true)
+  async pinProject(
+    @Param('id') projectId: string,
+    @CurrentUserId() userId: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ): Promise<void> {
+    this.logger.log({ projectId, userId }, 'POST /project/:id/pin')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
+    if (!isValidPID(projectId)) {
+      throw new BadRequestException('The provided project ID is incorrect')
+    }
+
+    const project = await this.projectService.getFullProject(projectId, userId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, userId)
+
+    await this.projectService.pinProject(userId, projectId)
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'PROJECT_PINNED',
+    })
+  }
+
+  @ApiBearerAuth()
+  @Delete('/:id/pin')
+  @ApiOperation({ summary: 'Unpin a project from the top of the dashboard' })
+  @ApiResponse({ status: 200, description: 'Project unpinned successfully' })
+  @Auth(true)
+  async unpinProject(
+    @Param('id') projectId: string,
+    @CurrentUserId() userId: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ): Promise<void> {
+    this.logger.log({ projectId, userId }, 'DELETE /project/:id/pin')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
+    if (!isValidPID(projectId)) {
+      throw new BadRequestException('The provided project ID is incorrect')
+    }
+
+    const project = await this.projectService.getFullProject(projectId, userId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, userId)
+
+    await this.projectService.unpinProject(userId, projectId)
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'PROJECT_UNPINNED',
+    })
+  }
+
+  @ApiBearerAuth()
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
   @Auth(true)
   async create(
     @Body() projectDTO: CreateProjectDTO,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
     @CurrentUserId() userId: string,
   ): Promise<Omit<Project, 'passwordHash'>> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     if (!userId) {
       throw new UnauthorizedException('Please auth first')
@@ -331,28 +353,7 @@ export class ProjectController {
       )
     }
 
-    if (projectDTO.isCaptcha) {
-      if (
-        _size(
-          _filter(
-            user.projects,
-            (project: Project) => project.isCaptchaProject,
-          ),
-        ) >= maxProjects
-      ) {
-        throw new HttpException(
-          `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
-          HttpStatus.PAYMENT_REQUIRED,
-        )
-      }
-    } else if (
-      _size(
-        _filter(
-          user.projects,
-          (project: Project) => project.isAnalyticsProject,
-        ),
-      ) >= maxProjects
-    ) {
+    if (_size(user.projects) >= maxProjects) {
       throw new ForbiddenException(
         `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
       )
@@ -378,15 +379,6 @@ export class ProjectController {
         },
       } as Project
 
-      if (projectDTO.isCaptcha) {
-        project.isCaptchaProject = true
-        project.isAnalyticsProject = false
-        project.isCaptchaEnabled = true
-        project.captchaSecretKey = generateRandomString(
-          CAPTCHA_SECRET_KEY_LENGTH,
-        )
-      }
-
       if (projectDTO.organisationId) {
         project.organisation = {
           id: projectDTO.organisationId,
@@ -399,6 +391,10 @@ export class ProjectController {
       }
 
       const newProject = await this.projectService.create(project)
+
+      await trackCustom(ip, headers['user-agent'], {
+        ev: 'PROJECT_CREATED',
+      })
 
       return _omit(newProject, ['passwordHash'])
     } catch (reason) {
@@ -414,8 +410,12 @@ export class ProjectController {
   async createFunnel(
     @Body() funnelDTO: FunnelCreateDTO,
     @CurrentUserId() userId: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ): Promise<any> {
     this.logger.log({ funnelDTO, userId }, 'POST /project/funnel')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     if (!userId) {
       throw new UnauthorizedException('Please auth first')
@@ -454,6 +454,13 @@ export class ProjectController {
     }
 
     this.projectService.allowedToManage(project, userId)
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'FUNNEL_CREATED',
+      meta: {
+        steps_quantity: funnelDTO.steps.length,
+      },
+    })
 
     return this.projectService.createFunnel(project.id, funnelDTO)
   }
@@ -535,8 +542,12 @@ export class ProjectController {
     @Param('id') id: string,
     @Param('pid') pid: string,
     @CurrentUserId() userId: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ): Promise<void> {
     this.logger.log({ id, userId }, 'PATCH /project/funnel')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     if (!userId) {
       throw new UnauthorizedException('Please auth first')
@@ -557,6 +568,13 @@ export class ProjectController {
     }
 
     await this.projectService.deleteFunnel(id)
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'FUNNEL_DELETED',
+      meta: {
+        steps_quantity: oldFunnel.steps.length,
+      },
+    })
   }
 
   @Get('/funnels/:pid')
@@ -590,8 +608,12 @@ export class ProjectController {
   async createAnnotation(
     @Body() annotationDTO: AnnotationCreateDTO,
     @CurrentUserId() userId: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ): Promise<any> {
     this.logger.log({ annotationDTO, userId }, 'POST /project/annotation')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     if (!userId) {
       throw new UnauthorizedException('Please auth first')
@@ -616,6 +638,13 @@ export class ProjectController {
     }
 
     this.projectService.allowedToManage(project, userId)
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'ANNOTATION_CREATED',
+      meta: {
+        length: annotationDTO.text.length,
+      },
+    })
 
     return this.projectService.createAnnotation(project.id, annotationDTO)
   }
@@ -825,7 +854,6 @@ export class ProjectController {
   })
   @ApiResponse({ status: 200 })
   @Auth()
-  @Auth()
   async deletePartially(
     @Param('pid') pid: string,
     @Query('from') from: string,
@@ -936,7 +964,6 @@ export class ProjectController {
   @Delete('/reset-filters/:pid')
   @ApiResponse({ status: 200 })
   @Auth()
-  @Auth()
   async resetFilters(
     @Param('pid') pid: string,
     @Query('type') type: string,
@@ -959,7 +986,12 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid)
 
-    const filters = JSON.parse(rawFilters)
+    let filters
+    try {
+      filters = JSON.parse(rawFilters)
+    } catch {
+      throw new BadRequestException('The provided filters are incorrect')
+    }
 
     await this.projectService.deleteByFilters(pid, type, filters)
   }
@@ -1051,7 +1083,7 @@ export class ProjectController {
 
       // TODO: Implement link expiration
       const actionToken = await this.actionTokensService.createForUser(
-        user,
+        invitee,
         ActionTokenType.PROJECT_SHARE,
         share.id,
       )
@@ -1158,16 +1190,18 @@ export class ProjectController {
 
       const share = await this.projectService.findOneShare({
         where: { id: shareId },
+        relations: ['user'],
       })
-      share.confirmed = true
 
       if (_isEmpty(share)) {
         throw new BadRequestException('The provided share ID is not valid')
       }
 
-      // if (share.user?.id !== user.id) {
-      //   throw new BadRequestException('You are not allowed to manage this share')
-      // }
+      if (share.user?.id !== actionToken.user?.id) {
+        throw new ForbiddenException('You are not allowed to manage this share')
+      }
+
+      share.confirmed = true
 
       await this.projectService.updateShare(shareId, share)
       await this.actionTokensService.delete(tokenID)
@@ -1518,8 +1552,12 @@ export class ProjectController {
   async delete(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ): Promise<any> {
     this.logger.log({ uid, id }, 'DELETE /project/:id')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     if (!uid) {
       throw new UnauthorizedException('Please auth first')
@@ -1565,12 +1603,16 @@ export class ProjectController {
     }
 
     try {
-      await this.projectService.deleteMultipleShare(`project = "${id}"`)
+      await this.projectService.deleteMultipleShare({ project: { id } })
       await this.projectService.delete(id)
     } catch (reason) {
       this.logger.error(reason)
       return 'Error while deleting your project'
     }
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'PROJECT_DELETED',
+    })
 
     return 'Project deleted successfully'
   }
@@ -1612,10 +1654,15 @@ export class ProjectController {
   @ApiResponse({ status: 200 })
   async getOgImage(
     @Param('id') id: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
     @Res() res: Response,
   ): Promise<any> {
     // TODO: Cache the generated image in the filesystem (or CDN) for 1 day and return it instead of generating it again
     this.logger.log({ id }, 'GET /project/ogimage/:id')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+    await checkRateLimit(ip, 'project-ogimage', 100, 60 * 60)
 
     if (!isValidPID(id)) {
       throw new BadRequestException(
@@ -1773,6 +1820,10 @@ export class ProjectController {
       project.botsProtectionLevel = projectDTO.botsProtectionLevel
     }
 
+    if (projectDTO.captchaDifficulty !== undefined) {
+      project.captchaDifficulty = projectDTO.captchaDifficulty
+    }
+
     if (projectDTO.name) {
       project.name = _trim(projectDTO.name)
     }
@@ -1789,7 +1840,12 @@ export class ProjectController {
       }
     }
 
-    // @ts-expect-error
+    if (projectDTO.websiteUrl !== undefined) {
+      project.websiteUrl = projectDTO.websiteUrl
+        ? _trim(projectDTO.websiteUrl)
+        : null
+    }
+
     await this.projectService.update({ id }, _omit(project, ['share', 'admin']))
 
     await deleteProjectRedis(id)
@@ -1874,12 +1930,16 @@ export class ProjectController {
 
     this.projectService.allowedToView(project, userId, headers['x-password'])
 
-    const [isDataExists, isErrorDataExists] = await Promise.all([
-      !_isEmpty(
-        await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
-      ),
-      !_isEmpty(await this.projectService.getPIDsWhereErrorsDataExists([id])),
-    ])
+    const [isDataExists, isErrorDataExists, isCaptchaDataExists] =
+      await Promise.all([
+        !_isEmpty(
+          await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
+        ),
+        !_isEmpty(await this.projectService.getPIDsWhereErrorsDataExists([id])),
+        !_isEmpty(
+          await this.projectService.getPIDsWhereCaptchaDataExists([id]),
+        ),
+      ])
 
     let role
     let isAccessConfirmed = true
@@ -1917,6 +1977,7 @@ export class ProjectController {
       isLocked: !!project.admin?.dashboardBlockReason,
       isDataExists,
       isErrorDataExists,
+      isCaptchaDataExists,
       organisationId: project.organisation?.id,
       role,
     }
@@ -1955,7 +2016,11 @@ export class ProjectController {
     @Param() params: ProjectIdDto,
     @Body() body: CreateProjectViewDto,
     @CurrentUserId() userId: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ) {
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
     const project = await this.projectService.getFullProject(params.projectId)
 
     if (!project) {
@@ -1981,6 +2046,15 @@ export class ProjectController {
           2,
         ),
       })
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'SEGMENT_CREATED',
+      meta: {
+        type: body.type,
+        filters: !_isEmpty(body.filters),
+        customEvents: !_isEmpty(body.customEvents),
+      },
+    })
 
     return _omit(createdProjectView, ['project'])
   }
@@ -2061,7 +2135,11 @@ export class ProjectController {
   async deleteProjectView(
     @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ) {
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
     const project = await this.projectService.getFullProject(params.projectId)
 
     if (!project) {
@@ -2086,5 +2164,9 @@ export class ProjectController {
     }
 
     await this.projectsViewsRepository.deleteProjectView(params.viewId)
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'SEGMENT_DELETED',
+    })
   }
 }

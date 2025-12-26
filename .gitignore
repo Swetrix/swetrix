@@ -64,6 +64,7 @@ crowdin.yml
 .cache
 web/vite.config.ts.timestamp*
 web/.react-router/
+web/unused_keys.txt
 
 # Docs
 docs/build

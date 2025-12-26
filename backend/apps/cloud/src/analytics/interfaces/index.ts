@@ -19,6 +19,7 @@ export interface TrafficCHResponse {
 export interface BirdseyeCHResponse {
   all: number
   unique: number
+  users: number
   sdur: number
 }
 
@@ -134,18 +135,9 @@ export interface IGetFunnel {
 interface IOverallPeriodStats {
   all: number
   unique: number
+  users: number
   bounceRate: number
   sdur: number
-}
-
-interface ICaptchaObject {
-  current: {
-    all: number
-  }
-  previous: {
-    all: number
-  }
-  change: number
 }
 
 interface IPerformanceObject {
@@ -164,21 +156,24 @@ interface IPerformanceObject {
   networkChange: number
 }
 
+interface IOverallChart {
+  x: string[]
+  visits: number[]
+}
+
 interface IOverallObject {
   current: IOverallPeriodStats
   previous: IOverallPeriodStats
   change: number
   uniqueChange?: number
+  usersChange?: number
   bounceRateChange?: number
   sdurChange?: number
+  chart?: IOverallChart
 }
 
 export interface IOverall {
   [key: string]: IOverallObject
-}
-
-export interface IOverallCaptcha {
-  [key: string]: ICaptchaObject
 }
 
 export interface IOverallPerformance {
@@ -186,7 +181,7 @@ export interface IOverallPerformance {
 }
 
 export interface IPageflow {
-  type: 'pageview' | 'event'
+  type: 'pageview' | 'event' | 'error' | 'sale' | 'refund'
   value: string
   created: string
   metadata?: [string, string][]

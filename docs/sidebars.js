@@ -23,6 +23,12 @@ module.exports = {
       },
       'troubleshooting',
     ],
+    Features: [
+      'features/revenue-tracking',
+      'features/ask-ai',
+      'features/feature-flags',
+      'features/experiments',
+    ],
     'Site settings': [
       'sitesettings/how-to-access-site-settings',
       'sitesettings/how-to-invite-users-to-your-website',
@@ -70,8 +76,6 @@ module.exports = {
         ],
       },
     ],
-    'Affiliate program': ['affiliate/about', 'affiliate/terms'],
-    'Extensions SDK': ['ext-sdk-introduction', 'ext-sdk-faq', 'ext-sdk-reference'],
     API: ['api/stats', 'api/events', 'api/admin'],
     CAPTCHA: ['captcha/introduction', 'captcha/client-side-usage', 'captcha/server-side-validation', 'captcha/testing'],
     'Self-hosting': ['selfhosting/how-to', 'selfhosting/configuring'],

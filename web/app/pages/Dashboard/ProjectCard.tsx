@@ -1,36 +1,50 @@
-import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import cx from 'clsx'
 import _find from 'lodash/find'
 import _isNumber from 'lodash/isNumber'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
-import _round from 'lodash/round'
 import _size from 'lodash/size'
-import { Settings2Icon } from 'lucide-react'
-import React, { useState, useMemo } from 'react'
+import { Settings2Icon, PinIcon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
 
-import { acceptProjectShare } from '~/api'
-import useFeatureFlag from '~/hooks/useFeatureFlag'
+import { acceptProjectShare, pinProject, unpinProject } from '~/api'
 import { OverallObject, Project } from '~/lib/models/Project'
-import { FeatureFlag } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
 import { Badge, BadgeProps } from '~/ui/Badge'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
+import { Text } from '~/ui/Text'
 import { nFormatter, calculateRelativePercentage } from '~/utils/generic'
+import { getFaviconHost } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
-import { DASHBOARD_TABS } from './Tabs'
+import Sparkline from './Sparkline'
+
+// Detect if device supports hover (i.e., not a touch-only device)
+const useIsTouchDevice = () => {
+  const [isTouchDevice, setIsTouchDevice] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(hover: none)').matches
+  })
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(hover: none)')
+    const handler = (e: MediaQueryListEvent) => setIsTouchDevice(e.matches)
+    mediaQuery.addEventListener('change', handler)
+    return () => mediaQuery.removeEventListener('change', handler)
+  }, [])
+
+  return isTouchDevice
+}
 
 interface ProjectCardProps {
   live?: string | number | null
   overallStats?: OverallObject
   project: Project
   activePeriod: string
-  activeTab: (typeof DASHBOARD_TABS)[number]['id']
   viewMode: 'grid' | 'list'
   refetchProjects: () => Promise<void>
 }
@@ -39,42 +53,58 @@ interface MiniCardProps {
   labelTKey: string
   total?: number | string | null
   percChange?: number
+  hasData?: boolean
 }
 
-const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
+const MiniCard = ({ labelTKey, total, percChange, hasData }: MiniCardProps) => {
   const { t } = useTranslation('common')
   const statsDidGrowUp = percChange ? percChange >= 0 : false
+  const isLoading = total === null
 
   return (
     <div>
-      <p className='text-sm text-gray-500 dark:text-gray-300'>{t(labelTKey)}</p>
+      <Text as='p' size='sm' colour='muted'>
+        {t(labelTKey)}
+      </Text>
 
       <div className='flex font-bold'>
-        {total === null ? (
-          <Spin className='mt-2 !ml-0' />
+        {isLoading ? (
+          <Spin className='mt-2 ml-0!' />
+        ) : !hasData || total === 'N/A' ? (
+          <div className='flex items-baseline gap-1'>
+            <Text as='p' weight='bold' size='sm' colour='muted'>
+              —
+            </Text>
+            <Text as='span' size='xs' colour='muted' className='font-normal'>
+              {t('dashboard.noData')}
+            </Text>
+          </div>
         ) : (
           <>
-            <p className='text-xl text-gray-700 dark:text-gray-100'>{_isNumber(total) ? nFormatter(total) : total}</p>
-            {_isNumber(percChange) ? (
-              <p
-                className={cx('flex items-start text-xs', {
-                  'text-green-600': statsDidGrowUp,
-                  'text-slate-600 dark:text-slate-400': !statsDidGrowUp,
-                })}
+            <Text as='p' weight='bold' size='base' colour='secondary'>
+              {_isNumber(total) ? nFormatter(total) : total}
+            </Text>
+            {_isNumber(percChange) && percChange !== 0 ? (
+              <Text
+                as='p'
+                size='xs'
+                weight='medium'
+                colour={statsDidGrowUp ? 'success' : 'muted'}
+                className='-mt-3 flex items-center'
               >
                 {statsDidGrowUp ? (
                   <>
-                    <ChevronUpIcon className='h-4 w-4 shrink-0 text-green-500' />
+                    <ChevronUpIcon className='size-3.5 shrink-0 text-green-500' />
                     <span className='sr-only'>{t('dashboard.inc')}</span>
                   </>
                 ) : (
                   <>
-                    <ChevronDownIcon className='h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400' />
+                    <ChevronDownIcon className='size-3.5 shrink-0 text-slate-500 dark:text-slate-400' />
                     <span className='sr-only'>{t('dashboard.dec')}</span>
                   </>
                 )}
                 {nFormatter(percChange)}%
-              </p>
+              </Text>
             ) : null}
           </>
         )}
@@ -88,23 +118,75 @@ export const ProjectCard = ({
   project,
   overallStats,
   activePeriod,
-  activeTab,
   viewMode,
   refetchProjects,
 }: ProjectCardProps) => {
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
-  const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
-  const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
 
   const { user, mergeUser } = useAuth()
+  const isTouchDevice = useIsTouchDevice()
 
   const shareId = useMemo(
     () => _find(project.share, (item) => item.user?.id === user?.id)?.id,
     [project.share, user?.id],
   )
 
-  const { id, name, public: isPublic, active, isTransferring, share, organisation, role } = project
+  const {
+    id,
+    name,
+    public: isPublic,
+    active,
+    isTransferring,
+    share,
+    organisation,
+    role,
+    isPinned,
+    websiteUrl,
+  } = project
+
+  const faviconHost = useMemo(() => getFaviconHost(websiteUrl || null), [websiteUrl])
+  const [isPinning, setIsPinning] = useState(false)
+  const [localIsPinned, setLocalIsPinned] = useState(isPinned)
+
+  // Sync local state with prop
+  useEffect(() => {
+    setLocalIsPinned(isPinned)
+  }, [isPinned])
+
+  const handlePinToggle = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      if (isPinning) return
+
+      setIsPinning(true)
+      // Optimistically update local state
+      const newPinnedState = !localIsPinned
+      setLocalIsPinned(newPinnedState)
+
+      try {
+        if (!newPinnedState) {
+          await unpinProject(id)
+          toast.success(t('dashboard.unpinned'))
+        } else {
+          await pinProject(id)
+          toast.success(t('dashboard.pinned'))
+        }
+        // Silently refetch projects in background - don't await
+        refetchProjects()
+      } catch (reason: any) {
+        // Revert on error
+        setLocalIsPinned(!newPinnedState)
+        console.error('[ERROR] Error while toggling pin:', reason)
+        toast.error(t('apiNotifications.somethingWentWrong'))
+      } finally {
+        setIsPinning(false)
+      }
+    },
+    [id, localIsPinned, isPinning, refetchProjects, t],
+  )
 
   const badges = useMemo(() => {
     const list: BadgeProps[] = []
@@ -125,10 +207,6 @@ export const ProjectCard = ({
       list.push({ colour: 'yellow', label: t('common.pending') })
     }
 
-    if (project.isCaptchaProject) {
-      list.push({ colour: 'indigo', label: t('dashboard.captcha') })
-    }
-
     if (isTransferring) {
       list.push({ colour: 'indigo', label: t('common.transferring') })
     }
@@ -144,18 +222,7 @@ export const ProjectCard = ({
     }
 
     return list
-  }, [
-    t,
-    active,
-    isTransferring,
-    isPublic,
-    organisation,
-    share,
-    project.isAccessConfirmed,
-    project.role,
-    project.isCaptchaProject,
-    shareId,
-  ])
+  }, [t, active, isTransferring, isPublic, organisation, share, project.isAccessConfirmed, project.role, shareId])
 
   const onAccept = async () => {
     try {
@@ -196,43 +263,79 @@ export const ProjectCard = ({
   const searchParams = useMemo(() => {
     const params = new URLSearchParams()
 
-    if (showPeriodSelector) {
-      params.set('period', activePeriod)
-    }
-
-    if (isHostnameNavigationEnabled) {
-      params.set('host', encodeURIComponent(project.name))
-    }
+    params.set('period', activePeriod)
 
     return params.toString()
-  }, [showPeriodSelector, activePeriod, isHostnameNavigationEnabled, project.name])
+  }, [activePeriod])
+
+  // Determine if action buttons should always be visible
+  // Show on touch devices, or when project is pinned
+  const alwaysShowActions = isTouchDevice || localIsPinned
 
   return (
     <Link
       to={{
-        pathname: _replace(project.isCaptchaProject ? routes.captcha : routes.project, ':id', id),
+        pathname: _replace(routes.project, ':id', id),
         search: searchParams,
       }}
       onClick={onElementClick}
       className={cx(
-        'cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60',
+        'group relative cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60',
         viewMode === 'list' ? 'flex items-center justify-between px-6 py-4' : 'min-h-[153.1px]',
       )}
     >
-      <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
+      {/* Background sparkline chart */}
+      {viewMode === 'grid' && overallStats?.chart ? (
+        <div className='pointer-events-none absolute inset-x-0 bottom-0 z-0 opacity-50'>
+          <Sparkline chart={overallStats.chart} className='w-full' />
+        </div>
+      ) : null}
+      <div className={cx('relative z-10 flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
         <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
-          <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
+          <div className='flex min-w-0 items-center gap-1'>
+            {faviconHost ? (
+              <img
+                className='size-6 shrink-0 rounded-sm'
+                src={`https://icons.duckduckgo.com/ip3/${faviconHost}.ico`}
+                loading='lazy'
+                alt=''
+                aria-hidden='true'
+              />
+            ) : null}
+            <Text as='p' size='lg' weight='semibold' truncate>
+              {name}
+            </Text>
+          </div>
 
-          {project.isAccessConfirmed && role !== 'viewer' ? (
-            <Link
-              className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
-              onClick={(e) => e.stopPropagation()}
-              to={_replace(routes.project_settings, ':id', id)}
-              aria-label={`${t('project.settings.settings')} ${name}`}
+          <div
+            className={cx(
+              'flex shrink-0 items-center transition-opacity',
+              alwaysShowActions ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+            )}
+          >
+            <button
+              type='button'
+              className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+              onClick={handlePinToggle}
+              disabled={isPinning}
+              aria-label={localIsPinned ? t('dashboard.unpin') : t('dashboard.pin')}
             >
-              <Settings2Icon className='size-5' strokeWidth={1.5} />
-            </Link>
-          ) : null}
+              <PinIcon
+                className={cx('size-5 transition-transform', localIsPinned && 'rotate-[30deg]')}
+                strokeWidth={1.5}
+              />
+            </button>
+            {project.isAccessConfirmed && role !== 'viewer' ? (
+              <Link
+                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                onClick={(e) => e.stopPropagation()}
+                to={_replace(routes.project_settings, ':id', id)}
+                aria-label={`${t('project.settings.settings')} ${name}`}
+              >
+                <Settings2Icon className='size-5' strokeWidth={1.5} />
+              </Link>
+            ) : null}
+          </div>
         </div>
         <div className='mt-1 flex shrink-0 flex-wrap gap-2'>
           {badges.length > 0 ? (
@@ -242,31 +345,22 @@ export const ProjectCard = ({
           )}
         </div>
       </div>
-      <div className={cx('flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4')}>
-        {isHostnameNavigationEnabled ? (
-          <MiniCard
-            labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
-            // @ts-expect-error
-            total={project?.trafficStats?.visits}
-            percChange={
-              activeTab === 'performance'
-                ? // @ts-expect-error
-                  _round(project?.trafficStats?.percentageChange, 2)
-                : undefined
-            }
-          />
-        ) : (
-          <MiniCard
-            labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
-            total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
-            percChange={
-              live === 'N/A'
-                ? 0
-                : calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)
-            }
-          />
-        )}
-        {project.isAnalyticsProject ? <MiniCard labelTKey='dashboard.liveVisitors' total={live} /> : null}
+      <div className={cx('relative z-10 flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4')}>
+        <MiniCard
+          labelTKey='dashboard.pageviews'
+          total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
+          percChange={
+            live === 'N/A'
+              ? 0
+              : calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)
+          }
+          hasData={project?.isDataExists || project?.isErrorDataExists || project?.isCaptchaDataExists}
+        />
+        <MiniCard
+          labelTKey='dashboard.liveVisitors'
+          total={live}
+          hasData={project?.isDataExists || project?.isErrorDataExists || project?.isCaptchaDataExists}
+        />
       </div>
       {project.role !== 'owner' && !project.isAccessConfirmed ? (
         <Modal

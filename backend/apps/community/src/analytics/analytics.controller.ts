@@ -23,6 +23,7 @@ import {
   Ip,
   ForbiddenException,
   Response,
+  Header,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 
@@ -47,7 +48,6 @@ import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDto } from './dto/getUserFlow.dto'
 import { GetFunnelsDto } from './dto/getFunnels.dto'
 import { AppLoggerService } from '../logger/logger.service'
-import { redis, UNIQUE_SESSION_LIFE_TIME } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
   checkRateLimit,
@@ -67,6 +67,10 @@ import { GetSessionDto } from './dto/get-session.dto'
 import { ErrorDto } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDto } from './dto/get-error.dto'
+import {
+  GetErrorOverviewDto,
+  GetErrorOverviewOptions,
+} from './dto/get-error-overview.dto'
 import { PatchStatusDto } from './dto/patch-status.dto'
 import {
   customEventTransformer,
@@ -87,7 +91,9 @@ const DEFAULT_MEASURE = 'median'
 
 // Silent 200 response for bots
 // https://github.com/Swetrix/swetrix/issues/371
-const BOT_RESPONSE = { message: 'Bot traffic detected, opinion rejected :D' }
+const BOT_RESPONSE = { message: 'Bot traffic detected, request is ignored' }
+
+const ONLINE_VISITORS_WINDOW_MINUTES = 5 // minutes
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
@@ -690,6 +696,7 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       filters,
       timeBucket,
+      includeChart,
     } = data
     const pidsArray = getPIDsArray(pids, pid)
 
@@ -711,6 +718,7 @@ export class AnalyticsController {
       to,
       timezone,
       filters,
+      includeChart,
     )
   }
 
@@ -811,13 +819,12 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    const keys = await redis.keys(`sd:*:${pid}`)
-    if (_isEmpty(keys)) {
-      return []
-    }
+    const since = dayjs
+      .utc()
+      .subtract(ONLINE_VISITORS_WINDOW_MINUTES, 'minute')
+      .format('YYYY-MM-DD HH:mm:ss')
 
-    const psids = _map(keys, key => key.split(':')[1])
-
+    // Query ClickHouse for active sessions in the last 5 minutes
     const query = `
       SELECT DISTINCT ON (psid)
         any(dv) AS dv,
@@ -835,8 +842,9 @@ export class AnalyticsController {
           cc
         FROM analytics
         WHERE
-          psid IN ({ psids: Array(String) })
-          AND pid = ({ pid: FixedString(12) })
+          pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
         UNION ALL
         SELECT
           psid,
@@ -846,8 +854,9 @@ export class AnalyticsController {
           cc
         FROM customEV
         WHERE
-          psid IN ({ psids: Array(String) })
-          AND pid = ({ pid: FixedString(12) })
+          pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
       )
       GROUP BY psid
     `
@@ -856,8 +865,8 @@ export class AnalyticsController {
       .query({
         query,
         query_params: {
-          psids,
           pid,
+          since,
         },
       })
       .then(resultSet => resultSet.json())
@@ -914,8 +923,22 @@ export class AnalyticsController {
       ip,
     )
 
+    const profileId = await this.analyticsService.generateProfileId(
+      eventsDTO.pid,
+      userAgent,
+      ip,
+      eventsDTO.profileId,
+    )
+
+    await this.analyticsService.recordSessionActivity(
+      psid,
+      eventsDTO.pid,
+      profileId,
+    )
+
     const transformed = customEventTransformer(
       psid,
+      profileId,
       eventsDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
       eventsDTO.ev,
@@ -975,8 +998,11 @@ export class AnalyticsController {
 
     await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
 
-    const { exists, psid, sessionHash } =
-      await this.analyticsService.getSessionId(pid, userAgent, ip)
+    const { exists, psid } = await this.analyticsService.getSessionId(
+      pid,
+      userAgent,
+      ip,
+    )
 
     if (!exists) {
       throw new ForbiddenException(
@@ -984,9 +1010,15 @@ export class AnalyticsController {
       )
     }
 
-    await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
+    const profileId = await this.analyticsService.generateProfileId(
+      pid,
+      userAgent,
+      ip,
+      logDTO.profileId,
+    )
 
-    await this.analyticsService.processInteractionSD(psid, pid)
+    await this.analyticsService.extendSessionTTL(psid)
+    await this.analyticsService.recordSessionActivity(psid, pid, profileId)
 
     return {}
   }
@@ -1013,9 +1045,20 @@ export class AnalyticsController {
         ip,
       )
 
-    await this.analyticsService.processInteractionSD(psid, logDTO.pid)
+    const profileId = await this.analyticsService.generateProfileId(
+      logDTO.pid,
+      userAgent,
+      ip,
+      logDTO.profileId,
+    )
 
-    if (unique && logDTO.unique) {
+    await this.analyticsService.recordSessionActivity(
+      psid,
+      logDTO.pid,
+      profileId,
+    )
+
+    if (!unique && logDTO.unique) {
       throw new ForbiddenException(
         'The event was not saved because it was not unique while unique only param is provided',
       )
@@ -1030,6 +1073,7 @@ export class AnalyticsController {
 
     const transformed = trafficTransformer(
       psid,
+      profileId,
       logDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
       logDTO.pg,
@@ -1117,6 +1161,7 @@ export class AnalyticsController {
   // Fallback for logging pageviews for users with JavaScript disabled
   // Returns 1x1 transparent gif
   @Get('noscript')
+  @Header('Cross-Origin-Resource-Policy', 'cross-origin')
   @Public()
   async noscript(
     @Query() data: NoscriptDto,
@@ -1146,7 +1191,19 @@ export class AnalyticsController {
       ip,
     )
 
-    await this.analyticsService.processInteractionSD(psid, logDTO.pid)
+    // For noscript requests, we generate an anonymous profile ID since
+    // user-supplied profileId is not available without JavaScript
+    const profileId = await this.analyticsService.generateProfileId(
+      logDTO.pid,
+      userAgent,
+      ip,
+    )
+
+    await this.analyticsService.recordSessionActivity(
+      psid,
+      logDTO.pid,
+      profileId,
+    )
 
     const { city, region, regionCode, country } = getGeoDetails(ip, null)
 
@@ -1157,6 +1214,7 @@ export class AnalyticsController {
 
     const transformed = trafficTransformer(
       psid,
+      profileId,
       logDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
       null,
@@ -1274,12 +1332,7 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const {
-      pid,
-      psid,
-      timezone = DEFAULT_TIMEZONE,
-      //
-    } = data
+    const { pid, psid, timezone = DEFAULT_TIMEZONE } = data
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1353,6 +1406,23 @@ export class AnalyticsController {
 
     const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
+    // customEvents comes as a JSON.stringified array from the frontend
+    let customEventsList: string[] = []
+    try {
+      const parsed = JSON.parse(customEvents || '[]')
+      customEventsList = Array.isArray(parsed) ? parsed : []
+    } catch {
+      customEventsList = []
+    }
+
+    if (customEventsList.length === 0) {
+      return {
+        chart: {},
+        appliedFilters: parsedFilters,
+        timeBucket: timeBucketForAllTime,
+      }
+    }
+
     const result: any = await this.analyticsService.groupCustomEVByTimeBucket(
       newTimeBucket,
       groupFrom,
@@ -1360,27 +1430,8 @@ export class AnalyticsController {
       filtersQuery,
       paramsData,
       safeTimezone,
+      customEventsList,
     )
-
-    let customEventss = customEvents
-
-    if (filters) {
-      try {
-        customEventss = JSON.parse(customEvents)
-      } catch {
-        //
-      }
-    }
-
-    if (customEventss.length > 0) {
-      for (const key in result.chart.events) {
-        if (!customEventss.includes(key)) {
-          delete result.chart.events[key]
-        }
-      }
-    } else {
-      result.chart = {}
-    }
 
     return {
       ...result,
@@ -1446,7 +1497,18 @@ export class AnalyticsController {
       ip,
     )
 
-    await this.analyticsService.processInteractionSD(psid, errorDTO.pid)
+    const profileId = await this.analyticsService.generateProfileId(
+      errorDTO.pid,
+      userAgent,
+      ip,
+      errorDTO.profileId,
+    )
+
+    await this.analyticsService.recordSessionActivity(
+      psid,
+      errorDTO.pid,
+      profileId,
+    )
 
     const { city, region, regionCode, country } = getGeoDetails(ip, errorDTO.tz)
 
@@ -1460,6 +1522,7 @@ export class AnalyticsController {
 
     const transformed = errorEventTransformer(
       psid,
+      profileId,
       this.analyticsService.getErrorID(errorDTO),
       errorDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
@@ -1623,7 +1686,6 @@ export class AnalyticsController {
       from,
       to,
       timeBucket,
-      //
     } = data
 
     await this.analyticsService.checkProjectAccess(
@@ -1665,5 +1727,148 @@ export class AnalyticsController {
     )
 
     return result
+  }
+
+  @Get('error-overview')
+  @Auth(true, true)
+  async getErrorOverview(
+    @Query() data: GetErrorOverviewDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+      timeBucket,
+      options,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    let parsedOptions: GetErrorOverviewOptions = {}
+
+    if (typeof options === 'string') {
+      try {
+        parsedOptions = JSON.parse(options)
+      } catch {
+        // Ignore parse errors
+      }
+    } else {
+      parsedOptions = options || {}
+    }
+
+    let newTimeBucket = timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'errors',
+      )
+
+      newTimeBucket = res.timeBucket[0]
+      diff = res.diff
+    }
+
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters,
+      DataType.ERRORS,
+      true,
+    )
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      newTimeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
+
+    return this.analyticsService.getErrorOverview(
+      pid,
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      groupFromUTC,
+      groupToUTC,
+      newTimeBucket,
+      parsedOptions.showResolved || false,
+    )
+  }
+
+  @Get('error-sessions')
+  @Auth(true, true)
+  async getErrorSessions(
+    @Query() data: GetErrorDto & { take?: number; skip?: number },
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, eid, period, from, to, timeBucket } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const take = this.analyticsService.getSafeNumber(data.take, 10)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 50) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 50',
+      )
+    }
+
+    let newTimeBucket = timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'errors',
+      )
+
+      newTimeBucket = res.timeBucket[0]
+      diff = res.diff
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(DEFAULT_TIMEZONE)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      newTimeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    return this.analyticsService.getErrorAffectedSessions(
+      pid,
+      eid,
+      groupFromUTC,
+      groupToUTC,
+      take,
+      skip,
+    )
   }
 }

@@ -150,6 +150,46 @@ curl -i -X POST https://api.swetrix.com/log/hb \
   -d '{"pid":"YOUR_PROJECT_ID"}'
 ```
 
+#### WebSocket Heartbeat
+
+For more efficient heartbeat tracking (like long-running sessions, desktop applications, etc.), you can use the WebSocket interface as an alternative to the HTTP endpoint.
+
+**Connection Details:**
+
+- **URL:** `https://api.swetrix.com`
+- **Namespace:** `/hb`
+- **Query Parameters:**
+  - `pid` (Required): Your Project ID.
+
+**Events:**
+
+- `connected`: Emitted by the server when the session is successfully established.
+- `error`: Emitted if the connection is rejected (e.g., missing PID, invalid origin, or bot detected).
+
+**Example (using socket.io-client):**
+
+```javascript
+import { io } from 'socket.io-client'
+
+const socket = io('https://api.swetrix.com/hb', {
+  query: {
+    pid: 'YOUR_PROJECT_ID',
+  },
+  transports: ['websocket'], // Optional: force WebSocket transport
+})
+
+socket.on('connected', () => {
+  console.log('Heartbeat session established')
+})
+
+socket.on('error', (err) => {
+  console.error('Heartbeat error:', err.message)
+})
+
+// The server automatically handles the heartbeat interval (every 60s)
+// Keep the connection open as long as the user is active on the page
+```
+
 ```json title="Response (201 Created)"
 {}
 ```

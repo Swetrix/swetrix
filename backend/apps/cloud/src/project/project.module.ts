@@ -15,12 +15,12 @@ import {
   Funnel,
   ProjectShare,
   Annotation,
+  PinnedProject,
 } from './entity'
 import { ProjectsViewsRepository } from './repositories/projects-views.repository'
 import { ProjectViewEntity } from './entity/project-view.entity'
 import { ProjectViewCustomEventEntity } from './entity/project-view-custom-event.entity'
 import { OrganisationModule } from '../organisation/organisation.module'
-import { ProjectExtraService } from './project-extra.service'
 
 @Module({
   imports: [
@@ -32,6 +32,7 @@ import { ProjectExtraService } from './project-extra.service'
       Annotation,
       ProjectViewEntity,
       ProjectViewCustomEventEntity,
+      PinnedProject,
     ]),
     forwardRef(() => UserModule),
     forwardRef(() => OrganisationModule),
@@ -39,18 +40,8 @@ import { ProjectExtraService } from './project-extra.service'
     ActionTokensModule,
     MailerModule,
   ],
-  providers: [
-    ProjectService,
-    ProjectExtraService,
-    ProjectsViewsRepository,
-    GSCService,
-  ],
-  exports: [
-    ProjectService,
-    ProjectExtraService,
-    ProjectsViewsRepository,
-    GSCService,
-  ],
+  providers: [ProjectService, ProjectsViewsRepository, GSCService],
+  exports: [ProjectService, ProjectsViewsRepository, GSCService],
   controllers: [ProjectController, GSCController],
 })
 export class ProjectModule {}

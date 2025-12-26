@@ -55,7 +55,6 @@ import {
   REDIS_TRIALS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
-  UNIQUE_SESSION_LIFE_TIME,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
@@ -75,9 +74,15 @@ import {
 } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
+import { GetProfilesDto } from './dto/get-profiles.dto'
+import { GetProfileDto, GetProfileSessionsDto } from './dto/get-profile.dto'
 import { ErrorDto } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDto } from './dto/get-error.dto'
+import {
+  GetErrorOverviewDto,
+  GetErrorOverviewOptions,
+} from './dto/get-error-overview.dto'
 import { PatchStatusDto } from './dto/patch-status.dto'
 import {
   customEventTransformer,
@@ -95,6 +100,7 @@ import { LiveVisitorsDto } from './dto/live-visitors.dto'
 import { GetHeartbeatStatsDto } from './dto/get-heartbeat-stats'
 import { GetKeywordsDto } from './dto/get-keywords.dto'
 import { GSCService } from '../project/gsc.service'
+import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -104,6 +110,8 @@ const DEFAULT_MEASURE = 'median'
 // Silent 200 response for bots
 // https://github.com/Swetrix/swetrix/issues/371
 const BOT_RESPONSE = { message: 'Bot traffic detected, request is ignored' }
+
+const ONLINE_VISITORS_WINDOW_MINUTES = 5 // minutes
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
@@ -850,6 +858,7 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       timeBucket,
       filters,
+      includeChart,
     } = data
     const pidsArray = getPIDsArray(pids, pid)
 
@@ -888,57 +897,7 @@ export class AnalyticsController {
       to,
       timezone,
       filters,
-    )
-  }
-
-  @Get('captcha/birdseye')
-  @Auth(true, true)
-  // returns overall short statistics per CAPTCHA project
-  async getCaptchaOverallStats(
-    @Query() data: GetOverallStatsDto,
-    @CurrentUserId() uid: string,
-  ) {
-    const {
-      pids,
-      pid,
-      period,
-      from,
-      to,
-      timezone = DEFAULT_TIMEZONE,
-      filters,
-    } = data
-    const pidsArray = getPIDsArray(pids, pid)
-
-    const validPids = []
-
-    const validationPromises = _map(pidsArray, async currentPID => {
-      await this.analyticsService.checkProjectAccess(currentPID, uid)
-
-      await this.analyticsService.checkBillingAccess(currentPID)
-
-      validPids.push(currentPID)
-    })
-
-    try {
-      await Promise.allSettled(validationPromises)
-    } catch {
-      //
-    }
-
-    if (_isEmpty(validPids)) {
-      throw new HttpException(
-        'The data could not be loaded for the selected projects. It is possible that the projects are not accessible to you or the account owner has been suspended.',
-        HttpStatus.PAYMENT_REQUIRED,
-      )
-    }
-
-    return this.analyticsService.getCaptchaSummary(
-      validPids,
-      period,
-      from,
-      to,
-      timezone,
-      filters,
+      includeChart,
     )
   }
 
@@ -1081,13 +1040,12 @@ export class AnalyticsController {
     )
     await this.analyticsService.checkBillingAccess(pid)
 
-    const keys = await redis.keys(`sd:*:${pid}`)
-    if (_isEmpty(keys)) {
-      return []
-    }
+    const since = dayjs
+      .utc()
+      .subtract(ONLINE_VISITORS_WINDOW_MINUTES, 'minute')
+      .format('YYYY-MM-DD HH:mm:ss')
 
-    const psids = _map(keys, key => key.split(':')[1])
-
+    // Query ClickHouse for active sessions in the last 5 minutes
     const query = `
       SELECT DISTINCT ON (psid)
         any(dv) AS dv,
@@ -1105,8 +1063,9 @@ export class AnalyticsController {
           cc
         FROM analytics
         WHERE
-          psid IN ({ psids: Array(String) })
-          AND pid = ({ pid: FixedString(12) })
+          pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
         UNION ALL
         SELECT
           psid,
@@ -1116,8 +1075,9 @@ export class AnalyticsController {
           cc
         FROM customEV
         WHERE
-          psid IN ({ psids: Array(String) })
-          AND pid = ({ pid: FixedString(12) })
+          pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
       )
       GROUP BY psid
     `
@@ -1126,8 +1086,8 @@ export class AnalyticsController {
       .query({
         query,
         query_params: {
-          psids,
           pid,
+          since,
         },
       })
       .then(resultSet => resultSet.json())
@@ -1156,7 +1116,18 @@ export class AnalyticsController {
       ip,
     )
 
-    await this.analyticsService.processInteractionSD(psid, errorDTO.pid)
+    const profileId = await this.analyticsService.generateProfileId(
+      errorDTO.pid,
+      userAgent,
+      ip,
+      errorDTO.profileId,
+    )
+
+    await this.analyticsService.recordSessionActivity(
+      psid,
+      errorDTO.pid,
+      profileId,
+    )
 
     const { city, region, regionCode, country } = getGeoDetails(ip, errorDTO.tz)
 
@@ -1170,6 +1141,7 @@ export class AnalyticsController {
 
     const transformed = errorEventTransformer(
       psid,
+      profileId,
       this.analyticsService.getErrorID(errorDTO),
       errorDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
@@ -1283,8 +1255,22 @@ export class AnalyticsController {
       ip,
     )
 
+    const profileId = await this.analyticsService.generateProfileId(
+      eventsDTO.pid,
+      userAgent,
+      ip,
+      eventsDTO.profileId,
+    )
+
+    await this.analyticsService.recordSessionActivity(
+      psid,
+      eventsDTO.pid,
+      profileId,
+    )
+
     const transformed = customEventTransformer(
       psid,
+      profileId,
       eventsDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
       eventsDTO.ev,
@@ -1344,8 +1330,11 @@ export class AnalyticsController {
 
     await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
 
-    const { exists, psid, sessionHash } =
-      await this.analyticsService.getSessionId(pid, userAgent, ip)
+    const { exists, psid } = await this.analyticsService.getSessionId(
+      pid,
+      userAgent,
+      ip,
+    )
 
     if (!exists) {
       throw new ForbiddenException(
@@ -1353,9 +1342,15 @@ export class AnalyticsController {
       )
     }
 
-    await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
+    const profileId = await this.analyticsService.generateProfileId(
+      pid,
+      userAgent,
+      ip,
+      logDTO.profileId,
+    )
 
-    await this.analyticsService.processInteractionSD(psid, pid)
+    await this.analyticsService.extendSessionTTL(psid)
+    await this.analyticsService.recordSessionActivity(psid, pid, profileId)
 
     return {}
   }
@@ -1383,7 +1378,18 @@ export class AnalyticsController {
         ip,
       )
 
-    await this.analyticsService.processInteractionSD(psid, logDTO.pid)
+    const profileId = await this.analyticsService.generateProfileId(
+      logDTO.pid,
+      userAgent,
+      ip,
+      logDTO.profileId,
+    )
+
+    await this.analyticsService.recordSessionActivity(
+      psid,
+      logDTO.pid,
+      profileId,
+    )
 
     if (!unique && logDTO.unique) {
       throw new ForbiddenException(
@@ -1400,6 +1406,7 @@ export class AnalyticsController {
 
     const transformed = trafficTransformer(
       psid,
+      profileId,
       logDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
       logDTO.pg,
@@ -1517,7 +1524,17 @@ export class AnalyticsController {
       ip,
     )
 
-    await this.analyticsService.processInteractionSD(psid, logDTO.pid)
+    const profileId = await this.analyticsService.generateProfileId(
+      logDTO.pid,
+      userAgent,
+      ip,
+    )
+
+    await this.analyticsService.recordSessionActivity(
+      psid,
+      logDTO.pid,
+      profileId,
+    )
 
     const { city, region, regionCode, country } = getGeoDetails(ip)
 
@@ -1528,6 +1545,7 @@ export class AnalyticsController {
 
     const transformed = trafficTransformer(
       psid,
+      profileId,
       logDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
       null,
@@ -1738,7 +1756,6 @@ export class AnalyticsController {
       from,
       to,
       timeBucket,
-      //
     } = data
 
     await this.analyticsService.checkProjectAccess(
@@ -1784,6 +1801,153 @@ export class AnalyticsController {
     return result
   }
 
+  @Get('error-overview')
+  @Auth(true, true)
+  async getErrorOverview(
+    @Query() data: GetErrorOverviewDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+      timeBucket,
+      options,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    let parsedOptions: GetErrorOverviewOptions = {}
+
+    if (typeof options === 'string') {
+      try {
+        parsedOptions = JSON.parse(options)
+      } catch {
+        // Ignore parse errors
+      }
+    } else {
+      parsedOptions = options || {}
+    }
+
+    let newTimeBucket = timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'errors',
+      )
+
+      newTimeBucket = res.timeBucket[0]
+      diff = res.diff
+    }
+
+    const [filtersQuery, filtersParams] = this.analyticsService.getFiltersQuery(
+      filters,
+      DataType.ERRORS,
+      true,
+    )
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      newTimeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
+
+    return this.analyticsService.getErrorOverview(
+      pid,
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      groupFromUTC,
+      groupToUTC,
+      newTimeBucket,
+      parsedOptions.showResolved || false,
+    )
+  }
+
+  @Get('error-sessions')
+  @Auth(true, true)
+  async getErrorSessions(
+    @Query() data: GetErrorDto & { take?: number; skip?: number },
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const { pid, eid, period, from, to, timeBucket } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const take = this.analyticsService.getSafeNumber(data.take, 10)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 50) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 50',
+      )
+    }
+
+    let newTimeBucket = timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'errors',
+      )
+
+      newTimeBucket = res.timeBucket[0]
+      diff = res.diff
+    }
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(DEFAULT_TIMEZONE)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      newTimeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    return this.analyticsService.getErrorAffectedSessions(
+      pid,
+      eid,
+      groupFromUTC,
+      groupToUTC,
+      take,
+      skip,
+    )
+  }
+
   @Get('session')
   @Auth(true, true)
   async getSession(
@@ -1791,12 +1955,7 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const {
-      pid,
-      psid,
-      timezone = DEFAULT_TIMEZONE,
-      //
-    } = data
+    const { pid, psid, timezone = DEFAULT_TIMEZONE } = data
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1815,6 +1974,246 @@ export class AnalyticsController {
     )
 
     return result
+  }
+
+  @Get('profiles')
+  @Auth(true, true)
+  async getProfiles(
+    @Query() data: GetProfilesDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+      profileType = 'all',
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of profiles to return is 150',
+      )
+    }
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    const [filtersQuery, filtersParams, appliedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
+
+    const profiles = await this.analyticsService.getProfilesList(
+      pid,
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      take,
+      skip,
+      profileType,
+    )
+
+    return { profiles, appliedFilters, take, skip }
+  }
+
+  @Get('profile')
+  @Auth(true, true)
+  async getProfile(
+    @Query() data: GetProfileDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      profileId,
+      timezone = DEFAULT_TIMEZONE,
+      period,
+      from,
+      to,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const [details, topPages, activityCalendar, chart] = await Promise.all([
+      this.analyticsService.getProfileDetails(pid, profileId, safeTimezone),
+      this.analyticsService.getProfileTopPages(pid, profileId),
+      this.analyticsService.getProfileActivityCalendar(pid, profileId),
+      this.analyticsService.getProfileChartData(
+        pid,
+        profileId,
+        timeBucket,
+        groupFromUTC,
+        groupToUTC,
+        safeTimezone,
+      ),
+    ])
+
+    return {
+      ...details,
+      topPages,
+      activityCalendar,
+      chart,
+      timeBucket,
+    }
+  }
+
+  @Get('profile/sessions')
+  @Auth(true, true)
+  async getProfileSessions(
+    @Query() data: GetProfileSessionsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      profileId,
+      period,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 150',
+      )
+    }
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    const [filtersQuery, filtersParams, appliedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
+
+    const sessions = await this.analyticsService.getProfileSessionsList(
+      pid,
+      profileId,
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      take,
+      skip,
+    )
+
+    return { sessions, appliedFilters, take, skip }
   }
 
   @Get('custom-events')
@@ -1875,6 +2274,19 @@ export class AnalyticsController {
 
     const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
+    // customEvents comes as a JSON.stringified array from the frontend
+    let customEventsList: string[] = []
+    try {
+      const parsed = JSON.parse(customEvents || '[]')
+      customEventsList = Array.isArray(parsed) ? parsed : []
+    } catch {
+      customEventsList = []
+    }
+
+    if (customEventsList.length === 0) {
+      return { chart: {}, appliedFilters, timeBucket: timeBucketForAllTime }
+    }
+
     const result: any = await this.analyticsService.groupCustomEVByTimeBucket(
       newTimeBucket,
       groupFrom,
@@ -1882,28 +2294,63 @@ export class AnalyticsController {
       filtersQuery,
       paramsData,
       safeTimezone,
+      customEventsList,
     )
 
-    let customEventss = customEvents
-
-    if (filters) {
-      try {
-        customEventss = JSON.parse(customEvents)
-      } catch {
-        //
-      }
-    }
-
-    if (customEventss.length > 0) {
-      for (const key in result.chart.events) {
-        if (!customEventss.includes(key)) {
-          delete result.chart.events[key]
-        }
-      }
-    } else {
-      result.chart = {}
-    }
-
     return { ...result, appliedFilters, timeBucket: timeBucketForAllTime }
+  }
+
+  // Revenue attribution endpoints
+
+  @Post('profile-id')
+  @Public()
+  async getOrCreateProfileId(
+    @Body() dto: GetProfileIdDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ profileId: string | null }> {
+    const { 'user-agent': userAgent } = headers
+    const { pid } = dto
+
+    try {
+      const ip = getIPFromHeaders(headers, true) || reqIP || ''
+
+      const profileId = await this.analyticsService.generateProfileId(
+        pid,
+        userAgent,
+        ip,
+      )
+
+      return { profileId }
+    } catch (error) {
+      this.logger.error({ error, pid }, 'Error generating profile ID')
+      return { profileId: null }
+    }
+  }
+
+  @Post('session-id')
+  @Public()
+  async getOrCreateSessionId(
+    @Body() dto: GetSessionIdDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ sessionId: string | null }> {
+    const { 'user-agent': userAgent } = headers
+    const { pid } = dto
+
+    try {
+      const ip = getIPFromHeaders(headers, true) || reqIP || ''
+
+      const { psid } = await this.analyticsService.getSessionId(
+        pid,
+        userAgent,
+        ip,
+      )
+
+      return { sessionId: psid }
+    } catch (error) {
+      this.logger.error({ error, pid }, 'Error generating session ID')
+      return { sessionId: null }
+    }
   }
 }

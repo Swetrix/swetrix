@@ -9,12 +9,6 @@ import {
 import { ActionToken } from '../../action-tokens/action-token.entity'
 import { Project } from '../../project/entity/project.entity'
 import { ProjectShare } from '../../project/entity/project-share.entity'
-import { Extension } from '../../marketplace/extensions/entities/extension.entity'
-import { ExtensionToUser } from '../../marketplace/extensions/entities/extension-to-user.entity'
-import { Payout } from '../../payouts/entities/payouts.entity'
-import { Comment } from '../../marketplace/comments/entities/comment.entity'
-import { CommentReply } from '../../marketplace/comments/entities/comment-reply.entity'
-import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
 import { RefreshToken } from './refresh-token.entity'
 import { OrganisationMember } from '../../organisation/entity/organisation-member.entity'
 
@@ -221,23 +215,10 @@ export const DEFAULT_TIMEZONE = 'Etc/GMT'
 
 export const TRIAL_DURATION = 14 // days
 
-export enum FeatureFlag {
-  'dashboard-period-selector' = 'dashboard-period-selector',
-  'dashboard-analytics-tabs' = 'dashboard-analytics-tabs',
-  'dashboard-hostname-cards' = 'dashboard-hostname-cards',
-}
-
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string
-
-  @Column({
-    type: 'set',
-    enum: FeatureFlag,
-    default: [],
-  })
-  featureFlags: FeatureFlag[]
 
   @Column({
     type: 'enum',
@@ -331,21 +312,6 @@ export class User {
   @Column({ default: false })
   isAccountBillingSuspended: boolean
 
-  /* Affiliate system related fields */
-  @Column('varchar', { length: 8, default: null })
-  refCode: string | null
-
-  @Column('varchar', { default: null })
-  referrerID: string | null
-
-  @Column('varchar', {
-    length: 254,
-    unique: true,
-    default: null,
-    nullable: true,
-  })
-  paypalPaymentsEmail: string | null
-
   @BeforeUpdate()
   updateTimestamp() {
     this.updated = new Date()
@@ -356,17 +322,11 @@ export class User {
   @OneToMany(() => Project, project => project.admin)
   projects: Project[]
 
-  @OneToMany(() => Payout, payout => payout.user)
-  payouts: Payout[]
-
   @OneToMany(() => ProjectShare, sharedProjects => sharedProjects.user)
   sharedProjects: ProjectShare[]
 
   @OneToMany(() => ActionToken, actionToken => actionToken.user)
   actionTokens: ActionToken[]
-
-  @OneToMany(() => Extension, extension => extension.owner)
-  ownedExtensions: Extension[]
 
   @Column({
     type: 'enum',
@@ -460,22 +420,6 @@ export class User {
 
   @Column({ default: false })
   registeredWithGithub: boolean
-
-  @OneToMany(() => ExtensionToUser, extensionToUser => extensionToUser.user)
-  @JoinTable()
-  extensions: ExtensionToUser[]
-
-  @OneToMany(() => Comment, comment => comment.user)
-  @JoinTable()
-  comments: Comment[]
-
-  @OneToMany(() => CommentReply, comment => comment.user)
-  @JoinTable()
-  commentReplies: CommentReply[]
-
-  @OneToMany(() => Complaint, complaint => complaint.user)
-  @JoinTable()
-  complaints: Complaint[]
 
   @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
   @JoinTable()

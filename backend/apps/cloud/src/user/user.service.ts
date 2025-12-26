@@ -14,6 +14,7 @@ import {
   Repository,
 } from 'typeorm'
 import axios from 'axios'
+import crypto from 'crypto'
 import CryptoJS from 'crypto-js'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -24,7 +25,6 @@ import _isNull from 'lodash/isNull'
 import _toNumber from 'lodash/toNumber'
 
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
-import { PayoutsService } from '../payouts/payouts.service'
 import {
   User,
   ACCOUNT_PLANS,
@@ -32,7 +32,6 @@ import {
   BillingFrequency,
   PlanCode,
 } from './entities/user.entity'
-import { PayoutStatus } from '../payouts/entities/payouts.entity'
 import { UserProfileDTO } from './dto/user.dto'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { DeleteFeedback } from './entities/delete-feedback.entity'
@@ -109,7 +108,6 @@ export class UserService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     @InjectRepository(DeleteFeedback)
     private readonly deleteFeedbackRepository: Repository<DeleteFeedback>,
-    private readonly payoutsService: PayoutsService,
     private readonly organisationService: OrganisationService,
   ) {}
 
@@ -174,6 +172,10 @@ export class UserService {
     ])
   }
 
+  private hashRefreshToken(refreshToken: string) {
+    return crypto.createHash('sha256').update(refreshToken).digest('hex')
+  }
+
   findOne(options: FindOneOptions<User> = {}): Promise<User> {
     return this.usersRepository.findOne(options)
   }
@@ -214,9 +216,7 @@ export class UserService {
     return this.usersRepository.findOne({ where: { email } })
   }
 
-  public async createUser(
-    user: Pick<User, 'email' | 'password' | 'referrerID'>,
-  ) {
+  public async createUser(user: Pick<User, 'email' | 'password'>) {
     return this.usersRepository.save({
       ...user,
       trialEndDate: dayjs
@@ -249,25 +249,29 @@ export class UserService {
   }
 
   public async saveRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = this.hashRefreshToken(refreshToken)
     return this.refreshTokenRepository.save({
       userId,
-      refreshToken,
+      refreshToken: hashedRefreshToken,
     })
   }
 
   public async findRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = this.hashRefreshToken(refreshToken)
     return this.refreshTokenRepository.findOne({
-      where: {
-        userId,
-        refreshToken,
-      },
+      // Backward-compatible: support legacy plaintext tokens while migrating.
+      where: [
+        { userId, refreshToken },
+        { userId, refreshToken: hashedRefreshToken },
+      ],
     })
   }
 
   public async deleteRefreshToken(userId: string, refreshToken: string) {
+    const hashedRefreshToken = this.hashRefreshToken(refreshToken)
     await this.refreshTokenRepository.delete({
       userId,
-      refreshToken,
+      refreshToken: In([refreshToken, hashedRefreshToken]),
     })
   }
 
@@ -509,18 +513,6 @@ export class UserService {
     await this.update(id, updateParams)
   }
 
-  async getPayoutsList(user: User, take = 20, skip = 0) {
-    return this.payoutsService.paginate(
-      {
-        take,
-        skip,
-      },
-      {
-        user: { id: user.id },
-      },
-    )
-  }
-
   createUnsubscribeKey(userId: string): string {
     return encodeURIComponent(
       CryptoJS.Rabbit.encrypt(userId, EMAIL_ACTION_ENCRYPTION_KEY).toString(),
@@ -533,77 +525,6 @@ export class UserService {
       EMAIL_ACTION_ENCRYPTION_KEY,
     )
     return bytes.toString(CryptoJS.enc.Utf8)
-  }
-
-  async getReferralsList(user: User): Promise<Partial<User>[]> {
-    return this.usersRepository
-      .createQueryBuilder('user')
-      .select([
-        'user.planCode',
-        'user.created',
-        'user.billingFrequency',
-        'user.tierCurrency',
-      ])
-      .where('user.referrerID = :id', { id: user.id })
-      .andWhere('user.planCode != :none', { none: PlanCode.none })
-      .andWhere('user.planCode != :trial', { trial: PlanCode.trial })
-      .andWhere('user.planCode != :free', { free: PlanCode.free })
-      .orderBy('user.created', 'DESC')
-      .getMany()
-  }
-
-  async getPayoutsInfo(user: User): Promise<any> {
-    const { id } = user
-
-    const trials = await this.count({
-      where: {
-        referrerID: id,
-        planCode: In([PlanCode.trial, PlanCode.none]),
-      },
-    })
-
-    const subscribers = _toNumber(
-      (
-        await this.usersRepository
-          .createQueryBuilder('user')
-          .select('COUNT(user.id)', 'count')
-          .where('user.referrerID = :id', { id })
-          .andWhere('user.planCode != :none', { none: PlanCode.none })
-          .andWhere('user.planCode != :trial', { trial: PlanCode.trial })
-          .getRawOne()
-      )?.count,
-    )
-
-    let paid = await this.payoutsService.sumAmountByReferrerId(
-      id,
-      PayoutStatus.paid,
-    )
-    let nextPayout = await this.payoutsService.sumAmountByReferrerId(
-      id,
-      PayoutStatus.processing,
-    )
-    let pending = await this.payoutsService.sumAmountByReferrerId(
-      id,
-      PayoutStatus.pending,
-    )
-
-    paid = paid ?? 0
-    nextPayout = nextPayout ?? 0
-    pending = pending ?? 0
-
-    return {
-      trials,
-      subscribers,
-      paid,
-      nextPayout,
-      pending,
-    }
-  }
-
-  async isRefCodeUnique(code: string): Promise<boolean> {
-    const user = await this.findOne({ where: { refCode: code } })
-
-    return !user
   }
 
   async getReportUsers(

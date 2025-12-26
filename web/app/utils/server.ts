@@ -120,13 +120,6 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
       }
       break
 
-    case routes.new_project:
-    case routes.new_captcha:
-      result = {
-        title: t('project.settings.create'),
-      }
-      break
-
     case routes.billing:
       result = {
         title: t('titles.billing'),
@@ -147,19 +140,19 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
 
     case routes.privacy:
       result = {
-        title: 'Privacy Policy',
+        title: t('titles.privacyPolicy'),
       }
       break
 
     case routes.cookiePolicy:
       result = {
-        title: 'Cookie Policy',
+        title: t('titles.cookiePolicy'),
       }
       break
 
     case routes.terms:
       result = {
-        title: 'Terms and Conditions',
+        title: t('titles.termsAndConditions'),
       }
       break
 
@@ -177,7 +170,7 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
 
     case routes.about:
       result = {
-        title: 'About us',
+        title: t('titles.aboutUs'),
       }
       break
 
@@ -217,19 +210,11 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
       }
       break
 
-    case routes.feature_flags:
-      result = {
-        title: t('titles.featureFlags'),
-      }
-      break
-
     default:
       break
   }
 
-  // organisation, project_settings, captcha_settings, project, captcha titles are set dynamically
-
-  // todo: create_alert, alert_settings, project_protected_password
+  // organisation, project_settings, project titles are set dynamically
 
   result.prefixLessTitle = result.title
   result.title += ` ${TITLE_SUFFIX}`

@@ -19,7 +19,8 @@ export class JwtRefreshTokenStrategy extends PassportStrategy(
   }
 
   public validate(request: Request, payload: IJwtPayload) {
-    const refreshToken = request.headers.authorization.split(' ')[1]
+    const authHeader = request.headers.authorization
+    const refreshToken = authHeader?.split(' ')?.[1]
 
     if (!refreshToken) throw new ForbiddenException()
 

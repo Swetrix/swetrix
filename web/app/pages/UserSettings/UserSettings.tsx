@@ -9,7 +9,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { MessageSquareTextIcon, MonitorIcon, UserRoundIcon, MousePointerClickIcon } from 'lucide-react'
+import { MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
 import React, { useState, useEffect, memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -36,9 +36,9 @@ import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
+import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
 import TimezonePicker from '~/ui/TimezonePicker'
-import { trackCustom } from '~/utils/analytics'
 import { getCookie, setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
@@ -48,7 +48,6 @@ import NoOrganisations from './components/NoOrganisations'
 import NoSharedProjects from './components/NoSharedProjects'
 import Organisations from './components/Organisations'
 import ProjectList from './components/ProjectList'
-import Referral from './components/Referral'
 import Socialisations from './components/Socialisations'
 import TwoFA from './components/TwoFA'
 
@@ -58,7 +57,6 @@ const timeFormatArray = _map(TimeFormat, (key) => key)
 
 const TAB_MAPPING = {
   ACCOUNT: 'account',
-  REFERRALS: 'referrals',
   INTERFACE: 'interface',
   COMMUNICATIONS: 'communications',
 }
@@ -73,7 +71,7 @@ const getTabs = (t: typeof i18next.t) => {
       },
       {
         id: TAB_MAPPING.INTERFACE,
-        label: 'Interface settings',
+        label: t('profileSettings.interfaceSettings'),
         icon: MonitorIcon,
       },
     ]
@@ -87,18 +85,13 @@ const getTabs = (t: typeof i18next.t) => {
     },
     {
       id: TAB_MAPPING.COMMUNICATIONS,
-      label: 'Communications',
+      label: t('profileSettings.communications'),
       icon: MessageSquareTextIcon,
     },
     {
       id: TAB_MAPPING.INTERFACE,
-      label: 'Interface settings',
+      label: t('profileSettings.interfaceSettings'),
       icon: MonitorIcon,
-    },
-    {
-      id: TAB_MAPPING.REFERRALS,
-      label: t('profileSettings.referral.title'),
-      icon: MousePointerClickIcon,
     },
   ]
 }
@@ -312,9 +305,6 @@ const UserSettings = () => {
       await deleteUser(deletionFeedback)
       logout()
       toast.success(t('apiNotifications.accountDeleted'))
-      trackCustom('ACCOUNT_DELETED', {
-        reason_stated: deletionFeedback ? 'true' : 'false',
-      })
       navigate(routes.main)
     } catch (reason: any) {
       toast.error(t(`apiNotifications.${reason}`, 'apiNotifications.somethingWentWrong'))
@@ -381,9 +371,9 @@ const UserSettings = () => {
   const SharedProjects = () => (
     <>
       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+      <Text as='h3' size='lg' weight='bold' className='mt-2 flex items-center'>
         {t('profileSettings.shared')}
-      </h3>
+      </Text>
       <div>
         {!_isEmpty(user?.sharedProjects) ? (
           <div className='mt-3 overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
@@ -428,7 +418,9 @@ const UserSettings = () => {
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 dark:bg-slate-900'>
       <form className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.profileSettings')}</h2>
+        <Text as='h2' size='3xl' weight='bold' className='mt-2'>
+          {t('titles.profileSettings')}
+        </Text>
         <hr className='mt-5 border-gray-200 dark:border-gray-600' />
         <div className='mt-6 flex flex-col gap-6 md:flex-row'>
           <div className='md:hidden'>
@@ -806,20 +798,6 @@ const UserSettings = () => {
                           ) : null}
                         </>
                       ) : null}
-                    </>
-                  )
-                }
-
-                if (activeTab === TAB_MAPPING.REFERRALS) {
-                  return (
-                    <>
-                      <h3
-                        id='socialisations'
-                        className='flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'
-                      >
-                        {t('profileSettings.referral.title')}
-                      </h3>
-                      <Referral />
                     </>
                   )
                 }

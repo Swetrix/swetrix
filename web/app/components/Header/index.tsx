@@ -31,15 +31,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { changeLanguage } from '~/i18n'
-import {
-  whitelist,
-  languages,
-  languageFlag,
-  isSelfhosted,
-  DOCS_URL,
-  CAPTCHA_URL,
-  isDisableMarketingPages,
-} from '~/lib/constants'
+import { whitelist, languages, languageFlag, isSelfhosted, DOCS_URL, isDisableMarketingPages } from '~/lib/constants'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
@@ -80,7 +72,7 @@ const getSolutions = (t: typeof i18nextT) => [
   {
     name: t('header.solutions.captcha.title'),
     description: t('header.solutions.captcha.desc'),
-    link: CAPTCHA_URL,
+    link: routes.captchaLanding,
     icon: PuzzleIcon,
   },
 ]
@@ -242,7 +234,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             <Disclosure>
               {({ open }) => (
                 <>
-                  <DisclosureButton className='flex w-full justify-between rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'>
+                  <DisclosureButton className='flex w-full justify-between rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'>
                     <div className='flex'>
                       <Flag
                         className='mr-1.5 rounded-xs'
@@ -308,7 +300,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                   href={CONTACT_US_URL}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
                 >
                   {t('footer.support')}
                 </a>
@@ -317,7 +309,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <MenuItem>
                 <Link
                   to={routes.contact}
-                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
                 >
                   {t('footer.support')}
                 </Link>
@@ -327,7 +319,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <MenuItem>
                 <Link
                   to={routes.billing}
-                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
                 >
                   {t('common.billing')}
                 </Link>
@@ -339,7 +331,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             <MenuItem>
               <Link
                 to={routes.user_settings}
-                className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
               >
                 {t('common.accountSettings')}
               </Link>
@@ -348,7 +340,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <MenuItem>
                 <Link
                   to={routes.organisations}
-                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
                 >
                   {t('organisations.organisations')}
                 </Link>
@@ -357,7 +349,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             <MenuItem>
               <button
                 type='button'
-                className='w-full rounded-md p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                className='w-full rounded-md p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
                 onClick={logoutHandler}
               >
                 {t('common.logout')}

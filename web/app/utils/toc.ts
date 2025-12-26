@@ -5,6 +5,29 @@ interface TocItem {
   children: TocItem[]
 }
 
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function stripHtmlTags(input: string): string {
+  const tagRegex = /<[^>]*>/g
+  let result = input
+  let previous: string
+
+  // Repeatedly remove HTML tags until no more changes occur
+  do {
+    previous = result
+    result = result.replace(tagRegex, '')
+  } while (result !== previous)
+
+  return result.trim()
+}
+
 export function generateSlug(text: string): string {
   return text
     .toLowerCase()
@@ -28,7 +51,7 @@ export function renderTocAsHtml(items: TocItem[]): string {
       html += `<li class="flex flex-col">`
       html += `<div class="flex items-start gap-0.5">`
       html += `<span class="text-gray-600 dark:text-gray-400 font-medium mr-[1ch]">${currentNumber}.</span>`
-      html += `<a href="#${item.id}">${item.text}</a>`
+      html += `<a href="#${escapeHtml(item.id)}">${escapeHtml(item.text)}</a>`
       html += `</div>`
 
       if (item.children.length > 0) {
@@ -56,7 +79,7 @@ export function extractTableOfContents(html: string): TocItem[] {
   while ((match = headerRegex.exec(html)) !== null) {
     const level = parseInt(match[1])
     const existingId = match[2]
-    const text = match[3].replace(/<[^>]*>/g, '').trim() // Remove HTML tags
+    const text = stripHtmlTags(match[3])
     const id = existingId || generateSlug(text)
 
     const tocItem: TocItem = {
@@ -93,7 +116,7 @@ export function ensureHeaderIds(html: string): string {
         return match // Already has an ID
       }
 
-      const text = content.replace(/<[^>]*>/g, '').trim()
+      const text = stripHtmlTags(content)
       const id = generateSlug(text)
 
       return `<h${level} id="${id}"${attrs}>${content}</h${level}>`

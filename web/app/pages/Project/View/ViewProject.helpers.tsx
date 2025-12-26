@@ -12,12 +12,15 @@ import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
+import _orderBy from 'lodash/orderBy'
 import _reduce from 'lodash/reduce'
 import _replace from 'lodash/replace'
 import _round from 'lodash/round'
 import _size from 'lodash/size'
+import _some from 'lodash/some'
 import _split from 'lodash/split'
 import _startsWith from 'lodash/startsWith'
+import _sum from 'lodash/sum'
 import _toNumber from 'lodash/toNumber'
 import _toString from 'lodash/toString'
 import {
@@ -230,6 +233,7 @@ const CHART_METRICS_MAPPING = {
   sessionDuration: 'sessionDuration',
   customEvents: 'customEvents',
   cumulativeMode: 'cumulativeMode',
+  revenue: 'revenue',
 } as const
 
 const CHART_METRICS_MAPPING_PERF = {
@@ -319,6 +323,18 @@ const getColumns = (
 
     if (compareChart?.sdur) {
       columns.push(['sessionDurationCompare', ...compareChart.sdur])
+    }
+  }
+
+  // Revenue data (if available) - revenue as bars with refunds stacked on top
+  if (activeChartMetrics.revenue && chart.revenue) {
+    columns.push(['revenue', ...chart.revenue])
+    // Add refundsAmount if available for stacked bar display
+    if (chart.refundsAmount) {
+      const hasAnyRefunds = _some(chart.refundsAmount, (v) => Number(v || 0) > 0)
+      if (hasAnyRefunds) {
+        columns.push(['refundsAmount', ...chart.refundsAmount])
+      }
     }
   }
 
@@ -615,6 +631,9 @@ const getSettings = (
         trendlineTotal: spline(),
         sessionDuration: chartType === chartTypes.line ? spline() : bar(),
         sessionDurationCompare: chartType === chartTypes.line ? spline() : bar(),
+        // Revenue is always bars (stacked with refunds)
+        revenue: bar(),
+        refundsAmount: bar(),
       },
       colors: {
         unique: '#2563EB',
@@ -628,13 +647,22 @@ const getSettings = (
         trendlineTotal: '#eba14b',
         sessionDuration: '#c945ed',
         sessionDurationCompare: 'rgba(201, 69, 237, 0.4)',
+        revenue: '#ea580c', // orange-600 for net revenue
+        refundsAmount: 'rgba(234, 88, 12, 0.25)', // light orange fill for refunds overlay
         ...customEventsColors,
       },
+      // Stack revenue and refundsAmount together
+      groups: activeChartMetrics.revenue ? [['revenue', 'refundsAmount']] : undefined,
+      // Prevent billboard/c3 from auto-reordering stacked series
+      // (we need refunds stacked on top of revenue consistently)
+      order: activeChartMetrics.revenue ? null : undefined,
       // @ts-expect-error
       regions,
       axes: {
         bounce: 'y2',
         sessionDuration: 'y2',
+        revenue: 'y2',
+        refundsAmount: 'y2',
       },
     },
     grid: {
@@ -677,12 +705,14 @@ const getSettings = (
         inner: true,
       },
       y2: {
-        show: activeChartMetrics.bounce || activeChartMetrics.sessionDuration,
+        show: activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.revenue,
         tick: {
           // @ts-expect-error
           format: activeChartMetrics.bounce
             ? (d: string) => `${d}%`
-            : (d: string) => getStringFromTime(getTimeFromSeconds(d)),
+            : activeChartMetrics.revenue
+              ? (d: number) => `$${nFormatter(d, 1)}`
+              : (d: string) => getStringFromTime(getTimeFromSeconds(d)),
         },
         min: activeChartMetrics.bounce ? 10 : undefined,
         max: activeChartMetrics.bounce ? 100 : undefined,
@@ -720,6 +750,31 @@ const getSettings = (
 
             if (el.id === 'trendlineUnique' || el.id === 'trendlineTotal') {
               return ''
+            }
+
+            // Format revenue and refunds as currency
+            if (el.id === 'revenue') {
+              return `
+              <li class='flex justify-between'>
+                <div class='flex justify-items-start'>
+                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style='background-color:${color(el.id)}'></div>
+                  <span>${el.name}</span>
+                </div>
+                <span class='pl-4'>$${nFormatter(Number(el.value) || 0, 2)}</span>
+              </li>
+              `
+            }
+
+            if (el.id === 'refundsAmount') {
+              return `
+              <li class='flex justify-between'>
+                <div class='flex justify-items-start'>
+                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style='background-color:rgba(234,88,12,0.25);border:1.5px dashed #ea580c'></div>
+                  <span>${el.name}</span>
+                </div>
+                <span class='pl-4'>$${nFormatter(Number(el.value) || 0, 2)}</span>
+              </li>
+              `
             }
 
             return `
@@ -831,14 +886,56 @@ const getSettings = (
           r: 3,
         },
       },
-      hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare'],
+      hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare', 'refundsAmount'],
     },
     area: {
       linearGradient: true,
     },
     bar: {
-      linearGradient: true,
+      linearGradient: !activeChartMetrics.revenue, // Disable gradient when revenue is shown
+      radius: {
+        ratio: 0.15,
+      },
     },
+    onrendered: activeChartMetrics.revenue
+      ? function () {
+          // Revenue chart styling:
+          // - revenue: solid orange stroke (handled by CSS)
+          // - refunds: dashed orange stroke + light fill
+          // - when refunds value is 0, remove stroke to avoid "cap" lines
+          const chart = this as any
+
+          if (chart?.$ && chart.$.bar?.bars) {
+            chart.$.bar.bars.each(function (this: SVGPathElement, d: any) {
+              const value = Number(d?.value || 0)
+
+              if (d?.id === 'refundsAmount') {
+                if (value > 0) {
+                  this.style.stroke = '#ea580c'
+                  this.style.strokeWidth = '1.5px'
+                  this.style.strokeDasharray = '6,4'
+                  this.style.display = ''
+                } else {
+                  this.style.strokeDasharray = ''
+                  this.style.strokeWidth = '0'
+                  this.style.stroke = 'none'
+                  this.style.display = 'none'
+                }
+              } else if (d?.id === 'revenue') {
+                if (value === 0) {
+                  this.style.strokeWidth = '0'
+                  this.style.stroke = 'none'
+                  this.style.display = 'none'
+                } else {
+                  this.style.strokeWidth = '1.5px'
+                  this.style.stroke = '#ea580c'
+                  this.style.display = ''
+                }
+              }
+            })
+          }
+        }
+      : undefined,
     zoom:
       onZoom && enableZoom !== false
         ? {
@@ -849,6 +946,145 @@ const getSettings = (
           }
         : undefined,
     bindto: '#dataChart',
+  }
+}
+
+// Stacked bar chart for custom events
+const getSettingsCustomEventsStacked = (
+  chart: { x: string[]; events: Record<string, Array<number | string>> } | undefined,
+  timeBucket: string,
+  rotateXAxis: boolean,
+  timeFormat: string,
+): ChartOptions => {
+  if (!chart || _isEmpty(chart.x) || _isEmpty(chart.events)) {
+    return {}
+  }
+
+  const eventTotals = _map(_keys(chart.events), (id) => ({
+    id,
+    total: _sum(_map(chart.events[id] || [], (v) => Number(v) || 0)),
+  }))
+  const eventIds = _map(_orderBy(eventTotals, 'total', 'desc'), 'id') as string[]
+
+  const columns: any[] = [['x', ..._map(chart.x, (el) => dayjs(el).toDate())]]
+  eventIds.forEach((id) => {
+    columns.push([id, ...(chart.events[id] || [])])
+  })
+
+  const types: Record<string, any> = _reduce(
+    eventIds,
+    (acc: Record<string, any>, id: string) => {
+      acc[id] = bar()
+      return acc
+    },
+    {},
+  )
+
+  const colors: Record<string, string> = _reduce(
+    eventIds,
+    (acc: Record<string, string>, id: string) => {
+      acc[id] = stringToColour(id)
+      return acc
+    },
+    {},
+  )
+
+  // Calculate optimal Y axis ticks based on all event series
+  const allYValues: number[] = []
+  eventIds.forEach((id) => {
+    allYValues.push(..._map(chart.events[id] || [], (v) => Number(v) || 0))
+  })
+  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+
+  return {
+    data: {
+      x: 'x',
+      columns,
+      types,
+      colors,
+      groups: [eventIds],
+      // Keep stack order stable (avoid per-x sorting)
+      order: null,
+    },
+    grid: {
+      y: {
+        show: true,
+      },
+    },
+    axis: {
+      x: {
+        clipPath: false,
+        tick: {
+          fit: true,
+          rotate: rotateXAxis ? 45 : 0,
+          format:
+            // @ts-expect-error
+            timeFormat === TimeFormat['24-hour']
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+        },
+        localtime: timeFormat === TimeFormat['24-hour'],
+        type: 'timeseries',
+      },
+      y: {
+        tick: {
+          format: (d: number) => nFormatter(d, 1),
+          values: optimalTicks,
+        },
+        show: true,
+        inner: true,
+      },
+    },
+    tooltip: {
+      contents: (item: any, _: any, __: any, color: any) => {
+        if (_isEmpty(item)) {
+          return ''
+        }
+
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+          <li class='font-semibold'>${
+            timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
+          }</li>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          ${_map(
+            item,
+            (el: { id: string; index: number; name: string; value: string; x: Date }) => `
+            <li class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <span>${el.name}</span>
+              </div>
+              <span class='pl-4'>${nFormatter(Number(el.value) || 0, 1)}</span>
+            </li>
+            `,
+          ).join('')}`
+      },
+    },
+    transition: {
+      duration: 200,
+    },
+    resize: {
+      auto: true,
+      timer: false,
+    },
+    legend: {
+      position: 'bottom',
+      item: {
+        tile: {
+          type: 'circle',
+          width: 10,
+          r: 3,
+        },
+      },
+    },
+    bar: {
+      linearGradient: false,
+      radius: {
+        ratio: 0.15,
+      },
+    },
   }
 }
 
@@ -1008,6 +1244,9 @@ const getSettingsSession = (
     },
     bar: {
       linearGradient: true,
+      radius: {
+        ratio: 0.15,
+      },
     },
     bindto: '#sessionChart',
   }
@@ -1020,6 +1259,7 @@ const getSettingsError = (
   rotateXAxis: boolean,
   chartType: string,
   annotations?: Annotation[],
+  dataNames?: Record<string, string>,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
@@ -1035,11 +1275,22 @@ const getSettingsError = (
     position: 'start',
   }))
 
-  const columns = getColumns(chart, { occurrences: true })
+  // Build columns with both occurrences and affectedUsers if available
+  const columns: any[] = [['x', ..._map(chart.x, (el: string) => dayjs(el).toDate())]]
+
+  if (chart.occurrences) {
+    columns.push(['occurrences', ...chart.occurrences])
+  }
+  if (chart.affectedUsers) {
+    columns.push(['affectedUsers', ...chart.affectedUsers])
+  }
 
   const allYValues: number[] = []
   if (chart.occurrences) {
     allYValues.push(...chart.occurrences.filter((n: any) => n !== undefined && n !== null))
+  }
+  if (chart.affectedUsers) {
+    allYValues.push(...chart.affectedUsers.filter((n: any) => n !== undefined && n !== null))
   }
 
   const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
@@ -1052,17 +1303,25 @@ const getSettingsError = (
     regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
   }
 
+  const types: Record<string, any> = {
+    occurrences: chartType === chartTypes.line ? area() : bar(),
+  }
+  if (chart.affectedUsers) {
+    types.affectedUsers = chartType === chartTypes.line ? area() : bar()
+  }
+
+  const colors: Record<string, string> = {
+    occurrences: '#f97316', // orange-500
+    affectedUsers: '#dc2626', // red-600
+  }
+
   return {
     data: {
       x: 'x',
       columns,
-      types: {
-        occurrences: chartType === chartTypes.line ? area() : bar(),
-      },
-      colors: {
-        occurrences: '#dc2626',
-        occurrencesCompare: 'rgba(220, 38, 38, 0.4)',
-      },
+      types,
+      colors,
+      names: dataNames,
       regions: {
         occurrences: [
           {
@@ -1155,13 +1414,15 @@ const getSettingsError = (
           r: 3,
         },
       },
-      hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare'],
     },
     area: {
       linearGradient: true,
     },
     bar: {
       linearGradient: true,
+      radius: {
+        ratio: 0.15,
+      },
     },
   }
 }
@@ -1582,6 +1843,9 @@ const getSettingsPerf = (
     },
     bar: {
       linearGradient: true,
+      radius: {
+        ratio: 0.15,
+      },
     },
     zoom:
       onZoom && enableZoom !== false
@@ -1666,13 +1930,14 @@ const getFormatDate = (date: Date) => {
 const SHORTCUTS_TABS_MAP = {
   T: PROJECT_TABS.traffic,
   P: PROJECT_TABS.performance,
+  U: PROJECT_TABS.profiles,
   F: PROJECT_TABS.funnels,
   S: PROJECT_TABS.sessions,
   A: PROJECT_TABS.alerts,
   R: PROJECT_TABS.errors,
 }
 
-const _SHORTCUTS_TABS_LISTENERS = 'shift+t, shift+p, shift+s, shift+f, shift+e, shift+r'
+const _SHORTCUTS_TABS_LISTENERS = 'shift+t, shift+p, shift+u, shift+s, shift+f, shift+e, shift+r'
 const SHORTCUTS_TABS_LISTENERS = isSelfhosted ? _SHORTCUTS_TABS_LISTENERS : _SHORTCUTS_TABS_LISTENERS + ', shift+a'
 
 const _SHORTCUTS_GENERAL_LISTENERS = 'alt+s,alt+ß, alt+b,alt+∫, alt+l,alt+¬, r'
@@ -1800,12 +2065,155 @@ export const getDeviceRowMapper = (activeTab: string, theme: string, t: typeof i
   return undefined
 }
 
+const getSettingsCaptcha = (
+  chart: { x: string[]; results: number[] },
+  timeBucket: string,
+  timeFormat: string,
+  rotateXAxis: boolean,
+  chartType: string,
+): ChartOptions => {
+  const xAxisSize = _size(chart.x)
+
+  // Build columns directly since getColumns doesn't handle 'results'
+  const columns: any[] = [
+    ['x', ..._map(chart.x, (el) => dayjs(el).toDate())],
+    ['results', ...chart.results],
+  ]
+
+  const allYValues: number[] = []
+  if (chart.results) {
+    allYValues.push(...chart.results.filter((n: any) => n !== undefined && n !== null))
+  }
+
+  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+
+  let regionStart
+
+  if (xAxisSize > 1) {
+    regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
+  } else {
+    regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
+  }
+
+  return {
+    data: {
+      x: 'x',
+      columns,
+      types: {
+        results: chartType === chartTypes.line ? area() : bar(),
+      },
+      colors: {
+        results: '#16a34a',
+      },
+      regions: {
+        results: [
+          {
+            // @ts-expect-error
+            start: regionStart,
+            style: {
+              dasharray: '6 2',
+            },
+          },
+        ],
+      },
+    },
+    grid: {
+      y: {
+        show: true,
+      },
+    },
+    transition: {
+      duration: 200,
+    },
+    resize: {
+      auto: true,
+      timer: false,
+    },
+    axis: {
+      x: {
+        clipPath: false,
+        tick: {
+          fit: true,
+          rotate: rotateXAxis ? 45 : 0,
+          format:
+            // @ts-expect-error
+            timeFormat === TimeFormat['24-hour']
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+        },
+        localtime: timeFormat === TimeFormat['24-hour'],
+        type: 'timeseries',
+      },
+      y: {
+        tick: {
+          format: (d: number) => nFormatter(d, 1),
+          values: optimalTicks,
+        },
+        show: true,
+        inner: true,
+      },
+    },
+    tooltip: {
+      contents: (item: any, _: any, __: any, color: any) => {
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+          <li class='font-semibold'>${
+            timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
+          }</li>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          ${_map(
+            item,
+            (el: { id: string; index: number; name: string; value: string; x: Date }) => `
+            <li class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <span>${el.name}</span>
+              </div>
+              <span class='pl-4'>${el.value}</span>
+            </li>
+            `,
+          ).join('')}`
+      },
+    },
+    point:
+      chartType === chartTypes.bar
+        ? {}
+        : {
+            focus: {
+              only: xAxisSize > 1,
+            },
+            pattern: ['circle'],
+            r: 2,
+          },
+    legend: {
+      item: {
+        tile: {
+          type: 'circle',
+          width: 10,
+          r: 3,
+        },
+      },
+    },
+    area: {
+      linearGradient: true,
+    },
+    bar: {
+      linearGradient: true,
+      radius: {
+        ratio: 0.15,
+      },
+    },
+  }
+}
+
 export {
   getFormatDate,
   panelIconMapping,
   typeNameMapping,
   noRegionPeriods,
   getSettings,
+  getSettingsCustomEventsStacked,
   onCSVExportClick,
   CHART_METRICS_MAPPING,
   CHART_METRICS_MAPPING_PERF,
@@ -1818,4 +2226,5 @@ export {
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
   CHART_MEASURES_MAPPING_PERF,
   getSettingsError,
+  getSettingsCaptcha,
 }

@@ -56,6 +56,7 @@ import {
   AuthenticationGuard,
 } from './guards'
 import { ProjectService } from '../project/project.service'
+import { trackCustom } from '../common/analytics'
 
 const OAUTH_RATE_LIMIT = 15
 
@@ -115,13 +116,17 @@ export class AuthController {
       throw new ConflictException(i18n.t('auth.passwordSameAsEmail'))
     }
 
-    const referrerID = await this.authService.getReferrerId(body.refCode)
-
     const newUser = await this.authService.createUnverifiedUser(
       body.email,
       body.password,
-      referrerID,
     )
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'SIGNUP',
+      meta: {
+        method: 'email',
+      },
+    })
 
     const jwtTokens = await this.authService.generateJwtTokens(newUser.id, true)
 
@@ -217,7 +222,6 @@ export class AuthController {
   @Post('reset-password')
   public async requestResetPassword(
     @Body() body: RequestResetPasswordDto,
-    @I18n() i18n: I18nContext,
     @Headers() headers: Record<string, string>,
     @Ip() requestIp: string,
   ): Promise<void> {
@@ -228,11 +232,10 @@ export class AuthController {
 
     const user = await this.userService.findUser(body.email)
 
-    if (!user) {
-      throw new ConflictException(i18n.t('auth.accountNotExists'))
+    // Do not reveal whether the account exists (prevents account enumeration).
+    if (user) {
+      await this.authService.sendResetPasswordEmail(user.id, user.email)
     }
-
-    await this.authService.sendResetPasswordEmail(user.id, user.email)
   }
 
   @ApiOperation({ summary: 'Reset a password' })
@@ -484,15 +487,9 @@ export class AuthController {
   ): Promise<any> {
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const { hash, provider, refCode } = body
+    const { hash, provider } = body
 
-    return this.authService.authenticateSSO(
-      hash,
-      headers,
-      ip,
-      provider,
-      refCode,
-    )
+    return this.authService.authenticateSSO(hash, headers, ip, provider)
   }
 
   @ApiBearerAuth()

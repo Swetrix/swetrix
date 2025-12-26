@@ -97,6 +97,9 @@ import {
   createAnnotationClickhouse,
   updateAnnotationClickhouse,
   deleteAnnotationClickhouse,
+  getPinnedProjectsClickhouse,
+  pinProjectClickhouse,
+  unpinProjectClickhouse,
 } from '../common/utils'
 import { Funnel } from './entity/funnel.entity'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -195,23 +198,34 @@ export class ProjectController {
 
     let combinedProjects = _map(combinedProjectsMap, p => p)
 
-    if (sort) {
-      combinedProjects = [...combinedProjects].sort((a: any, b: any) => {
-        if (sort === 'alpha_asc') {
-          return (a.name || '').localeCompare(b.name || '')
-        }
-        if (sort === 'alpha_desc') {
-          return (b.name || '').localeCompare(a.name || '')
-        }
-        if (sort === 'date_asc') {
-          return (a.created || '').localeCompare(b.created || '')
-        }
-        if (sort === 'date_desc') {
-          return (b.created || '').localeCompare(a.created || '')
-        }
-        return 0
-      })
-    }
+    // Get pinned project IDs to mark shared projects as pinned too
+    const pinnedProjectIds = await getPinnedProjectsClickhouse(userId)
+
+    // Always sort by pinned first, then by the requested sort criteria
+    combinedProjects = [...combinedProjects].sort((a: any, b: any) => {
+      // First, sort by pinned status (pinned projects first)
+      const aIsPinned = a.isPinned || _includes(pinnedProjectIds, a.id)
+      const bIsPinned = b.isPinned || _includes(pinnedProjectIds, b.id)
+
+      if (aIsPinned && !bIsPinned) return -1
+      if (!aIsPinned && bIsPinned) return 1
+
+      // Then apply the secondary sort
+      if (sort === 'alpha_asc') {
+        return (a.name || '').localeCompare(b.name || '')
+      }
+      if (sort === 'alpha_desc') {
+        return (b.name || '').localeCompare(a.name || '')
+      }
+      if (sort === 'date_asc') {
+        return (a.created || '').localeCompare(b.created || '')
+      }
+      if (sort === 'date_desc') {
+        return (b.created || '').localeCompare(a.created || '')
+      }
+      // Default to alphabetical ascending
+      return (a.name || '').localeCompare(b.name || '')
+    })
 
     const pidsWithData =
       await this.projectService.getPIDsWhereAnalyticsDataExists(
@@ -283,18 +297,72 @@ export class ProjectController {
         funnels: funnelsMap[project.id],
         isDataExists: _includes(pidsWithData, project?.id),
         isErrorDataExists: _includes(pidsWithErrorData, project?.id),
+        isPinned: _includes(pinnedProjectIds, project?.id),
         role,
         isLocked: false,
         isAccessConfirmed,
-        isAnalyticsProject: true,
       }
     })
+
+    // Pinned projects are already sorted at the combined sort step above
 
     return {
       results,
       page_total: _size(combinedProjects),
       total: _size(combinedProjects),
     }
+  }
+
+  @ApiBearerAuth()
+  @Post('/:id/pin')
+  @ApiOperation({ summary: 'Pin a project to the top of the dashboard' })
+  @ApiResponse({ status: 200, description: 'Project pinned successfully' })
+  @Auth(true)
+  async pinProject(
+    @Param('id') projectId: string,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ projectId, userId }, 'POST /project/:id/pin')
+
+    if (!isValidPID(projectId)) {
+      throw new BadRequestException('The provided project ID is incorrect')
+    }
+
+    const project = await this.projectService.getFullProject(projectId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, userId)
+
+    await pinProjectClickhouse(userId, projectId)
+  }
+
+  @ApiBearerAuth()
+  @Delete('/:id/pin')
+  @ApiOperation({ summary: 'Unpin a project from the top of the dashboard' })
+  @ApiResponse({ status: 200, description: 'Project unpinned successfully' })
+  @Auth(true)
+  async unpinProject(
+    @Param('id') projectId: string,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ projectId, userId }, 'DELETE /project/:id/pin')
+
+    if (!isValidPID(projectId)) {
+      throw new BadRequestException('The provided project ID is incorrect')
+    }
+
+    const project = await this.projectService.getFullProject(projectId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found')
+    }
+
+    this.projectService.allowedToView(project, userId)
+
+    await unpinProjectClickhouse(userId, projectId)
   }
 
   @Post('transfer')
@@ -381,12 +449,6 @@ export class ProjectController {
     if (existing) {
       throw new BadRequestException(
         `You're already sharing the project with ${invitee.email}`,
-      )
-    }
-
-    if (project.adminId !== userId) {
-      throw new BadRequestException(
-        'You are not allowed to manage this project',
       )
     }
 
@@ -506,10 +568,12 @@ export class ProjectController {
 
     try {
       await clickhouse.command({
-        query: `ALTER TABLE analytics DELETE WHERE pid='${id}'`,
+        query: `ALTER TABLE analytics DELETE WHERE pid={pid:FixedString(12)}`,
+        query_params: { pid: id },
       })
       await clickhouse.command({
-        query: `ALTER TABLE customEV DELETE WHERE pid='${id}'`,
+        query: `ALTER TABLE customEV DELETE WHERE pid={pid:FixedString(12)}`,
+        query_params: { pid: id },
       })
       return 'Project reset successfully'
     } catch (e) {
@@ -821,7 +885,6 @@ export class ProjectController {
     type: 'string',
   })
   @ApiResponse({ status: 200 })
-  @Auth()
   @Auth(true)
   async deletePartially(
     @Param('pid') pid: string,
@@ -890,10 +953,12 @@ export class ProjectController {
     try {
       await deleteProjectSharesByProjectClickhouse(id)
       await clickhouse.command({
-        query: `ALTER TABLE analytics DELETE WHERE pid='${id}'`,
+        query: `ALTER TABLE analytics DELETE WHERE pid={pid:FixedString(12)}`,
+        query_params: { pid: id },
       })
       await clickhouse.command({
-        query: `ALTER TABLE customEV DELETE WHERE pid='${id}'`,
+        query: `ALTER TABLE customEV DELETE WHERE pid={pid:FixedString(12)}`,
+        query_params: { pid: id },
       })
       await deleteProjectRedis(id)
       return 'Project deleted successfully'
@@ -970,6 +1035,12 @@ export class ProjectController {
         project.isPasswordProtected = false
         project.passwordHash = null
       }
+    }
+
+    if (projectDTO.websiteUrl !== undefined) {
+      project.websiteUrl = projectDTO.websiteUrl
+        ? _trim(projectDTO.websiteUrl)
+        : null
     }
 
     await updateProjectClickhouse(
@@ -1065,15 +1136,17 @@ export class ProjectController {
         : true
 
     return this.projectService.formatFromClickhouse({
-      ..._omit(project, ['passwordHash']),
-      share,
+      ..._omit(project, [
+        'passwordHash',
+        role !== 'owner' && role !== 'admin' && 'share',
+      ]),
+      share: role === 'owner' || role === 'admin' ? share : undefined,
       funnels: this.projectService.formatFunnelsFromClickhouse(funnels),
       isDataExists,
       isErrorDataExists,
       role,
       isLocked: false,
       isAccessConfirmed,
-      isAnalyticsProject: true,
     })
   }
 

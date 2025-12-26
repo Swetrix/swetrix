@@ -6,17 +6,12 @@ import { ArrowUpDown } from 'lucide-react'
 import { Fragment, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import useFeatureFlag from '~/hooks/useFeatureFlag'
-import { FeatureFlag } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
-
-import { DASHBOARD_TABS } from './Tabs'
 
 interface SortSelectorProps {
   activeSort: string
   setActiveSort: (sort: string) => void
   isLoading: boolean
-  activeTab: (typeof DASHBOARD_TABS)[number]['id']
 }
 
 export const SORT_OPTIONS = {
@@ -24,66 +19,33 @@ export const SORT_OPTIONS = {
   ALPHA_DESC: 'alpha_desc',
   DATE_ASC: 'date_asc',
   DATE_DESC: 'date_desc',
-  PAGEVIEWS_ASC: 'pageviews_asc',
-  PAGEVIEWS_DESC: 'pageviews_desc',
-  LAST_VISIT_DESC: 'last_visit_desc',
 } as const
 
-export const SortSelector = ({ activeSort, setActiveSort, isLoading, activeTab }: SortSelectorProps) => {
+export const SortSelector = ({ activeSort, setActiveSort, isLoading }: SortSelectorProps) => {
   const { t } = useTranslation('common')
 
   const { isLoading: authLoading } = useAuth()
 
-  const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
-
   const sortOptions = useMemo(() => {
     return [
-      ...(activeTab === 'lost-traffic' && !isHostnameNavigationEnabled
-        ? []
-        : [
-            {
-              label: t('dashboard.sortAlphaAsc'),
-              sort: SORT_OPTIONS.ALPHA_ASC,
-            },
-            {
-              label: t('dashboard.sortAlphaDesc'),
-              sort: SORT_OPTIONS.ALPHA_DESC,
-            },
-          ]),
-      ...(isHostnameNavigationEnabled || activeTab !== 'default'
-        ? []
-        : [
-            {
-              label: t('dashboard.sortDateAsc'),
-              sort: SORT_OPTIONS.DATE_ASC,
-            },
-            {
-              label: t('dashboard.sortDateDesc'),
-              sort: SORT_OPTIONS.DATE_DESC,
-            },
-          ]),
-      ...(!isHostnameNavigationEnabled || activeTab !== 'default'
-        ? []
-        : [
-            {
-              label: t('dashboard.pageviewsDesc'),
-              sort: SORT_OPTIONS.PAGEVIEWS_DESC,
-            },
-            {
-              label: t('dashboard.pageviewsAsc'),
-              sort: SORT_OPTIONS.PAGEVIEWS_ASC,
-            },
-          ]),
-      ...(activeTab === 'lost-traffic'
-        ? [
-            {
-              label: t('dashboard.lastVisitDesc'),
-              sort: SORT_OPTIONS.LAST_VISIT_DESC,
-            },
-          ]
-        : []),
+      {
+        label: t('dashboard.sortAlphaAsc'),
+        sort: SORT_OPTIONS.ALPHA_ASC,
+      },
+      {
+        label: t('dashboard.sortAlphaDesc'),
+        sort: SORT_OPTIONS.ALPHA_DESC,
+      },
+      {
+        label: t('dashboard.sortDateAsc'),
+        sort: SORT_OPTIONS.DATE_ASC,
+      },
+      {
+        label: t('dashboard.sortDateDesc'),
+        sort: SORT_OPTIONS.DATE_DESC,
+      },
     ]
-  }, [t, isHostnameNavigationEnabled, activeTab])
+  }, [t])
 
   useEffect(() => {
     if (authLoading) return

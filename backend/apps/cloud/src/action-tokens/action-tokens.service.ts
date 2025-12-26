@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { Repository, FindOptionsWhere } from 'typeorm'
 
 import { ActionToken, ActionTokenType } from './action-token.entity'
 import { User } from '../user/entities/user.entity'
@@ -12,12 +12,8 @@ export class ActionTokensService {
     private actionTokensRepository: Repository<ActionToken>,
   ) {}
 
-  async deleteMultiple(where: string): Promise<any> {
-    return this.actionTokensRepository
-      .createQueryBuilder()
-      .delete()
-      .where(where)
-      .execute()
+  async deleteMultiple(where: FindOptionsWhere<ActionToken>): Promise<any> {
+    return this.actionTokensRepository.delete(where)
   }
 
   async createForUser(

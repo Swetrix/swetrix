@@ -1,85 +1,14 @@
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import _map from 'lodash/map'
-import { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router'
-import { ClientOnly } from 'remix-utils/client-only'
 
-import { getGeneralStats } from '~/api'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import MarketingPricing from '~/components/pricing/MarketingPricing'
 import { PERFORMANCE_LIVE_DEMO_URL } from '~/lib/constants'
-import { Stats } from '~/lib/models/Stats'
 import { useTheme } from '~/providers/ThemeProvider'
-import BackgroundSvg from '~/ui/icons/BackgroundSvg'
-import { nFormatterSeparated } from '~/utils/generic'
 import routesPath from '~/utils/routes'
-
-export const PeopleLoveSwetrix = () => {
-  const { t } = useTranslation('common')
-  const [stats, setStats] = useState<Stats>({} as Stats)
-
-  useEffect(() => {
-    getGeneralStats()
-      .then((stats) => setStats(stats))
-      .catch(console.error)
-  }, [])
-
-  const events = nFormatterSeparated(Number(stats.events))
-  const users = nFormatterSeparated(Number(stats.users))
-  const websites = nFormatterSeparated(Number(stats.projects))
-
-  return (
-    <div className='mx-auto w-full max-w-5xl px-3'>
-      <div className='mx-auto w-full max-w-prose'>
-        <h2 className='text-center text-3xl font-extrabold text-gray-900 md:text-4xl dark:text-white'>
-          {t('main.peopleLoveSwetrix')}
-        </h2>
-        <p className='mx-auto mt-5 max-w-prose text-center text-xl text-gray-600 dark:text-gray-200'>
-          {t('main.whyPeopleLoveSwetrix')}
-        </p>
-      </div>
-      <div className='mt-20 flex flex-col items-center justify-between md:mt-32 md:flex-row'>
-        <div className='text-center'>
-          <ClientOnly fallback={<p className='text-center text-5xl font-extrabold text-indigo-700'>0</p>}>
-            {() => (
-              <p className='text-center text-5xl font-extrabold text-indigo-700'>
-                {users[0]}
-                {users[1] ? <span className='text-gray-900 dark:text-indigo-200'>{users[1]}+</span> : null}
-              </p>
-            )}
-          </ClientOnly>
-          <p className='text-lg text-gray-600 dark:text-gray-200'>{t('main.users')}</p>
-        </div>
-        <div className='mx-5 mt-16 mb-14 h-2 w-2 rounded-full bg-gray-800 md:mt-0 md:mb-0 dark:bg-gray-200' />
-        <div className='text-center'>
-          <ClientOnly fallback={<p className='text-center text-5xl font-extrabold text-indigo-700'>0</p>}>
-            {() => (
-              <p className='text-center text-5xl font-extrabold text-indigo-700'>
-                {websites[0]}
-                {websites[1] ? <span className='text-gray-900 dark:text-indigo-200'>{websites[1]}+</span> : null}
-              </p>
-            )}
-          </ClientOnly>
-          <p className='text-lg text-gray-600 dark:text-gray-200'>{t('main.websites')}</p>
-        </div>
-        <div className='mx-5 mt-16 mb-14 h-2 w-2 rounded-full bg-gray-800 md:mt-0 md:mb-0 dark:bg-gray-200' />
-        <div className='text-center'>
-          <ClientOnly fallback={<p className='text-center text-5xl font-extrabold text-indigo-700'>0</p>}>
-            {() => (
-              <p className='text-center text-5xl font-extrabold text-indigo-700'>
-                {events[0]}
-                {events[1] ? <span className='text-gray-900 dark:text-indigo-200'>{events[1]}+</span> : null}
-              </p>
-            )}
-          </ClientOnly>
-          <p className='text-lg text-gray-600 dark:text-gray-200'>{t('main.pageviews')}</p>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 const Performance = () => {
   const { t } = useTranslation('common')
@@ -218,18 +147,6 @@ const Performance = () => {
         <MarketingPricing />
 
         <DitchGoogle />
-
-        {/* Become a developer */}
-        <section className='relative bg-white pt-20 pb-44 dark:bg-slate-900'>
-          <div className='absolute top-16 right-0 z-0'>
-            <BackgroundSvg type='threecircle' />
-          </div>
-          <div className='absolute top-52 -left-9 rotate-90'>
-            <BackgroundSvg type='shapes' />
-          </div>
-          <PeopleLoveSwetrix />
-        </section>
-        {/* end Become a developer */}
       </main>
     </div>
   )

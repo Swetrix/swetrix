@@ -12,7 +12,7 @@ import _size from 'lodash/size'
 import path from 'path'
 import fs from 'fs/promises'
 import { AppLoggerService } from '../logger/logger.service'
-import { BLOG_POSTS_PATH, BLOG_POSTS_ROOT, redis } from '../common/constants'
+import { BLOG_POSTS_PATH, redis } from '../common/constants'
 
 const parseFrontMatter = require('front-matter')
 
@@ -34,36 +34,67 @@ interface IParseFontMatter {
   body: string
 }
 
-const validatePath = (input: string) => {
-  if (!_includes(path.normalize(input), BLOG_POSTS_ROOT)) {
+const BLOG_POSTS_BASE = path.resolve(BLOG_POSTS_PATH)
+
+const isSafePathSegment = (segment: string) => {
+  // Express/Nest will decode URL params; explicitly disallow separators/traversal.
+  return (
+    typeof segment === 'string' &&
+    !_isEmpty(segment) &&
+    !segment.includes('\0') &&
+    !segment.includes('/') &&
+    !segment.includes('\\') &&
+    segment !== '.' &&
+    segment !== '..' &&
+    !segment.includes('..')
+  )
+}
+
+const resolveBlogPostsPath = (...segments: string[]) => {
+  const resolved = path.resolve(BLOG_POSTS_BASE, ...segments)
+  if (resolved === BLOG_POSTS_BASE) {
+    return resolved
+  }
+
+  // Ensure resolved path stays within BLOG_POSTS_BASE.
+  if (!resolved.startsWith(`${BLOG_POSTS_BASE}${path.sep}`)) {
     throw new Error('You are not allowed to access this file')
   }
+
+  return resolved
 }
 
 const getFileNames = async (category?: string): Promise<string[]> => {
-  let files
-
   try {
-    if (category) {
-      const pathToRead = path.join(BLOG_POSTS_PATH, category)
-
-      validatePath(pathToRead)
-
-      files = (await fs.readdir(pathToRead)) as string[]
-    } else {
-      files = (await fs.readdir(BLOG_POSTS_PATH)) as string[]
+    if (category && !isSafePathSegment(category)) {
+      return []
     }
+
+    const pathToRead = category
+      ? resolveBlogPostsPath(category)
+      : resolveBlogPostsPath()
+
+    const dirents = await fs.readdir(pathToRead, { withFileTypes: true })
+    return _map(
+      _filter(dirents, d => d.isFile() && _endsWith(d.name, '.md')),
+      d => d.name,
+    )
   } catch {
     return []
   }
-
-  return _filter(files, file => _endsWith(file, '.md'))
 }
 
 const getPost = async (
   slug: string,
   category?: string,
 ): Promise<IParseFontMatter> => {
+  if (!isSafePathSegment(slug)) {
+    return null
+  }
+  if (category && !isSafePathSegment(category)) {
+    return null
+  }
+
   const files = await getFileNames(category)
   const filename = findFilenameBySlug(files, slug)
 
@@ -72,8 +103,8 @@ const getPost = async (
   }
 
   const filepath = category
-    ? path.join(BLOG_POSTS_PATH, category, filename)
-    : path.join(BLOG_POSTS_PATH, filename)
+    ? resolveBlogPostsPath(category, filename)
+    : resolveBlogPostsPath(filename)
 
   let file: Buffer
 
@@ -91,33 +122,45 @@ const getPost = async (
 }
 
 const getArticlesMetaData = async () => {
-  let dir: string[]
-
   try {
-    dir = await fs.readdir(BLOG_POSTS_PATH)
+    const dirents = await fs.readdir(resolveBlogPostsPath(), {
+      withFileTypes: true,
+    })
+    const filtered = _map(
+      _filter(dirents, d => d.isFile() && _endsWith(d.name, '.md')),
+      d => d.name,
+    )
+
+    const articles = await Promise.all(
+      _map(filtered, async filename => {
+        try {
+          const file = await fs.readFile(resolveBlogPostsPath(filename))
+          const { attributes }: IParseFontMatter = parseFrontMatter(
+            file.toString(),
+          )
+          return {
+            slug: _replace(getSlugFromFilename(filename), /\.md$/, ''),
+            title: attributes.title,
+            hidden: attributes.hidden,
+            intro: attributes.intro,
+            date: attributes.date,
+            _date: getDateFromFilename(filename),
+            author: attributes.author,
+            nickname: attributes.nickname,
+          }
+        } catch {
+          return null
+        }
+      }),
+    )
+
+    return _sortBy(
+      _filter(articles, a => !!a),
+      ['_date'],
+    ).reverse()
   } catch {
     return null
   }
-
-  const filtered = _filter(dir, (file: string) => _endsWith(file, '.md'))
-  const articles = await Promise.all(
-    _map(filtered, async filename => {
-      const file = await fs.readFile(path.join(BLOG_POSTS_PATH, filename))
-      const { attributes }: IParseFontMatter = parseFrontMatter(file.toString())
-      return {
-        slug: _replace(getSlugFromFilename(filename), /\.md$/, ''),
-        title: attributes.title,
-        hidden: attributes.hidden,
-        intro: attributes.intro,
-        date: attributes.date,
-        _date: getDateFromFilename(filename),
-        author: attributes.author,
-        nickname: attributes.nickname,
-      }
-    }),
-  )
-
-  return _sortBy(articles, ['_date']).reverse()
 }
 
 @Injectable()
@@ -144,33 +187,58 @@ export class BlogService {
   ): Promise<any> {
     // Only check/use cache at root level (when category is undefined)
     if (!category) {
-      const rawRedisSitemap = await redis.get(REDIS_SITEMAP_KEY)
+      try {
+        const rawRedisSitemap = await redis.get(REDIS_SITEMAP_KEY)
 
-      if (rawRedisSitemap) {
-        try {
-          return JSON.parse(rawRedisSitemap)
-        } catch (reason) {
-          this.logger.error(
-            `[getSitemapFileNames][JSON.parse] An error occured: ${reason}`,
-          )
+        if (rawRedisSitemap) {
+          try {
+            return JSON.parse(rawRedisSitemap)
+          } catch (reason) {
+            this.logger.error(
+              `[getSitemapFileNames][JSON.parse] An error occured: ${reason}`,
+            )
+          }
         }
+      } catch (reason) {
+        this.logger.warn(
+          `[getSitemapFileNames][redis.get] Unable to read cache: ${reason}`,
+        )
       }
     }
 
-    const allFiles = (await fs.readdir(
-      category ? path.join(BLOG_POSTS_PATH, category) : BLOG_POSTS_PATH,
-    )) as string[]
-    const directories = _filter(allFiles, file => !_endsWith(file, '.md'))
-    const markdownFiles = _filter(allFiles, file => _endsWith(file, '.md'))
+    if (category && !isSafePathSegment(category)) {
+      return []
+    }
+
+    let dirents: any[]
+
+    try {
+      const dirPath = category
+        ? resolveBlogPostsPath(category)
+        : BLOG_POSTS_BASE
+      dirents = await fs.readdir(dirPath, { withFileTypes: true })
+    } catch (reason) {
+      this.logger.warn(
+        `[getSitemapFileNames][readdir] Unable to read directory: ${reason}`,
+      )
+      return []
+    }
+
+    const directories = _filter(dirents, d => d.isDirectory())
+    const markdownFiles = _filter(
+      dirents,
+      d => d.isFile() && _endsWith(d.name, '.md'),
+    )
 
     const processedFiles = await Promise.all(
       _map(markdownFiles, async filename => {
-        const slug = _replace(filename, /\.md$/, '')
+        const actualFilename = filename.name ?? filename
+        const slug = _replace(actualFilename, /\.md$/, '')
 
         try {
           const filePath = category
-            ? path.join(BLOG_POSTS_PATH, category, filename)
-            : path.join(BLOG_POSTS_PATH, filename)
+            ? resolveBlogPostsPath(category, actualFilename)
+            : resolveBlogPostsPath(actualFilename)
 
           const file = await fs.readFile(filePath)
           const { attributes }: IParseFontMatter = parseFrontMatter(
@@ -202,26 +270,39 @@ export class BlogService {
 
     let filesInDirectories: any[] = []
 
-    for (let i = 0; i < _size(directories); ++i) {
-      const directory = directories[i]
+    if (infiniteRecursive) {
+      for (let i = 0; i < _size(directories); ++i) {
+        const directory = directories[i]
+        const directoryName = directory.name ?? directory
 
-      const _files = await this.getSitemapFileNames(
-        directory,
-        infiniteRecursive,
-      )
-      filesInDirectories = [...filesInDirectories, ..._files]
+        if (!isSafePathSegment(directoryName)) {
+          continue
+        }
+
+        const _files = await this.getSitemapFileNames(
+          directoryName,
+          infiniteRecursive,
+        )
+        filesInDirectories = [...filesInDirectories, ..._files]
+      }
     }
 
     const sitemap = [...processedFiles, ...filesInDirectories]
 
     // Only cache at root level (when category is undefined)
     if (!category) {
-      await redis.set(
-        REDIS_SITEMAP_KEY,
-        JSON.stringify(sitemap),
-        'EX',
-        REDIS_SITEMAP_LIFETIME,
-      )
+      try {
+        await redis.set(
+          REDIS_SITEMAP_KEY,
+          JSON.stringify(sitemap),
+          'EX',
+          REDIS_SITEMAP_LIFETIME,
+        )
+      } catch (reason) {
+        this.logger.warn(
+          `[getSitemapFileNames][redis.set] Unable to write cache: ${reason}`,
+        )
+      }
     }
 
     return sitemap

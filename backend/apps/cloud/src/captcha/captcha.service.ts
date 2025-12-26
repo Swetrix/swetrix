@@ -1,7 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common'
-import svgCaptcha from 'svg-captcha'
+import * as crypto from 'crypto'
 import CryptoJS from 'crypto-js'
-import _toLower from 'lodash/toLower'
 import { UAParser } from '@ua-parser-js/pro-business'
 import _values from 'lodash/values'
 import _includes from 'lodash/includes'
@@ -14,15 +13,20 @@ import {
   redis,
   isValidPID,
   getRedisCaptchaKey,
-  CAPTCHA_SALT,
   CAPTCHA_TOKEN_LIFETIME,
 } from '../common/constants'
-import { getGeoDetails, hash } from '../common/utils'
-import { GeneratedCaptcha } from './interfaces/generated-captcha'
+import { getGeoDetails } from '../common/utils'
+import { GeneratedChallenge } from './interfaces/generated-captcha'
 import { captchaTransformer } from './utils/transformers'
 import { clickhouse } from '../common/integrations/clickhouse'
 
 dayjs.extend(utc)
+
+// Default difficulty: number of leading hex zeros required (4 = ~65k iterations avg)
+const DEFAULT_POW_DIFFICULTY = 4
+
+// Challenge TTL in seconds (5 minutes)
+const CHALLENGE_TTL = 300
 
 export const DUMMY_PIDS = {
   ALWAYS_PASS: 'AP00000000000',
@@ -48,19 +52,39 @@ const decryptString = (text: string, key: string): string => {
   return bytes.toString(CryptoJS.enc.Utf8)
 }
 
-const captchaString = (text: string) => `${_toLower(text)}${CAPTCHA_SALT}`
+const getChallengeCacheKey = (challenge: string): string => {
+  return `pow_challenge:${challenge}`
+}
+
+const signCaptchaCiphertext = (ciphertext: string, key: string): string => {
+  // NOTE: Encryption alone (CryptoJS.Rabbit) is malleable; we add an HMAC to
+  // prevent token tampering and replay-bypass via ciphertext bitflips.
+  return crypto.createHmac('sha256', key).update(ciphertext).digest('base64url')
+}
+
+const timingSafeEqualString = (a: string, b: string): boolean => {
+  try {
+    const aBuf = Buffer.from(a)
+    const bBuf = Buffer.from(b)
+    if (aBuf.length !== bBuf.length) return false
+    return crypto.timingSafeEqual(aBuf, bBuf)
+  } catch {
+    return false
+  }
+}
 
 const isTokenAlreadyUsed = async (token: string): Promise<boolean> => {
   const captchaKey = getRedisCaptchaKey(token)
-  const key = await redis.get(captchaKey)
+  const setResult = await redis.set(
+    captchaKey,
+    '1',
+    'EX',
+    CAPTCHA_TOKEN_LIFETIME / 1000,
+    'NX',
+  )
 
-  if (key) {
-    return true
-  }
-
-  await redis.set(captchaKey, '1', 'EX', CAPTCHA_TOKEN_LIFETIME)
-
-  return false
+  // ioredis returns null when key already exists (i.e. token already used)
+  return setResult === null
 }
 
 @Injectable()
@@ -70,7 +94,7 @@ export class CaptchaService {
     private readonly projectService: ProjectService,
   ) {}
 
-  // checks if captcha is enabled for pid
+  // checks if captcha is enabled for pid (by checking if captchaSecretKey exists)
   async _isCaptchaEnabledForPID(pid: string) {
     const project = await this.projectService.getRedisProject(pid)
 
@@ -78,7 +102,19 @@ export class CaptchaService {
       return false
     }
 
-    return project.isCaptchaEnabled
+    return !!project.captchaSecretKey
+  }
+
+  // Get project's configured PoW difficulty, or default
+  async _getProjectDifficulty(pid: string): Promise<number> {
+    if (isDummyPID(pid)) {
+      return DEFAULT_POW_DIFFICULTY
+    }
+
+    const project = await this.projectService.getRedisProject(pid)
+
+    // Use project's configured difficulty if available, otherwise default
+    return project?.captchaDifficulty || DEFAULT_POW_DIFFICULTY
   }
 
   // validates pid, checks if captcha is enabled and throws an error otherwise
@@ -144,7 +180,7 @@ export class CaptchaService {
     )
   }
 
-  async generateToken(pid: string, captchaHash: string, timestamp: number) {
+  async generateToken(pid: string, challenge: string, timestamp: number) {
     if (isDummyPID(pid)) {
       return this.generateDummyToken()
     }
@@ -160,12 +196,22 @@ export class CaptchaService {
     }
 
     const token = {
-      hash: captchaHash,
+      challenge,
       timestamp,
       pid,
     }
 
-    return encryptString(JSON.stringify(token), project.captchaSecretKey)
+    const ciphertext = encryptString(
+      JSON.stringify(token),
+      project.captchaSecretKey,
+    )
+    const signature = signCaptchaCiphertext(
+      ciphertext,
+      project.captchaSecretKey,
+    )
+
+    // Token format: <ciphertext>.<hmac_sha256(ciphertext)>
+    return `${ciphertext}.${signature}`
   }
 
   async validateToken(token: string, secretKey: string) {
@@ -181,17 +227,47 @@ export class CaptchaService {
 
     if (secretKey === DUMMY_SECRETS.ALWAYS_PASS) {
       return {
-        hash: 'DUMMY_HASH00000111112222233333444445555566666777778888899999',
+        challenge:
+          'DUMMY_CHALLENGE00000111112222233333444445555566666777778888899999',
         timestamp: dayjs().unix() * 1000,
         pid: DUMMY_PIDS.ALWAYS_PASS,
       }
     }
 
     try {
-      const decrypted = decryptString(token, secretKey)
+      const parts = token.split('.')
+
+      if (parts.length !== 2) {
+        throw new BadRequestException('Invalid token format')
+      }
+
+      const [ciphertext, providedSignature] = parts
+      const expectedSignature = signCaptchaCiphertext(ciphertext, secretKey)
+
+      if (!timingSafeEqualString(providedSignature, expectedSignature)) {
+        throw new BadRequestException('Invalid token signature')
+      }
+
+      const decrypted = decryptString(ciphertext, secretKey)
       parsed = JSON.parse(decrypted)
     } catch {
       throw new BadRequestException('Could not decrypt token')
+    }
+
+    if (
+      !parsed ||
+      typeof parsed !== 'object' ||
+      typeof parsed.pid !== 'string' ||
+      typeof parsed.challenge !== 'string' ||
+      typeof parsed.timestamp !== 'number' ||
+      !Number.isFinite(parsed.timestamp)
+    ) {
+      throw new BadRequestException('Invalid token payload')
+    }
+
+    // Guard against obviously invalid pid values to reduce accidental misuse.
+    if (!isDummyPID(parsed.pid) && !isValidPID(parsed.pid)) {
+      throw new BadRequestException('Invalid token payload')
     }
 
     if (dayjs().unix() * 1000 - parsed.timestamp > CAPTCHA_TOKEN_LIFETIME) {
@@ -207,34 +283,107 @@ export class CaptchaService {
     return parsed
   }
 
-  hashCaptcha(text: string): string {
-    return hash(captchaString(text))
+  // Generate SHA-256 hash of the input
+  sha256(input: string): string {
+    return crypto.createHash('sha256').update(input).digest('hex')
   }
 
-  async generateCaptcha(theme: string): Promise<GeneratedCaptcha> {
-    const themeParams =
-      theme === 'light'
-        ? {}
-        : {
-            background: '#1f2937',
-            color: true,
-          }
+  // Check if hash has required number of leading zeros
+  hasValidPrefix(hash: string, difficulty: number): boolean {
+    const prefix = '0'.repeat(difficulty)
+    return hash.startsWith(prefix)
+  }
 
-    const captcha = svgCaptcha.create({
-      size: 6,
-      ignoreChars: '0o1iIl',
-      noise: 2,
-      ...themeParams,
-    })
-    const captchaHash = this.hashCaptcha(_toLower(captcha.text))
+  // Generate a PoW challenge
+  async generateChallenge(pid: string): Promise<GeneratedChallenge> {
+    const difficulty = await this._getProjectDifficulty(pid)
+
+    // Generate a random challenge string
+    const challenge = crypto.randomBytes(32).toString('hex')
+
+    // Store challenge in Redis with TTL to prevent replay attacks
+    // Include pid to prevent cross-project difficulty bypass
+    const cacheKey = getChallengeCacheKey(challenge)
+    const challengeData = JSON.stringify({ pid, difficulty })
+    await redis.set(cacheKey, challengeData, 'EX', CHALLENGE_TTL)
 
     return {
-      data: captcha.data,
-      hash: captchaHash,
+      challenge,
+      difficulty,
     }
   }
 
-  verifyCaptcha(text: string, captchaHash: string) {
-    return captchaHash === this.hashCaptcha(text)
+  // Verify a PoW solution
+  async verifyPoW(
+    challenge: string,
+    nonce: number,
+    solution: string,
+    pid: string,
+  ): Promise<boolean> {
+    // Check if challenge exists and hasn't been used
+    const cacheKey = getChallengeCacheKey(challenge)
+    const storedData = await redis.get(cacheKey)
+
+    if (!storedData) {
+      throw new BadRequestException('Invalid or expired challenge')
+    }
+
+    let difficulty: number
+    let storedPid: string | undefined
+
+    // Parse stored data - support both old string format (difficulty only)
+    // and new JSON format (pid + difficulty) for backward compatibility
+    try {
+      const parsed = JSON.parse(storedData)
+      if (
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        'difficulty' in parsed
+      ) {
+        difficulty = parsed.difficulty
+        storedPid = parsed.pid
+      } else {
+        // Fallback: treat as raw difficulty number
+        difficulty = parseInt(storedData, 10)
+      }
+    } catch {
+      // Old format: just the difficulty as a string
+      difficulty = parseInt(storedData, 10)
+    }
+
+    // Validate difficulty to prevent bypass via NaN or invalid values
+    if (
+      typeof difficulty !== 'number' ||
+      !Number.isFinite(difficulty) ||
+      difficulty < 1 ||
+      difficulty > 6
+    ) {
+      throw new BadRequestException('Invalid challenge difficulty')
+    }
+
+    // If the challenge was bound to a specific project, verify it matches
+    if (storedPid !== undefined && storedPid !== pid) {
+      throw new BadRequestException(
+        'Challenge was issued for a different project',
+      )
+    }
+
+    // Compute the expected hash
+    const input = `${challenge}:${nonce}`
+    const computedHash = this.sha256(input)
+
+    // Verify the solution matches and has required prefix
+    if (computedHash !== solution) {
+      return false
+    }
+
+    if (!this.hasValidPrefix(computedHash, difficulty)) {
+      return false
+    }
+
+    // Mark challenge as used by deleting it
+    await redis.del(cacheKey)
+
+    return true
   }
 }

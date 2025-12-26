@@ -14,6 +14,7 @@ import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
 import { Badge, BadgeProps } from '~/ui/Badge'
 import Modal from '~/ui/Modal'
+import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 interface OrganisationCardProps {
@@ -126,7 +127,9 @@ export const OrganisationCard = ({ organisation, reloadOrganisations }: Organisa
     >
       <div className='px-4 py-4'>
         <div className='flex items-center justify-between'>
-          <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
+          <Text as='p' size='lg' weight='semibold' truncate>
+            {name}
+          </Text>
 
           {membership?.role === 'viewer' ? null : (
             // dummy button, since the whole card is clickable

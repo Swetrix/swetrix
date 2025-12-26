@@ -1,4 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger'
+import { PID_REGEX } from '../../common/constants'
 import {
   IsEnum,
   IsNotEmpty,
@@ -7,6 +8,7 @@ import {
   IsBoolean,
   IsString,
   IsNumber,
+  Matches,
 } from 'class-validator'
 
 export enum QueryMetric {
@@ -84,6 +86,7 @@ export class CreateAlertDTO extends AlertBaseDTO {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @Matches(PID_REGEX, { message: 'The provided Project ID (pid) is incorrect' })
   pid: string
 }
 

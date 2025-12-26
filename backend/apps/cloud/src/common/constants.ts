@@ -4,8 +4,7 @@ import _toNumber from 'lodash/toNumber'
 import 'dotenv/config'
 import { deriveKey, hash } from './utils'
 
-const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, EMAIL_ACTION_ENCRYPTION_KEY } =
-  process.env
+const { EMAIL_ACTION_ENCRYPTION_KEY } = process.env
 
 const redis = new Redis(
   _toNumber(process.env.REDIS_PORT),
@@ -16,11 +15,6 @@ const redis = new Redis(
     family: 0,
   },
 )
-
-redis.defineCommand('countKeysByPattern', {
-  numberOfKeys: 0,
-  lua: "return #redis.call('keys', ARGV[1])",
-})
 
 export const JWT_ACCESS_TOKEN_SECRET = deriveKey('access-token')
 export const JWT_REFRESH_TOKEN_SECRET = deriveKey('refresh-token')
@@ -50,15 +44,11 @@ const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
 const getRedisUserUsageInfoKey = (uid: string) => `user_ui_${uid}`
 const getRedisCaptchaKey = (token: string) => `captcha_${hash(token)}`
 
-const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_TRIALS_COUNT_KEY = 'stats:trials_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
 const REDIS_EVENTS_COUNT_KEY = 'stats:events'
 const REDIS_SSO_UUID = 'sso:uuid'
-
-// Captcha service
-const { CAPTCHA_SALT } = process.env
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -71,8 +61,6 @@ const redisUserUsageinfoCacheTimeout = 300
 
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
 const UNIQUE_SESSION_LIFE_TIME = 1800
-
-const AFFILIATE_CUT = 0.2
 
 // send email warning when 85% of events in tier are used
 const SEND_WARNING_AT_PERC = 85
@@ -87,8 +75,6 @@ const MIN_PAGES_IN_FUNNEL = 2
 const MAX_PAGES_IN_FUNNEL = 10
 
 const TRAFFIC_SPIKE_ALLOWED_PERCENTAGE = 0.3
-
-const BLOG_POSTS_ROOT = 'blog-posts/posts'
 
 const BLOG_POSTS_PATH = isDevelopment
   ? path.join(__dirname, '../../../..', 'blog-posts', 'posts')
@@ -167,8 +153,19 @@ const sentryIgnoreErrors: (string | RegExp)[] = [
   'HttpException', // at the moment, these are either rate-limiting or payment required errors, so no need to track them
 ]
 
-const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = Number(JWT_REFRESH_TOKEN_LIFETIME)
-const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)
+const parseLifetimeSeconds = (value: unknown, fallback: number) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
+}
+
+const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = parseLifetimeSeconds(
+  JWT_REFRESH_TOKEN_LIFETIME,
+  60 * 60 * 24 * 30,
+)
+const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = parseLifetimeSeconds(
+  JWT_ACCESS_TOKEN_LIFETIME,
+  60 * 30,
+)
 
 const MAX_FUNNELS = 100
 
@@ -180,7 +177,6 @@ export {
   UNIQUE_SESSION_LIFE_TIME,
   getRedisUserCountKey,
   redisProjectCountCacheTimeout,
-  REDIS_SESSION_SALT_KEY,
   REDIS_USERS_COUNT_KEY,
   REDIS_TRIALS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
@@ -190,7 +186,6 @@ export {
   TWO_FACTOR_AUTHENTICATION_APP_NAME,
   IP_REGEX,
   ORIGINS_REGEX,
-  CAPTCHA_SALT,
   EMAIL_ACTION_ENCRYPTION_KEY,
   isDevelopment,
   getRedisCaptchaKey,
@@ -209,15 +204,11 @@ export {
   PERFORMANCE_COLUMNS,
   sentryIgnoreErrors,
   isProxiedByCloudflare,
-  PAYPAL_CLIENT_ID,
-  PAYPAL_CLIENT_SECRET,
   BLOG_POSTS_PATH,
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,
   MAX_FUNNELS,
   ALL_COLUMNS,
-  BLOG_POSTS_ROOT,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
-  AFFILIATE_CUT,
   PID_REGEX,
 }

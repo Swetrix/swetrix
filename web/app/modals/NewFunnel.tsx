@@ -10,6 +10,7 @@ import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
+import { Text } from '~/ui/Text'
 
 interface NewFunnelProps {
   onClose: () => void
@@ -88,7 +89,9 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
             onChange={(e) => setName(e.target.value)}
             disabled={!allowedToManage}
           />
-          <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('modals.funnels.steps')}</p>
+          <Text as='p' size='sm' weight='medium' colour='secondary' className='mt-5'>
+            {t('modals.funnels.steps')}
+          </Text>
           {_map(steps, (step, index) => (
             <div key={index} className='mt-1 flex items-center space-x-2'>
               <Select
@@ -125,7 +128,7 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
               {steps.length > MIN_FUNNEL_STEPS && allowedToManage ? (
                 <button
                   type='button'
-                  className='rounded-md p-2 text-gray-800 hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+                  className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
                   onClick={() => {
                     const newSteps = [...steps]
                     newSteps.splice(index, 1)

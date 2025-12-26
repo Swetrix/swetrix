@@ -20,7 +20,6 @@ Swetrix is built with Nest.js backend (MySQL + ClickHouse databases) and Remix f
 - [Self-hosting Documentation](https://docs.swetrix.com/selfhosting/how-to): How to self-host Swetrix on your own servers
 - [Statistics API Documentation](https://docs.swetrix.com/statistics-api): Public API for data aggregation and programmatic access
 - [Error Tracking Documentation](https://docs.swetrix.com/error-tracking): Guide for setting up error monitoring
-- [Affiliate Program Documentation](https://docs.swetrix.com/affiliate/about): Information about the referral program
 
 ## Development
 
@@ -44,4 +43,3 @@ Swetrix is built with Nest.js backend (MySQL + ClickHouse databases) and Remix f
 - [Blog](https://swetrix.com/blog): Articles about web analytics, privacy, and performance optimisation
 - [Discord Community](https://discord.gg/ZVK8Tw2E8j): Community support and discussions
 - [Twitter](https://x.com/swetrix): Official Twitter account
-- [Affiliate Terms](https://docs.swetrix.com/affiliate/terms): Terms and conditions for the affiliate program

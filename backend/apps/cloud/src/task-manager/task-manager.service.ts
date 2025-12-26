@@ -1,16 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import { IsNull, LessThan, In, Not, Between, MoreThan, Like } from 'typeorm'
+import { IsNull, LessThan, In, Not, Between } from 'typeorm'
 import { ConfigService } from '@nestjs/config'
-import Paypal from '@paypal/payouts-sdk'
-import bcrypt from 'bcrypt'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import _isEmpty from 'lodash/isEmpty'
 import _isNull from 'lodash/isNull'
 import _size from 'lodash/size'
 import _map from 'lodash/map'
-import _now from 'lodash/now'
 import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _toNumber from 'lodash/toNumber'
@@ -19,8 +16,6 @@ import _filter from 'lodash/filter'
 
 import { AlertService } from '../alert/alert.service'
 import { QueryCondition, QueryMetric, QueryTime } from '../alert/dto/alert.dto'
-import { ExtensionsService } from '../marketplace/extensions/extensions.service'
-import { Extension } from '../marketplace/extensions/entities/extension.entity'
 import { ReportFrequency } from '../project/enums'
 import { TelegramService } from '../integrations/telegram/telegram.service'
 import { MailerService } from '../mailer/mailer.service'
@@ -30,8 +25,10 @@ import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
-import { PayoutsService } from '../payouts/payouts.service'
-import { PayoutStatus } from '../payouts/entities/payouts.entity'
+import { SaltService } from '../analytics/salt.service'
+import { TimeBucketType } from '../analytics/dto/getData.dto'
+import { GoalService } from '../goal/goal.service'
+import { Goal, GoalType, GoalMatchType } from '../goal/entity/goal.entity'
 import {
   ACCOUNT_PLANS,
   PlanCode,
@@ -43,34 +40,26 @@ import {
   ReportFrequency as UserReportFrequency,
 } from '../user/entities/user.entity'
 import {
-  redis,
-  REDIS_SESSION_SALT_KEY,
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   JWT_REFRESH_TOKEN_LIFETIME,
-  PAYPAL_CLIENT_ID,
-  PAYPAL_CLIENT_SECRET,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
-  isDevelopment,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { CHPlanUsage } from './interfaces'
-import { getRandomTip } from '../common/utils'
+import {
+  getRandomTip,
+  isPrimaryClusterNode,
+  isPrimaryNode,
+} from '../common/utils'
 import { AppLoggerService } from '../logger/logger.service'
 import { DiscordService } from '../integrations/discord/discord.service'
 import { SlackService } from '../integrations/slack/slack.service'
+import { RevenueService } from '../revenue/revenue.service'
+import { PaddleAdapter } from '../revenue/adapters/paddle.adapter'
+import { StripeAdapter } from '../revenue/adapters/stripe.adapter'
 
 dayjs.extend(utc)
-
-let paypalClient
-
-if (PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET) {
-  const environment = new Paypal.core.SandboxEnvironment(
-    PAYPAL_CLIENT_ID,
-    PAYPAL_CLIENT_SECRET,
-  )
-  paypalClient = new Paypal.core.PayPalHttpClient(environment)
-}
 
 const getQueryTime = (time: QueryTime): number => {
   if (time === QueryTime.LAST_15_MINUTES) return 15 * 60
@@ -113,18 +102,40 @@ const checkQueryCondition = (
 }
 
 const CHUNK_SIZE = 5000
+const REPORTS_USERS_CONCURRENCY = 3
+const REPORTS_PROJECTS_CONCURRENCY = 5
+
+const mapLimit = async <T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> => {
+  const results: R[] = new Array(items.length)
+  const concurrency = Math.max(1, Math.min(limit, items.length))
+  let nextIndex = 0
+
+  const workers = Array.from({ length: concurrency }).map(async () => {
+    while (true) {
+      const current = nextIndex++
+      if (current >= items.length) {
+        break
+      }
+      results[current] = await fn(items[current], current)
+    }
+  })
+
+  await Promise.all(workers)
+  return results
+}
 
 // TODO: Count for other tables like captcha, errors, customEV too
-const generatePlanUsageQueryForUser = (
-  user: User,
-  getFromDate: (user?: User) => string,
-  getToDate: (user?: User) => string,
-): string => {
+const generatePlanUsageQueryForUser = (): string => {
+  // NOTE: keep all values parameterized to avoid injection and formatting issues.
   return `
-    SELECT '${user.id}' AS id, count(*) AS "count" 
-    FROM analytics 
-    WHERE pid IN ({pids:Array(FixedString(12))}) 
-    AND created BETWEEN '${getFromDate(user)}' AND '${getToDate(user)}'
+    SELECT {uid:String} AS id, count(*) AS "count"
+    FROM analytics
+    WHERE pid IN ({pids:Array(FixedString(12))})
+    AND created BETWEEN {from:String} AND {to:String}
   `
 }
 
@@ -133,35 +144,39 @@ const executeChunkedQueries = async (
   getFromDate: (user?: User) => string,
   getToDate: (user?: User) => string,
 ): Promise<CHPlanUsage[]> => {
-  const results: CHPlanUsage[] = []
-
-  for (const user of users) {
+  return mapLimit(users, 5, async user => {
     if (_isEmpty(user.projects)) {
-      continue
+      return {
+        id: user.id,
+        count: 0,
+      }
     }
 
     const pids = _map(user.projects, p => p.id)
     let totalCount = 0
+    const from = getFromDate(user)
+    const to = getToDate(user)
 
     // Process project IDs in chunks
     for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
       const pidChunk = pids.slice(i, i + CHUNK_SIZE)
-      const query = generatePlanUsageQueryForUser(user, getFromDate, getToDate)
+      const query = generatePlanUsageQueryForUser()
 
       const { data } = await clickhouse
-        .query({ query, query_params: { pids: pidChunk } })
+        .query({
+          query,
+          query_params: { pids: pidChunk, uid: user.id, from, to },
+        })
         .then(resultSet => resultSet.json<CHPlanUsage>())
 
       totalCount += data[0]?.count || 0
     }
 
-    results.push({
+    return {
       id: user.id,
       count: totalCount,
-    })
-  }
-
-  return results
+    }
+  })
 }
 
 const getUsersThatExceedPlanUsage = (
@@ -289,14 +304,189 @@ export class TaskManagerService {
     private readonly projectService: ProjectService,
     private readonly actionTokensService: ActionTokensService,
     private readonly alertService: AlertService,
-    private readonly extensionsService: ExtensionsService,
     private readonly logger: AppLoggerService,
     private readonly telegramService: TelegramService,
-    private readonly payoutsService: PayoutsService,
     private readonly configService: ConfigService,
     private readonly discordService: DiscordService,
     private readonly slackService: SlackService,
+    private readonly saltService: SaltService,
+    private readonly goalService: GoalService,
+    private readonly revenueService: RevenueService,
+    private readonly paddleAdapter: PaddleAdapter,
+    private readonly stripeAdapter: StripeAdapter,
   ) {}
+
+  /**
+   * Build goal match condition for querying conversions
+   */
+  private buildGoalMatchCondition(
+    goal: Goal,
+    paramKey: string,
+  ): { condition: string; params: Record<string, string> } {
+    const goalValue = (goal.value ?? '').toString()
+
+    // If goal value is blank, never match anything (avoid LIKE '%%')
+    if (goalValue.trim() === '') {
+      return { condition: '1=0', params: {} }
+    }
+
+    const params: Record<string, string> = {}
+    const column = goal.type === GoalType.CUSTOM_EVENT ? 'ev' : 'pg'
+
+    if (goal.matchType === GoalMatchType.EXACT) {
+      params[paramKey] = goalValue
+      return { condition: `${column} = {${paramKey}:String}`, params }
+    }
+
+    if (goal.matchType === GoalMatchType.CONTAINS) {
+      params[paramKey] = `%${goalValue}%`
+      return { condition: `${column} LIKE {${paramKey}:String}`, params }
+    }
+
+    // Regex goal
+    params[paramKey] = goalValue
+    return { condition: `match(${column}, {${paramKey}:String})`, params }
+  }
+
+  /**
+   * Get goal conversions for a specific period (batched per table using UNION ALL).
+   */
+  private async getGoalsWithConversionsForReport(
+    pid: string,
+    projectGoals: Goal[],
+    groupFrom: string,
+    groupTo: string,
+    totalSessions: number,
+  ): Promise<
+    Array<{ goalId: string; conversions: number; conversionRate: number }>
+  > {
+    if (_isEmpty(projectGoals)) {
+      return []
+    }
+
+    const total = Number(totalSessions) || 0
+
+    const buildUnionQuery = (
+      table: 'analytics' | 'customEV',
+      goals: Goal[],
+    ): { query: string; params: Record<string, any> } | null => {
+      if (_isEmpty(goals)) {
+        return null
+      }
+
+      const params: Record<string, any> = { pid, groupFrom, groupTo }
+      const parts: string[] = []
+      let idx = 0
+
+      for (const goal of goals) {
+        const goalIdKey = `goalId${idx}`
+        const goalValueKey = `goalValue${idx}`
+        const { condition, params: matchParams } = this.buildGoalMatchCondition(
+          goal,
+          goalValueKey,
+        )
+
+        // Skip blanks / never-matching goals
+        if (condition === '1=0') {
+          continue
+        }
+
+        params[goalIdKey] = goal.id
+        Object.assign(params, matchParams)
+
+        parts.push(`
+          SELECT
+            {${goalIdKey}:String} as goalId,
+            count(*) as conversions,
+            uniqExact(psid) as uniqueSessions
+          FROM ${table}
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND ${condition}
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        `)
+
+        idx += 1
+      }
+
+      if (_isEmpty(parts)) {
+        return null
+      }
+
+      return {
+        query: parts.join('\nUNION ALL\n'),
+        params,
+      }
+    }
+
+    const analyticsGoals = _filter(
+      projectGoals,
+      g => g.type === GoalType.PAGEVIEW,
+    )
+    const customEventGoals = _filter(
+      projectGoals,
+      g => g.type === GoalType.CUSTOM_EVENT,
+    )
+
+    const analyticsQuery = buildUnionQuery('analytics', analyticsGoals)
+    const customEventQuery = buildUnionQuery('customEV', customEventGoals)
+
+    const [analyticsRes, customEventRes] = await Promise.all([
+      analyticsQuery
+        ? clickhouse
+            .query({
+              query: analyticsQuery.query,
+              query_params: analyticsQuery.params,
+            })
+            .then(resultSet =>
+              resultSet.json<{
+                goalId: string
+                conversions: any
+                uniqueSessions: any
+              }>(),
+            )
+        : Promise.resolve({ data: [] as any[] }),
+      customEventQuery
+        ? clickhouse
+            .query({
+              query: customEventQuery.query,
+              query_params: customEventQuery.params,
+            })
+            .then(resultSet =>
+              resultSet.json<{
+                goalId: string
+                conversions: any
+                uniqueSessions: any
+              }>(),
+            )
+        : Promise.resolve({ data: [] as any[] }),
+    ])
+
+    const combined = [
+      ...(analyticsRes.data || []),
+      ...(customEventRes.data || []),
+    ]
+    const result: Array<{
+      goalId: string
+      conversions: number
+      conversionRate: number
+    }> = []
+
+    for (const row of combined) {
+      const conversions = Number(row.conversions) || 0
+      const uniqueSessions = Number(row.uniqueSessions) || 0
+      const conversionRate =
+        total > 0 ? Math.round((uniqueSessions / total) * 100) : 0
+
+      result.push({
+        goalId: row.goalId,
+        conversions,
+        conversionRate,
+      })
+    }
+
+    return result
+  }
 
   generateUnsubscribeUrl(
     id: string,
@@ -325,51 +515,143 @@ export class TaskManagerService {
 
     const users = await this.userService.getReportUsers(reportFrequency)
 
-    const now = dayjs.utc().format('DD.MM.YYYY')
+    const now = dayjs.utc()
+    const nowFormatted = now.format('DD.MM.YYYY')
     const timeAgo = dayjs
       .utc()
       // @ts-expect-error
       .subtract(...params.dayjsParams)
-      .format('DD.MM.YYYY')
-    const date = `${timeAgo} - ${now}`
+    const timeAgoFormatted = timeAgo.format('DD.MM.YYYY')
+    const date = `${timeAgoFormatted} - ${nowFormatted}`
     const tip = getRandomTip()
 
-    const promises = _map(users, async user => {
+    // Date range for additional queries (must match summary period + cron execution timestamp)
+    const safeTimezone = this.analyticsService.getSafeTimezone(undefined)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      '',
+      '',
+      TimeBucketType.DAY,
+      params.analyticsParam,
+      safeTimezone,
+      undefined,
+      false,
+      now,
+    )
+
+    await mapLimit(users, REPORTS_USERS_CONCURRENCY, async user => {
       const { id, email, projects } = user
 
-      const unsubscribeUrl = this.generateUnsubscribeUrl(id, 'user-reports')
+      try {
+        const unsubscribeUrl = this.generateUnsubscribeUrl(id, 'user-reports')
+        const ids = _map(projects, p => p.id)
 
-      const ids = _map(projects, p => p.id)
-      const data = this.analyticsService.convertSummaryToObsoleteFormat(
-        await this.analyticsService.getAnalyticsSummary(
+        const [summary, topCountries, errorCounts, totalSessions] =
+          await Promise.all([
+            this.analyticsService.getAnalyticsSummary(
+              ids,
+              undefined,
+              params.analyticsParam,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              now,
+            ),
+            this.analyticsService.getTopCountriesForReport(
+              ids,
+              groupFrom,
+              groupTo,
+            ),
+            this.analyticsService.getErrorCountsForReport(
+              ids,
+              groupFrom,
+              groupTo,
+            ),
+            this.analyticsService.getTotalSessionsForReport(
+              ids,
+              groupFrom,
+              groupTo,
+            ),
+          ])
+
+        const data = this.analyticsService.convertSummaryToReportFormat(summary)
+
+        const projectsWithExtraData = await mapLimit(
           ids,
-          undefined,
-          params.analyticsParam,
-        ),
-      )
+          REPORTS_PROJECTS_CONCURRENCY,
+          async (pid, index) => {
+            const projectData = data[pid] || {}
+            const topCountry = topCountries[pid]?.cc || null
+            const errorStats = errorCounts[pid] || { count: 0, uniqueErrors: 0 }
+            const pidTotalSessions = totalSessions[pid] || 0
 
-      const result = {
-        type: params.type,
-        date,
-        projects: _map(ids, (pid, index) => ({
-          data: data[pid],
-          name: projects[index].name,
-        })),
-        tip,
-        unsubscribeUrl,
+            const projectGoals = await this.goalService.findByProject(pid)
+            const conversions = await this.getGoalsWithConversionsForReport(
+              pid,
+              projectGoals,
+              groupFrom,
+              groupTo,
+              pidTotalSessions,
+            )
+
+            const conversionsById = _reduce(
+              conversions,
+              (acc, row) => ({ ...acc, [row.goalId]: row }),
+              {},
+            ) as Record<
+              string,
+              { goalId: string; conversions: number; conversionRate: number }
+            >
+
+            const goalsWithConversions = _map(projectGoals, goal => {
+              const stats = conversionsById[goal.id]
+              return {
+                name: goal.name,
+                conversions: stats?.conversions || 0,
+                conversionRate: stats?.conversionRate || 0,
+              }
+            })
+
+            const activeGoals = _filter(
+              goalsWithConversions,
+              g => g.conversions > 0,
+            )
+
+            return {
+              data: projectData,
+              name: projects[index].name,
+              topCountry,
+              errors:
+                errorStats.count > 0
+                  ? {
+                      count: errorStats.count,
+                      uniqueErrors: errorStats.uniqueErrors,
+                    }
+                  : null,
+              goals: activeGoals.length > 0 ? activeGoals : null,
+            }
+          },
+        )
+
+        const result = {
+          type: params.type,
+          date,
+          projects: projectsWithExtraData,
+          tip,
+          unsubscribeUrl,
+        }
+
+        await this.mailerService.sendEmail(
+          email,
+          LetterTemplate.ProjectReport,
+          result,
+        )
+      } catch (reason) {
+        this.logger.error(
+          `[CRON WORKER](handleUserReports) Frequency: ${reportFrequency}; Error occured: ${reason}`,
+        )
       }
-
-      await this.mailerService.sendEmail(
-        email,
-        LetterTemplate.ProjectReport,
-        result,
-      )
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleUserReports) Frequency: ${reportFrequency}; Error occured: ${reason}`,
-      )
     })
   }
 
@@ -383,52 +665,144 @@ export class TaskManagerService {
 
     const subscribers =
       await this.projectService.getSubscribersForReports(reportFrequency)
-    const now = dayjs.utc().format('DD.MM.YYYY')
+    const now = dayjs.utc()
+    const nowFormatted = now.format('DD.MM.YYYY')
     const timeAgo = dayjs
       .utc()
       // @ts-expect-error
       .subtract(...params.dayjsParams)
-      .format('DD.MM.YYYY')
-    const date = `${timeAgo} - ${now}`
+    const timeAgoFormatted = timeAgo.format('DD.MM.YYYY')
+    const date = `${timeAgoFormatted} - ${nowFormatted}`
     const tip = getRandomTip()
 
-    const promises = _map(subscribers, async subscriber => {
+    // Date range for additional queries (must match summary period + cron execution timestamp)
+    const safeTimezone = this.analyticsService.getSafeTimezone(undefined)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      '',
+      '',
+      TimeBucketType.DAY,
+      params.analyticsParam,
+      safeTimezone,
+      undefined,
+      false,
+      now,
+    )
+
+    await mapLimit(subscribers, REPORTS_USERS_CONCURRENCY, async subscriber => {
       const { id, email } = subscriber
-      const projects = await this.projectService.getSubscriberProjects(id)
 
-      const unsubscribeUrl = this.generateUnsubscribeUrl(id, '3rdparty')
+      try {
+        const projects = await this.projectService.getSubscriberProjects(id)
+        const unsubscribeUrl = this.generateUnsubscribeUrl(id, '3rdparty')
+        const ids = projects.map(project => project.id)
 
-      const ids = projects.map(project => project.id)
-      const data = this.analyticsService.convertSummaryToObsoleteFormat(
-        await this.analyticsService.getAnalyticsSummary(
+        const [summary, topCountries, errorCounts, totalSessions] =
+          await Promise.all([
+            this.analyticsService.getAnalyticsSummary(
+              ids,
+              undefined,
+              params.analyticsParam,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              undefined,
+              now,
+            ),
+            this.analyticsService.getTopCountriesForReport(
+              ids,
+              groupFrom,
+              groupTo,
+            ),
+            this.analyticsService.getErrorCountsForReport(
+              ids,
+              groupFrom,
+              groupTo,
+            ),
+            this.analyticsService.getTotalSessionsForReport(
+              ids,
+              groupFrom,
+              groupTo,
+            ),
+          ])
+
+        const data = this.analyticsService.convertSummaryToReportFormat(summary)
+
+        const projectsWithExtraData = await mapLimit(
           ids,
-          undefined,
-          params.analyticsParam,
-        ),
-      )
+          REPORTS_PROJECTS_CONCURRENCY,
+          async (pid, index) => {
+            const projectData = data[pid] || {}
+            const topCountry = topCountries[pid]?.cc || null
+            const errorStats = errorCounts[pid] || { count: 0, uniqueErrors: 0 }
+            const pidTotalSessions = totalSessions[pid] || 0
 
-      const result = {
-        type: params.type,
-        date,
-        projects: _map(ids, (pid, index) => ({
-          data: data[pid],
-          name: projects[index].name,
-        })),
-        tip,
-        unsubscribeUrl,
+            const projectGoals = await this.goalService.findByProject(pid)
+            const conversions = await this.getGoalsWithConversionsForReport(
+              pid,
+              projectGoals,
+              groupFrom,
+              groupTo,
+              pidTotalSessions,
+            )
+
+            const conversionsById = _reduce(
+              conversions,
+              (acc, row) => ({ ...acc, [row.goalId]: row }),
+              {},
+            ) as Record<
+              string,
+              { goalId: string; conversions: number; conversionRate: number }
+            >
+
+            const goalsWithConversions = _map(projectGoals, goal => {
+              const stats = conversionsById[goal.id]
+              return {
+                name: goal.name,
+                conversions: stats?.conversions || 0,
+                conversionRate: stats?.conversionRate || 0,
+              }
+            })
+
+            const activeGoals = _filter(
+              goalsWithConversions,
+              g => g.conversions > 0,
+            )
+
+            return {
+              data: projectData,
+              name: projects[index].name,
+              topCountry,
+              errors:
+                errorStats.count > 0
+                  ? {
+                      count: errorStats.count,
+                      uniqueErrors: errorStats.uniqueErrors,
+                    }
+                  : null,
+              goals: activeGoals.length > 0 ? activeGoals : null,
+            }
+          },
+        )
+
+        const result = {
+          type: params.type,
+          date,
+          projects: projectsWithExtraData,
+          tip,
+          unsubscribeUrl,
+        }
+
+        await this.mailerService.sendEmail(
+          email,
+          LetterTemplate.ProjectReport,
+          result,
+        )
+      } catch (reason) {
+        this.logger.error(
+          `[CRON WORKER](handleSubscriberReports) Frequency: ${reportFrequency}; Error: ${reason}`,
+        )
       }
-
-      await this.mailerService.sendEmail(
-        email,
-        LetterTemplate.ProjectReport,
-        result,
-      )
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleSubscriberReports) Frequency: ${reportFrequency}; Error: ${reason}`,
-      )
     })
   }
 
@@ -676,22 +1050,97 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_2_HOURS)
   async deleteOldShareInvitations() {
-    const minDate = dayjs
-      .utc()
-      .subtract(PROJECT_INVITE_EXPIRE, 'h')
-      .format('YYYY-MM-DD HH:mm:ss')
-    await this.actionTokensService.deleteMultiple(
-      `action="${ActionTokenType.PROJECT_SHARE}" AND created<"${minDate}"`,
-    )
-    await this.projectService.deleteMultipleShare(
-      `confirmed=0 AND created<"${minDate}"`,
-    )
+    const minDate = dayjs.utc().subtract(PROJECT_INVITE_EXPIRE, 'h').toDate()
+    await this.actionTokensService.deleteMultiple({
+      action: ActionTokenType.PROJECT_SHARE,
+      created: LessThan(minDate),
+    })
+    await this.projectService.deleteMultipleShare({
+      confirmed: false,
+      created: LessThan(minDate),
+    })
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async generateSessionSalt() {
-    const salt = await bcrypt.genSalt(10)
-    await redis.set(REDIS_SESSION_SALT_KEY, salt, 'EX', 87000)
+  @Cron(CronExpression.EVERY_HOUR)
+  async regenerateGlobalSalts() {
+    await this.saltService.regenerateExpiredSalts()
+  }
+
+  // Sync revenue data from payment providers every 30 minutes
+  @Cron(CronExpression.EVERY_30_MINUTES)
+  async syncRevenueData() {
+    // Find all projects with Paddle or Stripe connected
+    const projects = await this.projectService.find({
+      where: [
+        {
+          paddleApiKeyEnc: Not(IsNull()),
+          admin: {
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
+        },
+        {
+          stripeApiKeyEnc: Not(IsNull()),
+          admin: {
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
+        },
+      ],
+      relations: ['admin'],
+    })
+
+    if (_isEmpty(projects)) {
+      return
+    }
+
+    const promises = _map(projects, async project => {
+      try {
+        if (project.paddleApiKeyEnc) {
+          const apiKey = this.revenueService.getPaddleApiKey(project)
+          if (!apiKey) {
+            this.logger.warn(
+              `[CRON WORKER](syncRevenueData) Failed to decrypt Paddle API key for project ${project.id}`,
+            )
+            return
+          }
+
+          await this.paddleAdapter.syncTransactions(
+            project.id,
+            apiKey,
+            project.revenueCurrency || 'USD',
+            project.revenueLastSyncAt || undefined,
+          )
+        } else if (project.stripeApiKeyEnc) {
+          const apiKey = this.revenueService.getStripeApiKey(project)
+          if (!apiKey) {
+            this.logger.warn(
+              `[CRON WORKER](syncRevenueData) Failed to decrypt Stripe API key for project ${project.id}`,
+            )
+            return
+          }
+
+          await this.stripeAdapter.syncTransactions(
+            project.id,
+            apiKey,
+            project.revenueCurrency || 'USD',
+            project.revenueLastSyncAt || undefined,
+          )
+        }
+
+        await this.revenueService.updateLastSyncAt(project.id)
+      } catch (error) {
+        this.logger.error(
+          `[CRON WORKER](syncRevenueData) Error syncing project ${project.id}: ${error}`,
+        )
+      }
+    })
+
+    await Promise.allSettled(promises).catch(reason => {
+      this.logger.error(
+        `[CRON WORKER](syncRevenueData) Error occured: ${reason}`,
+      )
+    })
   }
 
   // EVERY SUNDAY AT 2:30 AM
@@ -728,49 +1177,6 @@ export class TaskManagerService {
   @Cron('0 03 * * 0')
   async handleWeeklyReports() {
     await this.handleSubscriberReports(ReportFrequency.WEEKLY)
-  }
-
-  @Cron(CronExpression.EVERY_MINUTE)
-  async processSessionDuration() {
-    const keys = await redis.keys('sd:*')
-    const keysToDelete = []
-    const toSave = []
-    const now = _now()
-
-    const promises = _map(keys, async key => {
-      const [start, last] = (await redis.get(key)).split(':')
-      const duration = now - Number(last)
-
-      // storing to the DB if last interaction was more than 1 minute ago
-      if (duration > 60000) {
-        const [, psid, pid] = key.split(':')
-        toSave.push({
-          psid,
-          pid,
-          duration: Math.max(
-            0,
-            Math.floor((Number(last) - Number(start)) / 1000),
-          ), // convert to seconds, ensure non-negative
-        })
-        keysToDelete.push(key)
-      }
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](processSessionDuration) Error occured: ${reason}`,
-      )
-    })
-
-    if (_size(toSave) > 0) {
-      await redis.del(...keysToDelete)
-
-      await clickhouse.insert({
-        table: 'session_durations',
-        values: toSave,
-        format: 'JSONEachRow',
-      })
-    }
   }
 
   @Cron(CronExpression.EVERY_30_MINUTES)
@@ -966,51 +1372,81 @@ export class TaskManagerService {
     })
 
     const promises = _map(alerts, async alert => {
-      const project = _find(projects, { id: alert.project.id })
+      try {
+        const project = _find(projects, { id: alert.project.id })
 
-      if (alert.lastTriggered !== null) {
-        const lastTriggered = new Date(alert.lastTriggered)
-        const now = new Date()
-
-        if (now.getTime() - lastTriggered.getTime() < 24 * 60 * 60 * 1000) {
+        if (!project) {
+          this.logger.warn(
+            `[CRON WORKER](checkOnlineUsersAlerts) Alert ${alert.id} references missing project ${alert.project?.id}`,
+          )
           return
         }
-      }
 
-      const online = await this.analyticsService.getOnlineUserCount(project.id)
-      const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!`
+        if (alert.lastTriggered !== null) {
+          const lastTriggered = new Date(alert.lastTriggered)
+          const now = new Date()
 
-      if (checkQueryCondition(online, alert.queryValue, alert.queryCondition)) {
-        // @ts-expect-error
-        await this.alertService.update(alert.id, {
-          lastTriggered: new Date(),
-        })
-        if (project.admin && project.admin.isTelegramChatIdConfirmed) {
-          this.telegramService.addMessage(project.admin.telegramChatId, text, {
-            parse_mode: 'Markdown',
+          if (now.getTime() - lastTriggered.getTime() < 24 * 60 * 60 * 1000) {
+            return
+          }
+        }
+
+        const online = await this.analyticsService.getOnlineUserCount(
+          project.id,
+        )
+        const alertName = this.telegramService.escapeTelegramMarkdown(
+          alert.name,
+        )
+        const projectName = this.telegramService.escapeTelegramMarkdown(
+          project.name,
+        )
+        const text = `🔔 Alert *${alertName}* got triggered!\nYour project *${projectName}* has *${online}* online users right now!`
+
+        if (
+          checkQueryCondition(online, alert.queryValue, alert.queryCondition)
+        ) {
+          // @ts-expect-error
+          await this.alertService.update(alert.id, {
+            lastTriggered: new Date(),
           })
-        }
-        if (project.admin.discordWebhookUrl) {
-          await this.discordService.sendWebhook(
-            project.admin.discordWebhookUrl,
-            text,
-          )
-        }
+          if (project.admin && project.admin.isTelegramChatIdConfirmed) {
+            this.telegramService.addMessage(
+              project.admin.telegramChatId,
+              text,
+              {
+                parse_mode: 'Markdown',
+              },
+            )
+          }
+          if (project.admin.discordWebhookUrl) {
+            await this.discordService.sendWebhook(
+              project.admin.discordWebhookUrl,
+              text,
+            )
+          }
 
-        if (project.admin.slackWebhookUrl) {
-          await this.slackService.sendWebhook(
-            project.admin.slackWebhookUrl,
-            text,
-          )
+          if (project.admin.slackWebhookUrl) {
+            await this.slackService.sendWebhook(
+              project.admin.slackWebhookUrl,
+              text,
+            )
+          }
         }
+      } catch (reason) {
+        this.logger.error(
+          `[CRON WORKER](checkOnlineUsersAlerts) Failed to process alert ${alert.id}: ${reason}`,
+        )
       }
     })
 
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](checkOnlineUsersAlerts) Error occured: ${reason}`,
-      )
-    })
+    const results = await Promise.allSettled(promises)
+    for (const r of results) {
+      if (r.status === 'rejected') {
+        this.logger.error(
+          `[CRON WORKER](checkOnlineUsersAlerts) Alert promise rejected: ${r.reason}`,
+        )
+      }
+    }
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
@@ -1037,48 +1473,62 @@ export class TaskManagerService {
     })
 
     const promises = _map(alerts, async alert => {
-      const project = _find(projects, { id: alert.project.id })
+      try {
+        const project = _find(projects, { id: alert.project.id })
 
-      if (
-        alert.lastTriggered !== null &&
-        alert.queryMetric !== QueryMetric.ERRORS &&
-        !(
-          alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
-          alert.alertOnEveryCustomEvent
-        )
-      ) {
-        const lastTriggered = new Date(alert.lastTriggered)
-        const now = new Date()
-
-        if (now.getTime() - lastTriggered.getTime() < 24 * 60 * 60 * 1000) {
+        if (!project) {
+          this.logger.warn(
+            `[CRON WORKER](checkMetricAlerts) Alert ${alert.id} references missing project ${alert.project?.id}`,
+          )
           return
         }
-      }
 
-      let query: string
-      const queryParams: Record<string, any> = { pid: project.id }
+        if (
+          alert.lastTriggered !== null &&
+          alert.queryMetric !== QueryMetric.ERRORS &&
+          !(
+            alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+            alert.alertOnEveryCustomEvent
+          )
+        ) {
+          const lastTriggered = new Date(alert.lastTriggered)
+          const now = new Date()
 
-      const nowUnix = dayjs.utc().unix()
-      let lastEventSubtractSeconds = 0
+          if (now.getTime() - lastTriggered.getTime() < 24 * 60 * 60 * 1000) {
+            return
+          }
+        }
 
-      if (alert.lastTriggered) {
-        lastEventSubtractSeconds =
-          nowUnix - dayjs.utc(alert.lastTriggered).unix()
-      } else {
-        lastEventSubtractSeconds =
-          nowUnix - dayjs.utc().subtract(CRON_INTERVAL_SECONDS, 'second').unix()
-      }
+        let query: string
+        const queryParams: Record<string, any> = { pid: project.id }
 
-      const subtractSecondsTimeframe =
-        alert.queryMetric === QueryMetric.ERRORS ||
-        (alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
-          alert.alertOnEveryCustomEvent)
-          ? lastEventSubtractSeconds
-          : getQueryTime(alert.queryTime as QueryTime)
+        const nowUnix = dayjs.utc().unix()
+        let lastEventSubtractSeconds = 0
 
-      if (alert.queryMetric === QueryMetric.ERRORS) {
-        if (alert.alertOnNewErrorsOnly) {
-          query = `
+        if (alert.lastTriggered) {
+          lastEventSubtractSeconds =
+            nowUnix - dayjs.utc(alert.lastTriggered).unix()
+        } else {
+          lastEventSubtractSeconds =
+            nowUnix -
+            dayjs.utc().subtract(CRON_INTERVAL_SECONDS, 'second').unix()
+        }
+
+        const subtractSecondsTimeframeRaw =
+          alert.queryMetric === QueryMetric.ERRORS ||
+          (alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+            alert.alertOnEveryCustomEvent)
+            ? lastEventSubtractSeconds
+            : getQueryTime(alert.queryTime as QueryTime)
+        const subtractSecondsTimeframe = Number.isFinite(
+          subtractSecondsTimeframeRaw,
+        )
+          ? Math.max(0, Math.floor(subtractSecondsTimeframeRaw))
+          : CRON_INTERVAL_SECONDS
+
+        if (alert.queryMetric === QueryMetric.ERRORS) {
+          if (alert.alertOnNewErrorsOnly) {
+            query = `
             SELECT
               count()
             FROM (
@@ -1089,8 +1539,8 @@ export class TaskManagerService {
             )
             WHERE first_seen >= now() - ${subtractSecondsTimeframe}
           `
-        } else {
-          query = `
+          } else {
+            query = `
             SELECT
               count()
             FROM errors
@@ -1098,9 +1548,9 @@ export class TaskManagerService {
               pid = {pid:FixedString(12)}
               AND created >= now() - ${subtractSecondsTimeframe}
           `
-        }
-      } else if (alert.queryMetric === QueryMetric.CUSTOM_EVENTS) {
-        query = `
+          }
+        } else if (alert.queryMetric === QueryMetric.CUSTOM_EVENTS) {
+          query = `
           SELECT
             count()
           FROM customEV
@@ -1109,10 +1559,10 @@ export class TaskManagerService {
             AND ev = {ev:String}
             AND created >= now() - ${subtractSecondsTimeframe}
         `
-        queryParams.ev = alert.queryCustomEvent
-      } else {
-        const isUnique = alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
-        query = `
+          queryParams.ev = alert.queryCustomEvent
+        } else {
+          const isUnique = alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
+          query = `
           SELECT
             count(${isUnique ? 'DISTINCT psid' : '*'})
           FROM analytics
@@ -1120,50 +1570,50 @@ export class TaskManagerService {
             pid = {pid:FixedString(12)}
             AND created >= now() - ${subtractSecondsTimeframe}
         `
-      }
-
-      const { data: queryResult } = await clickhouse
-        .query({
-          query,
-          query_params: queryParams,
-        })
-        .then(resultSet => resultSet.json())
-
-      const count = Number(queryResult[0]['count()']) || 0
-
-      const conditionMet =
-        alert.queryMetric === QueryMetric.ERRORS
-          ? count > 0
-          : alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
-              alert.alertOnEveryCustomEvent
-            ? count > 0
-            : checkQueryCondition(
-                count,
-                alert.queryValue as number,
-                alert.queryCondition as QueryCondition,
-              )
-
-      if (!conditionMet) {
-        return
-      }
-
-      let errorDetails: {
-        eid: string
-        name: string
-        message?: string | null
-        lineno?: number | null
-        colno?: number | null
-        filename?: string | null
-      } | null = null
-
-      if (alert.queryMetric === QueryMetric.ERRORS && count > 0) {
-        let detailQuery: string
-        const detailQueryParams: Record<string, any> = {
-          pid: project.id,
         }
 
-        if (alert.alertOnNewErrorsOnly) {
-          detailQuery = `
+        const { data: queryResult } = await clickhouse
+          .query({
+            query,
+            query_params: queryParams,
+          })
+          .then(resultSet => resultSet.json())
+
+        const count = Number(queryResult[0]['count()']) || 0
+
+        const conditionMet =
+          alert.queryMetric === QueryMetric.ERRORS
+            ? count > 0
+            : alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+                alert.alertOnEveryCustomEvent
+              ? count > 0
+              : checkQueryCondition(
+                  count,
+                  alert.queryValue as number,
+                  alert.queryCondition as QueryCondition,
+                )
+
+        if (!conditionMet) {
+          return
+        }
+
+        let errorDetails: {
+          eid: string
+          name: string
+          message?: string | null
+          lineno?: number | null
+          colno?: number | null
+          filename?: string | null
+        } | null = null
+
+        if (alert.queryMetric === QueryMetric.ERRORS && count > 0) {
+          let detailQuery: string
+          const detailQueryParams: Record<string, any> = {
+            pid: project.id,
+          }
+
+          if (alert.alertOnNewErrorsOnly) {
+            detailQuery = `
             SELECT eid, name, message, lineno, colno, filename
             FROM errors
             WHERE pid = {pid:FixedString(12)} AND eid IN (
@@ -1179,8 +1629,8 @@ export class TaskManagerService {
             ORDER BY created DESC
             LIMIT 1
           `
-        } else {
-          detailQuery = `
+          } else {
+            detailQuery = `
             SELECT eid, name, message, lineno, colno, filename
             FROM errors
             WHERE
@@ -1189,278 +1639,194 @@ export class TaskManagerService {
             ORDER BY created DESC
             LIMIT 1
           `
-        }
-        try {
-          const { data: errorDetailResult } = await clickhouse
-            .query({ query: detailQuery, query_params: detailQueryParams })
-            .then(resultSet => resultSet.json())
-          if (errorDetailResult && errorDetailResult.length > 0) {
-            errorDetails = errorDetailResult[0] as typeof errorDetails
           }
-        } catch (reason) {
-          this.logger.error(
-            `[CRON WORKER](checkMetricAlerts) Error fetching error details: ${reason}`,
-          )
-        }
-      }
-
-      // @ts-expect-error
-      await this.alertService.update(alert.id, {
-        lastTriggered: new Date(),
-      })
-
-      let queryMetricString = ''
-      switch (alert.queryMetric) {
-        case QueryMetric.CUSTOM_EVENTS:
-          queryMetricString = 'custom events'
-          break
-        case QueryMetric.UNIQUE_PAGE_VIEWS:
-          queryMetricString = 'unique page views'
-          break
-        case QueryMetric.PAGE_VIEWS:
-          queryMetricString = 'page views'
-          break
-        case QueryMetric.ERRORS:
-          queryMetricString = alert.alertOnNewErrorsOnly
-            ? 'new errors'
-            : 'errors'
-          break
-        default:
-          queryMetricString = alert.queryMetric
-      }
-
-      const effectiveQueryTimeString =
-        alert.queryMetric === QueryMetric.ERRORS
-          ? `${CRON_INTERVAL_SECONDS / 60} minutes`
-          : alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
-              alert.alertOnEveryCustomEvent
-            ? `${CRON_INTERVAL_SECONDS / 60} minutes`
-            : getQueryTimeString(alert.queryTime as QueryTime)
-
-      let text = ``
-
-      const clientUrl = this.configService.get('CLIENT_URL')
-      const escapedProjectLink = this.telegramService.escapeTelegramMarkdown(
-        `${clientUrl}/projects/${project.id}`,
-      )
-
-      if (alert.queryMetric === QueryMetric.ERRORS) {
-        if (!errorDetails) {
-          console.error(
-            `[CRON WORKER](checkMetricAlerts) Error details not found for alert ${alert.id}`,
-          )
-          console.error(queryResult)
-          return
+          try {
+            const { data: errorDetailResult } = await clickhouse
+              .query({ query: detailQuery, query_params: detailQueryParams })
+              .then(resultSet => resultSet.json())
+            if (errorDetailResult && errorDetailResult.length > 0) {
+              errorDetails = errorDetailResult[0] as typeof errorDetails
+            }
+          } catch (reason) {
+            this.logger.error(
+              `[CRON WORKER](checkMetricAlerts) Error fetching error details: ${reason}`,
+            )
+          }
         }
 
-        const escapedErrorLink = this.telegramService.escapeTelegramMarkdown(
-          `${clientUrl}/projects/${project.id}?tab=errors&eid=${errorDetails.eid}`,
-        )
-
-        const alertName = this.telegramService.escapeTelegramMarkdown(
-          alert.name,
-        )
-        const projectName = this.telegramService.escapeTelegramMarkdown(
-          project.name,
-        )
-        const errorName = this.telegramService.escapeTelegramMarkdown(
-          errorDetails.name || 'N/A',
-        )
-        const errorMessage = this.telegramService.escapeTelegramMarkdown(
-          errorDetails.message || 'N/A',
-        )
-        const filename = this.telegramService.escapeTelegramMarkdown(
-          errorDetails.filename || 'N/A',
-        )
-
-        let locationInfo = 'Location: Not available'
-        if (
-          errorDetails.filename ||
-          errorDetails.lineno !== null ||
-          errorDetails.colno !== null
-        ) {
-          const ln =
-            errorDetails.lineno !== null
-              ? errorDetails.lineno.toString()
-              : 'N/A'
-          const cn =
-            errorDetails.colno !== null ? errorDetails.colno.toString() : 'N/A'
-          locationInfo = `File: ${filename}, Line: ${ln}, Col: ${cn}`
-        }
-
-        text =
-          `🐞 Error alert *${alertName}* triggered!\n\n` +
-          `Project: [${projectName}](${escapedProjectLink})\n` +
-          `Error: \`${errorName}\`\n` +
-          `Message: \`${errorMessage}\`\n\n` +
-          `${locationInfo}\n\n` +
-          `[View error](${escapedErrorLink})`
-      } else {
-        const alertName = this.telegramService.escapeTelegramMarkdown(
-          alert.name,
-        )
-        const projectName = this.telegramService.escapeTelegramMarkdown(
-          project.name,
-        )
-
-        let customEventInfo = ''
-        if (
-          alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
-          alert.queryCustomEvent
-        ) {
-          customEventInfo = ` "${alert.queryCustomEvent}"`
-        }
-
-        if (
-          alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
-          alert.alertOnEveryCustomEvent
-        ) {
-          text =
-            `🔔 Alert *${alertName}* triggered!\n\n` +
-            `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} occur in the last *${effectiveQueryTimeString}*!`
-        } else {
-          text =
-            `🔔 Alert *${alertName}* triggered!\n\n` +
-            `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*!`
-        }
-      }
-
-      if (project.admin?.isTelegramChatIdConfirmed) {
-        this.telegramService.addMessage(project.admin.telegramChatId, text, {
-          parse_mode: 'Markdown',
-          // @ts-expect-error It's not typed
-          disable_web_page_preview: true,
+        // @ts-expect-error
+        await this.alertService.update(alert.id, {
+          lastTriggered: new Date(),
         })
-      }
 
-      if (project.admin?.discordWebhookUrl) {
-        await this.discordService.sendWebhook(
-          project.admin.discordWebhookUrl,
-          text,
-        )
-      }
-
-      if (project.admin?.slackWebhookUrl) {
-        await this.slackService.sendWebhook(project.admin.slackWebhookUrl, text)
-      }
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](checkMetricAlerts) Error occured: ${reason}`,
-      )
-    })
-  }
-
-  @Cron('0 * * * *')
-  async handleNewExtensions() {
-    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-    const newExtensions = await this.extensionsService.find({
-      where: {
-        createdAt: MoreThan(twoWeeksAgo),
-      },
-    })
-
-    const newExtensionsPromise = _map(newExtensions, async extension => {
-      if (!extension.tags.includes('New')) {
-        extension.tags.push('New')
-        await this.extensionsService.save(extension)
-      }
-    })
-
-    await Promise.allSettled(newExtensionsPromise).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleNewExtensions) Error occured: ${reason}`,
-      )
-    })
-
-    const oldExtensions = await this.extensionsService.find({
-      where: {
-        createdAt: LessThan(twoWeeksAgo),
-        tags: Like('%New%'),
-      },
-    })
-
-    const oldExtensionsPromise = _map(oldExtensions, async extension => {
-      extension.tags = extension.tags.filter(tag => tag !== 'New')
-      await this.extensionsService.save(extension)
-    })
-
-    await Promise.allSettled(oldExtensionsPromise).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleNewExtensions) Error occured: ${reason}`,
-      )
-    })
-  }
-
-  @Cron('0 * * * *')
-  async handleTrendingExtensions() {
-    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-    const extensions = await this.extensionsService.find({
-      where: {
-        createdAt: MoreThan(twoWeeksAgo),
-      },
-    })
-
-    const promises = _map(extensions, async extension => {
-      const currentInstalls =
-        await this.extensionsService.getExtensionInstallCount(extension.id)
-      const twoWeeksBeforeInstalls =
-        await this.extensionsService.getExtensionInstallCount(
-          extension.id,
-          twoWeeksAgo,
-        )
-
-      if (
-        currentInstalls > twoWeeksBeforeInstalls * 2 &&
-        currentInstalls > 0.9 * (await this.getAverageInstalls(extensions))
-      ) {
-        if (!extension.tags.includes('Trending')) {
-          extension.tags.push('Trending')
-          await this.extensionsService.save(extension)
+        let queryMetricString = ''
+        switch (alert.queryMetric) {
+          case QueryMetric.CUSTOM_EVENTS:
+            queryMetricString = 'custom events'
+            break
+          case QueryMetric.UNIQUE_PAGE_VIEWS:
+            queryMetricString = 'unique page views'
+            break
+          case QueryMetric.PAGE_VIEWS:
+            queryMetricString = 'page views'
+            break
+          case QueryMetric.ERRORS:
+            queryMetricString = alert.alertOnNewErrorsOnly
+              ? 'new errors'
+              : 'errors'
+            break
+          default:
+            queryMetricString = alert.queryMetric
         }
-      } else if (extension.tags.includes('Trending')) {
-        extension.tags = extension.tags.filter(tag => tag !== 'Trending')
-        await this.extensionsService.save(extension)
+
+        const effectiveQueryTimeString =
+          alert.queryMetric === QueryMetric.ERRORS
+            ? `${CRON_INTERVAL_SECONDS / 60} minutes`
+            : alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+                alert.alertOnEveryCustomEvent
+              ? `${CRON_INTERVAL_SECONDS / 60} minutes`
+              : getQueryTimeString(alert.queryTime as QueryTime)
+
+        let text = ``
+
+        const clientUrl = this.configService.get('CLIENT_URL')
+        const escapedProjectLink = this.telegramService.escapeTelegramMarkdown(
+          `${clientUrl}/projects/${project.id}`,
+        )
+
+        if (alert.queryMetric === QueryMetric.ERRORS) {
+          if (!errorDetails) {
+            console.error(
+              `[CRON WORKER](checkMetricAlerts) Error details not found for alert ${alert.id}`,
+            )
+            console.error(queryResult)
+            return
+          }
+
+          const escapedErrorLink = this.telegramService.escapeTelegramMarkdown(
+            `${clientUrl}/projects/${project.id}?tab=errors&eid=${errorDetails.eid}`,
+          )
+
+          const alertName = this.telegramService.escapeTelegramMarkdown(
+            alert.name,
+          )
+          const projectName = this.telegramService.escapeTelegramMarkdown(
+            project.name,
+          )
+          const errorName = this.telegramService.escapeTelegramMarkdown(
+            errorDetails.name || 'N/A',
+          )
+          const errorMessage = this.telegramService.escapeTelegramMarkdown(
+            errorDetails.message || 'N/A',
+          )
+          const filename = this.telegramService.escapeTelegramMarkdown(
+            errorDetails.filename || 'N/A',
+          )
+
+          let locationInfo = 'Location: Not available'
+          if (
+            errorDetails.filename ||
+            errorDetails.lineno !== null ||
+            errorDetails.colno !== null
+          ) {
+            const ln =
+              errorDetails.lineno !== null
+                ? errorDetails.lineno.toString()
+                : 'N/A'
+            const cn =
+              errorDetails.colno !== null
+                ? errorDetails.colno.toString()
+                : 'N/A'
+            locationInfo = `File: ${filename}, Line: ${ln}, Col: ${cn}`
+          }
+
+          text =
+            `🐞 Error alert *${alertName}* triggered!\n\n` +
+            `Project: [${projectName}](${escapedProjectLink})\n` +
+            `Error: \`${errorName}\`\n` +
+            `Message: \`${errorMessage}\`\n\n` +
+            `${locationInfo}\n\n` +
+            `[View error](${escapedErrorLink})`
+        } else {
+          const alertName = this.telegramService.escapeTelegramMarkdown(
+            alert.name,
+          )
+          const projectName = this.telegramService.escapeTelegramMarkdown(
+            project.name,
+          )
+
+          let customEventInfo = ''
+          if (
+            alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+            alert.queryCustomEvent
+          ) {
+            customEventInfo = ` "${alert.queryCustomEvent}"`
+          }
+
+          if (
+            alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+            alert.alertOnEveryCustomEvent
+          ) {
+            text =
+              `🔔 Alert *${alertName}* triggered!\n\n` +
+              `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} occur in the last *${effectiveQueryTimeString}*!`
+          } else {
+            text =
+              `🔔 Alert *${alertName}* triggered!\n\n` +
+              `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*!`
+          }
+        }
+
+        if (project.admin?.isTelegramChatIdConfirmed) {
+          this.telegramService.addMessage(project.admin.telegramChatId, text, {
+            parse_mode: 'Markdown',
+            // @ts-expect-error It's not typed
+            disable_web_page_preview: true,
+          })
+        }
+
+        if (project.admin?.discordWebhookUrl) {
+          await this.discordService.sendWebhook(
+            project.admin.discordWebhookUrl,
+            text,
+          )
+        }
+
+        if (project.admin?.slackWebhookUrl) {
+          await this.slackService.sendWebhook(
+            project.admin.slackWebhookUrl,
+            text,
+          )
+        }
+      } catch (reason) {
+        this.logger.error(
+          `[CRON WORKER](checkMetricAlerts) Failed to process alert ${alert.id}: ${reason}`,
+        )
       }
     })
 
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleTrendingExtensions) Error occured: ${reason}`,
-      )
-    })
-  }
-
-  private async getAverageInstalls(
-    extensions: Extension[],
-    twoWeeksAgo?: Date,
-  ) {
-    let totalInstalls = 0
-
-    const promises = _map(extensions, async extension => {
-      totalInstalls += await this.extensionsService.getExtensionInstallCount(
-        extension.id,
-        twoWeeksAgo,
-      )
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](getAverageInstalls) Error occured: ${reason}`,
-      )
-      return 0
-    })
-
-    return totalInstalls / extensions.length
+    const results = await Promise.allSettled(promises)
+    for (const r of results) {
+      if (r.status === 'rejected') {
+        this.logger.error(
+          `[CRON WORKER](checkMetricAlerts) Alert promise rejected: ${r.reason}`,
+        )
+      }
+    }
   }
 
   @Cron(CronExpression.EVERY_5_SECONDS)
   async sendTelegramMessages() {
     try {
+      // Only one instance should process Telegram message queue; otherwise messages
+      // may be deleted by nodes that don't have the bot launched.
+      if (!(isPrimaryNode() && isPrimaryClusterNode())) {
+        return
+      }
+
       const messages = await this.telegramService.getMessages()
 
-      messages.forEach(async message => {
+      const promises = messages.map(async message => {
         try {
           await this.telegramService.sendMessage(
             message.id,
@@ -1476,6 +1842,8 @@ export class TaskManagerService {
           await this.telegramService.deleteMessage(message.id)
         }
       })
+
+      await Promise.allSettled(promises)
     } catch (error) {
       this.logger.error(
         `[CRON WORKER](sendTelegramMessages) Error occured: ${error}`,
@@ -1499,59 +1867,68 @@ export class TaskManagerService {
     // a bit more than 2 months ago
     const nineWeeksAgo = dayjs.utc().subtract(9, 'w').format('YYYY-MM-DD')
 
-    const promises = _map(users, async user => {
+    await mapLimit(users, REPORTS_USERS_CONCURRENCY, async user => {
       const { id, projects } = user
 
-      if (_isEmpty(projects) || _isNull(projects)) {
-        return
-      }
+      try {
+        if (_isEmpty(projects) || _isNull(projects)) {
+          return
+        }
 
-      const pidsStringified = _map(projects, p => `'${p.id}'`).join(',')
-      // No need to check for performance activity because it's not tracked without tracking analytics
-      const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
-      const queryCaptcha = `SELECT count() FROM captcha WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
-      const queryCustomEvents = `SELECT count() FROM customEV WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
+        const pids = _map(projects, p => p.id)
+        const queryParams = {
+          pids,
+          nineWeeksAgo,
+          now,
+        }
 
-      const { data: analyticsResult } = await clickhouse
-        .query({
-          query: queryAnalytics,
+        // No need to check for performance activity because it's not tracked without tracking analytics
+        const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryCaptcha = `SELECT count() FROM captcha WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+        const queryCustomEvents = `SELECT count() FROM customEV WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
+
+        const { data: analyticsResult } = await clickhouse
+          .query({
+            query: queryAnalytics,
+            query_params: queryParams,
+          })
+          .then(resultSet => resultSet.json<{ 'count()': number }>())
+
+        if (analyticsResult[0]['count()'] > 0) {
+          return
+        }
+
+        const { data: captchaResult } = await clickhouse
+          .query({
+            query: queryCaptcha,
+            query_params: queryParams,
+          })
+          .then(resultSet => resultSet.json<{ 'count()': number }>())
+
+        if (captchaResult[0]['count()'] > 0) {
+          return
+        }
+
+        const { data: customEventsResult } = await clickhouse
+          .query({
+            query: queryCustomEvents,
+            query_params: queryParams,
+          })
+          .then(resultSet => resultSet.json<{ 'count()': number }>())
+
+        if (customEventsResult[0]['count()'] > 0) {
+          return
+        }
+
+        await this.userService.update(id, {
+          reportFrequency: ReportFrequency.NEVER,
         })
-        .then(resultSet => resultSet.json<{ 'count()': number }>())
-
-      if (analyticsResult[0]['count()'] > 0) {
-        return
+      } catch (reason) {
+        this.logger.error(
+          '[CRON WORKER](disableReportsForInactiveUsers) Error occured:',
+          reason,
+        )
       }
-
-      const { data: captchaResult } = await clickhouse
-        .query({
-          query: queryCaptcha,
-        })
-        .then(resultSet => resultSet.json<{ 'count()': number }>())
-
-      if (captchaResult[0]['count()'] > 0) {
-        return
-      }
-
-      const { data: customEventsResult } = await clickhouse
-        .query({
-          query: queryCustomEvents,
-        })
-        .then(resultSet => resultSet.json<{ 'count()': number }>())
-
-      if (customEventsResult[0]['count()'] > 0) {
-        return
-      }
-
-      await this.userService.update(id, {
-        reportFrequency: ReportFrequency.NEVER,
-      })
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        '[CRON WORKER](disableReportsForInactiveUsers) Error occured:',
-        reason,
-      )
     })
   }
 
@@ -1568,112 +1945,5 @@ export class TaskManagerService {
     }
 
     await this.userService.deleteRefreshTokensWhere(where)
-  }
-
-  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
-  async payReferrers() {
-    if (isDevelopment || !paypalClient) {
-      return
-    }
-
-    const payoutsToProcess = await this.payoutsService.find({
-      where: {
-        status: PayoutStatus.processing,
-      },
-      relations: ['user'],
-    })
-
-    if (_isEmpty(payoutsToProcess)) {
-      return
-    }
-
-    // A map of emails to pay and their amounts
-    const payouts = {}
-
-    for (let i = 0; i < _size(payoutsToProcess); ++i) {
-      const key = payoutsToProcess[i].user.paypalPaymentsEmail
-
-      if (!key) {
-        continue
-      }
-
-      if (!payouts[key]) {
-        payouts[key] = {
-          amount: 0,
-          payoutsIds: [],
-        }
-      }
-
-      payouts[key].amount += _toNumber(payoutsToProcess[i].amount)
-      payouts[key].payoutsIds.push(payoutsToProcess[i].id)
-    }
-
-    const requestBody = {
-      sender_batch_header: {
-        recipient_type: 'EMAIL',
-        email_message: 'Swetrix referral program payout.',
-        note: 'Swetrix referral program payout.',
-      },
-      items: _reduce(
-        payouts,
-        (acc, value: any, key) => {
-          acc.push({
-            recipient_type: 'EMAIL',
-            amount: {
-              value: value.amount.toFixed(2),
-              currency: 'USD',
-            },
-            receiver: key,
-            note: `Your Swetrix $${value.amount.toFixed(2)} payout.`,
-          })
-
-          return acc
-        },
-        [],
-      ),
-    }
-
-    // Send the request to PayPal
-    const request = new Paypal.payouts.PayoutsPostRequest()
-    request.requestBody(requestBody)
-
-    const response = await paypalClient.execute(request)
-
-    if (response.statusCode !== 201) {
-      console.error(
-        `[CRON](payReferrers) An error occured while executing a request to pay referrers: ${JSON.stringify(
-          response,
-          null,
-          2,
-        )}`,
-      )
-      console.error(`Payouts: ${JSON.stringify(payouts, null, 2)}`)
-
-      // Update the payouts in the DB
-      await this.payoutsService.update(
-        {
-          where: {
-            id: In(_map(payoutsToProcess, 'id')),
-          },
-        },
-        {
-          status: PayoutStatus.suspended,
-        },
-      )
-      return
-    }
-
-    // Update the payouts in the DB
-    await this.payoutsService.update(
-      {
-        where: {
-          id: In(_map(payoutsToProcess, 'id')),
-        },
-      },
-      {
-        status: PayoutStatus.paid,
-        transactionId: response.result?.batch_header?.payout_batch_id,
-      },
-    )
   }
 }

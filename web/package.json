@@ -28,7 +28,6 @@
     "@react-router/fs-routes": "^7.9.6",
     "@react-router/node": "^7.9.6",
     "@react-router/serve": "^7.9.6",
-    "@swetrix/sdk": "^1.2.0",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/react-virtual": "^3.13.12",
     "@types/leaflet": "^1.9.21",
@@ -36,6 +35,7 @@
     "axios": "^1.13.2",
     "axios-auth-refresh": "^3.3.6",
     "billboard.js": "^3.17.2",
+    "boring-avatars": "^2.0.4",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
     "d3-scale": "^4.0.2",
@@ -72,7 +72,8 @@
     "spacetime": "^7.11.0",
     "swetrix": "^3.7.2",
     "tailwind-merge": "^3.4.0",
-    "timezone-soft": "^1.5.2"
+    "timezone-soft": "^1.5.2",
+    "use-stick-to-bottom": "^1.1.1"
   },
   "browserslist": {
     "production": [

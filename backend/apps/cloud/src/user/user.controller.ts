@@ -13,7 +13,6 @@ import {
   ConflictException,
   Headers,
   Ip,
-  Patch,
   NotFoundException,
 } from '@nestjs/common'
 import { Request } from 'express'
@@ -30,7 +29,6 @@ import _pick from 'lodash/pick'
 import _round from 'lodash/round'
 import { randomUUID } from 'crypto'
 import { HttpService } from '@nestjs/axios'
-import { catchError, firstValueFrom, map, of } from 'rxjs'
 
 import { Markup } from 'telegraf'
 
@@ -42,11 +40,9 @@ import {
   User,
   MAX_EMAIL_REQUESTS,
   PlanCode,
-  FeatureFlag,
   OnboardingStep,
 } from './entities/user.entity'
 import { isDevelopment, PRODUCTION_ORIGIN } from '../common/constants'
-import { clickhouse } from '../common/integrations/clickhouse'
 import { AuthenticationGuard } from '../auth/guards/authentication.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { IChangePlanDTO } from './dto/change-plan.dto'
@@ -62,15 +58,16 @@ import {
   checkRateLimit,
   getGeoDetails,
   getIPFromHeaders,
-  generateRefCode,
 } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { ReportFrequency } from '../project/enums'
 import { OrganisationService } from '../organisation/organisation.service'
+import { trackCustom } from '../common/analytics'
 
 dayjs.extend(utc)
 
 const UNPAID_PLANS = [PlanCode.free, PlanCode.trial, PlanCode.none]
+const ORGANISATION_INVITE_EXPIRE_HOURS = 7 * 24 // 7 days
 
 @ApiTags('User')
 @Controller('user')
@@ -114,15 +111,6 @@ export class UserController {
   }
 
   @ApiBearerAuth()
-  @Put('/feature-flags')
-  async setFeatureFlags(
-    @CurrentUserId() userId: string,
-    @Body('featureFlags') featureFlags: FeatureFlag[],
-  ) {
-    await this.userService.update(userId, { featureFlags })
-  }
-
-  @ApiBearerAuth()
   @Put('/live-visitors')
   async setShowLiveVisitors(
     @CurrentUserId() userId: string,
@@ -152,40 +140,6 @@ export class UserController {
   }
 
   @ApiBearerAuth()
-  @Patch('/set-paypal-email')
-  async setPaypalEmail(
-    @CurrentUserId() userId: string,
-    @Body('paypalPaymentsEmail') paypalPaymentsEmail: string,
-    @Headers() headers,
-    @Ip() reqIP,
-  ): Promise<User> {
-    this.logger.log(
-      { userId, paypalPaymentsEmail },
-      'PATCH /user/set-paypal-email',
-    )
-
-    const ip = getIPFromHeaders(headers) || reqIP || ''
-
-    await checkRateLimit(ip, 'set-paypal-email', 10, 3600)
-    await checkRateLimit(userId, 'set-paypal-email', 10, 3600)
-
-    const user = await this.userService.findOne({ where: { id: userId } })
-
-    if (!user) {
-      throw new BadRequestException('User not found')
-    }
-
-    await this.mailerService.sendEmail(
-      user.email,
-      LetterTemplate.PayPalEmailUpdate,
-    )
-
-    return this.userService.update(userId, {
-      paypalPaymentsEmail: paypalPaymentsEmail || null,
-    })
-  }
-
-  @ApiBearerAuth()
   @Post('/api-key')
   async generateApiKey(
     @CurrentUserId() userId: string,
@@ -210,19 +164,33 @@ export class UserController {
 
     await this.userService.update(userId, { apiKey })
 
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'API_KEY_GENERATED',
+    })
+
     return { apiKey }
   }
 
   @ApiBearerAuth()
   @Delete('/api-key')
-  async deleteApiKey(@CurrentUserId() userId: string): Promise<void> {
+  async deleteApiKey(
+    @CurrentUserId() userId: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ): Promise<void> {
     this.logger.log({ userId }, 'DELETE /user/api-key')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const user = await this.userService.findOne({ where: { id: userId } })
 
     if (_isNull(user.apiKey)) {
       throw new ConflictException("You don't have an API key")
     }
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'API_KEY_DELETED',
+    })
 
     await this.userService.update(userId, { apiKey: null })
   }
@@ -233,8 +201,12 @@ export class UserController {
   async deleteSelf(
     @CurrentUserId() id: string,
     @Body() deleteSelfDTO: DeleteSelfDTO,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ): Promise<any> {
     this.logger.log({ id }, 'DELETE /user')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const user = await this.userService.findOne({
       where: { id },
@@ -252,27 +224,14 @@ export class UserController {
 
     try {
       if (!_isEmpty(user.projects)) {
-        const pidArray = user.projects.map(el => el.id)
-        const queries = [
-          'ALTER TABLE analytics DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE customEV DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE performance DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE errors DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE error_statuses DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-          'ALTER TABLE captcha DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
-        ]
-        await this.projectService.deleteMultiple(user.projects.map(el => el.id))
-        const promises = _map(queries, async query =>
-          clickhouse.command({
-            query,
-            query_params: { pids: pidArray },
-          }),
+        await this.projectService.update(
+          { admin: { id } },
+          { isArchived: true },
         )
-        await Promise.all(promises)
       }
-      await this.actionTokensService.deleteMultiple(`userId="${id}"`)
+      await this.actionTokensService.deleteMultiple({ user: { id } })
       await this.userService.deleteAllRefreshTokens(id)
-      await this.projectService.deleteMultipleShare(`userId="${id}"`)
+      await this.projectService.deleteMultipleShare({ user: { id } })
       await this.organisationService.deleteMemberships({
         user: {
           id,
@@ -295,6 +254,13 @@ export class UserController {
       )
       this.logger.error('DeleteSelfDTO: ', deleteSelfDTO)
     }
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'ACCOUNT_DELETED',
+      meta: {
+        reason_stated: !!deleteSelfDTO.feedback,
+      },
+    })
 
     return 'accountDeleted'
   }
@@ -397,16 +363,29 @@ export class UserController {
   ) {
     this.logger.log({ uid, actionId }, 'DELETE /user/organisation/:actionId')
 
-    let isActionToken = false
-
     const actionToken = await this.actionTokensService.getActionToken(actionId)
 
-    if (actionToken) {
-      isActionToken = true
+    if (
+      !actionToken ||
+      actionToken.action !== ActionTokenType.ORGANISATION_INVITE ||
+      !actionToken.newValue
+    ) {
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
+    }
+
+    const tokenAgeMs =
+      Date.now() - new Date(actionToken.created as any).getTime()
+    if (tokenAgeMs > ORGANISATION_INVITE_EXPIRE_HOURS * 60 * 60 * 1000) {
+      await this.actionTokensService.delete(actionId)
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
     }
 
     const membership = await this.organisationService.findOneMembership({
-      where: { id: actionToken?.newValue || actionId },
+      where: { id: actionToken.newValue },
       relations: ['user'],
       select: {
         id: true,
@@ -428,11 +407,15 @@ export class UserController {
       )
     }
 
+    if (actionToken.user?.id && actionToken.user.id !== membership.user.id) {
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
+    }
+
     await this.organisationService.deleteMembership(membership.id)
 
-    if (isActionToken) {
-      await this.actionTokensService.delete(actionId)
-    }
+    await this.actionTokensService.delete(actionId)
   }
 
   @ApiBearerAuth()
@@ -445,16 +428,29 @@ export class UserController {
   ): Promise<any> {
     this.logger.log({ uid, actionId }, 'POST /user/organisation/:actionId')
 
-    let isActionToken = false
-
     const actionToken = await this.actionTokensService.getActionToken(actionId)
 
-    if (actionToken) {
-      isActionToken = true
+    if (
+      !actionToken ||
+      actionToken.action !== ActionTokenType.ORGANISATION_INVITE ||
+      !actionToken.newValue
+    ) {
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
+    }
+
+    const tokenAgeMs =
+      Date.now() - new Date(actionToken.created as any).getTime()
+    if (tokenAgeMs > ORGANISATION_INVITE_EXPIRE_HOURS * 60 * 60 * 1000) {
+      await this.actionTokensService.delete(actionId)
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
     }
 
     const membership = await this.organisationService.findOneMembership({
-      where: { id: actionToken?.newValue || actionId },
+      where: { id: actionToken.newValue },
       relations: ['user', 'organisation'],
       select: {
         id: true,
@@ -479,13 +475,17 @@ export class UserController {
       )
     }
 
+    if (actionToken.user?.id && actionToken.user.id !== membership.user.id) {
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
+    }
+
     await this.organisationService.updateMembership(membership.id, {
       confirmed: true,
     })
 
-    if (isActionToken) {
-      await this.actionTokensService.delete(actionId)
-    }
+    await this.actionTokensService.delete(actionId)
 
     await this.organisationService.deleteOrganisationProjectsFromRedis(
       membership.organisation.id,
@@ -612,7 +612,7 @@ export class UserController {
           isTelegramChatIdConfirmed: false,
         })
 
-        this.telegramService.addMessage(
+        await this.telegramService.addMessage(
           userDTO.telegramChatId,
           'Please confirm your Telegram chat ID',
           Markup.inlineKeyboard([
@@ -627,49 +627,13 @@ export class UserController {
         )
       }
 
-      if (userDTO.slackWebhookUrl) {
-        const slackWebhookResponse = await firstValueFrom(
-          this.httpService.get<string>(userDTO.slackWebhookUrl).pipe(
-            map(response => response.data),
-            catchError(error => {
-              if (error.response && error.response.data) {
-                return of(error.response.data)
-              }
-
-              return of('Error occurred, but no response data was returned')
-            }),
-          ),
-        )
-
-        if (slackWebhookResponse === 'invalid_token') {
-          throw new ConflictException('Invalid Slack URL.')
-        }
-      } else if (userDTO.slackWebhookUrl === null) {
+      if (userDTO.slackWebhookUrl === null) {
         await this.userService.update(id, {
           slackWebhookUrl: null,
         })
       }
 
-      if (userDTO.discordWebhookUrl) {
-        const discordWebhookResponse = await firstValueFrom(
-          this.httpService
-            .get<{ code?: number }>(userDTO.discordWebhookUrl)
-            .pipe(
-              map(response => response.data),
-              catchError(error => {
-                if (error.response && error.response.data) {
-                  return of(error.response.data)
-                }
-
-                return of('Error occurred, but no response data was returned')
-              }),
-            ),
-        )
-
-        if (discordWebhookResponse.code === 50027) {
-          throw new ConflictException('Invalid Discord URL.')
-        }
-      } else if (userDTO.discordWebhookUrl === null) {
+      if (userDTO.discordWebhookUrl === null) {
         await this.userService.update(id, {
           discordWebhookUrl: null,
         })
@@ -688,7 +652,6 @@ export class UserController {
         'timezone',
         'theme',
         'showLiveVisitorsInTitle',
-        'paypalPaymentsEmail',
         'slackWebhookUrl',
         'discordWebhookUrl',
         'telegramChatId',
@@ -713,62 +676,6 @@ export class UserController {
       return this.userService.omitSensitiveData(updatedUser)
     } catch (reason) {
       throw new BadRequestException(reason.message)
-    }
-  }
-
-  @ApiBearerAuth()
-  @Get('referrals')
-  async getReferralsList(@CurrentUserId() id: string): Promise<any> {
-    this.logger.log({ id }, 'GET /user/referrals')
-
-    const user = await this.userService.findOne({ where: { id } })
-
-    if (!user) {
-      throw new BadRequestException('User not found')
-    }
-
-    return this.userService.getReferralsList(user)
-  }
-
-  @ApiBearerAuth()
-  @Get('payouts/info')
-  async getPayoutsInfo(@CurrentUserId() id: string): Promise<any> {
-    this.logger.log({ id }, 'GET /user/payouts/info')
-
-    const user = await this.userService.findOne({ where: { id } })
-
-    if (!user) {
-      throw new BadRequestException('User not found')
-    }
-
-    return this.userService.getPayoutsInfo(user)
-  }
-
-  @ApiBearerAuth()
-  @Post('generate-ref-code')
-  async generateRefCode(@CurrentUserId() id: string): Promise<any> {
-    this.logger.log({ id }, 'POST /user/generate-ref-code')
-
-    const user = await this.userService.findOne({ where: { id } })
-
-    if (!user) {
-      throw new BadRequestException('User not found')
-    }
-
-    if (user.refCode) {
-      throw new BadRequestException('Referral code already exists')
-    }
-
-    let refCode = generateRefCode()
-
-    while (!(await this.userService.isRefCodeUnique(refCode))) {
-      refCode = generateRefCode()
-    }
-
-    await this.userService.update(id, { refCode })
-
-    return {
-      refCode,
     }
   }
 

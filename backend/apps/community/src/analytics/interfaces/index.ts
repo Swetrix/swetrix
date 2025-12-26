@@ -128,12 +128,14 @@ export interface IGetFunnel {
 export interface BirdseyeCHResponse {
   all: number
   unique: number
+  users: number
   sdur: number
 }
 
 interface IOverallPeriodStats {
   all: number
   unique: number
+  users: number
   bounceRate: number
   sdur: number
 }
@@ -154,13 +156,20 @@ interface IPerformanceObject {
   networkChange: number
 }
 
+interface IOverallChart {
+  x: string[]
+  visits: number[]
+}
+
 interface IOverallObject {
   current: IOverallPeriodStats
   previous: IOverallPeriodStats
   change: number
   uniqueChange?: number
+  usersChange?: number
   bounceRateChange?: number
   sdurChange?: number
+  chart?: IOverallChart
 }
 
 export interface IOverall {

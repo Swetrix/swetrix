@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { isSelfhosted } from '~/lib/constants'
+import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 const CONTACT_US_URL = `https://swetrix.com${routes.contact}`
@@ -13,15 +14,17 @@ const NotFound = () => {
     <div className='min-h-min-footer bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
       <div className='mx-auto max-w-max'>
         <main className='sm:flex'>
-          <p className='text-4xl font-bold text-indigo-600 sm:text-5xl dark:text-indigo-500'>404</p>
+          <Text as='p' size='4xl' weight='bold' className='text-indigo-600 sm:text-5xl dark:text-indigo-500'>
+            404
+          </Text>
           <div className='sm:ml-6'>
             <div className='sm:border-l sm:border-gray-200 sm:pl-6'>
-              <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
+              <Text as='h1' size='4xl' weight='bold' className='sm:text-5xl'>
                 {t('notFoundPage.title')}
-              </h1>
-              <p className='mt-1 text-base whitespace-pre-line text-gray-500 dark:text-gray-300'>
+              </Text>
+              <Text as='p' size='base' colour='muted' className='mt-1 whitespace-pre-line'>
                 {t('notFoundPage.description')}
-              </p>
+              </Text>
             </div>
             <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
               <Link

@@ -1,4 +1,6 @@
 import { PickType, ApiProperty } from '@nestjs/swagger'
+import { Type } from 'class-transformer'
+import { IsInt, Min, Max } from 'class-validator'
 import { GetDataDto } from './getData.dto'
 
 export class GetErrorsDto extends PickType(GetDataDto, [
@@ -9,8 +11,15 @@ export class GetErrorsDto extends PickType(GetDataDto, [
   'filters',
   'timezone',
 ] as const) {
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(150)
   take: number
 
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
   skip: number
 
   @ApiProperty({

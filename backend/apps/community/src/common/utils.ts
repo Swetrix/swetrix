@@ -299,26 +299,32 @@ const getProjectsClickhouse = async (
   search: string = null,
   sort: 'alpha_asc' | 'alpha_desc' | 'date_asc' | 'date_desc' = 'alpha_asc',
 ): Promise<Project[]> => {
-  let orderBy = 'ORDER BY created ASC'
+  // Build the secondary ORDER BY based on sort parameter
+  let secondaryOrderBy = 'p.name ASC'
 
   if (sort === 'alpha_asc') {
-    orderBy = 'ORDER BY name ASC'
+    secondaryOrderBy = 'p.name ASC'
   } else if (sort === 'alpha_desc') {
-    orderBy = 'ORDER BY name DESC'
+    secondaryOrderBy = 'p.name DESC'
   } else if (sort === 'date_asc') {
-    orderBy = 'ORDER BY created ASC'
+    secondaryOrderBy = 'p.created ASC'
   } else if (sort === 'date_desc') {
-    orderBy = 'ORDER BY created DESC'
+    secondaryOrderBy = 'p.created DESC'
   }
+
+  // Always sort pinned projects first, then apply the requested sort
+  const orderBy = `ORDER BY isPinned DESC, ${secondaryOrderBy}`
 
   if (search) {
     const query = `
         SELECT
-          *
-        FROM project
+          p.*,
+          CASE WHEN pp.projectId IS NOT NULL THEN 1 ELSE 0 END AS isPinned
+        FROM project p
+        LEFT JOIN pinned_project pp ON pp.projectId = p.id AND pp.visitorId = {adminId:FixedString(36)}
         WHERE
-          adminId = {adminId:FixedString(36)}
-          AND (name ILIKE {search:String} OR id ILIKE {search:String})
+          p.adminId = {adminId:FixedString(36)}
+          AND (p.name ILIKE {search:String} OR p.id ILIKE {search:String})
         ${orderBy}
       `
 
@@ -335,7 +341,15 @@ const getProjectsClickhouse = async (
     return data
   }
 
-  const query = `SELECT * FROM project WHERE adminId = {adminId:FixedString(36)} ${orderBy};`
+  const query = `
+    SELECT
+      p.*,
+      CASE WHEN pp.projectId IS NOT NULL THEN 1 ELSE 0 END AS isPinned
+    FROM project p
+    LEFT JOIN pinned_project pp ON pp.projectId = p.id AND pp.visitorId = {adminId:FixedString(36)}
+    WHERE p.adminId = {adminId:FixedString(36)}
+    ${orderBy};
+  `
 
   const { data } = await clickhouse
     .query({
@@ -1161,6 +1175,55 @@ const sumArrays = (source: number[], target: number[]) => {
   return result
 }
 
+// Pinned projects functions
+const getPinnedProjectsClickhouse = async (
+  visitorId: string,
+): Promise<string[]> => {
+  const query = `SELECT projectId FROM pinned_project WHERE visitorId = {visitorId:String};`
+
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: { visitorId },
+    })
+    .then(resultSet => resultSet.json<{ projectId: string }>())
+
+  return _map(data, row => row.projectId)
+}
+
+const pinProjectClickhouse = async (
+  visitorId: string,
+  projectId: string,
+): Promise<void> => {
+  const id = crypto.randomUUID()
+  const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+  await clickhouse.insert({
+    table: 'pinned_project',
+    format: 'JSONEachRow',
+    values: [
+      {
+        id,
+        visitorId,
+        projectId,
+        created: now,
+      },
+    ],
+  })
+}
+
+const unpinProjectClickhouse = async (
+  visitorId: string,
+  projectId: string,
+): Promise<void> => {
+  const query = `ALTER TABLE pinned_project DELETE WHERE visitorId = {visitorId:String} AND projectId = {projectId:FixedString(12)};`
+
+  await clickhouse.command({
+    query,
+    query_params: { visitorId, projectId },
+  })
+}
+
 export {
   checkRateLimit,
   createProjectClickhouse,
@@ -1205,4 +1268,8 @@ export {
   createAnnotationClickhouse,
   updateAnnotationClickhouse,
   deleteAnnotationClickhouse,
+  // pinned projects
+  getPinnedProjectsClickhouse,
+  pinProjectClickhouse,
+  unpinProjectClickhouse,
 }

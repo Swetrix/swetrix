@@ -16,6 +16,8 @@ export class Project {
   passwordHash?: string
   created: Date
   adminId: string | null
+  // Optional website URL - used to display favicon and construct page links
+  websiteUrl: string | null
 }
 
 export enum Role {

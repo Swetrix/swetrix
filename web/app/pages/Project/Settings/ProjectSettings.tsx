@@ -21,6 +21,8 @@ import {
   ChevronLeftIcon,
   PuzzleIcon,
   StickyNoteIcon,
+  ShieldCheckIcon,
+  DollarSignIcon,
 } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -42,6 +44,7 @@ import {
   getGSCProperties,
   setGSCProperty,
   disconnectGSC,
+  reGenerateCaptchaSecretKey,
 } from '~/api'
 import { withAuthentication, auth } from '~/hoc/protected'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
@@ -71,6 +74,7 @@ import People from './People'
 import AccessSettings from './tabs/AccessSettings'
 import DangerZone from './tabs/DangerZone'
 import General from './tabs/General'
+import Revenue from './tabs/Revenue'
 import Shields from './tabs/Shields'
 
 const MAX_NAME_LENGTH = 50
@@ -269,6 +273,7 @@ interface Form extends Partial<Project> {
   origins: string | null
   ipBlacklist: string | null
   countryBlacklist: string[]
+  websiteUrl?: string | null
 }
 
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
@@ -292,6 +297,7 @@ const ProjectSettings = () => {
     countryBlacklist: [],
     botsProtectionLevel: 'basic',
     gscPropertyUri: null,
+    websiteUrl: null,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
@@ -299,6 +305,7 @@ const ProjectSettings = () => {
     origins?: string
     ipBlacklist?: string
     password?: string
+    websiteUrl?: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
@@ -316,7 +323,17 @@ const ProjectSettings = () => {
   const [error, setError] = useState<string | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
-  type SettingsTab = 'general' | 'shields' | 'access' | 'integrations' | 'emails' | 'people' | 'annotations' | 'danger'
+  type SettingsTab =
+    | 'general'
+    | 'shields'
+    | 'access'
+    | 'captcha'
+    | 'integrations'
+    | 'revenue'
+    | 'emails'
+    | 'people'
+    | 'annotations'
+    | 'danger'
 
   const tabs = useMemo(
     () =>
@@ -325,9 +342,21 @@ const ProjectSettings = () => {
         { id: 'access', label: t('project.settings.tabs.access'), icon: LockIcon, visible: true },
         { id: 'shields', label: t('project.settings.tabs.shields'), icon: ShieldIcon, visible: true },
         {
+          id: 'captcha',
+          label: t('project.settings.tabs.captcha'),
+          icon: ShieldCheckIcon,
+          visible: !isSelfhosted,
+        },
+        {
           id: 'integrations',
           label: t('project.settings.tabs.integrations'),
           icon: PuzzleIcon,
+          visible: !isSelfhosted,
+        },
+        {
+          id: 'revenue',
+          label: t('project.settings.tabs.revenue'),
+          icon: DollarSignIcon,
           visible: !isSelfhosted,
         },
         { id: 'emails', label: t('project.settings.tabs.emails'), icon: MailIcon, visible: !isSelfhosted },
@@ -359,6 +388,12 @@ const ProjectSettings = () => {
   const [gscConnected, setGscConnected] = useState<boolean | null>(null)
   const [gscProperties, setGscProperties] = useState<{ siteUrl: string; permissionLevel?: string }[]>([])
   const [gscEmail, setGscEmail] = useState<string | null>(null)
+
+  // CAPTCHA state
+  const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(null)
+  const [captchaDifficulty, setCaptchaDifficulty] = useState<number>(4)
+  const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
+  const [isSavingDifficulty, setIsSavingDifficulty] = useState(false)
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
@@ -414,11 +449,14 @@ const ProjectSettings = () => {
     try {
       const result = await getProject(projectId)
       setProject(result)
+      setCaptchaSecretKey(result.captchaSecretKey)
+      setCaptchaDifficulty(result.captchaDifficulty || 4)
       setForm({
         ...result,
         ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
         origins: _isString(result.origins) ? result.origins : _join(result.origins, ', '),
         countryBlacklist: result.countryBlacklist || [],
+        websiteUrl: result.websiteUrl || null,
       })
     } catch (reason: any) {
       setError(reason)
@@ -557,6 +595,7 @@ const ProjectSettings = () => {
       origins?: string
       ipBlacklist?: string
       password?: string
+      websiteUrl?: string
     } = {}
 
     if (_isEmpty(form.name)) {
@@ -573,6 +612,18 @@ const ProjectSettings = () => {
 
     if (_size(form.ipBlacklist) > MAX_IPBLACKLIST_LENGTH) {
       allErrors.ipBlacklist = t('project.settings.oxCharsError', { amount: MAX_IPBLACKLIST_LENGTH })
+    }
+
+    // Validate websiteUrl if provided
+    if (form.websiteUrl && form.websiteUrl.trim()) {
+      try {
+        const url = new URL(form.websiteUrl.trim())
+        if (!['http:', 'https:'].includes(url.protocol)) {
+          allErrors.websiteUrl = t('project.settings.invalidUrl')
+        }
+      } catch {
+        allErrors.websiteUrl = t('project.settings.invalidUrl')
+      }
     }
 
     const valid = _isEmpty(_keys(allErrors))
@@ -848,7 +899,25 @@ const ProjectSettings = () => {
                         onClick={async () => {
                           try {
                             const { url } = await generateGSCAuthURL(id)
-                            window.location.href = url
+                            const safeUrl = (() => {
+                              try {
+                                const parsed = new URL(url)
+                                if (parsed.protocol !== 'https:') return null
+                                if (parsed.username || parsed.password) return null
+                                // Google OAuth consent screen
+                                if (parsed.hostname !== 'accounts.google.com') return null
+                                return parsed.toString()
+                              } catch {
+                                return null
+                              }
+                            })()
+
+                            if (!safeUrl) {
+                              toast.error(t('apiNotifications.somethingWentWrong'))
+                              return
+                            }
+
+                            window.location.href = safeUrl
                           } catch (reason: any) {
                             toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
                           }
@@ -960,6 +1029,116 @@ const ProjectSettings = () => {
               </div>
             ) : null}
 
+            {activeTab === 'captcha' ? (
+              <div>
+                <div className='rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
+                  <h3 className='mb-2 text-lg font-medium text-gray-900 dark:text-gray-50'>
+                    {t('project.settings.captcha.title')}
+                  </h3>
+                  <p className='mb-4 text-sm text-gray-600 dark:text-gray-300'>
+                    {t('project.settings.captcha.description')}
+                  </p>
+
+                  {captchaSecretKey ? (
+                    <>
+                      <Input
+                        label={t('project.settings.captcha.secretKey')}
+                        hint={t('project.settings.captcha.learnMore')}
+                        name='captchaSecretKey'
+                        className='mt-4 lg:w-1/2'
+                        value={captchaSecretKey}
+                        disabled
+                      />
+                      <div className='mt-4 flex gap-2'>
+                        <Button type='button' onClick={() => setShowRegenerateSecret(true)} danger regular>
+                          {t('project.settings.captcha.regenerateKey')}
+                        </Button>
+                      </div>
+
+                      <div className='mt-6'>
+                        <Select
+                          label={t('project.settings.captcha.difficulty')}
+                          hint={t('project.settings.captcha.difficultyHint')}
+                          className='lg:w-1/2'
+                          hintClassName='lg:w-2/3'
+                          items={[
+                            { value: 2, label: t('project.settings.captcha.difficultyLevels.veryEasy') },
+                            { value: 3, label: t('project.settings.captcha.difficultyLevels.easy') },
+                            { value: 4, label: t('project.settings.captcha.difficultyLevels.medium') },
+                            { value: 5, label: t('project.settings.captcha.difficultyLevels.hard') },
+                            { value: 6, label: t('project.settings.captcha.difficultyLevels.veryHard') },
+                          ]}
+                          keyExtractor={(item) => String(item.value)}
+                          labelExtractor={(item) => item.label}
+                          selectedItem={{ value: captchaDifficulty, label: '' }}
+                          onSelect={(item: { value: number; label: string }) => {
+                            setCaptchaDifficulty(item.value)
+                          }}
+                          title={
+                            captchaDifficulty === 2
+                              ? t('project.settings.captcha.difficultyLevels.veryEasy')
+                              : captchaDifficulty === 3
+                                ? t('project.settings.captcha.difficultyLevels.easy')
+                                : captchaDifficulty === 4
+                                  ? t('project.settings.captcha.difficultyLevels.medium')
+                                  : captchaDifficulty === 5
+                                    ? t('project.settings.captcha.difficultyLevels.hard')
+                                    : t('project.settings.captcha.difficultyLevels.veryHard')
+                          }
+                        />
+                        <Button
+                          type='button'
+                          className='mt-4'
+                          loading={isSavingDifficulty}
+                          onClick={async () => {
+                            setIsSavingDifficulty(true)
+                            try {
+                              await updateProject(id, { captchaDifficulty })
+                              toast.success(t('project.settings.updated'))
+                            } catch (reason: any) {
+                              toast.error(
+                                typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'),
+                              )
+                            } finally {
+                              setIsSavingDifficulty(false)
+                            }
+                          }}
+                          primary
+                          regular
+                        >
+                          {t('common.save')}
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className='mb-4 text-sm text-gray-600 dark:text-gray-300'>
+                        {t('project.settings.captcha.noKeyGenerated')}
+                      </p>
+                      <Button
+                        type='button'
+                        onClick={async () => {
+                          try {
+                            const newKey = await reGenerateCaptchaSecretKey(id)
+                            setCaptchaSecretKey(newKey)
+                            toast.success(t('project.settings.captcha.keyGenerated'))
+                          } catch (reason: any) {
+                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+                          }
+                        }}
+                        primary
+                        regular
+                      >
+                        {t('project.settings.captcha.generateKey')}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : null}
+
+            {activeTab === 'revenue' ? <Revenue projectId={id} /> : null}
+
             {activeTab === 'danger' ? (
               <DangerZone
                 setShowTransfer={setShowTransfer}
@@ -1062,6 +1241,26 @@ const ProjectSettings = () => {
         }
         isOpened={showTransfer}
         onSubmit={onTransfer}
+      />
+      <Modal
+        onClose={() => setShowRegenerateSecret(false)}
+        onSubmit={async () => {
+          try {
+            const newKey = await reGenerateCaptchaSecretKey(id)
+            setCaptchaSecretKey(newKey)
+            setShowRegenerateSecret(false)
+            toast.success(t('project.settings.captcha.keyRegenerated'))
+          } catch (reason: any) {
+            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+          }
+        }}
+        submitText={t('project.settings.captcha.regenerateKey')}
+        closeText={t('common.cancel')}
+        title={t('project.settings.captcha.regenerateKeyTitle')}
+        message={t('project.settings.captcha.regenerateKeyWarning')}
+        submitType='danger'
+        type='error'
+        isOpened={showRegenerateSecret}
       />
     </div>
   )

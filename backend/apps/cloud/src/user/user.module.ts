@@ -9,7 +9,6 @@ import { User } from './entities/user.entity'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { MailerModule } from '../mailer/mailer.module'
 import { AuthModule } from '../auth/auth.module'
-import { PayoutsModule } from '../payouts/payouts.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
 import { RefreshToken } from './entities/refresh-token.entity'
@@ -26,7 +25,6 @@ import { OrganisationModule } from '../organisation/organisation.module'
     AppLoggerModule,
     ProjectModule,
     OrganisationModule,
-    PayoutsModule,
     HttpModule,
   ],
   providers: [UserService, TelegramService],

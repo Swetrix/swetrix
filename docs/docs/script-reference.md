@@ -9,7 +9,7 @@ The Swetrix.js is a highly customisable tracking script. The following is a refe
 
 ## init()
 
-This fuction is used to initialise the analytics.
+This function is used to initialise the analytics.
 Basically you're letting the script know which project do you want to use it with, as well as specifying your custom parameters if needed.
 
 It takes two arguments:
@@ -25,6 +25,7 @@ swetrix.init('YOUR_PROJECT_ID', {
   disabled: false,
   respectDNT: false,
   apiURL: 'https://api.swetrix.com/log',
+  profileId: 'user-123',
 })
 ```
 
@@ -34,6 +35,7 @@ swetrix.init('YOUR_PROJECT_ID', {
 | disabled   | When set to true, the tracking library won't send any data to server.<br />Useful for development purposes when this value is set based on '.env' var.                                                                                                                   | `false`                         |
 | respectDNT | By setting this flag to true, we will not collect ANY kind of data about the user with the DNT setting. <br />This setting is not true by default because our service anonymises all incoming data and does not pass it on to any third parties under any circumstances. | `false`                         |
 | apiURL     | Set a custom URL of the API server (for selfhosted variants of Swetrix).                                                                                                                                                                                                 | `'https://api.swetrix.com/log'` |
+| profileId  | Optional profile ID for long-term user tracking (MAU/DAU). If set, it will be used for all pageviews and events unless overridden per-call. This allows you to track users across sessions and devices.                                                                  | `undefined`                     |
 
 ## track()
 
@@ -52,6 +54,7 @@ Here's an example of how to use this function with all the available options:
 swetrix.track({
   ev: 'YOUR_EVENT_NAME',
   unique: false,
+  profileId: 'user-123',
 })
 ```
 
@@ -60,6 +63,7 @@ swetrix.track({
 | ev     | The event identifier you want to track.<br />This has to be a string, which:<br />1. Contains only English letters (a-Z A-Z), numbers (0-9), underscores (\_) and dots (.).<br />2. Is fewer than 64 characters.<br />3. Starts with an English letter.                                                                                                                                                                                                                                                             | REQUIRED PARAMETER |
 | unique | If true, only 1 event with the same ID will be saved per user session.<br />The principle of this parameter is similar to page views and unique views.                                                                                                                                                                                                                                                                                                                                                              | `false`            |
 | meta   | An object that contains event-related metadata. The values of the object must be a primitive type (string, number, boolean, null) which will be converted to a string, the maximum number of keys allowed is `20` and the total length of the values combined must be less than `1000` characters.<br /> This feature is useful if you want to track additional data about your custom events, for example the custom event name might be `Sign up` and the metadata might be `{ affiliate: 'Yes', footer: 'No' }`. | `{}`               |
+| profileId | Optional profile ID for long-term user tracking. Overrides the global profileId if set.                                                                                                                                                                                                                                                                                                                                                                                                                              | `undefined`        |
 
 ## trackViews()
 
@@ -77,6 +81,7 @@ Such data will include the following params if available:
 9. `co` - UTM content ('utm_content' GET param).
 10. `pg` - the page user currently views (e.g. /hello).
 11. `perf` - an object which contains performance metrics related to the page load.
+12. `profileId` - the profile ID if set.
 
 On the server side we also gather users IP Address and User Agent. This data is used to detect whether the page view is unique or not.
 
@@ -99,7 +104,7 @@ swetrix.trackViews({
 | Name                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Default value |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
 | unique                | If true, only unique events will be saved. This param is useful when tracking single-page landing websites.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | `false`       |
-| callback              | A callback used to edit / prevent sending pageviews.<br />It accepts an object with pageview event data as a parameter which has the following structure: <br />lc: string \| undefined<br />tz: string \| undefined<br />ref: string \| undefined<br />so: string \| undefined<br />me: string \| undefined<br />ca: string \| undefined<br />meta: object \| undefined ("object" should contain string values only)<br />pg: string \| null \| undefined<br /><br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined`   |
+| callback              | A callback used to edit / prevent sending pageviews.<br />It accepts an object with pageview event data as a parameter which has the following structure: <br />lc: string \| undefined<br />tz: string \| undefined<br />ref: string \| undefined<br />so: string \| undefined<br />me: string \| undefined<br />ca: string \| undefined<br />meta: object \| undefined ("object" should contain string values only)<br />pg: string \| null \| undefined<br />profileId: string \| undefined<br /><br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined`   |
 | heartbeatOnBackground | Send Heartbeat requests when the website tab is not active in the browser.<br />Setting this to `true` means that users who opened your website in inactive browser tab or window will not be counted into users realtime statistics.<br />Setting this to true is usually useful for services like Spotify or Youtube.                                                                                                                                                                                                                                                                                                        | `false`       |
 | hash                  | Set to `true` to enable hash-based routing. For example if you have pages like `/#/path` or want to track pages like `/path#hash`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | `false`       |
 | search                | Set to `true` to enable search-based routing. For example if you have pages like `/path?search`. Although it's not recommended in most cases, you can set both `hash` and `search` to `true` at the same time, in which case the pageview event will be fired when either the hash or the search part of the URL changes (again, both the hash and the search are sent to the server).                                                                                                                                                                                                                                         | `false`       |
@@ -142,6 +147,7 @@ swetrix.pageview({
       author: 'Andrii',
       type: 'story',
     },
+    profileId: 'user-123',
   },
 })
 ```
@@ -217,4 +223,88 @@ swetrix.trackError({
     level: 'Critical',
   },
 })
+```
+
+## getFeatureFlags()
+
+Fetches all feature flags for the project. Results are cached for 5 minutes by default.
+
+```javascript
+const flags = await swetrix.getFeatureFlags({
+  profileId: 'user-123'
+})
+// Returns: { 'flag-1': true, 'flag-2': false }
+```
+
+Arguments:
+1. `options` (optional): `{ profileId?: string }`
+2. `forceRefresh` (optional): `boolean` - If true, bypasses the cache.
+
+## getFeatureFlag()
+
+Gets the value of a single feature flag.
+
+```javascript
+const isEnabled = await swetrix.getFeatureFlag('new-feature', {
+  profileId: 'user-123'
+})
+```
+
+Arguments:
+1. `key`: `string` - The feature flag key.
+2. `options` (optional): `{ profileId?: string }`
+3. `defaultValue` (optional): `boolean` - Default value if flag not found (default: `false`).
+
+## clearFeatureFlagsCache()
+
+Clears the cached feature flags and experiments, forcing a fresh fetch on the next call.
+
+```javascript
+swetrix.clearFeatureFlagsCache()
+```
+
+## getExperiments()
+
+Fetches all A/B test experiments for the project.
+
+```javascript
+const experiments = await swetrix.getExperiments({
+  profileId: 'user-123'
+})
+// Returns: { 'experiment-1': 'variant-a', 'experiment-2': 'control' }
+```
+
+Arguments:
+1. `options` (optional): `{ profileId?: string }`
+2. `forceRefresh` (optional): `boolean` - If true, bypasses the cache.
+
+## getExperiment()
+
+Gets the variant key for a specific A/B test experiment.
+
+```javascript
+const variant = await swetrix.getExperiment('checkout-redesign', {
+  profileId: 'user-123'
+})
+```
+
+Arguments:
+1. `experimentId`: `string` - The experiment ID.
+2. `options` (optional): `{ profileId?: string }`
+3. `defaultVariant` (optional): `string | null` - Default variant if not found (default: `null`).
+
+## getProfileId()
+
+Gets the anonymous profile ID for the current visitor. If `profileId` was set via `init`, returns that. Otherwise, requests server to generate one from IP/UA hash. This ID can be used for revenue attribution.
+
+```javascript
+const profileId = await swetrix.getProfileId()
+```
+
+## getSessionId()
+
+Gets the current session ID for the visitor. Session IDs are generated server-side based on IP and user agent.
+
+```javascript
+const sessionId = await swetrix.getSessionId()
 ```

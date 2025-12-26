@@ -7,9 +7,11 @@ interface GeneralProps {
   form: {
     name?: string
     id?: string
+    websiteUrl?: string | null
   }
   errors: {
     name?: string
+    websiteUrl?: string
   }
   beenSubmitted: boolean
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -39,6 +41,16 @@ const General = ({ form, errors, beenSubmitted, handleInput, sharableLink }: Gen
         onChange={handleInput}
         error={null}
         disabled
+      />
+      <Input
+        name='websiteUrl'
+        label={t('project.settings.websiteUrl')}
+        hint={t('project.settings.websiteUrlHint')}
+        value={form.websiteUrl || ''}
+        placeholder={t('project.settings.websiteUrlPlaceholder')}
+        className='mt-4'
+        onChange={handleInput}
+        error={beenSubmitted ? errors.websiteUrl : null}
       />
       <Input
         name='sharableLink'

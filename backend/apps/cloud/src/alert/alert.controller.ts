@@ -13,6 +13,9 @@ import {
   HttpException,
   HttpStatus,
   ParseIntPipe,
+  ParseUUIDPipe,
+  Ip,
+  Headers,
 } from '@nestjs/common'
 import { In } from 'typeorm'
 import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
@@ -36,6 +39,8 @@ import {
   QueryTime,
 } from './dto/alert.dto'
 import { AlertService } from './alert.service'
+import { getIPFromHeaders } from '../common/utils'
+import { trackCustom } from '../common/analytics'
 
 const ALERTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxAlerts
 
@@ -55,7 +60,7 @@ export class AlertController {
   @ApiResponse({ status: 200, type: Alert })
   async getAlert(
     @CurrentUserId() userId: string,
-    @Param('alertId') alertId: string,
+    @Param('alertId', new ParseUUIDPipe({ version: '4' })) alertId: string,
   ) {
     this.logger.log({ userId, alertId }, 'GET /alert/:alertId')
 
@@ -85,7 +90,10 @@ export class AlertController {
     @Query('take', new ParseIntPipe({ optional: true })) take?: number,
     @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
   ) {
-    this.logger.log({ userId, projectId, take, skip }, 'GET /alert/:projectId')
+    this.logger.log(
+      { userId, projectId, take, skip },
+      'GET /alert/project/:projectId',
+    )
 
     const project = await this.projectService.getFullProject(projectId)
 
@@ -95,8 +103,11 @@ export class AlertController {
 
     this.projectService.allowedToView(project, userId)
 
+    const safeTake = Math.min(Math.max(take ?? 100, 1), 100)
+    const safeSkip = Math.max(skip ?? 0, 0)
+
     const result = await this.alertService.paginate(
-      { take, skip },
+      { take: safeTake, skip: safeSkip },
       { project: { id: projectId } },
       ['project'],
     )
@@ -117,15 +128,23 @@ export class AlertController {
   async createAlert(
     @Body() alertDTO: CreateAlertDTO,
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ) {
     this.logger.log({ uid }, 'POST /alert')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const user = await this.userService.findOne({
       where: { id: uid },
       relations: ['projects'],
     })
 
-    const maxAlerts = ACCOUNT_PLANS[user.planCode]?.maxAlerts
+    if (_isEmpty(user)) {
+      throw new ForbiddenException('User not found')
+    }
+
+    const maxAlerts = ACCOUNT_PLANS[user.planCode]?.maxAlerts ?? ALERTS_MAXIMUM
 
     if (!user.isActive) {
       throw new ForbiddenException('Please, verify your email address first')
@@ -150,7 +169,7 @@ export class AlertController {
 
     const pids = _map(user.projects, userProject => userProject.id)
     const alertsCount = await this.alertService.count({
-      where: { project: In(pids) },
+      where: { project: { id: In(pids) } },
     })
 
     if (user.planCode === PlanCode.none) {
@@ -167,7 +186,7 @@ export class AlertController {
       )
     }
 
-    if (alertsCount >= (maxAlerts || ALERTS_MAXIMUM)) {
+    if (alertsCount >= maxAlerts) {
       throw new HttpException(
         `You cannot create more than ${maxAlerts} alerts on your account plan. Please upgrade to be able to create more alerts.`,
         HttpStatus.PAYMENT_REQUIRED,
@@ -175,9 +194,18 @@ export class AlertController {
     }
 
     try {
-      let alert = new Alert() as Partial<Alert>
-      Object.assign(alert, alertDTO)
-      alert = _omit(alert, ['pid'])
+      const alert: Partial<Alert> = {
+        name: alertDTO.name,
+        queryMetric: alertDTO.queryMetric,
+        queryCondition: alertDTO.queryCondition ?? null,
+        queryValue: alertDTO.queryValue ?? null,
+        queryTime: alertDTO.queryTime ?? null,
+        active: alertDTO.active ?? true,
+        queryCustomEvent: alertDTO.queryCustomEvent ?? null,
+        alertOnNewErrorsOnly: alertDTO.alertOnNewErrorsOnly ?? true,
+        alertOnEveryCustomEvent: alertDTO.alertOnEveryCustomEvent ?? false,
+        project,
+      }
 
       if (alertDTO.queryMetric === QueryMetric.ERRORS) {
         alert.queryCondition = null
@@ -191,6 +219,14 @@ export class AlertController {
         alert.queryValue = null
         alert.queryTime = null
       } else {
+        if (
+          alertDTO.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+          _isEmpty(alertDTO.queryCustomEvent)
+        ) {
+          throw new BadRequestException(
+            'queryCustomEvent is required when queryMetric is custom_events',
+          )
+        }
         if (alertDTO.queryCondition === undefined)
           alert.queryCondition = QueryCondition.GREATER_THAN
         if (alertDTO.queryValue === undefined) alert.queryValue = 0
@@ -198,27 +234,29 @@ export class AlertController {
           alert.queryTime = QueryTime.LAST_1_HOUR
       }
 
-      if (alertDTO.alertOnNewErrorsOnly === undefined) {
-        alert.alertOnNewErrorsOnly = true
-      }
+      const newAlert = await this.alertService.create(alert as Alert)
 
-      if (alertDTO.alertOnEveryCustomEvent === undefined) {
-        alert.alertOnEveryCustomEvent = false
-      }
-
-      const newAlert = await this.alertService.create(alert)
-
-      project.alerts.push(newAlert)
-
-      await this.projectService.create(project)
+      await trackCustom(ip, headers['user-agent'], {
+        ev: 'ALERT_CREATED',
+        meta: {
+          metric: alertDTO.queryMetric,
+          condition: alertDTO.queryCondition,
+          value: alertDTO.queryValue,
+          time: alertDTO.queryTime,
+        },
+      })
 
       return {
         ...newAlert,
         pid: alertDTO.pid,
       }
     } catch (reason) {
-      console.error('Error while creating alert', reason)
-      throw new BadRequestException('Error occured while creating alert')
+      this.logger.error(
+        { uid, reason },
+        'Error while creating alert',
+        AlertController.name,
+      )
+      throw new BadRequestException('Error occurred while creating alert')
     }
   }
 
@@ -227,7 +265,7 @@ export class AlertController {
   @Auth()
   @ApiResponse({ status: 200, type: Alert })
   async updateAlert(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() alertDTO: AlertDTO,
     @CurrentUserId() uid: string,
   ) {
@@ -303,8 +341,15 @@ export class AlertController {
   @Delete('/:id')
   @Auth()
   @ApiResponse({ status: 204, description: 'Empty body' })
-  async deleteAlert(@Param('id') id: string, @CurrentUserId() uid: string) {
+  async deleteAlert(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ) {
     this.logger.log({ id, uid }, 'DELETE /alert/:id')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const alert = await this.alertService.findOneWithRelations(id)
 
@@ -319,5 +364,9 @@ export class AlertController {
     )
 
     await this.alertService.delete(id)
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'ALERT_DELETED',
+    })
   }
 }

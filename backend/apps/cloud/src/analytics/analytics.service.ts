@@ -17,7 +17,6 @@ import _last from 'lodash/last'
 import _replace from 'lodash/replace'
 import _some from 'lodash/some'
 import _find from 'lodash/find'
-import _now from 'lodash/now'
 import _isString from 'lodash/isString'
 import _values from 'lodash/values'
 import _round from 'lodash/round'
@@ -43,7 +42,6 @@ import { DEFAULT_TIMEZONE, PlanCode } from '../user/entities/user.entity'
 import {
   redis,
   UNIQUE_SESSION_LIFE_TIME,
-  REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
   ALL_COLUMNS,
   CAPTCHA_COLUMNS,
@@ -57,6 +55,7 @@ import {
   TRAFFIC_METAKEY_COLUMNS,
   REDIS_TRIALS_COUNT_KEY,
 } from '../common/constants'
+import { SaltService } from './salt.service'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { getDomainsForRefName } from './utils/referrers.map'
 import {
@@ -64,6 +63,7 @@ import {
   hash,
   millisecondsToSeconds,
   sumArrays,
+  formatDuration,
 } from '../common/utils'
 import { PageviewsDto } from './dto/pageviews.dto'
 import { EventsDto } from './dto/events.dto'
@@ -91,7 +91,6 @@ import {
   IFunnelCHResponse,
   IFunnel,
   IOverall,
-  IOverallCaptcha,
   IOverallPerformance,
   IPageflow,
   PerfMeasure,
@@ -113,8 +112,6 @@ dayjs.extend(isSameOrBefore)
 
 // 2 minutes
 const LIVE_SESSION_THRESHOLD_SECONDS = 120
-
-const getSessionDurationKey = (psid: string, pid: string) => `sd:${psid}:${pid}`
 
 const SOFTWARE_WITH_PATCH_VERSION = ['GameVault']
 
@@ -248,7 +245,7 @@ export const getLowestPossibleTimeBucket = (
   return _head(tbMap.tb)
 }
 
-const EXCLUDE_NULL_FOR = ['so', 'me', 'ca', 'te', 'co']
+const EXCLUDE_NULL_FOR = ['so', 'me', 'ca', 'te', 'co', 'rg', 'ct']
 
 const generateParamsQuery = (
   col: string,
@@ -286,11 +283,11 @@ const generateParamsQuery = (
       return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
     }
 
-    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'errors') {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'captcha') {
@@ -320,6 +317,9 @@ export enum DataType {
 }
 
 const isValidOrigin = (origins: string[], origin: string) => {
+  const escapeRegex = (str: string) =>
+    str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
   for (let i = 0; i < _size(origins); ++i) {
     const allowedOrigin = origins[i]
 
@@ -330,8 +330,10 @@ const isValidOrigin = (origins: string[], origin: string) => {
 
     // Check if the allowedOrigin contains a wildcard
     if (_includes(allowedOrigin, '*')) {
-      // Escape the wildcard character for use in a regular expression
-      const wildcardRegex = new RegExp(allowedOrigin.replace(/\*/g, '.*'))
+      // Convert wildcard host pattern into a safe, anchored regex.
+      // Example: "*.example.com" -> /^.*\.example\.com$/i
+      const parts = allowedOrigin.split('*').map(escapeRegex)
+      const wildcardRegex = new RegExp(`^${parts.join('.*')}$`, 'i')
 
       // Check if the origin matches the wildcard pattern
       if (wildcardRegex.test(origin)) {
@@ -348,6 +350,7 @@ export class AnalyticsService {
   constructor(
     private readonly projectService: ProjectService,
     private readonly userService: UserService,
+    private readonly saltService: SaltService,
   ) {}
 
   async checkProjectAccess(
@@ -550,6 +553,7 @@ export class AnalyticsService {
     safeTimezone: string,
     diff?: number,
     checkTimebucket = true,
+    now?: dayjs.Dayjs,
   ): IGetGroupFromTo {
     let groupFrom: dayjs.Dayjs
     let groupTo: dayjs.Dayjs
@@ -557,9 +561,13 @@ export class AnalyticsService {
     let groupToUTC: string
     const formatFrom = 'YYYY-MM-DD HH:mm:ss'
     const formatTo = 'YYYY-MM-DD HH:mm:ss'
-    const djsNow = _includes(GMT_0_TIMEZONES, safeTimezone)
-      ? dayjs.utc()
-      : dayjs().tz(safeTimezone)
+    const djsNow = now
+      ? _includes(GMT_0_TIMEZONES, safeTimezone)
+        ? dayjs.utc(now.toDate())
+        : dayjs(now.toDate()).tz(safeTimezone)
+      : _includes(GMT_0_TIMEZONES, safeTimezone)
+        ? dayjs.utc()
+        : dayjs().tz(safeTimezone)
 
     if (!_isEmpty(from) && !_isEmpty(to)) {
       if (!isValidDate(from)) {
@@ -747,36 +755,6 @@ export class AnalyticsService {
     }
   }
 
-  async getSessionHash(
-    pid: string,
-    userAgent: string,
-    ip: string,
-  ): Promise<string> {
-    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-
-    return `ses_${hash(`${userAgent}${ip}${pid}${salt || ''}`)}`
-  }
-
-  async isSessionDurationOpen(sdKey: string): Promise<[string, boolean]> {
-    const sd = await redis.get(sdKey)
-    return [sd, Boolean(sd)]
-  }
-
-  // Processes interaction for session duration
-  async processInteractionSD(psid: string, pid: string): Promise<void> {
-    const sdKey = getSessionDurationKey(psid, pid)
-    const [sd, isOpened] = await this.isSessionDurationOpen(sdKey)
-    const now = _now()
-
-    // the value is START_UNIX_TIMESTAMP:LAST_INTERACTION_UNIX_TIMESTAMP
-    if (isOpened) {
-      const [start] = _split(sd, ':')
-      await redis.set(sdKey, `${start}:${now}`, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    } else {
-      await redis.set(sdKey, `${now}:${now}`, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    }
-  }
-
   async getPagesArray(
     rawPages?: string,
     funnelId?: string,
@@ -923,6 +901,8 @@ export class AnalyticsService {
     let parsed = []
     let query = ''
     let customEVFilterApplied = false
+    const allowTagFilters =
+      dataType === DataType.ANALYTICS || dataType === DataType.ERRORS
 
     if (filters === '""' || _isEmpty(filters)) {
       return [query, params, parsed, customEVFilterApplied]
@@ -970,8 +950,8 @@ export class AnalyticsService {
         } else if (
           !_includes(SUPPORTED_COLUMNS, column) &&
           column !== 'refn' &&
-          !_includes(TRAFFIC_METAKEY_COLUMNS, column) &&
-          !_startsWith(column, 'tag:key:') &&
+          !(allowTagFilters && _includes(TRAFFIC_METAKEY_COLUMNS, column)) &&
+          !(allowTagFilters && _startsWith(column, 'tag:key:')) &&
           column !== 'entryPage' &&
           column !== 'exitPage'
         ) {
@@ -1077,7 +1057,10 @@ export class AnalyticsService {
         }
 
         // when we want to filter meta.value for a specific meta.key
-        if (_startsWith(column, 'ev:key:') || _startsWith(column, 'tag:key:')) {
+        if (
+          _startsWith(column, 'ev:key:') ||
+          (allowTagFilters && _startsWith(column, 'tag:key:'))
+        ) {
           const key = column.replace(/^ev:key:/, '').replace(/^tag:key:/, '')
           const keyParam = `qfk_${col}_${f}`
           params[keyParam] = key
@@ -1096,12 +1079,15 @@ export class AnalyticsService {
 
         // meta.key filters for page properties and custom event metadata
         // e.g. article "author" (property)
-        if (column === 'ev:key' || column === 'tag:key') {
+        if (column === 'ev:key' || (allowTagFilters && column === 'tag:key')) {
           sqlColumn = 'meta.key'
           isArrayDataset = true
           // meta.value filters for page properties and custom event metadata
           // e.g. "Andrii" ("author" value)
-        } else if (column === 'ev:value' || column === 'tag:value') {
+        } else if (
+          column === 'ev:value' ||
+          (allowTagFilters && column === 'tag:value')
+        ) {
           sqlColumn = 'meta.value'
           isArrayDataset = true
         }
@@ -1144,43 +1130,219 @@ export class AnalyticsService {
     ]
   }
 
-  generateUInt64(): string {
-    return crypto.randomBytes(8).readBigUInt64BE(0).toString()
+  derivePsidFromInputs(
+    pid: string,
+    userAgent: string,
+    ip: string,
+    salt: string,
+  ): string {
+    const combined = `${userAgent}${ip}${pid}${salt}`
+    return crypto
+      .createHash('sha256')
+      .update(combined)
+      .digest()
+      .readBigUInt64BE(0)
+      .toString()
+  }
+
+  getSessionKey(psid: string): string {
+    return `ses:${psid}`
   }
 
   async getSessionId(
     pid: string,
     userAgent: string,
     ip: string,
-  ): Promise<{ exists: boolean; psid: string; sessionHash: string }> {
-    const sessionHash = await this.getSessionHash(pid, userAgent, ip)
+  ): Promise<{ exists: boolean; psid: string }> {
+    const salt = await this.saltService.getSaltForSession()
+    const psid = this.derivePsidFromInputs(pid, userAgent, ip, salt)
+    const sessionKey = this.getSessionKey(psid)
 
-    let psid = await redis.get(sessionHash)
-    const exists = Boolean(psid)
+    const exists = Boolean(await redis.exists(sessionKey))
 
-    if (!exists) {
-      psid = this.generateUInt64()
-    }
-
-    return { exists, psid, sessionHash }
+    return { exists, psid }
   }
 
-  /**
-   * Checks if the session is unique and returns the session psid (or creates a new one)
-   */
   async generateAndStoreSessionId(
     pid: string,
     userAgent: string,
     ip: string,
   ): Promise<[boolean, string]> {
-    const { exists, psid, sessionHash } = await this.getSessionId(
-      pid,
-      userAgent,
-      ip,
+    const salt = await this.saltService.getSaltForSession()
+    const psid = this.derivePsidFromInputs(pid, userAgent, ip, salt)
+    const sessionKey = this.getSessionKey(psid)
+
+    // Use SET with NX (only set if not exists) for atomic "new session" detection
+    // This prevents race conditions where multiple workers could both see the key
+    // doesn't exist and both think they're creating a "new session"
+    const result = await redis.set(
+      sessionKey,
+      '1',
+      'EX',
+      UNIQUE_SESSION_LIFE_TIME,
+      'NX',
     )
 
-    await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    return [!exists, psid]
+    // If SET NX succeeded (returned 'OK'), this is a new session
+    // If it returned null, the session already existed
+    const isNew = result === 'OK'
+
+    if (!isNew) {
+      // Session already exists, extend TTL
+      await this.extendSessionTTL(psid)
+    }
+
+    return [isNew, psid]
+  }
+
+  async extendSessionTTL(psid: string): Promise<void> {
+    const sessionKey = this.getSessionKey(psid)
+    await redis.set(sessionKey, '1', 'EX', UNIQUE_SESSION_LIFE_TIME)
+  }
+
+  static readonly PROFILE_PREFIX_ANON = 'anon_'
+  static readonly PROFILE_PREFIX_USER = 'usr_'
+
+  private hashToNumericString(value: string): string {
+    return crypto
+      .createHash('sha256')
+      .update(value)
+      .digest()
+      .readBigUInt64BE(0)
+      .toString()
+  }
+
+  async generateProfileId(
+    pid: string,
+    userAgent: string,
+    ip: string,
+    userSupplied?: string,
+  ): Promise<string> {
+    if (userSupplied) {
+      const cleanId = userSupplied
+        .replace(AnalyticsService.PROFILE_PREFIX_ANON, '')
+        .replace(AnalyticsService.PROFILE_PREFIX_USER, '')
+      const hash = this.hashToNumericString(`${cleanId}${pid}`)
+      return `${AnalyticsService.PROFILE_PREFIX_USER}${hash}`
+    }
+
+    const salt = await this.saltService.getSaltForProfile()
+    const combined = `${userAgent}${ip}${pid}${salt}`
+    const hash = this.hashToNumericString(combined)
+
+    return `${AnalyticsService.PROFILE_PREFIX_ANON}${hash}`
+  }
+
+  isUserSuppliedProfile(profileId: string): boolean {
+    return profileId.startsWith(AnalyticsService.PROFILE_PREFIX_USER)
+  }
+
+  async recordSessionActivity(
+    psid: string,
+    pid: string,
+    profileId: string,
+  ): Promise<void> {
+    const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+    try {
+      const query = `
+        SELECT firstSeen
+        FROM sessions FINAL
+        WHERE psid = {psid:UInt64}
+          AND pid = {pid:FixedString(12)}
+        LIMIT 1
+      `
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { psid, pid },
+        })
+        .then(resultSet =>
+          resultSet.json<{
+            firstSeen: string
+          }>(),
+        )
+
+      const existingSession = data[0]
+
+      await clickhouse.insert({
+        table: 'sessions',
+        format: 'JSONEachRow',
+        values: [
+          {
+            psid,
+            pid,
+            profileId,
+            firstSeen: existingSession?.firstSeen ?? now,
+            lastSeen: now,
+          },
+        ],
+        clickhouse_settings: { async_insert: 1 },
+      })
+    } catch (error) {
+      console.error('Failed to record session:', error)
+    }
+  }
+
+  async checkSessionExistsInClickHouse(
+    psid: string,
+    pid: string,
+  ): Promise<boolean> {
+    const cutoff = dayjs
+      .utc()
+      .subtract(UNIQUE_SESSION_LIFE_TIME, 'second')
+      .format('YYYY-MM-DD HH:mm:ss')
+
+    try {
+      const query = `
+        SELECT 1
+        FROM sessions FINAL
+        WHERE psid = {psid:UInt64}
+          AND pid = {pid:FixedString(12)}
+          AND lastSeen >= {cutoff:DateTime}
+        LIMIT 1
+      `
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { psid, pid, cutoff },
+        })
+        .then(resultSet => resultSet.json())
+
+      return data.length > 0
+    } catch (error) {
+      console.error('Failed to check session existence:', error)
+      return false
+    }
+  }
+
+  async getSessionDurationFromClickHouse(
+    psid: string,
+    pid: string,
+  ): Promise<number | null> {
+    try {
+      const query = `
+        SELECT dateDiff('second', firstSeen, lastSeen) as duration
+        FROM sessions FINAL
+        WHERE psid = {psid:UInt64}
+          AND pid = {pid:FixedString(12)}
+        LIMIT 1
+      `
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { psid, pid },
+        })
+        .then(resultSet => resultSet.json<{ duration: number }>())
+
+      return data[0]?.duration ?? null
+    } catch (error) {
+      console.error('Failed to get session duration:', error)
+      return null
+    }
   }
 
   formatFunnel(data: IFunnelCHResponse[], pages: string[]): IFunnel[] {
@@ -1353,133 +1515,6 @@ export class AnalyticsService {
     return data[0]?.c || 0
   }
 
-  async getCaptchaSummary(
-    pids: string[],
-    period?: string,
-    from?: string,
-    to?: string,
-    timezone?: string,
-    filters?: string,
-  ): Promise<IOverallCaptcha> {
-    let _from: string
-
-    let _to: string
-
-    if (_isEmpty(period) || ['today', 'yesterday', 'custom'].includes(period)) {
-      const safeTimezone = this.getSafeTimezone(timezone)
-
-      const { groupFrom, groupTo } = this.getGroupFromTo(
-        from,
-        to,
-        ['today', 'yesterday'].includes(period) ? TimeBucketType.HOUR : null,
-        period,
-        safeTimezone,
-      )
-
-      _from = groupFrom
-      _to = groupTo
-    }
-
-    const result = {}
-
-    const [filtersQuery, filtersParams] = this.getFiltersQuery(
-      filters,
-      DataType.CAPTCHA,
-      true,
-    )
-
-    const promises = pids.map(async pid => {
-      try {
-        if (period === 'all') {
-          const queryAll = `SELECT count(*) AS all FROM captcha WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
-          const { data } = await clickhouse
-            .query({
-              query: queryAll,
-              query_params: { pid, ...filtersParams },
-            })
-            .then(resultSet => resultSet.json<Partial<BirdseyeCHResponse>>())
-
-          result[pid] = {
-            current: {
-              all: data[0].all,
-            },
-            previous: {
-              all: 0,
-            },
-            change: data[0].all,
-          }
-          return
-        }
-
-        let now: string
-        let periodFormatted: string
-        let periodSubtracted: string
-
-        if (_from && _to) {
-          // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
-          const diff = dayjs(_to).diff(dayjs(_from), 'days') || 1
-
-          now = _to
-          periodFormatted = _from
-          periodSubtracted = dayjs(_from)
-            .subtract(diff, 'days')
-            .format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          const amountToSubtract = parseInt(period, 10)
-          const unit = _replace(period, /[0-9]/g, '') as dayjs.ManipulateType
-
-          now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-          const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
-          periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
-          periodSubtracted = periodRaw
-            .subtract(amountToSubtract, unit)
-            .format('YYYY-MM-DD HH:mm:ss')
-        }
-
-        const queryCurrent = `SELECT 1 AS sortOrder, count(*) AS all FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String} ${filtersQuery}`
-        const queryPrevious = `SELECT 2 AS sortOrder, count(*) AS all FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String} ${filtersQuery}`
-
-        const query = `${queryCurrent} UNION ALL ${queryPrevious}`
-
-        let { data } = await clickhouse
-          .query({
-            query,
-            query_params: {
-              pid,
-              periodFormatted,
-              periodSubtracted,
-              now,
-              ...filtersParams,
-            },
-          })
-          .then(resultSet => resultSet.json<Partial<BirdseyeCHResponse>>())
-
-        data = _sortBy(data, 'sortOrder')
-
-        const currentPeriod = data[0]
-        const previousPeriod = data[1]
-
-        result[pid] = {
-          current: {
-            all: currentPeriod.all,
-          },
-          previous: {
-            all: previousPeriod.all,
-          },
-          change: currentPeriod.all - previousPeriod.all,
-        }
-      } catch {
-        throw new InternalServerErrorException(
-          "Can't process the provided PID. Please, try again later.",
-        )
-      }
-    })
-
-    await Promise.all(promises)
-
-    return result
-  }
-
   convertSummaryToObsoleteFormat(summary: IOverall): any {
     const result = {}
 
@@ -1502,6 +1537,257 @@ export class AnalyticsService {
     return result
   }
 
+  convertSummaryToReportFormat(summary: IOverall): any {
+    const result = {}
+
+    for (const pid of _keys(summary)) {
+      const { current, previous } = summary[pid]
+
+      result[pid] = {
+        // Existing metrics
+        pageviews: current.all,
+        previousPageviews: previous.all,
+        percChangePageviews: calculateRelativePercentage(
+          previous.all,
+          current.all,
+        ),
+
+        uniqueVisitors: current.unique,
+        previousUniqueVisitors: previous.unique,
+        percChangeUnique: calculateRelativePercentage(
+          previous.unique,
+          current.unique,
+        ),
+
+        // Active Users (MAU/WAU)
+        activeUsers: current.users || 0,
+        previousActiveUsers: previous.users || 0,
+        percChangeUsers: calculateRelativePercentage(
+          previous.users || 0,
+          current.users || 0,
+        ),
+
+        // Average Session Duration
+        avgDuration: formatDuration(current.sdur),
+        avgDurationSeconds: _round(current.sdur || 0),
+        previousAvgDuration: formatDuration(previous.sdur),
+        previousAvgDurationSeconds: _round(previous.sdur || 0),
+        percChangeDuration: calculateRelativePercentage(
+          previous.sdur || 0,
+          current.sdur || 0,
+        ),
+
+        // Bounce Rate
+        bounceRate: _round(current.bounceRate || 0, 1),
+        previousBounceRate: _round(previous.bounceRate || 0, 1),
+        // For bounce rate, lower is better, so we subtract current from previous
+        bounceRateChange: _round(
+          (previous.bounceRate || 0) - (current.bounceRate || 0),
+          1,
+        ),
+      }
+    }
+
+    return result
+  }
+
+  async getTopCountryForReport(
+    pid: string,
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<{ cc: string; count: number } | null> {
+    const query = `
+      SELECT 
+        cc,
+        count() as count
+      FROM analytics
+      WHERE 
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        AND cc IS NOT NULL
+        AND cc != ''
+      GROUP BY cc
+      ORDER BY count DESC
+      LIMIT 1
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, groupFrom, groupTo },
+      })
+      .then(resultSet => resultSet.json<{ cc: string; count: number }>())
+
+    return data[0] || null
+  }
+
+  async getTopCountriesForReport(
+    pids: string[],
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<Record<string, { cc: string; count: number }>> {
+    if (_isEmpty(pids)) {
+      return {}
+    }
+
+    const query = `
+      WITH counts AS (
+        SELECT 
+          pid,
+          cc,
+          count() as cnt
+        FROM analytics
+        WHERE 
+          pid IN {pids:Array(FixedString(12))}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND cc IS NOT NULL
+          AND cc != ''
+        GROUP BY pid, cc
+      )
+      SELECT
+        pid,
+        argMax(cc, cnt) as cc,
+        max(cnt) as count
+      FROM counts
+      GROUP BY pid
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pids, groupFrom, groupTo },
+      })
+      .then(resultSet =>
+        resultSet.json<{ pid: string; cc: string; count: any }>(),
+      )
+
+    const result: Record<string, { cc: string; count: number }> = {}
+    for (const row of data || []) {
+      if (!row?.pid) {
+        continue
+      }
+      result[row.pid] = {
+        cc: row.cc,
+        count: Number(row.count) || 0,
+      }
+    }
+
+    return result
+  }
+
+  async getErrorCountForReport(
+    pid: string,
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<{ count: number; uniqueErrors: number }> {
+    const query = `
+      SELECT 
+        count() as count,
+        count(DISTINCT eid) as uniqueErrors
+      FROM errors
+      WHERE 
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, groupFrom, groupTo },
+      })
+      .then(resultSet =>
+        resultSet.json<{ count: number; uniqueErrors: number }>(),
+      )
+
+    return data[0] || { count: 0, uniqueErrors: 0 }
+  }
+
+  async getErrorCountsForReport(
+    pids: string[],
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<Record<string, { count: number; uniqueErrors: number }>> {
+    if (_isEmpty(pids)) {
+      return {}
+    }
+
+    const query = `
+      SELECT 
+        pid,
+        count() as count,
+        count(DISTINCT eid) as uniqueErrors
+      FROM errors
+      WHERE 
+        pid IN {pids:Array(FixedString(12))}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY pid
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pids, groupFrom, groupTo },
+      })
+      .then(resultSet =>
+        resultSet.json<{
+          pid: string
+          count: any
+          uniqueErrors: any
+        }>(),
+      )
+
+    const result: Record<string, { count: number; uniqueErrors: number }> = {}
+    for (const row of data || []) {
+      if (!row?.pid) {
+        continue
+      }
+      result[row.pid] = {
+        count: Number(row.count) || 0,
+        uniqueErrors: Number(row.uniqueErrors) || 0,
+      }
+    }
+
+    return result
+  }
+
+  async getTotalSessionsForReport(
+    pids: string[],
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<Record<string, number>> {
+    if (_isEmpty(pids)) {
+      return {}
+    }
+
+    const query = `
+      SELECT 
+        pid,
+        uniqExact(psid) as totalSessions
+      FROM analytics
+      WHERE 
+        pid IN {pids:Array(FixedString(12))}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY pid
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pids, groupFrom, groupTo },
+      })
+      .then(resultSet => resultSet.json<{ pid: string; totalSessions: any }>())
+
+    const result: Record<string, number> = {}
+    for (const row of data || []) {
+      if (!row?.pid) {
+        continue
+      }
+      result[row.pid] = Number(row.totalSessions) || 0
+    }
+
+    return result
+  }
+
   async getAnalyticsSummary(
     pids: string[],
     timeBucket?: string,
@@ -1510,20 +1796,29 @@ export class AnalyticsService {
     to?: string,
     timezone?: string,
     filters?: string,
+    includeChart?: boolean,
+    now?: dayjs.Dayjs,
   ): Promise<IOverall> {
     const safeTimezone = this.getSafeTimezone(timezone)
 
-    const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
-      from,
-      to,
-      ['today', 'yesterday', 'custom'].includes(period)
-        ? TimeBucketType.HOUR
-        : (timeBucket as TimeBucketType) || TimeBucketType.DAY,
+    // Determine the time bucket for chart data
+    const effectiveTimeBucket = ['today', 'yesterday', 'custom'].includes(
       period,
-      safeTimezone,
-      undefined,
-      false,
     )
+      ? TimeBucketType.HOUR
+      : (timeBucket as TimeBucketType) || TimeBucketType.DAY
+
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.getGroupFromTo(
+        from,
+        to,
+        effectiveTimeBucket,
+        period,
+        safeTimezone,
+        undefined,
+        false,
+        now,
+      )
 
     const result = {}
 
@@ -1537,15 +1832,16 @@ export class AnalyticsService {
             WITH analytics_counts AS (
               SELECT
                 count(*) AS all,
-                count(DISTINCT psid) AS unique
+                count(DISTINCT psid) AS unique,
+                count(DISTINCT profileId) AS users
               FROM analytics
               WHERE
                 pid = {pid:FixedString(12)}
                 ${filtersQuery}
             ),
             duration_avg AS (
-              SELECT avg(duration) as sdur
-              FROM session_durations
+              SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+              FROM sessions FINAL
               WHERE pid = {pid:FixedString(12)}
             )
             SELECT
@@ -1556,12 +1852,25 @@ export class AnalyticsService {
 
           if (customEVFilterApplied) {
             queryAll = `
+              WITH analytics_counts AS (
+                SELECT
+                  count(*) AS all,
+                  count(DISTINCT psid) AS unique,
+                  count(DISTINCT profileId) AS users
+                FROM customEV
+                WHERE
+                  pid = {pid:FixedString(12)}
+                  ${filtersQuery}
+              ),
+              duration_avg AS (
+                SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+                FROM sessions FINAL
+                WHERE pid = {pid:FixedString(12)}
+              )
               SELECT
-                count(*) AS all
-              FROM customEV
-              WHERE
-                pid = {pid:FixedString(12)}
-                ${filtersQuery}
+                analytics_counts.*,
+                duration_avg.sdur
+              FROM analytics_counts, duration_avg
             `
           }
 
@@ -1585,20 +1894,46 @@ export class AnalyticsService {
             current: {
               all: data[0].all,
               unique: data[0].unique,
+              users: data[0].users,
               bounceRate,
               sdur: data[0].sdur,
             },
             previous: {
               all: 0,
               unique: 0,
+              users: 0,
               bounceRate: 0,
               sdur: 0,
             },
             change: data[0].all,
             uniqueChange: data[0].unique,
+            usersChange: data[0].users,
             bounceRateChange: bounceRate,
             sdurChange: data[0].sdur,
             customEVFilterApplied,
+          }
+
+          // For 'all' period, we use month time bucket for chart
+          if (includeChart) {
+            const allTimeChartBucket = TimeBucketType.MONTH
+            const { groupFrom: allFrom, groupTo: allTo } = this.getGroupFromTo(
+              undefined,
+              undefined,
+              allTimeChartBucket,
+              'all',
+              safeTimezone,
+            )
+            const chartData = await this.getSimplifiedChartData(
+              pid,
+              allTimeChartBucket,
+              allFrom,
+              allTo,
+              filtersQuery,
+              filtersParams,
+              safeTimezone,
+              customEVFilterApplied,
+            )
+            result[pid].chart = chartData
           }
           return
         }
@@ -1618,7 +1953,8 @@ export class AnalyticsService {
             SELECT
               1 AS sortOrder,
               count(*) AS all,
-              count(DISTINCT psid) AS unique
+              count(DISTINCT psid) AS unique,
+              count(DISTINCT profileId) AS users
             FROM analytics
             WHERE
               pid = {pid:FixedString(12)}
@@ -1626,8 +1962,8 @@ export class AnalyticsService {
               ${filtersQuery}
           ),
           duration_avg AS (
-            SELECT avg(duration) as sdur
-            FROM session_durations
+            SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+            FROM sessions FINAL
             WHERE pid = {pid:FixedString(12)}
             AND psid IN (
               SELECT DISTINCT psid
@@ -1648,7 +1984,8 @@ export class AnalyticsService {
             SELECT
               2 AS sortOrder,
               count(*) AS all,
-              count(DISTINCT psid) AS unique
+              count(DISTINCT psid) AS unique,
+              count(DISTINCT profileId) AS users
             FROM analytics
             WHERE
               pid = {pid:FixedString(12)}
@@ -1656,8 +1993,8 @@ export class AnalyticsService {
               ${filtersQuery}
           ),
           duration_avg AS (
-            SELECT avg(duration) as sdur
-            FROM session_durations
+            SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+            FROM sessions FINAL
             WHERE pid = {pid:FixedString(12)}
             AND psid IN (
               SELECT DISTINCT psid
@@ -1675,20 +2012,64 @@ export class AnalyticsService {
 
         if (customEVFilterApplied) {
           queryCurrent = `
-            SELECT 1 AS sortOrder, count(*) AS all
-            FROM customEV
-            WHERE
-              pid = {pid:FixedString(12)}
-              AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
-              ${filtersQuery}
+            WITH analytics_counts AS (
+              SELECT
+                1 AS sortOrder,
+                count(*) AS all,
+                count(DISTINCT psid) AS unique,
+                count(DISTINCT profileId) AS users
+              FROM customEV
+              WHERE
+                pid = {pid:FixedString(12)}
+                AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
+                ${filtersQuery}
+            ),
+            duration_avg AS (
+              SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+              FROM sessions FINAL
+              WHERE pid = {pid:FixedString(12)}
+              AND psid IN (
+                SELECT DISTINCT psid
+                FROM customEV
+                WHERE pid = {pid:FixedString(12)}
+                AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
+                ${filtersQuery}
+              )
+            )
+            SELECT
+              analytics_counts.*,
+              duration_avg.sdur
+            FROM analytics_counts, duration_avg
           `
           queryPrevious = `
-            SELECT 2 AS sortOrder, count(*) AS all
-            FROM customEV
-            WHERE
-              pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
-              ${filtersQuery}
+            WITH analytics_counts AS (
+              SELECT
+                2 AS sortOrder,
+                count(*) AS all,
+                count(DISTINCT psid) AS unique,
+                count(DISTINCT profileId) AS users
+              FROM customEV
+              WHERE
+                pid = {pid:FixedString(12)}
+                AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
+                ${filtersQuery}
+            ),
+            duration_avg AS (
+              SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
+              FROM sessions FINAL
+              WHERE pid = {pid:FixedString(12)}
+              AND psid IN (
+                SELECT DISTINCT psid
+                FROM customEV
+                WHERE pid = {pid:FixedString(12)}
+                AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
+                ${filtersQuery}
+              )
+            )
+            SELECT
+              analytics_counts.*,
+              duration_avg.sdur
+            FROM analytics_counts, duration_avg
           `
         }
 
@@ -1733,20 +2114,38 @@ export class AnalyticsService {
           current: {
             all: currentPeriod.all,
             unique: currentPeriod.unique,
+            users: currentPeriod.users,
             sdur: currentPeriod.sdur || 0,
             bounceRate,
           },
           previous: {
             all: previousPeriod.all,
             unique: previousPeriod.unique,
+            users: previousPeriod.users,
             sdur: previousPeriod.sdur || 0,
             bounceRate: prevBounceRate,
           },
           change: currentPeriod.all - previousPeriod.all,
           uniqueChange: currentPeriod.unique - previousPeriod.unique,
+          usersChange: currentPeriod.users - previousPeriod.users,
           bounceRateChange: (bounceRate - prevBounceRate) * -1,
           sdurChange: currentPeriod.sdur - previousPeriod.sdur,
           customEVFilterApplied,
+        }
+
+        // Add chart data if requested
+        if (includeChart) {
+          const chartData = await this.getSimplifiedChartData(
+            pid,
+            effectiveTimeBucket,
+            groupFrom,
+            groupTo,
+            filtersQuery,
+            filtersParams,
+            safeTimezone,
+            customEVFilterApplied,
+          )
+          result[pid].chart = chartData
         }
       } catch (reason) {
         console.error(
@@ -1762,6 +2161,74 @@ export class AnalyticsService {
     await Promise.all(promises)
 
     return result
+  }
+
+  /**
+   * Get simplified chart data for dashboard cards
+   * Returns only x (dates) and visits (pageviews) for a lightweight chart
+   */
+  async getSimplifiedChartData(
+    pid: string,
+    timeBucket: TimeBucketType,
+    groupFrom: string,
+    groupTo: string,
+    filtersQuery: string,
+    filtersParams: Record<string, string | boolean>,
+    safeTimezone: string,
+    customEVFilterApplied: boolean,
+  ): Promise<{ x: string[]; visits: number[] }> {
+    const { xShifted } = this.generateXAxis(
+      timeBucket,
+      groupFrom,
+      groupTo,
+      safeTimezone,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom,
+        groupTo,
+        ...filtersParams,
+      },
+    }
+
+    if (customEVFilterApplied) {
+      const query = this.generateCustomEventsAggregationQuery(
+        timeBucket,
+        filtersQuery,
+        ChartRenderMode.PERIODICAL,
+      )
+
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: { ...paramsData.params, timezone: safeTimezone },
+        })
+        .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
+
+      const visits =
+        this.extractCustomEventsChartData(data, xShifted)?._unknown_event || []
+
+      return { x: xShifted, visits }
+    }
+
+    const query = this.generateAnalyticsAggregationQuery(
+      timeBucket,
+      filtersQuery,
+      ChartRenderMode.PERIODICAL,
+    )
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { ...paramsData.params, timezone: safeTimezone },
+      })
+      .then(resultSet => resultSet.json<TrafficCHResponse>())
+
+    const { visits } = this.extractChartData(data, xShifted)
+
+    return { x: xShifted, visits }
   }
 
   async getPerformanceSummary(
@@ -2408,25 +2875,24 @@ export class AnalyticsService {
   generateAnalyticsAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    safeTimezone: string,
     mode: ChartRenderMode,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), {timezone:String})`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), {timezone:String})`
 
     const baseQuery = `
       SELECT
         ${selector},
-        avgOrNull(session_durations.duration) as sdur,
+        avgOrNull(sessions_data.duration) as sdur,
         count() as pageviews,
         count(DISTINCT psid) as uniques
       FROM (
         SELECT
           pid,
           psid,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM analytics
         PREWHERE pid = {pid:FixedString(12)}
         WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
@@ -2436,12 +2902,12 @@ export class AnalyticsService {
         SELECT
           pid,
           psid,
-          duration
-        FROM session_durations
+          dateDiff('second', firstSeen, lastSeen) as duration
+        FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
-      ) as session_durations
-      ON subquery.pid = session_durations.pid
-      AND subquery.psid = session_durations.psid
+      ) as sessions_data
+      ON subquery.pid = sessions_data.pid
+      AND subquery.psid = sessions_data.psid
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
     `
@@ -2462,12 +2928,11 @@ export class AnalyticsService {
   generateSessionAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    safeTimezone: string,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), {timezone:String})`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), {timezone:String})`
 
     const baseQuery = `
       SELECT
@@ -2475,7 +2940,7 @@ export class AnalyticsService {
         count() as pageviews
       FROM (
         SELECT
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM analytics
         PREWHERE pid = {pid:FixedString(12)}
         WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
@@ -2491,12 +2956,11 @@ export class AnalyticsService {
   generateSessionCustomEventsAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    safeTimezone: string,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), {timezone:String})`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), {timezone:String})`
 
     return `
       SELECT
@@ -2504,7 +2968,7 @@ export class AnalyticsService {
         count() as customEventsCount
       FROM (
         SELECT
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM customEV
         PREWHERE pid = {pid:FixedString(12)}
         WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
@@ -2518,12 +2982,11 @@ export class AnalyticsService {
   generateSessionErrorsAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    safeTimezone: string,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), {timezone:String})`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), {timezone:String})`
 
     return `
       SELECT
@@ -2531,7 +2994,7 @@ export class AnalyticsService {
         count() as errorsCount
       FROM (
         SELECT
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM errors
         PREWHERE pid = {pid:FixedString(12)}
         WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
@@ -2545,13 +3008,12 @@ export class AnalyticsService {
   generateCustomEventsAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    safeTimezone: string,
     mode: ChartRenderMode,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), {timezone:String})`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), {timezone:String})`
 
     const baseQuery = `
       SELECT
@@ -2559,7 +3021,7 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-        ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+        ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM customEV
         WHERE pid = {pid:FixedString(12)}
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
@@ -2584,13 +3046,12 @@ export class AnalyticsService {
   generatePerformanceAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    safeTimezone: string,
     measure: PerfMeasure,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), {timezone:String})`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), {timezone:String})`
 
     const cols = ['dns', 'tls', 'conn', 'response', 'render', 'domLoad', 'ttfb']
 
@@ -2604,7 +3065,7 @@ export class AnalyticsService {
         ${columnSelectors}
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM performance
         WHERE
           pid = {pid:FixedString(12)}
@@ -2619,12 +3080,11 @@ export class AnalyticsService {
   generatePerformanceQuantilesQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    safeTimezone: string,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), {timezone:String})`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), {timezone:String})`
 
     const cols = ['dns', 'tls', 'conn', 'response', 'render', 'domLoad', 'ttfb']
 
@@ -2638,7 +3098,7 @@ export class AnalyticsService {
         ${columnSelectors}
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM performance
         WHERE
           pid = {pid:FixedString(12)}
@@ -2653,13 +3113,12 @@ export class AnalyticsService {
   generateCaptchaAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    safeTimezone: string,
     mode: ChartRenderMode,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), {timezone:String})`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), {timezone:String})`
 
     const baseQuery = `
       SELECT
@@ -2667,7 +3126,7 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM captcha
         WHERE
           pid = {pid:FixedString(12)}
@@ -2702,9 +3161,10 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        count() as count
+        count() as count,
+        uniqExact(profileId) as affectedUsers
       FROM (
-        SELECT pg, dv, br, os, lc, cc, rg, ct,
+        SELECT pg, dv, br, os, lc, cc, rg, ct, profileId,
           ${timeBucketFunc}(created) as tz_created
         FROM errors
         WHERE
@@ -2892,14 +3352,13 @@ export class AnalyticsService {
       const query = this.generateCustomEventsAggregationQuery(
         timeBucket,
         filtersQuery,
-        safeTimezone,
         mode,
       )
 
       const { data } = await clickhouse
         .query({
           query,
-          query_params: paramsData.params,
+          query_params: { ...paramsData.params, timezone: safeTimezone },
         })
         .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
 
@@ -2921,14 +3380,13 @@ export class AnalyticsService {
     const query = this.generateAnalyticsAggregationQuery(
       timeBucket,
       filtersQuery,
-      safeTimezone,
       mode,
     )
 
     const { data } = await clickhouse
       .query({
         query,
-        query_params: paramsData.params,
+        query_params: { ...paramsData.params, timezone: safeTimezone },
       })
       .then(resultSet => resultSet.json<TrafficCHResponse>())
 
@@ -3025,36 +3483,35 @@ export class AnalyticsService {
     const pageviewsQuery = this.generateSessionAggregationQuery(
       timeBucket,
       filtersQuery,
-      safeTimezone,
     )
     const customEventsQuery = this.generateSessionCustomEventsAggregationQuery(
       timeBucket,
       filtersQuery,
-      safeTimezone,
     )
     const errorsQuery = this.generateSessionErrorsAggregationQuery(
       timeBucket,
       filtersQuery,
-      safeTimezone,
     )
+
+    const queryParams = { ...paramsData.params, timezone: safeTimezone }
 
     const [pageviewsData, customEventsData, errorsData] = await Promise.all([
       clickhouse
         .query({
           query: pageviewsQuery,
-          query_params: paramsData.params,
+          query_params: queryParams,
         })
         .then(resultSet => resultSet.json<any>()),
       clickhouse
         .query({
           query: customEventsQuery,
-          query_params: paramsData.params,
+          query_params: queryParams,
         })
         .then(resultSet => resultSet.json<any>()),
       clickhouse
         .query({
           query: errorsQuery,
-          query_params: paramsData.params,
+          query_params: queryParams,
         })
         .then(resultSet => resultSet.json<any>()),
     ])
@@ -3198,14 +3655,13 @@ export class AnalyticsService {
         const query = this.generateCaptchaAggregationQuery(
           timeBucket,
           filtersQuery,
-          safeTimezone,
           mode,
         )
 
         const { data } = await clickhouse
           .query({
             query,
-            query_params: paramsData.params,
+            query_params: { ...paramsData.params, timezone: safeTimezone },
           })
           .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
         const { count } = this.extractCaptchaChartData(data, xShifted)
@@ -3272,11 +3728,12 @@ export class AnalyticsService {
             query_params: paramsData.params,
           })
           .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
-        const { count } = this.extractCaptchaChartData(data, x)
+        const { count, affectedUsers } = this.extractErrorsChartData(data, x)
 
         chart = {
           x: this.shiftToTimezone(x, safeTimezone, format),
           occurrences: count,
+          affectedUsers,
         }
       })(),
     ]
@@ -3287,6 +3744,26 @@ export class AnalyticsService {
       params,
       chart,
     })
+  }
+
+  extractErrorsChartData(
+    result: any[],
+    x: string[],
+  ): { count: number[]; affectedUsers: number[] } {
+    const count = Array(x.length).fill(0)
+    const affectedUsers = Array(x.length).fill(0)
+
+    for (let row = 0; row < _size(result); ++row) {
+      const dateString = this.generateDateString(result[row])
+      const index = x.indexOf(dateString)
+
+      if (index !== -1) {
+        count[index] = Number(result[row].count) || 0
+        affectedUsers[index] = Number(result[row].affectedUsers) || 0
+      }
+    }
+
+    return { count, affectedUsers }
   }
 
   extractPerformanceChartData(result, x: string[]): any {
@@ -3373,13 +3850,12 @@ export class AnalyticsService {
       const query = this.generatePerformanceQuantilesQuery(
         timeBucket,
         filtersQuery,
-        safeTimezone,
       )
 
       const { data } = await clickhouse
         .query({
           query,
-          query_params: paramsData.params,
+          query_params: { ...paramsData.params, timezone: safeTimezone },
         })
         .then(resultSet => resultSet.json())
 
@@ -3392,14 +3868,13 @@ export class AnalyticsService {
     const query = this.generatePerformanceAggregationQuery(
       timeBucket,
       filtersQuery,
-      safeTimezone,
       measure,
     )
 
     const { data } = await clickhouse
       .query({
         query,
-        query_params: paramsData.params,
+        query_params: { ...paramsData.params, timezone: safeTimezone },
       })
       .then(resultSet => resultSet.json<PerformanceCHResponse>())
 
@@ -3727,8 +4202,44 @@ export class AnalyticsService {
   }
 
   async getOnlineUserCount(pid: string): Promise<number> {
-    // @ts-expect-error
-    return redis.countKeysByPattern(`sd:*:${pid}`)
+    const ONLINE_VISITORS_WINDOW_MINUTES = 5
+
+    const since = dayjs
+      .utc()
+      .subtract(ONLINE_VISITORS_WINDOW_MINUTES, 'minute')
+      .format('YYYY-MM-DD HH:mm:ss')
+
+    const query = `
+      SELECT uniqExact(psid) as count
+      FROM (
+        SELECT psid FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
+        UNION ALL
+        SELECT psid FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+          AND created >= {since:DateTime}
+          AND psid IS NOT NULL
+      )
+    `
+
+    try {
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: {
+            pid,
+            since,
+          },
+        })
+        .then(resultSet => resultSet.json<{ count: string }>())
+
+      return Number(data[0]?.count || 0)
+    } catch (error) {
+      console.error(`[ERROR](getOnlineUserCount): ${error}`)
+      return 0
+    }
   }
 
   async groupCustomEVByTimeBucket(
@@ -3738,13 +4249,18 @@ export class AnalyticsService {
     filtersQuery: string,
     paramsData: any,
     safeTimezone: string,
+    customEvents?: string[],
   ): Promise<object | void> {
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), {timezone:String})`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), {timezone:String})`
+    const customEventsFilter =
+      customEvents && customEvents.length > 0
+        ? 'AND ev IN {customEvents:Array(String)}'
+        : ''
 
     const query = `
       SELECT
@@ -3753,12 +4269,13 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT *,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
         FROM customEV
         WHERE
           pid = {pid:FixedString(12)}
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
+          ${customEventsFilter}
       ) as subquery
       GROUP BY ${groupBy}, ev
       ORDER BY ${groupBy}
@@ -3767,7 +4284,11 @@ export class AnalyticsService {
     const { data } = await clickhouse
       .query({
         query,
-        query_params: paramsData.params,
+        query_params: {
+          ...paramsData.params,
+          timezone: safeTimezone,
+          customEvents: customEvents || [],
+        },
       })
       .then(resultSet => resultSet.json<CustomsCHAggregatedResponse>())
 
@@ -3782,17 +4303,18 @@ export class AnalyticsService {
   }
 
   getSafeNumber(value: any, defaultValue: number): number {
-    if (typeof value === 'undefined') {
+    if (typeof value === 'undefined' || value === null || value === '') {
       return defaultValue
     }
 
-    const parsed = parseInt(value, 10)
+    const n = typeof value === 'number' ? value : Number(value)
 
-    if (Number.isNaN(parsed)) {
+    if (!Number.isFinite(n)) {
       return defaultValue
     }
 
-    return parsed
+    // ClickHouse LIMIT/OFFSET must be non-negative integers
+    return Math.max(0, Math.trunc(n))
   }
 
   processPageflow(pages: IPageflow[]) {
@@ -3801,16 +4323,44 @@ export class AnalyticsService {
     }
 
     return _map(pages, (page: IPageflow) => {
-      if (!page.metadata) {
-        return page
+      const processedMetadata = page.metadata
+        ? _map(page.metadata, ([key, value]: [string, string]) => ({
+            key,
+            value,
+          }))
+        : undefined
+
+      // For sale and refund events, extract amount and currency from metadata
+      if (
+        (page.type === 'sale' || page.type === 'refund') &&
+        processedMetadata
+      ) {
+        const amountEntry = processedMetadata.find(m => m.key === 'amount')
+        const currencyEntry = processedMetadata.find(m => m.key === 'currency')
+
+        let amount: number | undefined
+
+        if (amountEntry) {
+          const parsedAmount = parseFloat(amountEntry.value)
+
+          if (Number.isFinite(parsedAmount) && parsedAmount >= 0) {
+            amount = parsedAmount
+          }
+        }
+
+        return {
+          ...page,
+          metadata: processedMetadata.filter(
+            m => m.key !== 'amount' && m.key !== 'currency',
+          ),
+          amount,
+          currency: currencyEntry ? currencyEntry.value : undefined,
+        }
       }
 
       return {
         ...page,
-        metadata: _map(page.metadata, ([key, value]: [string, string]) => ({
-          key,
-          value,
-        })),
+        metadata: processedMetadata,
       }
     })
   }
@@ -3824,56 +4374,93 @@ export class AnalyticsService {
       WITH events_with_meta AS (
         SELECT
           'pageview' AS type,
-          pg AS value,
-          toTimeZone(analytics.created, '${safeTimezone}') AS created,
+          toString(pg) AS value,
+          toTimeZone(analytics.created, {timezone:String}) AS created,
           pid,
-          psid,
+          toString(analytics.psid) AS psid,
           groupArrayIf(tuple(meta.key, meta.value), notEmpty(meta.key) AND notEmpty(meta.value)) AS metadata
         FROM analytics
         LEFT ARRAY JOIN meta.key, meta.value
         WHERE
           pid = {pid:FixedString(12)}
           AND analytics.psid IS NOT NULL
-          AND CAST(analytics.psid AS String) = {psid:String}
+          AND toString(analytics.psid) = {psid:String}
         GROUP BY type, value, created, pid, psid
 
         UNION ALL
 
         SELECT
           'event' AS type,
-          ev AS value,
-          toTimeZone(customEV.created, '${safeTimezone}') AS created,
+          toString(ev) AS value,
+          toTimeZone(customEV.created, {timezone:String}) AS created,
           pid,
-          psid,
+          toString(customEV.psid) AS psid,
           groupArrayIf(tuple(meta.key, meta.value), notEmpty(meta.key) AND notEmpty(meta.value)) AS metadata
         FROM customEV
         LEFT ARRAY JOIN meta.key, meta.value
         WHERE
           pid = {pid:FixedString(12)}
           AND customEV.psid IS NOT NULL
-          AND CAST(customEV.psid AS String) = {psid:String}
+          AND toString(customEV.psid) = {psid:String}
         GROUP BY type, value, created, pid, psid
         
         UNION ALL
 
         SELECT
           'error' AS type,
-          errors.name AS value,
-          toTimeZone(errors.created, '${safeTimezone}') AS created,
+          toString(errors.name) AS value,
+          toTimeZone(errors.created, {timezone:String}) AS created,
           pid,
-          psid,
+          toString(errors.psid) AS psid,
           [
             tuple('message', COALESCE(errors.message, '')),
-            tuple('lineno', CAST(COALESCE(errors.lineno, 0), 'String')),
-            tuple('colno', CAST(COALESCE(errors.colno, 0), 'String')),
+            tuple('lineno', toString(COALESCE(errors.lineno, 0))),
+            tuple('colno', toString(COALESCE(errors.colno, 0))),
             tuple('filename', COALESCE(errors.filename, ''))
           ] AS metadata
         FROM errors
         WHERE
           pid = {pid:FixedString(12)}
           AND errors.psid IS NOT NULL
-          AND CAST(errors.psid AS String) = {psid:String}
+          AND toString(errors.psid) = {psid:String}
         GROUP BY type, value, created, pid, psid, errors.message, errors.lineno, errors.colno, errors.filename
+
+        UNION ALL
+
+        SELECT
+          type,
+          COALESCE(toString(product_name), toString(product_id), if(type = 'refund', 'Refund', 'Sale')) AS value,
+          toTimeZone(created, {timezone:String}) AS created,
+          pid,
+          toString(session_id) AS psid,
+          [
+            tuple('amount', toString(amount)),
+            tuple('currency', toString(currency)),
+            tuple('transaction_id', toString(transaction_id)),
+            tuple('status', toString(status)),
+            tuple('provider', toString(provider))
+          ] AS metadata
+        FROM (
+          SELECT
+            argMax(type, synced_at) AS type,
+            argMax(product_name, synced_at) AS product_name,
+            argMax(product_id, synced_at) AS product_id,
+            argMax(created, synced_at) AS created,
+            pid,
+            session_id,
+            argMax(amount, synced_at) AS amount,
+            argMax(currency, synced_at) AS currency,
+            transaction_id,
+            argMax(status, synced_at) AS status,
+            argMax(provider, synced_at) AS provider
+          FROM revenue
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND session_id IS NOT NULL
+            AND toString(session_id) = {psid:String}
+            AND revenue.type IN ('sale', 'refund')
+          GROUP BY pid, session_id, transaction_id
+        )
       )
 
       SELECT
@@ -3891,24 +4478,27 @@ export class AnalyticsService {
       FROM analytics
       WHERE
         pid = {pid:FixedString(12)}
-        AND CAST(psid, 'String') = {psid:String}
+        AND psid IS NOT NULL
+        AND toString(psid) = {psid:String}
       ORDER BY created ASC
       LIMIT 1;
     `
 
     const querySessionDuration = `
       SELECT
-        avg(duration) as duration
-      FROM session_durations
+        avg(dateDiff('second', firstSeen, lastSeen)) as duration
+      FROM sessions FINAL
       WHERE
         pid = {pid:FixedString(12)}
-        AND CAST(psid, 'String') = {psid:String}
+        AND psid IS NOT NULL
+        AND toString(psid) = {psid:String}
     `
 
     const paramsData = {
       params: {
         pid,
         psid,
+        timezone: safeTimezone,
       },
     }
 
@@ -3948,7 +4538,8 @@ export class AnalyticsService {
         FROM analytics
         WHERE
           pid = {pid:FixedString(12)}
-          AND CAST(psid, 'String') = {psid:String}
+          AND psid IS NOT NULL
+          AND toString(psid) = {psid:String}
         LIMIT 1;
       `
 
@@ -3987,7 +4578,7 @@ export class AnalyticsService {
         timeBucket,
         from,
         to,
-        "AND psid IS NOT NULL AND CAST(psid, 'String') = {psid:String}",
+        'AND psid IS NOT NULL AND toString(psid) = {psid:String}',
         {
           params: {
             ...paramsData.params,
@@ -4044,7 +4635,7 @@ export class AnalyticsService {
         ${primaryEventsTable}.cc,
         ${primaryEventsTable}.os,
         ${primaryEventsTable}.br,
-        toTimeZone(${primaryEventsTable}.created, '${safeTimezone}') AS created_for_grouping
+        toTimeZone(${primaryEventsTable}.created, {timezone:String}) AS created_for_grouping
       FROM ${primaryEventsTable}
       WHERE
         ${primaryEventsTable}.pid = {pid:FixedString(12)}
@@ -4096,14 +4687,45 @@ export class AnalyticsService {
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         GROUP BY psidCasted, pid
       ),
+      revenue_totals AS (
+        SELECT
+          psidCasted,
+          pid,
+          sum(CASE WHEN type = 'sale' THEN amount ELSE 0 END) - sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as revenue,
+          sum(CASE WHEN type = 'refund' THEN abs(amount) ELSE 0 END) as refunds
+        FROM (
+          SELECT
+            CAST(session_id, 'String') AS psidCasted,
+            pid,
+            argMax(type, synced_at) AS type,
+            argMax(amount, synced_at) AS amount
+          FROM revenue
+          WHERE pid = {pid:FixedString(12)} AND session_id IS NOT NULL
+            AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+            AND revenue.type IN ('sale', 'refund')
+          GROUP BY psidCasted, pid, transaction_id
+        )
+        GROUP BY psidCasted, pid
+      ),
       session_duration_agg AS (
         SELECT 
           CAST(psid, 'String') AS psidCasted, 
           pid, 
-          avg(duration) as avg_duration
-        FROM session_durations 
+          avg(dateDiff('second', firstSeen, lastSeen)) as avg_duration,
+          any(profileId) as profileId
+        FROM sessions FINAL
         WHERE pid = {pid:FixedString(12)}
         GROUP BY psidCasted, pid
+      ),
+      first_session_per_profile AS (
+        SELECT
+          profileId,
+          argMin(CAST(psid, 'String'), firstSeen) AS firstPsid
+        FROM sessions FINAL
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+        GROUP BY profileId
       )
       SELECT
         dsf.psidCasted AS psid,
@@ -4113,29 +4735,553 @@ export class AnalyticsService {
         COALESCE(pc.count, 0) AS pageviews,
         COALESCE(ec.count, 0) AS customEvents,
         COALESCE(errc.count, 0) AS errors,
+        toFloat64(COALESCE(rt.revenue, toDecimal64(0, 4))) AS revenue,
+        toFloat64(COALESCE(rt.refunds, toDecimal64(0, 4))) AS refunds,
         dsf.sessionStart,
         dsf.lastActivity,
         if(dateDiff('second', dsf.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
-        sda.avg_duration AS sdur
+        sda.avg_duration AS sdur,
+        sda.profileId AS profileId,
+        if(startsWith(sda.profileId, '${AnalyticsService.PROFILE_PREFIX_USER}'), 1, 0) AS isIdentified,
+        if(fsp.firstPsid = dsf.psidCasted, 1, 0) AS isFirstSession
       FROM distinct_sessions_filtered dsf
       LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
       LEFT JOIN event_counts ec ON dsf.psidCasted = ec.psidCasted AND dsf.pid = ec.pid
       LEFT JOIN error_counts errc ON dsf.psidCasted = errc.psidCasted AND dsf.pid = errc.pid
+      LEFT JOIN revenue_totals rt ON dsf.psidCasted = rt.psidCasted AND dsf.pid = rt.pid
       LEFT JOIN session_duration_agg sda ON dsf.psidCasted = sda.psidCasted AND dsf.pid = sda.pid
+      LEFT JOIN first_session_per_profile fsp ON sda.profileId = fsp.profileId
       WHERE dsf.psidCasted IS NOT NULL
       ORDER BY dsf.sessionStart DESC
-      LIMIT ${take}
-      OFFSET ${skip}
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32}
     `
 
     const { data } = await clickhouse
       .query({
         query,
-        query_params: paramsData.params,
+        query_params: {
+          ...paramsData.params,
+          timezone: safeTimezone,
+          take,
+          skip,
+        },
       })
       .then(resultSet => resultSet.json())
 
     return data
+  }
+
+  async getProfilesList(
+    pid: string,
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+    profileType: 'all' | 'anonymous' | 'identified' = 'all',
+  ): Promise<object[]> {
+    let profileTypeFilter = ''
+    if (profileType === 'anonymous') {
+      profileTypeFilter = `AND profileId LIKE '${AnalyticsService.PROFILE_PREFIX_ANON}%'`
+    } else if (profileType === 'identified') {
+      profileTypeFilter = `AND profileId LIKE '${AnalyticsService.PROFILE_PREFIX_USER}%'`
+    }
+
+    const query = `
+      WITH profile_analytics AS (
+        SELECT
+          profileId,
+          count() AS pageviewsCount,
+          countDistinct(psid) AS sessionsCount,
+          min(created) AS firstSeen,
+          max(created) AS lastSeen,
+          any(cc) AS cc_agg,
+          any(os) AS os_agg,
+          any(br) AS br_agg,
+          any(dv) AS dv_agg
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+          ${profileTypeFilter}
+          ${filtersQuery}
+        GROUP BY profileId
+      ),
+      profile_events AS (
+        SELECT
+          profileId,
+          count() AS eventsCount
+        FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+          ${profileTypeFilter}
+        GROUP BY profileId
+      ),
+      profile_errors AS (
+        SELECT
+          profileId,
+          count() AS errorsCount
+        FROM errors
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId IS NOT NULL
+          AND profileId != ''
+          ${profileTypeFilter}
+        GROUP BY profileId
+      )
+      SELECT
+        pa.profileId AS profileId,
+        pa.sessionsCount AS sessionsCount,
+        pa.pageviewsCount AS pageviewsCount,
+        COALESCE(pe.eventsCount, 0) AS eventsCount,
+        COALESCE(perr.errorsCount, 0) AS errorsCount,
+        pa.firstSeen AS firstSeen,
+        pa.lastSeen AS lastSeen,
+        pa.cc_agg AS cc,
+        pa.os_agg AS os,
+        pa.br_agg AS br,
+        pa.dv_agg AS dv
+      FROM profile_analytics AS pa
+      LEFT JOIN profile_events AS pe ON pa.profileId = pe.profileId
+      LEFT JOIN profile_errors AS perr ON pa.profileId = perr.profileId
+      ORDER BY pa.lastSeen DESC
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, ...paramsData.params, take, skip },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data
+      .filter((profile: any) => profile.profileId)
+      .map((profile: any) => ({
+        ...profile,
+        isIdentified: this.isUserSuppliedProfile(profile.profileId),
+      }))
+  }
+
+  async getProfileDetails(
+    pid: string,
+    profileId: string,
+    _safeTimezone: string,
+  ): Promise<any> {
+    // Query session count from sessions table
+    const querySessionCount = `
+      SELECT
+        count() AS sessionsCount,
+        min(sessions.firstSeen) AS firstSeen,
+        max(sessions.lastSeen) AS lastSeen
+      FROM sessions FINAL
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+    `
+
+    // Query avg duration from analytics table (more accurate than sessions table)
+    const queryAvgDuration = `
+      SELECT
+        avg(session_duration) AS avgDuration
+      FROM (
+        SELECT
+          psid,
+          dateDiff('second', min(created), max(created)) AS session_duration
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+        GROUP BY psid
+        HAVING session_duration > 0
+      )
+    `
+
+    // Query analytics for accurate pageview count
+    const queryPageviews = `
+      SELECT count() AS pageviewsCount
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+    `
+
+    // Query customEV for accurate events count
+    const queryEvents = `
+      SELECT count() AS eventsCount
+      FROM customEV
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+    `
+
+    // Query for device/location details
+    const queryDetails = `
+      SELECT
+        any(cc) AS cc,
+        any(rg) AS rg,
+        any(ct) AS ct,
+        any(os) AS os,
+        any(osv) AS osv,
+        any(br) AS br,
+        any(brv) AS brv,
+        any(dv) AS dv,
+        any(lc) AS lc
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+    `
+
+    // Query for total revenue from profile (only sales, not refunds)
+    const queryRevenue = `
+      SELECT
+        sum(amount) AS totalRevenue,
+        any(currency) AS revenueCurrency
+      FROM (
+        SELECT
+          argMax(amount, synced_at) AS amount,
+          argMax(currency, synced_at) AS currency
+        FROM revenue
+        WHERE pid = {pid:FixedString(12)}
+          AND profile_id = {profileId:String}
+          AND type = 'sale'
+          AND status = 'completed'
+        GROUP BY transaction_id
+      )
+    `
+
+    const params = { pid, profileId }
+
+    const [
+      sessionCountResult,
+      avgDurationResult,
+      pageviewsResult,
+      eventsResult,
+      detailsResult,
+      revenueResult,
+    ] = await Promise.all([
+      clickhouse
+        .query({ query: querySessionCount, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryAvgDuration, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryPageviews, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryEvents, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryDetails, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryRevenue, query_params: params })
+        .then(resultSet => resultSet.json()),
+    ])
+
+    const sessionCount = (sessionCountResult.data[0] || {}) as Record<
+      string,
+      any
+    >
+    const avgDuration = (avgDurationResult.data[0] || {}) as Record<string, any>
+    const pageviews = (pageviewsResult.data[0] || {}) as Record<string, any>
+    const events = (eventsResult.data[0] || {}) as Record<string, any>
+    const details = (detailsResult.data[0] || {}) as Record<string, any>
+    const revenue = (revenueResult.data[0] || {}) as Record<string, any>
+
+    return {
+      profileId,
+      isIdentified: this.isUserSuppliedProfile(profileId),
+      sessionsCount: sessionCount.sessionsCount || 0,
+      pageviewsCount: pageviews.pageviewsCount || 0,
+      eventsCount: events.eventsCount || 0,
+      firstSeen: sessionCount.firstSeen,
+      lastSeen: sessionCount.lastSeen,
+      avgDuration: avgDuration.avgDuration || 0,
+      totalRevenue: revenue.totalRevenue || 0,
+      revenueCurrency: revenue.revenueCurrency || null,
+      ...details,
+    }
+  }
+
+  async getProfileTopPages(
+    pid: string,
+    profileId: string,
+    limit = 10,
+  ): Promise<{ page: string; count: number }[]> {
+    const query = `
+      SELECT
+        pg AS page,
+        count() AS count
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+      GROUP BY pg
+      ORDER BY count DESC
+      LIMIT {limit:UInt32}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, profileId, limit: Number(limit) },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data as { page: string; count: number }[]
+  }
+
+  async getProfileActivityCalendar(
+    pid: string,
+    profileId: string,
+    months = 4,
+  ): Promise<{ date: string; count: number }[]> {
+    const startDate = dayjs
+      .utc()
+      .subtract(months, 'month')
+      .startOf('day')
+      .format('YYYY-MM-DD')
+
+    const query = `
+      SELECT
+        toDate(created) AS date,
+        count() AS count
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND created >= {startDate:Date}
+      GROUP BY date
+      ORDER BY date ASC
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, profileId, startDate },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data as { date: string; count: number }[]
+  }
+
+  async getProfileChartData(
+    pid: string,
+    profileId: string,
+    timeBucket: string,
+    from: string,
+    to: string,
+    safeTimezone: string,
+  ): Promise<{
+    x: string[]
+    pageviews: number[]
+    customEvents: number[]
+    errors: number[]
+  }> {
+    const timeBucketFunc =
+      timeBucketConversion[timeBucket] || timeBucketConversion.day
+
+    const queryPageviews = `
+      SELECT
+        ${timeBucketFunc}(toTimeZone(created, {timezone:String})) AS time,
+        count() AS count
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND created BETWEEN {from:String} AND {to:String}
+      GROUP BY time
+      ORDER BY time ASC
+    `
+
+    const queryEvents = `
+      SELECT
+        ${timeBucketFunc}(toTimeZone(created, {timezone:String})) AS time,
+        count() AS count
+      FROM customEV
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND created BETWEEN {from:String} AND {to:String}
+      GROUP BY time
+      ORDER BY time ASC
+    `
+
+    const queryErrors = `
+      SELECT
+        ${timeBucketFunc}(toTimeZone(created, {timezone:String})) AS time,
+        count() AS count
+      FROM errors
+      WHERE pid = {pid:FixedString(12)}
+        AND profileId = {profileId:String}
+        AND created BETWEEN {from:String} AND {to:String}
+      GROUP BY time
+      ORDER BY time ASC
+    `
+
+    const params = { pid, profileId, from, to, timezone: safeTimezone }
+
+    const [pageviewsResult, eventsResult, errorsResult] = await Promise.all([
+      clickhouse
+        .query({ query: queryPageviews, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryEvents, query_params: params })
+        .then(resultSet => resultSet.json()),
+      clickhouse
+        .query({ query: queryErrors, query_params: params })
+        .then(resultSet => resultSet.json()),
+    ])
+
+    // Merge all timestamps and create aligned data
+    const allTimes = new Set<string>()
+    const pageviewsMap = new Map<string, number>()
+    const eventsMap = new Map<string, number>()
+    const errorsMap = new Map<string, number>()
+
+    for (const row of pageviewsResult.data as {
+      time: string
+      count: number
+    }[]) {
+      allTimes.add(row.time)
+      pageviewsMap.set(row.time, Number(row.count))
+    }
+
+    for (const row of eventsResult.data as {
+      time: string
+      count: number
+    }[]) {
+      allTimes.add(row.time)
+      eventsMap.set(row.time, Number(row.count))
+    }
+
+    for (const row of errorsResult.data as {
+      time: string
+      count: number
+    }[]) {
+      allTimes.add(row.time)
+      errorsMap.set(row.time, Number(row.count))
+    }
+
+    const sortedTimes = Array.from(allTimes).sort()
+
+    return {
+      x: sortedTimes,
+      pageviews: sortedTimes.map(t => pageviewsMap.get(t) || 0),
+      customEvents: sortedTimes.map(t => eventsMap.get(t) || 0),
+      errors: sortedTimes.map(t => errorsMap.get(t) || 0),
+    }
+  }
+
+  async getProfileSessionsList(
+    pid: string,
+    profileId: string,
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+  ): Promise<object[]> {
+    const query = `
+      WITH profile_sessions AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          profileId,
+          any(cc) AS cc_agg,
+          any(os) AS os_agg,
+          any(br) AS br_agg,
+          min(toTimeZone(created, {timezone:String})) AS sessionStart,
+          max(toTimeZone(created, {timezone:String})) AS lastActivity
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+        GROUP BY psidCasted, pid, profileId
+      ),
+      pageview_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      event_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      error_counts AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          count() as count
+        FROM errors
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      session_duration_agg AS (
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          avg(dateDiff('second', firstSeen, lastSeen)) as avg_duration
+        FROM sessions FINAL
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+        GROUP BY psidCasted, pid
+      )
+      SELECT
+        ps.psidCasted AS psid,
+        ps.cc_agg AS cc,
+        ps.os_agg AS os,
+        ps.br_agg AS br,
+        COALESCE(pc.count, 0) AS pageviews,
+        COALESCE(ec.count, 0) AS customEvents,
+        COALESCE(errc.count, 0) AS errors,
+        ps.sessionStart,
+        ps.lastActivity,
+        if(dateDiff('second', ps.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        sda.avg_duration AS sdur
+      FROM profile_sessions ps
+      LEFT JOIN pageview_counts pc ON ps.psidCasted = pc.psidCasted AND ps.pid = pc.pid
+      LEFT JOIN event_counts ec ON ps.psidCasted = ec.psidCasted AND ps.pid = ec.pid
+      LEFT JOIN error_counts errc ON ps.psidCasted = errc.psidCasted AND ps.pid = errc.pid
+      LEFT JOIN session_duration_agg sda ON ps.psidCasted = sda.psidCasted AND ps.pid = sda.pid
+      WHERE ps.psidCasted IS NOT NULL
+      ORDER BY ps.sessionStart DESC
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32}
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          pid,
+          profileId,
+          ...paramsData.params,
+          timezone: safeTimezone,
+          take,
+          skip,
+        },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data as object[]
   }
 
   async getErrorsList(
@@ -4164,9 +5310,11 @@ export class AnalyticsService {
         any(filename) as filename,
         count(*) as count,
         max(created) as last_seen,
+        count(DISTINCT profileId) as users,
+        count(DISTINCT psid) as sessions,
         status.status
       FROM (
-        SELECT eid, name, message, filename, toTimeZone(errors.created, '${safeTimezone}') AS created
+        SELECT eid, name, message, filename, psid, profileId, toTimeZone(errors.created, {timezone:String}) AS created
         FROM errors
         WHERE pid = {pid:FixedString(12)}
           AND errors.created BETWEEN {groupFrom:String} AND {groupTo:String}
@@ -4187,14 +5335,19 @@ export class AnalyticsService {
       }
       GROUP BY errors.eid, status.status
       ORDER BY last_seen DESC
-      LIMIT ${take}
-      OFFSET ${skip};
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32};
     `
 
     const { data } = await clickhouse
       .query({
         query,
-        query_params: paramsData.params,
+        query_params: {
+          ...paramsData.params,
+          timezone: safeTimezone,
+          take,
+          skip,
+        },
       })
       .then(resultSet => resultSet.json())
 
@@ -4331,6 +5484,254 @@ export class AnalyticsService {
       metadata,
       ...groupedChart,
       timeBucket,
+    }
+  }
+
+  async getErrorOverview(
+    pid: string,
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+    groupFrom: string,
+    groupTo: string,
+    timeBucket: string,
+    showResolved: boolean,
+  ): Promise<any> {
+    const resolvedFilter = showResolved
+      ? ''
+      : "AND (status.status = 'active' OR status.status = 'regressed' OR status.status IS NULL)"
+
+    // Get total sessions from analytics table for the time range
+    const queryTotalSessions = `
+      SELECT count(DISTINCT psid) as totalSessions
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    // Get error stats: total errors, unique errors, affected sessions, affected users
+    const queryErrorStats = `
+      SELECT
+        count(*) as totalErrors,
+        count(DISTINCT eid) as uniqueErrors,
+        count(DISTINCT psid) as affectedSessions,
+        count(DISTINCT profileId) as affectedUsers
+      FROM errors
+      LEFT JOIN (
+        SELECT eid, argMax(status, updated) AS status
+        FROM error_statuses
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY eid
+      ) AS status ON errors.eid = status.eid
+      WHERE pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filtersQuery}
+        ${resolvedFilter}
+    `
+
+    // Get most frequent error
+    const queryMostFrequentError = `
+      SELECT
+        errors.eid as eid,
+        any(errors.name) as name,
+        any(errors.message) as message,
+        count(*) as count,
+        count(DISTINCT errors.profileId) as usersAffected,
+        max(errors.created) as lastSeen
+      FROM errors
+      LEFT JOIN (
+        SELECT eid, argMax(status, updated) AS status
+        FROM error_statuses
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY eid
+      ) AS status ON errors.eid = status.eid
+      WHERE errors.pid = {pid:FixedString(12)}
+        AND errors.created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filtersQuery}
+        ${resolvedFilter}
+      GROUP BY errors.eid
+      ORDER BY count DESC
+      LIMIT 1
+    `
+
+    // Get chart data with affected users - use same pattern as other chart methods
+    const timeBucketFunc =
+      timeBucketConversion[timeBucket as keyof typeof timeBucketConversion] ||
+      timeBucketConversion.day
+    const [selector, groupBy] = this.getGroupSubquery(
+      timeBucket as TimeBucketType,
+    )
+    const queryChart = `
+      SELECT
+        ${selector},
+        count(*) as count,
+        uniqExact(profileId) as affectedUsers
+      FROM (
+        SELECT
+          profileId,
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
+        FROM errors
+        LEFT JOIN (
+          SELECT eid, argMax(status, updated) AS status
+          FROM error_statuses
+          WHERE pid = {pid:FixedString(12)}
+          GROUP BY eid
+        ) AS status ON errors.eid = status.eid
+        WHERE pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+          ${resolvedFilter}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+
+    const paramsWithTimezone = {
+      ...paramsData.params,
+      timezone: safeTimezone,
+    }
+
+    const [
+      totalSessionsResult,
+      errorStatsResult,
+      mostFrequentResult,
+      chartResult,
+    ] = await Promise.all([
+      clickhouse
+        .query({
+          query: queryTotalSessions,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data[0]),
+      clickhouse
+        .query({
+          query: queryErrorStats,
+          query_params: paramsWithTimezone,
+        })
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data[0]),
+      clickhouse
+        .query({
+          query: queryMostFrequentError,
+          query_params: paramsWithTimezone,
+        })
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data[0] || null),
+      clickhouse
+        .query({
+          query: queryChart,
+          query_params: paramsWithTimezone,
+        })
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data),
+    ])
+
+    // Process chart data using same pattern as extractErrorsChartData
+    const { x, format } = this.generateUTCXAxis(
+      timeBucket as TimeBucketType,
+      groupFrom,
+      groupTo,
+    )
+    const occurrences = Array(x.length).fill(0)
+    const affectedUsersChart = Array(x.length).fill(0)
+
+    for (const row of chartResult) {
+      const dateString = this.generateDateString(row)
+      const index = x.indexOf(dateString)
+      if (index !== -1) {
+        occurrences[index] = Number(row.count) || 0
+        affectedUsersChart[index] = Number(row.affectedUsers) || 0
+      }
+    }
+
+    const errorRate =
+      totalSessionsResult?.totalSessions > 0
+        ? (Number(errorStatsResult?.affectedSessions || 0) /
+            Number(totalSessionsResult.totalSessions)) *
+          100
+        : 0
+
+    return {
+      stats: {
+        totalErrors: Number(errorStatsResult?.totalErrors || 0),
+        uniqueErrors: Number(errorStatsResult?.uniqueErrors || 0),
+        affectedSessions: Number(errorStatsResult?.affectedSessions || 0),
+        affectedUsers: Number(errorStatsResult?.affectedUsers || 0),
+        errorRate: Math.round(errorRate * 100) / 100,
+      },
+      mostFrequentError: mostFrequentResult
+        ? {
+            eid: mostFrequentResult.eid,
+            name: mostFrequentResult.name,
+            message: mostFrequentResult.message,
+            count: Number(mostFrequentResult.count),
+            usersAffected: Number(mostFrequentResult.usersAffected),
+            lastSeen: mostFrequentResult.lastSeen,
+          }
+        : null,
+      chart: {
+        x: this.shiftToTimezone(x, safeTimezone, format),
+        occurrences,
+        affectedUsers: affectedUsersChart,
+      },
+      timeBucket,
+    }
+  }
+
+  async getErrorAffectedSessions(
+    pid: string,
+    eid: string,
+    groupFrom: string,
+    groupTo: string,
+    take: number = 10,
+    skip: number = 0,
+  ): Promise<{ sessions: any[]; total: number }> {
+    const queryCount = `
+      SELECT count(DISTINCT psid) as total
+      FROM errors
+      WHERE pid = {pid:FixedString(12)}
+        AND eid = {eid:FixedString(32)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+
+    const querySessions = `
+      SELECT DISTINCT
+        CAST(errors.psid, 'String') as psid,
+        any(errors.profileId) as profileId,
+        any(analytics.cc) as cc,
+        any(analytics.br) as br,
+        any(analytics.os) as os,
+        min(errors.created) as firstErrorAt,
+        max(errors.created) as lastErrorAt,
+        count(*) as errorCount
+      FROM errors
+      LEFT JOIN analytics ON errors.psid = analytics.psid AND errors.pid = analytics.pid
+      WHERE errors.pid = {pid:FixedString(12)}
+        AND errors.eid = {eid:FixedString(32)}
+        AND errors.created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY errors.psid
+      ORDER BY lastErrorAt DESC
+      LIMIT {take:UInt32}
+      OFFSET {skip:UInt32}
+    `
+
+    const params = { pid, eid, groupFrom, groupTo, take, skip }
+
+    const [countResult, sessionsResult] = await Promise.all([
+      clickhouse
+        .query({ query: queryCount, query_params: params })
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data[0]),
+      clickhouse
+        .query({ query: querySessions, query_params: params })
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data),
+    ])
+
+    return {
+      sessions: sessionsResult,
+      total: Number(countResult?.total || 0),
     }
   }
 

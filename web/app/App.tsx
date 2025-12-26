@@ -62,6 +62,7 @@ const App = () => {
     routesPath.forMarketers,
     routesPath.forStartups,
     routesPath.forSmallBusinesses,
+    routesPath.captchaLanding,
   ]
 
   return (

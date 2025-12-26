@@ -90,7 +90,7 @@ const MultiSelect = ({
         <input
           ref={inputRef}
           type='text'
-          className='w-full cursor-text rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-sm transition-colors placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-gray-700 dark:bg-slate-800 dark:text-gray-50 dark:placeholder:text-gray-500'
+          className='w-full cursor-text rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-sm transition-colors ring-inset placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-gray-700 dark:bg-slate-800 dark:text-gray-50 dark:placeholder:text-gray-500'
           placeholder={placeholder}
           value={searchValue}
           onChange={handleInputChange}

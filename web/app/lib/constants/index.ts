@@ -139,84 +139,6 @@ export const tbPeriodPairs = (
   },
 ]
 
-export const captchaTbPeriodPairs = (
-  t: typeof i18nextT,
-  tbs?: TimeBucket[] | null,
-  dates?: Date[] | null,
-  language?: string,
-): TBPeriodPairsProps[] => [
-  {
-    label: t('project.thisHour'),
-    period: '1h',
-    tbs: ['minute'],
-  },
-  {
-    label: t('project.today'),
-    period: 'today',
-    tbs: ['hour'],
-  },
-  {
-    label: t('project.yesterday'),
-    period: 'yesterday',
-    tbs: ['hour'],
-  },
-  {
-    label: t('project.last24h'),
-    period: '1d',
-    countDays: 1,
-    tbs: ['hour'],
-  },
-  {
-    label: t('project.lastXDays', { amount: 7 }),
-    period: '7d',
-    tbs: ['hour', 'day'],
-    countDays: 7,
-  },
-  {
-    label: t('project.lastXWeeks', { amount: 4 }),
-    period: '4w',
-    tbs: ['day'],
-    countDays: 28,
-  },
-  {
-    label: t('project.lastXMonths', { amount: 3 }),
-    period: '3M',
-    tbs: ['month'],
-    countDays: 90,
-  },
-  {
-    label: t('project.lastXMonths', { amount: 12 }),
-    period: '12M',
-    tbs: ['month'],
-    countDays: 365,
-  },
-  {
-    label: t('project.lastXMonths', { amount: 24 }),
-    period: '24M',
-    tbs: ['month'],
-  },
-  {
-    label: t('project.all'),
-    period: 'all',
-    tbs: ['month', 'year'],
-  },
-  {
-    label: dates ? getCustomLabel(dates, t, language) : t('project.custom'),
-    dropdownLabel: t('project.custom'),
-    isCustomDate: true,
-    period: 'custom',
-    tbs: tbs || ['month'],
-  },
-]
-
-export const FILTERS_PERIOD_PAIRS = ['1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
-
-// TODO: add 'custom' later after an issue with it is resolved
-// currently if you select a date range - it will not display errors within the last day of the date range
-export const ERROR_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'all']
-
-export const FUNNELS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'all', 'custom']
-
 export const tbPeriodPairsCompare = (
   t: typeof i18nextT,
   dates?: Date[],
@@ -357,25 +279,13 @@ export const TWITTER_USERNAME = '@swetrix'
 export const DISCORD_URL = 'https://discord.gg/ZVK8Tw2E8j'
 export const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
 export const MAIN_URL = 'https://swetrix.com'
-export const REF_URL_PREFIX = `${MAIN_URL}/ref/`
 export const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 export const BOOK_A_CALL_URL = 'https://cal.com/swetrix'
 export const PERFORMANCE_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=performance'
 export const ERROR_TRACKING_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=errors'
-export const MARKETPLACE_URL = 'https://marketplace.swetrix.com'
 export const DOCS_URL = 'https://docs.swetrix.com'
 export const INTEGRATIONS_URL = 'https://docs.swetrix.com/integrations'
 export const ERROR_TRACKING_DOCS_URL = 'https://docs.swetrix.com/error-tracking'
-export const CAPTCHA_URL = 'https://captcha.swetrix.com'
-export const DOCS_REFERRAL_PROGRAM_URL = `${DOCS_URL}/affiliate/about`
-
-// Referral program
-export const REFERRAL_COOKIE = 'affiliate'
-export const REFERRAL_COOKIE_DAYS = 30
-export const REFERRAL_DISCOUNT = 20
-export const REFERRAL_PENDING_PAYOUT_DAYS = 30
-export const REFERRAL_CUT = 0.2
-export const REFERRAL_DISCOUNT_CODE = 'REFERRAL_DISCOUNT'
 
 export const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
 
@@ -402,12 +312,10 @@ export const isDisableMarketingPages =
   (isBrowser ? window.REMIX_ENV?.DISABLE_MARKETING_PAGES : process.env.DISABLE_MARKETING_PAGES) === 'true'
 
 export const apiUrlUnprocessed = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
-const cdnUrlUnprocessed = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_URL
 
 export const TITLE_SUFFIX = isSelfhosted ? '| Swetrix Community Edition' : '| Swetrix'
 
 export const API_URL = _endsWith(apiUrlUnprocessed, '/') ? apiUrlUnprocessed : `${apiUrlUnprocessed}/`
-export const CDN_URL = _endsWith(cdnUrlUnprocessed, '/') ? cdnUrlUnprocessed : `${cdnUrlUnprocessed}/`
 const NODE_ENV = isBrowser ? window.REMIX_ENV?.NODE_ENV : process.env.NODE_ENV
 
 export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
@@ -468,21 +376,33 @@ export const I18N_CACHE_BREAKER = 27
 
 export const roles: Role[] = ['admin', 'viewer']
 
+export const FUNNELS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'all', 'custom']
+
 const SELFHOSTED_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
+  users: 'users',
   funnels: 'funnels',
   sessions: 'sessions',
   errors: 'errors',
+  goals: 'goals',
+  experiments: 'experiments',
+  featureFlags: 'featureFlags',
 } as const
 
 const PRODUCTION_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
+  profiles: 'profiles',
   funnels: 'funnels',
   sessions: 'sessions',
   errors: 'errors',
+  goals: 'goals',
+  experiments: 'experiments',
+  featureFlags: 'featureFlags',
   alerts: 'alerts',
+  captcha: 'captcha',
+  ai: 'ai',
 } as const
 
 export const PROJECT_TABS = (
@@ -545,20 +465,6 @@ export const CURRENCIES: ICurrencies = {
   EUR,
   USD,
   GBP,
-}
-
-export const MERCHANT_FEE = '5% + 50¢'
-
-// Paddle fee is 5% + 50¢
-const calculatePriceAfterFees = (price: number): number => {
-  const fee = 0.05 * price + 0.5
-  return price - fee
-}
-
-export const calculateReferralCut = (originalTierPrice: number): number => {
-  const priceAfterFees = calculatePriceAfterFees(originalTierPrice)
-  const referralCut = REFERRAL_CUT * priceAfterFees
-  return referralCut
 }
 
 export const BillingFrequency = {

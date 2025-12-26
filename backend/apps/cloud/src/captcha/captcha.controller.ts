@@ -12,15 +12,30 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 
 import { AppLoggerService } from '../logger/logger.service'
-import { getIPFromHeaders } from '../common/utils'
+import { getIPFromHeaders, checkRateLimit } from '../common/utils'
 import { CaptchaService, DUMMY_PIDS } from './captcha.service'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { VerifyDto } from './dtos/manual.dto'
 import { ValidateDto } from './dtos/validate.dto'
-import { GenerateDto, DEFAULT_THEME } from './dtos/generate.dto'
+import { GenerateDto } from './dtos/generate.dto'
 
 dayjs.extend(utc)
+
+// Rate limit: 30 requests per IP per minute for challenge generation
+const CAPTCHA_GENERATE_RL_REQUESTS_IP = 30
+const CAPTCHA_GENERATE_RL_TIMEOUT = 60 // 1 minute
+
+// Rate limit: 100 requests per project per minute for challenge generation
+const CAPTCHA_GENERATE_RL_REQUESTS_PID = 100
+
+// Rate limit: verification attempts per IP per minute
+const CAPTCHA_VERIFY_RL_REQUESTS_IP = 60
+const CAPTCHA_VERIFY_RL_TIMEOUT = 60 // 1 minute
+
+// Rate limit: token validations per IP per minute
+const CAPTCHA_VALIDATE_RL_REQUESTS_IP = 120
+const CAPTCHA_VALIDATE_RL_TIMEOUT = 60 // 1 minute
 
 @Controller({
   version: '1',
@@ -36,14 +51,32 @@ export class CaptchaController {
   @HttpCode(200)
   @UseGuards(BotDetectionGuard)
   @BotDetection()
-  async generateCaptcha(@Body() generateDTO: GenerateDto): Promise<any> {
-    this.logger.log({ generateDTO }, 'POST /captcha/generate')
+  async generateCaptcha(
+    @Body() generateDTO: GenerateDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<any> {
+    const { pid } = generateDTO
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const { theme = DEFAULT_THEME, pid } = generateDTO
+    this.logger.log({ pid }, 'POST /captcha/generate')
+
+    await checkRateLimit(
+      ip,
+      'captcha-generate',
+      CAPTCHA_GENERATE_RL_REQUESTS_IP,
+      CAPTCHA_GENERATE_RL_TIMEOUT,
+    )
+    await checkRateLimit(
+      pid,
+      'captcha-generate',
+      CAPTCHA_GENERATE_RL_REQUESTS_PID,
+      CAPTCHA_GENERATE_RL_TIMEOUT,
+    )
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
-    return this.captchaService.generateCaptcha(theme)
+    return this.captchaService.generateChallenge(pid)
   }
 
   @Post('/verify')
@@ -55,10 +88,18 @@ export class CaptchaController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    this.logger.log({ manualDTO: verifyDto }, 'POST /captcha/verify')
-    // todo: add origin checks
+    const { challenge, nonce, solution, pid } = verifyDto
 
-    const { code, hash, pid } = verifyDto
+    this.logger.log({ pid }, 'POST /captcha/verify')
+
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(
+      ip,
+      'captcha-verify',
+      CAPTCHA_VERIFY_RL_REQUESTS_IP,
+      CAPTCHA_VERIFY_RL_TIMEOUT,
+    )
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
@@ -66,26 +107,37 @@ export class CaptchaController {
 
     // For dummy (test) PIDs
     if (pid === DUMMY_PIDS.ALWAYS_PASS) {
-      const dummyToken = this.captchaService.generateDummyToken()
+      const dummyToken = await this.captchaService.generateDummyToken()
       return {
         success: true,
         token: dummyToken,
         timestamp,
-        hash,
+        challenge,
         pid,
       }
     }
 
-    if (
-      pid === DUMMY_PIDS.ALWAYS_FAIL ||
-      !this.captchaService.verifyCaptcha(code, hash)
-    ) {
-      throw new ForbiddenException('Incorrect captcha')
+    if (pid === DUMMY_PIDS.ALWAYS_FAIL) {
+      throw new ForbiddenException('PoW verification failed')
     }
 
-    const token = await this.captchaService.generateToken(pid, hash, timestamp)
+    // Verify the PoW solution
+    const isValid = await this.captchaService.verifyPoW(
+      challenge,
+      nonce,
+      solution,
+      pid,
+    )
 
-    const ip = getIPFromHeaders(headers) || reqIP || ''
+    if (!isValid) {
+      throw new ForbiddenException('PoW verification failed')
+    }
+
+    const token = await this.captchaService.generateToken(
+      pid,
+      challenge,
+      timestamp,
+    )
 
     try {
       await this.captchaService.logCaptchaPass(pid, headers, timestamp, ip)
@@ -99,17 +151,29 @@ export class CaptchaController {
       success: true,
       token,
       timestamp,
-      hash,
+      challenge,
       pid,
     }
   }
 
   @Post('/validate')
   @HttpCode(200)
-  async validateToken(@Body() validateDTO: ValidateDto): Promise<any> {
-    this.logger.log({ validateDTO }, 'POST /captcha/validate')
+  async validateToken(
+    @Body() validateDTO: ValidateDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<any> {
+    this.logger.log(validateDTO, 'POST /captcha/validate')
 
     const { token, secret } = validateDTO
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(
+      ip,
+      'captcha-validate',
+      CAPTCHA_VALIDATE_RL_REQUESTS_IP,
+      CAPTCHA_VALIDATE_RL_TIMEOUT,
+    )
 
     return {
       success: true,

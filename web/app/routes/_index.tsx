@@ -16,6 +16,11 @@ import {
   BugIcon,
   ChevronUpIcon,
   ChevronDownIcon,
+  ToggleRightIcon,
+  FlaskConicalIcon,
+  TrendingUpIcon,
+  TargetIcon,
+  DollarSignIcon,
 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -40,8 +45,8 @@ import {
 } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Stats } from '~/lib/models/Stats'
+import { MetricCard, MetricCardSelect } from '~/pages/Project/tabs/Traffic/MetricCards'
 import CCRow from '~/pages/Project/View/components/CCRow'
-import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
 import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
@@ -400,7 +405,7 @@ const LargeFeatureCard = ({
   media: React.ReactNode
 }) => (
   <div className='flex h-full flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
-    <div className='relative h-64 overflow-hidden sm:h-72 md:h-80'>{media}</div>
+    <div className='relative h-60 overflow-hidden'>{media}</div>
     <div className='p-6'>
       <h3 className='text-xl font-semibold text-gray-950 dark:text-white'>{title}</h3>
       <div className='mt-1 text-sm text-gray-700 dark:text-gray-300'>{description}</div>
@@ -475,7 +480,7 @@ const AnalyticsLivePreview = () => {
       <div className='mb-3 flex items-center justify-between'>
         <div className='flex gap-3'>
           {[
-            { l: t('dashboard.unique'), v: 471 },
+            { l: t('dashboard.sessions'), v: 471 },
             { l: t('dashboard.pageviews'), v: 994 },
             { l: t('dashboard.bounceRate'), v: '28.5%' },
           ].map((k) => (
@@ -574,7 +579,15 @@ const AnalyticsLivePreview = () => {
 type EventItem = { id: string; name: string; meta: React.ReactNode }
 
 const randomEvent = (): EventItem => {
-  const names = ['signup', 'purchase', 'button_click', 'pageview', 'add_to_cart', 'checkout_start', 'newsletter_join']
+  const names = [
+    'signup',
+    'purchase',
+    'goal_reached',
+    'pageview',
+    'add_to_cart',
+    'checkout_complete',
+    'newsletter_join',
+  ]
   const metas = [
     {
       text: 'United States • Chrome • iOS',
@@ -637,9 +650,18 @@ const CustomEventsPreview = () => {
               className='flex items-center justify-between rounded-md bg-slate-50 p-2 text-sm ring-1 ring-black/5 dark:bg-slate-800/60 dark:text-gray-200 dark:ring-white/10'
             >
               <div className='flex items-center gap-2'>
-                <span className='flex size-6 items-center justify-center rounded-md bg-indigo-500/10 ring-1 ring-indigo-500/30'>
+                <span
+                  className={cn(
+                    'flex size-6 items-center justify-center rounded-md ring-1',
+                    ev.name === 'goal_reached'
+                      ? 'bg-emerald-500/10 ring-emerald-500/30'
+                      : 'bg-indigo-500/10 ring-indigo-500/30',
+                  )}
+                >
                   {ev.name === 'pageview' ? (
                     <FileTextIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
+                  ) : ev.name === 'goal_reached' ? (
+                    <TargetIcon className='size-4 text-emerald-600 dark:text-emerald-400' />
                   ) : (
                     <MousePointerClickIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
                   )}
@@ -1079,6 +1101,265 @@ const AlertsPreview = () => {
   )
 }
 
+const RevenuePreview = () => {
+  const [revenue, setRevenue] = useState(2840)
+  const [sources, setSources] = useState([
+    { name: 'Google Search', amount: 1240, color: '#4285F4' },
+    { name: 'Twitter / X', amount: 850, color: '#1DA1F2' },
+    { name: 'Direct', amount: 460, color: '#64748b' },
+  ])
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const amountToAdd = Math.floor(Math.random() * 15)
+      setRevenue((prev) => prev + amountToAdd)
+      setSources((prev) => {
+        const next = [...prev]
+        const idx = Math.floor(Math.random() * next.length)
+        next[idx] = { ...next[idx], amount: next[idx].amount + amountToAdd }
+        return next
+      })
+    }, 4000)
+    return () => clearInterval(id)
+  }, [])
+
+  const total = sources.reduce((acc, s) => acc + s.amount, 0)
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 dark:from-slate-800 dark:to-slate-900'>
+      <div className='mb-4 flex items-center justify-between rounded-xl bg-white p-4 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+        <div>
+          <div className='flex items-center gap-1.5 text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-gray-400'>
+            <DollarSignIcon className='size-3' />
+            Total Revenue
+          </div>
+          <motion.div
+            key={Math.floor(revenue / 10)}
+            initial={{ opacity: 0.8 }}
+            animate={{ opacity: 1 }}
+            className='text-2xl font-bold text-slate-900 tabular-nums dark:text-white'
+          >
+            ${revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </motion.div>
+        </div>
+        <div className='flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'>
+          <TrendingUpIcon className='size-3.5' />
+          +14.2%
+        </div>
+      </div>
+
+      <div className='space-y-4'>
+        {sources.map((source) => (
+          <div key={source.name} className='space-y-2'>
+            <div className='flex items-center justify-between text-[11px]'>
+              <div className='flex items-center gap-2'>
+                <div className='size-2 rounded-full' style={{ backgroundColor: source.color }} />
+                <span className='font-medium text-slate-700 dark:text-gray-300'>{source.name}</span>
+              </div>
+              <span className='font-semibold text-slate-900 tabular-nums dark:text-white'>
+                ${source.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </span>
+            </div>
+            <div className='relative h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800'>
+              <motion.div
+                className='absolute inset-y-0 left-0 rounded-full'
+                style={{ backgroundColor: source.color }}
+                initial={{ width: 0 }}
+                animate={{ width: `${(source.amount / total) * 100}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+type FlagItem = {
+  id: string
+  name: string
+  enabled: boolean
+  type: 'boolean' | 'percentage'
+  value: number
+  evaluations: number
+}
+
+const FeatureFlagsPreview = () => {
+  const [flags, setFlags] = useState<FlagItem[]>([
+    { id: '1', name: 'dark-mode', enabled: true, type: 'boolean', value: 100, evaluations: 1247 },
+    { id: '2', name: 'new-checkout', enabled: true, type: 'percentage', value: 75, evaluations: 892 },
+    { id: '3', name: 'beta-features', enabled: false, type: 'boolean', value: 0, evaluations: 156 },
+  ])
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setFlags((prev) =>
+        prev.map((f) => ({
+          ...f,
+          evaluations: f.evaluations + Math.floor(Math.random() * 5),
+        })),
+      )
+    }, 3000)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 dark:from-slate-800 dark:to-slate-900'>
+      <ul className='space-y-2'>
+        {flags.map((flag) => (
+          <motion.li
+            key={flag.id}
+            className='flex items-center justify-between rounded-md bg-white p-3 ring-1 ring-black/5 dark:bg-slate-800/60 dark:ring-white/10'
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className='flex items-center gap-3'>
+              <div
+                className={cn(
+                  'flex size-8 items-center justify-center rounded-md',
+                  flag.enabled
+                    ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400'
+                    : 'bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-500',
+                )}
+              >
+                <ToggleRightIcon className='size-4' />
+              </div>
+              <div>
+                <div className='flex items-center gap-2'>
+                  <span className='font-medium text-slate-900 dark:text-gray-50'>{flag.name}</span>
+                  <span
+                    className={cn(
+                      'rounded px-1.5 py-0.5 text-[10px] font-medium',
+                      flag.enabled
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
+                        : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400',
+                    )}
+                  >
+                    {flag.enabled ? 'Enabled' : 'Disabled'}
+                  </span>
+                  <span className='rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'>
+                    {flag.type === 'boolean' ? 'Boolean' : `${flag.value}%`}
+                  </span>
+                </div>
+                <div className='text-xs text-slate-500 dark:text-gray-400'>
+                  {flag.evaluations.toLocaleString()} evaluations
+                </div>
+              </div>
+            </div>
+            <div
+              className={cn(
+                'size-3 rounded-full',
+                flag.enabled
+                  ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
+                  : 'bg-slate-300 dark:bg-slate-600',
+              )}
+            />
+          </motion.li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+const ExperimentsPreview = () => {
+  const [tick, setTick] = useState(0)
+
+  useEffect(() => {
+    const id = setInterval(() => setTick((s) => s + 1), 2500)
+    return () => clearInterval(id)
+  }, [])
+
+  const controlProb = 35 + ((tick * 2) % 15)
+  const variantProb = 100 - controlProb
+
+  const variants = [
+    { name: 'Control', conversions: 127, exposures: 1842, color: '#3b82f6' },
+    { name: 'Variant A', conversions: 186, exposures: 1756, color: '#22c55e' },
+  ]
+
+  const winnerIdx = variantProb > 50 ? 1 : 0
+
+  return (
+    <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 dark:from-slate-800 dark:to-slate-900'>
+      <div className='mb-3 flex items-center justify-between'>
+        <div className='flex items-center gap-2'>
+          <FlaskConicalIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
+          <span className='text-sm font-medium text-slate-900 dark:text-white'>Checkout Flow Test</span>
+          <span className='rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'>
+            Running
+          </span>
+        </div>
+        <div className='rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'>
+          95% confidence
+        </div>
+      </div>
+
+      <div className='rounded-lg bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+        <div className='mb-2 text-[10px] font-medium text-slate-600 dark:text-gray-300'>Probability of winning</div>
+        <div className='relative h-6 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800'>
+          <motion.div
+            className='absolute top-0 left-0 h-full bg-blue-500'
+            initial={{ width: '50%' }}
+            animate={{ width: `${controlProb}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          />
+          <motion.div
+            className='absolute top-0 right-0 h-full bg-emerald-500'
+            initial={{ width: '50%' }}
+            animate={{ width: `${variantProb}%` }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          />
+          <div className='absolute inset-0 flex items-center justify-between px-3 text-[10px] font-bold text-white'>
+            <span>{controlProb.toFixed(0)}%</span>
+            <span>{variantProb.toFixed(0)}%</span>
+          </div>
+        </div>
+
+        <div className='mt-3 grid grid-cols-2 gap-2'>
+          {variants.map((v, i) => (
+            <div
+              key={v.name}
+              className={cn(
+                'rounded-md p-2 text-xs ring-1',
+                i === winnerIdx
+                  ? 'bg-emerald-50 ring-emerald-200 dark:bg-emerald-950/40 dark:ring-emerald-800'
+                  : 'bg-slate-50 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700',
+              )}
+            >
+              <div className='flex items-center justify-between'>
+                <span className='font-medium text-slate-900 dark:text-white'>{v.name}</span>
+                {i === winnerIdx ? <TrendingUpIcon className='size-3 text-emerald-600 dark:text-emerald-400' /> : null}
+              </div>
+              <div className='mt-1 text-slate-600 dark:text-gray-300'>
+                <span className='font-semibold text-slate-900 dark:text-white'>
+                  {((v.conversions / v.exposures) * 100).toFixed(1)}%
+                </span>{' '}
+                conversion
+              </div>
+              <div className='text-[10px] text-slate-500 dark:text-gray-400'>
+                {v.conversions} / {v.exposures.toLocaleString()} exposures
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className='mt-2 flex items-center justify-center gap-4 text-[10px] text-slate-600 dark:text-gray-300'>
+        <span className='flex items-center gap-1'>
+          <span className='inline-block size-2 rounded-[2px] bg-blue-500' />
+          Control
+        </span>
+        <span className='flex items-center gap-1'>
+          <span className='inline-block size-2 rounded-[2px] bg-emerald-500' />
+          Variant A
+        </span>
+      </div>
+    </div>
+  )
+}
+
 const FeaturesShowcase = () => {
   const { theme } = useTheme()
   const {
@@ -1372,6 +1653,49 @@ const FeaturesShowcase = () => {
           title={t('main.cookies.title')}
           description={t('main.cookies.description')}
           media={<img src='/assets/say-no-to-cookies.png' alt='' className='h-full w-full object-cover' />}
+        />
+      </div>
+
+      {/* Product analytics & experimentation features */}
+      <div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
+        <LargeFeatureCard
+          title={t('main.revenue.title')}
+          description={t('main.revenue.description')}
+          media={
+            <ClientOnly
+              fallback={
+                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
+              }
+            >
+              {() => <RevenuePreview />}
+            </ClientOnly>
+          }
+        />
+        <LargeFeatureCard
+          title={t('main.featureFlags.title')}
+          description={t('main.featureFlags.description')}
+          media={
+            <ClientOnly
+              fallback={
+                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
+              }
+            >
+              {() => <FeatureFlagsPreview />}
+            </ClientOnly>
+          }
+        />
+        <LargeFeatureCard
+          title={t('main.experiments.title')}
+          description={t('main.experiments.description')}
+          media={
+            <ClientOnly
+              fallback={
+                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
+              }
+            >
+              {() => <ExperimentsPreview />}
+            </ClientOnly>
+          }
         />
       </div>
     </section>

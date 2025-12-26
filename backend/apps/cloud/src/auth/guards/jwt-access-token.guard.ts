@@ -1,7 +1,7 @@
 import { Injectable, ExecutionContext } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
-import { IS_PUBLIC_KEY } from '../decorators'
+import { IS_PUBLIC_KEY, IS_OPTIONAL_AUTH_KEY } from '../decorators'
 
 @Injectable()
 export class JwtAccessTokenGuard extends AuthGuard('jwt-access-token') {
@@ -18,5 +18,28 @@ export class JwtAccessTokenGuard extends AuthGuard('jwt-access-token') {
     if (isPublic) return true
 
     return super.canActivate(context)
+  }
+
+  handleRequest(
+    err: any,
+    user: any,
+    info: any,
+    context: ExecutionContext,
+    status?: any,
+  ) {
+    const isOptionalAuth = this.reflector.getAllAndOverride<boolean>(
+      IS_OPTIONAL_AUTH_KEY,
+      [context.getHandler(), context.getClass()],
+    )
+
+    if (isOptionalAuth) {
+      if (err) {
+        return super.handleRequest(err, user, info, context, status)
+      }
+
+      return user
+    }
+
+    return super.handleRequest(err, user, info, context, status)
   }
 }

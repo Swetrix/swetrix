@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsOptional, IsString, Matches, ValidateIf } from 'class-validator'
+import {
+  IsOptional,
+  IsString,
+  Matches,
+  ValidateIf,
+  IsBoolean,
+} from 'class-validator'
+import { Transform } from 'class-transformer'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 import { ValidatePeriod } from '../decorators/validate-period.decorator'
 import { PID_REGEX } from '../../common/constants'
@@ -56,4 +63,14 @@ export class GetOverallStatsDto {
   @IsOptional()
   @IsString()
   filters?: string
+
+  @ApiProperty({
+    description: 'Whether to include simplified chart data for each project',
+    required: false,
+    default: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  includeChart?: boolean = false
 }

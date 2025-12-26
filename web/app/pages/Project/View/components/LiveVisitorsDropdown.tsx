@@ -54,7 +54,7 @@ const LiveVisitorsDropdown = () => {
           aria-expanded={isDropdownVisible}
           aria-controls='live-visitors-dropdown'
           className={cn(
-            'flex cursor-pointer items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-900 transition-colors hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+            'flex cursor-pointer items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-900 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
           )}
           onClick={onOpen}
         >
@@ -96,13 +96,13 @@ const LiveVisitorsDropdown = () => {
             </div>
             <div className='scrollbar-thin max-h-[200px] overflow-y-auto px-2'>
               {isLoading ? (
-                <p className='mt-2 flex items-center py-2 text-sm text-gray-900 dark:text-gray-50'>
+                <p className='flex items-center py-2 text-sm text-gray-900 dark:text-gray-50'>
                   <Spin className='ml-0' />
 
                   {t('common.loading')}
                 </p>
               ) : liveInfo.length === 0 ? (
-                <p className='mt-2 py-2 text-sm text-gray-900 dark:text-gray-50'>{t('project.noData')}</p>
+                <p className='py-2 text-sm text-gray-900 dark:text-gray-50'>{t('project.noData')}</p>
               ) : (
                 <div className='table w-full border-separate border-spacing-y-2'>
                   <div className='table-row-group'>

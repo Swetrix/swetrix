@@ -23,7 +23,4 @@ export class UserGoogleDTO {
 
   @ApiProperty({ example: true, required: false })
   isActive: boolean
-
-  @ApiProperty({ example: 'uuid-of-referrer', required: false })
-  referrerId?: string
 }

@@ -24,7 +24,7 @@ export class TelegramService {
       telegramId.toString(),
     )
 
-    let text: string
+    let text = ''
     let extra: ExtraReplyMessage = {}
 
     if (!user) {
@@ -66,14 +66,35 @@ export class TelegramService {
       return
     }
 
+    // Ensure the confirming Telegram user matches the pending chat ID on the user.
+    // This prevents confirming from a different chat/user if callback data ever leaks.
+    const user = await this.userService.findOne({ where: { id: userId } })
+    if (
+      !user ||
+      user.isTelegramChatIdConfirmed ||
+      user.telegramChatId !== String(chatId)
+    ) {
+      return
+    }
+
     await this.userService.updateUserTelegramId(userId, chatId, true)
   }
 
-  async cancelLinkAccount(userId: string) {
+  async cancelLinkAccount(userId: string, chatId: number) {
     if (
       this.configService.get<string>('ENABLE_INTEGRATIONS') !== 'true' &&
       this.configService.get<string>('ENABLE_TELEGRAM_INTEGRATION') !== 'true'
     ) {
+      return
+    }
+
+    const user = await this.userService.findOne({ where: { id: userId } })
+    if (!user || user.isTelegramChatIdConfirmed) {
+      return
+    }
+
+    // Only allow cancelling if the pending chat ID matches the current chat.
+    if (user.telegramChatId !== String(chatId)) {
       return
     }
 
@@ -89,6 +110,9 @@ export class TelegramService {
     }
 
     const user = await this.userService.getUserByTelegramId(chatId.toString())
+    if (!user) {
+      return
+    }
     await this.userService.updateUserTelegramId(user.id, null)
   }
 
@@ -130,6 +154,12 @@ export class TelegramService {
       this.configService.get<string>('ENABLE_INTEGRATIONS') !== 'true' &&
       this.configService.get<string>('ENABLE_TELEGRAM_INTEGRATION') !== 'true'
     ) {
+      return
+    }
+
+    // If the bot isn't launched on this node (e.g. non-primary instance),
+    // do nothing here and let the primary node handle queued messages.
+    if (!this.bot) {
       return
     }
 

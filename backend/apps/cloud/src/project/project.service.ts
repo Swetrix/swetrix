@@ -7,6 +7,7 @@ import {
   InternalServerErrorException,
   ConflictException,
   NotFoundException,
+  OnModuleDestroy,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import {
@@ -18,7 +19,8 @@ import {
   FindOptionsWhere,
 } from 'typeorm'
 import handlebars from 'handlebars'
-import puppeteer from 'puppeteer'
+import crypto from 'crypto'
+import puppeteer, { type Browser } from 'puppeteer'
 import CryptoJS from 'crypto-js'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
@@ -64,7 +66,7 @@ import {
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { IUsageInfoRedis } from '../user/interfaces'
-import { ProjectSubscriber, Funnel, Annotation } from './entity'
+import { ProjectSubscriber, Funnel, Annotation, PinnedProject } from './entity'
 import { AddSubscriberType } from './types'
 import {
   CreateProjectDTO,
@@ -280,7 +282,35 @@ const getCompiledHTML = (title: string, desc: string, styles: string) => {
 }
 
 @Injectable()
-export class ProjectService {
+export class ProjectService implements OnModuleDestroy {
+  private ogBrowser: Browser | null = null
+  private ogBrowserPromise: Promise<Browser> | null = null
+
+  private async getOgBrowser(): Promise<Browser> {
+    if (this.ogBrowser && this.ogBrowser.isConnected()) return this.ogBrowser
+    if (this.ogBrowserPromise) return this.ogBrowserPromise
+
+    this.ogBrowserPromise = puppeteer.launch({
+      headless: true,
+      args: browserArgs,
+      defaultViewport: {
+        width: 1200,
+        height: 630,
+        deviceScaleFactor: 1,
+      },
+    })
+
+    try {
+      this.ogBrowser = await this.ogBrowserPromise
+      this.ogBrowser.on('disconnected', () => {
+        this.ogBrowser = null
+      })
+      return this.ogBrowser
+    } finally {
+      this.ogBrowserPromise = null
+    }
+  }
+
   constructor(
     @InjectRepository(Project)
     private projectsRepository: Repository<Project>,
@@ -292,6 +322,8 @@ export class ProjectService {
     private readonly funnelRepository: Repository<Funnel>,
     @InjectRepository(Annotation)
     private readonly annotationRepository: Repository<Annotation>,
+    @InjectRepository(PinnedProject)
+    private readonly pinnedProjectRepository: Repository<PinnedProject>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
     private readonly userService: UserService,
@@ -321,7 +353,7 @@ export class ProjectService {
           'project.countryBlacklist',
           'project.botsProtectionLevel',
           'project.captchaSecretKey',
-          'project.isCaptchaEnabled',
+          'project.captchaDifficulty',
           'project.passwordHash',
           'project.isPasswordProtected',
           'admin.id',
@@ -329,6 +361,7 @@ export class ProjectService {
           'admin.isAccountBillingSuspended',
           'organisation.id',
           'organisationMembers.role',
+          'organisationMembers.confirmed',
           'organisationUser.id',
         ])
         .where('project.id = :pid', { pid })
@@ -343,7 +376,7 @@ export class ProjectService {
       const share = await this.projectShareRepository
         .createQueryBuilder('share')
         .leftJoinAndSelect('share.user', 'user')
-        .select(['share.role', 'user.id'])
+        .select(['share.role', 'share.confirmed', 'user.id'])
         .where('share.project = :pid', { pid })
         .getMany()
 
@@ -404,6 +437,7 @@ export class ProjectService {
           members: {
             id: true,
             role: true,
+            confirmed: true,
             user: {
               id: true,
             },
@@ -447,12 +481,21 @@ export class ProjectService {
         'organisationUser.id',
         'organisationUser.email',
       ])
+      .addSelect(
+        'CASE WHEN pinnedProject.id IS NOT NULL THEN 1 ELSE 0 END',
+        'isPinned',
+      )
       .leftJoin('project.admin', 'admin')
       .leftJoin('project.share', 'share')
       .leftJoin('share.user', 'sharedUser')
       .leftJoin('project.organisation', 'organisation')
       .leftJoin('organisation.members', 'organisationMembers')
       .leftJoin('organisationMembers.user', 'organisationUser')
+      .leftJoin(
+        PinnedProject,
+        'pinnedProject',
+        'pinnedProject.projectId = project.id AND pinnedProject.userId = :userId',
+      )
       .where(
         new Brackets(qb => {
           qb.where('project.adminId = :userId')
@@ -472,22 +515,25 @@ export class ProjectService {
         .setParameter('search', search ? `%${search.trim()}%` : '')
     }
 
-    // Add sorting based on options.sort
+    // Always sort pinned projects first, then apply the requested sort
+    queryBuilder.orderBy('isPinned', 'DESC')
+
+    // Add secondary sorting based on options.sort
     switch (sort) {
       case 'alpha_asc':
-        queryBuilder.orderBy('project.name', 'ASC')
+        queryBuilder.addOrderBy('project.name', 'ASC')
         break
       case 'alpha_desc':
-        queryBuilder.orderBy('project.name', 'DESC')
+        queryBuilder.addOrderBy('project.name', 'DESC')
         break
       case 'date_asc':
-        queryBuilder.orderBy('project.created', 'ASC')
+        queryBuilder.addOrderBy('project.created', 'ASC')
         break
       case 'date_desc':
-        queryBuilder.orderBy('project.created', 'DESC')
+        queryBuilder.addOrderBy('project.created', 'DESC')
         break
       default:
-        queryBuilder.orderBy('project.name', 'ASC')
+        queryBuilder.addOrderBy('project.name', 'ASC')
     }
 
     queryBuilder.skip(options.skip || 0).take(options.take || 100)
@@ -553,7 +599,7 @@ export class ProjectService {
 
   async update(
     where: FindOptionsWhere<Project>,
-    projectDTO: ProjectDTO | Project,
+    projectDTO: DeepPartial<Project>,
   ) {
     return this.projectsRepository.update(where, projectDTO)
   }
@@ -570,12 +616,8 @@ export class ProjectService {
       .execute()
   }
 
-  async deleteMultipleShare(where: string) {
-    return this.projectShareRepository
-      .createQueryBuilder()
-      .delete()
-      .where(where)
-      .execute()
+  async deleteMultipleShare(where: FindOptionsWhere<ProjectShare>) {
+    return this.projectShareRepository.delete(where)
   }
 
   async createShare(share: ProjectShare): Promise<ProjectShare> {
@@ -622,10 +664,13 @@ export class ProjectService {
     if (
       project.public ||
       uid === project.admin?.id ||
-      _findIndex(project.share, ({ user }) => user?.id === uid) !== -1 ||
+      _findIndex(
+        project.share,
+        ({ user, confirmed }) => user?.id === uid && confirmed === true,
+      ) !== -1 ||
       _findIndex(
         project.organisation?.members,
-        member => member.user?.id === uid,
+        member => member.user?.id === uid && member.confirmed === true,
       ) !== -1
     ) {
       return null
@@ -658,12 +703,16 @@ export class ProjectService {
       uid === project.admin?.id ||
       _findIndex(
         project.share,
-        share => share.user?.id === uid && share.role === Role.admin,
+        share =>
+          share.user?.id === uid &&
+          share.role === Role.admin &&
+          share.confirmed === true,
       ) !== -1 ||
       _findIndex(
         project.organisation?.members,
         member =>
           member.user?.id === uid &&
+          member.confirmed === true &&
           (member.role === OrganisationRole.admin ||
             member.role === OrganisationRole.owner),
       ) !== -1
@@ -866,10 +915,14 @@ export class ProjectService {
       // Process PIDs in chunks
       for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
         const pidChunk = pids.slice(i, i + CHUNK_SIZE)
-        const params = { pids: pidChunk }
+        const params = {
+          pids: pidChunk,
+          monthStart,
+          monthEnd,
+        }
 
         const selector = `
-          WHERE created BETWEEN '${monthStart}' AND '${monthEnd}'
+          WHERE created BETWEEN {monthStart:String} AND {monthEnd:String}
           AND pid IN ({pids:Array(FixedString(12))})
         `
 
@@ -1182,6 +1235,55 @@ export class ProjectService {
     return _map(data, ({ pid }) => pid)
   }
 
+  async getPIDsWhereCaptchaDataExists(projectIds: string[]): Promise<string[]> {
+    if (_isEmpty(projectIds)) {
+      return []
+    }
+
+    const params = _reduce(
+      projectIds,
+      (acc, curr, index) => ({
+        ...acc,
+        [`pid_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const pids = _join(
+      _map(params, (val, key) => `{${key}:FixedString(12)}`),
+      ',',
+    )
+
+    const query = `
+      SELECT
+        pid,
+        CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM captcha
+            WHERE pid IN (${pids})
+          )
+          THEN 1
+          ELSE 0
+        END AS exists
+      FROM
+      (
+        SELECT DISTINCT pid
+        FROM captcha
+        WHERE pid IN (${pids})
+      );
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then(resultSet => resultSet.json<{ pid: string }>())
+
+    return _map(data, ({ pid }) => pid)
+  }
+
   async getSubscriberByEmail(projectId: string, email: string) {
     return this.projectSubscriberRepository.findOne({
       where: { projectId, email },
@@ -1461,6 +1563,18 @@ export class ProjectService {
   }
 
   async getOgImage(pid: string, name: string) {
+    const nameHash = crypto.createHash('sha256').update(name).digest('hex')
+    const cacheKey = `ogimg:project:${pid}:${nameHash.substring(0, 16)}`
+
+    try {
+      const cached = await redis.get(cacheKey)
+      if (cached) {
+        return Buffer.from(cached, 'base64')
+      }
+    } catch {
+      // ignore cache read errors
+    }
+
     const from = dayjs
       .utc()
       .subtract(1, 'month')
@@ -1481,26 +1595,48 @@ export class ProjectService {
 
     const html = this.getOgHTML(name, desc)
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: browserArgs,
-      defaultViewport: {
-        width: 1200,
-        height: 630,
-        deviceScaleFactor: 1,
-      },
-    })
+    const browser = await this.getOgBrowser()
     const page = await browser.newPage()
 
-    // Set the content to our rendered HTML
-    await page.setContent(html, { waitUntil: 'domcontentloaded' })
+    try {
+      await page.setContent(html, { waitUntil: 'domcontentloaded' })
+      const image = await page.screenshot({
+        type: 'jpeg',
+        quality: 92,
+      })
+      const imageBuffer = Buffer.isBuffer(image) ? image : Buffer.from(image)
 
-    const image = await page.screenshot({
-      type: 'jpeg',
-    })
-    await browser.close()
+      // Cache 1 day (matches controller header)
+      try {
+        await redis.set(
+          cacheKey,
+          imageBuffer.toString('base64'),
+          'EX',
+          60 * 60 * 24,
+        )
+      } catch {
+        // ignore cache write errors
+      }
 
-    return image
+      return imageBuffer
+    } finally {
+      try {
+        await page.close()
+      } catch {
+        // ignore closing errors
+      }
+    }
+  }
+
+  async onModuleDestroy() {
+    if (this.ogBrowser) {
+      try {
+        await this.ogBrowser.close()
+      } catch {
+        // ignore closing errors
+      }
+      this.ogBrowser = null
+    }
   }
 
   async countVisitorsFromTo(
@@ -1606,6 +1742,8 @@ export class ProjectService {
       _map(paginated.results, ({ id }) => id),
     )
 
+    const pinnedProjectIds = await this.getPinnedProjectIds(userId)
+
     paginated.results = _map(paginated.results, project => {
       const userShare = project.share?.find(share => share.user?.id === userId)
       const organisationMembership = project.organisation?.members?.find(
@@ -1632,12 +1770,66 @@ export class ProjectService {
         isDataExists: _includes(pidsWithData, project?.id),
         isErrorDataExists: _includes(pidsWithErrorData, project?.id),
         organisationId: project?.organisation?.id,
+        isPinned: _includes(pinnedProjectIds, project?.id),
         role,
         passwordHash: undefined,
         admin: undefined,
       }
     })
 
+    // Pinned projects are already sorted at the database level in paginate()
+
     return paginated
+  }
+
+  async getPinnedProjectIds(userId: string): Promise<string[]> {
+    const pinnedProjects = await this.pinnedProjectRepository.find({
+      where: { user: { id: userId } },
+      relations: ['project'],
+      select: {
+        project: {
+          id: true,
+        },
+      },
+    })
+
+    return _map(pinnedProjects, pp => pp.project?.id).filter(Boolean)
+  }
+
+  async pinProject(userId: string, projectId: string): Promise<void> {
+    // Check if already pinned
+    const existing = await this.pinnedProjectRepository.findOne({
+      where: {
+        user: { id: userId },
+        project: { id: projectId },
+      },
+    })
+
+    if (existing) {
+      return // Already pinned
+    }
+
+    await this.pinnedProjectRepository.save({
+      user: { id: userId },
+      project: { id: projectId },
+    })
+  }
+
+  async unpinProject(userId: string, projectId: string): Promise<void> {
+    await this.pinnedProjectRepository.delete({
+      user: { id: userId },
+      project: { id: projectId },
+    })
+  }
+
+  async isProjectPinned(userId: string, projectId: string): Promise<boolean> {
+    const pinned = await this.pinnedProjectRepository.findOne({
+      where: {
+        user: { id: userId },
+        project: { id: projectId },
+      },
+    })
+
+    return !!pinned
   }
 }

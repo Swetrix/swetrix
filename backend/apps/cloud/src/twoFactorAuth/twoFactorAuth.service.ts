@@ -31,6 +31,9 @@ export class TwoFactorAuthService {
     twoFactorAuthenticationCode: string,
     user: User,
   ) {
+    if (!twoFactorAuthenticationCode) return false
+    if (!user?.twoFactorAuthenticationSecret) return false
+
     return authenticator.verify({
       token: twoFactorAuthenticationCode,
       secret: user.twoFactorAuthenticationSecret,

@@ -107,7 +107,10 @@ export class ProjectService {
     if (
       project.public ||
       uid === project.adminId ||
-      _findIndex(project.share, ({ user }) => user?.id === uid) !== -1
+      _findIndex(
+        project.share,
+        ({ user, confirmed }) => user?.id === uid && confirmed === true,
+      ) !== -1
     ) {
       return null
     }
@@ -199,7 +202,10 @@ export class ProjectService {
       uid === project.adminId ||
       _findIndex(
         project.share,
-        share => share.user?.id === uid && share.role === Role.admin,
+        share =>
+          share.user?.id === uid &&
+          share.role === Role.admin &&
+          share.confirmed === true,
       ) !== -1
     ) {
       return null
@@ -491,7 +497,18 @@ export class ProjectService {
   formatViewFromClickhouse(view: any): ProjectViewEntity {
     const updView = { ...view }
     updView.name = _trim(updView.name)
-    updView.filters = JSON.parse(view.filters)
+
+    try {
+      updView.filters = JSON.parse(view.filters)
+    } catch (reason) {
+      console.error(
+        '[ERROR] formatViewFromClickhouse, failed to parse filters:',
+        reason,
+      )
+      console.error('VIEW:', view)
+      updView.filters = []
+    }
+
     updView.customEvents = _map(view.customEvents, customEvent => ({
       ...customEvent,
       createdAt: '1970-01-01T00:00:00.000Z',

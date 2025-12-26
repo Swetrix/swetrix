@@ -8,13 +8,12 @@ export default defineConfig({
     port: 3000,
   },
   optimizeDeps: {
-    include: ['axios-auth-refresh', '@swetrix/sdk'],
+    include: ['axios-auth-refresh'],
   },
   ssr: {
     noExternal: [
       'axios',
       'axios-auth-refresh',
-      '@swetrix/sdk',
       'd3',
       /^d3-*/,
       'nivo',
@@ -30,7 +29,7 @@ export default defineConfig({
       'lucide-react',
     ],
     optimizeDeps: {
-      include: ['axios-auth-refresh', '@swetrix/sdk'],
+      include: ['axios-auth-refresh'],
     },
   },
   plugins: [reactRouter(), tsconfigPaths(), tailwindcss()],

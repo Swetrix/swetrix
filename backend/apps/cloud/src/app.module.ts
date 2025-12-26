@@ -18,8 +18,11 @@ import { TaskManagerModule } from './task-manager/task-manager.module'
 import { BlogModule } from './blog/blog.module'
 import { WebhookModule } from './webhook/webhook.module'
 import { PingModule } from './ping/ping.module'
-import { MarketplaceModule } from './marketplace/marketplace.module'
 import { AlertModule } from './alert/alert.module'
+import { GoalModule } from './goal/goal.module'
+import { ExperimentModule } from './experiment/experiment.module'
+import { FeatureFlagModule } from './feature-flag/feature-flag.module'
+import { AiModule } from './ai/ai.module'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
 import { CaptchaModule } from './captcha/captcha.module'
@@ -29,6 +32,7 @@ import { HealthModule } from './health/health.module'
 import { AppController } from './app.controller'
 import { isPrimaryNode, isPrimaryClusterNode } from './common/utils'
 import { OrganisationModule } from './organisation/organisation.module'
+import { RevenueModule } from './revenue/revenue.module'
 
 const modules = [
   SentryModule.forRoot(),
@@ -75,13 +79,17 @@ const modules = [
   AnalyticsModule,
   WebhookModule,
   PingModule,
-  MarketplaceModule,
   AlertModule,
+  GoalModule,
+  ExperimentModule,
+  FeatureFlagModule,
+  AiModule,
   AuthModule,
   CaptchaModule,
   OgImageModule,
   HealthModule,
   OrganisationModule,
+  RevenueModule,
 ]
 
 @Module({

@@ -5,6 +5,9 @@ import {
   IsEnum,
   IsOptional,
   IsArray,
+  IsUrl,
+  MaxLength,
+  ValidateIf,
 } from 'class-validator'
 import { BotsProtectionLevel } from '../entity/project.entity'
 
@@ -74,9 +77,14 @@ export class ProjectDTO {
   public: boolean
 
   @ApiProperty({
+    example: 'https://example.com',
     required: false,
     description:
-      'When true, created a new Captcha Project without Analytics Projects.',
+      'Optional website URL. Used to display favicon and construct clickable page links.',
   })
-  isCaptcha: boolean
+  @IsOptional()
+  @ValidateIf(o => o.websiteUrl !== null && o.websiteUrl !== undefined)
+  @IsUrl({}, { message: 'websiteUrl must be a valid URL' })
+  @MaxLength(512)
+  websiteUrl?: string | null
 }

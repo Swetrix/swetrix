@@ -8,10 +8,7 @@ import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import MarketingPricing from '~/components/pricing/MarketingPricing'
 import { ERROR_TRACKING_LIVE_DEMO_URL } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
-import BackgroundSvg from '~/ui/icons/BackgroundSvg'
 import routesPath from '~/utils/routes'
-
-import { PeopleLoveSwetrix } from '../Performance'
 
 const ErrorTracking = () => {
   const { t } = useTranslation('common')
@@ -153,16 +150,6 @@ const ErrorTracking = () => {
         <MarketingPricing />
 
         <DitchGoogle />
-
-        <section className='relative bg-white pt-20 pb-44 dark:bg-slate-900'>
-          <div className='absolute top-16 right-0 z-0'>
-            <BackgroundSvg type='threecircle' />
-          </div>
-          <div className='absolute top-52 -left-9 rotate-90'>
-            <BackgroundSvg type='shapes' />
-          </div>
-          <PeopleLoveSwetrix />
-        </section>
       </main>
     </div>
   )

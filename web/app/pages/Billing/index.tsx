@@ -166,14 +166,40 @@ const Billing = () => {
     })
   }, [language, trialEndDate, isTrial, timeFormat, isTrialEnded, t])
 
+  const getSafePaddleUrl = (rawUrl: unknown): string | null => {
+    if (typeof rawUrl !== 'string' || rawUrl.trim().length === 0) return null
+
+    let parsed: URL
+    try {
+      parsed = new URL(rawUrl)
+    } catch {
+      return null
+    }
+
+    if (parsed.protocol !== 'https:') return null
+    if (parsed.username || parsed.password) return null
+
+    // Allow only Paddle-managed hosts.
+    const allowedHosts = new Set(['checkout.paddle.com', 'my.paddle.com'])
+    if (!allowedHosts.has(parsed.hostname)) return null
+
+    return parsed.toString()
+  }
+
   const onSubscriptionCancel = () => {
+    const safeCancelUrl = getSafePaddleUrl(subCancelURL)
+    if (!safeCancelUrl) {
+      toast.error(t('apiNotifications.somethingWentWrong'))
+      return
+    }
+
     if (!window.Paddle) {
-      if (subCancelURL) window.location.replace(subCancelURL)
+      window.location.replace(safeCancelUrl)
       return
     }
 
     window.Paddle.Checkout.open({
-      override: subCancelURL,
+      override: safeCancelUrl,
       method: 'inline',
       frameTarget: 'checkout-container',
       frameInitialHeight: 416,
@@ -189,13 +215,19 @@ const Billing = () => {
   }
 
   const onUpdatePaymentDetails = () => {
+    const safeUpdateUrl = getSafePaddleUrl(subUpdateURL)
+    if (!safeUpdateUrl) {
+      toast.error(t('apiNotifications.somethingWentWrong'))
+      return
+    }
+
     if (!window.Paddle) {
-      if (subUpdateURL) window.location.replace(subUpdateURL)
+      window.location.replace(safeUpdateUrl)
       return
     }
 
     window.Paddle.Checkout.open({
-      override: subUpdateURL,
+      override: safeUpdateUrl,
       method: 'inline',
       frameTarget: 'checkout-container',
       frameInitialHeight: 416,

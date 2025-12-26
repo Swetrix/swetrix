@@ -1,14 +1,13 @@
 import { EnvelopeIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid'
-import cx from 'clsx'
 import type { TFunction } from 'i18next'
-import { ChevronRightIcon, LaptopMinimalIcon } from 'lucide-react'
+import { ChevronRightIcon, LaptopMinimalIcon, RocketIcon, CodeIcon, MailCheckIcon, SparklesIcon } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
-import { updateOnboardingStep, completeOnboarding, createProject, authMe, getProjects } from '~/api'
+import { updateOnboardingStep, completeOnboarding, createProject, authMe, getProjects, deleteUser } from '~/api'
 import { CONTACT_US_URL } from '~/components/Footer'
 import { withAuthentication, auth } from '~/hoc/protected'
 import { DOCS_URL, INTEGRATIONS_URL, isSelfhosted } from '~/lib/constants'
@@ -19,12 +18,22 @@ import Button from '~/ui/Button'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
+import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
+import { removeAccessToken } from '~/utils/accessToken'
 import { trackCustom } from '~/utils/analytics'
-import { logout } from '~/utils/auth'
+import { cn } from '~/utils/generic'
+import { removeRefreshToken } from '~/utils/refreshToken'
 import routes from '~/utils/routes'
 
-import { MAX_PROJECT_NAME_LENGTH } from '../Project/New'
+const MAX_PROJECT_NAME_LENGTH = 50
+
+const STEP_ICONS = {
+  confirm_email: MailCheckIcon,
+  create_project: RocketIcon,
+  setup_tracking: CodeIcon,
+  waiting_for_events: SparklesIcon,
+}
 
 const getOnboardingSteps = (t: TFunction) => [
   {
@@ -61,7 +70,7 @@ interface Project {
 
 const Onboarding = () => {
   const { t } = useTranslation('common')
-  const { user, loadUser } = useAuth()
+  const { user, loadUser, logout } = useAuth()
   const navigate = useNavigate()
 
   const [currentStep, setCurrentStep] = useState(0)
@@ -173,10 +182,6 @@ const Onboarding = () => {
       setProject(newProject)
       await updateUserStep('setup_tracking')
       setCurrentStep(2)
-
-      trackCustom('PROJECT_CREATED', {
-        from: 'onboarding',
-      })
     } catch (reason) {
       toast.error(typeof reason === 'string' ? reason : 'Failed to create project')
     } finally {
@@ -184,7 +189,7 @@ const Onboarding = () => {
     }
   }
 
-  const handleCompleteOnboarding = async (skipped = false) => {
+  const handleCompleteOnboarding = async (skipped: boolean) => {
     try {
       await completeOnboarding()
       await loadUser()
@@ -214,148 +219,157 @@ const Onboarding = () => {
 
   if (!user) {
     return (
-      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
+      <div className='flex min-h-min-footer items-center justify-center bg-gray-50 dark:bg-slate-900'>
         <Loader />
       </div>
     )
   }
 
   const progressPercentage = (currentStep / (steps.length - 1)) * 100
+  const visibleSteps = steps.filter((step) => !step.uiHidden)
 
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto flex min-h-screen max-w-7xl md:px-6 lg:px-8'>
-        <div className='hidden md:block md:w-80 md:border-r md:border-gray-200 md:bg-white md:p-8 md:dark:border-slate-700 md:dark:bg-slate-800/50'>
-          <div className='mb-8'>
-            <div className='mb-2 text-sm font-medium text-gray-500 uppercase dark:text-gray-400'>
+      <div className='mx-auto flex max-w-6xl gap-6 px-4 py-6 md:px-6 lg:px-8'>
+        {/* Sidebar - Desktop */}
+        <aside className='sticky top-6 hidden h-fit w-72 shrink-0 self-start overflow-hidden rounded-lg border border-gray-200 bg-white md:block dark:border-slate-800/60 dark:bg-slate-800/25'>
+          <div className='border-b border-gray-200 p-5 dark:border-slate-800/60'>
+            <Text as='span' size='xs' weight='medium' colour='muted' className='tracking-wide uppercase'>
               {t('onboarding.welcome')}
-            </div>
-            <h1 className='max-w-3xl text-2xl font-medium tracking-tight text-pretty text-gray-950 dark:text-gray-200'>
+            </Text>
+            <Text as='h1' size='xl' weight='semibold' tracking='tight' className='mt-1'>
               {t('onboarding.title')}
-            </h1>
+            </Text>
           </div>
 
-          <nav aria-label='Progress'>
-            <ol className='overflow-hidden'>
-              {steps.map((step, stepIdx) => {
+          <nav aria-label='Progress' className='p-4'>
+            <ol className='space-y-1'>
+              {steps.map((step) => {
                 if (step.uiHidden) return null
 
                 const status = step.completed ? 'complete' : step.current ? 'current' : 'upcoming'
+                const StepIcon = STEP_ICONS[step.id as keyof typeof STEP_ICONS]
 
                 return (
-                  <li key={step.id} className={cx(stepIdx !== steps.length - 1 ? 'pb-10' : '', 'relative')}>
-                    {status === 'complete' ? (
-                      <>
-                        {stepIdx !== steps.length - 1 ? (
-                          <div
-                            aria-hidden='true'
-                            className='absolute top-4 left-4 mt-0.5 -ml-px h-full w-0.5 bg-indigo-600'
+                  <li key={step.id}>
+                    <div
+                      className={cn(
+                        'group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors',
+                        status === 'current' &&
+                          'bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20',
+                        status === 'complete' && 'bg-green-50/50 dark:bg-green-500/10',
+                        status === 'upcoming' && 'opacity-60',
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors',
+                          status === 'complete' && 'bg-green-100 dark:bg-green-500/20',
+                          status === 'current' && 'bg-indigo-100 dark:bg-indigo-500/20',
+                          status === 'upcoming' && 'bg-gray-100 dark:bg-slate-700',
+                        )}
+                      >
+                        {status === 'complete' ? (
+                          <CheckCircleIconSolid className='size-5 text-green-600 dark:text-green-400' />
+                        ) : StepIcon ? (
+                          <StepIcon
+                            className={cn(
+                              'size-4',
+                              status === 'current' && 'text-indigo-600 dark:text-indigo-400',
+                              status === 'upcoming' && 'text-gray-400 dark:text-gray-500',
+                            )}
+                            strokeWidth={1.5}
                           />
                         ) : null}
-                        <div className='group relative flex items-start'>
-                          <span className='flex h-9 items-center'>
-                            <span className='relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600'>
-                              <CheckCircleIconSolid aria-hidden='true' className='h-5 w-5 text-white' />
-                            </span>
-                          </span>
-                          <span className='ml-4 flex min-w-0 flex-col'>
-                            <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>{step.title}</span>
-                            <span className='text-sm text-gray-600 dark:text-gray-300'>{step.description}</span>
-                          </span>
-                        </div>
-                      </>
-                    ) : status === 'current' ? (
-                      <>
-                        {stepIdx !== steps.length - 1 ? (
-                          <div
-                            aria-hidden='true'
-                            className='absolute top-4 left-4 mt-0.5 -ml-px h-full w-0.5 bg-gray-300 dark:bg-slate-600'
-                          />
-                        ) : null}
-                        <div className='group relative flex items-start' aria-current='step'>
-                          <span aria-hidden='true' className='flex h-9 items-center'>
-                            <span className='relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-indigo-600 bg-white dark:border-indigo-500 dark:bg-slate-800'>
-                              <span className='h-2.5 w-2.5 rounded-full bg-indigo-600 dark:bg-indigo-500' />
-                            </span>
-                          </span>
-                          <span className='ml-4 flex min-w-0 flex-col'>
-                            <span className='text-sm font-medium text-indigo-600 dark:text-indigo-500'>
-                              {step.title}
-                            </span>
-                            <span className='text-sm text-gray-600 dark:text-gray-300'>{step.description}</span>
-                          </span>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        {stepIdx !== steps.length - 1 ? (
-                          <div
-                            aria-hidden='true'
-                            className='absolute top-4 left-4 mt-0.5 -ml-px h-full w-0.5 bg-gray-300 dark:bg-slate-600'
-                          />
-                        ) : null}
-                        <div className='group relative flex items-start'>
-                          <span aria-hidden='true' className='flex h-9 items-center'>
-                            <span className='relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-white transition-colors group-hover:border-gray-400 dark:border-slate-600 dark:bg-slate-800'>
-                              <span className='h-2.5 w-2.5 rounded-full bg-transparent transition-colors group-hover:bg-gray-300 dark:group-hover:bg-slate-600' />
-                            </span>
-                          </span>
-                          <span className='ml-4 flex min-w-0 flex-col'>
-                            <span className='text-sm font-medium text-gray-500 dark:text-gray-200/90'>
-                              {step.title}
-                            </span>
-                            <span className='text-sm text-gray-600 dark:text-gray-300/70'>{step.description}</span>
-                          </span>
-                        </div>
-                      </>
-                    )}
+                      </div>
+                      <div className='min-w-0 flex-1'>
+                        <Text
+                          as='span'
+                          size='sm'
+                          weight='medium'
+                          className={cn(
+                            'block',
+                            status === 'current' && 'text-indigo-700 dark:text-indigo-300',
+                            status === 'complete' && 'text-green-700 dark:text-green-300',
+                          )}
+                        >
+                          {step.title}
+                        </Text>
+                        <Text as='span' size='xs' colour='muted' className='block'>
+                          {step.description}
+                        </Text>
+                      </div>
+                    </div>
                   </li>
                 )
               })}
             </ol>
           </nav>
 
-          {/* We don't want users to skip the "Confirm your email" step until they've confirmed their email */}
-          {currentStep === 0 ? null : (
-            <div className='mt-8 border-t border-gray-200 pt-8 dark:border-slate-700'>
+          {/* Skip onboarding - only shown after email confirmation */}
+          {currentStep > 0 ? (
+            <div className='border-t border-gray-200 p-4 dark:border-slate-800/60'>
               <button
                 type='button'
                 onClick={() => handleCompleteOnboarding(true)}
-                className='flex items-center text-sm text-gray-800 hover:underline dark:text-gray-200'
+                className='flex w-full items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200'
               >
                 {t('onboarding.skipOnboarding')}
-                <ChevronRightIcon className='ml-0.5 h-3.5 w-3.5' />
+                <ChevronRightIcon className='size-3.5' strokeWidth={2} />
               </button>
             </div>
-          )}
-        </div>
+          ) : null}
+        </aside>
 
-        <div className='flex-1 overflow-visible'>
-          <div className='max-w-3xl px-6 py-8 md:px-12'>
-            <div className='mb-8 block md:hidden'>
-              <h4 className='sr-only'>Progress</h4>
-              <p className='text-sm font-medium text-gray-900 dark:text-gray-50'>{steps[currentStep].title}</p>
-              <div aria-hidden='true' className='mt-4'>
-                <div className='overflow-hidden rounded-full bg-gray-200 dark:bg-slate-600'>
-                  <div style={{ width: `${progressPercentage}%` }} className='h-2 rounded-full bg-indigo-600' />
-                </div>
-              </div>
+        {/* Main content */}
+        <div className='min-w-0 flex-1'>
+          {/* Mobile progress bar */}
+          <div className='mb-6 block md:hidden'>
+            <div className='flex items-center justify-between'>
+              <Text as='span' size='sm' weight='medium'>
+                {steps[currentStep]?.title}
+              </Text>
+              <Text as='span' size='xs' colour='muted'>
+                {visibleSteps.findIndex((s) => s.id === steps[currentStep]?.id) + 1} / {visibleSteps.length}
+              </Text>
             </div>
+            <div className='mt-3 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700'>
+              <div
+                style={{ width: `${progressPercentage}%` }}
+                className='h-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300'
+              />
+            </div>
+            {currentStep > 0 ? (
+              <button
+                type='button'
+                onClick={() => handleCompleteOnboarding(true)}
+                className='mt-3 flex w-full items-center justify-center gap-1 text-sm text-gray-500 dark:text-gray-400'
+              >
+                {t('onboarding.skipOnboarding')}
+                <ChevronRightIcon className='size-3.5' strokeWidth={2} />
+              </button>
+            ) : null}
+          </div>
 
+          {/* Content card */}
+          <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-800/25'>
             {/* "Confirm your email" step */}
             {currentStep === 0 ? (
-              <div>
-                <EnvelopeIcon className='mb-2 h-16 w-auto text-indigo-500 dark:text-indigo-600' />
-                <h1 className='max-w-3xl text-5xl/10 tracking-tight text-pretty text-gray-950 max-lg:font-medium dark:text-gray-200'>
+              <div className='p-6 md:p-8'>
+                <div className='mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20'>
+                  <EnvelopeIcon className='size-8 text-indigo-600 dark:text-indigo-400' />
+                </div>
+                <Text as='h1' size='3xl' weight='semibold' tracking='tight' className='text-center'>
                   {t('onboarding.confirm.title')}
-                </h1>
-                <p className='mt-6 max-w-prose text-base whitespace-pre-line text-gray-800 dark:text-gray-200'>
+                </Text>
+                <Text as='p' colour='secondary' className='mx-auto mt-4 max-w-md text-center whitespace-pre-line'>
                   {t('onboarding.confirm.linkSent', { email: user?.email })}
-                </p>
-                <p className='mt-4 max-w-prose text-sm whitespace-pre-line text-gray-800 dark:text-gray-200'>
+                </Text>
+
+                <Text as='p' size='sm' colour='muted' className='mx-auto mt-8 max-w-md text-center'>
                   {t('onboarding.confirm.spam')}
-                </p>
-                <p className='max-w-prose text-sm whitespace-pre-line text-gray-800 dark:text-gray-200'>
+                </Text>
+                <Text as='p' size='sm' colour='muted' className='mt-2 text-center'>
                   <Trans
                     t={t}
                     i18nKey='onboarding.confirm.wrongEmail'
@@ -365,28 +379,41 @@ const Onboarding = () => {
                           tabIndex={0}
                           role='button'
                           className='cursor-pointer font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                          onClick={() => {
-                            logout()
+                          onClick={async () => {
+                            try {
+                              await deleteUser()
+                              // Clear tokens synchronously before React state updates trigger redirects
+                              removeAccessToken()
+                              removeRefreshToken()
+                              logout()
+                              navigate(routes.signup)
+                            } catch (error) {
+                              console.error('Failed to delete account:', error)
+                              toast.error(t('apiNotifications.somethingWentWrong'))
+                            }
                           }}
                         />
                       ),
                     }}
                   />
-                </p>
+                </Text>
               </div>
             ) : null}
 
             {/* "Create a project" step */}
             {currentStep === 1 ? (
-              <form onSubmit={handleCreateProject}>
-                <h1 className='max-w-3xl text-5xl/10 tracking-tight text-pretty text-gray-950 max-lg:font-medium dark:text-gray-200'>
+              <form onSubmit={handleCreateProject} className='p-6 md:p-8'>
+                <div className='mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20'>
+                  <RocketIcon className='size-8 text-indigo-600 dark:text-indigo-400' strokeWidth={1.5} />
+                </div>
+                <Text as='h1' size='3xl' weight='semibold' tracking='tight' className='text-center'>
                   {t('onboarding.createProject.title')}
-                </h1>
-                <p className='mt-6 max-w-prose text-base whitespace-pre-line text-gray-800 dark:text-gray-200'>
+                </Text>
+                <Text as='p' colour='secondary' className='mx-auto mt-4 max-w-md text-center whitespace-pre-line'>
                   {t('onboarding.createProject.desc')}
-                </p>
+                </Text>
 
-                <div className='mt-6'>
+                <div className='mx-auto mt-8 max-w-sm'>
                   <Input
                     label={t('project.settings.name')}
                     placeholder='My awesome website'
@@ -400,7 +427,7 @@ const Onboarding = () => {
                   />
                 </div>
 
-                <div className='mt-6 flex justify-end'>
+                <div className='mt-8 flex justify-center'>
                   <Button type='submit' loading={isLoading} primary large>
                     {t('common.continue')}
                   </Button>
@@ -410,11 +437,14 @@ const Onboarding = () => {
 
             {/* "Install tracking script" step */}
             {currentStep === 2 && project ? (
-              <div>
-                <h1 className='max-w-3xl text-5xl/10 tracking-tight text-pretty text-gray-950 max-lg:font-medium dark:text-gray-200'>
+              <div className='p-6 md:p-8'>
+                <div className='mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20'>
+                  <CodeIcon className='size-8 text-indigo-600 dark:text-indigo-400' strokeWidth={1.5} />
+                </div>
+                <Text as='h1' size='3xl' weight='semibold' tracking='tight' className='text-center'>
                   {t('onboarding.installTracking.title')}
-                </h1>
-                <p className='mt-6 max-w-prose text-base whitespace-pre-line text-gray-800 dark:text-gray-200'>
+                </Text>
+                <Text as='p' colour='secondary' className='mx-auto mt-4 max-w-lg text-center whitespace-pre-line'>
                   <Trans
                     t={t}
                     i18nKey='onboarding.installTracking.desc'
@@ -429,24 +459,24 @@ const Onboarding = () => {
                       ),
                     }}
                   />
-                </p>
+                </Text>
 
-                <div className='mt-8 rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
-                  <div className='flex items-center space-x-3'>
-                    <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-800'>
-                      <LaptopMinimalIcon className='h-5 w-5 text-gray-900 dark:text-gray-100' />
+                <div className='mt-8 rounded-lg border border-gray-200 bg-gray-50 p-5 dark:border-slate-700/60 dark:bg-slate-800/50'>
+                  <div className='flex items-center gap-3'>
+                    <div className='flex size-11 items-center justify-center rounded-lg bg-white dark:bg-slate-700'>
+                      <LaptopMinimalIcon className='size-5 text-gray-700 dark:text-gray-200' strokeWidth={1.5} />
                     </div>
                     <div>
-                      <h3 className='font-medium text-gray-900 dark:text-gray-50'>
+                      <Text as='h3' size='sm' weight='semibold'>
                         {t('onboarding.installTracking.websiteInstallation')}
-                      </h3>
-                      <p className='text-sm text-gray-500 dark:text-gray-400'>
+                      </Text>
+                      <Text as='p' size='xs' colour='muted'>
                         {t('onboarding.installTracking.pasteScript')}
-                      </p>
+                      </Text>
                     </div>
                   </div>
 
-                  <p className='mt-4 text-gray-800 dark:text-gray-200'>
+                  <Text as='p' size='sm' colour='secondary' className='mt-4'>
                     <Trans
                       t={t}
                       i18nKey='modals.trackingSnippet.add'
@@ -454,19 +484,19 @@ const Onboarding = () => {
                         bsect: <Badge label='<body>' colour='slate' />,
                       }}
                     />
-                  </p>
+                  </Text>
 
                   <Textarea
                     classes={{
-                      container: 'mt-2 font-mono',
-                      textarea: 'bg-gray-100 ring-0',
+                      container: 'mt-3 font-mono text-sm',
+                      textarea: 'bg-white dark:bg-slate-900 ring-1 ring-gray-200 dark:ring-slate-700',
                     }}
                     value={getSnippet(project.id)}
                     rows={15}
                     readOnly
                   />
 
-                  <p className='mt-4 text-sm text-gray-600 dark:text-gray-400'>
+                  <Text as='p' size='xs' colour='muted' className='mt-4'>
                     <Trans
                       t={t}
                       i18nKey='onboarding.installTracking.weAlsoSupport'
@@ -481,10 +511,10 @@ const Onboarding = () => {
                         ),
                       }}
                     />
-                  </p>
+                  </Text>
                 </div>
 
-                <div className='mt-6 flex justify-end'>
+                <div className='mt-8 flex justify-center'>
                   <Button
                     onClick={async () => {
                       await updateUserStep('waiting_for_events')
@@ -502,57 +532,59 @@ const Onboarding = () => {
 
             {/* "Verify installation" step */}
             {currentStep === 3 ? (
-              <div>
-                <h1 className='max-w-3xl text-5xl/10 tracking-tight text-pretty text-gray-950 max-lg:font-medium dark:text-gray-200'>
-                  {t('onboarding.verifyInstallation.navTitle')}
-                </h1>
-                <p className='mt-6 max-w-prose text-base whitespace-pre-line text-gray-800 dark:text-gray-200'>
-                  {t('onboarding.verifyInstallation.desc')}
-                </p>
-
-                <div className='mt-8 rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
+              <div className='p-6 md:p-8'>
+                <div
+                  className={cn(
+                    'mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl',
+                    hasEvents
+                      ? 'bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-500/20 dark:to-emerald-500/20'
+                      : 'bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20',
+                  )}
+                >
                   {hasEvents ? (
-                    <>
-                      <div className='flex items-center space-x-3'>
-                        <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-800/30'>
-                          <CheckCircleIconSolid className='h-5 w-5 text-green-500' />
-                        </div>
-                        <div>
-                          <h3 className='font-medium text-gray-900 dark:text-gray-50'>
-                            {t('onboarding.verifyInstallation.perfect')}
-                          </h3>
-                          <p className='text-sm text-gray-500 dark:text-gray-400'>
-                            {t('onboarding.verifyInstallation.perfectDesc')}
-                          </p>
-                        </div>
-                      </div>
-
-                      <p className='mt-4 text-gray-800 dark:text-gray-200'>
-                        {t('onboarding.verifyInstallation.eventReceived')}
-                      </p>
-                    </>
+                    <CheckCircleIconSolid className='size-8 text-green-600 dark:text-green-400' />
                   ) : (
-                    <>
-                      <div className='flex items-center space-x-3'>
-                        <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-800'>
-                          <PulsatingCircle type='big' />
-                        </div>
-                        <div>
-                          <h3 className='font-medium text-gray-900 dark:text-gray-50'>
-                            {t('onboarding.verifyInstallation.waitingForEvents')}
-                          </h3>
-                          <p className='text-sm text-gray-500 dark:text-gray-400'>
-                            {project?.name
-                              ? t('onboarding.verifyInstallation.onTheXProject', { project: project.name })
-                              : t('onboarding.verifyInstallation.onYourProject')}
-                          </p>
-                        </div>
-                      </div>
-                      <p className='mt-4 text-gray-800 dark:text-gray-200'>
-                        {t('onboarding.verifyInstallation.waitingForAnEvent')}
-                      </p>
+                    <PulsatingCircle type='giant' />
+                  )}
+                </div>
+                <Text as='h1' size='3xl' weight='semibold' tracking='tight' className='text-center'>
+                  {hasEvents ? t('onboarding.verifyInstallation.perfect') : t('onboarding.verifyInstallation.navTitle')}
+                </Text>
+                <Text as='p' colour='secondary' className='mx-auto mt-4 max-w-md text-center whitespace-pre-line'>
+                  {hasEvents
+                    ? t('onboarding.verifyInstallation.eventReceived')
+                    : t('onboarding.verifyInstallation.desc')}
+                </Text>
 
-                      <p className='mt-4 text-sm text-gray-600 dark:text-gray-400'>
+                {hasEvents ? (
+                  <div className='mx-auto mt-8 max-w-sm rounded-lg bg-green-50 p-4 dark:bg-green-500/10'>
+                    <Text as='p' size='sm' className='text-center text-green-700 dark:text-green-300'>
+                      {t('onboarding.verifyInstallation.perfectDesc')}
+                    </Text>
+                  </div>
+                ) : (
+                  <div className='mx-auto mt-8 max-w-md rounded-lg border border-gray-200 bg-gray-50 p-5 dark:border-slate-700/60 dark:bg-slate-800/50'>
+                    <div className='flex items-center gap-3'>
+                      <div className='flex size-11 items-center justify-center rounded-lg bg-white dark:bg-slate-700'>
+                        <PulsatingCircle type='big' />
+                      </div>
+                      <div>
+                        <Text as='h3' size='sm' weight='semibold'>
+                          {t('onboarding.verifyInstallation.waitingForEvents')}
+                        </Text>
+                        <Text as='p' size='xs' colour='muted'>
+                          {project?.name
+                            ? t('onboarding.verifyInstallation.onTheXProject', { project: project.name })
+                            : t('onboarding.verifyInstallation.onYourProject')}
+                        </Text>
+                      </div>
+                    </div>
+                    <Text as='p' size='sm' colour='secondary' className='mt-4'>
+                      {t('onboarding.verifyInstallation.waitingForAnEvent')}
+                    </Text>
+
+                    <div className='mt-4 space-y-2 border-t border-gray-200 pt-4 dark:border-slate-700'>
+                      <Text as='p' size='xs' colour='muted'>
                         <Trans
                           t={t}
                           i18nKey='onboarding.verifyInstallation.needInstructionsAgain'
@@ -560,14 +592,17 @@ const Onboarding = () => {
                             btn: (
                               <button
                                 type='button'
-                                onClick={() => {}}
+                                onClick={() => {
+                                  setCurrentStep(2)
+                                  setIsWaitingForEvents(false)
+                                }}
                                 className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                               />
                             ),
                           }}
                         />
-                      </p>
-                      <p className='mt-2 text-sm text-gray-600 dark:text-gray-400'>
+                      </Text>
+                      <Text as='p' size='xs' colour='muted'>
                         <Trans
                           t={t}
                           i18nKey='onboarding.verifyInstallation.orContactUs'
@@ -582,24 +617,26 @@ const Onboarding = () => {
                             ),
                           }}
                         />
-                      </p>
-                    </>
-                  )}
-                </div>
+                      </Text>
+                    </div>
+                  </div>
+                )}
 
-                <div className='mt-6 flex justify-end gap-3'>
-                  <Button
-                    onClick={async () => {
-                      await updateUserStep('setup_tracking')
-                      setCurrentStep(2)
-                      setIsWaitingForEvents(false)
-                    }}
-                    secondary
-                    large
-                  >
-                    {t('common.goBack')}
-                  </Button>
-                  <Button onClick={handleCompleteOnboarding} primary large>
+                <div className='mt-8 flex justify-center gap-3'>
+                  {!hasEvents ? (
+                    <Button
+                      onClick={async () => {
+                        await updateUserStep('setup_tracking')
+                        setCurrentStep(2)
+                        setIsWaitingForEvents(false)
+                      }}
+                      secondary
+                      large
+                    >
+                      {t('common.goBack')}
+                    </Button>
+                  ) : null}
+                  <Button onClick={() => handleCompleteOnboarding(false)} primary large>
                     {t('onboarding.finishOnboarding')}
                   </Button>
                 </div>

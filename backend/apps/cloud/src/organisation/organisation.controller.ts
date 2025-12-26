@@ -40,6 +40,7 @@ import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity'
 import { isDevelopment, PRODUCTION_ORIGIN } from '../common/constants'
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
+import { trackCustom } from '../common/analytics'
 
 const ORGANISATION_INVITE_EXPIRE = 7 * 24 // 7 days in hours
 
@@ -127,8 +128,12 @@ export class OrganisationController {
   async create(
     @Body() createOrgDTO: CreateOrganisationDTO,
     @CurrentUserId() uid: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
   ): Promise<Organisation> {
     this.logger.log({ uid, createOrgDTO }, 'POST /organisation')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const user = await this.userService.findOne({ where: { id: uid } })
 
@@ -141,6 +146,10 @@ export class OrganisationController {
       user,
       organisation,
       confirmed: true,
+    })
+
+    await trackCustom(ip, headers['user-agent'], {
+      ev: 'ORGANISATION_CREATED',
     })
 
     return organisation
@@ -159,7 +168,7 @@ export class OrganisationController {
     @Ip() reqIP,
   ): Promise<Organisation> {
     this.logger.log(
-      { userId, orgId, inviteDTO },
+      { userId, orgId, role: inviteDTO?.role },
       'POST /organisation/:orgId/invite',
     )
 
@@ -180,6 +189,10 @@ export class OrganisationController {
     }
 
     this.organisationService.validateManageAccess(organisation, userId)
+
+    if (inviteDTO.role === OrganisationRole.owner) {
+      throw new BadRequestException('You cannot invite a member as an owner')
+    }
 
     const invitee = await this.userService.findOne({
       where: { email: inviteDTO.email },
@@ -220,14 +233,16 @@ export class OrganisationController {
       })
 
       const actionToken = await this.actionTokensService.createForUser(
-        user,
+        invitee,
         ActionTokenType.ORGANISATION_INVITE,
         membership.id,
       )
 
-      const url = `${
-        isDevelopment ? headers.origin : PRODUCTION_ORIGIN
-      }/organisation/invite/${actionToken.id}`
+      const origin =
+        isDevelopment && typeof headers?.origin === 'string'
+          ? headers.origin
+          : PRODUCTION_ORIGIN
+      const url = `${origin}/organisation/invite/${actionToken.id}`
 
       await this.mailerService.sendEmail(
         invitee.email,
@@ -246,10 +261,11 @@ export class OrganisationController {
         relations: ['members', 'members.user'],
       })
     } catch (reason) {
-      console.error(
-        `[ERROR] Could not invite to organisation (orgId: ${organisation.id}, invitee ID: ${invitee.id}): ${reason}`,
+      this.logger.error(
+        { orgId: organisation?.id, inviteeId: invitee?.id, reason },
+        'Could not invite member to organisation',
       )
-      throw new BadRequestException(reason)
+      throw new BadRequestException('Failed to invite member to organisation')
     }
   }
 
@@ -342,8 +358,15 @@ export class OrganisationController {
   @Delete('/:orgId')
   @ApiResponse({ status: 200, type: Organisation })
   @Auth(true)
-  async delete(@Param('orgId') orgId: string, @CurrentUserId() userId: string) {
+  async delete(
+    @Param('orgId') orgId: string,
+    @CurrentUserId() userId: string,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ) {
     this.logger.log({ orgId, userId }, 'DELETE /organisation/:orgId')
+
+    const ip = getIPFromHeaders(headers) || requestIp || ''
 
     const isOwner = await this.organisationService.isOrganisationOwner(
       orgId,
@@ -364,6 +387,10 @@ export class OrganisationController {
         organisation: { id: orgId },
       })
       await this.organisationService.delete(orgId)
+
+      await trackCustom(ip, headers['user-agent'], {
+        ev: 'ORGANISATION_DELETED',
+      })
     } catch (reason) {
       console.error('[ERROR] Failed to delete organisation:', reason)
       throw new BadRequestException('Failed to delete organisation')
@@ -399,6 +426,7 @@ export class OrganisationController {
       await this.organisationService.update(orgId, {
         name: _trim(updateOrgDTO.name),
       })
+      return this.organisationService.findOne({ where: { id: orgId } })
     } catch (reason) {
       console.error('[ERROR] Failed to update organisation:', reason)
       throw new BadRequestException('Failed to update organisation')

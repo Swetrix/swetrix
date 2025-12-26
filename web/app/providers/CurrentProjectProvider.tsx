@@ -4,19 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
-import { checkPassword, getInstalledExtensions, getLiveVisitors, getProject } from '~/api'
-import {
-  isSelfhosted,
-  LIVE_VISITORS_UPDATE_INTERVAL,
-  LS_PROJECTS_PROTECTED_KEY,
-  Period,
-  TimeBucket,
-} from '~/lib/constants'
-import { Extension, type Project } from '~/lib/models/Project'
+import { checkPassword, getLiveVisitors, getProject } from '~/api'
+import { LIVE_VISITORS_UPDATE_INTERVAL, LS_PROJECTS_PROTECTED_KEY, Period, TimeBucket } from '~/lib/constants'
+import { type Project } from '~/lib/models/Project'
 import { getItemJSON, removeItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
-import { getProjectPreferences, setProjectPreferences } from '../pages/Project/View/utils/cache'
+import { getProjectPreferences, setProjectPassword, setProjectPreferences } from '../pages/Project/View/utils/cache'
 import { CHART_METRICS_MAPPING } from '../pages/Project/View/ViewProject.helpers'
 
 import { useAuth } from './AuthProvider'
@@ -25,12 +19,13 @@ interface CurrentProjectContextType {
   id: string
   project: Project | null
   preferences: ProjectPreferences
-  extensions: Extension[]
   allowedToManage: boolean
   updatePreferences: (prefs: ProjectPreferences) => void
   mergeProject: (project: Partial<Project>) => void
   liveVisitors: number
   updateLiveVisitors: () => Promise<void>
+  isPasswordRequired: boolean
+  submitPassword: (password: string) => Promise<{ success: boolean; error?: string }>
 }
 
 const CurrentProjectContext = createContext<CurrentProjectContextType | undefined>(undefined)
@@ -57,6 +52,8 @@ const useProject = (id: string) => {
   const { isLoading: authLoading } = useAuth()
   const projectPassword = useProjectPassword(id)
   const [project, setProject] = useState<Project | null>(null)
+  const [isPasswordRequired, setIsPasswordRequired] = useState(false)
+  const [passwordForRetry, setPasswordForRetry] = useState<string | null>(null)
 
   const [searchParams] = useSearchParams()
 
@@ -87,10 +84,7 @@ const useProject = (id: string) => {
         }
 
         toast.error(t('apiNotifications.incorrectPassword'))
-        navigate({
-          pathname: _replace(routes.project_protected_password, ':pid', id),
-          search: params,
-        })
+        setIsPasswordRequired(true)
         removeItem(LS_PROJECTS_PROTECTED_KEY)
       })
       return
@@ -100,22 +94,47 @@ const useProject = (id: string) => {
     navigate(routes.dashboard)
   }, [id, projectPassword, navigate, t, params])
 
+  // Function to submit password and retry loading project
+  const submitPassword = useCallback(
+    async (password: string): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const isValid = await checkPassword(id, password)
+
+        if (!isValid) {
+          return { success: false, error: t('apiNotifications.incorrectPassword') }
+        }
+
+        // Password is correct, store it for future use and trigger project reload
+        setProjectPassword(id, password)
+        setPasswordForRetry(password)
+        setIsPasswordRequired(false)
+        return { success: true }
+      } catch (error) {
+        console.error('[ERROR] (submitPassword)', error)
+        return { success: false, error: t('apiNotifications.somethingWentWrong') }
+      }
+    },
+    [id, t],
+  )
+
   useEffect(() => {
     if (authLoading || project) {
       return
     }
 
-    getProject(id, projectPassword)
+    // Use passwordForRetry if available, otherwise use stored password
+    const effectivePassword = passwordForRetry || projectPassword
+
+    getProject(id, effectivePassword)
       .then((result) => {
         if (!result) {
           onErrorLoading()
+          return
         }
 
-        if (result.isPasswordProtected && !result.role && !projectPassword) {
-          navigate({
-            pathname: _replace(routes.project_protected_password, ':pid', id),
-            search: params,
-          })
+        if (result.isPasswordProtected && !result.role && !effectivePassword) {
+          // Show password modal instead of redirecting
+          setIsPasswordRequired(true)
           return
         }
 
@@ -125,7 +144,7 @@ const useProject = (id: string) => {
         console.error('[ERROR] (getProject)', reason)
         onErrorLoading()
       })
-  }, [authLoading, project, id, projectPassword, navigate, onErrorLoading, params])
+  }, [authLoading, project, id, projectPassword, passwordForRetry, navigate, onErrorLoading, params])
 
   const mergeProject = useCallback((project: Partial<Project>) => {
     setProject((prev) => {
@@ -137,7 +156,7 @@ const useProject = (id: string) => {
     })
   }, [])
 
-  return { project, mergeProject }
+  return { project, mergeProject, isPasswordRequired, submitPassword }
 }
 
 export type ProjectPreferences = {
@@ -198,29 +217,9 @@ const useLiveVisitors = (project: Project | null) => {
 }
 
 export const CurrentProjectProvider = ({ children, id }: CurrentProjectProviderProps) => {
-  const { project, mergeProject } = useProject(id)
-  const { isAuthenticated } = useAuth()
+  const { project, mergeProject, isPasswordRequired, submitPassword } = useProject(id)
   const { preferences, updatePreferences } = useProjectPreferences(id)
-  const [extensions, setExtensions] = useState<Extension[]>([])
   const { liveVisitors, updateLiveVisitors } = useLiveVisitors(project)
-
-  useEffect(() => {
-    if (!project || isSelfhosted || !isAuthenticated) {
-      return
-    }
-
-    const abortController = new AbortController()
-
-    getInstalledExtensions(100, 0, { signal: abortController.signal })
-      .then(({ extensions }) => {
-        setExtensions(extensions)
-      })
-      .catch((reason) => {
-        console.error('[ERROR] (CurrentProjectProvider -> getInstalledExtensions)', reason)
-      })
-
-    return () => abortController.abort()
-  }, [project, isAuthenticated])
 
   return (
     <CurrentProjectContext.Provider
@@ -229,11 +228,12 @@ export const CurrentProjectProvider = ({ children, id }: CurrentProjectProviderP
         project,
         preferences,
         updatePreferences,
-        extensions,
         mergeProject,
         allowedToManage: project?.role === 'owner' || project?.role === 'admin',
         liveVisitors,
         updateLiveVisitors,
+        isPasswordRequired,
+        submitPassword,
       }}
     >
       {children}

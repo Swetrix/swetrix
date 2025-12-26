@@ -92,11 +92,6 @@ const metaInfoJson = {
         `A Swetrix user offers to transfer ${p.name} project to your account`,
     },
   },
-  [LetterTemplate.PayPalEmailUpdate]: {
-    subject: {
-      en: () => 'Your PayPal email has been updated',
-    },
-  },
   [LetterTemplate.UsageOverLimit]: {
     subject: {
       en: () =>
@@ -133,6 +128,13 @@ handlebars.registerHelper(
 
 handlebars.registerHelper('greater', function greater(v1, v2, options) {
   if (v1 > v2) {
+    return options.fn(this)
+  }
+  return options.inverse(this)
+})
+
+handlebars.registerHelper('less', function less(v1, v2, options) {
+  if (v1 < v2) {
     return options.fn(this)
   }
   return options.inverse(this)
