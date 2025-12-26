@@ -252,7 +252,14 @@ export const SessionDetailView = ({
 
             {details.so || details.me || details.ca || details.te || details.co ? (
               <>
-                <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
+                <Text
+                  as='h3'
+                  size='xs'
+                  weight='semibold'
+                  colour='primary'
+                  className='mt-5 mb-2 uppercase'
+                  tracking='wide'
+                >
                   {t('project.campaigns')}
                 </Text>
                 <div>
