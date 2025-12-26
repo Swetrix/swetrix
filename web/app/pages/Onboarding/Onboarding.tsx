@@ -244,7 +244,7 @@ const Onboarding = () => {
 
           <nav aria-label='Progress' className='p-4'>
             <ol className='space-y-1'>
-              {steps.map((step, stepIdx) => {
+              {steps.map((step) => {
                 if (step.uiHidden) return null
 
                 const status = step.completed ? 'complete' : step.current ? 'current' : 'upcoming'

@@ -16,44 +16,26 @@ const Unsubscribe = ({ type }: UnsubscribeProps) => {
   const { t } = useTranslation('common')
   const { token } = useParams()
   const { isAuthenticated } = useAuth()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+
+  const isValidToken = _isString(token)
+  const [loading, setLoading] = useState(isValidToken)
+  const [error, setError] = useState(isValidToken ? '' : t('apiNotifications.invalidToken'))
 
   useEffect(() => {
-    setLoading(true)
-
-    if (!_isString(token)) {
-      setError(t('apiNotifications.invalidToken'))
-      setLoading(false)
+    if (!isValidToken) {
       return
     }
 
-    if (type === 'user-reports') {
-      unsubscribeFromEmailReports(token)
-        .then(() => {
-          setLoading(false)
-        })
-        .catch((reason) => {
-          setError(_isString(reason) ? reason : reason?.response?.data?.message || reason.message)
-        })
-        .finally(() => {
-          setLoading(false)
-        })
-    }
+    const apiCall = type === 'user-reports' ? unsubscribeFromEmailReports : unsubscribeFromEmailReports3rdParty
 
-    if (type === '3rdparty') {
-      unsubscribeFromEmailReports3rdParty(token)
-        .then(() => {
-          setLoading(false)
-        })
-        .catch((reason) => {
-          setError(_isString(reason) ? reason : reason?.response?.data?.message || reason.message)
-        })
-        .finally(() => {
-          setLoading(false)
-        })
-    }
-  }, [token, type]) // eslint-disable-line
+    apiCall(token)
+      .catch((reason) => {
+        setError(_isString(reason) ? reason : reason?.response?.data?.message || reason.message)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [token, type, isValidToken])
 
   const primaryAction = isAuthenticated
     ? { label: t('common.dashboard'), to: routes.dashboard, primary: true }
