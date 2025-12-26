@@ -3,12 +3,14 @@ import _capitalize from 'lodash/capitalize'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
-import { GlobeIcon, MonitorIcon, SmartphoneIcon, TabletIcon, ClockIcon, LinkIcon } from 'lucide-react'
+import { GlobeIcon, MonitorIcon, SmartphoneIcon, TabletIcon, ClockIcon, LinkIcon, UserIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
-import { BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants'
+import { BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK, PROJECT_TABS } from '~/lib/constants'
 import { SessionDetails as SessionDetailsType } from '~/lib/models/Project'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
@@ -101,6 +103,7 @@ export const SessionDetailView = ({
     t,
     i18n: { language },
   } = useTranslation('common')
+  const { id: projectId } = useCurrentProject()
   const { theme } = useTheme()
   const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(null)
 
@@ -270,6 +273,16 @@ export const SessionDetailView = ({
                   {details.co ? <InfoRow label={t('project.mapping.co')} value={details.co} /> : null}
                 </div>
               </>
+            ) : null}
+
+            {details.profileId ? (
+              <Link
+                to={`/projects/${projectId}?tab=${PROJECT_TABS.profiles}&profileId=${encodeURIComponent(details.profileId)}`}
+                className='mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700'
+              >
+                <UserIcon className='h-4 w-4' />
+                {t('project.goToProfile')}
+              </Link>
             ) : null}
           </div>
         </div>

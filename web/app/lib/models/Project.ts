@@ -130,6 +130,7 @@ export interface SessionDetails {
   rg: string | null
   ct: string | null
   dv: string | null
+  profileId: string | null
 
   sdur?: number
   isLive?: boolean
