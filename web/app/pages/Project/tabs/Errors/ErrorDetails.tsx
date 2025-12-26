@@ -63,15 +63,15 @@ const BrowserIcon = ({ browser }: { browser: string | null }) => {
 const OSIcon = ({ os, theme }: { os: string | null; theme: string }) => {
   if (!os) return null
 
-  const logoPathLight = OS_LOGO_MAP[os as keyof typeof OS_LOGO_MAP]
-  const logoPathDark = OS_LOGO_MAP_DARK[os as keyof typeof OS_LOGO_MAP_DARK]
+  const logoUrlLight = OS_LOGO_MAP[os as keyof typeof OS_LOGO_MAP]
+  const logoUrlDark = OS_LOGO_MAP_DARK[os as keyof typeof OS_LOGO_MAP_DARK]
 
-  let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
-  logoPath ||= logoPathLight
+  let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
+  logoUrl ||= logoUrlLight
 
-  if (!logoPath) return null
+  if (!logoUrl) return null
 
-  return <img src={`/${logoPath}`} className='h-4 w-4' alt='' />
+  return <img src={logoUrl} className='h-4 w-4' alt='' />
 }
 
 interface SessionRowProps {

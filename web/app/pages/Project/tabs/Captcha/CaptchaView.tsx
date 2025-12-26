@@ -306,12 +306,13 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                     const rowMapper = (entry: any) => {
                       const { name: entryName } = entry
                       // @ts-expect-error
-                      const logoPathLight = OS_LOGO_MAP[entryName]
+                      const logoUrlLight = OS_LOGO_MAP[entryName]
                       // @ts-expect-error
-                      const logoPathDark = OS_LOGO_MAP_DARK[entryName]
-                      let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
-                      logoPath ||= logoPathLight
-                      if (!logoPath) {
+                      const logoUrlDark = OS_LOGO_MAP_DARK[entryName]
+                      let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
+                      logoUrl ||= logoUrlLight
+
+                      if (!logoUrl) {
                         return (
                           <>
                             <GlobeAltIcon className='h-5 w-5' />
@@ -320,7 +321,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                           </>
                         )
                       }
-                      const logoUrl = `/${logoPath}`
+
                       return (
                         <>
                           <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />

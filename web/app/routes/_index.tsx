@@ -1480,13 +1480,13 @@ const FeaturesShowcase = () => {
                 label={t('project.mapping.os')}
                 value={deviceInfo.os}
                 valueMapper={(value: keyof typeof OS_LOGO_MAP) => {
-                  const logoPathLight = OS_LOGO_MAP[value]
-                  const logoPathDark = OS_LOGO_MAP_DARK[value as keyof typeof OS_LOGO_MAP_DARK]
+                  const logoUrlLight = OS_LOGO_MAP[value]
+                  const logoUrlDark = OS_LOGO_MAP_DARK[value as keyof typeof OS_LOGO_MAP_DARK]
 
-                  let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
-                  logoPath ||= logoPathLight
+                  let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
+                  logoUrl ||= logoUrlLight
 
-                  if (!logoPath) {
+                  if (!logoUrl) {
                     return (
                       <>
                         <GlobeIcon className='size-6' />
@@ -1495,7 +1495,6 @@ const FeaturesShowcase = () => {
                       </>
                     )
                   }
-                  const logoUrl = `/${logoPath}`
 
                   return (
                     <div className='flex items-center'>

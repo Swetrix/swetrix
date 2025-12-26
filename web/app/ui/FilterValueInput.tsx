@@ -180,14 +180,14 @@ const FilterValueInput = ({
 
       if (column === 'os') {
         // @ts-expect-error - dynamic key access
-        const logoPathLight = OS_LOGO_MAP[item]
+        const logoUrlLight = OS_LOGO_MAP[item]
         // @ts-expect-error - dynamic key access
-        const logoPathDark = OS_LOGO_MAP_DARK[item]
-        let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
-        logoPath ||= logoPathLight
+        const logoUrlDark = OS_LOGO_MAP_DARK[item]
+        let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
+        logoUrl ||= logoUrlLight
 
-        if (logoPath) {
-          return <img src={`/${logoPath}`} className='size-4 shrink-0 dark:fill-gray-50' alt='' />
+        if (logoUrl) {
+          return <img src={logoUrl} className='size-4 shrink-0 dark:fill-gray-50' alt='' />
         }
         return <GlobeIcon className='size-4 shrink-0' strokeWidth={1.5} />
       }
@@ -197,14 +197,14 @@ const FilterValueInput = ({
         const parsed = parseVersionValue(item)
         if (parsed) {
           // @ts-expect-error - dynamic key access
-          const logoPathLight = OS_LOGO_MAP[parsed.parent]
+          const logoUrlLight = OS_LOGO_MAP[parsed.parent]
           // @ts-expect-error - dynamic key access
-          const logoPathDark = OS_LOGO_MAP_DARK[parsed.parent]
-          let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
-          logoPath ||= logoPathLight
+          const logoUrlDark = OS_LOGO_MAP_DARK[parsed.parent]
+          let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
+          logoUrl ||= logoUrlLight
 
-          if (logoPath) {
-            return <img src={`/${logoPath}`} className='size-4 shrink-0 dark:fill-gray-50' alt='' />
+          if (logoUrl) {
+            return <img src={logoUrl} className='size-4 shrink-0 dark:fill-gray-50' alt='' />
           }
         }
         return <GlobeIcon className='size-4 shrink-0' strokeWidth={1.5} />

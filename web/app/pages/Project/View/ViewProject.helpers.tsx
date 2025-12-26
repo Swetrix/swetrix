@@ -1993,13 +1993,13 @@ export const getDeviceRowMapper = (activeTab: string, theme: string, t: typeof i
       const { name: entryName, version } = entry
       const logoKey = entryName
       // @ts-expect-error
-      const logoPathLight = OS_LOGO_MAP[logoKey]
+      const logoUrlLight = OS_LOGO_MAP[logoKey]
       // @ts-expect-error
-      const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
+      const logoUrlDark = OS_LOGO_MAP_DARK[logoKey]
       const displayName = version ? `${entryName} ${version}` : entryName
 
-      let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
-      logoPath ||= logoPathLight
+      let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
+      logoUrl ||= logoUrlLight
 
       if (entryName === null) {
         return (
@@ -2011,7 +2011,7 @@ export const getDeviceRowMapper = (activeTab: string, theme: string, t: typeof i
         )
       }
 
-      if (!logoPath) {
+      if (!logoUrl) {
         return (
           <>
             <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
@@ -2021,7 +2021,6 @@ export const getDeviceRowMapper = (activeTab: string, theme: string, t: typeof i
         )
       }
 
-      const logoUrl = `/${logoPath}`
       return (
         <>
           <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
