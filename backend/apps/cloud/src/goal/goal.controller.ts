@@ -89,7 +89,7 @@ export class GoalController {
 
   @ApiBearerAuth()
   @Get('/:goalId')
-  @Auth()
+  @Auth(true, true)
   @ApiResponse({ status: 200, type: Goal })
   async getGoal(
     @CurrentUserId() userId: string,
@@ -118,7 +118,7 @@ export class GoalController {
 
   @ApiBearerAuth()
   @Get('/project/:projectId')
-  @Auth()
+  @Auth(true, true)
   @ApiResponse({ status: 200, type: [GoalDto] })
   async getProjectGoals(
     @CurrentUserId() userId: string,
@@ -393,7 +393,7 @@ export class GoalController {
 
   @ApiBearerAuth()
   @Get('/:id/stats')
-  @Auth()
+  @Auth(true, true)
   @ApiResponse({ status: 200, type: GoalStatsDto })
   async getGoalStats(
     @CurrentUserId() userId: string,
@@ -601,7 +601,7 @@ export class GoalController {
 
   @ApiBearerAuth()
   @Get('/:id/chart')
-  @Auth()
+  @Auth(true, true)
   async getGoalChart(
     @CurrentUserId() userId: string,
     @Param('id') id: string,

@@ -2299,6 +2299,8 @@ export interface AIChatSummary {
 
 interface AIChat extends AIChatSummary {
   messages: AIChatMessage[]
+  isOwner?: boolean
+  branched?: boolean
 }
 
 export const getRecentAIChats = async (pid: string, limit: number = 5): Promise<AIChatSummary[]> => {

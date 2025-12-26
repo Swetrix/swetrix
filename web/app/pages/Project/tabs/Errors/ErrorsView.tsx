@@ -334,7 +334,7 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
               <Tooltip
                 text={error.message}
                 tooltipNode={
-                  <Text as='p' size='sm' colour='muted' className='mt-1 flex leading-5'>
+                  <Text as='p' size='sm' colour='muted' className='mt-1 flex text-left leading-5'>
                     {displayMessage}
                   </Text>
                 }

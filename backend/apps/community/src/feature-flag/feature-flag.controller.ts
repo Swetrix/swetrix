@@ -65,7 +65,7 @@ export class FeatureFlagController {
 
   @ApiBearerAuth()
   @Get('/project/:projectId')
-  @Auth()
+  @Auth(false, true)
   @ApiResponse({ status: 200, type: [FeatureFlagDto] })
   @ApiOperation({ summary: 'Get all feature flags for a project' })
   async getProjectFeatureFlags(
@@ -111,7 +111,7 @@ export class FeatureFlagController {
 
   @ApiBearerAuth()
   @Get('/:flagId')
-  @Auth()
+  @Auth(false, true)
   @ApiResponse({ status: 200, type: FeatureFlagDto })
   @ApiOperation({ summary: 'Get a feature flag by ID' })
   async getFeatureFlag(
@@ -415,7 +415,7 @@ export class FeatureFlagController {
 
   @ApiBearerAuth()
   @Get('/:id/stats')
-  @Auth()
+  @Auth(false, true)
   @ApiResponse({ status: 200, type: FeatureFlagStatsDto })
   @ApiOperation({ summary: 'Get statistics for a feature flag' })
   async getFeatureFlagStats(
@@ -517,7 +517,7 @@ export class FeatureFlagController {
 
   @ApiBearerAuth()
   @Get('/:id/profiles')
-  @Auth()
+  @Auth(false, true)
   @ApiResponse({ status: 200, type: FeatureFlagProfilesResponseDto })
   @ApiOperation({
     summary: 'Get profiles who have evaluated a feature flag',

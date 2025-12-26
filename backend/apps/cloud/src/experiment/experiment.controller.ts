@@ -89,7 +89,7 @@ export class ExperimentController {
 
   @ApiBearerAuth()
   @Get('/project/:projectId')
-  @Auth()
+  @Auth(false, true)
   @ApiResponse({ status: 200, type: [ExperimentDto] })
   @ApiOperation({ summary: 'Get all experiments for a project' })
   async getProjectExperiments(
@@ -141,7 +141,7 @@ export class ExperimentController {
 
   @ApiBearerAuth()
   @Get('/:id')
-  @Auth()
+  @Auth(false, true)
   @ApiResponse({ status: 200, type: ExperimentDto })
   @ApiOperation({ summary: 'Get an experiment by ID' })
   async getExperiment(
@@ -846,7 +846,7 @@ export class ExperimentController {
 
   @ApiBearerAuth()
   @Get('/:id/results')
-  @Auth()
+  @Auth(false, true)
   @ApiResponse({ status: 200, type: ExperimentResultsDto })
   @ApiOperation({ summary: 'Get experiment results with Bayesian statistics' })
   async getExperimentResults(

@@ -821,17 +821,13 @@ export class ProjectController {
 
   @Get('/annotations/:pid')
   @ApiResponse({ status: 200 })
-  @Auth(true)
+  @Auth(true, true)
   async getAnnotations(
     @Param('pid') pid: string,
     @CurrentUserId() userId: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     this.logger.log({ pid, userId }, 'GET /project/annotations')
-
-    if (!userId) {
-      throw new UnauthorizedException('Please auth first')
-    }
 
     const project = await this.projectService.getFullProject(pid)
 

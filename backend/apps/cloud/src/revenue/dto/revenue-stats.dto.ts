@@ -89,26 +89,6 @@ export class RevenueBreakdownItemDto {
   count: number
 }
 
-export class RevenueBreakdownDto {
-  @ApiProperty({
-    description: 'Revenue by source/referrer',
-    type: [RevenueBreakdownItemDto],
-  })
-  bySource: RevenueBreakdownItemDto[]
-
-  @ApiProperty({
-    description: 'Revenue by country',
-    type: [RevenueBreakdownItemDto],
-  })
-  byCountry: RevenueBreakdownItemDto[]
-
-  @ApiProperty({
-    description: 'Revenue by product',
-    type: [RevenueBreakdownItemDto],
-  })
-  byProduct: RevenueBreakdownItemDto[]
-}
-
 export class RevenueStatusDto {
   @ApiProperty({ description: 'Whether Paddle is connected' })
   connected: boolean

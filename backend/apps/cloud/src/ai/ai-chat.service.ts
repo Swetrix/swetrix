@@ -176,6 +176,15 @@ export class AiChatService {
         id: chatId,
         project: { id: projectId },
       },
+      relations: ['user'],
     })
+  }
+
+  /**
+   * Check if the user is the owner of a chat.
+   */
+  isOwner(chat: AiChat, userId: string | null): boolean {
+    if (!userId) return false
+    return chat.user?.id === userId
   }
 }

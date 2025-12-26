@@ -32,7 +32,6 @@ import {
   RevenueStatsDto,
   RevenueChartDto,
   RevenueTransactionDto,
-  RevenueBreakdownDto,
   RevenueStatusDto,
 } from './dto/revenue-stats.dto'
 import { STRIPE_REQUIRED_PERMISSIONS } from './interfaces/revenue.interface'
@@ -47,13 +46,12 @@ export class RevenueController {
     private readonly paddleAdapter: PaddleAdapter,
     private readonly stripeAdapter: StripeAdapter,
     private readonly projectService: ProjectService,
-    private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
   ) {}
 
   @ApiBearerAuth()
   @Get('/:pid/revenue/status')
-  @Auth()
+  @Auth(true, true)
   @ApiResponse({ status: 200, type: RevenueStatusDto })
   async getRevenueStatus(
     @CurrentUserId() userId: string,
@@ -268,7 +266,7 @@ export class RevenueAnalyticsController {
 
   @ApiBearerAuth()
   @Get('/')
-  @Auth()
+  @Auth(true, true)
   @ApiResponse({ status: 200 })
   async getRevenueStats(
     @CurrentUserId() userId: string,
@@ -378,48 +376,6 @@ export class RevenueAnalyticsController {
       dto.skip || 0,
       dto.type,
       dto.status,
-    )
-  }
-
-  @ApiBearerAuth()
-  @Get('/breakdown')
-  @Auth()
-  @ApiResponse({ status: 200, type: RevenueBreakdownDto })
-  async getRevenueBreakdown(
-    @CurrentUserId() userId: string,
-    @Query() dto: GetRevenueDto,
-  ): Promise<RevenueBreakdownDto> {
-    this.logger.log({ userId, ...dto }, 'GET /log/revenue/breakdown')
-
-    const project = await this.projectService.getFullProject(dto.pid)
-
-    if (_isEmpty(project)) {
-      throw new NotFoundException('Project not found')
-    }
-
-    this.projectService.allowedToView(project, userId)
-
-    if (!project.paddleApiKeyEnc && !project.stripeApiKeyEnc) {
-      throw new BadRequestException(
-        'Revenue tracking is not configured for this project',
-      )
-    }
-
-    const safeTimezone = this.analyticsService.getSafeTimezone(dto.timezone)
-    const timeBucket = getLowestPossibleTimeBucket(dto.period, dto.from, dto.to)
-
-    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
-      dto.from,
-      dto.to,
-      timeBucket,
-      dto.period,
-      safeTimezone,
-    )
-
-    return this.revenueService.getRevenueBreakdown(
-      dto.pid,
-      groupFromUTC,
-      groupToUTC,
     )
   }
 }

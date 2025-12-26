@@ -464,21 +464,15 @@ export class AiController {
 
     this.projectService.allowedToView(project, uid)
 
-    let chat
-
-    if (project.public) {
-      if (!uid) {
-        chat = await this.aiChatService.verifyPublicChatAccess(chatId, pid)
-      } else {
-        chat = await this.aiChatService.verifyAccess(chatId, pid, uid)
-      }
-    } else {
-      chat = await this.aiChatService.verifyOwnerAccess(chatId, pid, uid)
-    }
+    // Anyone who can view the project can view any chat via direct link
+    const chat = await this.aiChatService.verifyProjectAccess(chatId, pid)
 
     if (!chat) {
       throw new NotFoundException('Chat not found')
     }
+
+    // Check if the current user is the owner of this chat
+    const isOwner = uid && chat.user?.id === uid
 
     return {
       id: chat.id,
@@ -486,6 +480,7 @@ export class AiController {
       messages: chat.messages,
       created: chat.created,
       updated: chat.updated,
+      isOwner,
     }
   }
 
@@ -540,7 +535,7 @@ export class AiController {
   @Post(':pid/chats/:chatId')
   @Auth(false, true) // Allow optional auth for public projects
   @ApiOperation({ summary: 'Update an AI chat' })
-  @ApiResponse({ status: 200, description: 'Chat updated' })
+  @ApiResponse({ status: 200, description: 'Chat updated or branched' })
   async updateChat(
     @Param('pid') pid: string,
     @Param('chatId') chatId: string,
@@ -560,31 +555,60 @@ export class AiController {
 
     this.projectService.allowedToView(project, uid)
 
-    const existingChat = await this.aiChatService.verifyOwnerAccess(
+    // Check if the chat exists and belongs to this project
+    const existingChat = await this.aiChatService.verifyProjectAccess(
       chatId,
       pid,
-      uid,
     )
 
     if (!existingChat) {
       throw new NotFoundException('Chat not found')
     }
 
-    const chat = await this.aiChatService.update(chatId, {
-      messages: updateChatDto.messages,
+    // Check if the current user owns this chat
+    const isOwner = this.aiChatService.isOwner(existingChat, uid)
+
+    if (isOwner) {
+      // User owns the chat - update it directly
+      const chat = await this.aiChatService.update(chatId, {
+        messages: updateChatDto.messages,
+        name: updateChatDto.name,
+      })
+
+      if (!chat) {
+        throw new NotFoundException('Chat not found')
+      }
+
+      return {
+        id: chat.id,
+        name: chat.name,
+        messages: chat.messages,
+        created: chat.created,
+        updated: chat.updated,
+        branched: false,
+      }
+    }
+
+    // User doesn't own the chat - create a new branched chat with the messages
+    const branchedChat = await this.aiChatService.create({
+      projectId: pid,
+      userId: uid,
+      messages: updateChatDto.messages || existingChat.messages,
       name: updateChatDto.name,
     })
 
-    if (!chat) {
-      throw new NotFoundException('Chat not found')
-    }
+    this.logger.log(
+      { uid, pid, originalChatId: chatId, newChatId: branchedChat.id },
+      'Chat branched for non-owner',
+    )
 
     return {
-      id: chat.id,
-      name: chat.name,
-      messages: chat.messages,
-      created: chat.created,
-      updated: chat.updated,
+      id: branchedChat.id,
+      name: branchedChat.name,
+      messages: branchedChat.messages,
+      created: branchedChat.created,
+      updated: branchedChat.updated,
+      branched: true,
     }
   }
 
