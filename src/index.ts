@@ -23,6 +23,12 @@ export interface LibOptions {
    * This param is useful when tracking single-page landing websites.
    */
   unique?: boolean
+
+  /**
+   * Optional profile ID for long-term user tracking.
+   * If set, it will be used for all pageviews and events unless overridden per-call.
+   */
+  profileId?: string
 }
 
 export interface TrackEventOptions {
@@ -57,8 +63,11 @@ export interface TrackEventOptions {
 
   /** Event-related metadata object with string values. */
   meta?: {
-    [key: string]: string
+    [key: string]: string | number | boolean | null | undefined
   }
+
+  /** Optional profile ID for long-term user tracking. Overrides the global profileId if set. */
+  profileId?: string
 }
 
 export interface PerformanceMetrics {
@@ -119,8 +128,11 @@ export interface TrackPageViewOptions {
 
   /** Pageview-related metadata object with string values. */
   meta?: {
-    [key: string]: string
+    [key: string]: string | number | boolean | null | undefined
   }
+
+  /** Optional profile ID for long-term user tracking. Overrides the global profileId if set. */
+  profileId?: string
 }
 
 export interface TrackErrorOptions {
@@ -132,25 +144,85 @@ export interface TrackErrorOptions {
   /**
    * Error message (e.g. Malformed input).
    */
-  message: string | null | undefined
+  message?: string | null
 
   /**
    * On what line in your code did the error occur (e.g. 1520)
    */
-  lineno: number | null | undefined
+  lineno?: number | null
 
   /**
    * On what column in your code did the error occur (e.g. 26)
    */
-  colno: number | null | undefined
+  colno?: number | null
 
   /**
    * In what file did the error occur (e.g. https://example.com/broken.js)
    */
-  filename: string | null | undefined
+  filename?: string | null
+
+  /**
+   * Stack trace of the error.
+   */
+  stackTrace?: string | null
+
+  /**
+   * Visitor's timezone (used as a backup in case IP geolocation fails).
+   */
+  tz?: string
+
+  /** A locale of the user (e.g. en-US or uk-UA) */
+  lc?: string
+
+  /** A page to record the error event for (e.g. /home) */
+  pg?: string
+
+  /** Error-related metadata object with string values. */
+  meta?: {
+    [key: string]: string | number | boolean | null | undefined
+  }
+}
+
+/**
+ * Options for evaluating feature flags.
+ */
+export interface FeatureFlagsOptions {
+  /**
+   * Optional profile ID for long-term user tracking.
+   * If not provided, an anonymous profile ID will be generated server-side based on IP and user agent.
+   * Overrides the global profileId if set.
+   */
+  profileId?: string
+}
+
+/**
+ * Options for evaluating experiments.
+ */
+export interface ExperimentOptions {
+  /**
+   * Optional profile ID for long-term user tracking.
+   * If not provided, an anonymous profile ID will be generated server-side based on IP and user agent.
+   * Overrides the global profileId if set.
+   */
+  profileId?: string
+}
+
+/**
+ * Cached feature flags and experiments with timestamp.
+ */
+interface CachedData {
+  flags: Record<string, boolean>
+  experiments: Record<string, string>
+  timestamp: number
+  /** The profileId used when fetching this cached data */
+  profileId?: string
 }
 
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
+const DEFAULT_API_BASE = 'https://api.swetrix.com'
+
+// Default cache duration: 5 minutes
+const DEFAULT_CACHE_DURATION = 5 * 60 * 1000
 
 /**
  * Server-side implementation of Swetrix tracking library.
@@ -159,49 +231,53 @@ const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
  * @param options LibOptions
  */
 export class Swetrix {
+  private cachedData: CachedData | null = null
+
   constructor(private projectID: string, private options?: LibOptions) {
     this.heartbeat = this.heartbeat.bind(this)
   }
 
   /**
-   * This function is used to send custom events (implements https://docs.swetrix.com/events-api#post-loghb).
+   * This function is used to send custom events (implements https://docs.swetrix.com/events-api#post-logcustom).
    *
    * @param ip IP address of the visitor
    * @param userAgent User agent of the visitor
    * @param event TrackEventOptions
-   * @returns void
+   * @returns Promise<void>
    */
-  public track(ip: string, userAgent: string, event: TrackEventOptions): void {
+  public async track(ip: string, userAgent: string, event: TrackEventOptions): Promise<void> {
     if (!this.canTrack()) {
       return
     }
 
     const data = {
       pid: this.projectID,
+      profileId: event.profileId ?? this.options?.profileId,
       ...event,
     }
-    this.sendRequest('custom', ip, userAgent, data)
+    await this.sendRequest('custom', ip, userAgent, data)
   }
 
   /**
-   * This function is used to send pageview events (implements https://docs.swetrix.com/events-api#post-loghb).
+   * This function is used to send pageview events (implements https://docs.swetrix.com/events-api#post-log).
    *
    * @param ip IP address of the visitor
    * @param userAgent User agent of the visitor
    * @param pageview TrackPageViewOptions
-   * @returns void
+   * @returns Promise<void>
    */
-  public trackPageView(ip: string, userAgent: string, pageview?: TrackPageViewOptions) {
+  public async trackPageView(ip: string, userAgent: string, pageview?: TrackPageViewOptions): Promise<void> {
     if (!this.canTrack()) {
       return
     }
 
     const data = {
       pid: this.projectID,
+      profileId: pageview?.profileId ?? this.options?.profileId,
       ...(pageview || {}),
     }
 
-    this.sendRequest('', ip, userAgent, data)
+    await this.sendRequest('', ip, userAgent, data)
   }
 
   /**
@@ -210,14 +286,10 @@ export class Swetrix {
    *
    * @param ip IP address of the visitor
    * @param userAgent User agent of the visitor
-   * @param error TrackErrorOptions | Pick<TrackPageViewOptions, 'tz' | 'lc' | 'pg'>
-   * @returns void
+   * @param error TrackErrorOptions
+   * @returns Promise<void>
    */
-  public trackError(
-    ip: string,
-    userAgent: string,
-    error?: TrackErrorOptions | Pick<TrackPageViewOptions, 'tz' | 'lc' | 'pg'>,
-  ) {
+  public async trackError(ip: string, userAgent: string, error?: TrackErrorOptions): Promise<void> {
     if (!this.canTrack()) {
       return
     }
@@ -227,7 +299,7 @@ export class Swetrix {
       ...(error || {}),
     }
 
-    this.sendRequest('error', ip, userAgent, data)
+    await this.sendRequest('error', ip, userAgent, data)
   }
 
   /**
@@ -239,17 +311,356 @@ export class Swetrix {
    *
    * @param ip IP address of the visitor
    * @param userAgent User agent of the visitor
-   * @returns void
+   * @returns Promise<void>
    */
-  public heartbeat(ip: string, userAgent: string): void {
+  public async heartbeat(ip: string, userAgent: string): Promise<void> {
     if (!this.canTrack()) {
       return
     }
 
-    const data = {
+    const data: { pid: string; profileId?: string } = {
       pid: this.projectID,
     }
-    this.sendRequest('hb', ip, userAgent, data)
+
+    if (this.options?.profileId) {
+      data.profileId = this.options.profileId
+    }
+
+    await this.sendRequest('hb', ip, userAgent, data)
+  }
+
+  /**
+   * Fetches all feature flags for the project.
+   * Results are cached for 5 minutes by default.
+   *
+   * @param ip IP address of the visitor
+   * @param userAgent User agent of the visitor
+   * @param options Options for evaluating feature flags (profileId).
+   * @param forceRefresh If true, bypasses the cache and fetches fresh flags.
+   * @returns A promise that resolves to a record of flag keys to boolean values.
+   *
+   * @example
+   * ```typescript
+   * const flags = await swetrix.getFeatureFlags('192.155.52.12', 'Mozilla/5.0...', {
+   *   profileId: 'user-123'
+   * })
+   *
+   * if (flags['new-checkout']) {
+   *   // Show new checkout flow
+   * }
+   * ```
+   */
+  public async getFeatureFlags(
+    ip: string,
+    userAgent: string,
+    options?: FeatureFlagsOptions,
+    forceRefresh?: boolean,
+  ): Promise<Record<string, boolean>> {
+    const requestedProfileId = options?.profileId ?? this.options?.profileId
+
+    // Check cache first - must match profileId and not be expired
+    if (!forceRefresh && this.cachedData) {
+      const now = Date.now()
+      const isSameProfile = this.cachedData.profileId === requestedProfileId
+      if (isSameProfile && now - this.cachedData.timestamp < DEFAULT_CACHE_DURATION) {
+        return this.cachedData.flags
+      }
+    }
+
+    try {
+      await this.fetchFlagsAndExperiments(ip, userAgent, options)
+      return this.cachedData?.flags || {}
+    } catch (error) {
+      this.debug(`Error fetching feature flags: ${error}`, true)
+      return this.cachedData?.flags || {}
+    }
+  }
+
+  /**
+   * Gets the value of a single feature flag.
+   *
+   * @param key The feature flag key.
+   * @param ip IP address of the visitor
+   * @param userAgent User agent of the visitor
+   * @param options Options for evaluating the feature flag (profileId).
+   * @param defaultValue Default value to return if the flag is not found. Defaults to false.
+   * @returns A promise that resolves to the boolean value of the flag.
+   *
+   * @example
+   * ```typescript
+   * const isEnabled = await swetrix.getFeatureFlag('dark-mode', '192.155.52.12', 'Mozilla/5.0...', { profileId: 'user-123' })
+   *
+   * if (isEnabled) {
+   *   // Enable dark mode
+   * }
+   * ```
+   */
+  public async getFeatureFlag(
+    key: string,
+    ip: string,
+    userAgent: string,
+    options?: FeatureFlagsOptions,
+    defaultValue: boolean = false,
+  ): Promise<boolean> {
+    const flags = await this.getFeatureFlags(ip, userAgent, options)
+    return flags[key] ?? defaultValue
+  }
+
+  /**
+   * Clears the cached feature flags, forcing a fresh fetch on the next call.
+   * Useful when you know the user's context has changed significantly.
+   */
+  public clearFeatureFlagsCache(): void {
+    this.cachedData = null
+  }
+
+  /**
+   * Fetches all A/B test experiments for the project.
+   * Results are cached for 5 minutes by default (shared cache with feature flags).
+   *
+   * @param ip IP address of the visitor
+   * @param userAgent User agent of the visitor
+   * @param options Options for evaluating experiments.
+   * @param forceRefresh If true, bypasses the cache and fetches fresh data.
+   * @returns A promise that resolves to a record of experiment IDs to variant keys.
+   *
+   * @example
+   * ```typescript
+   * const experiments = await swetrix.getExperiments('192.155.52.12', 'Mozilla/5.0...')
+   * // experiments = { 'exp-123': 'variant-a', 'exp-456': 'control' }
+   *
+   * // Use the assigned variant
+   * const checkoutVariant = experiments['checkout-experiment-id']
+   * if (checkoutVariant === 'new-checkout') {
+   *   showNewCheckout()
+   * } else {
+   *   showOriginalCheckout()
+   * }
+   * ```
+   */
+  public async getExperiments(
+    ip: string,
+    userAgent: string,
+    options?: ExperimentOptions,
+    forceRefresh?: boolean,
+  ): Promise<Record<string, string>> {
+    const requestedProfileId = options?.profileId ?? this.options?.profileId
+
+    // Check cache first - must match profileId and not be expired
+    if (!forceRefresh && this.cachedData) {
+      const now = Date.now()
+      const isSameProfile = this.cachedData.profileId === requestedProfileId
+      if (isSameProfile && now - this.cachedData.timestamp < DEFAULT_CACHE_DURATION) {
+        return this.cachedData.experiments
+      }
+    }
+
+    try {
+      await this.fetchFlagsAndExperiments(ip, userAgent, options)
+      return this.cachedData?.experiments || {}
+    } catch (error) {
+      this.debug(`Error fetching experiments: ${error}`, true)
+      return this.cachedData?.experiments || {}
+    }
+  }
+
+  /**
+   * Gets the variant key for a specific A/B test experiment.
+   *
+   * @param experimentId The experiment ID.
+   * @param ip IP address of the visitor
+   * @param userAgent User agent of the visitor
+   * @param options Options for evaluating the experiment.
+   * @param defaultVariant Default variant key to return if the experiment is not found. Defaults to null.
+   * @returns A promise that resolves to the variant key assigned to this user, or defaultVariant if not found.
+   *
+   * @example
+   * ```typescript
+   * const variant = await swetrix.getExperiment('checkout-redesign-experiment-id', '192.155.52.12', 'Mozilla/5.0...')
+   *
+   * if (variant === 'new-checkout') {
+   *   // Show new checkout flow
+   *   showNewCheckout()
+   * } else if (variant === 'control') {
+   *   // Show original checkout (control group)
+   *   showOriginalCheckout()
+   * } else {
+   *   // Experiment not running or user not included
+   *   showOriginalCheckout()
+   * }
+   * ```
+   */
+  public async getExperiment(
+    experimentId: string,
+    ip: string,
+    userAgent: string,
+    options?: ExperimentOptions,
+    defaultVariant: string | null = null,
+  ): Promise<string | null> {
+    const experiments = await this.getExperiments(ip, userAgent, options)
+    return experiments[experimentId] ?? defaultVariant
+  }
+
+  /**
+   * Clears the cached experiments, forcing a fresh fetch on the next call.
+   * This is an alias for clearFeatureFlagsCache since experiments and flags share the same cache.
+   */
+  public clearExperimentsCache(): void {
+    this.cachedData = null
+  }
+
+  /**
+   * Gets the anonymous profile ID for a visitor.
+   * If profileId was set via constructor options, returns that.
+   * Otherwise, requests server to generate one from IP/UA hash.
+   *
+   * This ID can be used for revenue attribution with payment providers like Paddle.
+   *
+   * @param ip IP address of the visitor
+   * @param userAgent User agent of the visitor
+   * @returns A promise that resolves to the profile ID string, or null on error.
+   *
+   * @example
+   * ```typescript
+   * const profileId = await swetrix.getProfileId('192.155.52.12', 'Mozilla/5.0...')
+   *
+   * // Pass to Paddle Checkout for revenue attribution
+   * // customData: { swetrix_profile_id: profileId }
+   * ```
+   */
+  public async getProfileId(ip: string, userAgent: string): Promise<string | null> {
+    // If profileId is already set in options, return it
+    if (this.options?.profileId) {
+      return this.options.profileId
+    }
+
+    try {
+      const apiBase = this.getApiBase()
+      const response = await fetch(`${apiBase}/log/profile-id`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Client-IP-Address': ip,
+          'User-Agent': userAgent,
+        },
+        body: JSON.stringify({ pid: this.projectID }),
+      })
+
+      if (!response.ok) {
+        return null
+      }
+
+      const data = (await response.json()) as { profileId: string | null }
+      return data.profileId
+    } catch (error) {
+      this.debug(`Error fetching profile ID: ${error}`, true)
+      return null
+    }
+  }
+
+  /**
+   * Gets the current session ID for the visitor.
+   * Session IDs are generated server-side based on IP and user agent.
+   *
+   * This ID can be used for revenue attribution with payment providers like Paddle.
+   *
+   * @param ip IP address of the visitor
+   * @param userAgent User agent of the visitor
+   * @returns A promise that resolves to the session ID string, or null on error.
+   *
+   * @example
+   * ```typescript
+   * const sessionId = await swetrix.getSessionId('192.155.52.12', 'Mozilla/5.0...')
+   *
+   * // Pass to Paddle Checkout for revenue attribution
+   * // customData: { swetrix_session_id: sessionId }
+   * ```
+   */
+  public async getSessionId(ip: string, userAgent: string): Promise<string | null> {
+    try {
+      const apiBase = this.getApiBase()
+      const response = await fetch(`${apiBase}/log/session-id`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Client-IP-Address': ip,
+          'User-Agent': userAgent,
+        },
+        body: JSON.stringify({ pid: this.projectID }),
+      })
+
+      if (!response.ok) {
+        return null
+      }
+
+      const data = (await response.json()) as { sessionId: string | null }
+      return data.sessionId
+    } catch (error) {
+      this.debug(`Error fetching session ID: ${error}`, true)
+      return null
+    }
+  }
+
+  /**
+   * Internal method to fetch both feature flags and experiments from the API.
+   */
+  private async fetchFlagsAndExperiments(
+    ip: string,
+    userAgent: string,
+    options?: FeatureFlagsOptions | ExperimentOptions,
+  ): Promise<void> {
+    const apiBase = this.getApiBase()
+    const body: { pid: string; profileId?: string } = {
+      pid: this.projectID,
+    }
+
+    // Use profileId from options, or fall back to global profileId
+    const profileId = options?.profileId ?? this.options?.profileId
+    if (profileId) {
+      body.profileId = profileId
+    }
+
+    const response = await fetch(`${apiBase}/feature-flag/evaluate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Client-IP-Address': ip,
+        'User-Agent': userAgent,
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      this.debug(`Failed to fetch feature flags and experiments: ${response.status}`, true)
+      return
+    }
+
+    const data = (await response.json()) as {
+      flags: Record<string, boolean>
+      experiments?: Record<string, string>
+    }
+
+    // Use profileId from options, or fall back to global profileId
+    const cachedProfileId = options?.profileId ?? this.options?.profileId
+
+    // Update cache with both flags and experiments
+    this.cachedData = {
+      flags: data.flags || {},
+      experiments: data.experiments || {},
+      timestamp: Date.now(),
+      profileId: cachedProfileId,
+    }
+  }
+
+  /**
+   * Gets the API base URL (without /log suffix).
+   */
+  private getApiBase(): string {
+    if (this.options?.apiURL) {
+      // Remove trailing /log if present
+      return this.options.apiURL.replace(/\/log\/?$/, '')
+    }
+    return DEFAULT_API_BASE
   }
 
   private debug(message: string, force?: boolean): void {

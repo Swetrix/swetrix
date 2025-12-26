@@ -49,7 +49,25 @@ export interface LibOptions {
    * This param is useful when tracking single-page landing websites.
    */
   unique?: boolean
+
+  /**
+   * Optional profile ID for long-term user tracking.
+   * If set, it will be used for all pageviews and events unless overridden per-call.
+   */
+  profileId?: string
 }
+```
+
+## Important: Async/Await Support
+All tracking methods in this SDK return Promises, allowing you to await them if needed:
+
+```javascript
+// You can await tracking calls
+await swetrix.trackPageView(ip, userAgent, { pg: '/home' })
+await swetrix.track(ip, userAgent, { ev: 'button_click' })
+
+// Or fire-and-forget (no await)
+swetrix.trackPageView(ip, userAgent, { pg: '/home' })
 ```
 
 ## Tracking pageviews
@@ -59,7 +77,7 @@ You can read about it in details on our [Events API](https://docs.swetrix.com/ev
 Tracking pageviews can be done by calling the following function:
 
 ```javascript
-swetrix.trackPageView('192.155.52.12', 'Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0', {
+await swetrix.trackPageView('192.155.52.12', 'Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0', {
   lc: 'en-US',
   pg: '/hi',
   ref: 'https://www.swetrix.com/',
@@ -105,8 +123,11 @@ export interface TrackPageViewOptions {
 
   /** Pageview-related metadata object with string values. */
   meta?: {
-    [key: string]: string
+    [key: string]: string | number | boolean | null | undefined
   }
+
+  /** Optional profile ID for long-term user tracking. Overrides the global profileId if set. */
+  profileId?: string
 }
 
 export interface PerformanceMetrics {
@@ -139,7 +160,7 @@ export interface PerformanceMetrics {
 ## Tracking custom events
 You can track custom events by calling `track` function, the syntax is similar to tracking pageviews:
 ```javascript
-swetrix.track('192.155.52.12', 'Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0', {
+await swetrix.track('192.155.52.12', 'Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0', {
   ev: 'hello1234',
 })
 ```
@@ -183,8 +204,11 @@ export interface TrackEventOptions {
 
   /** Event-related metadata object with string values. */
   meta?: {
-    [key: string]: string
+    [key: string]: string | number | boolean | null | undefined
   }
+
+  /** Optional profile ID for long-term user tracking. Overrides the global profileId if set. */
+  profileId?: string
 }
 ```
 
@@ -192,7 +216,7 @@ export interface TrackEventOptions {
 ## Tracking errors
 You can also track error events by calling `trackError` function, the syntax is similar to tracking pageviews:
 ```javascript
-swetrix.trackError('192.155.52.12', 'Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0', {
+await swetrix.trackError('192.155.52.12', 'Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0', {
   name: 'ParseError',
   message: 'Malformed input',
   lineno: 1520,
@@ -217,36 +241,43 @@ export interface TrackErrorOptions {
   /**
    * Error message (e.g. Malformed input).
    */
-  message: string | null | undefined
+  message?: string | null
 
   /**
    * On what line in your code did the error occur (e.g. 1520)
    */
-  lineno: number | null | undefined
+  lineno?: number | null
 
   /**
    * On what column in your code did the error occur (e.g. 26)
    */
-  colno: number | null | undefined
+  colno?: number | null
 
   /**
    * In what file did the error occur (e.g. https://example.com/broken.js)
    */
-  filename: string | null | undefined
-
-  // --------------
-  // Additionally, it also accepts 3 parameters from the TrackPageViewOptions interface:
+  filename?: string | null
 
   /**
-   * Visitor's timezone (used as a backup in case IP geolocation fails). I.e. if it's set to Europe/Kiev and IP geolocation fails, we will set the country of this entry to Ukraine)
+   * Stack trace of the error.
+   */
+  stackTrace?: string | null
+
+  /**
+   * Visitor's timezone (used as a backup in case IP geolocation fails).
    */
   tz?: string
 
   /** A locale of the user (e.g. en-US or uk-UA) */
   lc?: string
 
-  /** A page to record the pageview event for (e.g. /home). All our scripts send the pg string with a slash (/) at the beginning, it's not a requirement but it's best to do the same so the data would be consistent when used together with our official scripts */
+  /** A page to record the error event for (e.g. /home) */
   pg?: string
+
+  /** Error-related metadata object with string values. */
+  meta?: {
+    [key: string]: string | number | boolean | null | undefined
+  }
 }
 ```
 
@@ -255,13 +286,148 @@ Heartbeat events are used to determine if the user session is still active. This
 
 You can send heartbeat events by calling the following function:
 ```javascript
-swetrix.heartbeat('192.155.52.12', 'Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0')
+await swetrix.heartbeat('192.155.52.12', 'Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0')
 ```
 
 Make sure to pass your website visitors IP address and User Agent instead of these example values.
 
+## Feature Flags
+Feature flags allow you to control feature rollouts to your users. You can evaluate flags server-side based on user context.
+
+### Getting all feature flags
+```javascript
+const flags = await swetrix.getFeatureFlags(
+  '192.155.52.12',
+  'Mozilla/5.0...',
+  { profileId: 'user-123' } // optional
+)
+
+if (flags['new-checkout']) {
+  // Show new checkout flow
+}
+```
+
+### Getting a single feature flag
+```javascript
+const isEnabled = await swetrix.getFeatureFlag(
+  'dark-mode',
+  '192.155.52.12',
+  'Mozilla/5.0...',
+  { profileId: 'user-123' }, // optional
+  false // default value if flag not found
+)
+
+if (isEnabled) {
+  // Enable dark mode
+}
+```
+
+### Clearing the feature flags cache
+Feature flags are cached for 5 minutes by default. You can force a refresh:
+```javascript
+// Clear the cache
+swetrix.clearFeatureFlagsCache()
+
+// Or force refresh on next call
+const flags = await swetrix.getFeatureFlags(ip, userAgent, options, true)
+```
+
+## A/B Testing (Experiments)
+Run A/B tests and get the assigned variant for each user.
+
+### Getting all experiments
+```javascript
+const experiments = await swetrix.getExperiments(
+  '192.155.52.12',
+  'Mozilla/5.0...',
+  { profileId: 'user-123' } // optional
+)
+
+// experiments = { 'exp-123': 'variant-a', 'exp-456': 'control' }
+const checkoutVariant = experiments['checkout-experiment-id']
+
+if (checkoutVariant === 'new-checkout') {
+  showNewCheckout()
+} else {
+  showOriginalCheckout()
+}
+```
+
+### Getting a single experiment variant
+```javascript
+const variant = await swetrix.getExperiment(
+  'checkout-redesign-experiment-id',
+  '192.155.52.12',
+  'Mozilla/5.0...',
+  { profileId: 'user-123' }, // optional
+  null // default variant if experiment not found
+)
+
+if (variant === 'new-checkout') {
+  showNewCheckout()
+} else if (variant === 'control') {
+  showOriginalCheckout()
+} else {
+  // Experiment not running or user not included
+  showOriginalCheckout()
+}
+```
+
+### Clearing the experiments cache
+```javascript
+swetrix.clearExperimentsCache()
+```
+
+## Profile ID
+Get an anonymous profile ID for long-term user tracking. Useful for revenue attribution with payment providers.
+
+```javascript
+const profileId = await swetrix.getProfileId('192.155.52.12', 'Mozilla/5.0...')
+
+// Pass to your payment provider for revenue attribution
+// e.g., Paddle Checkout customData: { swetrix_profile_id: profileId }
+```
+
+If you set a `profileId` in the constructor options, it will be returned directly instead of generating one.
+
+## Session ID
+Get the current session ID for the visitor. Session IDs are generated server-side based on IP and user agent.
+
+```javascript
+const sessionId = await swetrix.getSessionId('192.155.52.12', 'Mozilla/5.0...')
+
+// Use for revenue attribution or session-based tracking
+```
+
+## Revenue Attribution Example
+Here's a complete example of using profile and session IDs for revenue attribution with Paddle:
+
+```javascript
+const swetrix = new Swetrix('YOUR_PROJECT_ID')
+
+app.get('/checkout', async (req, res) => {
+  const ip = req.ip
+  const userAgent = req.headers['user-agent']
+
+  const [profileId, sessionId] = await Promise.all([
+    swetrix.getProfileId(ip, userAgent),
+    swetrix.getSessionId(ip, userAgent),
+  ])
+
+  res.json({
+    checkoutConfig: {
+      // ... your checkout configuration
+      customData: {
+        swetrix_profile_id: profileId,
+        swetrix_session_id: sessionId,
+      },
+    },
+  })
+})
+```
+
 # Selfhosted API
-If you are selfhosting the [Swetrix-API](https://github.com/Swetrix/swetrix-api), be sure to point the `apiUrl` parameter to: `https://yourapiinstance.com/log`
+If you are selfhosting the [Swetrix-API](https://github.com/Swetrix/swetrix-api), be sure to point the `apiURL` parameter to: `https://yourapiinstance.com/log`
 
 # Donate
 You can support the project by donating us at https://ko-fi.com/andriir \
