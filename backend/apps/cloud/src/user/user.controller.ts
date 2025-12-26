@@ -164,7 +164,7 @@ export class UserController {
 
     await this.userService.update(userId, { apiKey })
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'API_KEY_GENERATED',
     })
 
@@ -188,7 +188,7 @@ export class UserController {
       throw new ConflictException("You don't have an API key")
     }
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'API_KEY_DELETED',
     })
 
@@ -255,7 +255,7 @@ export class UserController {
       this.logger.error('DeleteSelfDTO: ', deleteSelfDTO)
     }
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'ACCOUNT_DELETED',
       meta: {
         reason_stated: !!deleteSelfDTO.feedback,

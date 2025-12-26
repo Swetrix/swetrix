@@ -234,7 +234,7 @@ export class GoalController {
 
       const newGoal = await this.goalService.create(goal)
 
-      trackCustom(ip, headers['user-agent'], {
+      await trackCustom(ip, headers['user-agent'], {
         ev: 'GOAL_CREATED',
       })
 
@@ -323,7 +323,7 @@ export class GoalController {
 
     await this.goalService.delete(id)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'GOAL_DELETED',
     })
   }

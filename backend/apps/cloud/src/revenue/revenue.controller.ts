@@ -120,7 +120,7 @@ export class RevenueController {
         throw new BadRequestException(result.message)
       }
 
-      trackCustom(ip, headers['user-agent'], {
+      await trackCustom(ip, headers['user-agent'], {
         ev: 'REVENUE_SETUP',
         meta: {
           provider: 'paddle',
@@ -149,7 +149,7 @@ export class RevenueController {
       throw new BadRequestException(result.message)
     }
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'REVENUE_SETUP',
       meta: {
         provider: 'stripe',
@@ -187,7 +187,7 @@ export class RevenueController {
 
     await this.revenueService.disconnectRevenue(pid)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'REVENUE_DISCONNECTED',
     })
   }

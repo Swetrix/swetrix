@@ -226,7 +226,7 @@ export class AiController {
               },
               'AI stream finish event',
             )
-            trackCustom(ip, headers['user-agent'], {
+            await trackCustom(ip, headers['user-agent'], {
               ev: 'AI_CHAT_STREAM_FINISHED',
               meta: {
                 finishReason: (part as any)?.finishReason,
@@ -522,7 +522,7 @@ export class AiController {
       name: createChatDto.name,
     })
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'AI_CHAT_CREATED',
     })
 
@@ -652,7 +652,7 @@ export class AiController {
 
     await this.aiChatService.delete(chatId)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'AI_CHAT_DELETED',
     })
 

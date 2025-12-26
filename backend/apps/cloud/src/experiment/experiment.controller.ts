@@ -355,7 +355,7 @@ export class ExperimentController {
         },
       )
 
-      trackCustom(ip, headers['user-agent'], {
+      await trackCustom(ip, headers['user-agent'], {
         ev: 'EXPERIMENT_CREATED',
       })
 
@@ -602,7 +602,7 @@ export class ExperimentController {
 
     await this.experimentService.delete(id)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'EXPERIMENT_DELETED',
     })
   }

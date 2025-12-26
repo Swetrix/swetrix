@@ -7,16 +7,13 @@ const swetrix = new Swetrix(process.env.SWETRIX_PID, {
   devMode: isDevelopment,
 })
 
-export const trackCustom = (
+export const trackCustom = async (
   ip: string,
   userAgent: string,
-  options: Omit<TrackEventOptions, 'meta'> & {
-    meta?: Record<string, string | number | boolean>
-  },
+  options: TrackEventOptions,
 ) => {
   try {
-    // @ts-expect-error - Will be fixed in the next version of the library
-    swetrix.track(ip, userAgent, options)
+    await swetrix.track(ip, userAgent, options)
   } catch (reason) {
     console.error('[ERROR] Failed to track custom event:', reason)
   }

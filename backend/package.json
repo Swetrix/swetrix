@@ -48,7 +48,7 @@
     "@sentry/cli": "^2.58.2",
     "@sentry/nestjs": "^10.27.0",
     "@sentry/profiling-node": "^10.27.0",
-    "@swetrix/node": "^2.1.0",
+    "@swetrix/node": "^3.0.1",
     "@ua-parser-js/pro-business": "^2.0.6",
     "ai": "^4.3.16",
     "axios": "^1.13.2",

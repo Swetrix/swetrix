@@ -254,7 +254,7 @@ export class ProjectController {
 
     await this.projectService.pinProject(userId, projectId)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'PROJECT_PINNED',
     })
   }
@@ -280,7 +280,7 @@ export class ProjectController {
 
     await this.projectService.unpinProject(userId, projectId)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'PROJECT_UNPINNED',
     })
   }
@@ -384,7 +384,7 @@ export class ProjectController {
 
       const newProject = await this.projectService.create(project)
 
-      trackCustom(ip, headers['user-agent'], {
+      await trackCustom(ip, headers['user-agent'], {
         ev: 'PROJECT_CREATED',
       })
 
@@ -447,7 +447,7 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, userId)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'FUNNEL_CREATED',
       meta: {
         steps_quantity: funnelDTO.steps.length,
@@ -561,7 +561,7 @@ export class ProjectController {
 
     await this.projectService.deleteFunnel(id)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'FUNNEL_DELETED',
       meta: {
         steps_quantity: oldFunnel.steps.length,
@@ -631,7 +631,7 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, userId)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'ANNOTATION_CREATED',
       meta: {
         length: annotationDTO.text.length,
@@ -1602,7 +1602,7 @@ export class ProjectController {
       return 'Error while deleting your project'
     }
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'PROJECT_DELETED',
     })
 
@@ -2039,7 +2039,7 @@ export class ProjectController {
         ),
       })
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'SEGMENT_CREATED',
       meta: {
         type: body.type,
@@ -2157,7 +2157,7 @@ export class ProjectController {
 
     await this.projectsViewsRepository.deleteProjectView(params.viewId)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'SEGMENT_DELETED',
     })
   }

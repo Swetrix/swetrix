@@ -121,7 +121,7 @@ export class AuthController {
       body.password,
     )
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'SIGNUP',
       meta: {
         method: 'email',

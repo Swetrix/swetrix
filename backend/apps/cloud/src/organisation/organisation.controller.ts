@@ -148,7 +148,7 @@ export class OrganisationController {
       confirmed: true,
     })
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'ORGANISATION_CREATED',
     })
 
@@ -388,7 +388,7 @@ export class OrganisationController {
       })
       await this.organisationService.delete(orgId)
 
-      trackCustom(ip, headers['user-agent'], {
+      await trackCustom(ip, headers['user-agent'], {
         ev: 'ORGANISATION_DELETED',
       })
     } catch (reason) {

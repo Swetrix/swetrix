@@ -685,7 +685,7 @@ export class AuthService {
       if (!user) {
         const data = await this.registerUserGoogle(sub, email)
 
-        trackCustom(ip, headers['user-agent'], {
+        await trackCustom(ip, headers['user-agent'], {
           ev: 'SIGNUP',
           meta: {
             method: 'google',
@@ -1115,7 +1115,7 @@ export class AuthService {
       if (!user) {
         const data = await this.registerUserGithub(id, email)
 
-        trackCustom(ip, headers['user-agent'], {
+        await trackCustom(ip, headers['user-agent'], {
           ev: 'SIGNUP',
           meta: {
             method: 'github',

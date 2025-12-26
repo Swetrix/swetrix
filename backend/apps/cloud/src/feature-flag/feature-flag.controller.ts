@@ -240,7 +240,7 @@ export class FeatureFlagController {
 
       const newFlag = await this.featureFlagService.create(flag)
 
-      trackCustom(ip, headers['user-agent'], {
+      await trackCustom(ip, headers['user-agent'], {
         ev: 'FEATURE_FLAG_CREATED',
       })
 
@@ -539,7 +539,7 @@ export class FeatureFlagController {
 
     await this.featureFlagService.delete(id)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'FEATURE_FLAG_DELETED',
     })
   }

@@ -47,7 +47,7 @@ export class GSCController {
 
     const { pid } = await this.gscService.handleOAuthCallback(uid, code, state)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'GSC_CONNECTED',
     })
 
@@ -111,7 +111,7 @@ export class GSCController {
     this.projectService.allowedToManage(project, uid)
     await this.gscService.disconnect(pid)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'GSC_DISCONNECTED',
     })
   }

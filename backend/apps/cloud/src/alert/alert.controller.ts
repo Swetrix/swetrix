@@ -236,7 +236,7 @@ export class AlertController {
 
       const newAlert = await this.alertService.create(alert as Alert)
 
-      trackCustom(ip, headers['user-agent'], {
+      await trackCustom(ip, headers['user-agent'], {
         ev: 'ALERT_CREATED',
         meta: {
           metric: alertDTO.queryMetric,
@@ -365,7 +365,7 @@ export class AlertController {
 
     await this.alertService.delete(id)
 
-    trackCustom(ip, headers['user-agent'], {
+    await trackCustom(ip, headers['user-agent'], {
       ev: 'ALERT_DELETED',
     })
   }
