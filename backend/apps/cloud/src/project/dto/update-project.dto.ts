@@ -35,13 +35,13 @@ export class UpdateProjectDto extends IntersectionType(
   @ApiProperty({
     required: false,
     description:
-      'CAPTCHA PoW difficulty (number of leading zeros required). Higher = harder. Range: 1-6.',
+      'CAPTCHA PoW difficulty (number of leading zeros required). Higher = harder. Range: 2-6.',
     default: 4,
-    minimum: 1,
+    minimum: 2,
     maximum: 6,
   })
   @IsInt()
-  @Min(1)
+  @Min(2)
   @Max(6)
   @IsOptional()
   captchaDifficulty?: number
