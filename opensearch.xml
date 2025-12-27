@@ -4,8 +4,8 @@
   <ShortName>Swetrix Docs</ShortName>
   <Description>Search Swetrix Docs</Description>
   <InputEncoding>UTF-8</InputEncoding>
-  <Image width="16" height="16" type="image/x-icon">https://docs.swetrix.com/img/favicon.ico</Image>
-  <Url type="text/html" method="get" template="https://docs.swetrix.com/search?q={searchTerms}"/>
-  <Url type="application/opensearchdescription+xml" rel="self" template="https://docs.swetrix.com/opensearch.xml" />
-  <moz:SearchForm>https://docs.swetrix.com/</moz:SearchForm>
+  <Image width="16" height="16" type="image/x-icon">https://docs.swetrix.com/swetrix/img/favicon.ico</Image>
+  <Url type="text/html" method="get" template="https://docs.swetrix.com/swetrix/search?q={searchTerms}"/>
+  <Url type="application/opensearchdescription+xml" rel="self" template="https://docs.swetrix.com/swetrix/opensearch.xml" />
+  <moz:SearchForm>https://docs.swetrix.com/swetrix/</moz:SearchForm>
 </OpenSearchDescription>
