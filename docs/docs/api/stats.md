@@ -70,7 +70,7 @@ Filters are used to aggregate data by specific parameters. For example, you can 
 }
 ```
 
-- **column** - the column to filter by. Possible values are: `cc`, `host`, `pg`, `lc`, `br`, `brv`, `os`, `osv`, `dv`, `ref`, `so`, `me`, `ca`. You can find more detailed information about columns [here](/sdk-reference#addpaneltab).
+- **column** - the column to filter by. Possible values are: `cc` (country code), `host` (hostname), `pg` (page), `lc` (locale), `br` (browser), `brv` (browser version), `os` (operating system), `osv` (OS version), `dv` (device), `ref` (referrer), `so` (source), `me` (medium), `ca` (campaign).
 - **filter** - the value to filter by. For example, if you want to filter by country, the value should be a country code (e.g. `GB` for Great Britain).
 - **isExclusive** - whether to include or exclude the specified value. If `isExclusive` is `true`, the data will be filtered by the specified value. If `isExclusive` is `false`, the data will be filtered by all values except the specified one.
 - **isContains** - whether the value should be matches exactly, or if it should be a substring. If `isContains` is `true`, the data will be filtered by the specified value (for example, searching for "rain" will return "Ukraine" because it contains "rain"). If `isContains` is `false`, the data will be filtered by the specified value exactly.
