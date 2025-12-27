@@ -60,7 +60,34 @@ const appendParamsToURL = (url: string, params: any) => {
   return `${url}?${queryString}`
 }
 
+const clearExistingCaptcha = (container: Element) => {
+  // Remove existing iframe(s) that belong to this captcha
+  const existingFrames = container.querySelectorAll('iframe[id^="swetrix-captcha-"]')
+  existingFrames.forEach((frame) => {
+    const frameId = frame.id
+    // Extract cid from frame id (e.g., "swetrix-captcha-abc123-frame" -> "swetrix-captcha-abc123")
+    const cid = frameId.replace('-frame', '')
+
+    // Remove the corresponding hidden input
+    const input = container.querySelector(`input[id="${cid}"]`)
+    if (input) {
+      input.remove()
+    }
+
+    // Remove the cid from ids array
+    const cidIndex = ids.indexOf(cid)
+    if (cidIndex > -1) {
+      ids.splice(cidIndex, 1)
+    }
+
+    frame.remove()
+  })
+}
+
 const renderCaptcha = (container: Element, params: any) => {
+  // Clear any existing captcha in this container before rendering
+  clearExistingCaptcha(container)
+
   const cid = generateRandomID()
   const cParams = {
     ...params,
