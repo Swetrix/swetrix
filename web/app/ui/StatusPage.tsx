@@ -16,12 +16,23 @@ interface ActionLink {
   primary?: boolean
 }
 
+interface ActionButton {
+  label: string
+  onClick: () => void
+  primary?: boolean
+}
+
+type Action = ActionLink | ActionButton
+
+const isActionLink = (action: Action): action is ActionLink => 'to' in action
+
 interface StatusPageProps {
   loading?: boolean
   type?: StatusType
   title?: string
+  description?: string
   icon?: ReactNode
-  actions?: ActionLink[]
+  actions?: Action[]
 }
 
 const iconMap: Record<StatusType, ReactNode> = {
@@ -36,7 +47,7 @@ const iconBgMap: Record<StatusType, string> = {
   info: 'bg-amber-100 dark:bg-amber-500/10',
 }
 
-const StatusPage = ({ loading, type = 'success', title, icon, actions }: StatusPageProps) => {
+const StatusPage = ({ loading, type = 'success', title, description, icon, actions }: StatusPageProps) => {
   const { t } = useTranslation('common')
 
   if (loading) {
@@ -65,22 +76,44 @@ const StatusPage = ({ loading, type = 'success', title, icon, actions }: StatusP
           </Text>
         ) : null}
 
+        {description ? (
+          <Text as='p' size='base' colour='secondary' className='mt-2'>
+            {description}
+          </Text>
+        ) : null}
+
         {actions && actions.length > 0 ? (
           <div className='mt-6 flex flex-wrap items-center justify-center gap-3'>
-            {actions.map((action) => (
-              <Link
-                key={action.to}
-                to={action.to}
-                className={cn(
-                  'inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none',
-                  action.primary
-                    ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-500 dark:bg-slate-800 dark:hover:bg-slate-700'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700',
-                )}
-              >
-                {action.label}
-              </Link>
-            ))}
+            {actions.map((action, index) =>
+              isActionLink(action) ? (
+                <Link
+                  key={action.to}
+                  to={action.to}
+                  className={cn(
+                    'inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none',
+                    action.primary
+                      ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-500 dark:bg-slate-800 dark:hover:bg-slate-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700',
+                  )}
+                >
+                  {action.label}
+                </Link>
+              ) : (
+                <button
+                  key={index}
+                  type='button'
+                  onClick={action.onClick}
+                  className={cn(
+                    'inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none',
+                    action.primary
+                      ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-500 dark:bg-slate-800 dark:hover:bg-slate-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700',
+                  )}
+                >
+                  {action.label}
+                </button>
+              ),
+            )}
           </div>
         ) : null}
       </div>

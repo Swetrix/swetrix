@@ -3,10 +3,10 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { StretchHorizontalIcon, LayoutGridIcon, SearchIcon, XIcon, FolderPlusIcon, CircleXIcon } from 'lucide-react'
+import { StretchHorizontalIcon, LayoutGridIcon, SearchIcon, XIcon, FolderPlusIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLoaderData, useNavigate, useSearchParams } from 'react-router'
+import { useLoaderData, useNavigate, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
@@ -23,6 +23,7 @@ import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import Select from '~/ui/Select'
+import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
 import { setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
@@ -333,38 +334,15 @@ const Dashboard = () => {
 
   if (error && isLoading === false) {
     return (
-      <div className='min-h-page bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
-        <div className='mx-auto max-w-max'>
-          <main className='sm:flex'>
-            <CircleXIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
-            <div className='sm:ml-6'>
-              <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
-                <Text as='h1' size='4xl' weight='bold' className='sm:text-5xl'>
-                  {t('apiNotifications.somethingWentWrong')}
-                </Text>
-                <Text as='p' size='2xl' weight='medium' colour='secondary' className='mt-4'>
-                  {t('apiNotifications.errorCode', { error })}
-                </Text>
-              </div>
-              <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
-                <button
-                  type='button'
-                  onClick={() => window.location.reload()}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700'
-                >
-                  {t('dashboard.reloadPage')}
-                </button>
-                <Link
-                  to={routes.contact}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-                >
-                  {t('notFoundPage.support')}
-                </Link>
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
+      <StatusPage
+        type='error'
+        title={t('apiNotifications.somethingWentWrong')}
+        description={t('apiNotifications.errorCode', { error })}
+        actions={[
+          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
+          { label: t('notFoundPage.support'), to: routes.contact },
+        ]}
+      />
     )
   }
 
