@@ -2,8 +2,8 @@
 const isDevelopment = window.__SWETRIX_CAPTCHA_DEV || false
 
 const CAPTCHA_SELECTOR = '.swecaptcha'
-const LIGHT_CAPTCHA_IFRAME_URL = isDevelopment ? './light.html' : 'https://cap.swetrix.com/pages/light'
-const DARK_CAPTCHA_IFRAME_URL = isDevelopment ? './dark.html' : 'https://cap.swetrix.com/pages/dark'
+const LIGHT_CAPTCHA_IFRAME_URL = isDevelopment ? './light.html' : 'https://cdn.swetrixcaptcha.com/pages/light'
+const DARK_CAPTCHA_IFRAME_URL = isDevelopment ? './dark.html' : 'https://cdn.swetrixcaptcha.com/pages/dark'
 const DEFAULT_RESPONSE_INPUT_NAME = 'swetrix-captcha-response'
 const MESSAGE_IDENTIFIER = 'swetrix-captcha'
 const ID_PREFIX = 'swetrix-captcha-'

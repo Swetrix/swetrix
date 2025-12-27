@@ -3,8 +3,8 @@ export {}
 // @ts-ignore
 const isDevelopment = window.__SWETRIX_CAPTCHA_DEV || false
 
-const API_URL = isDevelopment ? 'http://localhost:5005/v1/captcha' : 'https://api.swetrix.com/v1/captcha'
-const WORKER_URL = isDevelopment ? './pow-worker.js' : 'https://cap.swetrix.com/pow-worker.js'
+const API_URL = isDevelopment ? 'http://localhost:5005/v1/captcha' : 'https://api.swetrixcaptcha.com/v1/captcha'
+const WORKER_URL = isDevelopment ? './pow-worker.js' : 'https://cdn.swetrixcaptcha.com/pow-worker.js'
 const MSG_IDENTIFIER = 'swetrix-captcha'
 const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
 
