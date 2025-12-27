@@ -11,6 +11,7 @@ on:
       - main
     paths:
       - "docs/**"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -40,7 +41,7 @@ jobs:
 
   deploy:
     name: Deploy to GitHub Pages
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
