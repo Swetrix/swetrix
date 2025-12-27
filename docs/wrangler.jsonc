@@ -1,0 +1,8 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "docs-monorepo",
+  "compatibility_date": "2025-12-27",
+  "assets": {
+    "directory": "./build"
+  }
+}
