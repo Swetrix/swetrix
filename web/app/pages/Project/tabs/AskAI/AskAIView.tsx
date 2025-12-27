@@ -409,7 +409,7 @@ const AssistantMessage = ({ message, isStreaming }: { message: Message; isStream
                 !message.parts!.slice(idx + 1).some((p) => p.type === 'text' && p.text?.trim())
               return (
                 <div key={idx} className='mb-3'>
-                  <MessageContent content={part.text} isStreaming={isStreaming && isLastTextPart} />
+                  <MessageContent content={part.text} isStreaming={isStreaming ? isLastTextPart : undefined} />
                 </div>
               )
             }
@@ -487,7 +487,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const [currentChatId, setCurrentChatId] = useState<string | null>(null)
-  const [isCurrentChatOwner, setIsCurrentChatOwner] = useState(true)
   const [recentChats, setRecentChats] = useState<AIChatSummary[]>([])
   const [allChats, setAllChats] = useState<AIChatSummary[]>([])
   const [allChatsTotal, setAllChatsTotal] = useState(0)
@@ -550,8 +549,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
           })),
         )
         setCurrentChatId(chatId)
-        // Track if the current user owns this chat (defaults to true for new chats)
-        setIsCurrentChatOwner(chat.isOwner !== false)
       } catch (err) {
         console.error('Failed to load chat:', err)
         const newParams = new URLSearchParams(searchParams)
@@ -580,7 +577,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
           // If the chat was branched (user didn't own the original), update to the new chat ID
           if (result.branched) {
             setCurrentChatId(result.id)
-            setIsCurrentChatOwner(true) // User now owns the branched chat
             const newParams = new URLSearchParams(searchParams)
             newParams.set('chat', result.id)
             setSearchParams(newParams, { replace: true })
@@ -588,7 +584,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         } else {
           const chat = await createAIChat(projectId, apiMessages)
           setCurrentChatId(chat.id)
-          setIsCurrentChatOwner(true)
           const newParams = new URLSearchParams(searchParams)
           newParams.set('chat', chat.id)
           setSearchParams(newParams, { replace: true })
@@ -615,7 +610,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const handleNewChat = () => {
     setMessages([])
     setCurrentChatId(null)
-    setIsCurrentChatOwner(true)
     setStreamingMessage(null)
     setError(null)
     const newParams = new URLSearchParams(searchParams)

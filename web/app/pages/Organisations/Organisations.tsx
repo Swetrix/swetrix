@@ -5,7 +5,6 @@ import _size from 'lodash/size'
 import { SearchIcon, XIcon } from 'lucide-react'
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 

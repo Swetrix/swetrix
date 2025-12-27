@@ -4,7 +4,7 @@ import _size from 'lodash/size'
 import { Trash2Icon } from 'lucide-react'
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { transferProject, getOrganisation, updateOrganisation, deleteOrganisation } from '~/api'
