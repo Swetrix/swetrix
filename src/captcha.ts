@@ -3,7 +3,9 @@ export {}
 // @ts-ignore
 const isDevelopment = window.__SWETRIX_CAPTCHA_DEV || false
 
-const API_URL = isDevelopment ? 'http://localhost:5005/v1/captcha' : 'https://api.swetrixcaptcha.com/v1/captcha'
+const DEFAULT_API_URL = isDevelopment ? 'http://localhost:5005/v1/captcha' : 'https://api.swetrixcaptcha.com/v1/captcha'
+// @ts-ignore
+const API_URL: string = window.__SWETRIX_API_URL || DEFAULT_API_URL
 const WORKER_URL = isDevelopment ? './pow-worker.js' : 'https://cdn.swetrixcaptcha.com/pow-worker.js'
 const MSG_IDENTIFIER = 'swetrix-captcha'
 const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
@@ -49,6 +51,7 @@ interface PowProgress {
 
 let activeAction: ACTION = ACTION.checkbox
 let powWorker: Worker | null = null
+let progressStartTime: number = 0
 
 const sendMessageToLoader = (event: IFRAME_MESSAGE_TYPES, data = {}) => {
   window.parent.postMessage(
@@ -61,6 +64,107 @@ const sendMessageToLoader = (event: IFRAME_MESSAGE_TYPES, data = {}) => {
     },
     '*',
   )
+}
+
+/**
+ * Updates the progress bar
+ * @param progress - Progress value between 0 and 100, or -1 for indeterminate
+ */
+const updateProgressBar = (progress: number) => {
+  const progressBarContainer = document.querySelector('#progress-bar-container')
+  const progressBar = document.querySelector('#progress-bar') as HTMLElement | null
+
+  if (!progressBarContainer || !progressBar) return
+
+  if (progress < 0) {
+    // Indeterminate state
+    progressBarContainer.classList.add('show')
+    progressBar.classList.add('indeterminate')
+    progressBar.style.width = ''
+    progressBarContainer.setAttribute('aria-valuenow', '0')
+    progressBarContainer.removeAttribute('aria-valuenow')
+  } else if (progress === 0) {
+    // Hide progress bar
+    progressBarContainer.classList.remove('show')
+    progressBar.classList.remove('indeterminate')
+    progressBar.style.width = '0%'
+    progressBarContainer.setAttribute('aria-valuenow', '0')
+  } else if (progress >= 100) {
+    // Complete - fade out while staying at 100%
+    progressBar.classList.remove('indeterminate')
+    progressBar.style.width = '100%'
+    progressBarContainer.setAttribute('aria-valuenow', '100')
+    // Fade out after a brief moment at 100%
+    setTimeout(() => {
+      progressBarContainer.classList.remove('show')
+      // Reset width only after fade out completes (for next use)
+      setTimeout(() => {
+        progressBar.style.width = '0%'
+      }, 300)
+    }, 400)
+  } else {
+    // Show determinate progress
+    progressBarContainer.classList.add('show')
+    progressBar.classList.remove('indeterminate')
+    progressBar.style.width = `${Math.min(progress, 95)}%` // Cap at 95% until complete
+    progressBarContainer.setAttribute('aria-valuenow', String(Math.round(progress)))
+  }
+}
+
+/**
+ * Updates ARIA attributes based on current state
+ */
+const updateAriaState = (action: ACTION) => {
+  const captchaComponent = document.querySelector('#swetrix-captcha')
+  if (!captchaComponent) return
+
+  switch (action) {
+    case ACTION.checkbox:
+      captchaComponent.setAttribute('role', 'checkbox')
+      captchaComponent.setAttribute('aria-checked', 'false')
+      captchaComponent.setAttribute('aria-busy', 'false')
+      captchaComponent.setAttribute(
+        'aria-label',
+        'Human verification checkbox. Press Enter or Space to verify you are human.',
+      )
+      break
+    case ACTION.loading:
+      captchaComponent.setAttribute('role', 'status')
+      captchaComponent.setAttribute('aria-checked', 'mixed')
+      captchaComponent.setAttribute('aria-busy', 'true')
+      captchaComponent.setAttribute('aria-label', 'Verifying that you are human. Please wait.')
+      break
+    case ACTION.completed:
+      captchaComponent.setAttribute('role', 'checkbox')
+      captchaComponent.setAttribute('aria-checked', 'true')
+      captchaComponent.setAttribute('aria-busy', 'false')
+      captchaComponent.setAttribute('aria-label', 'Verification successful. You have been verified as human.')
+      break
+    case ACTION.failure:
+      captchaComponent.setAttribute('role', 'checkbox')
+      captchaComponent.setAttribute('aria-checked', 'false')
+      captchaComponent.setAttribute('aria-busy', 'false')
+      captchaComponent.setAttribute('aria-label', 'Verification failed. Press Enter or Space to try again.')
+      break
+  }
+
+  // Announce to screen readers
+  const srStatus = document.querySelector('#sr-status')
+  if (srStatus) {
+    switch (action) {
+      case ACTION.loading:
+        srStatus.textContent = 'Verification in progress. Please wait.'
+        break
+      case ACTION.completed:
+        srStatus.textContent = 'Verification successful!'
+        break
+      case ACTION.failure:
+        srStatus.textContent = 'Verification failed. Please try again.'
+        break
+      default:
+        srStatus.textContent = ''
+    }
+  }
 }
 
 /**
@@ -101,10 +205,17 @@ const activateAction = (action: ACTION) => {
 
   if (action === 'failure') {
     statusFailure?.classList.remove('hidden')
+    updateProgressBar(0) // Hide progress bar on failure
   } else if (action === 'loading') {
     statusComputing?.classList.remove('hidden')
+    progressStartTime = Date.now()
+    updateProgressBar(-1) // Start with indeterminate progress
+  } else if (action === 'completed') {
+    statusDefault?.classList.remove('hidden')
+    updateProgressBar(100) // Complete the progress bar
   } else {
     statusDefault?.classList.remove('hidden')
+    updateProgressBar(0) // Hide progress bar
   }
 
   // Show the active action element with animation
@@ -114,6 +225,9 @@ const activateAction = (action: ACTION) => {
       actions[action]?.classList.add('show')
     })
   }
+
+  // Update ARIA state
+  updateAriaState(action)
 }
 
 const setLifetimeTimeout = () => {
@@ -182,6 +296,26 @@ const verifySolution = async (challenge: string, nonce: number, solution: string
   }
 }
 
+/**
+ * Calculate estimated progress based on difficulty and attempts
+ * Uses a logarithmic scale to provide smooth progress feedback
+ */
+const calculateProgress = (attempts: number, difficulty: number): number => {
+  // Estimate expected iterations based on difficulty
+  // For difficulty d, expected iterations is roughly 16^d / 2
+  const expectedIterations = Math.pow(16, difficulty) / 2
+
+  // Use a logarithmic scale for smoother progress
+  // This ensures progress feels more linear to the user
+  const rawProgress = (attempts / expectedIterations) * 100
+
+  // Apply easing to make early progress more visible
+  // and slow down as we approach completion
+  const easedProgress = Math.min(95, Math.sqrt(rawProgress) * 10)
+
+  return easedProgress
+}
+
 const solveChallenge = async (challenge: PowChallenge): Promise<void> => {
   return new Promise((resolve, reject) => {
     // Terminate any existing worker
@@ -205,6 +339,10 @@ const solveChallenge = async (challenge: PowChallenge): Promise<void> => {
       const data = event.data
 
       if (data.type === 'progress') {
+        // Update progress bar based on attempts
+        const progressData = data as PowProgress
+        const progress = calculateProgress(progressData.attempts, challenge.difficulty)
+        updateProgressBar(progress)
         return
       }
 
@@ -221,6 +359,7 @@ const solveChallenge = async (challenge: PowChallenge): Promise<void> => {
 
       if (data.type === 'result') {
         // Worker found the solution
+        updateProgressBar(100) // Complete progress bar
         const token = await verifySolution(challenge.challenge, (data as PowResult).nonce, (data as PowResult).solution)
 
         if (token) {
@@ -278,6 +417,7 @@ const solveInMainThread = async (challenge: PowChallenge): Promise<void> => {
   const { challenge: challengeStr, difficulty } = challenge
   let nonce = 0
   const startTime = Date.now()
+  const progressInterval = 1000 // Update progress every 1k iterations
 
   const sha256 = async (message: string): Promise<string> => {
     const encoder = new TextEncoder()
@@ -308,6 +448,7 @@ const solveInMainThread = async (challenge: PowChallenge): Promise<void> => {
     const hash = await sha256(input)
 
     if (hasValidPrefix(hash, difficulty)) {
+      updateProgressBar(100) // Complete progress bar
       const token = await verifySolution(challengeStr, nonce, hash)
 
       if (token) {
@@ -319,12 +460,42 @@ const solveInMainThread = async (challenge: PowChallenge): Promise<void> => {
     }
 
     nonce++
+
+    // Update progress bar periodically
+    if (nonce % progressInterval === 0) {
+      const progress = calculateProgress(nonce, difficulty)
+      updateProgressBar(progress)
+    }
   }
 
   // Max iterations reached without finding solution
   console.error(`PoW main-thread max iterations reached: ${MAX_ITERATIONS} attempts`)
   sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
   activateAction(ACTION.failure)
+}
+
+/**
+ * Handles the captcha activation (click or keyboard)
+ */
+const handleCaptchaActivation = async () => {
+  if (activeAction === ACTION.loading || activeAction === ACTION.completed) {
+    return
+  }
+
+  if (activeAction === ACTION.failure) {
+    activateAction(ACTION.checkbox)
+    return
+  }
+
+  activateAction(ACTION.loading)
+
+  const challenge = await generateChallenge()
+
+  if (!challenge) {
+    return
+  }
+
+  await solveChallenge(challenge)
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -335,24 +506,23 @@ document.addEventListener('DOMContentLoaded', () => {
     e.stopPropagation()
   })
 
-  captchaComponent?.addEventListener('click', async () => {
-    if (activeAction === ACTION.loading || activeAction === ACTION.completed) {
-      return
+  captchaComponent?.addEventListener('click', handleCaptchaActivation)
+
+  captchaComponent?.addEventListener('keydown', (e: Event) => {
+    const keyboardEvent = e as KeyboardEvent
+
+    if (keyboardEvent.key === 'Enter' || keyboardEvent.key === ' ') {
+      e.preventDefault()
+      handleCaptchaActivation()
     }
-
-    if (activeAction === ACTION.failure) {
-      activateAction(ACTION.checkbox)
-      return
-    }
-
-    activateAction(ACTION.loading)
-
-    const challenge = await generateChallenge()
-
-    if (!challenge) {
-      return
-    }
-
-    await solveChallenge(challenge)
   })
+
+  captchaComponent?.addEventListener('keyup', (e: Event) => {
+    const keyboardEvent = e as KeyboardEvent
+    if (keyboardEvent.key === ' ') {
+      e.preventDefault()
+    }
+  })
+
+  updateAriaState(ACTION.checkbox)
 })

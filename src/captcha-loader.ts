@@ -7,7 +7,8 @@ const DARK_CAPTCHA_IFRAME_URL = isDevelopment ? './dark.html' : 'https://cdn.swe
 const DEFAULT_RESPONSE_INPUT_NAME = 'swetrix-captcha-response'
 const MESSAGE_IDENTIFIER = 'swetrix-captcha'
 const ID_PREFIX = 'swetrix-captcha-'
-const THEMES = ['light', 'dark']
+const THEMES = ['light', 'dark', 'auto']
+const DEFAULT_THEME = 'auto'
 const PID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
 
 enum LOG_ACTIONS {
@@ -29,6 +30,24 @@ const ids: string[] = []
 
 const log = (status: LOG_ACTIONS, text: string) => {
   console[status](`[Swetrix Captcha] ${text}`)
+}
+
+const detectPreferredTheme = (): 'light' | 'dark' => {
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark'
+    }
+  }
+
+  return 'light'
+}
+
+const resolveTheme = (theme: string | null): 'light' | 'dark' => {
+  if (!theme || theme === 'auto') {
+    return detectPreferredTheme()
+  }
+
+  return theme as 'light' | 'dark'
 }
 
 const appendParamsToURL = (url: string, params: any) => {
@@ -131,7 +150,8 @@ const postMessageCallback = (pmEvent: MessageEvent) => {
 }
 
 const generateCaptchaFrame = (params: any) => {
-  const { theme } = params
+  const { theme: rawTheme } = params
+  const theme = resolveTheme(rawTheme)
   const captchaFrame = document.createElement('iframe')
 
   captchaFrame.id = getFrameID(params.cid)
@@ -140,10 +160,13 @@ const generateCaptchaFrame = (params: any) => {
       ? appendParamsToURL(DARK_CAPTCHA_IFRAME_URL, params)
       : appendParamsToURL(LIGHT_CAPTCHA_IFRAME_URL, params)
   captchaFrame.style.height = FRAME_HEIGHT
-  captchaFrame.title = 'Swetrix Captcha'
+  captchaFrame.title = 'Swetrix Captcha - Human verification'
   captchaFrame.style.border = 'none'
   captchaFrame.style.width = '302px'
   captchaFrame.style.overflow = 'visible'
+
+  captchaFrame.setAttribute('role', 'presentation')
+  captchaFrame.setAttribute('aria-label', 'Human verification widget')
 
   return captchaFrame
 }
@@ -157,6 +180,8 @@ const generateHiddenInput = (params: any) => {
   input.value = ''
   input.id = cid
 
+  input.setAttribute('aria-hidden', 'true')
+
   return input
 }
 
@@ -164,7 +189,7 @@ const validateParams = (params: any) => {
   const { theme, pid } = params
 
   if (theme && !THEMES.includes(theme)) {
-    log(LOG_ACTIONS.error, `Invalid data-theme parameter: ${theme}`)
+    log(LOG_ACTIONS.error, `Invalid data-theme parameter: ${theme}. Valid options are: ${THEMES.join(', ')}`)
     return false
   }
 
@@ -176,11 +201,21 @@ const validateParams = (params: any) => {
   return true
 }
 
-const parseParams = (container: Element): object => ({
-  pid: container.getAttribute('data-project-id'),
-  respName: container.getAttribute('data-response-input-name') || DEFAULT_RESPONSE_INPUT_NAME,
-  theme: container.getAttribute('data-theme'),
-})
+const parseParams = (container: Element): object => {
+  const params: Record<string, string | null> = {
+    pid: container.getAttribute('data-project-id'),
+    respName: container.getAttribute('data-response-input-name') || DEFAULT_RESPONSE_INPUT_NAME,
+    theme: container.getAttribute('data-theme') || DEFAULT_THEME,
+  }
+
+  // Optional custom API URL
+  const apiUrl = container.getAttribute('data-api-url')
+  if (apiUrl) {
+    params.apiUrl = apiUrl
+  }
+
+  return params
+}
 
 const main = (forced = false) => {
   if (!forced && 'swecaptcha' in window) {

@@ -6,6 +6,38 @@ Swetrix CAPTCHA is a privacy-oriented, simple and opensource CAPTCHA service.
 
 See the full documentation at https://docs.swetrix.com/captcha/introduction
 
+## Features
+
+- **Privacy-focused**: No tracking, no cookies
+- **Accessible**: Full keyboard navigation, ARIA support, screen reader announcements, respects `prefers-reduced-motion`
+- **Progress indicator**: Visual progress bar during verification
+- **Auto theme detection**: Automatically matches browser's light/dark mode preference
+- **Lightweight**: Minimal footprint, fast loading
+
+## Usage
+
+```html
+<div class="swecaptcha" 
+     data-project-id="YOUR_PROJECT_ID" 
+     data-theme="auto">
+</div>
+<script src="https://cdn.swetrixcaptcha.com/captcha-loader.js" defer></script>
+```
+
+### Options
+
+| Attribute | Description | Values | Default |
+|-----------|-------------|--------|---------|
+| `data-project-id` | Your project ID | Valid project ID | Required |
+| `data-theme` | Color theme | `auto`, `light`, `dark` | `auto` |
+| `data-response-input-name` | Hidden input name | Any string | `swetrix-captcha-response` |
+
+### Theme Options
+
+- `auto`: Automatically detects user's browser theme preference using `prefers-color-scheme`
+- `light`: Forces light theme
+- `dark`: Forces dark theme
+
 ## Development
 
 To build the captcha run:
