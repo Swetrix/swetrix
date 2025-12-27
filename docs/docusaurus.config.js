@@ -1,13 +1,17 @@
-// const lightCodeTheme = require('prism-react-renderer/themes/github')
-// const darkCodeTheme = require('prism-react-renderer/themes/dracula')
+// @ts-check
 
-module.exports = {
+/** @type {import('@docusaurus/types').Config} */
+const config = {
   title: 'Swetrix Docs',
-  tagline: 'Ultimate open-source analytics to satisfy all your needs',
+  tagline: 'Turn traffic into insights',
   url: 'https://docs.swetrix.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'throw',
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'throw',
+    },
+  },
   favicon: 'img/favicon.ico',
   organizationName: 'swetrix', // github org name
   projectName: 'docs', // github repo name
@@ -165,3 +169,5 @@ module.exports = {
   //   }
   // },
 }
+
+module.exports = config
