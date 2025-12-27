@@ -4,7 +4,7 @@
 module.exports = {
   title: 'Swetrix Docs',
   tagline: 'Ultimate open-source analytics to satisfy all your needs',
-  url: 'https://docs.swetrix.com',
+  url: 'https://docs-test.swetrix.com',
   baseUrl: '/swetrix/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
