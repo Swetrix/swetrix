@@ -21,7 +21,6 @@ const routes = Object.freeze({
   cookiePolicy: '/cookie-policy',
   terms: '/terms',
   contact: '/contact',
-  about: '/about',
   transfer_confirm: '/project/transfer/confirm',
   transfer_reject: '/project/transfer/cancel',
   socialised: '/socialised',

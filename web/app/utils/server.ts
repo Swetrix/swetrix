@@ -168,12 +168,6 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
       }
       break
 
-    case routes.about:
-      result = {
-        title: t('titles.aboutUs'),
-      }
-      break
-
     case routes.socialised:
       result = {
         title: t('titles.socialisation'),

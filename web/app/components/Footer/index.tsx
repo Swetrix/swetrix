@@ -46,7 +46,6 @@ const productionNavigation = {
     { key: 'roi', href: routesPath.roi_calculator, internal: true },
   ],
   company: [
-    { key: 'about', href: routesPath.about, internal: true },
     { key: 'open', href: routesPath.open, internal: true },
     { key: 'status', href: STATUSPAGE_URL, internal: false },
     { key: 'blog', href: routesPath.blog, internal: true },
