@@ -1,3 +1,0 @@
-Thanks a lot to @laciferin2024 and his PR on the Cursor repository for the inspiration for this template.
-
-- Andrii.

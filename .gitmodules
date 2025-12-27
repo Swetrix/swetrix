@@ -1,3 +1,0 @@
-[submodule "blog-posts"]
-	path = backend/blog-posts
-	url = https://github.com/Swetrix/blog-posts.git

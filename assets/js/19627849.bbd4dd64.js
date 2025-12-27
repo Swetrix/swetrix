@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunk_swetrix_docs=globalThis.webpackChunk_swetrix_docs||[]).push([[6497],{7757(s){s.exports=JSON.parse('{"name":"docusaurus-theme-search-algolia","id":"default"}')}}]);
