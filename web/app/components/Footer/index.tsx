@@ -65,6 +65,7 @@ const productionNavigation = {
     { name: 'Fathom Analytics', href: '/comparison/fathom-analytics' },
     { name: 'Simple Analytics', href: '/comparison/simple-analytics' },
     { name: 'Vercel Web Analytics', href: '/comparison/vercel-web-analytics' },
+    { name: 'Rybbit', href: '/comparison/rybbit' },
     { name: 'Pirsch', href: '/comparison/pirsch' },
     { name: 'Umami', href: '/comparison/umami' },
     { name: 'Matomo', href: '/comparison/matomo' },
