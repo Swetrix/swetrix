@@ -1876,48 +1876,84 @@ export class TaskManagerService {
         }
 
         const pids = _map(projects, p => p.id)
-        const queryParams = {
-          pids,
-          nineWeeksAgo,
-          now,
-        }
 
         // No need to check for performance activity because it's not tracked without tracking analytics
         const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
         const queryCaptcha = `SELECT count() FROM captcha WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
         const queryCustomEvents = `SELECT count() FROM customEV WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
 
-        const { data: analyticsResult } = await clickhouse
-          .query({
-            query: queryAnalytics,
-            query_params: queryParams,
-          })
-          .then(resultSet => resultSet.json<{ 'count()': number }>())
+        // Process project IDs in chunks to avoid ClickHouse field value limit
+        let totalAnalytics = 0
+        let totalCaptcha = 0
+        let totalCustomEvents = 0
 
-        if (analyticsResult[0]['count()'] > 0) {
-          return
+        for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
+          const pidChunk = pids.slice(i, i + CHUNK_SIZE)
+          const queryParams = {
+            pids: pidChunk,
+            nineWeeksAgo,
+            now,
+          }
+
+          const { data: analyticsResult } = await clickhouse
+            .query({
+              query: queryAnalytics,
+              query_params: queryParams,
+            })
+            .then(resultSet => resultSet.json<{ 'count()': number }>())
+
+          totalAnalytics += analyticsResult[0]['count()']
+
+          // Early return if we found activity
+          if (totalAnalytics > 0) {
+            return
+          }
         }
 
-        const { data: captchaResult } = await clickhouse
-          .query({
-            query: queryCaptcha,
-            query_params: queryParams,
-          })
-          .then(resultSet => resultSet.json<{ 'count()': number }>())
+        for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
+          const pidChunk = pids.slice(i, i + CHUNK_SIZE)
+          const queryParams = {
+            pids: pidChunk,
+            nineWeeksAgo,
+            now,
+          }
 
-        if (captchaResult[0]['count()'] > 0) {
-          return
+          const { data: captchaResult } = await clickhouse
+            .query({
+              query: queryCaptcha,
+              query_params: queryParams,
+            })
+            .then(resultSet => resultSet.json<{ 'count()': number }>())
+
+          totalCaptcha += captchaResult[0]['count()']
+
+          // Early return if we found activity
+          if (totalCaptcha > 0) {
+            return
+          }
         }
 
-        const { data: customEventsResult } = await clickhouse
-          .query({
-            query: queryCustomEvents,
-            query_params: queryParams,
-          })
-          .then(resultSet => resultSet.json<{ 'count()': number }>())
+        for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
+          const pidChunk = pids.slice(i, i + CHUNK_SIZE)
+          const queryParams = {
+            pids: pidChunk,
+            nineWeeksAgo,
+            now,
+          }
 
-        if (customEventsResult[0]['count()'] > 0) {
-          return
+          const { data: customEventsResult } = await clickhouse
+            .query({
+              query: queryCustomEvents,
+              query_params: queryParams,
+            })
+            .then(resultSet => resultSet.json<{ 'count()': number }>())
+
+          totalCustomEvents += customEventsResult[0]['count()']
+
+          // Early return if we found activity
+          if (totalCustomEvents > 0) {
+            return
+          }
         }
 
         await this.userService.update(id, {
