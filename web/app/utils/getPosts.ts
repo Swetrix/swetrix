@@ -45,6 +45,9 @@ function isSectionHeaderRow(row: Tokens.TableCell[]): boolean {
   return isBold && otherCellsEmpty
 }
 
+// Emoji patterns that should be centered in table cells
+const CENTERED_EMOJI_CELLS = ['✅', '❌', '⚠️']
+
 // Custom table rendering with improved styling
 renderer.table = ({ header, rows }: Tokens.Table) => {
   const headerCells = header
@@ -66,10 +69,13 @@ renderer.table = ({ header, rows }: Tokens.Table) => {
 
       // Regular row
       return `<tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">${row
-        .map(
-          (cell) =>
-            `<td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">${parseInlineMarkdown(cell.text)}</td>`,
-        )
+        .map((cell) => {
+          const isEmojiOnly = CENTERED_EMOJI_CELLS.includes(cell.text.trim())
+          const cellClass = isEmojiOnly
+            ? 'px-4 py-3 text-sm text-slate-700 dark:text-slate-300 text-center'
+            : 'px-4 py-3 text-sm text-slate-700 dark:text-slate-300'
+          return `<td class="${cellClass}">${parseInlineMarkdown(cell.text)}</td>`
+        })
         .join('')}</tr>`
     })
     .join('')
