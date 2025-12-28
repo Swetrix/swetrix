@@ -238,6 +238,45 @@
         "desc": "Użyj naszego API, aby zweryfikować odpowiedź CAPTCHA na swoim serwerze i odfiltrować boty"
       },
       "readDocs": "Przeczytaj dokumentację"
+    },
+    "demo": {
+      "tagline": "Wypróbuj samodzielnie",
+      "title": "Wypróbuj Swetrix CAPTCHA",
+      "description": "Swetrix CAPTCHA wykorzystuje niewidoczne wyzwanie typu proof-of-work. Zamiast irytujących łamigłówek sprawdza urządzenie użytkownika w tle.",
+      "description2": "Użytkownicy przechodzą szybką weryfikację, aby udowodnić, że są ludźmi. Ten prosty krok zabezpiecza Twoje formularze przed spamem i zautomatyzowanymi atakami.",
+      "seeDevDemo": "Zobacz demo dla deweloperów",
+      "formTitle": "Demo",
+      "formSubtitle": "Użyj przykładowego formularza, aby zobaczyć Swetrix CAPTCHA w działaniu.",
+      "nameLabel": "Nazwa testowa",
+      "namePlaceholder": "Wpisz swoje imię i nazwisko",
+      "messageLabel": "Wiadomość testowa",
+      "messagePlaceholder": "Wpisz wiadomość (opcjonalnie)",
+      "submit": "Wyślij",
+      "success": "Formularz wysłano pomyślnie! Weryfikacja CAPTCHA zakończona sukcesem.",
+      "errors": {
+        "notCompleted": "Najpierw ukończ weryfikację CAPTCHA."
+      }
+    },
+    "demoPage": {
+      "title": "Demo deweloperskie Swetrix CAPTCHA",
+      "subtitle": "Testuj i konfiguruj widżet CAPTCHA",
+      "captchaWidget": "Widżet CAPTCHA",
+      "configuration": "Konfiguracja",
+      "theme": "Motyw",
+      "themeAuto": "Automatyczny",
+      "themeLight": "Jasny",
+      "themeDark": "Ciemny",
+      "mode": "Tryb",
+      "modeReal": "Prawdziwy przykład",
+      "modeAlwaysPass": "Zawsze zaliczaj",
+      "modeAlwaysFail": "Zawsze nie zaliczaj",
+      "serverValidation": "Walidacja tokenu po stronie serwera",
+      "tokenType": "Typ tokenu",
+      "tokenAlwaysPass": "Zawsze zaliczaj",
+      "tokenAlwaysFail": "Zawsze nie zaliczaj",
+      "tokenAlreadyUsed": "Niepowodzenie (token został już użyty)",
+      "validateButton": "Zweryfikuj",
+      "learnMore": "Dowiedz się więcej o integracji CAPTCHA w naszej dokumentacji."
     }
   },
   "marketers": {

@@ -238,6 +238,45 @@
         "desc": "Verwenden Sie unsere API, um die CAPTCHA-Antwort auf Ihrem Server zu verifizieren und Bots herauszufiltern"
       },
       "readDocs": "Dokumentation lesen"
+    },
+    "demo": {
+      "tagline": "Probieren Sie es selbst aus",
+      "title": "Erleben Sie Swetrix CAPTCHA",
+      "description": "Swetrix CAPTCHA verwendet eine unsichtbare Proof-of-Work-Prüfung. Statt nerviger Rätsel prüft es das Gerät des Nutzers im Hintergrund.",
+      "description2": "Nutzer führen eine kurze Verifizierung durch, um zu beweisen, dass sie Menschen sind. Dieser einfache Schritt schützt Ihre Formulare vor Spam und automatisierten Angriffen.",
+      "seeDevDemo": "Entwickler-Demo ansehen",
+      "formTitle": "Demo",
+      "formSubtitle": "Nutzen Sie das Beispielformular, um Swetrix CAPTCHA in Aktion zu erleben.",
+      "nameLabel": "Testname",
+      "namePlaceholder": "Geben Sie Ihren Namen ein",
+      "messageLabel": "Testnachricht",
+      "messagePlaceholder": "Geben Sie eine Nachricht ein (optional)",
+      "submit": "Absenden",
+      "success": "Formular erfolgreich gesendet! Die CAPTCHA-Verifizierung war erfolgreich.",
+      "errors": {
+        "notCompleted": "Bitte schließen Sie zuerst die CAPTCHA-Verifizierung ab."
+      }
+    },
+    "demoPage": {
+      "title": "Swetrix CAPTCHA Entwickler-Demo",
+      "subtitle": "CAPTCHA-Widget testen und konfigurieren",
+      "captchaWidget": "CAPTCHA-Widget",
+      "configuration": "Konfiguration",
+      "theme": "Design",
+      "themeAuto": "Automatisch",
+      "themeLight": "Hell",
+      "themeDark": "Dunkel",
+      "mode": "Modus",
+      "modeReal": "Echtes Beispiel",
+      "modeAlwaysPass": "Immer bestehen",
+      "modeAlwaysFail": "Immer fehlschlagen",
+      "serverValidation": "Serverseitige Token-Validierung",
+      "tokenType": "Token-Typ",
+      "tokenAlwaysPass": "Immer bestehen",
+      "tokenAlwaysFail": "Immer fehlschlagen",
+      "tokenAlreadyUsed": "Fehlschlag (Token bereits verwendet)",
+      "validateButton": "Validieren",
+      "learnMore": "Erfahren Sie in unserer Dokumentation mehr über die Integration von CAPTCHA."
     }
   },
   "marketers": {

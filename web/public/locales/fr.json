@@ -238,6 +238,45 @@
         "desc": "Utilisez notre API pour vérifier la réponse CAPTCHA sur votre serveur et filtrer les bots"
       },
       "readDocs": "Lire la documentation"
+    },
+    "demo": {
+      "tagline": "Essayez par vous-même",
+      "title": "Découvrez Swetrix CAPTCHA",
+      "description": "Swetrix CAPTCHA utilise un défi de preuve de travail invisible. Au lieu de puzzles agaçants, il vérifie l’appareil de l’utilisateur en arrière-plan.",
+      "description2": "Les utilisateurs effectuent une vérification rapide pour prouver qu’ils sont humains. Cette étape simple protège vos formulaires contre le spam et les attaques automatisées.",
+      "seeDevDemo": "Voir la démo pour développeurs",
+      "formTitle": "Démo",
+      "formSubtitle": "Utilisez le formulaire d’exemple pour voir Swetrix CAPTCHA en action.",
+      "nameLabel": "Nom de test",
+      "namePlaceholder": "Saisissez votre nom",
+      "messageLabel": "Message de test",
+      "messagePlaceholder": "Saisissez un message (facultatif)",
+      "submit": "Envoyer",
+      "success": "Formulaire envoyé avec succès ! La vérification CAPTCHA a réussi.",
+      "errors": {
+        "notCompleted": "Veuillez d’abord terminer la vérification CAPTCHA."
+      }
+    },
+    "demoPage": {
+      "title": "Démo développeur Swetrix CAPTCHA",
+      "subtitle": "Testez et configurez le widget CAPTCHA",
+      "captchaWidget": "Widget CAPTCHA",
+      "configuration": "Configuration",
+      "theme": "Thème",
+      "themeAuto": "Automatique",
+      "themeLight": "Clair",
+      "themeDark": "Sombre",
+      "mode": "Mode",
+      "modeReal": "Exemple réel",
+      "modeAlwaysPass": "Toujours réussir",
+      "modeAlwaysFail": "Toujours échouer",
+      "serverValidation": "Validation du jeton côté serveur",
+      "tokenType": "Type de jeton",
+      "tokenAlwaysPass": "Toujours réussir",
+      "tokenAlwaysFail": "Toujours échouer",
+      "tokenAlreadyUsed": "Échec (jeton déjà utilisé)",
+      "validateButton": "Valider",
+      "learnMore": "En savoir plus sur l’intégration du CAPTCHA dans notre documentation."
     }
   },
   "marketers": {

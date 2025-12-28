@@ -44,6 +44,9 @@ declare global {
     env: any
 
     Paddle: any
+
+    // Swetrix CAPTCHA loader function
+    swetrixCaptchaForceLoad?: () => void
   }
 }
 

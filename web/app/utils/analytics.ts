@@ -3,7 +3,7 @@ import * as Swetrix from 'swetrix'
 
 import { isBrowser, isDevelopment, isIframe, isSelfhosted } from '~/lib/constants'
 
-const SWETRIX_PID = 'STEzHcB1rALV'
+export const SWETRIX_PID = 'STEzHcB1rALV'
 
 const REFS_TO_IGNORE = [
   /https:\/\/swetrix.com\/projects\/(?!new$)[^/]+$/i,

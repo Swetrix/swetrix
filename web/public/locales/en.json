@@ -238,6 +238,45 @@
         "desc": "Use our API to verify the CAPTCHA response on your server and filter out bots"
       },
       "readDocs": "Read the documentation"
+    },
+    "demo": {
+      "tagline": "Try it yourself",
+      "title": "Experience Swetrix CAPTCHA",
+      "description": "Swetrix CAPTCHA uses an invisible proof-of-work challenge. Instead of annoying puzzles, it checks the user's device in the background.",
+      "description2": "Users complete a quick verification to prove they are human. This simple step secures your forms against spam and automated attacks.",
+      "seeDevDemo": "See developer demo",
+      "formTitle": "Demo",
+      "formSubtitle": "Use the sample form to experience Swetrix CAPTCHA in action.",
+      "nameLabel": "Test Name",
+      "namePlaceholder": "Enter your name",
+      "messageLabel": "Test Message",
+      "messagePlaceholder": "Enter a message (optional)",
+      "submit": "Submit",
+      "success": "Form submitted successfully! The CAPTCHA verification passed.",
+      "errors": {
+        "notCompleted": "Please complete the CAPTCHA verification first."
+      }
+    },
+    "demoPage": {
+      "title": "Swetrix CAPTCHA Developer Demo",
+      "subtitle": "Test and configure the CAPTCHA widget",
+      "captchaWidget": "CAPTCHA Widget",
+      "configuration": "Configuration",
+      "theme": "Theme",
+      "themeAuto": "Auto",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "mode": "Mode",
+      "modeReal": "Real example",
+      "modeAlwaysPass": "Always pass",
+      "modeAlwaysFail": "Always fail",
+      "serverValidation": "Token server-side validation",
+      "tokenType": "Token type",
+      "tokenAlwaysPass": "Always pass",
+      "tokenAlwaysFail": "Always fail",
+      "tokenAlreadyUsed": "Fail (token already used)",
+      "validateButton": "Validate",
+      "learnMore": "Learn more about integrating CAPTCHA in our documentation."
     }
   },
   "marketers": {
