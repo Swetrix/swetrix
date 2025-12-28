@@ -3,8 +3,7 @@ module.exports = {
     {
       name: 'Swetrix Frontend',
       script: './start.sh',
-      exec_mode: 'cluster',
-      instances: 'max',
+      interpreter: '/bin/bash',
     },
   ],
 }
