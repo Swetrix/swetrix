@@ -35,7 +35,7 @@ Here is a list of all available options:
 
 - `theme`: `light` or `dark` - the theme of the dashboard.
 - `lng`: language to display the dashboard in. Supported languages: `en`, `uk`, `pl`, `de`, `fr`. Defaults to user's browser language.
-- `tab`: `traffic`, `performance`, `sessions`, `errors`, `funnels`, `alerts` - the default tab to show. By default, the traffic tab is shown.
-- `tabs`: `traffic`, `performance`, `sessions`, `errors`, `funnels`, `alerts` - a comma-separated list of tabs that should be accessible in dashboard. Example: `tabs=traffic,performance,sessions` will only show the traffic, performance and sessions tabs. By default, all tabs are shown.
+- `tab`: `traffic`, `performance`, `profiles`, `funnels`, `sessions`, `errors`, `goals`, `experiments`, `featureFlags`, `alerts`, `captcha`, `ai` - the default tab to show. By default, the traffic tab is shown.
+- `tabs`: `traffic`, `performance`, `profiles`, `funnels`, `sessions`, `errors`, `goals`, `experiments`, `featureFlags`, `alerts`, `captcha`, `ai` - a comma-separated list of tabs that should be accessible in dashboard. Example: `tabs=traffic,performance,sessions` will only show the traffic, performance and sessions tabs. By default, all tabs are shown.
 - `embedded` - if set to `true`, header, footer and any marketing CTAs will be hidden.
 - `password` - if your dashboard is password-protected, you can pass the password as a query parameter. Example: `password=yourpassword`, this way the dashboard will be unlocked without the need to enter the password.
