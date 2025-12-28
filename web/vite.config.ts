@@ -5,7 +5,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 
 export default defineConfig({
   server: {
-    port: 3000,
+    port: Number(process.env.PORT) || 3000,
   },
   optimizeDeps: {
     include: ['axios-auth-refresh'],
