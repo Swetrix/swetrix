@@ -1836,13 +1836,16 @@
     "tiers": {
       "upToXWebsites": "Додавайте до {{amount}} вебсайтів",
       "dataOwnership": "100% володіння даними",
+      "trafficWebAnalytics": "Вебаналітика трафіку",
       "teamMembers": "Учасники команди",
       "apiAccess": "Доступ до API",
-      "reports": "Звіти",
       "funnels": "Воронки",
       "websiteSpeedAnalytics": "Аналітика швидкості вебсайту",
       "sessionAnalysis": "Аналіз сесій",
       "errorTracking": "Відстеження помилок",
+      "featureFlags": "Прапорці функцій",
+      "experiments": "Експерименти",
+      "captcha": "CAPTCHA",
       "moreWebsitesForFee": "У Swetrix немає обмеження на кількість вебсайтів, які ви можете додати. {{amount}} вебсайтів — це типовий ліміт для всіх планів. Ви можете придбати більше вебсайтів за додаткову плату."
     },
     "downgradeTitle": "Ви впевнені, що хочете понизити тариф?",

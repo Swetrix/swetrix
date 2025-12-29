@@ -1836,13 +1836,16 @@
     "tiers": {
       "upToXWebsites": "Add up to {{amount}} websites",
       "dataOwnership": "100% data ownership",
+      "trafficWebAnalytics": "Traffic web analytics",
       "teamMembers": "Team members",
       "apiAccess": "API access",
-      "reports": "Email reports",
       "funnels": "Funnels",
       "websiteSpeedAnalytics": "Website speed analytics",
       "sessionAnalysis": "Session analysis",
       "errorTracking": "Error tracking",
+      "featureFlags": "Feature flags",
+      "experiments": "Experiments",
+      "captcha": "CAPTCHA",
       "moreWebsitesForFee": "Swetrix has no limit on the number of websites you can add. {{amount}} websites are the default limit all plans have. You can purchase more websites for an additional fee."
     },
     "downgradeTitle": "Are you sure you want to downgrade?",

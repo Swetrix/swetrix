@@ -1836,13 +1836,16 @@
     "tiers": {
       "upToXWebsites": "Bis zu {{amount}} Webseiten hinzufügen",
       "dataOwnership": "100 % iges Dateneigentum",
+      "trafficWebAnalytics": "Web-Traffic-Analyse",
       "teamMembers": "Teammitglieder",
       "apiAccess": "API-Zugriff",
-      "reports": "E-Mail Berichte",
       "funnels": "Trichter",
       "websiteSpeedAnalytics": "Analyse der Website-Geschwindigkeit",
       "sessionAnalysis": "Sitzungsanalyse",
       "errorTracking": "Fehlerverfolgung",
+      "featureFlags": "Feature-Flags",
+      "experiments": "Experimente",
+      "captcha": "CAPTCHA",
       "moreWebsitesForFee": "Swetrix setzt keine feste Obergrenze für die Anzahl der Websites, die Sie hinzufügen können. {{amount}} Websites sind das Standardlimit in allen Tarifen. Sie können weitere Websites gegen Aufpreis hinzubuchen."
     },
     "downgradeTitle": "Sind Sie sicher, dass Sie ein Downgrade durchführen möchten?",

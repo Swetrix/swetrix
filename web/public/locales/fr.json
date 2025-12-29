@@ -1836,13 +1836,16 @@
     "tiers": {
       "upToXWebsites": "Ajouter jusqu'à {{amount}} sites web",
       "dataOwnership": "Propriété des données à 100%",
+      "trafficWebAnalytics": "Analyses du trafic web",
       "teamMembers": "Membres de l'équipe",
       "apiAccess": "Accès à l’API",
-      "reports": "Rapports par e-mail",
       "funnels": "Entonnoirs",
       "websiteSpeedAnalytics": "Analyse de la vitesse du site web",
       "sessionAnalysis": "Analyse des sessions",
       "errorTracking": "Suivi des erreurs",
+      "featureFlags": "Flags de fonctionnalités",
+      "experiments": "Expériences",
+      "captcha": "CAPTCHA",
       "moreWebsitesForFee": "Swetrix n’impose aucune limite au nombre de sites web que vous pouvez ajouter. {{amount}} sites web constituent la limite par défaut de tous les forfaits. Vous pouvez ajouter davantage de sites moyennant des frais supplémentaires."
     },
     "downgradeTitle": "Êtes-vous sûr de vouloir rétrograder ?",

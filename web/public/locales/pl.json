@@ -1836,13 +1836,16 @@
     "tiers": {
       "upToXWebsites": "Dodaj do {{amount}} witryn",
       "dataOwnership": "100% własności danych",
+      "trafficWebAnalytics": "Analityka ruchu na stronie internetowej",
       "teamMembers": "Członkowie zespołu",
       "apiAccess": "Dostęp do API",
-      "reports": "Raporty e-mail",
       "funnels": "Lejki",
       "websiteSpeedAnalytics": "Analiza szybkości witryny",
       "sessionAnalysis": "Analiza sesji",
       "errorTracking": "Śledzenie błędów",
+      "featureFlags": "Flagi funkcji",
+      "experiments": "Eksperymenty",
+      "captcha": "CAPTCHA",
       "moreWebsitesForFee": "Swetrix nie nakłada ograniczenia na liczbę witryn, które możesz dodać. Domyślny limit we wszystkich planach to {{amount}} witryn. Możesz dokupić więcej witryn za dodatkową opłatą."
     },
     "downgradeTitle": "Czy na pewno chcesz obniżyć swój plan?",

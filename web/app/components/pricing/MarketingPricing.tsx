@@ -62,8 +62,8 @@ const MarketingPricing = () => {
                   key: 'upToXWebsites',
                 },
                 {
-                  label: t('pricing.tiers.teamMembers'),
-                  key: 'teamMembers',
+                  label: t('pricing.tiers.trafficWebAnalytics'),
+                  key: 'trafficWebAnalytics',
                 },
                 {
                   label: t('pricing.tiers.sessionAnalysis'),
@@ -74,24 +74,32 @@ const MarketingPricing = () => {
                   key: 'websiteSpeedAnalytics',
                 },
                 {
+                  label: t('pricing.tiers.errorTracking'),
+                  key: 'errorTracking',
+                },
+                {
                   label: t('pricing.tiers.funnels'),
                   key: 'funnels',
                 },
                 {
-                  label: t('pricing.tiers.errorTracking'),
-                  key: 'errorTracking',
+                  label: t('pricing.tiers.featureFlags'),
+                  key: 'featureFlags',
+                },
+                {
+                  label: t('pricing.tiers.experiments'),
+                  key: 'experiments',
+                },
+                {
+                  label: t('pricing.tiers.captcha'),
+                  key: 'captcha',
                 },
                 {
                   label: t('pricing.tiers.apiAccess'),
                   key: 'apiAccess',
                 },
                 {
-                  label: t('pricing.tiers.dataOwnership'),
-                  key: 'dataOwnership',
-                },
-                {
-                  label: t('pricing.tiers.reports'),
-                  key: 'reports',
+                  label: t('pricing.tiers.teamMembers'),
+                  key: 'teamMembers',
                 },
               ].map(({ label, key }) => (
                 <div key={key} className='flex items-center text-gray-100'>
