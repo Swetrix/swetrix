@@ -45,9 +45,6 @@ function isSectionHeaderRow(row: Tokens.TableCell[]): boolean {
   return isBold && otherCellsEmpty
 }
 
-// Emoji patterns that should be centered in table cells
-const CENTERED_EMOJI_CELLS = ['✅', '❌', '⚠️']
-
 // Custom table rendering with improved styling
 renderer.table = ({ header, rows }: Tokens.Table) => {
   const headerCells = header
@@ -70,11 +67,7 @@ renderer.table = ({ header, rows }: Tokens.Table) => {
       // Regular row
       return `<tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">${row
         .map((cell) => {
-          const isEmojiOnly = CENTERED_EMOJI_CELLS.includes(cell.text.trim())
-          const cellClass = isEmojiOnly
-            ? 'px-4 py-3 text-sm text-slate-700 dark:text-slate-300 text-center'
-            : 'px-4 py-3 text-sm text-slate-700 dark:text-slate-300'
-          return `<td class="${cellClass}">${parseInlineMarkdown(cell.text)}</td>`
+          return `<td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">${parseInlineMarkdown(cell.text)}</td>`
         })
         .join('')}</tr>`
     })
@@ -89,11 +82,11 @@ renderer.table = ({ header, rows }: Tokens.Table) => {
 }
 
 // SVG icons for checkmark, cross, and warning
-const CHECK_ICON_SVG = `<span class="inline-flex items-center justify-center size-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 align-middle"><svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></span>`
+const CHECK_ICON_SVG = `<span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 align-middle"><svg class="h-3.5 w-3.5 overflow-visible text-emerald-600 dark:text-emerald-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></span>`
 
-const CROSS_ICON_SVG = `<span class="inline-flex items-center justify-center size-6 rounded-full bg-red-100 dark:bg-red-900/30 align-middle"><svg class="w-4 h-4 text-red-600 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="No"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>`
+const CROSS_ICON_SVG = `<span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 align-middle"><svg class="h-3.5 w-3.5 overflow-visible text-red-600 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="No"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>`
 
-const WARNING_ICON_SVG = `<span class="inline-flex items-center justify-center size-6 rounded-full bg-amber-100 dark:bg-amber-900/30 align-middle"><svg class="w-4 h-4 text-amber-600 dark:text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Warning"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></span>`
+const WARNING_ICON_SVG = `<span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30 align-middle"><svg class="h-3.5 w-3.5 overflow-visible text-amber-600 dark:text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Warning"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></span>`
 
 // Inline Swetrix logo that inherits font size
 const SWETRIX_LOGO_HTML = `<span class="inline-flex items-center gap-[0.15em] select-none whitespace-nowrap align-baseline"><img class="h-[0.9em] w-auto dark:hidden" src="/assets/logo/blue.png" alt="" /><img class="h-[0.9em] w-auto hidden dark:inline" src="/assets/logo/white.png" alt="" /><span class="font-bold text-indigo-950 dark:text-white">Swetrix</span></span>`
@@ -165,7 +158,7 @@ renderer.blockquote = ({ text }: Tokens.Blockquote) => {
 
     return `<div class="not-prose my-6 rounded-lg border-l-4 ${config.borderClass} ${config.bgClass} p-4">
       <div class="flex items-start gap-3">
-        <span class="${config.iconClass} flex-shrink-0 mt-0.5">${config.icon}</span>
+        <span class="${config.iconClass} shrink-0 mt-0.5">${config.icon}</span>
         <div class="min-w-0 flex-1">
           <p class="font-semibold ${config.titleClass} mb-1">${config.title}</p>
           <div class="${config.contentClass} [&>p]:my-0 [&>p:not(:last-child)]:mb-2 [&_a]:underline [&_a]:font-medium">${content}</div>
@@ -314,7 +307,9 @@ export async function getPost(slug: string, category?: string, tryStandalone?: b
       svg: [
         'class',
         'xmlns',
-        'viewBox',
+        'viewbox',
+        'width',
+        'height',
         'fill',
         'stroke',
         'stroke-width',
