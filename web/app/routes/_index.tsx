@@ -324,7 +324,6 @@ const Hero = () => {
         <Header transparent />
         <section className='mx-auto max-w-7xl px-4 pt-10 pb-5 sm:px-3 lg:grid lg:grid-cols-12 lg:gap-8 lg:px-6 lg:pt-20 xl:px-8'>
           <div className='z-20 col-span-6 flex flex-col items-start'>
-            <Testimonials className='hidden lg:block' />
             <h1 className='max-w-5xl text-left text-5xl font-semibold tracking-tight text-pretty text-slate-900 sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl dark:text-white'>
               {t('main.slogan')}
             </h1>
@@ -341,7 +340,6 @@ const Hero = () => {
                 <ArrowRightIcon className='mt-[1px] h-4 w-5' />
               </Link>
             </div>
-
             <div className='mt-8 grid w-full grid-cols-2 gap-3 text-slate-900 dark:text-gray-50'>
               <div className='flex items-center gap-3 text-sm'>
                 <StarIcon className='size-5' />
@@ -368,6 +366,7 @@ const Hero = () => {
                 <span>{t('main.heroBenefits.selfHostable')}</span>
               </div>
             </div>
+            <Testimonials className='mt-8 hidden lg:block' />
           </div>
           <div className='col-span-6 mt-10 overflow-visible lg:mt-0 lg:mr-0 lg:ml-4'>
             <ClientOnly
