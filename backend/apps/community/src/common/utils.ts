@@ -20,12 +20,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import _map from 'lodash/map'
 
-import {
-  redis,
-  isDevelopment,
-  isProxiedByCloudflare,
-  SELFHOSTED_GEOIP_DB_PATH,
-} from './constants'
+import { redis, isDevelopment, SELFHOSTED_GEOIP_DB_PATH } from './constants'
 import { clickhouse } from './integrations/clickhouse'
 import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { ProjectViewEntity } from '../project/entity/project-view.entity'
@@ -122,6 +117,22 @@ const ALLOWED_KEYS = [
   'isPasswordProtected',
   'passwordHash',
   'botsProtectionLevel',
+]
+
+const IP_ADDRESS_HEADERS = [
+  'cloudfront-viewer-address', // Cloudfront
+  'true-client-ip', // CDN
+  'cf-connecting-ip', // Cloudflare
+  'fastly-client-ip', // Fastly
+  'x-nf-client-connection-ip', // Netlify
+  'do-connecting-ip', // Digital Ocean
+  'x-real-ip', // Reverse proxy
+  'x-appengine-user-ip', // Google App Engine
+  'x-forwarded-for',
+  'forwarded',
+  'x-client-ip',
+  'x-cluster-client-ip',
+  'x-forwarded',
 ]
 
 const CLICKHOUSE_PROJECT_UPDATABLE_KEYS = [...ALLOWED_KEYS, 'adminId']
@@ -1144,24 +1155,46 @@ const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
 }
 
 const getIPFromHeaders = (headers: any) => {
-  if (isProxiedByCloudflare && headers['cf-connecting-ip']) {
-    return headers['cf-connecting-ip']
+  const customHeader = process.env.CLIENT_IP_HEADER
+
+  // only use customer header if not present in IP_ADDRESS_HEADERS
+  // since we might need some extra process based on proxy
+  if (
+    !!customHeader &&
+    !IP_ADDRESS_HEADERS.includes(customHeader) &&
+    headers.get(customHeader)
+  ) {
+    return headers.get(customHeader)
   }
 
-  // Get IP based on the NGINX configuration
-  let ip = headers['x-real-ip']
+  const header = IP_ADDRESS_HEADERS.find(name => {
+    return headers.get(name)
+  })
 
-  if (ip) {
-    return ip
-  }
-
-  ip = headers['x-forwarded-for'] || null
-
-  if (!ip) {
+  if (!header) {
     return null
   }
 
-  return _split(ip, ',')[0]
+  const ip = headers.get(header)
+
+  if (header === 'x-forwarded-for') {
+    return ip.split(',')[0].trim()
+  }
+
+  if (header === 'forwarded') {
+    const match = ip.match(/for=(\[?[0-9a-fA-F:.]+\]?)/)
+
+    if (match) {
+      return match[1]
+    }
+  }
+  if (header === 'cloudfront-viewer-address') {
+    const lastColonIndex = ip.lastIndexOf(':')
+    if (lastColonIndex > 0) {
+      return ip.substring(0, lastColonIndex)
+    }
+  }
+  return ip
 }
 
 const sumArrays = (source: number[], target: number[]) => {
