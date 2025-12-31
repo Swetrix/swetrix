@@ -28,6 +28,7 @@ module.exports = {
       'analytics-dashboard/ask-ai',
       'analytics-dashboard/traffic',
       'analytics-dashboard/performance',
+      'analytics-dashboard/funnels',
       'analytics-dashboard/alerts',
       'analytics-dashboard/profiles-and-sessions',
       'analytics-dashboard/feature-flags',
