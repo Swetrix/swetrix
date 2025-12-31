@@ -1,6 +1,6 @@
 ---
 title: Experiments (A/B Testing)
-slug: /features/experiments
+slug: /analytics-dashboard/experiments
 ---
 
 import useBaseUrl from '@docusaurus/useBaseUrl';
@@ -50,8 +50,8 @@ When a user participates in an experiment (i.e., they are assigned a variant), S
 
 You can create and manage your experiments in the **Experiments** tab of your project dashboard.
 
-<img alt="Experiments list" src={useBaseUrl('img/features/experiments-list.png')} />
+<img alt="Experiments list" src={useBaseUrl('img/analytics-dashboard/experiments-list.png')} />
 
 You can also see how your experiments are performing by clicking on the Results button.
 
-<img alt="Experiment results" src={useBaseUrl('img/features/experiment.png')} />
+<img alt="Experiment results" src={useBaseUrl('img/analytics-dashboard/experiment.png')} />

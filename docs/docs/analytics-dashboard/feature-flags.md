@@ -1,6 +1,6 @@
 ---
 title: Feature Flags
-slug: /features/feature-flags
+slug: /analytics-dashboard/feature-flags
 ---
 
 import useBaseUrl from '@docusaurus/useBaseUrl';
@@ -62,4 +62,4 @@ clearFeatureFlagsCache()
 
 You can create and manage your feature flags in the **Feature Flags** tab of your project dashboard.
 
-<img alt="Feature flags list" src={useBaseUrl('img/features/feature-flags-list.png')} />
+<img alt="Feature flags list" src={useBaseUrl('img/analytics-dashboard/feature-flags-list.png')} />

@@ -1,6 +1,6 @@
 ---
 title: Ask AI
-slug: /features/ask-ai
+slug: /analytics-dashboard/ask-ai
 ---
 
 import useBaseUrl from '@docusaurus/useBaseUrl';
@@ -11,7 +11,7 @@ Ask AI is a powerful feature that allows you to query your analytics data using 
 
 Ask AI uses advanced language models to understand your questions and translate them into queries against your analytics data. It can help you find trends, anomalies, and specific metrics without needing to know the underlying query language or navigate through multiple dashboard views.
 
-<img alt="Ask AI" src={useBaseUrl('img/features/ask-ai.png')} />
+<img alt="Ask AI" src={useBaseUrl('img/analytics-dashboard/ask-ai.png')} />
 
 ## Examples
 

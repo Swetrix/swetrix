@@ -24,11 +24,12 @@ module.exports = {
       },
       'troubleshooting',
     ],
-    Features: [
-      'features/revenue-tracking',
-      'features/ask-ai',
-      'features/feature-flags',
-      'features/experiments',
+    'Analytics Dashboard': [
+      'analytics-dashboard/revenue-tracking',
+      'analytics-dashboard/ask-ai',
+      'analytics-dashboard/feature-flags',
+      'analytics-dashboard/experiments',
+      'analytics-dashboard/profiles-and-sessions',
     ],
     'Site settings': [
       'sitesettings/how-to-access-site-settings',
