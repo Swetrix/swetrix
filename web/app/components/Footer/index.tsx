@@ -68,6 +68,7 @@ const productionNavigation = {
     { name: 'Pirsch', href: '/comparison/pirsch' },
     { name: 'Umami', href: '/comparison/umami' },
     { name: 'Matomo', href: '/comparison/matomo' },
+    { name: 'PostHog', href: '/comparison/posthog' },
   ],
   legal: [
     { key: 'privacy', href: routesPath.privacy, internal: true },
