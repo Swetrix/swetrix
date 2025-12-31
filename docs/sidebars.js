@@ -26,11 +26,13 @@ module.exports = {
     ],
     'Analytics Dashboard': [
       'analytics-dashboard/ask-ai',
+      'analytics-dashboard/traffic',
       'analytics-dashboard/performance',
       'analytics-dashboard/profiles-and-sessions',
       'analytics-dashboard/feature-flags',
       'analytics-dashboard/experiments',
       'analytics-dashboard/revenue-tracking',
+      'analytics-dashboard/segments',
     ],
     'Site settings': [
       'sitesettings/how-to-access-site-settings',

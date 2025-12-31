@@ -1,0 +1,37 @@
+---
+id: segments
+title: Segments
+sidebar_label: Segments
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+Segments (also known as Saved Views) allow you to save a specific configuration of filters and custom metrics for quick access. Instead of manually reapplying the same filters every time you visit your dashboard, you can simply switch to a saved Segment.
+
+<img alt="Segments Modal" src={useBaseUrl('img/analytics-dashboard/segments.png')} />
+
+## Creating a Segment
+
+1.  **Apply Filters**: Set up the dashboard exactly how you want it. This includes:
+    - Date ranges and time buckets.
+    - Specific filters (e.g., Country = USA, Browser = Chrome).
+    - Selected metrics on the chart.
+2.  **Open Segments Menu**: Click on the **Segments** dropdown (bookmark icon) in the top right header.
+3.  **Add Segment**: Select **Add a segment**.
+4.  **Name It**: Give your segment a descriptive name (e.g., "US Mobile Traffic").
+5.  **Save**: Confirm to save your current view.
+
+## Using a Segment
+
+To switch to a saved segment:
+
+1.  Click the **Segments** dropdown.
+2.  Select the segment you wish to view from the list.
+3.  The dashboard will immediately update to reflect the saved configuration.
+
+## Managing Segments
+
+You can manage your segments directly from the dropdown menu:
+
+- **Edit**: Click the pencil icon next to a segment to rename it or update its configuration.
+- **Delete**: Click the trash icon to remove a segment you no longer need.
