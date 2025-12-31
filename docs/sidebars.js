@@ -18,6 +18,7 @@ module.exports = {
           'integrations/docusaurus',
           'integrations/django',
           'integrations/google-tag-manager',
+          'integrations/google-search-console',
           'integrations/sveltekit',
         ],
       },
