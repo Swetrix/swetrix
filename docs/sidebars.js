@@ -31,6 +31,7 @@ module.exports = {
       'analytics-dashboard/funnels',
       'analytics-dashboard/alerts',
       'analytics-dashboard/profiles-and-sessions',
+      'analytics-dashboard/error-tracking',
       'analytics-dashboard/feature-flags',
       'analytics-dashboard/experiments',
       'analytics-dashboard/revenue-tracking',
