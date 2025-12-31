@@ -25,12 +25,12 @@ module.exports = {
       'troubleshooting',
     ],
     'Analytics Dashboard': [
-      'analytics-dashboard/revenue-tracking',
-      'analytics-dashboard/performance',
       'analytics-dashboard/ask-ai',
+      'analytics-dashboard/performance',
+      'analytics-dashboard/profiles-and-sessions',
       'analytics-dashboard/feature-flags',
       'analytics-dashboard/experiments',
-      'analytics-dashboard/profiles-and-sessions',
+      'analytics-dashboard/revenue-tracking',
     ],
     'Site settings': [
       'sitesettings/how-to-access-site-settings',
