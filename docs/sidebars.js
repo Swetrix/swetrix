@@ -34,6 +34,7 @@ module.exports = {
       'analytics-dashboard/error-tracking',
       'analytics-dashboard/feature-flags',
       'analytics-dashboard/experiments',
+      'analytics-dashboard/captcha',
       'analytics-dashboard/revenue-tracking',
       'analytics-dashboard/segments',
     ],
