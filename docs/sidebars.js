@@ -26,6 +26,7 @@ module.exports = {
     ],
     'Analytics Dashboard': [
       'analytics-dashboard/revenue-tracking',
+      'analytics-dashboard/performance',
       'analytics-dashboard/ask-ai',
       'analytics-dashboard/feature-flags',
       'analytics-dashboard/experiments',
