@@ -4284,7 +4284,8 @@ export class AnalyticsService {
     const queryFirstLastSeen = `
       SELECT
         max(created) AS last_seen,
-        min(created) AS first_seen
+        min(created) AS first_seen,
+        count() AS count
       FROM errors
       WHERE
         pid = {pid:FixedString(12)}
