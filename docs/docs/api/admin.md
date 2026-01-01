@@ -44,7 +44,95 @@ If you have special needs for more requests, please [contact us](https://swetrix
 | `botsProtectionLevel` | `off` or `basic` | Set to `basic` or `off`. `basic` will block common bots by user agent and `off` will allow all traffic. `basic` by default.                                                                                             |
 | `organisationId`      | `string`         | Organisation you want to add this project to. You must be an owner or admin of the organisation to add a project to it.                                                                                                 |
 
+### Organisations manipulation
+
+#### 'Create organisation' payload
+
+| Name   | Type     | Required | Description                                                   |
+| ------ | -------- | -------- | ------------------------------------------------------------- |
+| `name` | `string` | `true`   | A display name for your organisation, max length is 50 chars. |
+
+#### 'Invite member' payload
+
+| Name    | Type                           | Required | Description                                       |
+| ------- | ------------------------------ | -------- | ------------------------------------------------- |
+| `email` | `string`                       | `true`   | The email address of the user you want to invite. |
+| `role`  | `owner` or `admin` or `viewer` | `true`   | The role to assign to the invited user.           |
+
+#### 'Update member role' payload
+
+| Name   | Type                           | Required | Description                           |
+| ------ | ------------------------------ | -------- | ------------------------------------- |
+| `role` | `owner` or `admin` or `viewer` | `true`   | The new role to assign to the member. |
+
+### Funnels manipulation
+
+#### 'Create funnel' payload
+
+| Name    | Type            | Required | Description                                                                 |
+| ------- | --------------- | -------- | --------------------------------------------------------------------------- |
+| `name`  | `string`        | `true`   | A display name for your funnel, max length is 50 chars.                     |
+| `pid`   | `string`        | `true`   | The Project ID the funnel belongs to.                                       |
+| `steps` | `Array<string>` | `true`   | An array of paths for the funnel steps (e.g., `['/', '/signup', '/dash']`). |
+
+#### 'Update funnel' payload
+
+| Name    | Type            | Required | Description                                                                 |
+| ------- | --------------- | -------- | --------------------------------------------------------------------------- |
+| `id`    | `string`        | `true`   | The ID of the funnel to update.                                             |
+| `pid`   | `string`        | `true`   | The Project ID the funnel belongs to.                                       |
+| `name`  | `string`        | `true`   | A display name for your funnel, max length is 50 chars.                     |
+| `steps` | `Array<string>` | `true`   | An array of paths for the funnel steps (e.g., `['/', '/signup', '/dash']`). |
+
+### Annotations manipulation
+
+#### 'Create annotation' payload
+
+| Name   | Type     | Required | Description                               |
+| ------ | -------- | -------- | ----------------------------------------- |
+| `pid`  | `string` | `true`   | The Project ID the annotation belongs to. |
+| `date` | `string` | `true`   | Date of the annotation (YYYY-MM-DD).      |
+| `text` | `string` | `true`   | Annotation text (max 120 characters).     |
+
+#### 'Update annotation' payload
+
+| Name   | Type     | Required | Description                               |
+| ------ | -------- | -------- | ----------------------------------------- |
+| `id`   | `string` | `true`   | The ID of the annotation to update.       |
+| `pid`  | `string` | `true`   | The Project ID the annotation belongs to. |
+| `date` | `string` | `false`  | Date of the annotation (YYYY-MM-DD).      |
+| `text` | `string` | `false`  | Annotation text (max 120 characters).     |
+
 ## Endpoints
+
+### GET /v1/project
+
+This endpoint allows you to list all your projects.
+
+```bash title="Request"
+curl -i -X GET https://api.swetrix.com/v1/project \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response (200 OK)"
+[
+  {
+    "id": "WvZCYTrOPzSK",
+    "name": "My Project",
+    "active": true,
+    "public": false
+  }
+]
+```
+
+### GET /v1/project/:id
+
+This endpoint allows you to get details of a specific project.
+
+```bash title="Request"
+curl -i -X GET https://api.swetrix.com/v1/project/WvZCYTrOPzSK \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
 
 ### POST /v1/project
 
@@ -126,6 +214,24 @@ curl -i -X DELETE https://api.swetrix.com/v1/project/WvZCYTrOPzSK \
 
 ```
 
+### POST /v1/project/:id/pin
+
+Pin a project to the top of the dashboard.
+
+```bash title="Request"
+curl -i -X POST https://api.swetrix.com/v1/project/WvZCYTrOPzSK/pin \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+### DELETE /v1/project/:id/pin
+
+Unpin a project from the top of the dashboard.
+
+```bash title="Request"
+curl -i -X DELETE https://api.swetrix.com/v1/project/WvZCYTrOPzSK/pin \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
 ### PATCH /v1/project/:id/organisation
 
 This endpoint allows you to assign a project to an organisation, or unassign it from an organisation. To unassign a project from an organisation, don't pass the request body.
@@ -139,6 +245,166 @@ curl -i -X PATCH https://api.swetrix.com/v1/project/WvZCYTrOPzSK/organisation \
 
 ```json title="Response (204 No Content)"
 
+```
+
+### GET /v1/project/funnels/:pid
+
+Get all funnels for a specific project.
+
+```bash title="Request"
+curl -i -X GET https://api.swetrix.com/v1/project/funnels/WvZCYTrOPzSK \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+### POST /v1/project/funnel
+
+Create a new funnel.
+
+```bash title="Request"
+curl -i -X POST https://api.swetrix.com/v1/project/funnel \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Sign up","pid": "WvZCYTrOPzSK", "steps": ["/", "/signup"]}'
+```
+
+### PATCH /v1/project/funnel
+
+Update an existing funnel.
+
+```bash title="Request"
+curl -i -X PATCH https://api.swetrix.com/v1/project/funnel \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"id": "FUNNEL_ID", "name": "Sign up 2", "pid": "WvZCYTrOPzSK", "steps": ["/", "/signup"]}'
+```
+
+### DELETE /v1/project/funnel/:id/:pid
+
+Delete a funnel.
+
+```bash title="Request"
+curl -i -X DELETE https://api.swetrix.com/v1/project/funnel/FUNNEL_ID/WvZCYTrOPzSK \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+### GET /v1/project/annotations/:pid
+
+Get all annotations for a specific project.
+
+```bash title="Request"
+curl -i -X GET https://api.swetrix.com/v1/project/annotations/WvZCYTrOPzSK \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+### POST /v1/project/annotation
+
+Create a new annotation.
+
+```bash title="Request"
+curl -i -X POST https://api.swetrix.com/v1/project/annotation \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Marketing campaign", "pid": "WvZCYTrOPzSK", "date": "2023-10-01"}'
+```
+
+### PATCH /v1/project/annotation
+
+Update an existing annotation.
+
+```bash title="Request"
+curl -i -X PATCH https://api.swetrix.com/v1/project/annotation \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"id": "ANNOTATION_ID", "pid": "WvZCYTrOPzSK", "text": "Updated text"}'
+```
+
+### DELETE /v1/project/annotation/:id/:pid
+
+Delete an annotation.
+
+```bash title="Request"
+curl -i -X DELETE https://api.swetrix.com/v1/project/annotation/ANNOTATION_ID/WvZCYTrOPzSK \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+### GET /v1/organisation
+
+List all organisations you are a member of.
+
+```bash title="Request"
+curl -i -X GET https://api.swetrix.com/v1/organisation \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+### GET /v1/organisation/:orgId
+
+Get details of a specific organisation.
+
+```bash title="Request"
+curl -i -X GET https://api.swetrix.com/v1/organisation/ORG_ID \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+### POST /v1/organisation
+
+Create a new organisation.
+
+```bash title="Request"
+curl -i -X POST https://api.swetrix.com/v1/organisation \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My Organisation"}'
+```
+
+### PATCH /v1/organisation/:orgId
+
+Update an organisation.
+
+```bash title="Request"
+curl -i -X PATCH https://api.swetrix.com/v1/organisation/ORG_ID \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My Updated Organisation"}'
+```
+
+### DELETE /v1/organisation/:orgId
+
+Delete an organisation. You must be the owner to do this.
+
+```bash title="Request"
+curl -i -X DELETE https://api.swetrix.com/v1/organisation/ORG_ID \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+### POST /v1/organisation/:orgId/invite
+
+Invite a new member to the organisation.
+
+```bash title="Request"
+curl -i -X POST https://api.swetrix.com/v1/organisation/ORG_ID/invite \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "friend@example.com", "role": "viewer"}'
+```
+
+### PATCH /v1/organisation/member/:memberId
+
+Update a member's role.
+
+```bash title="Request"
+curl -i -X PATCH https://api.swetrix.com/v1/organisation/member/MEMBER_ID \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"role": "admin"}'
+```
+
+### DELETE /v1/organisation/member/:memberId
+
+Remove a member from the organisation.
+
+```bash title="Request"
+curl -i -X DELETE https://api.swetrix.com/v1/organisation/member/MEMBER_ID \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
 ## Status and error codes

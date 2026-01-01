@@ -53,7 +53,7 @@ It supports the following values:
 1. `median` (default) - the middle value of a set of numbers (i.e. 50th percentile).
 2. `average` - the arithmetic mean value.
 3. `p95` - the 95th quantile.
-4. `quantiles` - it's a special measure, because instead of the regular metrics (e.g. `dns`, `tls`, etc.) it will return load time (the sum on all metrics) across 3 qunatiles: `p50`, `p75` and `p95`.
+4. `quantiles` - it's a special measure, because instead of the regular metrics (e.g. `dns`, `tls`, etc.) it will return load time (the sum on all metrics) across 3 quantiles: `p50`, `p75` and `p95`.
 
 ### Filters
 
@@ -303,7 +303,7 @@ The `meta` is an array of objects like:
   "key": "amount", // equals to "metricKey" provided
   "current": { // for the current period or from / to pair
     "sum": 100, // the sum of all custom metrics
-    "avg": 20, // the averae of all custom metrics
+    "avg": 20, // the average of all custom metrics
   },
   "previous": { // for the previous period of the same length as the current one
     "sum": 80,
@@ -961,6 +961,419 @@ The session identifier.
 The timezone to use for the time range. The default is `Etc/GMT`. You can use any timezone supported by [day.js](https://day.js.org/docs/en/timezone/timezone/) library.
 
 <hr />
+
+### GET /v1/log/funnel
+
+Returns a funnel analysis for a specific set of pages.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/funnel?pid=YOUR_PROJECT_ID&pages=["/","/pricing","/signup"]&period=30d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "funnel": [
+    {
+      "page": "/",
+      "count": 100,
+      "dropoff": 0,
+      "dropoffPercentage": 0
+    },
+    {
+      "page": "/pricing",
+      "count": 50,
+      "dropoff": 50,
+      "dropoffPercentage": 50
+    },
+    {
+      "page": "/signup",
+      "count": 10,
+      "dropoff": 40,
+      "dropoffPercentage": 80
+    }
+  ],
+  "totalPageviews": 160
+}
+```
+
+#### Parameters
+
+The parameters are similar to the [`/log` endpoint](#get-v1log), with the addition of:
+
+**pages** (optional)
+
+A stringified JSON array of page paths to define the funnel steps.
+
+**funnelId** (optional)
+
+The ID of a saved funnel to retrieve.
+
+### GET /v1/log/user-flow
+
+Returns the user flow diagram data, showing how users navigate through your website.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/user-flow?pid=YOUR_PROJECT_ID&period=7d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+The parameters are similar to the [`/log` endpoint](#get-v1log).
+
+### GET /v1/log/chart
+
+Returns data for the main chart (visits, uniques, sessions duration, etc.) grouped by time bucket. This is useful when you only need the chart data without other aggregations.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/chart?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+The parameters are the same as for the [`/log` endpoint](#get-v1log).
+
+### GET /v1/log/performance/chart
+
+Returns performance data for the chart (DNS, TLS, etc.) grouped by time bucket.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/performance/chart?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+The parameters are the same as for the [`/log/performance` endpoint](#get-v1logperformance).
+
+### GET /v1/log/captcha
+
+Returns aggregated CAPTCHA statistics.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/captcha?pid=YOUR_PROJECT_ID&period=7d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+The parameters are the same as for the [`/log` endpoint](#get-v1log).
+
+### GET /v1/log/keywords
+
+Returns the search keywords data from Google Search Console integration.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/keywords?pid=YOUR_PROJECT_ID&period=30d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+<hr />
+
+**pid** (required)
+
+The project ID.
+
+<hr />
+
+**period** (required)
+
+See [periods](#periods).
+
+<hr />
+
+**from** / **to**
+
+Custom date range.
+
+<hr />
+
+**timezone**
+
+Timezone for the data.
+
+<hr />
+
+### GET /v1/log/custom-events
+
+Returns aggregated data for specific custom events, grouped by time bucket.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/custom-events?pid=YOUR_PROJECT_ID&period=7d&customEvents=["signup","purchase"]'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+The parameters are similar to the [`/log` endpoint](#get-v1log), with the addition of:
+
+**customEvents** (required)
+
+A stringified JSON array of custom event names to retrieve data for.
+
+### GET /v1/log/profiles
+
+Returns a list of user profiles (visitors).
+
+```bash
+curl 'https://api.swetrix.com/v1/log/profiles?pid=YOUR_PROJECT_ID&period=30d&take=20'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+The parameters are similar to the [`/log/sessions` endpoint](#get-v1logsessions), with the addition of:
+
+**profileType** (optional)
+
+Filter by profile type. Possible values: `all` (default), `anonymous`, `identified`.
+
+### GET /v1/log/profile
+
+Returns details for a specific user profile.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/profile?pid=YOUR_PROJECT_ID&profileId=PROFILE_ID'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+<hr />
+
+**pid** (required)
+
+The project ID.
+
+<hr />
+
+**profileId** (required)
+
+The unique identifier of the profile.
+
+<hr />
+
+**timezone**
+
+Timezone for the data.
+
+<hr />
+
+**period**, **from**, **to**
+
+Time range parameters.
+
+<hr />
+
+### GET /v1/log/profile/sessions
+
+Returns a list of sessions for a specific user profile.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/profile/sessions?pid=YOUR_PROJECT_ID&profileId=PROFILE_ID&take=20'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+Same as [`/log/sessions`](#get-v1logsessions), but requires `profileId`.
+
+### GET /v1/log/errors
+
+Returns a list of error events.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/errors?pid=YOUR_PROJECT_ID&period=7d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+Same as [`/log/sessions`](#get-v1logsessions), with an optional `options` parameter.
+
+### GET /v1/log/get-error
+
+Returns details for a specific error group (by error ID `eid`).
+
+```bash
+curl 'https://api.swetrix.com/v1/log/get-error?pid=YOUR_PROJECT_ID&eid=ERROR_ID'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+<hr />
+
+**pid** (required)
+
+The project ID.
+
+<hr />
+
+**eid** (required)
+
+The error ID.
+
+<hr />
+
+**period**, **from**, **to**, **timezone**
+
+Time range parameters.
+
+<hr />
+
+### GET /v1/log/error-overview
+
+Returns an overview of error statistics (occurrences, users affected, etc.) for the chart.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/error-overview?pid=YOUR_PROJECT_ID&period=7d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+Same as [`/log` endpoint](#get-v1log).
+
+### GET /v1/log/error-sessions
+
+Returns a list of sessions affected by a specific error.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/error-sessions?pid=YOUR_PROJECT_ID&eid=ERROR_ID'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+Same as [`/log/get-error`](#get-v1logget-error), with `take` and `skip`.
+
+### GET /v1/log/filters
+
+Returns available filter values for a specific column (e.g. all browser names).
+
+```bash
+curl 'https://api.swetrix.com/v1/log/filters?pid=YOUR_PROJECT_ID&type=br'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+**pid** (required)
+
+The project ID.
+
+**type** (required)
+
+The column to get filters for (e.g., `br`, `os`, `cc`).
+
+### GET /v1/log/errors-filters
+
+Returns available filter values for error tracking.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/errors-filters?pid=YOUR_PROJECT_ID&type=os'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+Same as `/filters`.
+
+### GET /v1/log/filters/versions
+
+Returns available versions (browser or OS) for filtering.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/filters/versions?pid=YOUR_PROJECT_ID&type=traffic&column=br'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+**pid** (required)
+
+The project ID.
+
+**type** (required)
+
+Data type: `traffic` or `errors`.
+
+**column** (required)
+
+Column: `br` or `os`.
+
+### GET /goal/:id/stats
+
+Returns statistics for a specific goal (conversions, conversion rate, trend).
+
+```bash
+curl 'https://api.swetrix.com/goal/GOAL_ID/stats?period=7d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+**period**, **from**, **to**, **timezone**
+
+Time range parameters.
+
+### GET /goal/:id/chart
+
+Returns chart data for a specific goal.
+
+```bash
+curl 'https://api.swetrix.com/goal/GOAL_ID/chart?period=7d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+**period**, **from**, **to**, **timezone**, **timeBucket**
+
+Time range parameters.
+
+### GET /v1/feature-flag/:id/stats
+
+Returns statistics for a specific feature flag (evaluations, true/false counts).
+
+```bash
+curl 'https://api.swetrix.com/v1/feature-flag/FLAG_ID/stats?period=7d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+**period**, **from**, **to**, **timezone**
+
+Time range parameters.
+
+### GET /v1/feature-flag/:id/profiles
+
+Returns a list of profiles that have evaluated a specific feature flag.
+
+```bash
+curl 'https://api.swetrix.com/v1/feature-flag/FLAG_ID/profiles?period=7d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+#### Parameters
+
+**period**, **from**, **to**, **timezone**
+
+Time range parameters.
+
+**take**, **skip**
+
+Pagination parameters.
+
+**result** (optional)
+
+Filter by result (`true` or `false`).
 
 ## Common request examples
 
