@@ -161,7 +161,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
       toast.success(t('apiNotifications.updatedPeriodEmailReports'))
     } catch (reason: any) {
       console.error(`[ERROR] Error while updating user's role: ${reason}`)
-      toast.error(t('apiNotifications.updatedPeriodEmailReportsError'))
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.updatedPeriodEmailReportsError'))
     }
 
     setOpen(false)
@@ -340,7 +340,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
       toast.success(t('apiNotifications.userInvited'))
     } catch (reason) {
       console.error(`[ERROR] Error while inviting a user: ${reason}`)
-      toast.error(t('apiNotifications.userInviteError'))
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.userInviteError'))
     }
 
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
