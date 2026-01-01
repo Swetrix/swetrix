@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { LinksFunction, LoaderFunctionArgs, HeadersFunction } from 'react-router'
 import {
+  data,
   redirect,
   Links,
   Meta,
@@ -73,6 +74,12 @@ export const headers: HeadersFunction = () => ({
   Pragma: 'no-cache',
   Expires: '0',
 })
+
+// Fix for "You made a POST request to ... but did not provide an `action`" error
+// caused by bots probing endpoints that don't support POST requests.
+export async function action() {
+  return data(null, { status: 405, statusText: 'Method Not Allowed - non existent endpoint' })
+}
 
 export function ErrorBoundary() {
   const error = useRouteError()
