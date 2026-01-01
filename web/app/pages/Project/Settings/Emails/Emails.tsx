@@ -377,10 +377,9 @@ const Emails = ({ projectId }: { projectId: string }) => {
       await removeSubscriber(projectId, emailId)
       const results = _filter(emails, (s) => s.id !== emailId)
       setEmails(results)
-      toast.success(t('apiNotifications.emailDelete'))
     } catch (reason: any) {
       console.error(`[ERROR] Error while deleting a email: ${reason}`)
-      toast.error(t('apiNotifications.emailDeleteError'))
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
     } finally {
       setIsDeleting(false)
     }
