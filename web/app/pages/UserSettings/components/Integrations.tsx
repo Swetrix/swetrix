@@ -1,6 +1,5 @@
 import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/solid'
 import type i18next from 'i18next'
-import _isString from 'lodash/isString'
 import _map from 'lodash/map'
 import React, { useState, memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
