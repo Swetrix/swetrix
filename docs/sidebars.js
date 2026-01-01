@@ -38,9 +38,11 @@ module.exports = {
       'analytics-dashboard/captcha',
       'analytics-dashboard/revenue-tracking',
       'analytics-dashboard/segments',
+      'analytics-dashboard/live-visitors',
     ],
     'Site settings': [
       'sitesettings/how-to-access-site-settings',
+      'sitesettings/project-configuration',
       'sitesettings/how-to-invite-users-to-your-website',
       'sitesettings/transfer-ownership',
       'sitesettings/embed-your-analytics-dashboard-into-your-website',
@@ -50,6 +52,7 @@ module.exports = {
     ],
     'Account settings': [
       'accountsettings/two-factor-authentication',
+      'accountsettings/teams-api-integrations',
       'accountsettings/change-email',
       'accountsettings/change-password',
       'accountsettings/delete-account',
