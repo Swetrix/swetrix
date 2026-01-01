@@ -468,6 +468,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
         onSubmit={async () => {
           await onRemove(emailToRemove!.id)
           setEmailToRemove(null)
+          setShowDeleteModal(false)
         }}
         submitText={t('common.yes')}
         type='confirmed'
