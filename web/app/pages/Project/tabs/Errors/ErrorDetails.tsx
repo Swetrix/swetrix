@@ -1,6 +1,6 @@
 import { ChevronDownIcon, ChevronUpIcon, ClipboardIcon, CheckIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
-import { BugIcon, FileCodeIcon, CalendarIcon, HashIcon, ExternalLinkIcon } from 'lucide-react'
+import { FileCodeIcon, CalendarIcon, HashIcon, ExternalLinkIcon, UsersIcon, ActivityIcon } from 'lucide-react'
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
@@ -15,8 +15,9 @@ import Button from '~/ui/Button'
 import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
-import Tooltip from '~/ui/Tooltip'
 import { getRelativeDateIfPossible } from '~/utils/date'
+
+const STACK_PREVIEW_LINES_COUNT = 5
 
 interface ErrorDetailsProps {
   details: SwetrixErrorDetails
@@ -27,24 +28,13 @@ interface ErrorDetailsProps {
   projectPassword?: string
 }
 
-const InfoRow = ({ label, value }: { label: React.ReactNode; value: React.ReactNode }) => (
-  <div className='flex items-center justify-between gap-3 border-b border-gray-100 py-2 last:border-0 dark:border-slate-700/50'>
-    <Text size='sm' colour='muted' className='shrink-0'>
-      {label}
-    </Text>
-    <Text size='sm' weight='medium' colour='primary' className='min-w-0 text-right' truncate>
-      {value}
-    </Text>
-  </div>
-)
-
 const StatItem = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) => (
-  <div>
-    <Text size='xxs' weight='medium' colour='muted' className='mb-0.5 flex items-center gap-1.5 uppercase'>
+  <div className='flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
+    <Text size='xs' weight='medium' colour='muted' className='flex items-center gap-1.5 tracking-wide uppercase'>
       {icon}
       {label}
     </Text>
-    <Text size='lg' weight='semibold' colour='primary'>
+    <Text size='xl' weight='semibold' colour='primary'>
       {value}
     </Text>
   </div>
@@ -99,25 +89,27 @@ const SessionRow = ({ session }: SessionRowProps) => {
   return (
     <Link
       to={sessionUrl}
-      className='flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3 transition-colors hover:border-gray-200 hover:bg-gray-100 dark:border-slate-700/50 dark:bg-slate-800/50 dark:hover:border-slate-600 dark:hover:bg-slate-700/50'
+      className='group flex items-start justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3 transition-colors hover:border-gray-200 hover:bg-gray-100 dark:border-slate-700/50 dark:bg-slate-800/50 dark:hover:border-slate-600 dark:hover:bg-slate-700/50'
     >
-      <div className='flex min-w-0 items-center gap-3'>
-        <div className='flex items-center gap-2'>
+      <div className='flex min-w-0 flex-1 items-start gap-3'>
+        <div className='flex shrink-0 items-center gap-2 pt-0.5'>
           {session.cc ? <Flag className='rounded-xs' country={session.cc} size={16} alt='' aria-hidden='true' /> : null}
           <BrowserIcon browser={session.br} />
           <OSIcon os={session.os} theme={theme} />
         </div>
-        <div className='min-w-0 gap-1'>
-          <Text size='xs' weight='medium' truncate>
+        <div className='flex min-w-0 flex-col gap-0.5'>
+          <Text size='xs' weight='medium' truncate className='text-gray-900 dark:text-gray-200'>
             {session.profileId || t('project.unknownUser')}
           </Text>
-          <Text size='xs' colour='muted'>
-            {' · '}
+          <Text size='xs' colour='muted' truncate>
             {lastErrorAt} · {session.errorCount} {t('project.occurrences').toLowerCase()}
           </Text>
         </div>
       </div>
-      <ExternalLinkIcon className='size-4 shrink-0 text-gray-400' strokeWidth={1.5} />
+      <ExternalLinkIcon
+        className='mt-0.5 size-4 shrink-0 text-gray-400 transition-colors group-hover:text-gray-600 dark:group-hover:text-gray-300'
+        strokeWidth={1.5}
+      />
     </Link>
   )
 }
@@ -314,244 +306,181 @@ export const ErrorDetails = ({
     return <p className='block text-slate-800 dark:text-slate-300'>{line}</p>
   }
 
-  const errorTitle = details.message ? `${details.name}: ${details.message}` : details.name
-  const shouldTruncate = errorTitle.length > 120
-  const displayTitle = shouldTruncate ? `${errorTitle.slice(0, 120)}...` : errorTitle
-
-  const stackPreviewCount = 6
-  const stackPreviewLines = stackTraceLines.slice(0, stackPreviewCount)
-  const stackHiddenCount = Math.max(0, stackTraceLines.length - stackPreviewCount)
+  const stackPreviewLines = stackTraceLines.slice(0, STACK_PREVIEW_LINES_COUNT)
+  const stackHiddenCount = Math.max(0, stackTraceLines.length - STACK_PREVIEW_LINES_COUNT)
 
   return (
-    <div className='space-y-6'>
-      <div className='flex items-start gap-3'>
-        <div className='flex size-14 shrink-0 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30'>
-          <BugIcon className='size-7 text-red-600 dark:text-red-400' strokeWidth={1.5} />
-        </div>
-        <div className='min-w-0 flex-1'>
-          <div className='flex flex-wrap items-center gap-2'>
-            {shouldTruncate ? (
-              <Tooltip
-                text={errorTitle}
-                tooltipNode={<h2 className='text-xl font-bold text-gray-900 dark:text-white'>{displayTitle}</h2>}
-              />
-            ) : (
-              <h2 className='text-xl font-bold text-gray-900 dark:text-white'>{displayTitle}</h2>
-            )}
-            <Badge label={status.label} colour={status.colour} />
-          </div>
-          <div className='mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1'>
-            {details.filename ? (
-              <div className='flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400'>
-                <FileCodeIcon className='size-3.5' strokeWidth={1.5} />
-                <span className='font-mono text-xs'>
-                  {details.filename}
-                  {details.lineno ? `:${details.lineno}` : ''}
-                  {details.colno ? `:${details.colno}` : ''}
-                </span>
+    <div className='space-y-3'>
+      <div className='flex flex-col gap-3'>
+        <div className='flex items-start justify-between gap-3'>
+          <div className='space-y-1.5'>
+            <div className='flex items-center gap-3'>
+              <Badge label={status.label} colour={status.colour} />
+              <div className='flex items-center gap-1.5'>
+                <Text size='xs' className='font-mono text-gray-400'>
+                  {details.eid}
+                </Text>
+                <button
+                  type='button'
+                  onClick={handleCopyEid}
+                  className='rounded-md p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-gray-200'
+                  aria-label={t('project.copy')}
+                >
+                  {isCopiedEid ? (
+                    <CheckIcon className='size-3.5 text-green-500' />
+                  ) : (
+                    <ClipboardIcon className='size-3.5' />
+                  )}
+                </button>
               </div>
-            ) : null}
+            </div>
+
+            <div>
+              <h2 className='text-2xl font-bold wrap-break-word text-gray-900 dark:text-white'>{details.name}</h2>
+              {details.message ? (
+                <p className='mt-1 font-mono text-sm wrap-break-word text-gray-600 dark:text-gray-400'>
+                  {details.message}
+                </p>
+              ) : null}
+            </div>
           </div>
         </div>
+
+        {details.filename ? (
+          <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 font-mono text-xs text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
+              <FileCodeIcon className='size-3.5 text-gray-500' strokeWidth={1.5} />
+              <span className='break-all'>{fileLocation}</span>
+              <button
+                type='button'
+                onClick={handleCopyFile}
+                className='ml-1 rounded-md p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-gray-200'
+                aria-label={t('project.copy')}
+              >
+                {isCopiedFile ? (
+                  <CheckIcon className='size-3.5 text-green-500' />
+                ) : (
+                  <ClipboardIcon className='size-3.5' />
+                )}
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
 
-      <div className='flex flex-col gap-3 lg:flex-row'>
-        <div className='space-y-3 lg:w-[380px]'>
+      <div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
+        <StatItem icon={<HashIcon className='size-4' />} label={t('project.occurrences')} value={details.count || 0} />
+        <StatItem icon={<UsersIcon className='size-4' />} label={t('dashboard.users')} value={details.users || 0} />
+        <StatItem
+          icon={<CalendarIcon className='size-4' />}
+          label={t('dashboard.firstSeen')}
+          value={firstSeen || '-'}
+        />
+        <StatItem icon={<ActivityIcon className='size-4' />} label={t('dashboard.lastSeen')} value={lastSeen || '-'} />
+      </div>
+
+      <div className='space-y-3'>
+        {details.stackTrace ? (
           <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-            <div className='grid grid-cols-2 gap-y-5 sm:grid-cols-3 lg:grid-cols-2'>
-              <StatItem
-                icon={<HashIcon className='h-3.5 w-3.5' />}
-                label={t('project.occurrences')}
-                value={details.count || 0}
-              />
-              <StatItem
-                icon={<CalendarIcon className='h-3.5 w-3.5' />}
-                label={t('dashboard.firstSeen')}
-                value={firstSeen || '-'}
-              />
-              <StatItem
-                icon={<CalendarIcon className='h-3.5 w-3.5' />}
-                label={t('dashboard.lastSeen')}
-                value={lastSeen || '-'}
-              />
-            </div>
-          </div>
-
-          <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-            <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
-              {t('project.metadata')}
-            </Text>
-            <div>
-              {details.filename ? (
-                <InfoRow
-                  label={
-                    <span className='flex items-center gap-1.5'>
-                      <FileCodeIcon className='size-4' strokeWidth={1.5} />
-                      File
-                    </span>
-                  }
-                  value={
-                    <span className='flex min-w-0 items-center justify-end gap-1.5'>
-                      <Tooltip
-                        text={fileLocation}
-                        tooltipNode={
-                          <span className='min-w-0 truncate font-mono text-xs text-gray-700 dark:text-gray-200'>
-                            {fileLocation}
-                          </span>
-                        }
-                        delay={0}
-                      />
-                      <button
-                        type='button'
-                        onClick={handleCopyFile}
-                        className='shrink-0 rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-gray-200'
-                        aria-label={t('project.copy')}
-                      >
-                        {isCopiedFile ? (
-                          <CheckIcon className='size-4 text-green-500' />
-                        ) : (
-                          <ClipboardIcon className='size-4' />
-                        )}
-                      </button>
-                    </span>
-                  }
-                />
-              ) : null}
-              <InfoRow
-                label={
-                  <span className='flex items-center gap-1.5'>
-                    <HashIcon className='size-4' strokeWidth={1.5} />
-                    ID
-                  </span>
-                }
-                value={
-                  <span className='flex items-center justify-end gap-1.5'>
-                    <code className='text-xs text-gray-400'>{details.eid}</code>
-                    <button
-                      type='button'
-                      onClick={handleCopyEid}
-                      className='rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-gray-200'
-                      aria-label={t('project.copy')}
-                    >
-                      {isCopiedEid ? (
-                        <CheckIcon className='size-4 text-green-500' />
-                      ) : (
-                        <ClipboardIcon className='size-4' />
-                      )}
-                    </button>
-                  </span>
-                }
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className='flex-1 space-y-3'>
-          {details.stackTrace ? (
-            <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-              <div className='mb-3 flex items-center justify-between gap-3'>
-                <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
-                  {t('project.stackTraceXFrames', { x: stackTraceLines.length })}
-                </Text>
-                <div className='flex items-center gap-2'>
-                  <button
-                    type='button'
-                    onClick={handleCopyStackTrace}
-                    className='flex items-center rounded-md border border-gray-200 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700'
-                    aria-label={t('project.copy')}
-                  >
-                    {isCopiedStack ? (
-                      <>
-                        <CheckIcon className='mr-1 size-3.5 text-green-500' />
-                        {t('project.copied')}
-                      </>
-                    ) : (
-                      <>
-                        <ClipboardIcon className='mr-1 size-3.5' />
-                        {t('project.copy')}
-                      </>
-                    )}
-                  </button>
-                  <button
-                    type='button'
-                    onClick={() => setIsStackTraceExpanded((v) => !v)}
-                    className='flex items-center rounded-md border border-gray-200 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700'
-                    aria-expanded={isStackTraceExpanded}
-                  >
-                    {isStackTraceExpanded ? (
-                      <>
-                        <ChevronUpIcon className='mr-1 size-4' />
-                        {t('project.showLess')}
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDownIcon className='mr-1 size-4' />
-                        {stackHiddenCount > 0
-                          ? t('project.showMore', { count: stackHiddenCount })
-                          : t('project.showMore', { count: 0 })}
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className='rounded-lg border border-gray-100 bg-gray-50 dark:border-slate-700 dark:bg-slate-900/50'>
-                <div className={isStackTraceExpanded ? 'max-h-80 overflow-auto p-3' : 'p-3'}>
-                  <div className='space-y-0.5 font-mono text-xs leading-relaxed'>
-                    {(isStackTraceExpanded ? stackTraceLines : stackPreviewLines).map((line, index) => (
-                      <div key={index} className='flex'>
-                        <span className='mr-3 inline-block w-6 text-right text-gray-400 select-none dark:text-slate-500'>
-                          {index + 1}
-                        </span>
-                        <div className='min-w-0 flex-1'>{formatStackTraceLine(line)}</div>
-                      </div>
-                    ))}
-                    {!isStackTraceExpanded && stackHiddenCount > 0 ? (
-                      <div className='pt-2 text-center text-[11px] text-gray-400 dark:text-slate-500'>
-                        +{stackHiddenCount}{' '}
-                        {t('project.showMore', { count: stackHiddenCount })
-                          .toLowerCase()
-                          .replace(/^\+?\d+\s+/, '')}
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : null}
-
-          <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-            <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
-              {t('project.affectedSessionsList')} {sessionsTotal > 0 ? `(${sessionsTotal})` : ''}
-            </Text>
-
-            {sessionsLoading && sessions.length === 0 ? (
-              <Loader />
-            ) : sessions.length === 0 ? (
-              <Text as='p' size='sm' colour='muted' className='py-4 text-center'>
-                {t('project.noAffectedSessions')}
+            <div className='mb-3 flex items-center justify-between gap-3'>
+              <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
+                {t('project.stackTraceXFrames', { x: stackTraceLines.length })}
               </Text>
-            ) : (
-              <div className='space-y-2'>
-                {_map(sessions, (session) => (
-                  <SessionRow key={session.psid} session={session} />
-                ))}
-
-                {canLoadMoreSessions ? (
-                  <Button
-                    onClick={() => loadSessions()}
-                    disabled={!!sessionsLoading}
-                    loading={!!sessionsLoading}
-                    className='mt-3 w-full'
-                    secondary
-                    regular
-                  >
-                    {t('project.loadMore')}
-                  </Button>
-                ) : null}
+              <div className='flex items-center gap-2'>
+                <button
+                  type='button'
+                  onClick={handleCopyStackTrace}
+                  className='flex items-center rounded-md border border-gray-200 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700'
+                  aria-label={t('project.copy')}
+                >
+                  {isCopiedStack ? (
+                    <>
+                      <CheckIcon className='mr-1 size-3.5 text-green-500' />
+                      {t('project.copied')}
+                    </>
+                  ) : (
+                    <>
+                      <ClipboardIcon className='mr-1 size-3.5' />
+                      {t('project.copy')}
+                    </>
+                  )}
+                </button>
+                <button
+                  type='button'
+                  onClick={() => setIsStackTraceExpanded((v) => !v)}
+                  className='flex items-center rounded-md border border-gray-200 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-700'
+                  aria-expanded={isStackTraceExpanded}
+                >
+                  {isStackTraceExpanded ? (
+                    <>
+                      <ChevronUpIcon className='mr-1 size-4' />
+                      {t('project.showLess')}
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDownIcon className='mr-1 size-4' />
+                      {stackHiddenCount > 0
+                        ? t('project.showMore', { count: stackHiddenCount })
+                        : t('project.showMore', { count: 0 })}
+                    </>
+                  )}
+                </button>
               </div>
-            )}
+            </div>
+
+            <div className='rounded-lg border border-gray-100 bg-gray-50 dark:border-slate-700 dark:bg-slate-900/50'>
+              <div className={isStackTraceExpanded ? 'max-h-80 overflow-auto p-3' : 'p-3'}>
+                <div className='space-y-0.5 font-mono text-xs leading-relaxed'>
+                  {(isStackTraceExpanded ? stackTraceLines : stackPreviewLines).map((line, index) => (
+                    <div key={index} className='flex'>
+                      <span className='mr-3 inline-block w-6 text-right text-gray-400 select-none dark:text-slate-500'>
+                        {index + 1}
+                      </span>
+                      <div className='min-w-0 flex-1'>{formatStackTraceLine(line)}</div>
+                    </div>
+                  ))}
+                  {!isStackTraceExpanded && stackHiddenCount > 0 ? (
+                    <div className='pt-2 text-center text-[11px] text-gray-400 dark:text-slate-500'>
+                      +{stackHiddenCount}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </div>
           </div>
+        ) : null}
+
+        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+          <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
+            {t('project.affectedSessionsList')} {sessionsTotal > 0 ? `(${sessionsTotal})` : ''}
+          </Text>
+
+          {sessionsLoading && sessions.length === 0 ? (
+            <Loader />
+          ) : sessions.length === 0 ? (
+            <Text as='p' size='sm' colour='muted' className='py-4 text-center'>
+              {t('project.noAffectedSessions')}
+            </Text>
+          ) : (
+            <div className='space-y-2'>
+              {_map(sessions, (session) => (
+                <SessionRow key={session.psid} session={session} />
+              ))}
+
+              {canLoadMoreSessions ? (
+                <Button
+                  onClick={() => loadSessions()}
+                  disabled={!!sessionsLoading}
+                  loading={!!sessionsLoading}
+                  className='mt-3 w-full'
+                  secondary
+                  regular
+                >
+                  {t('project.loadMore')}
+                </Button>
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
     </div>

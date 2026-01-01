@@ -1032,7 +1032,7 @@ const AlertsPreview = () => {
               Error alert <span className='font-semibold'>Unique error</span> triggered!
             </span>
           </div>
-          <div className='text-sm leading-5 break-words whitespace-pre-wrap text-slate-800 dark:text-gray-200'>
+          <div className='text-sm leading-5 wrap-break-word whitespace-pre-wrap text-slate-800 dark:text-gray-200'>
             Project: <span className='font-mono'>Demo</span>
             <br />
             Error: <span className='font-mono'>NetworkError: Failed to fetch /api/data</span>
