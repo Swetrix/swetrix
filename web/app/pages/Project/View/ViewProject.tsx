@@ -151,6 +151,10 @@ interface ViewProjectContextType {
 
   refCalendar: React.RefObject<any>
   refCalendarCompare: React.RefObject<any>
+
+  fullscreenMapRef: React.RefObject<HTMLDivElement>
+  isMapFullscreen: boolean
+  setIsMapFullscreen: (value: boolean) => void
 }
 
 const defaultViewProjectContext: ViewProjectContextType = {
@@ -205,6 +209,10 @@ const defaultViewProjectContext: ViewProjectContextType = {
   refreshStats: async () => {},
   refCalendar: { current: null } as any,
   refCalendarCompare: { current: null } as any,
+
+  fullscreenMapRef: { current: null } as any,
+  isMapFullscreen: false,
+  setIsMapFullscreen: () => {},
 }
 
 export const ViewProjectContext = createContext<ViewProjectContextType>(defaultViewProjectContext)
@@ -239,6 +247,9 @@ const ViewProjectContent = () => {
   } = useTranslation('common')
 
   const dashboardRef = useRef<HTMLDivElement>(null)
+  const fullscreenMapRef = useRef<HTMLDivElement>(null)
+
+  const [isMapFullscreen, setIsMapFullscreen] = useState(false)
 
   const navigate = useNavigate()
 
@@ -636,6 +647,8 @@ const ViewProjectContent = () => {
       return
     }
 
+    setIsMapFullscreen(false)
+
     const newSearchParams = new URLSearchParams(searchParams.toString())
     newSearchParams.set('tab', key)
     setSearchParams(newSearchParams)
@@ -973,6 +986,9 @@ const ViewProjectContent = () => {
 
       refCalendar,
       refCalendarCompare,
+      fullscreenMapRef,
+      isMapFullscreen,
+      setIsMapFullscreen,
     }),
     [
       timezone,
@@ -1021,6 +1037,9 @@ const ViewProjectContent = () => {
       refreshStats,
       refCalendar,
       refCalendarCompare,
+      fullscreenMapRef,
+      isMapFullscreen,
+      setIsMapFullscreen,
     ],
   )
 
@@ -1127,24 +1146,28 @@ const ViewProjectContent = () => {
               />
               {/* Mobile Sidebar */}
               {isMobileSidebarOpen ? (
-                <ProjectSidebar
-                  tabs={tabs}
-                  activeTab={activeTab}
-                  onTabChange={setDashboardTab}
-                  projectId={id}
-                  projectName={project.name}
-                  websiteUrl={project.websiteUrl}
-                  dataLoading={dataLoading}
-                  searchParams={searchParams}
-                  allowedToManage={allowedToManage}
-                  isMobileOpen={isMobileSidebarOpen}
-                  onMobileClose={closeMobileSidebar}
-                />
+                <div className='pointer-events-auto'>
+                  <ProjectSidebar
+                    tabs={tabs}
+                    activeTab={activeTab}
+                    onTabChange={setDashboardTab}
+                    projectId={id}
+                    projectName={project.name}
+                    websiteUrl={project.websiteUrl}
+                    dataLoading={dataLoading}
+                    searchParams={searchParams}
+                    allowedToManage={allowedToManage}
+                    isMobileOpen={isMobileSidebarOpen}
+                    onMobileClose={closeMobileSidebar}
+                  />
+                </div>
               ) : null}
 
               {/* Main Content */}
               <div className='flex min-w-0 flex-1 flex-col'>
-                <MobileSidebarTrigger onClick={openMobileSidebar} activeTabLabel={activeTabLabel} />
+                <div className='pointer-events-auto'>
+                  <MobileSidebarTrigger onClick={openMobileSidebar} activeTabLabel={activeTabLabel} />
+                </div>
                 <LockedDashboard />
               </div>
             </div>
@@ -1169,21 +1192,11 @@ const ViewProjectContent = () => {
             >
               {!isEmbedded ? <Header /> : null}
 
-              <div className='mx-auto w-full max-w-7xl flex-1 px-4 py-2 sm:px-6 lg:px-8'>
-                <div ref={ref} className='relative flex gap-4'>
-                  <ProjectSidebar
-                    tabs={tabs}
-                    activeTab={activeTab}
-                    onTabChange={setDashboardTab}
-                    projectId={id}
-                    projectName={project.name}
-                    websiteUrl={project.websiteUrl}
-                    dataLoading={dataLoading}
-                    searchParams={searchParams}
-                    allowedToManage={allowedToManage}
-                    className='hidden md:flex'
-                  />
-                  {isMobileSidebarOpen ? (
+              <div className='flex-1 grid grid-cols-1'>
+                <div ref={fullscreenMapRef} className='col-start-1 row-start-1 w-full min-h-full z-0 empty:hidden' />
+
+                <div className={cx('col-start-1 row-start-1 z-10 mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 lg:px-8', isMapFullscreen ? 'pointer-events-none' : 'pointer-events-auto')}>
+                  <div ref={ref} className='relative flex gap-4'>
                     <ProjectSidebar
                       tabs={tabs}
                       activeTab={activeTab}
@@ -1194,164 +1207,182 @@ const ViewProjectContent = () => {
                       dataLoading={dataLoading}
                       searchParams={searchParams}
                       allowedToManage={allowedToManage}
-                      isMobileOpen={isMobileSidebarOpen}
-                      onMobileClose={closeMobileSidebar}
+                      className='relative z-50 hidden md:flex pointer-events-auto'
                     />
-                  ) : null}
-                  {/* Main Content */}
-                  <div className='flex min-w-0 flex-1 flex-col' ref={dashboardRef}>
-                    <EventsRunningOutBanner />
-                    <MobileSidebarTrigger onClick={openMobileSidebar} activeTabLabel={activeTabLabel} />
-                    <AnimatePresence mode='wait'>
-                      <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                      >
-                        {activeTab === PROJECT_TABS.ai ? <AskAIView projectId={id} /> : null}
-                        {activeTab === PROJECT_TABS.traffic ? (
-                          <TrafficView
-                            tnMapping={tnMapping}
-                            customMetrics={customMetrics}
-                            onRemoveCustomMetric={onRemoveCustomMetric}
-                            resetCustomMetrics={resetCustomMetrics}
-                            mode={mode}
-                            projectViews={projectViews}
-                            projectViewsLoading={projectViewsLoading}
-                            projectViewDeleting={projectViewDeleting}
-                            loadProjectViews={loadProjectViews}
-                            onProjectViewDelete={onProjectViewDelete}
-                            setProjectViewToUpdate={setProjectViewToUpdate}
-                            setIsAddAViewOpened={setIsAddAViewOpened}
-                            onCustomMetric={onCustomMetric}
-                          />
-                        ) : null}
-                        {activeTab === PROJECT_TABS.performance ? <PerformanceView tnMapping={tnMapping} /> : null}
-                        {activeTab === PROJECT_TABS.funnels ? <FunnelsView /> : null}
-                        {activeTab === PROJECT_TABS.alerts ? <ProjectAlertsView /> : null}
-                        {activeTab === PROJECT_TABS.profiles ? <ProfilesView tnMapping={tnMapping} /> : null}
-                        {activeTab === PROJECT_TABS.sessions ? (
-                          <SessionsView tnMapping={tnMapping} rotateXAxis={rotateXAxis} />
-                        ) : null}
-                        {activeTab === PROJECT_TABS.errors ? <ErrorsView /> : null}
-                        {activeTab === PROJECT_TABS.goals ? (
-                          <GoalsView
-                            period={period}
-                            from={dateRange ? getFormatDate(dateRange[0]) : ''}
-                            to={dateRange ? getFormatDate(dateRange[1]) : ''}
-                            timezone={timezone}
-                          />
-                        ) : null}
-                        {activeTab === PROJECT_TABS.experiments ? (
-                          <ExperimentsView
-                            period={period}
-                            from={dateRange ? getFormatDate(dateRange[0]) : ''}
-                            to={dateRange ? getFormatDate(dateRange[1]) : ''}
-                            timezone={timezone}
-                          />
-                        ) : null}
-                        {activeTab === PROJECT_TABS.featureFlags ? (
-                          <FeatureFlagsView
-                            period={period}
-                            from={dateRange ? getFormatDate(dateRange[0]) : ''}
-                            to={dateRange ? getFormatDate(dateRange[1]) : ''}
-                            timezone={timezone}
-                          />
-                        ) : null}
-                        {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
-                      </motion.div>
-                    </AnimatePresence>
+                    {isMobileSidebarOpen ? (
+                      <div className='pointer-events-auto'>
+                        <ProjectSidebar
+                          tabs={tabs}
+                          activeTab={activeTab}
+                          onTabChange={setDashboardTab}
+                          projectId={id}
+                          projectName={project.name}
+                          websiteUrl={project.websiteUrl}
+                          dataLoading={dataLoading}
+                          searchParams={searchParams}
+                          allowedToManage={allowedToManage}
+                          isMobileOpen={isMobileSidebarOpen}
+                          onMobileClose={closeMobileSidebar}
+                        />
+                      </div>
+                    ) : null}
+                    {/* Main Content */}
+                    <div className={cx('flex min-w-0 flex-1 flex-col pointer-events-auto', isMapFullscreen ? 'pointer-events-none' : 'pointer-events-auto')} ref={dashboardRef}>
+                      <EventsRunningOutBanner />
+                      <div className='pointer-events-auto'>
+                        <MobileSidebarTrigger onClick={openMobileSidebar} activeTabLabel={activeTabLabel} />
+                      </div>
+                      <AnimatePresence mode='wait'>
+                        <motion.div
+                          key={activeTab}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                        >
+                          {activeTab === PROJECT_TABS.ai ? <AskAIView projectId={id} /> : null}
+                          {activeTab === PROJECT_TABS.traffic ? (
+                            <TrafficView
+                              tnMapping={tnMapping}
+                              customMetrics={customMetrics}
+                              onRemoveCustomMetric={onRemoveCustomMetric}
+                              resetCustomMetrics={resetCustomMetrics}
+                              mode={mode}
+                              projectViews={projectViews}
+                              projectViewsLoading={projectViewsLoading}
+                              projectViewDeleting={projectViewDeleting}
+                              loadProjectViews={loadProjectViews}
+                              onProjectViewDelete={onProjectViewDelete}
+                              setProjectViewToUpdate={setProjectViewToUpdate}
+                              setIsAddAViewOpened={setIsAddAViewOpened}
+                              onCustomMetric={onCustomMetric}
+                            />
+                          ) : null}
+                          {activeTab === PROJECT_TABS.performance ? <PerformanceView tnMapping={tnMapping} /> : null}
+                          {activeTab === PROJECT_TABS.funnels ? <FunnelsView /> : null}
+                          {activeTab === PROJECT_TABS.alerts ? <ProjectAlertsView /> : null}
+                          {activeTab === PROJECT_TABS.profiles ? <ProfilesView tnMapping={tnMapping} /> : null}
+                          {activeTab === PROJECT_TABS.sessions ? (
+                            <SessionsView tnMapping={tnMapping} rotateXAxis={rotateXAxis} />
+                          ) : null}
+                          {activeTab === PROJECT_TABS.errors ? <ErrorsView /> : null}
+                          {activeTab === PROJECT_TABS.goals ? (
+                            <GoalsView
+                              period={period}
+                              from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                              to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                              timezone={timezone}
+                            />
+                          ) : null}
+                          {activeTab === PROJECT_TABS.experiments ? (
+                            <ExperimentsView
+                              period={period}
+                              from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                              to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                              timezone={timezone}
+                            />
+                          ) : null}
+                          {activeTab === PROJECT_TABS.featureFlags ? (
+                            <FeatureFlagsView
+                              period={period}
+                              from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                              to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                              timezone={timezone}
+                            />
+                          ) : null}
+                          {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
+                        </motion.div>
+                      </AnimatePresence>
 
-                    {isEmbedded ? null : (
-                      <>
+                      {isEmbedded ? null : (
+                        <>
                         <div className='flex-1' />
-                        <div className='mt-4 flex w-full items-center justify-between gap-2'>
+                        <div className='mt-4 flex w-full items-center justify-between gap-2 pointer-events-auto'>
                           <Dropdown
                             items={whitelist}
-                            buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-slate-900 dark:text-gray-50'
-                            title={
-                              <span className='inline-flex items-center'>
-                                <Flag
-                                  className='mr-2 rounded-xs'
-                                  country={languageFlag[language]}
-                                  size={16}
-                                  alt={languages[language]}
-                                />
-                                {languages[language]}
-                              </span>
-                            }
-                            labelExtractor={(lng: string) => (
-                              <div className='flex items-center'>
-                                <Flag
-                                  className='mr-2 rounded-xs'
-                                  country={languageFlag[lng]}
-                                  size={16}
-                                  alt={languageFlag[lng]}
-                                />
-                                {languages[lng]}
-                              </div>
-                            )}
-                            onSelect={(lng: string) => {
-                              changeLanguage(lng)
-                            }}
-                            headless
-                          />
-                          <div className='flex items-center gap-2'>
-                            <button
-                              type='button'
-                              onClick={() => setIsHotkeysHelpOpened(true)}
-                              aria-label={t('modals.shortcuts.title')}
-                              className='relative rounded-md border border-transparent bg-gray-50 p-2 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-                            >
-                              <KeyboardIcon className='h-6 w-6 text-slate-700 dark:text-gray-200' />
-                            </button>
-                            <Dropdown
+                              buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-slate-900 dark:text-gray-50'
                               title={
-                                <span className='flex items-center justify-center'>
-                                  <span className='sr-only'>{t('header.switchTheme')}</span>
-                                  {theme === 'dark' ? (
-                                    <SunIcon className='h-6 w-6 text-gray-200' aria-hidden='true' />
-                                  ) : (
-                                    <MoonIcon className='h-6 w-6 text-slate-700' aria-hidden='true' />
-                                  )}
+                                <span className='inline-flex items-center'>
+                                  <Flag
+                                    className='mr-2 rounded-xs'
+                                    country={languageFlag[language]}
+                                    size={16}
+                                    alt={languages[language]}
+                                  />
+                                  {languages[language]}
                                 </span>
                               }
-                              items={[
-                                { key: 'light', label: t('header.light'), icon: SunIcon },
-                                { key: 'dark', label: t('header.dark'), icon: MoonIcon },
-                              ]}
-                              keyExtractor={(item) => item.key}
-                              labelExtractor={(item) => (
-                                <div
-                                  className={cx('flex w-full items-center', {
-                                    'light:text-indigo-600': item.key === 'light',
-                                    'dark:text-indigo-400': item.key === 'dark',
-                                  })}
-                                >
-                                  <item.icon
-                                    className={cx('mr-2 h-5 w-5', {
-                                      'dark:text-gray-300': item.key === 'light',
-                                      'light:text-gray-400': item.key === 'dark',
-                                    })}
-                                    aria-hidden='true'
+                              labelExtractor={(lng: string) => (
+                                <div className='flex items-center'>
+                                  <Flag
+                                    className='mr-2 rounded-xs'
+                                    country={languageFlag[lng]}
+                                    size={16}
+                                    alt={languageFlag[lng]}
                                   />
-                                  {item.label}
+                                  {languages[lng]}
                                 </div>
                               )}
-                              onSelect={(item) => setTheme(item.key as 'light' | 'dark')}
-                              className='flex'
-                              chevron={null}
+                              onSelect={(lng: string) => {
+                                changeLanguage(lng)
+                              }}
                               headless
-                              buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 md:px-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-                              menuItemsClassName='top-5'
-                              selectItemClassName='font-semibold'
                             />
+                            <div className='flex items-center gap-2'>
+                              <button
+                                type='button'
+                                onClick={() => setIsHotkeysHelpOpened(true)}
+                                aria-label={t('modals.shortcuts.title')}
+                                className='relative rounded-md border border-transparent bg-gray-50 p-2 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                              >
+                                <KeyboardIcon className='h-6 w-6 text-slate-700 dark:text-gray-200' />
+                              </button>
+                              <Dropdown
+                                title={
+                                  <span className='flex items-center justify-center'>
+                                    <span className='sr-only'>{t('header.switchTheme')}</span>
+                                    {theme === 'dark' ? (
+                                      <SunIcon className='h-6 w-6 text-gray-200' aria-hidden='true' />
+                                    ) : (
+                                      <MoonIcon className='h-6 w-6 text-slate-700' aria-hidden='true' />
+                                    )}
+                                  </span>
+                                }
+                                items={[
+                                  { key: 'light', label: t('header.light'), icon: SunIcon },
+                                  { key: 'dark', label: t('header.dark'), icon: MoonIcon },
+                                ]}
+                                keyExtractor={(item) => item.key}
+                                labelExtractor={(item) => (
+                                  <div
+                                    className={cx('flex w-full items-center', {
+                                      'light:text-indigo-600': item.key === 'light',
+                                      'dark:text-indigo-400': item.key === 'dark',
+                                    })}
+                                  >
+                                    <item.icon
+                                      className={cx('mr-2 h-5 w-5', {
+                                        'dark:text-gray-300': item.key === 'light',
+                                        'light:text-gray-400': item.key === 'dark',
+                                      })}
+                                      aria-hidden='true'
+                                    />
+                                    {item.label}
+                                  </div>
+                                )}
+                                onSelect={(item) => setTheme(item.key as 'light' | 'dark')}
+                                className='flex'
+                                chevron={null}
+                                headless
+                                buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 md:px-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                                menuItemsClassName='top-5'
+                                selectItemClassName='font-semibold'
+                              />
+                            </div>
                           </div>
-                        </div>
-                      </>
-                    )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

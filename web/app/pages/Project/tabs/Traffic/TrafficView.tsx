@@ -9,6 +9,7 @@ import _map from 'lodash/map'
 import _some from 'lodash/some'
 import { BanIcon, ChartColumnBigIcon, ChartLineIcon, EyeIcon } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useRef, lazy, Suspense, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, Link, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
@@ -144,6 +145,9 @@ const TrafficView = ({
     // Filter functions from context
     getFilterLink,
     getVersionFilterLink,
+    isMapFullscreen,
+    setIsMapFullscreen,
+    fullscreenMapRef,
   } = useViewProjectContext()
   const {
     t,
@@ -217,9 +221,6 @@ const TrafficView = ({
   const [keywords, setKeywords] = useState<KeywordEntry[]>([])
   const [keywordsLoading, setKeywordsLoading] = useState(false)
   const [keywordsNotConnected, setKeywordsNotConnected] = useState(false)
-
-  // Map fullscreen state
-  const [isMapFullscreen, setIsMapFullscreen] = useState(false)
 
   const isMountedRef = useRef(true)
 
@@ -901,36 +902,35 @@ const TrafficView = ({
   }
 
   // Fullscreen map view - takes over the entire content area
-  if (isMapFullscreen) {
+  if (isMapFullscreen && fullscreenMapRef.current) {
     const countryData = panelsData.data?.cc || []
     const regionData = panelsData.data?.rg || []
     const total = countryData.reduce((acc: number, curr: any) => acc + curr.count, 0)
 
-    return (
-      <div className='-mx-4 -my-2 flex h-full min-h-[calc(100vh-8rem)] flex-col sm:-mx-6 lg:-mx-8'>
-        <Suspense
-          fallback={
-            <div className='flex h-full flex-1 items-center justify-center'>
-              <div className='flex flex-col items-center gap-2'>
-                <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent' />
-                <span className='text-sm text-neutral-600 dark:text-neutral-300'>Loading map...</span>
-              </div>
+    return createPortal(
+      <Suspense
+        fallback={
+          <div className='flex h-full flex-1 items-center justify-center'>
+            <div className='flex flex-col items-center gap-2'>
+              <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent' />
+              <span className='text-sm text-neutral-600 dark:text-neutral-300'>Loading map...</span>
             </div>
-          }
-        >
-          <InteractiveMap
-            data={countryData}
-            regionData={regionData}
-            total={total}
-            onClick={(mapType, key) => {
-              const link = getFilterLink(mapType, key)
-              navigate(link)
-            }}
-            onFullscreenToggle={setIsMapFullscreen}
-            isFullscreen={true}
-          />
-        </Suspense>
-      </div>
+          </div>
+        }
+      >
+        <InteractiveMap
+          data={countryData}
+          regionData={regionData}
+          total={total}
+          onClick={(mapType, key) => {
+            const link = getFilterLink(mapType, key)
+            navigate(link)
+          }}
+          onFullscreenToggle={setIsMapFullscreen}
+          isFullscreen={true}
+        />
+      </Suspense>,
+      fullscreenMapRef.current,
     )
   }
 

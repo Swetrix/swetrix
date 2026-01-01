@@ -402,14 +402,18 @@ const InteractiveMapCore = ({
 
       {/* Exit fullscreen button */}
       {isFullscreen && onFullscreenToggle ? (
-        <button
-          type='button'
-          onClick={() => onFullscreenToggle(false)}
-          className='absolute top-3 left-3 z-50 flex items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-        >
-          <XMarkIcon className='mr-1.5 h-4 w-4' />
-          {t('common.close')}
-        </button>
+        <div className='pointer-events-none absolute inset-x-0 top-3 z-50 mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 lg:px-8'>
+          <div className='relative flex w-full justify-end'>
+            <button
+              type='button'
+              onClick={() => onFullscreenToggle(false)}
+              className='pointer-events-auto flex items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+            >
+              <XMarkIcon className='mr-1.5 h-4 w-4' />
+              {t('common.close')}
+            </button>
+          </div>
+        </div>
       ) : null}
 
       {dataLoading || isGeoDataLoading ? (
