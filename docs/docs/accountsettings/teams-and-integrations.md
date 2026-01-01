@@ -1,5 +1,5 @@
 ---
-title: Teams, API & Integrations
+title: Teams & Integrations
 slug: /teams-api-integrations
 ---
 
@@ -30,19 +30,6 @@ To manage your team, go to the Organisations page and click the **Settings** (ge
 ### Assigning Projects
 
 You can assign a project to an organisation in the **Project Settings -> Access** tab. Once assigned, all members of the organisation will have access to the project according to their organisation role.
-
-## API Keys
-
-Swetrix provides a personal API key that allows you to interact with the Swetrix API programmatically.
-
-1.  Go to your **[Account Settings](https://swetrix.com/user-settings)**.
-2.  Open the **Account** tab.
-3.  Scroll down to the **API Key** section.
-4.  Click **Generate new API key**.
-
-:::warning
-Treat your API key like a password. Do not share it or commit it to public repositories.
-:::
 
 ## Integrations
 
