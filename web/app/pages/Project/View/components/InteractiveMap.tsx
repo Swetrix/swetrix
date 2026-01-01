@@ -1,6 +1,6 @@
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
-import { scalePow, scaleQuantize } from 'd3-scale'
+import { scalePow, scaleThreshold } from 'd3-scale'
 import { Feature, GeoJsonObject } from 'geojson'
 import { Layer, Path } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -180,23 +180,20 @@ const InteractiveMapCore = ({
         .range(['hsla(0, 60%, 55%, 0.15)', 'hsla(0, 70%, 50%, 0.9)'])
     }
 
-    // Performance: discrete, darker Tailwind palette with 80% opacity -> blue (fast) to warm (slow)
+    // Performance: use fixed thresholds based on web performance standards (values are in seconds)
+    // This ensures colors represent absolute performance, not relative to the data
     if (isPerformanceTab) {
-      if (minValue === maxValue) {
-        const singleColor = 'rgba(34, 197, 94, 0.85)' // green-500 @ 85%
-        return () => singleColor
-      }
       const perfColors = [
-        'rgba(34, 197, 94, 0.85)', // green-500 @ 85% (fast)
-        'rgba(74, 222, 128, 0.85)', // green-400 @ 85%
-        'rgba(163, 230, 53, 0.85)', // lime-400 @ 85%
-        'rgba(250, 204, 21, 0.85)', // yellow-400 @ 85%
-        'rgba(251, 146, 60, 0.85)', // orange-400 @ 85%
-        'rgba(239, 68, 68, 0.85)', // red-500 @ 85%
-        'rgba(220, 38, 38, 0.85)', // red-600 @ 85%
-        'rgba(185, 28, 28, 0.85)', // red-700 @ 85% (slow)
+        'rgba(34, 197, 94, 0.85)', // green-500 @ 85% (< 1s - excellent)
+        'rgba(74, 222, 128, 0.85)', // green-400 @ 85% (1-2s - good)
+        'rgba(250, 204, 21, 0.85)', // yellow-400 @ 85% (2-3s - moderate)
+        'rgba(251, 146, 60, 0.85)', // orange-400 @ 85% (3-4s - slow)
+        'rgba(239, 68, 68, 0.85)', // red-500 @ 85% (4-5s - poor)
+        'rgba(185, 28, 28, 0.85)', // red-700 @ 85% (> 5s - critical)
       ]
-      return scaleQuantize<string>().domain([minValue, maxValue]).range(perfColors)
+      // Fixed thresholds in seconds for absolute performance classification
+      const thresholds = [1, 2, 3, 4, 5]
+      return scaleThreshold<number, string>().domain(thresholds).range(perfColors)
     }
 
     // Traffic (default): blue/indigo gradient to match site color scheme
