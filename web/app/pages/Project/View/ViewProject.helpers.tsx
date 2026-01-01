@@ -728,22 +728,21 @@ const getSettings = (
         }
 
         if (_isEmpty(compareChart)) {
-          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
-          <li class='font-semibold'>${
+          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-gray-50 dark:bg-slate-800'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
           }</li>
-          <hr class='border-gray-200 dark:border-gray-600' />
           ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
             if (el.id === 'sessionDuration') {
               return `
-              <li class='flex justify-between'>
-                <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
-                  <span>${el.name}</span>
+              <li class='flex justify-between items-center py-0.5'>
+                <div class='flex items-center min-w-0 mr-4'>
+                  <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
+                  <span class="truncate">${el.name}</span>
                 </div>
-                <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
+                <span class='font-mono whitespace-nowrap'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
               </li>
               `
             }
@@ -755,42 +754,42 @@ const getSettings = (
             // Format revenue and refunds as currency
             if (el.id === 'revenue') {
               return `
-              <li class='flex justify-between'>
-                <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style='background-color:${color(el.id)}'></div>
-                  <span>${el.name}</span>
+              <li class='flex justify-between items-center py-0.5'>
+                <div class='flex items-center min-w-0 mr-4'>
+                  <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style='background-color:${color(el.id)}'></div>
+                  <span class="truncate">${el.name}</span>
                 </div>
-                <span class='pl-4'>$${nFormatter(Number(el.value) || 0, 2)}</span>
+                <span class='font-mono whitespace-nowrap'>$${nFormatter(Number(el.value) || 0, 2)}</span>
               </li>
               `
             }
 
             if (el.id === 'refundsAmount') {
               return `
-              <li class='flex justify-between'>
-                <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style='background-color:rgba(234,88,12,0.25);border:1.5px dashed #ea580c'></div>
-                  <span>${el.name}</span>
+              <li class='flex justify-between items-center py-0.5'>
+                <div class='flex items-center min-w-0 mr-4'>
+                  <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style='background-color:rgba(234,88,12,0.25);border:1.5px dashed #ea580c'></div>
+                  <span class="truncate">${el.name}</span>
                 </div>
-                <span class='pl-4'>$${nFormatter(Number(el.value) || 0, 2)}</span>
+                <span class='font-mono whitespace-nowrap'>$${nFormatter(Number(el.value) || 0, 2)}</span>
               </li>
               `
             }
 
             return `
-            <li class='flex justify-between'>
-              <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
-                <span>${el.name}</span>
+            <li class='flex justify-between items-center py-0.5'>
+              <div class='flex items-center min-w-0 mr-4'>
+                <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
+                <span class="truncate">${el.name}</span>
               </div>
-              <span class='pl-4'>${el.value}</span>
+              <span class='font-mono whitespace-nowrap'>${el.value}</span>
             </li>
             `
-          }).join('')}`
+          }).join('')}</ul>`
         }
 
         return `
-        <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+        <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
           ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
             const { id, index, name, value, x } = el
 
@@ -818,23 +817,23 @@ const getSettings = (
 
             if (id === 'sessionDuration') {
               return `
-              <div class='flex justify-between'>
-              <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(id)}></div>
-                <span>${name}</span>
+              <div class='flex justify-between items-center py-0.5'>
+              <div class='flex items-center min-w-0 mr-4'>
+                <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(id)}></div>
+                <span class="truncate">${name}</span>
               </div>
             </div>
-            <hr class='border-gray-200 dark:border-gray-600' />
-            <li class='mt-1 ml-2'>
-              <p>
-                <span>${xDataValue}</span> -
-                <span>${getStringFromTime(getTimeFromSeconds(value))}</span>
+            <hr class='border-gray-200 dark:border-gray-600 my-1' />
+            <li class='ml-2 mb-2'>
+              <p class='flex justify-between'>
+                <span class="mr-2">${xDataValue}</span> -
+                <span class='font-mono whitespace-nowrap'>${getStringFromTime(getTimeFromSeconds(value))}</span>
               </p>
               ${
                 valueCompare && Number(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index]) > 0
-                  ? `<p>
-                <span>${xDataValueCompare}</span> -
-                <span>${valueCompare}</span>
+                  ? `<p class='flex justify-between'>
+                <span class="mr-2">${xDataValueCompare}</span> -
+                <span class='font-mono whitespace-nowrap'>${valueCompare}</span>
               </p>`
                   : ''
               }
@@ -843,22 +842,22 @@ const getSettings = (
             }
 
             return `
-            <div class='flex justify-between'>
-              <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(id)}></div>
-                <span>${name}</span>
+            <div class='flex justify-between items-center py-0.5'>
+              <div class='flex items-center min-w-0 mr-4'>
+                <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(id)}></div>
+                <span class="truncate">${name}</span>
               </div>
             </div>
-            <hr class='border-gray-200 dark:border-gray-600' />
-            <li class='mt-1 ml-2'>
-            <p>
-              <span>${xDataValue}</span> - <span>${value}</span>
+            <hr class='border-gray-200 dark:border-gray-600 my-1' />
+            <li class='ml-2 mb-2'>
+            <p class='flex justify-between'>
+              <span class="mr-2">${xDataValue}</span> - <span class='font-mono whitespace-nowrap'>${value}</span>
             </p>
             ${
               valueCompare
-                ? `<p>
-              <span>${xDataValueCompare}</span> -
-              <span>${valueCompare}</span>
+                ? `<p class='flex justify-between'>
+              <span class="mr-2">${xDataValueCompare}</span> -
+              <span class='font-mono whitespace-nowrap'>${valueCompare}</span>
             </p>`
                 : ''
             }
@@ -1041,22 +1040,21 @@ const getSettingsCustomEventsStacked = (
           return ''
         }
 
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
-          <li class='font-semibold'>${
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-gray-50 dark:bg-slate-800'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
           }</li>
-          <hr class='border-gray-200 dark:border-gray-600' />
           ${_map(
             item,
             (el: { id: string; index: number; name: string; value: string; x: Date }) => `
-            <li class='flex justify-between'>
-              <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
-                <span>${el.name}</span>
+            <li class='flex justify-between items-center py-0.5'>
+              <div class='flex items-center min-w-0 mr-4'>
+                <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
+                <span class="truncate">${el.name}</span>
               </div>
-              <span class='pl-4'>${nFormatter(Number(el.value) || 0, 1)}</span>
+              <span class='font-mono whitespace-nowrap'>${nFormatter(Number(el.value) || 0, 1)}</span>
             </li>
             `,
           ).join('')}`
@@ -1199,21 +1197,20 @@ const getSettingsSession = (
         if (!item || _isEmpty(item) || !item[0]) {
           return ''
         }
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
-          <li class='font-semibold'>${
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-gray-50 dark:bg-slate-800'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
           }</li>
-          <hr class='border-gray-200 dark:border-gray-600' />
           ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
             return `
-            <li class='flex justify-between'>
-              <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
-                <span>${el.name}</span>
+            <li class='flex justify-between items-center py-0.5'>
+              <div class='flex items-center min-w-0 mr-4'>
+                <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
+                <span class="truncate">${el.name}</span>
               </div>
-              <span class='pl-4'>${el.value}</span>
+              <span class='font-mono whitespace-nowrap'>${el.value}</span>
             </li>
             `
           }).join('')}</ul>`
@@ -1375,22 +1372,21 @@ const getSettingsError = (
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
-          <li class='font-semibold'>${
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-gray-50 dark:bg-slate-800'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
           }</li>
-          <hr class='border-gray-200 dark:border-gray-600' />
           ${_map(
             item,
             (el: { id: string; index: number; name: string; value: string; x: Date }) => `
-            <li class='flex justify-between'>
-              <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
-                <span>${el.name}</span>
+            <li class='flex justify-between items-center py-0.5'>
+              <div class='flex items-center min-w-0 mr-4'>
+                <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
+                <span class="truncate">${el.name}</span>
               </div>
-              <span class='pl-4'>${el.value}</span>
+              <span class='font-mono whitespace-nowrap'>${el.value}</span>
             </li>
             `,
           ).join('')}`
@@ -1520,16 +1516,16 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
 
         const events = `
           <tr class='tracking-tight'>
-            <td class='pr-7'>
-              <div class='w-3 h-3 rounded-xs mr-1 float-left mt-1.5' style=background-color:${color('events')}></div>
+            <td class='pr-4'>
+              <div class='w-2.5 h-2.5 rounded-xs mr-1 float-left mt-0.5' style=background-color:${color('events')}></div>
               <span class='font-semibold'>
                 ${_startsWith(step.value, '/') ? t('project.visitors') : t('project.events')}
               </span>
             </td>
-            <td class='pr-3 font-semibold text-right'>
+            <td class='pr-2 font-semibold text-right font-mono'>
               ${step.events}
             </td>
-            <td class='text-right'>
+            <td class='text-right font-mono'>
               ${step.eventsPercStep}%
             </td>
           </tr>
@@ -1537,18 +1533,18 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
 
         const dropoff = `
           <tr class='tracking-tight'>
-            <td class='pr-7'>
-              <div class='w-3 h-3 rounded-xs mr-1 float-left mt-1.5' style="background-color:${color(
+            <td class='pr-4'>
+              <div class='w-2.5 h-2.5 rounded-xs mr-1 float-left mt-0.5' style="background-color:${color(
                 'dropoff',
               )}"}></div>
               <span class='font-semibold'>
                 ${index === 0 ? t('project.neverEnteredTheFunnel') : t('project.dropoff')}
               </span>
             </td>
-            <td class='pr-3 font-semibold text-right'>
+            <td class='pr-2 font-semibold text-right font-mono'>
               ${index === 0 ? totalPageviews - step.events : step.dropoff}
             </td>
-            <td class='text-right'>
+            <td class='text-right font-mono'>
               ${
                 index === 0 ? _round(((totalPageviews - step.events) / totalPageviews) * 100, 2) : step.dropoffPercStep
               }%
@@ -1558,24 +1554,24 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
 
         const conversionFromStart = `
           <tr class='tracking-tight'>
-            <td class='pr-7'>
+            <td class='pr-4'>
               <span class='font-semibold'>${t('project.conversionFromStart')}</span>
             </td>
-            <td class='pr-3 font-semibold text-right'>${step.eventsPerc}%</td>
+            <td class='pr-2 font-semibold text-right font-mono'>${step.eventsPerc}%</td>
             <td class='text-right'></td>
           </tr>
         `
 
         return `
-          <div class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+          <div class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[300px] md:max-h-[400px] overflow-y-auto shadow-lg z-50'>
             ${title}
-            <hr class='border-gray-200 dark:border-gray-600' />
-            <table class='table-fixed'>
+            <div class='border-b border-gray-200 dark:border-gray-600 my-1'></div>
+            <table class='table-fixed w-full'>
               <thead>
                 <tr>
-                  <th className='w-3/5'></th>
-                  <th className='w-1/5'></th>
-                  <th className='w-1/5'></th>
+                  <th class='w-3/5'></th>
+                  <th class='w-1/5'></th>
+                  <th class='w-1/5'></th>
                 </tr>
               </thead>
               <tbody>
@@ -1753,28 +1749,27 @@ const getSettingsPerf = (
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
         if (_isEmpty(compareChart)) {
-          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
-        <li class='font-semibold'>${
+          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+        <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-gray-50 dark:bg-slate-800'>${
           timeFormat === TimeFormat['24-hour']
             ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
             : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
         }</li>
-        <hr class='border-gray-200 dark:border-gray-600' />
         ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
           return `
-          <li class='flex justify-between'>
-            <div class='flex justify-items-start'>
-              <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
-              <span>${el.name}</span>
+          <li class='flex justify-between items-center py-0.5'>
+            <div class='flex items-center min-w-0 mr-4'>
+              <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
+              <span class="truncate">${el.name}</span>
             </div>
-            <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
+            <span class='font-mono whitespace-nowrap'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
           </li>
           `
-        }).join('')}`
+        }).join('')}</ul>`
         }
 
         return `
-      <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+      <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
         ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
           const { id, index, name, value, x } = el
 
@@ -1793,22 +1788,22 @@ const getSettingsPerf = (
           }
 
           return `
-          <div class='flex justify-between'>
-            <div class='flex justify-items-start'>
-              <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(id)}></div>
-              <span>${name}</span>
+          <div class='flex justify-between items-center py-0.5'>
+            <div class='flex items-center min-w-0 mr-4'>
+              <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(id)}></div>
+              <span class="truncate">${name}</span>
             </div>
           </div>
-          <hr class='border-gray-200 dark:border-gray-600' />
-          <li class='mt-1 ml-2'>
-          <p>
-            <span>${xDataValue}</span> - <span>${getStringFromTime(getTimeFromSeconds(value), true)}</span>
+          <hr class='border-gray-200 dark:border-gray-600 my-1' />
+          <li class='ml-2 mb-2'>
+          <p class='flex justify-between'>
+            <span class="mr-2">${xDataValue}</span> - <span class='font-mono whitespace-nowrap'>${getStringFromTime(getTimeFromSeconds(value), true)}</span>
           </p>
           ${
             valueCompare
-              ? `<p>
-            <span>${xDataValueCompare}</span> -
-            <span>${getStringFromTime(getTimeFromSeconds(valueCompare), true)}</span>
+              ? `<p class='flex justify-between'>
+            <span class="mr-2">${xDataValueCompare}</span> -
+            <span class='font-mono whitespace-nowrap'>${getStringFromTime(getTimeFromSeconds(valueCompare), true)}</span>
           </p>`
               : ''
           }
@@ -2154,22 +2149,21 @@ const getSettingsCaptcha = (
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
-          <li class='font-semibold'>${
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-gray-50 dark:bg-slate-800'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
           }</li>
-          <hr class='border-gray-200 dark:border-gray-600' />
           ${_map(
             item,
             (el: { id: string; index: number; name: string; value: string; x: Date }) => `
-            <li class='flex justify-between'>
-              <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
-                <span>${el.name}</span>
+            <li class='flex justify-between items-center py-0.5'>
+              <div class='flex items-center min-w-0 mr-4'>
+                <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
+                <span class="truncate">${el.name}</span>
               </div>
-              <span class='pl-4'>${el.value}</span>
+              <span class='font-mono whitespace-nowrap'>${el.value}</span>
             </li>
             `,
           ).join('')}`
