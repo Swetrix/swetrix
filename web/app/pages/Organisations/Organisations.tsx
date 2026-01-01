@@ -78,7 +78,7 @@ const Organisations = () => {
       closeNewOrganisationModal()
     } catch (reason: any) {
       setNewOrganisationError(reason)
-      toast.error(t('apiNotifications.organisationCreateError'))
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.organisationCreateError'))
     } finally {
       setIsNewOrganisationLoading(false)
     }

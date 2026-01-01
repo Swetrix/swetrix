@@ -126,7 +126,7 @@ const ExperimentSettingsModal = ({
       }
     } catch (error) {
       console.error('Failed to load experiment:', error)
-      toast.error(t('experiments.loadError'))
+      toast.error(typeof error === 'string' ? error : t('experiments.loadError'))
       onClose()
     } finally {
       setIsLoading(false)

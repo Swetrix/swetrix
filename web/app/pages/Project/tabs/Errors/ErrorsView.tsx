@@ -582,7 +582,7 @@ const ErrorsView = () => {
       updateStatusInErrors('resolved')
     } catch (reason) {
       console.error('[markErrorAsResolved]', reason)
-      toast.error(t('apiNotifications.updateErrorStatusFailed'))
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.updateErrorStatusFailed'))
       setErrorStatusUpdating(false)
       return
     }
@@ -602,7 +602,7 @@ const ErrorsView = () => {
       updateStatusInErrors('active')
     } catch (reason) {
       console.error('[markErrorAsActive]', reason)
-      toast.error(t('apiNotifications.updateErrorStatusFailed'))
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.updateErrorStatusFailed'))
       setErrorStatusUpdating(false)
       return
     }

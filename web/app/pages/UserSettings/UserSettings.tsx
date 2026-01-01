@@ -268,8 +268,8 @@ const UserSettings = () => {
       await receiveLoginNotification(checked)
       mergeUser({ receiveLoginNotifications: checked })
       toast.success(t('profileSettings.updated'))
-    } catch {
-      toast.error(t('apiNotifications.somethingWentWrong'))
+    } catch (reason: any) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
     } finally {
       setSettingUpdating(false)
     }
@@ -307,7 +307,7 @@ const UserSettings = () => {
       toast.success(t('apiNotifications.accountDeleted'))
       navigate(routes.main)
     } catch (reason: any) {
-      toast.error(t(`apiNotifications.${reason}`, 'apiNotifications.somethingWentWrong'))
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
     }
   }
 

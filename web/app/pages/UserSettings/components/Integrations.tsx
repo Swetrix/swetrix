@@ -184,12 +184,8 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
           isTelegramChatIdConfirmed: false,
           telegramChatId: null,
         })
-      } catch (reason) {
-        if (_isString(reason)) {
-          toast.error(reason)
-        } else {
-          toast.error(t('apiNotifications.integrationRemovalError'))
-        }
+      } catch (reason: any) {
+        toast.error(typeof reason === 'string' ? reason : t('apiNotifications.integrationRemovalError'))
         console.error(`[ERROR] Failed to remove TG integration: ${reason}`)
       }
 
