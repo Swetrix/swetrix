@@ -1,0 +1,51 @@
+---
+title: Email reports
+slug: /email-reports
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+Swetrix can send you regular email reports containing a summary of your projects' performance. This is a great way to keep track of your website's traffic without having to log in to the dashboard every time.
+
+:::info
+This feature is available only on Swetrix Cloud. If you are self-hosting Swetrix, you won't see this setting.
+:::
+
+## How it works
+
+The email report is a digest that includes data for all the projects you have access to. It provides a quick overview of the key metrics for each project, allowing you to monitor trends and identify potential issues.
+
+The report includes the following metrics for each project:
+
+- **Active Users**: The number of people currently on your website.
+- **Unique Visitors**: The number of distinct individuals who have visited your website.
+- **Pageviews**: The total number of pages viewed.
+- **Avg. Session Duration**: The average length of a visit to your website.
+- **Bounce Rate**: The percentage of visitors who navigate away from the site after viewing only one page.
+- **Goal Conversions**: If you have set up goals, the report will show the number of conversions and the conversion rate.
+- **Errors Detected**: If you are using error tracking, the report will include a summary of the errors detected.
+- **Top Country**: The country from which most of your traffic originates.
+
+## Configuration
+
+You can configure the frequency of these reports in your account settings.
+
+1. Click on your profile icon in the top right corner and select **Account settings**.
+2. Navigate to the **Communications** tab.
+3. Locate the **Email reports** section.
+4. Select your desired frequency from the dropdown menu.
+
+<img alt="Email reports frequency" src={useBaseUrl('img/accountsettings/email-reports.png')} />
+
+You can choose to receive reports:
+
+- **Weekly**: Sent every week.
+- **Monthly**: Sent every month.
+- **Quarterly**: Sent every three months.
+- **Never**: Disable email reports.
+
+Once you have selected your preferred frequency, click the **Save** button to apply the changes.
+
+:::tip
+If you want to invite other people (like your team members or clients) to receive reports for a specific website, you should use the [site-specific email reports feature](/how-to-invite-users-to-your-website) instead. The account-level email reports described here are intended for your personal overview of all your projects.
+:::
