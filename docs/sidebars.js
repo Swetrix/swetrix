@@ -52,7 +52,7 @@ module.exports = {
     ],
     'Account settings': [
       'accountsettings/two-factor-authentication',
-      'accountsettings/teams-api-integrations',
+      'accountsettings/teams-and-integrations',
       'accountsettings/api-keys',
       'accountsettings/email-reports',
       'accountsettings/change-email',

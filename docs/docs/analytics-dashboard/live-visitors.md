@@ -22,7 +22,7 @@ You can configure Swetrix to display the live visitor count directly in your bro
 
 To enable this:
 
-1.  Go to your **[Account Settings](/user-settings)**.
+1.  Go to your **[Account Settings](https://swetrix.com/user-settings)**.
 2.  Open the **Interface** tab.
 3.  Check the box for **Show live visitors in browser title**.
 

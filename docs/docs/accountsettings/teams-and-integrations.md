@@ -13,7 +13,7 @@ Organisations allow you to collaborate with your team members on multiple projec
 
 ### Creating an Organisation
 
-1.  Navigate to the **[Organisations](/organisations)** page from the dashboard menu.
+1.  Navigate to the **[Organisations](https://swetrix.com/organisations)** page from the dashboard menu.
 2.  Click the **New organisation** button.
 3.  Enter a name for your organisation and click **Create**.
 
