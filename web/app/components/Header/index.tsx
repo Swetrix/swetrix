@@ -612,16 +612,6 @@ const AuthedHeader = ({
                 </Link>
               ) : null}
               {!isSelfhosted && !isDisableMarketingPages ? <SolutionsMenu /> : null}
-              {isSelfhosted && !isDisableMarketingPages ? (
-                <a
-                  href={`https://swetrix.com${routes.blog}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
-                >
-                  {t('footer.blog')}
-                </a>
-              ) : null}
               {!isSelfhosted && !isDisableMarketingPages ? (
                 <Link
                   to={routes.blog}
@@ -697,16 +687,6 @@ const NotAuthedHeader = ({
             {!refPage ? (
               <div className='ml-10 hidden items-center gap-4 space-x-1 lg:flex'>
                 {!isSelfhosted && !isDisableMarketingPages ? <SolutionsMenu /> : null}
-                {isSelfhosted && !isDisableMarketingPages ? (
-                  <a
-                    href={`https://swetrix.com${routes.blog}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
-                  >
-                    {t('footer.blog')}
-                  </a>
-                ) : null}
                 {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
                     to={routes.blog}
@@ -939,17 +919,6 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   >
                     {t('common.pricing')}
                   </Link>
-                ) : null}
-                {isSelfhosted && !isDisableMarketingPages ? (
-                  <a
-                    onClick={() => setMobileMenuOpen(false)}
-                    href={`https://swetrix.com${routes.blog}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
-                  >
-                    {t('footer.blog')}
-                  </a>
                 ) : null}
                 {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
