@@ -184,12 +184,12 @@ const InteractiveMapCore = ({
     // This ensures colors represent absolute performance, not relative to the data
     if (isPerformanceTab) {
       const perfColors = [
-        'rgba(34, 197, 94, 0.85)', // green-500 @ 85% (< 1s - excellent)
-        'rgba(74, 222, 128, 0.85)', // green-400 @ 85% (1-2s - good)
-        'rgba(250, 204, 21, 0.85)', // yellow-400 @ 85% (2-3s - moderate)
-        'rgba(251, 146, 60, 0.85)', // orange-400 @ 85% (3-4s - slow)
-        'rgba(239, 68, 68, 0.85)', // red-500 @ 85% (4-5s - poor)
-        'rgba(185, 28, 28, 0.85)', // red-700 @ 85% (> 5s - critical)
+        'rgba(34, 197, 94, 0.55)', // green-500 @ 55% (< 1s - excellent)
+        'rgba(74, 222, 128, 0.55)', // green-400 @ 55% (1-2s - good)
+        'rgba(250, 204, 21, 0.55)', // yellow-400 @ 55% (2-3s - moderate)
+        'rgba(251, 146, 60, 0.55)', // orange-400 @ 55% (3-4s - slow)
+        'rgba(239, 68, 68, 0.55)', // red-500 @ 55% (4-5s - poor)
+        'rgba(185, 28, 28, 0.55)', // red-700 @ 55% (> 5s - critical)
       ]
       // Fixed thresholds in seconds for absolute performance classification
       const thresholds = [1, 2, 3, 4, 5]
@@ -202,6 +202,26 @@ const InteractiveMapCore = ({
       .domain([0, maxValue])
       .range(['hsla(220, 70%, 55%, 0.12)', 'hsla(224, 75%, 50%, 0.9)'])
   }, [data, regionData, mapView, isErrorsTab, isPerformanceTab])
+
+  // Get tooltip text color based on the metric value and tab
+  const getTooltipColor = useCallback(
+    (count: number) => {
+      if (isTrafficTab) {
+        return 'rgb(79, 70, 229)' // indigo-600
+      }
+      if (isErrorsTab) {
+        return 'rgb(220, 38, 38)' // red-600
+      }
+      // Performance: use fixed thresholds matching the map colors (but fully opaque for text)
+      if (count < 1) return 'rgb(34, 197, 94)' // green-500
+      if (count < 2) return 'rgb(22, 163, 74)' // green-600
+      if (count < 3) return 'rgb(202, 138, 4)' // yellow-600
+      if (count < 4) return 'rgb(234, 88, 12)' // orange-600
+      if (count < 5) return 'rgb(220, 38, 38)' // red-600
+      return 'rgb(153, 27, 27)' // red-800
+    },
+    [isTrafficTab, isErrorsTab],
+  )
 
   const findDataForFeature = useCallback(
     (feature: Feature | undefined) => {
@@ -485,7 +505,7 @@ const InteractiveMapCore = ({
             <span>{tooltipContent.name}</span>
           </div>
           <div className='mt-0.5'>
-            <span className='font-bold text-indigo-600 dark:text-indigo-400'>
+            <span className='font-bold' style={{ color: getTooltipColor(tooltipContent.count) }}>
               {isTrafficTab || isErrorsTab
                 ? nFormatter(tooltipContent.count, 1)
                 : getStringFromTime(getTimeFromSeconds(tooltipContent.count), true)}
