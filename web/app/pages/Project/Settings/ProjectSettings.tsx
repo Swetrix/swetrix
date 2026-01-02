@@ -466,6 +466,10 @@ const ProjectSettings = () => {
   }
 
   const refreshGSCStatus = useCallback(async () => {
+    if (isSelfhosted) {
+      return
+    }
+
     try {
       const { connected, email } = await getGSCStatus(id)
       setGscConnected(connected)
