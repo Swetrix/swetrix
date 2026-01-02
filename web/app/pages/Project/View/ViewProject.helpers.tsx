@@ -737,7 +737,7 @@ const getSettings = (
           ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
             if (el.id === 'sessionDuration') {
               return `
-              <li class='flex justify-between items-center py-0.5'>
+              <li class='flex justify-between items-center py-px leading-snug'>
                 <div class='flex items-center min-w-0 mr-4'>
                   <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
                   <span class="truncate">${el.name}</span>
@@ -754,7 +754,7 @@ const getSettings = (
             // Format revenue and refunds as currency
             if (el.id === 'revenue') {
               return `
-              <li class='flex justify-between items-center py-0.5'>
+              <li class='flex justify-between items-center py-px leading-snug'>
                 <div class='flex items-center min-w-0 mr-4'>
                   <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style='background-color:${color(el.id)}'></div>
                   <span class="truncate">${el.name}</span>
@@ -766,7 +766,7 @@ const getSettings = (
 
             if (el.id === 'refundsAmount') {
               return `
-              <li class='flex justify-between items-center py-0.5'>
+              <li class='flex justify-between items-center py-px leading-snug'>
                 <div class='flex items-center min-w-0 mr-4'>
                   <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style='background-color:rgba(234,88,12,0.25);border:1.5px dashed #ea580c'></div>
                   <span class="truncate">${el.name}</span>
@@ -777,7 +777,7 @@ const getSettings = (
             }
 
             return `
-            <li class='flex justify-between items-center py-0.5'>
+            <li class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
                 <span class="truncate">${el.name}</span>
@@ -817,7 +817,7 @@ const getSettings = (
 
             if (id === 'sessionDuration') {
               return `
-              <div class='flex justify-between items-center py-0.5'>
+              <div class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(id)}></div>
                 <span class="truncate">${name}</span>
@@ -842,7 +842,7 @@ const getSettings = (
             }
 
             return `
-            <div class='flex justify-between items-center py-0.5'>
+            <div class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(id)}></div>
                 <span class="truncate">${name}</span>
@@ -1049,7 +1049,7 @@ const getSettingsCustomEventsStacked = (
           ${_map(
             item,
             (el: { id: string; index: number; name: string; value: string; x: Date }) => `
-            <li class='flex justify-between items-center py-0.5'>
+            <li class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
                 <span class="truncate">${el.name}</span>
@@ -1205,7 +1205,7 @@ const getSettingsSession = (
           }</li>
           ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
             return `
-            <li class='flex justify-between items-center py-0.5'>
+            <li class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
                 <span class="truncate">${el.name}</span>
@@ -1381,7 +1381,7 @@ const getSettingsError = (
           ${_map(
             item,
             (el: { id: string; index: number; name: string; value: string; x: Date }) => `
-            <li class='flex justify-between items-center py-0.5'>
+            <li class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
                 <span class="truncate">${el.name}</span>
@@ -1757,7 +1757,7 @@ const getSettingsPerf = (
         }</li>
         ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
           return `
-          <li class='flex justify-between items-center py-0.5'>
+          <li class='flex justify-between items-center py-px leading-snug'>
             <div class='flex items-center min-w-0 mr-4'>
               <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
               <span class="truncate">${el.name}</span>
@@ -1788,7 +1788,7 @@ const getSettingsPerf = (
           }
 
           return `
-          <div class='flex justify-between items-center py-0.5'>
+          <div class='flex justify-between items-center py-px leading-snug'>
             <div class='flex items-center min-w-0 mr-4'>
               <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(id)}></div>
               <span class="truncate">${name}</span>
@@ -2158,7 +2158,7 @@ const getSettingsCaptcha = (
           ${_map(
             item,
             (el: { id: string; index: number; name: string; value: string; x: Date }) => `
-            <li class='flex justify-between items-center py-0.5'>
+            <li class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
                 <span class="truncate">${el.name}</span>
