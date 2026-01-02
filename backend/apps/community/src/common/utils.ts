@@ -122,6 +122,7 @@ const ALLOWED_KEYS = [
   'isPasswordProtected',
   'passwordHash',
   'botsProtectionLevel',
+  'websiteUrl',
 ]
 
 const CLICKHOUSE_PROJECT_UPDATABLE_KEYS = [...ALLOWED_KEYS, 'adminId']
@@ -447,7 +448,7 @@ const deleteProjectSharesByUserIdClickhouse = async (userId: string) => {
 }
 
 const createProjectClickhouse = async (project: Partial<Project>) => {
-  const { id, name, adminId } = project
+  const { id, name, adminId, websiteUrl } = project
 
   await clickhouse.insert({
     table: 'project',
@@ -465,6 +466,7 @@ const createProjectClickhouse = async (project: Partial<Project>) => {
         passwordHash: null,
         botsProtectionLevel: BotsProtectionLevel.BASIC,
         adminId: adminId || null,
+        websiteUrl: websiteUrl || null,
         created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
       },
     ],
