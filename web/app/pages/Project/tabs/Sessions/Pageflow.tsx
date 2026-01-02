@@ -370,7 +370,13 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0, website
           })
 
           const isLastEvent = index === filteredPages.length - 1
-          const timeDuration = !isLastEvent ? timeBetweenEvents[index] : null
+          // For the last event, show the remaining time (sdur - time between first and last event)
+          // as "time spent on the last event" under the last item rather than under "End of session".
+          const timeDuration = !isLastEvent
+            ? timeBetweenEvents[index]
+            : timeAfterLastEvent > 0
+              ? timeAfterLastEvent
+              : null
 
           return (
             <PageflowItem
@@ -410,22 +416,6 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0, website
                       {t('project.endOfSession')}
                     </div>
                   </div>
-                  {/* Time after last event (only if sdur > 0) */}
-                  {timeAfterLastEvent > 0 ? (
-                    <div className='mt-1 flex items-center text-xs text-gray-500 dark:text-gray-400'>
-                      <svg
-                        className='mr-1 h-3 w-3'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                        xmlns='http://www.w3.org/2000/svg'
-                      >
-                        <circle cx='12' cy='12' r='10' strokeWidth='2' />
-                        <polyline points='12 6 12 12 16 14' strokeWidth='2' strokeLinecap='round' />
-                      </svg>
-                      {formatDuration(timeAfterLastEvent)}
-                    </div>
-                  ) : null}
                 </div>
               </div>
             </div>

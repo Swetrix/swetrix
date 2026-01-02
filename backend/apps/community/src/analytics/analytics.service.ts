@@ -1253,11 +1253,10 @@ export class AnalyticsService {
 
     try {
       const query = `
-        SELECT firstSeen
-        FROM sessions FINAL
+        SELECT minOrNull(firstSeen) AS firstSeen
+        FROM sessions
         WHERE psid = {psid:UInt64}
           AND pid = {pid:FixedString(12)}
-        LIMIT 1
       `
 
       const { data } = await clickhouse
@@ -1267,7 +1266,7 @@ export class AnalyticsService {
         })
         .then(resultSet =>
           resultSet.json<{
-            firstSeen: string
+            firstSeen: string | null
           }>(),
         )
 
@@ -1285,7 +1284,6 @@ export class AnalyticsService {
             lastSeen: now,
           },
         ],
-        clickhouse_settings: { async_insert: 1 },
       })
     } catch (error) {
       this.logger.error('Failed to record session:', error)
@@ -1512,9 +1510,15 @@ export class AnalyticsService {
                 ${filtersQuery}
             ),
             duration_avg AS (
-              SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
-              FROM sessions FINAL
-              WHERE pid = {pid:FixedString(12)}
+              SELECT avgOrNull(duration) as sdur
+              FROM (
+                SELECT
+                  psid,
+                  dateDiff('second', min(firstSeen), max(lastSeen)) as duration
+                FROM sessions
+                WHERE pid = {pid:FixedString(12)}
+                GROUP BY psid
+              )
             )
             SELECT
               analytics_counts.*,
@@ -1535,9 +1539,15 @@ export class AnalyticsService {
                   ${filtersQuery}
               ),
               duration_avg AS (
-                SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
-                FROM sessions FINAL
-                WHERE pid = {pid:FixedString(12)}
+                SELECT avgOrNull(duration) as sdur
+                FROM (
+                  SELECT
+                    psid,
+                    dateDiff('second', min(firstSeen), max(lastSeen)) as duration
+                  FROM sessions
+                  WHERE pid = {pid:FixedString(12)}
+                  GROUP BY psid
+                )
               )
               SELECT
                 analytics_counts.*,
@@ -1634,15 +1644,22 @@ export class AnalyticsService {
               ${filtersQuery}
           ),
           duration_avg AS (
-            SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
-            FROM sessions FINAL
-            WHERE pid = {pid:FixedString(12)}
-            AND psid IN (
-              SELECT DISTINCT psid
-              FROM analytics
+            SELECT avgOrNull(duration) as sdur
+            FROM (
+              SELECT
+                psid,
+                dateDiff('second', min(firstSeen), max(lastSeen)) as duration
+              FROM sessions
               WHERE pid = {pid:FixedString(12)}
-              AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
-              ${filtersQuery}
+                AND psid IN (
+                  SELECT DISTINCT psid
+                  FROM analytics
+                  WHERE pid = {pid:FixedString(12)}
+                    AND psid IS NOT NULL
+                    AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
+                    ${filtersQuery}
+                )
+              GROUP BY psid
             )
           )
           SELECT
@@ -1665,15 +1682,22 @@ export class AnalyticsService {
               ${filtersQuery}
           ),
           duration_avg AS (
-            SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
-            FROM sessions FINAL
-            WHERE pid = {pid:FixedString(12)}
-            AND psid IN (
-              SELECT DISTINCT psid
-              FROM analytics
+            SELECT avgOrNull(duration) as sdur
+            FROM (
+              SELECT
+                psid,
+                dateDiff('second', min(firstSeen), max(lastSeen)) as duration
+              FROM sessions
               WHERE pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
-              ${filtersQuery}
+                AND psid IN (
+                  SELECT DISTINCT psid
+                  FROM analytics
+                  WHERE pid = {pid:FixedString(12)}
+                    AND psid IS NOT NULL
+                    AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
+                    ${filtersQuery}
+                )
+              GROUP BY psid
             )
           )
           SELECT
@@ -1697,15 +1721,22 @@ export class AnalyticsService {
                 ${filtersQuery}
             ),
             duration_avg AS (
-              SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
-              FROM sessions FINAL
-              WHERE pid = {pid:FixedString(12)}
-              AND psid IN (
-                SELECT DISTINCT psid
-                FROM customEV
+              SELECT avgOrNull(duration) as sdur
+              FROM (
+                SELECT
+                  psid,
+                  dateDiff('second', min(firstSeen), max(lastSeen)) as duration
+                FROM sessions
                 WHERE pid = {pid:FixedString(12)}
-                AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
-                ${filtersQuery}
+                  AND psid IN (
+                    SELECT DISTINCT psid
+                    FROM customEV
+                    WHERE pid = {pid:FixedString(12)}
+                      AND psid IS NOT NULL
+                      AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
+                      ${filtersQuery}
+                  )
+                GROUP BY psid
               )
             )
             SELECT
@@ -1727,15 +1758,22 @@ export class AnalyticsService {
                 ${filtersQuery}
             ),
             duration_avg AS (
-              SELECT avg(dateDiff('second', firstSeen, lastSeen)) as sdur
-              FROM sessions FINAL
-              WHERE pid = {pid:FixedString(12)}
-              AND psid IN (
-                SELECT DISTINCT psid
-                FROM customEV
+              SELECT avgOrNull(duration) as sdur
+              FROM (
+                SELECT
+                  psid,
+                  dateDiff('second', min(firstSeen), max(lastSeen)) as duration
+                FROM sessions
                 WHERE pid = {pid:FixedString(12)}
-                AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
-                ${filtersQuery}
+                  AND psid IN (
+                    SELECT DISTINCT psid
+                    FROM customEV
+                    WHERE pid = {pid:FixedString(12)}
+                      AND psid IS NOT NULL
+                      AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
+                      ${filtersQuery}
+                  )
+                GROUP BY psid
               )
             )
             SELECT
@@ -2513,9 +2551,10 @@ export class AnalyticsService {
         SELECT
           pid,
           psid,
-          dateDiff('second', firstSeen, lastSeen) as duration
-        FROM sessions FINAL
+          dateDiff('second', min(firstSeen), max(lastSeen)) as duration
+        FROM sessions
         WHERE pid = {pid:FixedString(12)}
+        GROUP BY pid, psid
       ) as sessions_data
       ON subquery.pid = sessions_data.pid
       AND subquery.psid = sessions_data.psid
@@ -3903,11 +3942,17 @@ export class AnalyticsService {
 
     const querySessionDuration = `
       SELECT
-        avg(dateDiff('second', firstSeen, lastSeen)) as duration
-      FROM sessions FINAL
-      WHERE
-        pid = {pid:FixedString(12)}
-        AND CAST(psid, 'String') = {psid:String}
+        dateDiff('second', firstSeen, lastSeen) as duration,
+        lastSeen
+      FROM (
+        SELECT
+          minOrNull(firstSeen) AS firstSeen,
+          maxOrNull(lastSeen) AS lastSeen
+        FROM sessions
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND psid = toUInt64OrNull({psid:String})
+      )
     `
 
     const paramsData = {
@@ -3935,17 +3980,42 @@ export class AnalyticsService {
         .then(({ data }) => data)
     )[0] as any
 
-    const { duration = 0 } =
-      (
-        await clickhouse
-          .query({
-            query: querySessionDuration,
-            query_params: paramsData.params,
-          })
-          .then(resultSet =>
-            resultSet.json<{ duration: number }>().then(({ data }) => data),
-          )
-      )[0] || {}
+    let duration: number = 0
+
+    const { data: durationRows } = await clickhouse
+      .query({
+        query: querySessionDuration,
+        query_params: paramsData.params,
+      })
+      .then(resultSet =>
+        resultSet.json<{
+          duration: number | null
+          lastSeen: string | null
+        }>(),
+      )
+
+    const fromSessionsTable = durationRows[0]?.duration ?? null
+    const lastSeen = durationRows[0]?.lastSeen ?? null
+    if (typeof fromSessionsTable === 'number' && fromSessionsTable > 0) {
+      duration = fromSessionsTable
+    }
+
+    if (!duration && lastSeen && Array.isArray(pages) && pages.length >= 1) {
+      const first = dayjs(pages[0].created)
+      const diffSeconds = dayjs(lastSeen).diff(first, 'second')
+      if (diffSeconds > 0) {
+        duration = diffSeconds
+      }
+    }
+
+    if (!duration && Array.isArray(pages) && pages.length >= 2) {
+      const first = dayjs(pages[0].created)
+      const last = dayjs(pages[pages.length - 1].created)
+      const diffSeconds = last.diff(first, 'second')
+      if (diffSeconds > 0) {
+        duration = diffSeconds
+      }
+    }
 
     if (!details) {
       const querySessionDetailsBackup = `
@@ -4106,9 +4176,9 @@ export class AnalyticsService {
         SELECT 
           CAST(psid, 'String') AS psidCasted, 
           pid, 
-          avg(dateDiff('second', firstSeen, lastSeen)) as avg_duration,
-          any(profileId) as profileId
-        FROM sessions FINAL
+          dateDiff('second', min(firstSeen), max(lastSeen)) as avg_duration,
+          argMax(profileId, lastSeen) as profileId
+        FROM sessions
         WHERE pid = {pid:FixedString(12)}
         GROUP BY psidCasted, pid
       ),
