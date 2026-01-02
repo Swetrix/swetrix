@@ -100,7 +100,19 @@ const communityEditionNavigation = {
     { name: 'X', href: TWITTER_URL },
     { name: 'LinkedIn', href: LINKEDIN_URL },
   ],
-  comparisons: [{ name: 'Plausible', href: 'https://swetrix.com/blog/swetrix-vs-plausible' }],
+  comparisons: [
+    { name: 'Google Analytics', href: 'https://swetrix.com/comparison/google-analytics' },
+    { name: 'Plausible', href: 'https://swetrix.com/comparison/plausible' },
+    { name: 'Cloudflare Analytics', href: 'https://swetrix.com/comparison/cloudflare-analytics' },
+    { name: 'Fathom Analytics', href: 'https://swetrix.com/comparison/fathom-analytics' },
+    { name: 'Simple Analytics', href: 'https://swetrix.com/comparison/simple-analytics' },
+    { name: 'Vercel Web Analytics', href: 'https://swetrix.com/comparison/vercel-web-analytics' },
+    { name: 'Rybbit', href: 'https://swetrix.com/comparison/rybbit' },
+    { name: 'Pirsch', href: 'https://swetrix.com/comparison/pirsch' },
+    { name: 'Umami', href: 'https://swetrix.com/comparison/umami' },
+    { name: 'Matomo', href: 'https://swetrix.com/comparison/matomo' },
+    { name: 'PostHog', href: 'https://swetrix.com/comparison/posthog' },
+  ],
   legal: [
     { key: 'contact', href: `https://swetrix.com${routesPath.contact}`, internal: false },
     { key: 'imprint', href: `https://swetrix.com${routesPath.imprint}`, internal: false },
@@ -302,7 +314,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
             <div className='mt-12 md:mt-0 md:w-fit md:min-w-[280px]'>
               <SwetrixLogo theme='dark' lazy />
 
-              <p className='mt-4 text-sm text-white'>
+              <p className='mt-4 max-w-72 text-sm text-white'>
                 {isSelfhosted ? (
                   <Trans
                     t={t}
