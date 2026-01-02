@@ -61,7 +61,7 @@ const MetadataPanel = ({ metadata, t }: { metadata: Metadata[]; t: TFunction }) 
   const remainingCount = metadata.length - INITIAL_SHOW_COUNT
 
   return (
-    <div className='mt-2 ml-5 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/50'>
+    <div className='mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white sm:ml-5 dark:border-slate-700 dark:bg-slate-900/50'>
       {/* Header */}
       <div className='border-b border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-800/50'>
         <span className='text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400'>
@@ -78,7 +78,7 @@ const MetadataPanel = ({ metadata, t }: { metadata: Metadata[]; t: TFunction }) 
           return (
             <div
               key={`${key}${value}${index}`}
-              className='grid grid-cols-[minmax(80px,auto)_1fr] gap-3 px-3 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/30'
+              className='flex flex-col gap-1 px-3 py-2 transition-colors hover:bg-slate-50 sm:grid sm:grid-cols-[minmax(80px,auto)_1fr] sm:gap-3 dark:hover:bg-slate-800/30'
             >
               <div className='flex items-start'>
                 <span className='font-mono text-[11px] font-medium text-slate-500 dark:text-slate-400'>{key}</span>
@@ -190,9 +190,9 @@ const PageflowItem = ({
             </span>
           </div>
           <div className='flex min-w-0 flex-1 flex-col pt-1.5'>
-            <div className='flex justify-between space-x-4'>
+            <div className='flex flex-col gap-y-1 sm:flex-row sm:justify-between sm:space-x-4'>
               <div
-                className={cn('flex items-center text-sm text-gray-700 dark:text-gray-300', {
+                className={cn('flex flex-wrap items-center gap-x-1 text-sm text-gray-700 dark:text-gray-300', {
                   'cursor-pointer': hasMetadata,
                 })}
                 onClick={hasMetadata ? () => setIsExpanded(!isExpanded) : undefined}
@@ -238,7 +238,7 @@ const PageflowItem = ({
                           target='_blank'
                           rel='noopener noreferrer nofollow'
                           onClick={(e) => e.stopPropagation()}
-                          className='ml-1 font-medium text-gray-900 underline decoration-dashed underline-offset-2 hover:decoration-solid dark:text-gray-50'
+                          className='ml-1 font-medium break-all text-gray-900 underline decoration-dashed underline-offset-2 hover:decoration-solid dark:text-gray-50'
                         />
                       ) : (
                         <span className='ml-1 font-medium text-gray-900 dark:text-gray-50' />
@@ -266,7 +266,7 @@ const PageflowItem = ({
                   />
                 ) : null}
               </div>
-              <div className='text-right text-sm whitespace-nowrap text-gray-700 dark:text-gray-300'>
+              <div className='text-left text-xs whitespace-nowrap text-gray-500 sm:text-right sm:text-sm sm:text-gray-700 dark:text-gray-400 sm:dark:text-gray-300'>
                 <time dateTime={created}>{displayCreated}</time>
               </div>
             </div>
