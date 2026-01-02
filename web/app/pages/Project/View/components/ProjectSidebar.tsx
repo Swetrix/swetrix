@@ -579,7 +579,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
 
   if (isMobileOpen) {
     return (
-      <div className='fixed inset-0 z-50 md:hidden pointer-events-auto'>
+      <div className='pointer-events-auto fixed inset-0 z-50 md:hidden'>
         <div className='animate-fade-in absolute inset-0 bg-black/50' onClick={onMobileClose} aria-hidden='true' />
         <div className='animate-slide-in-left relative h-full w-fit'>{sidebarContent}</div>
       </div>
@@ -598,7 +598,7 @@ export const MobileSidebarTrigger: React.FC<MobileSidebarTriggerProps> = ({ onCl
   const { t } = useTranslation('common')
 
   return (
-    <div className='mb-4 flex items-center gap-3 md:hidden relative z-50'>
+    <div className='relative z-10 mb-4 flex items-center gap-3 md:hidden'>
       <button
         type='button'
         onClick={onClick}
