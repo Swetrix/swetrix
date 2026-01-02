@@ -20,7 +20,7 @@
   --min-height-min-footer: calc(100vh - 157px);
   --min-height-including-header: calc(100vh - var(--header-height));
 
-  --default-transition-duration: 250ms;
+  --default-transition-duration: 200ms;
 }
 
 /* Custom Animations */
