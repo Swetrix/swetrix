@@ -913,6 +913,9 @@ export class AnalyticsService {
     let customEVFilterApplied = false
     const allowTagFilters =
       dataType === DataType.ANALYTICS || dataType === DataType.ERRORS
+    const supportsReferrerFilters = dataType === DataType.ANALYTICS
+    const supportsSessionScopedPageFilters =
+      dataType === DataType.ANALYTICS || dataType === DataType.ERRORS
 
     if (filters === '""' || _isEmpty(filters)) {
       return [query, params, parsed, customEVFilterApplied]
@@ -959,11 +962,13 @@ export class AnalyticsService {
           customEVFilterApplied = true
         } else if (
           !_includes(SUPPORTED_COLUMNS, column) &&
-          column !== 'refn' &&
+          !(supportsReferrerFilters && column === 'refn') &&
           !(allowTagFilters && _includes(TRAFFIC_METAKEY_COLUMNS, column)) &&
           !(allowTagFilters && _startsWith(column, 'tag:key:')) &&
-          column !== 'entryPage' &&
-          column !== 'exitPage'
+          !(
+            supportsSessionScopedPageFilters &&
+            (column === 'entryPage' || column === 'exitPage')
+          )
         ) {
           return prev
         }
