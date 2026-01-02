@@ -46,11 +46,4 @@ You can customise the appearance of the CAPTCHA widget by adding the following a
 
 ### Widget sizes
 
-The CAPTCHA widget has several sizes based on the state of the CAPTCHA challenge and the widget will automatically adjust its size.
-
-Here's a table with the possible sizes of the widget that can help you when designing your website:
-
-| State            | Width | Height |
-| ---------------- | ----- | ------ |
-| Default          | 300px | 66px   |
-| Manual challenge | 300px | 200px  |
+The CAPTCHA widget has a default size of 302px wide and 66px high.
