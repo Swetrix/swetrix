@@ -354,14 +354,18 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     <>
       <DashboardHeader showLiveVisitors />
       {profilesLoading && !_isEmpty(profiles) ? <LoadingBar /> : null}
-      {!_isEmpty(profiles) ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
-      <ProfilesFilter
-        profileType={profileTypeFilter}
-        onProfileTypeChange={(type) => {
-          setProfileTypeFilter(type)
-          setProfilesSkip(0)
-        }}
-      />
+      {!_isEmpty(profiles) ? (
+        <>
+          <Filters className='mb-3' tnMapping={tnMapping} />
+          <ProfilesFilter
+            profileType={profileTypeFilter}
+            onProfileTypeChange={(type) => {
+              setProfileTypeFilter(type)
+              setProfilesSkip(0)
+            }}
+          />
+        </>
+      ) : null}
       {(profilesLoading === null || profilesLoading) && _isEmpty(profiles) ? <Loader /> : null}
       {typeof profilesLoading === 'boolean' && !profilesLoading && _isEmpty(profiles) ? (
         <NoEvents filters={filters} />
