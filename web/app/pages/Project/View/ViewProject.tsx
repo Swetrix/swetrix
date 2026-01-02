@@ -1212,7 +1212,7 @@ const ViewProjectContent = () => {
                       dataLoading={dataLoading}
                       searchParams={searchParams}
                       allowedToManage={allowedToManage}
-                      className='pointer-events-auto relative z-50 hidden md:flex'
+                      className='pointer-events-auto relative z-20 hidden md:flex'
                     />
                     {isMobileSidebarOpen ? (
                       <div className='pointer-events-auto'>

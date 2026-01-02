@@ -74,7 +74,7 @@ const LiveVisitorsDropdown = () => {
         <div
           id='live-visitors-dropdown'
           className={cn(
-            'scrollbar-thin absolute top-5 right-0 z-10 mt-2 origin-top-right transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white text-gray-900 shadow-lg transition duration-150 ease-out outline-none dark:border-slate-700/50 dark:bg-slate-900',
+            'scrollbar-thin absolute top-5 right-0 z-40 mt-2 origin-top-right transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white text-gray-900 shadow-lg transition duration-150 ease-out outline-none dark:border-slate-700/50 dark:bg-slate-900',
             liveInfo.length === 0 || isLoading ? 'min-w-[200px]' : 'min-w-max',
             isDropdownVisible
               ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
