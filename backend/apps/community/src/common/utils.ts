@@ -30,7 +30,7 @@ import { clickhouse } from './integrations/clickhouse'
 import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { ProjectViewEntity } from '../project/entity/project-view.entity'
 
-import { ClickhouseFunnel, ClickhouseAnnotation } from './types'
+import { ClickhouseFunnel, ClickhouseAnnotation, ClickhouseSalt } from './types'
 
 dayjs.extend(utc)
 
@@ -1224,6 +1224,56 @@ const unpinProjectClickhouse = async (
   })
 }
 
+// Salt functions
+const getSaltClickhouse = async (
+  rotation: string,
+): Promise<ClickhouseSalt | null> => {
+  const query = `SELECT * FROM salt WHERE rotation = {rotation:String}`
+
+  try {
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { rotation },
+      })
+      .then(resultSet => resultSet.json<ClickhouseSalt>())
+
+    return _head(data) || null
+  } catch {
+    return null
+  }
+}
+
+const saveSaltClickhouse = async (saltData: ClickhouseSalt) => {
+  const existing = await getSaltClickhouse(saltData.rotation)
+
+  if (existing) {
+    const query = `ALTER TABLE salt UPDATE salt = {salt:String}, expiresAt = {expiresAt:String} WHERE rotation = {rotation:String}`
+    await clickhouse.command({
+      query,
+      query_params: {
+        salt: saltData.salt,
+        expiresAt: saltData.expiresAt,
+        rotation: saltData.rotation,
+      },
+    })
+  } else {
+    await clickhouse.insert({
+      table: 'salt',
+      format: 'JSONEachRow',
+      values: [saltData],
+    })
+  }
+}
+
+const deleteSaltClickhouse = async (rotation: string) => {
+  const query = `ALTER TABLE salt DELETE WHERE rotation = {rotation:String}`
+  await clickhouse.command({
+    query,
+    query_params: { rotation },
+  })
+}
+
 export {
   checkRateLimit,
   createProjectClickhouse,
@@ -1272,4 +1322,8 @@ export {
   getPinnedProjectsClickhouse,
   pinProjectClickhouse,
   unpinProjectClickhouse,
+  // salt
+  getSaltClickhouse,
+  saveSaltClickhouse,
+  deleteSaltClickhouse,
 }

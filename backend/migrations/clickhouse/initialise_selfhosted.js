@@ -106,6 +106,16 @@ const CLICKHOUSE_INIT_QUERIES = [
   )
   ENGINE = MergeTree()
   PRIMARY KEY id;`,
+
+  `CREATE TABLE IF NOT EXISTS ${dbName}.salt
+  (
+    rotation String CODEC(ZSTD(3)),
+    salt String CODEC(ZSTD(3)),
+    expiresAt DateTime CODEC(Delta(4), LZ4),
+    created DateTime CODEC(Delta(4), LZ4)
+  )
+  ENGINE = MergeTree()
+  PRIMARY KEY rotation;`,
 ]
 
 const initialiseSelfhosted = async () => {
