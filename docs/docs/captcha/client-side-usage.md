@@ -37,12 +37,12 @@ After the CAPTCHA loader script is loaded, it will add a `window.swetrixCaptchaF
 
 You can customise the appearance of the CAPTCHA widget by adding the following attributes to the `.swecaptcha` element:
 
-| Attribute                  | Type   | Description                                                                          |
-| -------------------------- | ------ | ------------------------------------------------------------------------------------ |
-| `data-project-id`          | string | The ID of your CAPTCHA project (REQUIRED).                                           |
-| `data-theme`               | string | The theme of the CAPTCHA widget. Possible values: `auto` (default), `light`, `dark`. |
-| `data-response-input-name` | string | Name of the token input element. Default: `swetrix-captcha-response`.                |
-| `data-api-url`             | string | The URL of the CAPTCHA API. Default: `https://api.swetrixcaptcha.com/v1/captcha`.    |
+| Attribute                  | Type   | Description                                                                                                                                                                                                                                    |
+| -------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data-project-id`          | string | The ID of your CAPTCHA project (REQUIRED).                                                                                                                                                                                                     |
+| `data-theme`               | string | The theme of the CAPTCHA widget. Possible values: `auto` (default), `light`, `dark`.                                                                                                                                                           |
+| `data-response-input-name` | string | Name of the token input element. Default: `swetrix-captcha-response`.                                                                                                                                                                          |
+| `data-api-url`             | string | The URL of the CAPTCHA API. Default: `https://api.swetrixcaptcha.com/v1/captcha`. If you're self-hosting Swetrix CE, you should put the URL of your API instance here, like `[API_URL]/v1/captcha`. Swetrix Cloud users should leave it as is. |
 
 ### Widget sizes
 
