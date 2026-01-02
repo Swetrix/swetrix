@@ -324,6 +324,17 @@
       #progress-bar.indeterminate {
         width: 100%;
       }
+
+      /* Show static loading circle when animations are disabled */
+      #loading svg circle {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: 0;
+      }
+
+      /* Show checkmark immediately when animations are disabled */
+      #completed.show svg path {
+        stroke-dashoffset: 0;
+      }
     }
 
     /* High contrast mode support */
