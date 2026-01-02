@@ -414,6 +414,15 @@ const Signin = () => {
               name='password'
               type='password'
               label={t('auth.common.password')}
+              labelCorner={
+                <Link
+                  to={routes.reset_password}
+                  className='text-sm font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
+                  tabIndex={-1}
+                >
+                  {t('auth.signin.forgot')}
+                </Link>
+              }
               hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
               value={form.password}
               onChange={handleInput}
@@ -437,12 +446,6 @@ const Signin = () => {
                   </span>
                 }
               />
-              <Link
-                to={routes.reset_password}
-                className='text-sm font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
-              >
-                {t('auth.signin.forgot')}
-              </Link>
             </div>
 
             <Button className='mt-6 w-full justify-center' type='submit' loading={isLoading} primary giant>

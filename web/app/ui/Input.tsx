@@ -6,6 +6,7 @@ import React, { memo, useState } from 'react'
 
 interface InputProps {
   label?: React.ReactNode
+  labelCorner?: React.ReactNode
   hint?: React.ReactNode
   className?: string
   error?: string | null | boolean
@@ -20,6 +21,7 @@ interface InputProps {
 
 const Input = ({
   label,
+  labelCorner,
   hint,
   className,
   error,
@@ -56,7 +58,12 @@ const Input = ({
 
   return (
     <Field as='div' className={className}>
-      {label ? <Label className='mb-1 flex text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label> : null}
+      {label || labelCorner ? (
+        <div className='mb-1 flex items-center justify-between gap-x-2'>
+          {label ? <Label className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label> : <span />}
+          {labelCorner ? <span className='text-sm'>{labelCorner}</span> : null}
+        </div>
+      ) : null}
       {hint && hintPosition === 'top' ? (
         <Description className='mt-1 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</Description>
       ) : null}
