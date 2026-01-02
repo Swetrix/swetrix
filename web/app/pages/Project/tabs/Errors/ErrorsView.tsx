@@ -397,6 +397,7 @@ const ErrorsView = () => {
   } = useTranslation('common')
   const { theme } = useTheme()
   const [searchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
   const navigate = useNavigate()
 
   const from = dateRange ? getFormatDate(dateRange[0]) : ''
@@ -1023,7 +1024,16 @@ const ErrorsView = () => {
 
   // List view - Initial loading state
   if ((overviewLoading === null || overviewLoading) && !overview && _isEmpty(errors)) {
-    return <Loader />
+    return (
+      <div
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
+          'min-h-including-header': !isEmbedded,
+          'min-h-screen': isEmbedded,
+        })}
+      >
+        <Loader />
+      </div>
+    )
   }
 
   const filtersDropdown = hasErrors ? (

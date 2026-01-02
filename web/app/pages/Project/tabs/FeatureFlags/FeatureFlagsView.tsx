@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router'
+import { Link, useLocation, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import {
@@ -429,6 +429,8 @@ interface FeatureFlagsViewProps {
 const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlagsViewProps) => {
   const { id } = useCurrentProject()
   const { featureFlagsRefreshTrigger, timeFormat } = useViewProjectContext()
+  const [searchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
   const { t } = useTranslation()
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
@@ -753,7 +755,12 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   // Show Loader only on initial load (no existing data)
   if ((isLoading || isLoading === null) && _isEmpty(flags)) {
     return (
-      <div className='mt-4'>
+      <div
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
+          'min-h-including-header': !isEmbedded,
+          'min-h-screen': isEmbedded,
+        })}
+      >
         <Loader />
       </div>
     )

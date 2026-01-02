@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import {
@@ -429,6 +430,8 @@ interface GoalsViewProps {
 const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => {
   const { id } = useCurrentProject()
   const { goalsRefreshTrigger, timeBucket, timeFormat } = useViewProjectContext()
+  const [searchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
   const { t } = useTranslation()
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
@@ -645,7 +648,12 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   // Show Loader only on initial load (no existing data)
   if ((isLoading || isLoading === null) && _isEmpty(goals)) {
     return (
-      <div className='mt-4'>
+      <div
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
+          'min-h-including-header': !isEmbedded,
+          'min-h-screen': isEmbedded,
+        })}
+      >
         <Loader />
       </div>
     )

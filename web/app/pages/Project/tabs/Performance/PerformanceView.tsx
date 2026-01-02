@@ -184,6 +184,7 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
   const { theme } = useTheme()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
 
   // Performance-specific state
   const [dataLoading, setDataLoading] = useState(false)
@@ -505,7 +506,16 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
 
   // Show loader during initial load
   if (analyticsLoading) {
-    return <Loader />
+    return (
+      <div
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
+          'min-h-including-header': !isEmbedded,
+          'min-h-screen': isEmbedded,
+        })}
+      >
+        <Loader />
+      </div>
+    )
   }
 
   // Show no events if data is empty

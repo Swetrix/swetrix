@@ -40,6 +40,7 @@ const FunnelsView = () => {
   }, [periodPairs])
   const { t } = useTranslation('common')
   const [searchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
 
   const isMountedRef = useRef(true)
 
@@ -234,7 +235,16 @@ const FunnelsView = () => {
 
   // Show loader during initial load when viewing a specific funnel
   if (activeFunnel && analyticsLoading) {
-    return <Loader />
+    return (
+      <div
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
+          'min-h-including-header': !isEmbedded,
+          'min-h-screen': isEmbedded,
+        })}
+      >
+        <Loader />
+      </div>
+    )
   }
 
   // Render funnel detail view

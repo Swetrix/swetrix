@@ -286,6 +286,8 @@ interface ExperimentsViewProps {
 const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsViewProps) => {
   const { id } = useCurrentProject()
   const { experimentsRefreshTrigger, timeBucket } = useViewProjectContext()
+  const [searchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
   const { t } = useTranslation()
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
@@ -481,7 +483,12 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
 
   if ((isLoading === null || isLoading) && _isEmpty(experiments)) {
     return (
-      <div className='mt-4'>
+      <div
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
+          'min-h-including-header': !isEmbedded,
+          'min-h-screen': isEmbedded,
+        })}
+      >
         <Loader />
       </div>
     )

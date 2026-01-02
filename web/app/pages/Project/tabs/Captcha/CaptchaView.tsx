@@ -1,3 +1,4 @@
+import cx from 'clsx'
 import { GlobeAltIcon } from '@heroicons/react/24/outline'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
@@ -54,6 +55,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const { project } = useCurrentProject()
   const { period, timeBucket, dateRange, captchaRefreshTrigger, timeFormat, size } = useContext(ViewProjectContext)
   const [searchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
 
   const {
     t,
@@ -183,7 +185,16 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
 
   // Show Loader only on initial load (no existing data)
   if (analyticsLoading && !hasExistingData) {
-    return <Loader />
+    return (
+      <div
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
+          'min-h-including-header': !isEmbedded,
+          'min-h-screen': isEmbedded,
+        })}
+      >
+        <Loader />
+      </div>
+    )
   }
 
   if (isPanelsDataEmpty && !dataLoading) {
