@@ -12,6 +12,7 @@ import { TaskManagerModule } from './task-manager/task-manager.module'
 import { PingModule } from './ping/ping.module'
 import { GoalModule } from './goal/goal.module'
 import { FeatureFlagModule } from './feature-flag/feature-flag.module'
+import { CaptchaModule } from './captcha/captcha.module'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
 import { AppController } from './app.controller'
@@ -68,6 +69,7 @@ const modules = [
   PingModule,
   GoalModule,
   FeatureFlagModule,
+  CaptchaModule,
   AuthModule,
 ]
 

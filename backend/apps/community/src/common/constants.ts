@@ -1,5 +1,6 @@
 import Redis from 'ioredis'
 import _toNumber from 'lodash/toNumber'
+import crypto from 'crypto'
 
 import 'dotenv/config'
 import { deriveKey } from './utils'
@@ -13,6 +14,23 @@ const redis = new Redis(
     family: 0,
   },
 )
+
+// Returns a 32-character hash of the provided string
+const hash = (content: string): string => {
+  return crypto
+    .createHash('sha256')
+    .update(content)
+    .digest('hex')
+    .substring(0, 32)
+}
+
+// CAPTCHA related constants
+const CAPTCHA_TOKEN_LIFETIME = 300 * 1000 // milliseconds (5 minutes)
+const CAPTCHA_SECRET_KEY_LENGTH = 50
+const CAPTCHA_COLUMNS = ['cc', 'br', 'os', 'dv']
+
+// redis keys for captcha
+const getRedisCaptchaKey = (token: string) => `captcha_${hash(token)}`
 
 export const JWT_ACCESS_TOKEN_SECRET = deriveKey('access-token')
 export const JWT_REFRESH_TOKEN_SECRET = deriveKey('refresh-token')
@@ -125,4 +143,9 @@ export {
   OIDC_ENABLED,
   OIDC_ONLY_AUTH,
   REDIS_OIDC_SESSION_KEY,
+  // CAPTCHA
+  getRedisCaptchaKey,
+  CAPTCHA_TOKEN_LIFETIME,
+  CAPTCHA_SECRET_KEY_LENGTH,
+  CAPTCHA_COLUMNS,
 }

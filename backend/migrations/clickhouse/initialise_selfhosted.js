@@ -32,6 +32,9 @@ const CLICKHOUSE_INIT_QUERIES = [
     passwordHash Nullable(String) CODEC(ZSTD(3)),
     adminId Nullable(String) CODEC(ZSTD(3)),
     websiteUrl Nullable(String) CODEC(ZSTD(3)),
+    isCaptchaProject Int8 DEFAULT 0,
+    captchaSecretKey Nullable(String) CODEC(ZSTD(3)),
+    captchaDifficulty UInt8 DEFAULT 4,
     created DateTime CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()

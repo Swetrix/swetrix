@@ -374,6 +374,10 @@ export class ProjectService {
     updProject.public = Number(updProject.public)
     updProject.isPasswordProtected = Number(updProject.isPasswordProtected)
 
+    if (updProject.isCaptchaProject !== undefined) {
+      updProject.isCaptchaProject = Number(updProject.isCaptchaProject)
+    }
+
     if (!_isNull(updProject.origins)) {
       updProject.origins = _isString(updProject.origins)
         ? updProject.origins
@@ -400,6 +404,7 @@ export class ProjectService {
     updProject.active = Boolean(updProject.active)
     updProject.public = Boolean(updProject.public)
     updProject.isPasswordProtected = Boolean(updProject.isPasswordProtected)
+    updProject.isCaptchaProject = Boolean(updProject.isCaptchaProject)
 
     updProject.origins = _isEmpty(updProject.origins)
       ? []

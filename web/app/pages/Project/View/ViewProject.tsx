@@ -560,6 +560,11 @@ const ViewProjectContent = () => {
         label: t('dashboard.featureFlags'),
         icon: FlagIcon,
       },
+      {
+        id: PROJECT_TABS.captcha,
+        label: t('common.captcha'),
+        icon: PuzzleIcon,
+      },
     ]
 
     const adminTabs = allowedToManage
@@ -587,11 +592,6 @@ const ViewProjectContent = () => {
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
         icon: BellRingIcon,
-      },
-      {
-        id: PROJECT_TABS.captcha,
-        label: t('common.captcha'),
-        icon: PuzzleIcon,
       },
       {
         id: PROJECT_TABS.experiments,
