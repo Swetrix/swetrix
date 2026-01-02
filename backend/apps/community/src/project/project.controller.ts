@@ -204,8 +204,9 @@ export class ProjectController {
     // Always sort by pinned first, then by the requested sort criteria
     combinedProjects = [...combinedProjects].sort((a: any, b: any) => {
       // First, sort by pinned status (pinned projects first)
-      const aIsPinned = a.isPinned || _includes(pinnedProjectIds, a.id)
-      const bIsPinned = b.isPinned || _includes(pinnedProjectIds, b.id)
+      // isPinned from SQL query is 0 or 1, so we need to check for truthy value or use pinnedProjectIds
+      const aIsPinned = Boolean(a.isPinned) || _includes(pinnedProjectIds, a.id)
+      const bIsPinned = Boolean(b.isPinned) || _includes(pinnedProjectIds, b.id)
 
       if (aIsPinned && !bIsPinned) return -1
       if (!aIsPinned && bIsPinned) return 1
@@ -227,15 +228,23 @@ export class ProjectController {
       return (a.name || '').localeCompare(b.name || '')
     })
 
+    // Calculate total before pagination
+    const total = _size(combinedProjects)
+
+    // Apply pagination first to avoid fetching unnecessary data
+    const paginatedProjects =
+      take !== undefined
+        ? combinedProjects.slice(skip || 0, (skip || 0) + take)
+        : combinedProjects
+
+    // Only fetch additional data for paginated projects
+    const paginatedPids = _map(paginatedProjects, ({ id }) => id)
+
     const pidsWithData =
-      await this.projectService.getPIDsWhereAnalyticsDataExists(
-        _map(combinedProjects, ({ id }) => id),
-      )
+      await this.projectService.getPIDsWhereAnalyticsDataExists(paginatedPids)
 
     const pidsWithErrorData =
-      await this.projectService.getPIDsWhereErrorsDataExists(
-        _map(combinedProjects, ({ id }) => id),
-      )
+      await this.projectService.getPIDsWhereErrorsDataExists(paginatedPids)
 
     const funnelsData = await Promise.allSettled(
       pidsWithData.map(async pid => {
@@ -264,7 +273,7 @@ export class ProjectController {
       {},
     )
 
-    const results = _map(combinedProjects, project => {
+    const results = _map(paginatedProjects, project => {
       const userShare = sharesByProjectId[project.id]
       const isOwner = userId && project.adminId === userId
       const role = isOwner
@@ -304,12 +313,10 @@ export class ProjectController {
       }
     })
 
-    // Pinned projects are already sorted at the combined sort step above
-
     return {
       results,
-      page_total: _size(combinedProjects),
-      total: _size(combinedProjects),
+      page_total: _size(results),
+      total,
     }
   }
 
