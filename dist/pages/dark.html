@@ -187,7 +187,7 @@
       text-decoration: underline;
     }
 
-    #branding a:focus {
+    #branding a:focus-visible {
       outline: 1px solid #60a5fa;
       outline-offset: 1px;
     }
@@ -321,6 +321,17 @@
 
       #progress-bar.indeterminate {
         width: 100%;
+      }
+
+      /* Show static loading circle when animations are disabled */
+      #loading svg circle {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: 0;
+      }
+
+      /* Show checkmark immediately when animations are disabled */
+      #completed.show svg path {
+        stroke-dashoffset: 0;
       }
     }
 
