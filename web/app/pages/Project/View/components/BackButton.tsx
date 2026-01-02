@@ -8,35 +8,45 @@ interface BackButtonLinkProps {
   to: string
   onClick?: never
   className?: string
+  label?: string
 }
 
 interface BackButtonCallbackProps {
   to?: never
   onClick: () => void
   className?: string
+  label?: string
 }
 
 type BackButtonProps = BackButtonLinkProps | BackButtonCallbackProps
 
-export const BackButton = ({ to, onClick, className }: BackButtonProps) => {
+export const BackButton = ({ to, onClick, className, label }: BackButtonProps) => {
   const { t } = useTranslation('common')
+  const backLabel = label || t('common.goBack')
 
   const buttonClasses = cn(
-    'rounded-md border border-transparent p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+    'flex items-center gap-2 transition-colors rounded-md border border-transparent p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
     className,
+  )
+
+  const content = (
+    <>
+      <ChevronLeftIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+      <span className='text-sm font-medium text-gray-700 dark:text-gray-50'>{backLabel}</span>
+    </>
   )
 
   if (onClick) {
     return (
-      <button type='button' title={t('common.back')} onClick={onClick} className={buttonClasses}>
-        <ChevronLeftIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+      <button type='button' title={backLabel} onClick={onClick} className={buttonClasses}>
+        {content}
       </button>
     )
   }
 
   return (
-    <Link to={to!} title={t('common.back')} className={buttonClasses}>
-      <ChevronLeftIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+    <Link to={to!} title={backLabel} className={buttonClasses}>
+      {content}
     </Link>
   )
 }

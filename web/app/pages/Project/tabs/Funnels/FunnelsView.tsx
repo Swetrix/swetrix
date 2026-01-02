@@ -253,6 +253,7 @@ const FunnelsView = () => {
       <>
         <DashboardHeader
           backLink={`?${pureSearchParams}`}
+          backButtonLabel={t('project.backToFunnels')}
           showLiveVisitors={false}
           showSearchButton={false}
           hideTimeBucket

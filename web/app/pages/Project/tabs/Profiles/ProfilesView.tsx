@@ -323,7 +323,11 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
 
     return (
       <>
-        <DashboardHeader backLink={`?${backSearchParams}`} showLiveVisitors={false} />
+        <DashboardHeader
+          backLink={`?${backSearchParams}`}
+          backButtonLabel={t('project.backToUsers')}
+          showLiveVisitors={false}
+        />
         {profileLoading && !activeProfile ? (
           <Loader />
         ) : (

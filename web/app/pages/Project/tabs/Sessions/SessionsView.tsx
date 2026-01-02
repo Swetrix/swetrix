@@ -253,7 +253,11 @@ const SessionsView = ({ tnMapping, rotateXAxis }: SessionsViewProps) => {
   if (activePSID) {
     return (
       <>
-        <DashboardHeader backLink={`?${pureSearchParams}`} showLiveVisitors={false} />
+        <DashboardHeader
+          backLink={`?${pureSearchParams}`}
+          backButtonLabel={t('project.backToSessions')}
+          showLiveVisitors={false}
+        />
         <SessionDetailView
           activeSession={activeSession}
           sessionLoading={sessionLoading}

@@ -29,6 +29,7 @@ interface DashboardHeaderProps {
 
   // Back button link (when provided, shows a back button on the far left)
   backLink?: string
+  backButtonLabel?: string
   onBack?: () => void
 
   // Left side content (displayed after back button, before live visitors)
@@ -46,6 +47,7 @@ const DashboardHeader = ({
   hideTimeBucket = false,
   timeBucketSelectorItems: customTimeBucketSelectorItems,
   backLink,
+  backButtonLabel,
   onBack,
   leftContent,
   rightContent,
@@ -123,8 +125,8 @@ const DashboardHeader = ({
   return (
     <div className='relative top-0 z-20 -mt-2 flex flex-col items-center justify-between bg-gray-50/50 py-2 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
       <div className='flex flex-wrap items-center justify-center gap-2'>
-        {backLink ? <BackButton to={backLink} /> : null}
-        {onBack ? <BackButton onClick={onBack} /> : null}
+        {backLink ? <BackButton to={backLink} label={backButtonLabel} /> : null}
+        {onBack ? <BackButton onClick={onBack} label={backButtonLabel} /> : null}
         {leftContent}
         {showLiveVisitors ? <LiveVisitorsDropdown /> : null}
       </div>

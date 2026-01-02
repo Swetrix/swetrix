@@ -174,6 +174,7 @@ const CollapsibleGroup: React.FC<{
                     <TabIcon className={cn('size-5 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
                   </Link>
                 }
+                disableHoverableContent
               />
             )
           })}
@@ -413,6 +414,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                 </Text>
               )
             }
+            disableHoverableContent
           />
         ) : (
           <Tooltip
@@ -434,6 +436,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                 </Text>
               </div>
             }
+            disableHoverableContent
           />
         )}
         {isMobileOpen ? (
@@ -490,6 +493,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                         />
                       </Link>
                     }
+                    disableHoverableContent
                   />
                 )
               }
