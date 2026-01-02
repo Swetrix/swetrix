@@ -198,12 +198,17 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   }
 
   if (isPanelsDataEmpty && !dataLoading) {
-    return <NoCaptchaEvents filters={filters} />
+    return (
+      <>
+        <DashboardHeader showLiveVisitors={false} />
+        <NoCaptchaEvents filters={filters} />
+      </>
+    )
   }
 
   return (
     <>
-      <DashboardHeader showLiveVisitors />
+      <DashboardHeader showLiveVisitors={false} />
       <div ref={ref}>
         {dataLoading && hasExistingData ? <LoadingBar /> : null}
         <div>
