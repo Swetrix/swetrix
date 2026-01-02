@@ -381,7 +381,7 @@ export const FUNNELS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'all',
 const SELFHOSTED_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
-  users: 'users',
+  profiles: 'profiles',
   funnels: 'funnels',
   sessions: 'sessions',
   errors: 'errors',

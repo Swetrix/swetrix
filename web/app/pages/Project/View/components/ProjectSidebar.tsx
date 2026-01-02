@@ -333,16 +333,16 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   )
 
   const askAiTab = useMemo(() => {
-    return tabs.find((tab) => tab.id === PROJECT_TABS.ai)
+    return tabs.find((tab) => PROJECT_TABS.ai && tab.id === PROJECT_TABS.ai)
   }, [tabs])
 
   const tabGroups = useMemo<TabGroup[]>(() => {
     const groups: TabGroup[] = []
 
     const webAnalyticsTabs = tabs.filter((tab) =>
-      [PROJECT_TABS.traffic, PROJECT_TABS.performance, PROJECT_TABS.funnels, PROJECT_TABS.alerts].includes(
-        tab.id as any,
-      ),
+      [PROJECT_TABS.traffic, PROJECT_TABS.performance, PROJECT_TABS.funnels, PROJECT_TABS.alerts]
+        .filter(Boolean)
+        .includes(tab.id as any),
     )
     if (webAnalyticsTabs.length > 0) {
       groups.push({
@@ -360,7 +360,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         PROJECT_TABS.goals,
         PROJECT_TABS.experiments,
         PROJECT_TABS.featureFlags,
-      ].includes(tab.id as any),
+      ]
+        .filter(Boolean)
+        .includes(tab.id as any),
     )
     if (productAnalyticsTabs.length > 0) {
       groups.push({
@@ -370,7 +372,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       })
     }
 
-    const securityTabs = tabs.filter((tab) => tab.id === PROJECT_TABS.captcha)
+    const securityTabs = tabs.filter((tab) => PROJECT_TABS.captcha && tab.id === PROJECT_TABS.captcha)
     if (securityTabs.length > 0) {
       groups.push({
         id: 'security',
