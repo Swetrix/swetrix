@@ -1,22 +1,20 @@
-import { FunnelIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
+import { FunnelIcon, ClockIcon } from '@heroicons/react/24/outline'
 import _isEmpty from 'lodash/isEmpty'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import Filters from '~/pages/Project/View/components/Filters'
+import { Filter } from '~/pages/Project/View/interfaces/traffic'
+import { typeNameMapping } from '~/pages/Project/View/ViewProject.helpers'
 import { Text } from '~/ui/Text'
 
-import Filters from '../../View/components/Filters'
-import { Filter } from '../../View/interfaces/traffic'
-
-import { captchaTypeNameMapping } from './CaptchaView'
-
-interface NoCaptchaEventsProps {
+interface NoSessionsProps {
   filters: Filter[]
 }
 
-const NoCaptchaEvents = ({ filters }: NoCaptchaEventsProps) => {
+const NoSessions = ({ filters }: NoSessionsProps) => {
   const { t } = useTranslation('common')
-  const tnMapping = captchaTypeNameMapping(t)
+  const tnMapping = typeNameMapping(t)
   const hasFilters = !_isEmpty(filters)
 
   return (
@@ -27,18 +25,18 @@ const NoCaptchaEvents = ({ filters }: NoCaptchaEventsProps) => {
           {hasFilters ? (
             <FunnelIcon className='size-7 text-gray-700 dark:text-gray-200' />
           ) : (
-            <CalendarDaysIcon className='size-7 text-gray-700 dark:text-gray-200' />
+            <ClockIcon className='size-7 text-gray-700 dark:text-gray-200' />
           )}
         </div>
         <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
-          {t('project.noEvTitle')}
+          {t('project.noSessionsTitle')}
         </Text>
         <Text as='p' size='sm' colour='secondary' className='mx-auto mt-2 max-w-md'>
-          {hasFilters ? t('project.noEventsFiltersDesc') : t('project.noEvContent')}
+          {hasFilters ? t('project.noSessionsFiltersDesc') : t('project.noSessionsContent')}
         </Text>
       </div>
     </>
   )
 }
 
-export default memo(NoCaptchaEvents)
+export default memo(NoSessions)

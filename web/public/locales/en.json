@@ -1335,6 +1335,12 @@
     "trendlineTotal": "Pageviews trendline",
     "noEvContent": "No events have been recorded for the specified period, please try a different period.",
     "noEventsFiltersDesc": "No events have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
+    "noProfilesTitle": "No profiles yet",
+    "noProfilesContent": "No profiles have been recorded for the specified period, please try a different period.",
+    "noProfilesFiltersDesc": "No profiles have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
+    "noSessionsTitle": "No sessions yet",
+    "noSessionsContent": "No sessions have been recorded for the specified period, please try a different period.",
+    "noSessionsFiltersDesc": "No sessions have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
     "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
     "mapping": {
       "cc": "Country",

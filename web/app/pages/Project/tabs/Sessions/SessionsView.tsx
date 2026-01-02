@@ -7,11 +7,11 @@ import { useSearchParams } from 'react-router'
 
 import { getSessions, getSession } from '~/api'
 import { Session, SessionDetails as SessionDetailsType } from '~/lib/models/Project'
+import NoSessions from '~/pages/Project/tabs/Sessions/components/NoSessions'
 import { SessionDetailView } from '~/pages/Project/tabs/Sessions/SessionDetailView'
 import { Sessions } from '~/pages/Project/tabs/Sessions/Sessions'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
-import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
@@ -279,7 +279,7 @@ const SessionsView = ({ tnMapping, rotateXAxis }: SessionsViewProps) => {
         {!_isEmpty(sessions) ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
         {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) ? <Loader /> : null}
         {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) ? (
-          <NoEvents filters={filters} />
+          <NoSessions filters={filters} />
         ) : null}
         <Sessions sessions={sessions} timeFormat={timeFormat} currency={project?.revenueCurrency} />
         {canLoadMoreSessions ? (

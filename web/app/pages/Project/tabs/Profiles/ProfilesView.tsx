@@ -7,10 +7,10 @@ import { useSearchParams } from 'react-router'
 
 import { getProfiles, getProfile, getProfileSessions } from '~/api'
 import { Profile, ProfileDetails as ProfileDetailsType, Session } from '~/lib/models/Project'
+import NoProfiles from '~/pages/Project/tabs/Profiles/components/NoProfiles'
 import { ProfileDetails } from '~/pages/Project/tabs/Profiles/ProfileDetails'
 import { Profiles, ProfilesFilter } from '~/pages/Project/tabs/Profiles/Profiles'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
@@ -368,7 +368,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       ) : null}
       {(profilesLoading === null || profilesLoading) && _isEmpty(profiles) ? <Loader /> : null}
       {typeof profilesLoading === 'boolean' && !profilesLoading && _isEmpty(profiles) ? (
-        <NoEvents filters={filters} />
+        <NoProfiles filters={filters} />
       ) : null}
       <Profiles profiles={profiles} timeFormat={timeFormat} />
       {canLoadMoreProfiles ? (

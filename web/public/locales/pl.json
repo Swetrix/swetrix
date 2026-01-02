@@ -1335,6 +1335,12 @@
     "trendlineTotal": "Linia trendu odsłon witryny",
     "noEvContent": "W wybranym okresie nie zarejestrowano żadnych zdarzeń, proszę spróbować inny okres.",
     "noEventsFiltersDesc": "W wybranym okresie lub przy zastosowanych filtrach nie zarejestrowano żadnych zdarzeń, spróbuj innego okresu lub zmień zastosowane filtry.",
+    "noProfilesTitle": "Brak profili na razie",
+    "noProfilesContent": "Nie zarejestrowano żadnych profili dla wybranego okresu, spróbuj wybrać inny okres.",
+    "noProfilesFiltersDesc": "Nie zarejestrowano żadnych profili dla wybranego okresu lub zastosowanych filtrów, spróbuj wybrać inny okres lub zmień zastosowane filtry.",
+    "noSessionsTitle": "Brak sesji na razie",
+    "noSessionsContent": "Nie zarejestrowano żadnych sesji dla wybranego okresu, spróbuj wybrać inny okres.",
+    "noSessionsFiltersDesc": "Nie zarejestrowano żadnych sesji dla wybranego okresu lub zastosowanych filtrów, spróbuj wybrać inny okres lub zmień zastosowane filtry.",
     "noCaptchaEv": "Nie przechwycono żadnych zdarzeń dla określonych ram czasowych.\nJeśli jeszcze nie skonfigurowałeś CAPTCHA, możesz sprawdzić nasze <url>Docs</url>, aby łatwo zintegrować go z aplikacją.",
     "mapping": {
       "cc": "Kraj",
