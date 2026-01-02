@@ -152,7 +152,7 @@ interface ViewProjectContextType {
   refCalendar: React.RefObject<any>
   refCalendarCompare: React.RefObject<any>
 
-  fullscreenMapRef: React.RefObject<HTMLDivElement>
+  fullscreenMapRef: React.RefObject<HTMLDivElement | null>
   isMapFullscreen: boolean
   setIsMapFullscreen: (value: boolean) => void
 }
@@ -1192,10 +1192,15 @@ const ViewProjectContent = () => {
             >
               {!isEmbedded ? <Header /> : null}
 
-              <div className='flex-1 grid grid-cols-1'>
-                <div ref={fullscreenMapRef} className='col-start-1 row-start-1 w-full min-h-full z-0 empty:hidden' />
+              <div className='grid flex-1 grid-cols-1'>
+                <div ref={fullscreenMapRef} className='z-0 col-start-1 row-start-1 min-h-full w-full empty:hidden' />
 
-                <div className={cx('col-start-1 row-start-1 z-10 mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 lg:px-8', isMapFullscreen ? 'pointer-events-none' : 'pointer-events-auto')}>
+                <div
+                  className={cx(
+                    'z-10 col-start-1 row-start-1 mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 lg:px-8',
+                    isMapFullscreen ? 'pointer-events-none' : 'pointer-events-auto',
+                  )}
+                >
                   <div ref={ref} className='relative flex gap-4'>
                     <ProjectSidebar
                       tabs={tabs}
@@ -1207,7 +1212,7 @@ const ViewProjectContent = () => {
                       dataLoading={dataLoading}
                       searchParams={searchParams}
                       allowedToManage={allowedToManage}
-                      className='relative z-50 hidden md:flex pointer-events-auto'
+                      className='pointer-events-auto relative z-50 hidden md:flex'
                     />
                     {isMobileSidebarOpen ? (
                       <div className='pointer-events-auto'>
@@ -1227,7 +1232,13 @@ const ViewProjectContent = () => {
                       </div>
                     ) : null}
                     {/* Main Content */}
-                    <div className={cx('flex min-w-0 flex-1 flex-col pointer-events-auto', isMapFullscreen ? 'pointer-events-none' : 'pointer-events-auto')} ref={dashboardRef}>
+                    <div
+                      className={cx(
+                        'pointer-events-auto flex min-w-0 flex-1 flex-col',
+                        isMapFullscreen ? 'pointer-events-none' : 'pointer-events-auto',
+                      )}
+                      ref={dashboardRef}
+                    >
                       <EventsRunningOutBanner />
                       <div className='pointer-events-auto'>
                         <MobileSidebarTrigger onClick={openMobileSidebar} activeTabLabel={activeTabLabel} />
@@ -1296,10 +1307,10 @@ const ViewProjectContent = () => {
 
                       {isEmbedded ? null : (
                         <>
-                        <div className='flex-1' />
-                        <div className='mt-4 flex w-full items-center justify-between gap-2 pointer-events-auto'>
-                          <Dropdown
-                            items={whitelist}
+                          <div className='flex-1' />
+                          <div className='pointer-events-auto mt-4 flex w-full items-center justify-between gap-2'>
+                            <Dropdown
+                              items={whitelist}
                               buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-slate-900 dark:text-gray-50'
                               title={
                                 <span className='inline-flex items-center'>

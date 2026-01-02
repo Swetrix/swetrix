@@ -170,7 +170,6 @@ const InteractiveMapCore = ({
     const dataToUse = mapView === 'countries' ? data : regionData
     const values = dataToUse?.map((d) => d.count) || [0]
     const maxValue = Math.max(...values)
-    const minValue = Math.min(...values)
 
     // Errors: light red to deep red, higher == worse
     if (isErrorsTab) {
