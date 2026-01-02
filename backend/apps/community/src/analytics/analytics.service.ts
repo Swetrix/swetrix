@@ -1271,6 +1271,9 @@ export class AnalyticsService {
         )
 
       const existingSession = data[0]
+      const firstSeen = existingSession?.firstSeen
+        ? dayjs.utc(existingSession.firstSeen).format('YYYY-MM-DD HH:mm:ss')
+        : now
 
       await clickhouse.insert({
         table: 'sessions',
@@ -1280,7 +1283,7 @@ export class AnalyticsService {
             psid,
             pid,
             profileId,
-            firstSeen: existingSession?.firstSeen ?? now,
+            firstSeen,
             lastSeen: now,
           },
         ],
