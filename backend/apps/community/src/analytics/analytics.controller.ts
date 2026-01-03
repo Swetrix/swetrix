@@ -64,6 +64,9 @@ import {
 } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
+import { GetProfilesDto } from './dto/get-profiles.dto'
+import { GetProfileDto, GetProfileSessionsDto } from './dto/get-profile.dto'
+import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
 import { ErrorDto } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDto } from './dto/get-error.dto'
@@ -1870,5 +1873,291 @@ export class AnalyticsController {
       take,
       skip,
     )
+  }
+
+  @Get('profiles')
+  @Auth(true, true)
+  async getProfiles(
+    @Query() data: GetProfilesDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+      profileType = 'all',
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of profiles to return is 150',
+      )
+    }
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    const [filtersQuery, filtersParams, appliedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
+
+    const profiles = await this.analyticsService.getProfilesList(
+      pid,
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      take,
+      skip,
+      profileType,
+    )
+
+    return { profiles, appliedFilters, take, skip }
+  }
+
+  @Get('profile')
+  @Auth(true, true)
+  async getProfile(
+    @Query() data: GetProfileDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      profileId,
+      timezone = DEFAULT_TIMEZONE,
+      period,
+      from,
+      to,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const [details, topPages, activityCalendar, chart] = await Promise.all([
+      this.analyticsService.getProfileDetails(pid, profileId, safeTimezone),
+      this.analyticsService.getProfileTopPages(pid, profileId),
+      this.analyticsService.getProfileActivityCalendar(pid, profileId),
+      this.analyticsService.getProfileChartData(
+        pid,
+        profileId,
+        timeBucket,
+        groupFromUTC,
+        groupToUTC,
+        safeTimezone,
+      ),
+    ])
+
+    return {
+      ...details,
+      topPages,
+      activityCalendar,
+      chart,
+      timeBucket,
+    }
+  }
+
+  @Get('profile/sessions')
+  @Auth(true, true)
+  async getProfileSessions(
+    @Query() data: GetProfileSessionsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      profileId,
+      period,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 150',
+      )
+    }
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    const [filtersQuery, filtersParams, appliedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
+
+    const sessions = await this.analyticsService.getProfileSessionsList(
+      pid,
+      profileId,
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      take,
+      skip,
+    )
+
+    return { sessions, appliedFilters, take, skip }
+  }
+
+  @Post('profile-id')
+  @Public()
+  async getOrCreateProfileId(
+    @Body() dto: GetProfileIdDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ profileId: string | null }> {
+    const { 'user-agent': userAgent } = headers
+    const { pid } = dto
+
+    try {
+      const ip = getIPFromHeaders(headers) || reqIP || ''
+
+      const profileId = await this.analyticsService.generateProfileId(
+        pid,
+        userAgent,
+        ip,
+      )
+
+      return { profileId }
+    } catch (error) {
+      this.logger.error({ error, pid }, 'Error generating profile ID')
+      return { profileId: null }
+    }
+  }
+
+  @Post('session-id')
+  @Public()
+  async getOrCreateSessionId(
+    @Body() dto: GetSessionIdDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ sessionId: string | null }> {
+    const { 'user-agent': userAgent } = headers
+    const { pid } = dto
+
+    try {
+      const ip = getIPFromHeaders(headers) || reqIP || ''
+
+      const { psid } = await this.analyticsService.getSessionId(
+        pid,
+        userAgent,
+        ip,
+      )
+
+      return { sessionId: psid }
+    } catch (error) {
+      this.logger.error({ error, pid }, 'Error generating session ID')
+      return { sessionId: null }
+    }
   }
 }
