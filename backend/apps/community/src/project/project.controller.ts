@@ -1167,13 +1167,16 @@ export class ProjectController {
 
     this.projectService.allowedToView(project, userId, headers['x-password'])
 
-    const isDataExists = !_isEmpty(
-      await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
-    )
-
-    const isErrorDataExists = !_isEmpty(
-      await this.projectService.getPIDsWhereErrorsDataExists([id]),
-    )
+    const [isDataExists, isErrorDataExists, isCaptchaDataExists] =
+      await Promise.all([
+        !_isEmpty(
+          await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
+        ),
+        !_isEmpty(await this.projectService.getPIDsWhereErrorsDataExists([id])),
+        !_isEmpty(
+          await this.projectService.getPIDsWhereCaptchaDataExists([id]),
+        ),
+      ])
 
     const funnels = await getFunnelsClickhouse(id)
     const rawShares = await findProjectSharesByProjectClickhouse(id)
@@ -1216,6 +1219,7 @@ export class ProjectController {
       funnels: this.projectService.formatFunnelsFromClickhouse(funnels),
       isDataExists,
       isErrorDataExists,
+      isCaptchaDataExists,
       role,
       isLocked: false,
       isAccessConfirmed,
