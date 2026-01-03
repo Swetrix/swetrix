@@ -1280,14 +1280,6 @@ const saveSaltClickhouse = async (saltData: ClickhouseSalt) => {
   }
 }
 
-const deleteSaltClickhouse = async (rotation: string) => {
-  const query = `ALTER TABLE salt DELETE WHERE rotation = {rotation:String}`
-  await clickhouse.command({
-    query,
-    query_params: { rotation },
-  })
-}
-
 export {
   checkRateLimit,
   createProjectClickhouse,
@@ -1339,5 +1331,4 @@ export {
   // salt
   getSaltClickhouse,
   saveSaltClickhouse,
-  deleteSaltClickhouse,
 }

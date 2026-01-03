@@ -60,7 +60,11 @@ const Input = ({
     <Field as='div' className={className}>
       {label || labelCorner ? (
         <div className='mb-1 flex items-center justify-between gap-x-2'>
-          {label ? <Label className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label> : <span />}
+          {label ? (
+            <Label className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label>
+          ) : (
+            <span />
+          )}
           {labelCorner ? <span className='text-sm'>{labelCorner}</span> : null}
         </div>
       ) : null}

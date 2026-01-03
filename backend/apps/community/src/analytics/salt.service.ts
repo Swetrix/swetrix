@@ -12,7 +12,7 @@ const REDIS_SALT_DAILY = 'salt:daily'
 const REDIS_SALT_MONTHLY = 'salt:monthly'
 const REDIS_CACHE_TTL = 600 // 10 minutes in seconds
 
-export type SaltRotationType = 'daily' | 'monthly'
+type SaltRotationType = 'daily' | 'monthly'
 
 const getEndOfPeriod = (rotation: SaltRotationType): dayjs.Dayjs => {
   const now = dayjs.utc()
