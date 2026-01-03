@@ -1,5 +1,6 @@
 import { IntersectionType, PartialType } from '@nestjs/mapped-types'
 import { ApiProperty } from '@nestjs/swagger'
+import { IsInt, IsOptional, Max, Min } from 'class-validator'
 import { ProjectDTO } from './project.dto'
 import { ProjectPasswordDto } from './project-password.dto'
 
@@ -20,4 +21,14 @@ export class UpdateProjectDto extends IntersectionType(
       "When true, anyone on the internet (including Google) would be able to see the project's Dashboard.",
   })
   public?: boolean
+
+  @ApiProperty({
+    required: false,
+    description: 'CAPTCHA difficulty level (2-6). Higher = harder for bots.',
+  })
+  @IsInt()
+  @Min(2)
+  @Max(6)
+  @IsOptional()
+  captchaDifficulty?: number
 }

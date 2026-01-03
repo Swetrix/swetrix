@@ -200,6 +200,7 @@ export class AnalyticsController {
     @Query() data: GetDataDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
+    isCaptcha = false,
   ) {
     const {
       pid,
@@ -219,12 +220,16 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    const parsedMetrics = this.analyticsService.parseMetrics(metrics)
+    let parsedMetrics
 
-    if (_size(parsedMetrics) > MAX_METRICS_IN_VIEW) {
-      throw new BadRequestException(
-        `The maximum number of metrics within one request is ${MAX_METRICS_IN_VIEW}`,
-      )
+    if (!isCaptcha) {
+      parsedMetrics = this.analyticsService.parseMetrics(metrics)
+
+      if (_size(parsedMetrics) > MAX_METRICS_IN_VIEW) {
+        throw new BadRequestException(
+          `The maximum number of metrics within one request is ${MAX_METRICS_IN_VIEW}`,
+        )
+      }
     }
 
     let newTimebucket = timeBucket
@@ -235,7 +240,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'analytics',
+        isCaptcha ? 'captcha' : 'analytics',
       )
 
       diff = res.diff
@@ -247,7 +252,10 @@ export class AnalyticsController {
     }
 
     const [filtersQuery, filtersParams, parsedFilters, customEVFilterApplied] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+      this.analyticsService.getFiltersQuery(
+        filters,
+        isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
+      )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
@@ -260,9 +268,11 @@ export class AnalyticsController {
         diff,
       )
 
-    let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    let subQuery = `FROM ${
+      isCaptcha ? 'captcha' : 'analytics'
+    } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
-    if (customEVFilterApplied) {
+    if (customEVFilterApplied && !isCaptcha) {
       subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
@@ -275,18 +285,41 @@ export class AnalyticsController {
       },
     }
 
-    const result = await this.analyticsService.groupByTimeBucket(
-      newTimebucket,
-      groupFrom,
-      groupTo,
-      subQuery,
-      filtersQuery,
-      paramsData,
-      safeTimezone,
-      customEVFilterApplied,
-      parsedFilters,
-      mode,
-    )
+    let result: any | void
+
+    if (isCaptcha) {
+      result = await this.analyticsService.groupCaptchaByTimeBucket(
+        newTimebucket,
+        groupFrom,
+        groupTo,
+        subQuery,
+        filtersQuery,
+        paramsData,
+        safeTimezone,
+        mode,
+      )
+    } else {
+      result = await this.analyticsService.groupByTimeBucket(
+        newTimebucket,
+        groupFrom,
+        groupTo,
+        subQuery,
+        filtersQuery,
+        paramsData,
+        safeTimezone,
+        customEVFilterApplied,
+        parsedFilters,
+        mode,
+      )
+    }
+
+    if (isCaptcha) {
+      return {
+        ...result,
+        appliedFilters: parsedFilters,
+        timeBucket: allowedTumebucketForPeriodAll,
+      }
+    }
 
     const customs = await this.analyticsService.getCustomEvents(
       filtersQuery,
@@ -325,6 +358,15 @@ export class AnalyticsController {
       timeBucket: allowedTumebucketForPeriodAll,
       meta,
     }
+  }
+
+  @Get('captcha')
+  @Auth(true, true)
+  async getCaptchaData(
+    @Query() data: GetDataDto,
+    @CurrentUserId() uid: string,
+  ) {
+    return this.getData(data, uid, {}, true)
   }
 
   @Get('funnel')

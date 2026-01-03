@@ -128,6 +128,7 @@ const ALLOWED_KEYS = [
   'botsProtectionLevel',
   'websiteUrl',
   'captchaSecretKey',
+  'captchaDifficulty',
 ]
 
 const CLICKHOUSE_PROJECT_UPDATABLE_KEYS = [...ALLOWED_KEYS, 'adminId']
@@ -392,11 +393,17 @@ const updateProjectClickhouse = async (
   }
 
   const INT8_COLUMNS = ['active', 'public', 'isPasswordProtected']
+  const UINT8_COLUMNS = ['captchaDifficulty']
   const params: Record<string, any> = { id: project.id }
 
   const assignments = _map(columns, col => {
     params[col] = filtered[col]
-    const type = INT8_COLUMNS.includes(col) ? 'Int8' : 'String'
+    let type = 'String'
+    if (INT8_COLUMNS.includes(col)) {
+      type = 'Int8'
+    } else if (UINT8_COLUMNS.includes(col)) {
+      type = 'UInt8'
+    }
     return `${col}={${col}:${type}}`
   }).join(', ')
 

@@ -44,6 +44,7 @@ import {
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
   ERROR_COLUMNS,
+  CAPTCHA_COLUMNS,
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,
   ALL_COLUMNS,
@@ -243,7 +244,7 @@ const generateParamsQuery = (
   subQuery: string,
   customEVFilterApplied: boolean,
   isPageInclusiveFilterSet: boolean,
-  type: 'traffic' | 'performance' | 'errors',
+  type: 'traffic' | 'performance' | 'errors' | 'captcha',
   measure?: PerfMeasure,
 ): string => {
   let columns = [`${col} as name`]
@@ -281,6 +282,10 @@ const generateParamsQuery = (
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
+  if (type === 'captcha') {
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${col}`
+  }
+
   if (customEVFilterApplied) {
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
@@ -300,6 +305,7 @@ export enum DataType {
   ANALYTICS = 'analytics',
   PERFORMANCE = 'performance',
   ERRORS = 'errors',
+  CAPTCHA = 'captcha',
 }
 
 const isValidOrigin = (origins: string[], origin: string) => {
@@ -555,7 +561,11 @@ export class AnalyticsService {
       return ERROR_COLUMNS
     }
 
-    return PERFORMANCE_COLUMNS
+    if (dataType === DataType.PERFORMANCE) {
+      return PERFORMANCE_COLUMNS
+    }
+
+    return CAPTCHA_COLUMNS
   }
 
   getGroupFromTo(
@@ -821,7 +831,7 @@ export class AnalyticsService {
 
   async calculateTimeBucketForAllTime(
     pid: string,
-    table: 'analytics' | 'customEV' | 'performance' | 'errors',
+    table: 'analytics' | 'customEV' | 'performance' | 'errors' | 'captcha',
   ): Promise<{
     timeBucket: TimeBucketType[]
     diff: number
@@ -2193,7 +2203,7 @@ export class AnalyticsService {
     subQuery: string,
     customEVFilterApplied: boolean,
     paramsData: any,
-    type: 'traffic' | 'performance' | 'errors',
+    type: 'traffic' | 'performance' | 'errors' | 'captcha',
     measure?: PerfMeasure,
   ) {
     // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
@@ -2216,6 +2226,10 @@ export class AnalyticsService {
 
     if (type === 'performance') {
       columns = PERFORMANCE_COLUMNS
+    }
+
+    if (type === 'captcha') {
+      columns = CAPTCHA_COLUMNS
     }
 
     // Build a single query combining all metrics
@@ -3318,6 +3332,132 @@ export class AnalyticsService {
           x: this.shiftToTimezone(x, safeTimezone, format),
           occurrences: count,
           affectedUsers,
+        }
+      })(),
+    ]
+
+    await Promise.all(promises)
+
+    return Promise.resolve({
+      params,
+      chart,
+    })
+  }
+
+  generateCaptchaAggregationQuery(
+    timeBucket: TimeBucketType,
+    filtersQuery: string,
+    mode: ChartRenderMode,
+  ): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), {timezone:String})`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), {timezone:String})`
+
+    const baseQuery = `
+      SELECT
+        ${selector},
+        count() as count
+      FROM (
+        SELECT *,
+          ${timeBucketFunc}(toTimeZone(created, {timezone:String})) as tz_created
+        FROM captcha
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+          ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      return `
+        SELECT
+          *,
+          sum(count) OVER (ORDER BY ${groupBy}) as count
+        FROM (${baseQuery})
+      `
+    }
+
+    return baseQuery
+  }
+
+  extractCaptchaChartData(result, x: string[]): any {
+    const count = Array(x.length).fill(0)
+
+    for (let row = 0; row < _size(result); ++row) {
+      const dateString = this.generateDateString(result[row])
+
+      const index = x.indexOf(dateString)
+
+      if (index !== -1) {
+        count[index] = result[row].count
+      }
+    }
+
+    return {
+      count,
+    }
+  }
+
+  async groupCaptchaByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+    mode: ChartRenderMode,
+  ): Promise<object | void> {
+    let params: unknown = {}
+    let chart: unknown = {}
+
+    const promises = [
+      // Getting params
+      (async () => {
+        params = await this.generateParams(
+          null,
+          subQuery,
+          false,
+          paramsData,
+          'captcha',
+        )
+
+        if (!_some(_values(params), val => !_isEmpty(val))) {
+          throw new BadRequestException(
+            'There are no parameters for the specified time frames',
+          )
+        }
+      })(),
+
+      // Getting CAPTCHA chart data
+      (async () => {
+        const { xShifted } = this.generateXAxis(
+          timeBucket,
+          from,
+          to,
+          safeTimezone,
+        )
+
+        const query = this.generateCaptchaAggregationQuery(
+          timeBucket,
+          filtersQuery,
+          mode,
+        )
+
+        const { data } = await clickhouse
+          .query({
+            query,
+            query_params: { ...paramsData.params, timezone: safeTimezone },
+          })
+          .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
+        const { count } = this.extractCaptchaChartData(data, xShifted)
+
+        chart = {
+          x: xShifted,
+          results: count,
         }
       })(),
     ]

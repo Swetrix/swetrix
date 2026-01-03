@@ -345,7 +345,7 @@ const ProjectSettings = () => {
           id: 'captcha',
           label: t('project.settings.tabs.captcha'),
           icon: ShieldCheckIcon,
-          visible: !isSelfhosted,
+          visible: true,
         },
         {
           id: 'integrations',

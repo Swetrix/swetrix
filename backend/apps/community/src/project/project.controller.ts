@@ -1111,6 +1111,10 @@ export class ProjectController {
         : null
     }
 
+    if (projectDTO.captchaDifficulty !== undefined) {
+      project.captchaDifficulty = projectDTO.captchaDifficulty
+    }
+
     await updateProjectClickhouse(
       this.projectService.formatToClickhouse(project),
     )
