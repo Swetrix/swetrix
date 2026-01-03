@@ -205,9 +205,9 @@ export class ProjectController {
     // Always sort by pinned first, then by the requested sort criteria
     combinedProjects = [...combinedProjects].sort((a: any, b: any) => {
       // First, sort by pinned status (pinned projects first)
-      // isPinned from SQL query is 0 or 1, so we need to check for truthy value or use pinnedProjectIds
-      const aIsPinned = Boolean(a.isPinned) || _includes(pinnedProjectIds, a.id)
-      const bIsPinned = Boolean(b.isPinned) || _includes(pinnedProjectIds, b.id)
+      // Check pinnedProjectIds array - this is the source of truth
+      const aIsPinned = _includes(pinnedProjectIds, a.id)
+      const bIsPinned = _includes(pinnedProjectIds, b.id)
 
       if (aIsPinned && !bIsPinned) return -1
       if (!aIsPinned && bIsPinned) return 1

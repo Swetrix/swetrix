@@ -328,7 +328,7 @@ const getProjectsClickhouse = async (
           p.*,
           CASE WHEN pp.projectId IS NOT NULL THEN 1 ELSE 0 END AS isPinned
         FROM project p
-        LEFT JOIN pinned_project pp ON pp.projectId = p.id AND pp.visitorId = {adminId:FixedString(36)}
+        LEFT JOIN pinned_project pp ON pp.projectId = p.id AND pp.visitorId = {adminId:String}
         WHERE
           p.adminId = {adminId:FixedString(36)}
           AND (p.name ILIKE {search:String} OR p.id ILIKE {search:String})
@@ -353,7 +353,7 @@ const getProjectsClickhouse = async (
       p.*,
       CASE WHEN pp.projectId IS NOT NULL THEN 1 ELSE 0 END AS isPinned
     FROM project p
-    LEFT JOIN pinned_project pp ON pp.projectId = p.id AND pp.visitorId = {adminId:FixedString(36)}
+    LEFT JOIN pinned_project pp ON pp.projectId = p.id AND pp.visitorId = {adminId:String}
     WHERE p.adminId = {adminId:FixedString(36)}
     ${orderBy};
   `
