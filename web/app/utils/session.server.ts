@@ -1,3 +1,5 @@
+import { redirect } from 'react-router'
+
 const ACCESS_TOKEN_COOKIE = 'access_token'
 const REFRESH_TOKEN_COOKIE = 'refresh_token'
 
@@ -51,6 +53,16 @@ export function getRefreshToken(request: Request): string | null {
 
 export function hasAuthTokens(request: Request): boolean {
   return !!getAccessToken(request) || !!getRefreshToken(request)
+}
+
+export function redirectIfNotAuthenticated(request: Request, redirectTo = '/login'): Response | null {
+  if (hasAuthTokens(request)) {
+    return null
+  }
+
+  throw redirect(redirectTo, {
+    headers: createHeadersWithCookies(clearAuthCookies()),
+  })
 }
 
 function buildCookieHeader(
@@ -129,7 +141,7 @@ export function clearAuthCookies(): string[] {
   return cookies
 }
 
-export function appendCookiesToHeaders(headers: Headers, cookies: string[]): Headers {
+function appendCookiesToHeaders(headers: Headers, cookies: string[]): Headers {
   for (const cookie of cookies) {
     headers.append('Set-Cookie', cookie)
   }

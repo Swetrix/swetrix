@@ -1,5 +1,3 @@
-import { redirect } from 'react-router'
-
 import { Auth } from '~/lib/models/Auth'
 import { User } from '~/lib/models/User'
 import {
@@ -7,7 +5,6 @@ import {
   getRefreshToken,
   createAuthCookies,
   clearAuthCookies,
-  createHeadersWithCookies,
   AuthTokens,
 } from '~/utils/session.server'
 
@@ -35,7 +32,7 @@ function getApiUrl(): string {
   return apiUrl.endsWith('/') ? apiUrl : `${apiUrl}/`
 }
 
-export function getClientIP(request: Request): string | null {
+function getClientIP(request: Request): string | null {
   const headers = request.headers
 
   const cfIP = headers.get('cf-connecting-ip')
@@ -52,7 +49,7 @@ export function getClientIP(request: Request): string | null {
   return null
 }
 
-export interface ServerFetchOptions {
+interface ServerFetchOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
   body?: Record<string, unknown>
   headers?: Record<string, string>
@@ -60,7 +57,7 @@ export interface ServerFetchOptions {
   skipAuth?: boolean
 }
 
-export interface ServerFetchResult<T> {
+interface ServerFetchResult<T> {
   data: T | null
   error: string | string[] | null
   status: number
@@ -247,7 +244,7 @@ async function parseErrorResponse(response: Response): Promise<string | string[]
 // MARK: Auth utils
 // ============================================================================
 
-export interface AuthenticatedUser {
+interface AuthenticatedUser {
   user: User
   totalMonthlyEvents: number
 }
@@ -268,37 +265,6 @@ export async function getAuthenticatedUser(
   }
 
   return { user: result.data, cookies: result.cookies }
-}
-
-/**
- * Require authentication for a route.
- * Redirects to login if not authenticated.
- *
- * @returns The authenticated user and any cookies that need to be set
- */
-export async function requireAuth(
-  request: Request,
-  redirectTo = '/login',
-): Promise<{ user: AuthenticatedUser; cookies: string[] }> {
-  const accessToken = getAccessToken(request)
-
-  if (!accessToken) {
-    throw redirect(redirectTo)
-  }
-
-  const result = await serverFetch<AuthenticatedUser>(request, 'user/me')
-
-  if (result.error || !result.data) {
-    // Clear invalid cookies and redirect
-    throw redirect(redirectTo, {
-      headers: createHeadersWithCookies(clearAuthCookies()),
-    })
-  }
-
-  return {
-    user: result.data,
-    cookies: result.cookies,
-  }
 }
 
 export async function loginUser(

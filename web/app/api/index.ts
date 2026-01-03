@@ -6,7 +6,7 @@ import _map from 'lodash/map'
 
 import { DEFAULT_ALERTS_TAKE, API_URL } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
-import { Auth, SSOProvider } from '~/lib/models/Auth'
+import { SSOProvider } from '~/lib/models/Auth'
 import { Metainfo } from '~/lib/models/Metainfo'
 import { Role } from '~/lib/models/Organisation'
 import {
@@ -102,26 +102,6 @@ export const logoutAllApi = () =>
     .then((response) => response.data)
     .catch((error) => {
       throw new Error(error.respon)
-    })
-
-export const login = (credentials: { email: string; password: string }) =>
-  api
-    .post('v1/auth/login', credentials)
-    .then((response): Auth => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const signup = (data: { email: string; password: string; checkIfLeaked?: boolean }) =>
-  api
-    .post('v1/auth/register', data)
-    .then((response): Auth => response.data)
-    .catch((error) => {
-      const errorsArray = error.response.data.message
-      if (_isArray(errorsArray)) {
-        throw errorsArray
-      }
-      throw new Error(errorsArray)
     })
 
 export const deleteUser = (deletionFeedback?: string) =>
