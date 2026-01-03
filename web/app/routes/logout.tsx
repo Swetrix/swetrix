@@ -4,8 +4,14 @@ import { redirect } from 'react-router'
 import { logoutUser } from '~/api/api.server'
 import { createHeadersWithCookies } from '~/utils/session.server'
 
+function getLogoutAllParam(request: Request): boolean {
+  const url = new URL(request.url)
+  return url.searchParams.get('logoutAll') === 'true'
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
-  const { cookies } = await logoutUser(request)
+  const logoutAll = getLogoutAllParam(request)
+  const { cookies } = await logoutUser(request, { logoutAll })
 
   return redirect('/login', {
     headers: createHeadersWithCookies(cookies),
@@ -13,7 +19,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { cookies } = await logoutUser(request)
+  const logoutAll = getLogoutAllParam(request)
+  const { cookies } = await logoutUser(request, { logoutAll })
 
   return redirect('/login', {
     headers: createHeadersWithCookies(cookies),

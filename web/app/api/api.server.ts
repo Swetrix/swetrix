@@ -348,19 +348,34 @@ export async function registerUser(
   }
 }
 
-export async function logoutUser(request: Request): Promise<{ cookies: string[] }> {
-  const refreshToken = getRefreshToken(request)
+export async function logoutUser(
+  request: Request,
+  options: { logoutAll?: boolean } = {},
+): Promise<{ cookies: string[] }> {
+  const { logoutAll = false } = options
 
-  if (refreshToken) {
-    await serverFetch(request, 'v1/auth/logout', {
+  if (logoutAll) {
+    // Logout all sessions - uses access token
+    await serverFetch(request, 'v1/auth/logout-all', {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${refreshToken}`,
-      },
-      skipAuth: true,
     }).catch(() => {
       // Ignore errors - we're logging out anyway
     })
+  } else {
+    // Logout single session - uses refresh token
+    const refreshToken = getRefreshToken(request)
+
+    if (refreshToken) {
+      await serverFetch(request, 'v1/auth/logout', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${refreshToken}`,
+        },
+        skipAuth: true,
+      }).catch(() => {
+        // Ignore errors - we're logging out anyway
+      })
+    }
   }
 
   return {

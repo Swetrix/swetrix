@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { authMe } from '~/api'
 import { User } from '~/lib/models/User'
 import { getAccessToken } from '~/utils/accessToken'
-import { logout as logoutCookies } from '~/utils/auth'
+import { clearLocalStorageOnLogout } from '~/utils/auth'
 import { getRefreshToken } from '~/utils/refreshToken'
 
 interface AuthContextType {
@@ -12,7 +12,7 @@ interface AuthContextType {
   isLoading: boolean
   user: User | null
   totalMonthlyEvents: number
-  logout: (invalidateAllSessions?: boolean) => Promise<void>
+  logout: (invalidateAllSessions?: boolean) => void
   setUser: (user: User) => void
   mergeUser: (newUser: Partial<User>) => void
   setTotalMonthlyEvents: (totalMonthlyEvents: number) => void
@@ -46,10 +46,14 @@ export const AuthProvider = ({
   // TODO: @deprecated
   const [totalMonthlyEvents, setTotalMonthlyEvents] = useState(initialTotalMonthlyEvents || 0)
 
-  const logout = useCallback(async (invalidateAllSessions?: boolean) => {
+  const logout = useCallback((invalidateAllSessions?: boolean) => {
     setIsAuthenticated(false)
     setUser(null)
-    await logoutCookies(invalidateAllSessions)
+    clearLocalStorageOnLogout()
+
+    // Navigate to server-side logout route which handles cookie cleanup
+    const logoutUrl = invalidateAllSessions ? '/logout?logoutAll=true' : '/logout'
+    window.location.href = logoutUrl
   }, [])
 
   const mergeUser = useCallback((newUser: Partial<User>) => {

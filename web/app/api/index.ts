@@ -26,7 +26,7 @@ import { Subscriber } from '~/lib/models/Subscriber'
 import { User } from '~/lib/models/User'
 import { Filter, ProjectViewCustomEvent } from '~/pages/Project/View/interfaces/traffic'
 import { getAccessToken, setAccessToken } from '~/utils/accessToken'
-import { logout } from '~/utils/auth'
+import { clearLocalStorageOnLogout } from '~/utils/auth'
 import { getRefreshToken } from '~/utils/refreshToken'
 
 const api = axios.create({
@@ -51,8 +51,9 @@ const refreshAuthLogic = (failedRequest: { response: AxiosResponse }) =>
       return Promise.resolve()
     })
     .catch((error) => {
-      logout()
-      // If user session is invalid, this rejection will be thrown to authMe in AuthProvider and will reset user there too
+      clearLocalStorageOnLogout()
+      // Redirect to server-side logout which handles cookie cleanup
+      window.location.href = '/logout'
       return Promise.reject(error)
     })
 
@@ -83,26 +84,6 @@ export const authMe = (config?: AxiosRequestConfig) =>
       totalMonthlyEvents: number
     } => response.data,
   )
-
-export const logoutApi = (refreshToken: string | null) =>
-  axios
-    .post(`${API_URL}v1/auth/logout`, null, {
-      headers: {
-        Authorization: `Bearer ${refreshToken}`,
-      },
-    })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const logoutAllApi = () =>
-  api
-    .post(`${API_URL}v1/auth/logout-all`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw new Error(error.respon)
-    })
 
 export const deleteUser = (deletionFeedback?: string) =>
   api

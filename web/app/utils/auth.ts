@@ -1,4 +1,3 @@
-import { logoutAllApi, logoutApi } from '~/api'
 import {
   isSelfhosted,
   LOW_EVENTS_WARNING,
@@ -7,10 +6,8 @@ import {
   SHOW_BANNER_AT_PERC,
 } from '~/lib/constants'
 
-import { removeAccessToken } from './accessToken'
 import { getCookie } from './cookie'
 import { removeItem } from './localstorage'
-import { getRefreshToken, removeRefreshToken } from './refreshToken'
 
 export const shouldShowLowEventsBanner = (totalMonthlyEvents: number, maxEventsCount: number) => {
   if (isSelfhosted) {
@@ -28,21 +25,11 @@ export const shouldShowLowEventsBanner = (totalMonthlyEvents: number, maxEventsC
   return eventsUsedPercentage >= SHOW_BANNER_AT_PERC
 }
 
-export const logout = async (invalidateAllSessions?: boolean) => {
-  const refreshToken = getRefreshToken()
-
-  try {
-    if (invalidateAllSessions) {
-      await logoutAllApi()
-    } else {
-      await logoutApi(refreshToken)
-    }
-  } catch (reason) {
-    console.error('Failed to invalidate refresh token', reason)
-  }
-
-  removeAccessToken()
+/**
+ * Clears local storage items related to user session.
+ * Called before navigating to /logout route.
+ */
+export const clearLocalStorageOnLogout = () => {
   removeItem(LS_VIEW_PREFS_SETTING)
   removeItem(LS_CAPTCHA_VIEW_PREFS_SETTING)
-  removeRefreshToken()
 }
