@@ -130,7 +130,9 @@ export class CaptchaService {
     }
 
     if (!(await this._isCaptchaEnabledForPID(pid))) {
-      throw new BadRequestException('CAPTCHA is not enabled for this Project')
+      throw new BadRequestException(
+        'CAPTCHA not available for this project - please generate a secret key first in the project settings',
+      )
     }
   }
 
