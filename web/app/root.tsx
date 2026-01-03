@@ -20,6 +20,7 @@ import {
 import { useChangeLanguage } from 'remix-i18next/react'
 import { ExternalScripts } from 'remix-utils/external-scripts'
 
+import { getAuthenticatedUser } from '~/api/api.server'
 import { LocaleLinks } from '~/components/LocaleLinks'
 import SelfhostedApiUrlBanner from '~/components/SelfhostedApiUrlBanner'
 import { SEO } from '~/components/SEO'
@@ -28,7 +29,8 @@ import mainCss from '~/styles/index.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
 import { trackViews, trackErrors, trackError } from '~/utils/analytics'
 import { getCookie } from '~/utils/cookie'
-import { detectTheme, isAuthenticated, isWWW } from '~/utils/server'
+import { detectTheme, isWWW } from '~/utils/server'
+import { createHeadersWithCookies, hasAuthTokens } from '~/utils/session.server'
 
 import AppWrapper from './App'
 import { detectLanguage } from './i18n'
@@ -198,7 +200,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const locale = detectLanguage(request)
   const theme = detectTheme(request)
-  const isAuthed = isAuthenticated(request)
+  const hasTokens = hasAuthTokens(request)
+
+  let user = null
+  let totalMonthlyEvents = 0
+  let cookies: string[] = []
+
+  if (hasTokens) {
+    const authResult = await getAuthenticatedUser(request)
+    if (authResult) {
+      user = authResult.user.user
+      totalMonthlyEvents = authResult.user.totalMonthlyEvents
+      cookies = authResult.cookies
+    }
+  }
 
   const REMIX_ENV = {
     NODE_ENV: process.env.NODE_ENV,
@@ -212,19 +227,36 @@ export async function loader({ request }: LoaderFunctionArgs) {
     COOKIE_DOMAIN: process.env.COOKIE_DOMAIN,
   }
 
-  return { locale, url, theme, REMIX_ENV, isAuthed, pathname: urlObject.pathname }
+  const loaderData = {
+    locale,
+    url,
+    theme,
+    REMIX_ENV,
+    isAuthed: !!user,
+    user,
+    totalMonthlyEvents,
+    pathname: urlObject.pathname,
+  }
+
+  if (cookies.length > 0) {
+    return data(loaderData, {
+      headers: createHeadersWithCookies(cookies),
+    })
+  }
+
+  return loaderData
 }
 
 export const handle = { i18n: 'common' }
 
 const Body = () => {
-  const { isAuthed } = useLoaderData<typeof loader>()
+  const { isAuthed, user, totalMonthlyEvents } = useLoaderData<typeof loader>()
   const { theme } = useTheme()
 
   return (
     <body className={cx(theme, { 'bg-gray-50': theme === 'light', 'bg-slate-900': theme === 'dark' })}>
       <SelfhostedApiUrlBanner />
-      <AuthProvider initialIsAuthenticated={isAuthed}>
+      <AuthProvider initialIsAuthenticated={isAuthed} initialUser={user} initialTotalMonthlyEvents={totalMonthlyEvents}>
         <AppWrapper />
       </AuthProvider>
       <ScrollRestoration />

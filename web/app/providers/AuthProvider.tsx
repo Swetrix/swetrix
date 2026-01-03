@@ -12,7 +12,7 @@ interface AuthContextType {
   isLoading: boolean
   user: User | null
   totalMonthlyEvents: number
-  logout: (invalidateAllSessions?: boolean) => void
+  logout: (invalidateAllSessions?: boolean) => Promise<void>
   setUser: (user: User) => void
   mergeUser: (newUser: Partial<User>) => void
   setTotalMonthlyEvents: (totalMonthlyEvents: number) => void
@@ -25,25 +25,40 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 interface AuthProviderProps {
   children: React.ReactNode
   initialIsAuthenticated: boolean
+  initialUser?: User | null
+  initialTotalMonthlyEvents?: number
 }
 
-export const AuthProvider = ({ children, initialIsAuthenticated }: AuthProviderProps) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(initialIsAuthenticated)
-  const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<User | null>(null)
+export const AuthProvider = ({
+  children,
+  initialIsAuthenticated,
+  initialUser,
+  initialTotalMonthlyEvents,
+}: AuthProviderProps) => {
+  // If we have initial user from loader, we're definitely authenticated
+  const [isAuthenticated, setIsAuthenticated] = useState(initialIsAuthenticated || !!initialUser)
+
+  // If we have initial user data from loader, no need to load - start with isLoading = false
+  const [isLoading, setIsLoading] = useState(!initialUser && initialIsAuthenticated)
+
+  const [user, setUser] = useState<User | null>(initialUser || null)
 
   // TODO: @deprecated
-  const [totalMonthlyEvents, setTotalMonthlyEvents] = useState(0)
+  const [totalMonthlyEvents, setTotalMonthlyEvents] = useState(initialTotalMonthlyEvents || 0)
 
-  const logout = useCallback((invalidateAllSessions?: boolean) => {
+  const logout = useCallback(async (invalidateAllSessions?: boolean) => {
     setIsAuthenticated(false)
     setUser(null)
-    logoutCookies(invalidateAllSessions)
+    await logoutCookies(invalidateAllSessions)
   }, [])
 
   const mergeUser = useCallback((newUser: Partial<User>) => {
     setUser((prev) => {
       if (!prev) {
+        // If no previous user, set the new user as full user (if it has required fields)
+        if ('id' in newUser && 'email' in newUser) {
+          return newUser as User
+        }
         return null
       }
 
@@ -73,43 +88,49 @@ export const AuthProvider = ({ children, initialIsAuthenticated }: AuthProviderP
   )
 
   useEffect(() => {
+    // If we already have user data from loader, no need to fetch again
+    if (initialUser) {
+      setIsLoading(false)
+      return
+    }
+
     if (!initialIsAuthenticated) {
       setIsLoading(false)
       return
     }
 
+    // No initial user but have cookies - need to fetch user data
     const abortController = new AbortController()
-
     loadUser(abortController.signal)
 
     return () => abortController.abort()
-  }, [initialIsAuthenticated, loadUser])
+  }, [initialIsAuthenticated, initialUser, loadUser])
 
   useEffect(() => {
-    const abortController = new AbortController()
+    // Skip if we already have user or are loading
+    if (user || isLoading) {
+      return
+    }
 
-    if (initialIsAuthenticated) {
-      loadUser(abortController.signal)
-      return () => abortController.abort()
+    // Skip if initially authenticated (already handled above)
+    if (initialIsAuthenticated || initialUser) {
+      return
     }
 
     // Client-side rehydration: if tokens exist but SSR did not receive cookies
     const hasClientToken = Boolean(getAccessToken() || getRefreshToken())
 
     if (hasClientToken) {
+      const abortController = new AbortController()
       setIsLoading(true)
       loadUser(abortController.signal)
       return () => abortController.abort()
     }
-
-    setIsLoading(false)
-    return () => abortController.abort()
-  }, [initialIsAuthenticated, loadUser])
+  }, [initialIsAuthenticated, initialUser, user, isLoading, loadUser])
 
   return (
     <AuthContext.Provider
       value={{
-        //
         isAuthenticated,
         user,
         isLoading,

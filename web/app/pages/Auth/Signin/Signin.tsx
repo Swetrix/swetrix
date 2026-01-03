@@ -1,21 +1,18 @@
-import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
-import _keys from 'lodash/keys'
-import _omit from 'lodash/omit'
-import React, { useState, useEffect, memo } from 'react'
+import React, { useState, memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Link, useNavigate, useSearchParams, Form, useActionData, useNavigation } from 'react-router'
 import { toast } from 'sonner'
 
-import { generateSSOAuthURL, getJWTBySSOHash, login, submit2FA } from '~/api'
+import { generateSSOAuthURL, getJWTBySSOHash, submit2FA } from '~/api'
 import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
 import OIDCAuth from '~/components/OIDCAuth'
-import { withAuthentication, auth } from '~/hoc/protected'
 import { isSelfhosted, TRIAL_DAYS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import type { LoginActionData } from '~/routes/login'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
@@ -25,62 +22,46 @@ import { setAccessToken, removeAccessToken } from '~/utils/accessToken'
 import { cn, delay, openBrowserWindow } from '~/utils/generic'
 import { setRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
 import routes from '~/utils/routes'
-import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
-
-interface SigninForm {
-  email: string
-  password: string
-  dontRemember: boolean
-}
+import { MIN_PASSWORD_CHARS } from '~/utils/validator'
 
 const HASH_CHECK_FREQUENCY = 1000
 
 const Signin = () => {
   const navigate = useNavigate()
+  const navigation = useNavigation()
+  const actionData = useActionData<LoginActionData>()
   const [searchParams] = useSearchParams()
   const { t } = useTranslation('common')
   const { theme } = useTheme()
-  const [form, setForm] = useState<SigninForm>({
-    email: '',
-    password: '',
-    dontRemember: false,
-  })
-  const [validated, setValidated] = useState(false)
-  const [errors, setErrors] = useState<{
-    email?: string
-    password?: string
-  }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isTwoFARequired, setIsTwoFARequired] = useState(searchParams.get('show_2fa_screen') === 'true')
+
+  const [dontRemember, setDontRemember] = useState(false)
+
+  const [isSsoLoading, setIsSsoLoading] = useState(false)
+
+  const [isTwoFARequired, setIsTwoFARequired] = useState(
+    searchParams.get('show_2fa_screen') === 'true' || actionData?.requires2FA === true,
+  )
   const [twoFACode, setTwoFACode] = useState('')
   const [twoFACodeError, setTwoFACodeError] = useState<string | null>(null)
+  const [is2FALoading, setIs2FALoading] = useState(false)
+
   const { setUser, setTotalMonthlyEvents, setIsAuthenticated } = useAuth()
 
-  const validate = () => {
-    const allErrors = {} as {
-      email?: string
-      password?: string
+  const isFormSubmitting = navigation.state === 'submitting'
+  const isLoading = isFormSubmitting || isSsoLoading || is2FALoading
+
+  React.useEffect(() => {
+    if (actionData?.requires2FA) {
+      setIsTwoFARequired(true)
     }
+  }, [actionData?.requires2FA])
 
-    if (!isValidEmail(form.email)) {
-      allErrors.email = t('auth.common.badEmailError')
+  React.useEffect(() => {
+    if (actionData?.error && !actionData?.fieldErrors) {
+      const errorMessage = Array.isArray(actionData.error) ? actionData.error[0] : actionData.error
+      toast.error(errorMessage)
     }
-
-    if (!isValidPassword(form.password)) {
-      allErrors.password = t('auth.common.xCharsError', { amount: MIN_PASSWORD_CHARS })
-    }
-
-    const valid = _isEmpty(_keys(allErrors))
-
-    setErrors(allErrors)
-    setValidated(valid)
-  }
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Form validation on input change
-    validate()
-  }, [form]) // eslint-disable-line
+  }, [actionData?.error, actionData?.fieldErrors])
 
   const handle2FAInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const {
@@ -95,9 +76,11 @@ const Signin = () => {
 
     if (!authWindow) {
       toast.error(t('apiNotifications.socialisationAuthGenericError'))
-      setIsLoading(false)
+      setIsSsoLoading(false)
       return
     }
+
+    setIsSsoLoading(true)
 
     try {
       const {
@@ -134,7 +117,7 @@ const Signin = () => {
 
       if (!safeAuthUrl) {
         toast.error(t('apiNotifications.socialisationAuthGenericError'))
-        setIsLoading(false)
+        setIsSsoLoading(false)
         authWindow.close()
         return
       }
@@ -156,7 +139,7 @@ const Signin = () => {
             setRefreshToken(refreshToken)
             setUser(user)
             setIsTwoFARequired(true)
-            setIsLoading(false)
+            setIsSsoLoading(false)
             return
           }
 
@@ -179,55 +162,14 @@ const Signin = () => {
         }
 
         if (authWindow.closed) {
-          setIsLoading(false)
+          setIsSsoLoading(false)
           return
         }
       }
     } catch (reason) {
       toast.error(typeof reason === 'string' ? reason : t('apiNotifications.socialisationGenericError'))
-      setIsLoading(false)
+      setIsSsoLoading(false)
       return
-    }
-  }
-
-  const onSubmit = async (data: SigninForm) => {
-    if (isLoading) {
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      const { dontRemember } = data
-
-      const { user, accessToken, refreshToken, totalMonthlyEvents } = await login(_omit(data, ['dontRemember']))
-
-      if (user.isTwoFactorAuthenticationEnabled) {
-        setAccessToken(accessToken, true)
-        setRefreshToken(refreshToken, true)
-        setUser(user)
-        setIsTwoFARequired(true)
-        setIsLoading(false)
-        return
-      }
-
-      setUser(user)
-      setIsAuthenticated(true)
-      setTotalMonthlyEvents(totalMonthlyEvents)
-      setAccessToken(accessToken, dontRemember)
-      setRefreshToken(refreshToken)
-
-      setIsLoading(false)
-
-      // Redirect to onboarding if user hasn't completed it
-      if (!user.hasCompletedOnboarding) {
-        navigate(routes.onboarding)
-      } else {
-        navigate(routes.dashboard)
-      }
-    } catch (reason) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-      setIsLoading(false)
     }
   }
 
@@ -235,11 +177,11 @@ const Signin = () => {
     e.preventDefault()
     e.stopPropagation()
 
-    if (isLoading) {
+    if (is2FALoading) {
       return
     }
 
-    setIsLoading(true)
+    setIs2FALoading(true)
 
     try {
       const { accessToken, refreshToken, user } = await submit2FA(twoFACode)
@@ -249,6 +191,12 @@ const Signin = () => {
       setRefreshToken(refreshToken)
       setUser(user)
       setIsAuthenticated(true)
+
+      if (!user.hasCompletedOnboarding) {
+        navigate(routes.onboarding)
+      } else {
+        navigate(routes.dashboard)
+      }
     } catch (reason) {
       if (_isString(reason)) {
         toast.error(reason)
@@ -258,24 +206,7 @@ const Signin = () => {
     }
 
     setTwoFACode('')
-    setIsLoading(false)
-  }
-
-  const handleInput = ({ target }: { target: HTMLInputElement }) => {
-    setForm((oldForm) => ({
-      ...oldForm,
-      [target.name]: target.value,
-    }))
-  }
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit(form)
-    }
+    setIs2FALoading(false)
   }
 
   if (isTwoFARequired) {
@@ -299,7 +230,7 @@ const Signin = () => {
                 value={twoFACode}
                 placeholder={t('auth.signin.6digitCode')}
                 onChange={handle2FAInput}
-                disabled={isLoading}
+                disabled={is2FALoading}
                 error={twoFACodeError}
               />
               <div className='mt-6 flex items-center justify-between'>
@@ -319,7 +250,7 @@ const Signin = () => {
                     />
                   ) : null}
                 </Text>
-                <Button type='submit' loading={isLoading} primary large>
+                <Button type='submit' loading={is2FALoading} primary large>
                   {t('common.continue')}
                 </Button>
               </div>
@@ -362,10 +293,8 @@ const Signin = () => {
 
   return (
     <div className='flex min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-      {/* Left side - Form */}
       <div className='flex w-full flex-col justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:w-3/5 lg:px-12 xl:px-24 dark:bg-slate-900'>
         <div className='mx-auto w-full max-w-md'>
-          {/* Header */}
           <div className='mb-8'>
             <Text as='h1' size='3xl' weight='bold' className='tracking-tight'>
               {t('auth.signin.title')}
@@ -375,7 +304,6 @@ const Signin = () => {
             </Text>
           </div>
 
-          {/* SSO Buttons */}
           <div className={cn('grid gap-3', isSelfhosted ? 'grid-cols-1' : 'grid-cols-2')}>
             {isSelfhosted ? (
               <OIDCAuth onClick={() => onSsoLogin('openid-connect')} disabled={isLoading} className='w-full' />
@@ -387,7 +315,6 @@ const Signin = () => {
             )}
           </div>
 
-          {/* Divider */}
           <div className='relative my-6'>
             <div className='absolute inset-0 flex items-center' aria-hidden='true'>
               <div className='w-full border-t border-gray-200 dark:border-gray-700' />
@@ -399,16 +326,14 @@ const Signin = () => {
             </div>
           </div>
 
-          {/* Form */}
-          <form className='space-y-4' onSubmit={handleSubmit}>
+          <Form method='post' className='space-y-4'>
             <Input
               name='email'
               type='email'
               label={t('auth.common.email')}
-              value={form.email}
-              onChange={handleInput}
-              error={beenSubmitted ? errors.email : ''}
+              error={actionData?.fieldErrors?.email}
               placeholder='name@company.com'
+              disabled={isLoading}
             />
             <Input
               name='password'
@@ -424,21 +349,18 @@ const Signin = () => {
                 </Link>
               }
               hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-              value={form.password}
-              onChange={handleInput}
-              error={beenSubmitted ? errors.password : ''}
+              error={actionData?.fieldErrors?.password}
+              disabled={isLoading}
             />
+
+            {/* Hidden input for form submission since Headless UI Checkbox doesn't submit natively */}
+            <input type='hidden' name='dontRemember' value={dontRemember ? 'true' : 'false'} />
 
             <div className='flex items-center justify-between'>
               <Checkbox
-                checked={form.dontRemember}
-                onChange={(checked) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    dontRemember: checked,
-                  }))
-                }
-                name='dontRemember'
+                checked={dontRemember}
+                onChange={setDontRemember}
+                disabled={isLoading}
                 label={
                   <span className='flex items-center gap-1'>
                     <Text size='sm'>{t('auth.common.noRemember')}</Text>
@@ -448,10 +370,10 @@ const Signin = () => {
               />
             </div>
 
-            <Button className='mt-6 w-full justify-center' type='submit' loading={isLoading} primary giant>
+            <Button className='mt-6 w-full justify-center' type='submit' loading={isFormSubmitting} primary giant>
               {t('auth.signin.button')}
             </Button>
-          </form>
+          </Form>
 
           {/* Sign up link */}
           {!isSelfhosted ? (
@@ -477,14 +399,11 @@ const Signin = () => {
         </div>
       </div>
 
-      {/* Right side - Visual showcase */}
       <div className='relative hidden overflow-hidden bg-linear-to-br from-slate-800 via-slate-900 to-slate-950 lg:flex lg:w-2/5 lg:flex-col lg:justify-between dark:from-slate-900 dark:via-slate-950 dark:to-black'>
-        {/* Decorative gradient orbs */}
         <div className='absolute -top-24 -right-24 size-96 rounded-full bg-indigo-500/20 blur-3xl' />
         <div className='absolute -bottom-24 -left-24 size-96 rounded-full bg-slate-500/20 blur-3xl' />
 
         <div className='relative z-10 flex flex-1 flex-col justify-center px-10 py-10'>
-          {/* Welcome message */}
           <div className='mb-8'>
             <Text as='h2' size='2xl' weight='bold' className='mb-2 text-white'>
               {t('auth.signin.dashboardAwaits')}
@@ -494,7 +413,6 @@ const Signin = () => {
             </Text>
           </div>
 
-          {/* Dashboard preview */}
           <div className='relative'>
             <div className='overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/10'>
               <img
@@ -507,7 +425,6 @@ const Signin = () => {
           </div>
         </div>
 
-        {/* Testimonial */}
         <div className='relative z-10 border-t border-white/10 bg-white/5 px-10 py-6 backdrop-blur-sm'>
           <blockquote>
             <Text as='p' size='sm' className='text-white/90'>
@@ -535,4 +452,4 @@ const Signin = () => {
   )
 }
 
-export default memo(withAuthentication(Signin, auth.notAuthenticated))
+export default memo(Signin)

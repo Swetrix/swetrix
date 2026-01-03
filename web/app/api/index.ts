@@ -31,6 +31,8 @@ import { getRefreshToken } from '~/utils/refreshToken'
 
 const api = axios.create({
   baseURL: API_URL,
+  // Enable sending cookies with cross-origin requests
+  withCredentials: true,
 })
 
 // Function that will be called to refresh authorization

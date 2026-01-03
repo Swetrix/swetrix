@@ -10,7 +10,11 @@ export const getCookie = (key: string) => {
   const match = document.cookie.match(new RegExp(`(^| )${key}=([^;]+)`))
 
   if (match) {
-    return match[2]
+    try {
+      return decodeURIComponent(match[2])
+    } catch {
+      return match[2]
+    }
   }
 
   return null

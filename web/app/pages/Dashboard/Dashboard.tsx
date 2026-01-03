@@ -4,7 +4,7 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import { StretchHorizontalIcon, LayoutGridIcon, SearchIcon, XIcon, FolderPlusIcon } from 'lucide-react'
-import React, { useState, useEffect, useRef, useMemo } from 'react'
+import React, { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLoaderData, useNavigate, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
@@ -13,12 +13,12 @@ import { toast } from 'sonner'
 import { getProjects, getLiveVisitors, getOverallStats, createProject } from '~/api'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
-import { withAuthentication, auth } from '~/hoc/protected'
 import useBreakpoint from '~/hooks/useBreakpoint'
 import useDebounce from '~/hooks/useDebounce'
 import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL, tbPeriodPairs } from '~/lib/constants'
 import { Overall, Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
+import type { DashboardLoaderData } from '~/routes/dashboard'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
@@ -45,20 +45,23 @@ const MAX_PROJECT_NAME_LENGTH = 50
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 const Dashboard = () => {
-  const { viewMode: defaultViewMode } = useLoaderData<any>()
-  const { user, isLoading: authLoading } = useAuth()
+  const loaderData = useLoaderData<DashboardLoaderData>()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+
+  const { user } = useAuth()
 
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
-  const [viewMode, setViewMode] = useState(defaultViewMode)
+  const [viewMode, setViewMode] = useState(loaderData.viewMode)
   const isAboveLgBreakpoint = useBreakpoint('lg')
 
-  const [projects, setProjects] = useState<Project[]>([])
-  const [paginationTotal, setPaginationTotal] = useState(0)
+  // Initialize projects from loader data
+  const [projects, setProjects] = useState<Project[]>(loaderData.projects?.results || [])
+  const [paginationTotal, setPaginationTotal] = useState(loaderData.projects?.total || 0)
+
   const page = useMemo(() => {
     const pageParam = searchParams.get('page')
 
@@ -81,7 +84,9 @@ const Dashboard = () => {
       ? parseInt(pageSizeParam, 10)
       : PAGE_SIZE_OPTIONS[0]
   })
-  const [isLoading, setIsLoading] = useState<boolean | null>(null)
+
+  // Start with false since we have initial data from loader
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [liveStats, setLiveStats] = useState<Record<string, number>>({})
   const [overallStats, setOverallStats] = useState<Overall>({})
@@ -123,6 +128,9 @@ const Dashboard = () => {
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
 
+  // Track if user has interacted (changed page, search, etc.) - need to refetch
+  const [hasUserInteracted, setHasUserInteracted] = useState(false)
+
   // Update URL only when values are explicitly changed
   const updateURL = (params: Record<string, string>) => {
     const newSearchParams = new URLSearchParams(searchParams)
@@ -139,23 +147,27 @@ const Dashboard = () => {
   }
 
   const handlePageChange = (newPage: number) => {
+    setHasUserInteracted(true)
     setPage(newPage)
     updateURL({ page: newPage.toString() })
   }
 
   const handlePageSizeChange = (size: number) => {
+    setHasUserInteracted(true)
     setPageSize(size)
     setPage(1)
     updateURL({ pageSize: size.toString(), page: '1' })
   }
 
   const handlePeriodChange = (period: string) => {
+    setHasUserInteracted(true)
     setActivePeriod(period)
     setPage(1)
     updateURL({ period, page: '1' })
   }
 
   const handleSortChange = (sort: string) => {
+    setHasUserInteracted(true)
     setSortBy(sort)
     setPage(1)
     updateURL({ sort, page: '1' })
@@ -274,15 +286,23 @@ const Dashboard = () => {
     }
   }, [user, navigate])
 
+  // Only fetch on user interaction (search, pagination, sort, period changes)
   useEffect(() => {
-    if (authLoading) {
+    if (!hasUserInteracted) {
       return
     }
 
     loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activePeriod, sortBy)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, debouncedSearch, activePeriod, authLoading, sortBy])
+  }, [page, pageSize, debouncedSearch, activePeriod, sortBy, hasUserInteracted])
+
+  // Track search changes as user interaction
+  useEffect(() => {
+    if (debouncedSearch !== '') {
+      setHasUserInteracted(true)
+    }
+  }, [debouncedSearch])
 
   // Set up interval for live visitors
   useEffect(() => {
@@ -332,7 +352,7 @@ const Dashboard = () => {
     return () => clearInterval(interval)
   }, [projects, activePeriod, t]) // Reset interval when projects change
 
-  if (error && isLoading === false) {
+  if (error && !isLoading) {
     return (
       <StatusPage
         type='error'
@@ -424,13 +444,9 @@ const Dashboard = () => {
                 <PeriodSelector
                   activePeriod={activePeriod}
                   setActivePeriod={handlePeriodChange}
-                  isLoading={isLoading === null || isLoading}
+                  isLoading={isLoading}
                 />
-                <SortSelector
-                  activeSort={sortBy}
-                  setActiveSort={handleSortChange}
-                  isLoading={isLoading === null || isLoading}
-                />
+                <SortSelector activeSort={sortBy} setActiveSort={handleSortChange} isLoading={isLoading} />
                 <div className='hidden lg:block'>
                   {viewMode === DASHBOARD_VIEW.GRID ? (
                     <button
@@ -488,7 +504,7 @@ const Dashboard = () => {
                 </div>
               </div>
             ) : null}
-            {isLoading || isLoading === null ? (
+            {isLoading ? (
               <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
                 <ProjectCardSkeleton viewMode={_viewMode} />
               </div>
@@ -605,4 +621,4 @@ const Dashboard = () => {
   )
 }
 
-export default withAuthentication(Dashboard, auth.authenticated)
+export default memo(Dashboard)
