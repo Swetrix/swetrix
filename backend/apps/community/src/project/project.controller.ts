@@ -64,7 +64,7 @@ import {
   AnnotationUpdateDTO,
 } from './dto'
 import { AppLoggerService } from '../logger/logger.service'
-import { isValidPID } from '../common/constants'
+import { isValidPID, CAPTCHA_SECRET_KEY_LENGTH } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
   getProjectsClickhouse,
@@ -100,6 +100,7 @@ import {
   getPinnedProjectsClickhouse,
   pinProjectClickhouse,
   unpinProjectClickhouse,
+  generateRandomString,
 } from '../common/utils'
 import { Funnel } from './entity/funnel.entity'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -587,6 +588,70 @@ export class ProjectController {
       this.logger.error(e)
       return 'Error while resetting your project'
     }
+  }
+
+  @ApiBearerAuth()
+  @Post('/secret-gen/:pid')
+  @HttpCode(200)
+  @Auth()
+  @ApiResponse({ status: 200, description: 'A regenerated CAPTCHA secret key' })
+  async secretGen(
+    @Param('pid') pid: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, pid }, 'POST /project/secret-gen/:pid')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, uid)
+
+    const secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
+
+    await updateProjectClickhouse({ id: pid, captchaSecretKey: secret })
+
+    await deleteProjectRedis(pid)
+
+    return secret
+  }
+
+  @ApiBearerAuth()
+  @Delete('/secret-gen/:pid')
+  @HttpCode(200)
+  @Auth()
+  @ApiResponse({ status: 200, description: 'CAPTCHA secret key deleted' })
+  async deleteSecretKey(
+    @Param('pid') pid: string,
+    @CurrentUserId() uid: string,
+  ): Promise<void> {
+    this.logger.log({ uid, pid }, 'DELETE /project/secret-gen/:pid')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, uid)
+
+    await updateProjectClickhouse({ id: pid, captchaSecretKey: null })
+
+    await deleteProjectRedis(pid)
   }
 
   @Post('/funnel')
