@@ -54,7 +54,7 @@ const Signup = () => {
       const errorMessage = Array.isArray(actionData.error) ? actionData.error[0] : actionData.error
       toast.error(errorMessage)
     }
-  }, [actionData?.error, actionData?.fieldErrors])
+  }, [actionData?.error, actionData?.fieldErrors, actionData?.timestamp])
 
   const clearFieldError = (fieldName: string) => {
     if (actionData?.fieldErrors?.[fieldName as keyof typeof actionData.fieldErrors]) {

@@ -22,6 +22,7 @@ export interface CreateNewPasswordActionData {
     password?: string
     repeat?: string
   }
+  timestamp?: number
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -45,7 +46,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   if (fieldErrors.password || fieldErrors.repeat) {
-    return data<CreateNewPasswordActionData>({ fieldErrors }, { status: 400 })
+    return data<CreateNewPasswordActionData>({ fieldErrors, timestamp: Date.now() }, { status: 400 })
   }
 
   const result = await serverFetch(request, `v1/auth/reset-password/confirm/${id}`, {
@@ -55,7 +56,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   })
 
   if (result.error) {
-    return data<CreateNewPasswordActionData>({ error: result.error as string }, { status: 400 })
+    return data<CreateNewPasswordActionData>({ error: result.error as string, timestamp: Date.now() }, { status: 400 })
   }
 
   return redirect('/login?password_updated=true')

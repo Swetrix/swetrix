@@ -32,6 +32,7 @@ export interface LoginActionData {
     password?: string
     twoFACode?: string
   }
+  timestamp?: number
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -44,7 +45,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const dontRemember = formData.get('dontRemember') === 'true'
 
     if (!twoFactorAuthenticationCode || twoFactorAuthenticationCode.length !== 6) {
-      return data<LoginActionData>({ fieldErrors: { twoFACode: 'Please enter a valid 6-digit code' } }, { status: 400 })
+      return data<LoginActionData>({ fieldErrors: { twoFACode: 'Please enter a valid 6-digit code' }, timestamp: Date.now() }, { status: 400 })
     }
 
     const result = await serverFetch<{ accessToken: string; refreshToken: string; user: { hasCompletedOnboarding: boolean } }>(
@@ -57,7 +58,7 @@ export async function action({ request }: ActionFunctionArgs) {
     )
 
     if (result.error) {
-      return data<LoginActionData>({ fieldErrors: { twoFACode: 'Invalid 2FA code' } }, { status: 400 })
+      return data<LoginActionData>({ fieldErrors: { twoFACode: 'Invalid 2FA code' }, timestamp: Date.now() }, { status: 400 })
     }
 
     const { accessToken, refreshToken, user } = result.data!
@@ -86,13 +87,13 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (fieldErrors.email || fieldErrors.password) {
-    return data({ fieldErrors }, { status: 400 })
+    return data({ fieldErrors, timestamp: Date.now() }, { status: 400 })
   }
 
   const result = await loginUser(request, { email, password }, !dontRemember)
 
   if (!result.success) {
-    return data({ error: result.error }, { status: 400 })
+    return data({ error: result.error, timestamp: Date.now() }, { status: 400 })
   }
 
   if (result.requires2FA) {

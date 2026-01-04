@@ -21,6 +21,7 @@ export interface ForgotPasswordActionData {
   fieldErrors?: {
     email?: string
   }
+  timestamp?: number
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -29,7 +30,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (!isValidEmail(email)) {
     return data<ForgotPasswordActionData>(
-      { fieldErrors: { email: 'Please enter a valid email address' } },
+      { fieldErrors: { email: 'Please enter a valid email address' }, timestamp: Date.now() },
       { status: 400 },
     )
   }
@@ -41,7 +42,7 @@ export async function action({ request }: ActionFunctionArgs) {
   })
 
   if (result.error) {
-    return data<ForgotPasswordActionData>({ error: result.error as string }, { status: 400 })
+    return data<ForgotPasswordActionData>({ error: result.error as string, timestamp: Date.now() }, { status: 400 })
   }
 
   return redirect('/?password_reset_sent=true')

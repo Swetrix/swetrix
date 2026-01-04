@@ -38,6 +38,7 @@ export interface SignupActionData {
     repeat?: string
     tos?: string
   }
+  timestamp?: number
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -72,13 +73,13 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (fieldErrors.email || fieldErrors.password || fieldErrors.repeat || fieldErrors.tos) {
-    return data({ fieldErrors }, { status: 400 })
+    return data({ fieldErrors, timestamp: Date.now() }, { status: 400 })
   }
 
   const result = await registerUser(request, { email, password, checkIfLeaked }, true)
 
   if (!result.success) {
-    return data({ error: result.error }, { status: 400 })
+    return data({ error: result.error, timestamp: Date.now() }, { status: 400 })
   }
 
   return redirect('/onboarding', {

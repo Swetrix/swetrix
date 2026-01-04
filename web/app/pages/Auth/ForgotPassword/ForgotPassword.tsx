@@ -27,7 +27,7 @@ const ForgotPassword = () => {
     if (actionData?.error) {
       toast.error(actionData.error)
     }
-  }, [actionData?.error])
+  }, [actionData?.error, actionData?.timestamp])
 
   return (
     <div>
