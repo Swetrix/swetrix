@@ -46,6 +46,16 @@ export const AuthProvider = ({
   // TODO: @deprecated
   const [totalMonthlyEvents, setTotalMonthlyEvents] = useState(initialTotalMonthlyEvents || 0)
 
+  // Sync state with props when they change (e.g., after login redirect)
+  useEffect(() => {
+    if (initialUser) {
+      setUser(initialUser)
+      setIsAuthenticated(true)
+      setIsLoading(false)
+      setTotalMonthlyEvents(initialTotalMonthlyEvents || 0)
+    }
+  }, [initialUser, initialTotalMonthlyEvents])
+
   const logout = useCallback((invalidateAllSessions?: boolean) => {
     setIsAuthenticated(false)
     setUser(null)

@@ -84,30 +84,6 @@ export const authMe = (config?: AxiosRequestConfig) =>
     } => response.data,
   )
 
-export const verifyEmail = ({ id }: { id: string }) =>
-  api
-    .get(`v1/auth/verify-email/${id}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const confirmChangeEmail = ({ id }: { id: string }) =>
-  api
-    .get(`v1/auth/change-email/confirm/${id}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const verifyShare = ({ path, id }: { path: string; id: string }) =>
-  api
-    .get(`/project/${path}/${id}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getProjects = (take = 0, skip = 0, search = '', period = '7d', sort = 'alpha_asc') =>
   api
     .get(`/project?take=${take}&skip=${skip}&search=${search}&period=${period}&sort=${sort}`)
@@ -854,6 +830,14 @@ export const rejectProjectShare = (actionId: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const transferProject = (projectId: string, email: string) =>
+  api
+    .post('/project/transfer', { projectId, email })
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const acceptProjectShare = (actionId: string) =>
   api
     .get(`/user/share/${actionId}`)
@@ -1512,14 +1496,6 @@ export const removeSubscriber = (id: string, subscriberId: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const confirmSubscriberInvite = (id: string, token: string) =>
-  api
-    .get(`project/${id}/subscribers/invite?token=${token}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getProjectDataCustomEvents = (
   pid: string,
   tb = 'hour',
@@ -1543,22 +1519,6 @@ export const getProjectDataCustomEvents = (
       },
     )
     .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const rejectTransferProject = (uuid: string) =>
-  api
-    .delete(`project/transfer?token=${uuid}`)
-    .then((response): unknown => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const confirmTransferProject = (uuid: string) =>
-  api
-    .get(`project/transfer?token=${uuid}`)
-    .then((response): unknown => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1782,22 +1742,6 @@ export const getSitemap = () =>
 export const getBlogPostWithCategory = (category: string, slug: string) =>
   api
     .get(`v1/blog/${category}/${slug}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw error
-    })
-
-export const unsubscribeFromEmailReports = (token: string) =>
-  api
-    .get(`user/unsubscribe/${token}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw error
-    })
-
-export const unsubscribeFromEmailReports3rdParty = (token: string) =>
-  api
-    .get(`project/unsubscribe/${token}`)
     .then((response) => response.data)
     .catch((error) => {
       throw error
