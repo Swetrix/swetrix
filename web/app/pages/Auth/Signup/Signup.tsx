@@ -42,6 +42,8 @@ const Signup = () => {
 
   const [isSsoLoading, setIsSsoLoading] = useState(false)
 
+  const [clearedErrors, setClearedErrors] = useState<Set<string>>(new Set())
+
   const { setUser, setTotalMonthlyEvents, setIsAuthenticated } = useAuth()
 
   const isFormSubmitting = navigation.state === 'submitting'
@@ -53,6 +55,23 @@ const Signup = () => {
       toast.error(errorMessage)
     }
   }, [actionData?.error, actionData?.fieldErrors])
+
+  const clearFieldError = (fieldName: string) => {
+    if (actionData?.fieldErrors?.[fieldName as keyof typeof actionData.fieldErrors]) {
+      setClearedErrors((prev) => new Set(prev).add(fieldName))
+    }
+  }
+
+  const getFieldError = (fieldName: string) => {
+    if (clearedErrors.has(fieldName)) {
+      return undefined
+    }
+    return actionData?.fieldErrors?.[fieldName as keyof typeof actionData.fieldErrors]
+  }
+
+  const handleFormSubmit = () => {
+    setClearedErrors(new Set())
+  }
 
   const onSsoLogin = async (provider: SSOProvider) => {
     const authWindow = openBrowserWindow('')
@@ -193,29 +212,32 @@ const Signup = () => {
             </div>
           </div>
 
-          <Form method='post' className='space-y-4'>
+          <Form method='post' className='space-y-4' onSubmit={handleFormSubmit}>
             <Input
               name='email'
               type='email'
               label={t('auth.common.email')}
-              error={actionData?.fieldErrors?.email}
+              error={getFieldError('email')}
               placeholder='name@company.com'
               disabled={isLoading}
+              onChange={() => clearFieldError('email')}
             />
             <Input
               name='password'
               type='password'
               label={t('auth.common.password')}
               hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-              error={actionData?.fieldErrors?.password}
+              error={getFieldError('password')}
               disabled={isLoading}
+              onChange={() => clearFieldError('password')}
             />
             <Input
               name='repeat'
               type='password'
               label={t('auth.common.repeat')}
-              error={actionData?.fieldErrors?.repeat}
+              error={getFieldError('repeat')}
               disabled={isLoading}
+              onChange={() => clearFieldError('repeat')}
             />
 
             {/* Hidden fields for checkbox values since Headless UI Checkbox doesn't submit natively */}
@@ -225,7 +247,10 @@ const Signup = () => {
             {isSelfhosted ? null : (
               <Checkbox
                 checked={tos}
-                onChange={setTos}
+                onChange={(checked) => {
+                  setTos(checked)
+                  clearFieldError('tos')
+                }}
                 disabled={isLoading}
                 label={
                   <Text as='span' size='sm'>
@@ -255,7 +280,7 @@ const Signup = () => {
                 classes={{
                   hint: '!text-red-600 dark:!text-red-500',
                 }}
-                hint={actionData?.fieldErrors?.tos}
+                hint={getFieldError('tos')}
               />
             )}
 

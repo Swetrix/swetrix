@@ -42,6 +42,8 @@ const Signin = () => {
   // State for SSO-triggered 2FA (client-side flow)
   const [sso2FARequired, setSso2FARequired] = useState(false)
 
+  const [clearedErrors, setClearedErrors] = useState<Set<string>>(new Set())
+
   const { setUser, setTotalMonthlyEvents, setIsAuthenticated } = useAuth()
 
   const isFormSubmitting = navigation.state === 'submitting'
@@ -61,6 +63,23 @@ const Signin = () => {
       toast.error(errorMessage)
     }
   }, [actionData?.error, actionData?.fieldErrors])
+
+  const clearFieldError = (fieldName: string) => {
+    if (actionData?.fieldErrors?.[fieldName as keyof typeof actionData.fieldErrors]) {
+      setClearedErrors((prev) => new Set(prev).add(fieldName))
+    }
+  }
+
+  const getFieldError = (fieldName: string) => {
+    if (clearedErrors.has(fieldName)) {
+      return undefined
+    }
+    return actionData?.fieldErrors?.[fieldName as keyof typeof actionData.fieldErrors]
+  }
+
+  const handleFormSubmit = () => {
+    setClearedErrors(new Set())
+  }
 
   const handle2FAInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const {
@@ -304,14 +323,15 @@ const Signin = () => {
             </div>
           </div>
 
-          <Form method='post' className='space-y-4'>
+          <Form method='post' className='space-y-4' onSubmit={handleFormSubmit}>
             <Input
               name='email'
               type='email'
               label={t('auth.common.email')}
-              error={actionData?.fieldErrors?.email}
+              error={getFieldError('email')}
               placeholder='name@company.com'
               disabled={isLoading}
+              onChange={() => clearFieldError('email')}
             />
             <Input
               name='password'
@@ -327,8 +347,9 @@ const Signin = () => {
                 </Link>
               }
               hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-              error={actionData?.fieldErrors?.password}
+              error={getFieldError('password')}
               disabled={isLoading}
+              onChange={() => clearFieldError('password')}
             />
 
             {/* Hidden input for form submission since Headless UI Checkbox doesn't submit natively */}
