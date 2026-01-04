@@ -7,7 +7,6 @@ import { DEFAULT_ALERTS_TAKE, API_URL } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import { SSOProvider } from '~/lib/models/Auth'
 import { Metainfo } from '~/lib/models/Metainfo'
-import { Role } from '~/lib/models/Organisation'
 import {
   Project,
   Overall,
@@ -108,54 +107,6 @@ export const getProjectsAvailableForOrganisation = (take = 0, skip = 0, search?:
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getOrganisations = (take = 0, skip = 0, search?: string) =>
-  api
-    .get(`/organisation?take=${take}&skip=${skip}&search=${search}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getOrganisation = (id: string) =>
-  api
-    .get(`/organisation/${id}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const addProjectToOrganisation = (organisationId: string, projectId: string) =>
-  api
-    .post(`/project/organisation/${organisationId}`, { projectId })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const removeProjectFromOrganisation = (organisationId: string, projectId: string) =>
-  api
-    .delete(`/project/organisation/${organisationId}/${projectId}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const changeOrganisationRole = (memberId: string, role: Role) =>
-  api
-    .patch(`/organisation/member/${memberId}`, { role })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const inviteOrganisationMember = (organisationId: string, data: { email: string; role: Role }) =>
-  api
-    .post(`/organisation/${organisationId}/invite`, data)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const acceptOrganisationInvitation = (tokenId: string) =>
   api
     .post(`/user/organisation/${tokenId}`)
@@ -167,14 +118,6 @@ export const acceptOrganisationInvitation = (tokenId: string) =>
 export const rejectOrganisationInvitation = (tokenId: string) =>
   api
     .delete(`/user/organisation/${tokenId}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const removeOrganisationMember = (memberId: string) =>
-  api
-    .delete(`/organisation/member/${memberId}`)
     .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message

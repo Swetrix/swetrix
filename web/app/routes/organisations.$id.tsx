@@ -12,13 +12,33 @@ export const sitemap: SitemapFunction = () => ({
   exclude: true,
 })
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export interface OrganisationLoaderData {
+  organisation: DetailedOrganisation | null
+  error?: string
+}
+
+export async function loader({ request, params }: LoaderFunctionArgs) {
   if (isSelfhosted) {
     return redirect('/login', 302)
   }
 
   redirectIfNotAuthenticated(request)
-  return null
+
+  const { id } = params
+
+  const result = await serverFetch<DetailedOrganisation>(request, `organisation/${id}`)
+
+  if (result.error) {
+    return data<OrganisationLoaderData>(
+      { organisation: null, error: result.error as string },
+      { status: result.status, headers: createHeadersWithCookies(result.cookies) },
+    )
+  }
+
+  return data<OrganisationLoaderData>(
+    { organisation: result.data },
+    { headers: createHeadersWithCookies(result.cookies) },
+  )
 }
 
 export interface OrganisationSettingsActionData {
@@ -102,7 +122,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         )
       }
 
-      const result = await serverFetch(request, `organisation/${id}/members`, {
+      const result = await serverFetch(request, `organisation/${id}/invite`, {
         method: 'POST',
         body: { email, role },
       })
@@ -120,7 +140,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'remove-member': {
       const memberId = formData.get('memberId')?.toString()
 
-      const result = await serverFetch(request, `organisation/${id}/members/${memberId}`, {
+      const result = await serverFetch(request, `organisation/member/${memberId}`, {
         method: 'DELETE',
       })
 
@@ -138,9 +158,52 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const memberId = formData.get('memberId')?.toString()
       const role = formData.get('role')?.toString()
 
-      const result = await serverFetch(request, `organisation/${id}/members/${memberId}`, {
+      const result = await serverFetch(request, `organisation/member/${memberId}`, {
         method: 'PATCH',
         body: { role },
+      })
+
+      if (result.error) {
+        return data<OrganisationSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<OrganisationSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'add-project': {
+      const projectId = formData.get('projectId')?.toString()
+
+      if (!projectId) {
+        return data<OrganisationSettingsActionData>({ intent, error: 'Project ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `project/organisation/${id}`, {
+        method: 'POST',
+        body: { projectId },
+      })
+
+      if (result.error) {
+        return data<OrganisationSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<OrganisationSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'remove-project': {
+      const projectId = formData.get('projectId')?.toString()
+
+      if (!projectId) {
+        return data<OrganisationSettingsActionData>({ intent, error: 'Project ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `project/organisation/${id}/${projectId}`, {
+        method: 'DELETE',
       })
 
       if (result.error) {

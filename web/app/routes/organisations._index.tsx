@@ -3,7 +3,7 @@ import { redirect, data } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
-import { isSelfhosted } from '~/lib/constants'
+import { ENTRIES_PER_PAGE_DASHBOARD, isSelfhosted } from '~/lib/constants'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import Organisations from '~/pages/Organisations'
 import { redirectIfNotAuthenticated, createHeadersWithCookies } from '~/utils/session.server'
@@ -12,13 +12,52 @@ export const sitemap: SitemapFunction = () => ({
   exclude: true,
 })
 
+interface OrganisationsResponse {
+  results: DetailedOrganisation[]
+  total: number
+}
+
+export interface OrganisationsLoaderData {
+  organisations: DetailedOrganisation[]
+  total: number
+  page: number
+  search: string
+  error?: string
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
   if (isSelfhosted) {
     return redirect('/login', 302)
   }
 
   redirectIfNotAuthenticated(request)
-  return null
+
+  const url = new URL(request.url)
+  const page = parseInt(url.searchParams.get('page') || '1', 10)
+  const search = url.searchParams.get('search') || ''
+  const skip = (page - 1) * ENTRIES_PER_PAGE_DASHBOARD
+
+  const result = await serverFetch<OrganisationsResponse>(
+    request,
+    `organisation?take=${ENTRIES_PER_PAGE_DASHBOARD}&skip=${skip}&search=${encodeURIComponent(search)}`,
+  )
+
+  if (result.error) {
+    return data<OrganisationsLoaderData>(
+      { organisations: [], total: 0, page, search, error: result.error as string },
+      { status: 400, headers: createHeadersWithCookies(result.cookies) },
+    )
+  }
+
+  return data<OrganisationsLoaderData>(
+    {
+      organisations: result.data?.results || [],
+      total: result.data?.total || 0,
+      page,
+      search,
+    },
+    { headers: createHeadersWithCookies(result.cookies) },
+  )
 }
 
 export interface OrganisationsActionData {
@@ -70,6 +109,48 @@ export async function action({ request }: ActionFunctionArgs) {
 
       return data<OrganisationsActionData>(
         { intent, success: true, organisation: result.data as DetailedOrganisation },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'accept-invitation': {
+      const membershipId = formData.get('membershipId')?.toString()
+
+      if (!membershipId) {
+        return data<OrganisationsActionData>({ intent, error: 'Membership ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `user/organisation/${membershipId}`, {
+        method: 'POST',
+      })
+
+      if (result.error) {
+        return data<OrganisationsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<OrganisationsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'reject-invitation': {
+      const membershipId = formData.get('membershipId')?.toString()
+
+      if (!membershipId) {
+        return data<OrganisationsActionData>({ intent, error: 'Membership ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `user/organisation/${membershipId}`, {
+        method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<OrganisationsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<OrganisationsActionData>(
+        { intent, success: true },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }

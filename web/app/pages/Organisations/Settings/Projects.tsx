@@ -5,14 +5,15 @@ import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { removeProjectFromOrganisation, getProjectsAvailableForOrganisation, addProjectToOrganisation } from '~/api'
+import { getProjectsAvailableForOrganisation } from '~/api'
 import useDebounce from '~/hooks/useDebounce'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
+import type { OrganisationSettingsActionData } from '~/routes/organisations.$id'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -169,23 +170,44 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
 
 interface ProjectsProps {
   organisation: DetailedOrganisation
-  reloadOrganisation: () => Promise<void>
 }
 
-export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) => {
+export const Projects = ({ organisation }: ProjectsProps) => {
   const { t } = useTranslation('common')
+  const fetcher = useFetcher<OrganisationSettingsActionData>()
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showAddProjectModal, setShowAddProjectModal] = useState(false)
   const [projectToRemove, setProjectToRemove] = useState<DetailedOrganisation['projects'][number] | null>(null)
-
-  const [isActionLoading, setIsActionLoading] = useState(false)
   const [selectedProject, setSelectedProject] = useState<any>(null)
 
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
   const [isSearchActive, setIsSearchActive] = useState(false)
   const { projects } = organisation
+
+  const isSubmitting = fetcher.state === 'submitting'
+  const isAddingProject = isSubmitting && fetcher.formData?.get('intent') === 'add-project'
+  const isRemovingProject = isSubmitting && fetcher.formData?.get('intent') === 'remove-project'
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      const { intent } = fetcher.data
+      if (intent === 'add-project') {
+        toast.success(t('apiNotifications.projectAddedToOrganisation'))
+        setShowAddProjectModal(false)
+        setSelectedProject(null)
+      } else if (intent === 'remove-project') {
+        toast.success(t('apiNotifications.projectRemovedFromOrganisation'))
+        setShowDeleteModal(false)
+        setProjectToRemove(null)
+      }
+    } else if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
+    }
+  }, [fetcher.data, t])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const filteredProjects = useMemo(() => {
     if (!search) {
@@ -197,46 +219,20 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
 
   const pageAmount = Math.ceil(filteredProjects.length / PROJECT_LIST_PAGE_SIZE)
 
-  const removeProject = async (projectId: string) => {
-    if (isActionLoading) {
-      return
-    }
-
-    setIsActionLoading(true)
-
-    try {
-      await removeProjectFromOrganisation(organisation.id, projectId)
-      await reloadOrganisation()
-      toast.success(t('apiNotifications.projectRemovedFromOrganisation'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while deleting a project: ${reason}`)
-      toast.error(t('apiNotifications.projectRemoveError'))
-    } finally {
-      setProjectToRemove(null)
-      setIsActionLoading(false)
-    }
+  const removeProject = (projectId: string) => {
+    const formData = new FormData()
+    formData.set('intent', 'remove-project')
+    formData.set('projectId', projectId)
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const onAddProject = async () => {
-    setShowAddProjectModal(false)
+  const onAddProject = () => {
+    if (!selectedProject) return
 
-    if (isActionLoading) {
-      return
-    }
-
-    setIsActionLoading(true)
-
-    try {
-      await addProjectToOrganisation(organisation.id, selectedProject.id)
-      await reloadOrganisation()
-      toast.success(t('apiNotifications.projectAddedToOrganisation'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while adding a project: ${reason}`)
-      toast.error(t('apiNotifications.projectAddError'))
-    } finally {
-      setSelectedProject(null)
-      setIsActionLoading(false)
-    }
+    const formData = new FormData()
+    formData.set('intent', 'add-project')
+    formData.set('projectId', selectedProject.id)
+    fetcher.submit(formData, { method: 'post' })
   }
 
   return (
@@ -353,7 +349,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
             type='button'
             className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
             onClick={onAddProject}
-            disabled={!selectedProject || isActionLoading}
+            disabled={!selectedProject || isAddingProject}
           >
             {t('organisations.addProject')}
           </button>
@@ -383,7 +379,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
           </div>
         }
         isOpened={showAddProjectModal}
-        isLoading={isActionLoading}
+        isLoading={isAddingProject}
       />
 
       <Modal
@@ -391,9 +387,8 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
           setShowDeleteModal(false)
           setProjectToRemove(null)
         }}
-        onSubmit={async () => {
-          await removeProject(projectToRemove!.id)
-          setShowDeleteModal(false)
+        onSubmit={() => {
+          removeProject(projectToRemove!.id)
         }}
         submitText={t('common.yes')}
         closeText={t('common.no')}
@@ -401,7 +396,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
         message={t('organisations.modals.remove.message')}
         isOpened={showDeleteModal}
         type='warning'
-        isLoading={isActionLoading}
+        isLoading={isRemovingProject}
       />
     </div>
   )
