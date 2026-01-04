@@ -12,24 +12,15 @@ import _size from 'lodash/size'
 import { MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
 import React, { useState, useEffect, memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
+import { useNavigate, useFetcher } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import {
-  confirmEmail,
-  generateApiKey,
-  deleteApiKey,
-  receiveLoginNotification,
-  setShowLiveVisitorsInTitle,
-  changeUserDetails,
-  deleteUser,
-} from '~/api'
-import { withAuthentication, auth } from '~/hoc/protected'
 import { reportFrequencies, DEFAULT_TIMEZONE, CONFIRMATION_TIMEOUT, TimeFormat, isSelfhosted } from '~/lib/constants'
 import { User } from '~/lib/models/User'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
+import type { UserSettingsActionData } from '~/routes/user-settings'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
@@ -103,10 +94,12 @@ interface Form extends Partial<User> {
 }
 
 const UserSettings = () => {
-  const { user, isLoading, logout, setUser, mergeUser } = useAuth()
+  const { user, isLoading, logout, mergeUser } = useAuth()
 
   const navigate = useNavigate()
   const { t } = useTranslation('common')
+  const fetcher = useFetcher<UserSettingsActionData>()
+
   const [activeTab, setActiveTab] = useState(TAB_MAPPING.ACCOUNT)
   const [form, setForm] = useState<Form>({
     email: user?.email || '',
@@ -128,11 +121,49 @@ const UserSettings = () => {
   const [error, setError] = useState<null | string>(null)
   const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`))
   const translatedTimeFormat = _map(TimeFormat, (key) => t(`profileSettings.${key}`))
-  const [settingUpdating, setSettingUpdating] = useState(false)
   const [deletionFeedback, setDeletionFeedback] = useState('')
+
+  const isSubmitting = fetcher.state === 'submitting'
 
   const tabs = getTabs(t)
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
+
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      const { intent, user: updatedUser, apiKey } = fetcher.data
+
+      if (intent === 'update-profile' && updatedUser) {
+        mergeUser(updatedUser)
+        toast.success(t('profileSettings.updated'))
+
+        // If password was changed, log out the user
+        if (form.password) {
+          logout()
+        }
+      } else if (intent === 'generate-api-key' && apiKey) {
+        mergeUser({ apiKey })
+        toast.success(t('profileSettings.updated'))
+      } else if (intent === 'delete-api-key') {
+        mergeUser({ apiKey: null })
+        toast.success(t('profileSettings.updated'))
+      } else if (intent === 'toggle-live-visitors' && updatedUser) {
+        mergeUser(updatedUser)
+        toast.success(t('profileSettings.updated'))
+      } else if (intent === 'toggle-login-notifications') {
+        toast.success(t('profileSettings.updated'))
+      } else if (intent === 'confirm-email') {
+        setCookie(CONFIRMATION_TIMEOUT, true, 600)
+        toast.success(t('profileSettings.confSent'))
+      } else if (intent === 'delete-account') {
+        logout()
+        toast.success(t('apiNotifications.accountDeleted'))
+        navigate(routes.main)
+      }
+    } else if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
+    }
+  }, [fetcher.data, mergeUser, t, logout, navigate, form.password])
 
   const validate = () => {
     const allErrors = {} as Record<string, string>
@@ -155,26 +186,6 @@ const UserSettings = () => {
 
     setErrors(allErrors)
     setValidated(valid)
-  }
-
-  const onSubmit = async (data: any, callback: (isSuccess: boolean) => void = () => {}) => {
-    delete data.repeat
-
-    for (const key in data) {
-      if (data[key] === '') {
-        delete data[key]
-      }
-    }
-
-    try {
-      const result = await changeUserDetails(data)
-      setUser(result)
-      toast.success(t('profileSettings.updated'))
-    } catch (reason: any) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-    } finally {
-      callback(true)
-    }
   }
 
   useEffect(() => {
@@ -206,11 +217,26 @@ const UserSettings = () => {
     }))
   }
 
-  const handleSubmit = (
-    e: React.FormEvent<HTMLFormElement> | null,
-    force?: boolean,
-    callback: (isSuccess: boolean) => void = () => {},
-  ) => {
+  const submitProfileUpdate = (additionalData?: Record<string, unknown>) => {
+    setBeenSubmitted(true)
+
+    if (!validated) return
+
+    const formData = new FormData()
+    formData.set('intent', 'update-profile')
+    if (form.email) formData.set('email', form.email)
+    if (form.password) formData.set('password', form.password)
+    if (form.repeat) formData.set('repeat', form.repeat)
+    if (additionalData?.timezone) formData.set('timezone', additionalData.timezone as string)
+    if (additionalData?.timeFormat || form.timeFormat) {
+      formData.set('timeFormat', (additionalData?.timeFormat || form.timeFormat) as string)
+    }
+    if (additionalData?.reportFrequency) formData.set('reportFrequency', additionalData.reportFrequency as string)
+
+    fetcher.submit(formData, { method: 'post' })
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement> | null, force?: boolean) => {
     if (e) {
       e.preventDefault()
       e.stopPropagation()
@@ -224,139 +250,77 @@ const UserSettings = () => {
         return
       }
 
-      onSubmit(form, callback)
+      submitProfileUpdate()
     }
   }
 
   const handleTimezoneSave = () => {
+    submitProfileUpdate({ timezone })
+  }
+
+  const handleShowLiveVisitorsSave = (checked: boolean) => {
+    const formData = new FormData()
+    formData.set('intent', 'toggle-live-visitors')
+    formData.set('show', checked.toString())
+    fetcher.submit(formData, { method: 'post' })
+    // Optimistic update
+    mergeUser({ showLiveVisitorsInTitle: checked })
+  }
+
+  const handleReceiveLoginNotifications = (checked: boolean) => {
+    const formData = new FormData()
+    formData.set('intent', 'toggle-login-notifications')
+    formData.set('receiveLoginNotifications', checked.toString())
+    fetcher.submit(formData, { method: 'post' })
+    // Optimistic update
+    mergeUser({ receiveLoginNotifications: checked })
+  }
+
+  const handleIntegrationSave = (data: Record<string, unknown>, callback: (isSuccess: boolean) => void = () => {}) => {
     setBeenSubmitted(true)
 
     if (validated) {
-      onSubmit({
-        ...form,
-        timezone,
-      })
-    }
-  }
-
-  const handleShowLiveVisitorsSave = async (checked: boolean) => {
-    if (settingUpdating) {
-      return
-    }
-
-    setSettingUpdating(true)
-
-    try {
-      await setShowLiveVisitorsInTitle(checked)
-      mergeUser({ showLiveVisitorsInTitle: checked })
-      toast.success(t('profileSettings.updated'))
-    } catch (reason: any) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-    } finally {
-      setSettingUpdating(false)
-    }
-  }
-
-  const handleReceiveLoginNotifications = async (checked: boolean) => {
-    if (settingUpdating) {
-      return
-    }
-
-    setSettingUpdating(true)
-
-    try {
-      await receiveLoginNotification(checked)
-      mergeUser({ receiveLoginNotifications: checked })
-      toast.success(t('profileSettings.updated'))
-    } catch (reason: any) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-    } finally {
-      setSettingUpdating(false)
-    }
-  }
-
-  const handleIntegrationSave = (data: any, callback: (isSuccess: boolean) => void = () => {}) => {
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit(
-        {
-          ...form,
-          ...data,
-        },
-        callback,
-      )
+      submitProfileUpdate(data)
+      callback(true)
     }
   }
 
   const handleReportSave = () => {
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit({
-        ...form,
-        reportFrequency,
-      })
-    }
+    submitProfileUpdate({ reportFrequency })
   }
 
-  const onAccountDelete = async () => {
-    try {
-      await deleteUser(deletionFeedback)
-      logout()
-      toast.success(t('apiNotifications.accountDeleted'))
-      navigate(routes.main)
-    } catch (reason: any) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-    }
+  const onAccountDelete = () => {
+    const formData = new FormData()
+    formData.set('intent', 'delete-account')
+    formData.set('feedback', deletionFeedback)
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const onEmailConfirm = async (errorCallback: any) => {
+  const onEmailConfirm = () => {
     if (getCookie(CONFIRMATION_TIMEOUT)) {
       toast.error(t('profileSettings.confTimeout'))
       return
     }
 
-    try {
-      const res = await confirmEmail()
-
-      if (res) {
-        setCookie(CONFIRMATION_TIMEOUT, true, 600)
-        toast.success(t('profileSettings.confSent'))
-      } else {
-        errorCallback(t('profileSettings.noConfLeft'))
-      }
-    } catch (reason: any) {
-      toast.error(reason)
-    }
+    const formData = new FormData()
+    formData.set('intent', 'confirm-email')
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const onApiKeyGenerate = async () => {
-    try {
-      const { apiKey } = await generateApiKey()
-      mergeUser({ apiKey })
-    } catch (reason: any) {
-      toast.error(reason)
-    }
+  const onApiKeyGenerate = () => {
+    const formData = new FormData()
+    formData.set('intent', 'generate-api-key')
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const onApiKeyDelete = async () => {
-    try {
-      await deleteApiKey()
-      mergeUser({ apiKey: null })
-    } catch (reason: any) {
-      toast.error(reason)
-    }
+  const onApiKeyDelete = () => {
+    const formData = new FormData()
+    formData.set('intent', 'delete-api-key')
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const setAsyncTimeFormat = async () => {
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit({
-        ...form,
-      })
-    }
+  const setAsyncTimeFormat = () => {
+    submitProfileUpdate({ timeFormat: form.timeFormat })
   }
 
   const toggleShowPasswordFields = () => {
@@ -646,7 +610,7 @@ const UserSettings = () => {
                           {!user?.isActive ? (
                             <div
                               className='mt-4 flex max-w-max cursor-pointer pl-0 text-blue-600 underline hover:text-indigo-800 dark:hover:text-indigo-600'
-                              onClick={() => onEmailConfirm(setError)}
+                              onClick={onEmailConfirm}
                             >
                               <EnvelopeIcon className='mt-0.5 mr-2 h-6 w-6 text-blue-500' />
                               {t('profileSettings.noLink')}
@@ -730,7 +694,7 @@ const UserSettings = () => {
                       <Checkbox
                         checked={user?.showLiveVisitorsInTitle}
                         onChange={handleShowLiveVisitorsSave}
-                        disabled={settingUpdating}
+                        disabled={isSubmitting}
                         name='active'
                         classes={{
                           label: 'mt-4',
@@ -788,7 +752,7 @@ const UserSettings = () => {
                             <Checkbox
                               checked={user?.receiveLoginNotifications}
                               onChange={handleReceiveLoginNotifications}
-                              disabled={settingUpdating}
+                              disabled={isSubmitting}
                               name='receiveLoginNotifications'
                               classes={{
                                 label: 'mt-4',
@@ -872,12 +836,7 @@ const UserSettings = () => {
         }}
         onSubmit={() => {
           setIsPasswordChangeModalOpened(false)
-          handleSubmit(null, true, (isSuccess: boolean) => {
-            // password has been changed, let's log out the user as all the sessions are now invalid
-            if (isSuccess) {
-              logout()
-            }
-          })
+          handleSubmit(null, true)
         }}
         closeText={t('common.cancel')}
         submitText={t('common.continue')}
@@ -890,4 +849,4 @@ const UserSettings = () => {
   )
 }
 
-export default memo(withAuthentication(UserSettings, auth.authenticated))
+export default memo(UserSettings)

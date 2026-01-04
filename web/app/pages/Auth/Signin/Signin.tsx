@@ -1,10 +1,9 @@
-import _isString from 'lodash/isString'
-import React, { useState, memo } from 'react'
+import React, { useState, memo, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link, useNavigate, useSearchParams, Form, useActionData, useNavigation } from 'react-router'
+import { Link, useNavigate, useSearchParams, Form, useActionData, useNavigation, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { generateSSOAuthURL, getJWTBySSOHash, submit2FA } from '~/api'
+import { generateSSOAuthURL, getJWTBySSOHash } from '~/api'
 import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
 import OIDCAuth from '~/components/OIDCAuth'
@@ -18,9 +17,9 @@ import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
-import { setAccessToken, removeAccessToken } from '~/utils/accessToken'
+import { setAccessToken } from '~/utils/accessToken'
 import { cn, delay, openBrowserWindow } from '~/utils/generic'
-import { setRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
+import { setRefreshToken } from '~/utils/refreshToken'
 import routes from '~/utils/routes'
 import { MIN_PASSWORD_CHARS } from '~/utils/validator'
 
@@ -30,6 +29,7 @@ const Signin = () => {
   const navigate = useNavigate()
   const navigation = useNavigation()
   const actionData = useActionData<LoginActionData>()
+  const twoFAFetcher = useFetcher<LoginActionData>()
   const [searchParams] = useSearchParams()
   const { t } = useTranslation('common')
   const { theme } = useTheme()
@@ -38,25 +38,24 @@ const Signin = () => {
 
   const [isSsoLoading, setIsSsoLoading] = useState(false)
 
-  const [isTwoFARequired, setIsTwoFARequired] = useState(
-    searchParams.get('show_2fa_screen') === 'true' || actionData?.requires2FA === true,
-  )
   const [twoFACode, setTwoFACode] = useState('')
-  const [twoFACodeError, setTwoFACodeError] = useState<string | null>(null)
-  const [is2FALoading, setIs2FALoading] = useState(false)
+  // State for SSO-triggered 2FA (client-side flow)
+  const [sso2FARequired, setSso2FARequired] = useState(false)
 
   const { setUser, setTotalMonthlyEvents, setIsAuthenticated } = useAuth()
 
   const isFormSubmitting = navigation.state === 'submitting'
+  const is2FALoading = twoFAFetcher.state === 'submitting'
   const isLoading = isFormSubmitting || isSsoLoading || is2FALoading
 
-  React.useEffect(() => {
-    if (actionData?.requires2FA) {
-      setIsTwoFARequired(true)
-    }
-  }, [actionData?.requires2FA])
+  // 2FA is required from URL params, action data, or SSO flow
+  const isTwoFARequired =
+    searchParams.get('show_2fa_screen') === 'true' || actionData?.requires2FA === true || sso2FARequired
 
-  React.useEffect(() => {
+  // Derive 2FA error from fetcher data
+  const twoFACodeError = twoFAFetcher.data?.fieldErrors?.twoFACode || null
+
+  useEffect(() => {
     if (actionData?.error && !actionData?.fieldErrors) {
       const errorMessage = Array.isArray(actionData.error) ? actionData.error[0] : actionData.error
       toast.error(errorMessage)
@@ -68,7 +67,6 @@ const Signin = () => {
       target: { value },
     } = event
     setTwoFACode(value)
-    setTwoFACodeError(null)
   }
 
   const onSsoLogin = async (provider: SSOProvider) => {
@@ -138,7 +136,7 @@ const Signin = () => {
             setAccessToken(accessToken, true)
             setRefreshToken(refreshToken)
             setUser(user)
-            setIsTwoFARequired(true)
+            setSso2FARequired(true)
             setIsSsoLoading(false)
             return
           }
@@ -173,7 +171,7 @@ const Signin = () => {
     }
   }
 
-  const _submit2FA = async (e: React.FormEvent<HTMLFormElement>) => {
+  const _submit2FA = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     e.stopPropagation()
 
@@ -181,32 +179,12 @@ const Signin = () => {
       return
     }
 
-    setIs2FALoading(true)
+    const formData = new FormData()
+    formData.set('intent', 'submit-2fa')
+    formData.set('twoFACode', twoFACode)
+    formData.set('dontRemember', dontRemember.toString())
 
-    try {
-      const { accessToken, refreshToken, user } = await submit2FA(twoFACode)
-      removeAccessToken()
-      removeRefreshToken()
-      setAccessToken(accessToken)
-      setRefreshToken(refreshToken)
-      setUser(user)
-      setIsAuthenticated(true)
-
-      if (!user.hasCompletedOnboarding) {
-        navigate(routes.onboarding)
-      } else {
-        navigate(routes.dashboard)
-      }
-    } catch (reason) {
-      if (_isString(reason)) {
-        toast.error(reason)
-      }
-      console.error(`[ERROR] Failed to authenticate with 2FA: ${reason}`)
-      setTwoFACodeError(t('profileSettings.invalid2fa'))
-    }
-
-    setTwoFACode('')
-    setIs2FALoading(false)
+    twoFAFetcher.submit(formData, { method: 'post' })
   }
 
   if (isTwoFARequired) {

@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from 'react-router'
+import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
 import { data } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
@@ -18,6 +18,64 @@ export interface DashboardLoaderData {
     total: number
     page_total: number
   } | null
+}
+
+export interface DashboardActionData {
+  success?: boolean
+  intent?: string
+  error?: string
+  fieldErrors?: {
+    name?: string
+  }
+  project?: Project
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  redirectIfNotAuthenticated(request)
+
+  const formData = await request.formData()
+  const intent = formData.get('intent')?.toString()
+
+  switch (intent) {
+    case 'create-project': {
+      const name = formData.get('name')?.toString() || ''
+      const organisationId = formData.get('organisationId')?.toString()
+
+      if (!name.trim()) {
+        return data<DashboardActionData>(
+          { intent, fieldErrors: { name: 'Project name is required' } },
+          { status: 400 },
+        )
+      }
+
+      if (name.length > 50) {
+        return data<DashboardActionData>(
+          { intent, fieldErrors: { name: 'Project name must be 50 characters or less' } },
+          { status: 400 },
+        )
+      }
+
+      const body: { name: string; organisationId?: string } = { name: name.trim() }
+      if (organisationId) body.organisationId = organisationId
+
+      const result = await serverFetch<Project>(request, 'project', {
+        method: 'POST',
+        body,
+      })
+
+      if (result.error) {
+        return data<DashboardActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<DashboardActionData>(
+        { intent, success: true, project: result.data as Project },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    default:
+      return data<DashboardActionData>({ error: 'Unknown action' }, { status: 400 })
+  }
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {

@@ -4,13 +4,13 @@ import type { TFunction } from 'i18next'
 import { ChevronRightIcon, LaptopMinimalIcon, RocketIcon, CodeIcon, MailCheckIcon, SparklesIcon } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { updateOnboardingStep, completeOnboarding, createProject, authMe, getProjects, deleteUser } from '~/api'
+import { authMe, getProjects } from '~/api'
 import { CONTACT_US_URL } from '~/components/Footer'
-import { withAuthentication, auth } from '~/hoc/protected'
 import { DOCS_URL, INTEGRATIONS_URL, isSelfhosted } from '~/lib/constants'
+import type { OnboardingActionData } from '~/routes/onboarding'
 import { getSnippet } from '~/modals/TrackingSnippet'
 import { useAuth } from '~/providers/AuthProvider'
 import { Badge } from '~/ui/Badge'
@@ -72,9 +72,9 @@ const Onboarding = () => {
   const { t } = useTranslation('common')
   const { user, loadUser, logout } = useAuth()
   const navigate = useNavigate()
+  const fetcher = useFetcher<OnboardingActionData>()
 
   const [currentStep, setCurrentStep] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
   const [projectName, setProjectName] = useState('')
   const [project, setProject] = useState<Project | null>(null)
   const [isWaitingForEvents, setIsWaitingForEvents] = useState(false)
@@ -83,6 +83,37 @@ const Onboarding = () => {
   const [newProjectErrors, setNewProjectErrors] = useState<{
     name?: string
   }>({})
+
+  const isLoading = fetcher.state === 'submitting'
+
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      const { intent, project: newProject, user: updatedUser } = fetcher.data
+
+      if (intent === 'create-project' && newProject) {
+        setProject(newProject)
+        // Update the step after project creation
+        const stepFormData = new FormData()
+        stepFormData.set('intent', 'update-step')
+        stepFormData.set('step', 'setup_tracking')
+        fetcher.submit(stepFormData, { method: 'post' })
+        setCurrentStep(2)
+      } else if (intent === 'update-step') {
+        loadUser()
+      } else if (intent === 'complete-onboarding') {
+        loadUser()
+        navigate(routes.dashboard)
+      } else if (intent === 'delete-account') {
+        logout()
+        navigate(routes.main)
+      }
+    } else if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
+    } else if (fetcher.data?.fieldErrors?.name) {
+      setNewProjectErrors({ name: fetcher.data.fieldErrors.name })
+    }
+  }, [fetcher.data, loadUser, logout, navigate, fetcher])
 
   useEffect(() => {
     if (user?.hasCompletedOnboarding) {
@@ -148,16 +179,14 @@ const Onboarding = () => {
     return () => clearInterval(interval)
   }, [isWaitingForEvents, project])
 
-  const updateUserStep = async (step: string) => {
-    try {
-      await updateOnboardingStep(step)
-      await loadUser()
-    } catch (reason) {
-      console.error('Failed to update onboarding step:', reason)
-    }
+  const updateUserStep = (step: string) => {
+    const formData = new FormData()
+    formData.set('intent', 'update-step')
+    formData.set('step', step)
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const handleCreateProject = async (e?: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateProject = (e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault()
     e?.stopPropagation()
 
@@ -173,36 +202,25 @@ const Onboarding = () => {
       return
     }
 
-    setIsLoading(true)
-    try {
-      const newProject = await createProject({
-        name: trimmedName,
-      })
-
-      setProject(newProject)
-      await updateUserStep('setup_tracking')
-      setCurrentStep(2)
-    } catch (reason) {
-      toast.error(typeof reason === 'string' ? reason : 'Failed to create project')
-    } finally {
-      setIsLoading(false)
-    }
+    setNewProjectErrors({})
+    const formData = new FormData()
+    formData.set('intent', 'create-project')
+    formData.set('name', trimmedName)
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const handleCompleteOnboarding = async (skipped: boolean) => {
-    try {
-      await completeOnboarding()
-      await loadUser()
+  const handleCompleteOnboarding = (skipped: boolean) => {
+    trackCustom('ONBOARDING_COMPLETED', { skipped })
 
-      trackCustom('ONBOARDING_COMPLETED', {
-        skipped,
-      })
+    const formData = new FormData()
+    formData.set('intent', 'complete-onboarding')
+    fetcher.submit(formData, { method: 'post' })
+  }
 
-      navigate(routes.dashboard)
-    } catch (reason) {
-      console.error('Failed to complete onboarding:', reason)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-    }
+  const handleDeleteAccount = () => {
+    const formData = new FormData()
+    formData.set('intent', 'delete-account')
+    fetcher.submit(formData, { method: 'post' })
   }
 
   const steps = useMemo(() => {
@@ -379,19 +397,7 @@ const Onboarding = () => {
                           tabIndex={0}
                           role='button'
                           className='cursor-pointer font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                          onClick={async () => {
-                            try {
-                              await deleteUser()
-                              // Clear tokens synchronously before React state updates trigger redirects
-                              removeAccessToken()
-                              removeRefreshToken()
-                              logout()
-                              navigate(routes.signup)
-                            } catch (error) {
-                              console.error('Failed to delete account:', error)
-                              toast.error(t('apiNotifications.somethingWentWrong'))
-                            }
-                          }}
+                          onClick={handleDeleteAccount}
                         />
                       ),
                     }}
@@ -649,4 +655,4 @@ const Onboarding = () => {
   )
 }
 
-export default withAuthentication(Onboarding, auth.authenticated)
+export default Onboarding

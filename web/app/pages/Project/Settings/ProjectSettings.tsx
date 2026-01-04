@@ -8,7 +8,6 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _size from 'lodash/size'
-import _split from 'lodash/split'
 import _toUpper from 'lodash/toUpper'
 import {
   Settings2Icon,
@@ -25,31 +24,23 @@ import {
 } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useLoaderData, useNavigate, Link, useSearchParams } from 'react-router'
+import { useLoaderData, useNavigate, Link, useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import {
-  updateProject,
-  deleteProject,
-  resetProject,
-  transferProject,
-  deletePartially,
   getFilters,
-  resetFilters,
   getProject,
-  assignProjectToOrganisation,
   generateGSCAuthURL,
   getGSCStatus,
   getGSCProperties,
   setGSCProperty,
   disconnectGSC,
-  reGenerateCaptchaSecretKey,
 } from '~/api'
-import { withAuthentication, auth } from '~/hoc/protected'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
+import type { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
 import Button from '~/ui/Button'
 import DatePicker from '~/ui/Datepicker'
 import Dropdown from '~/ui/Dropdown'
@@ -66,7 +57,6 @@ import countries from '~/utils/isoCountries'
 import routes from '~/utils/routes'
 
 import CCRow from '../View/components/CCRow'
-import { getFormatDate } from '../View/ViewProject.helpers'
 
 import Annotations from './Annotations'
 import Emails from './Emails'
@@ -285,6 +275,7 @@ const ProjectSettings = () => {
   const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
   const { requestOrigin } = useLoaderData<{ requestOrigin: string | null }>()
+  const fetcher = useFetcher<ProjectSettingsActionData>()
 
   const [project, setProject] = useState<Project | null>(null)
   const [form, setForm] = useState<Form>({
@@ -393,7 +384,6 @@ const ProjectSettings = () => {
   const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(null)
   const [captchaDifficulty, setCaptchaDifficulty] = useState<number>(4)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
-  const [isSavingDifficulty, setIsSavingDifficulty] = useState(false)
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
@@ -425,13 +415,11 @@ const ProjectSettings = () => {
     [user?.organisationMemberships, t],
   )
 
-  const assignOrganisation = async (organisationId?: string) => {
-    try {
-      await assignProjectToOrganisation(id, organisationId)
-      toast.success(t('apiNotifications.projectAssigned'))
-    } catch (reason: any) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.projectAssignError'))
-    }
+  const assignOrganisation = async (organisationId?: string): Promise<void> => {
+    const formData = new FormData()
+    formData.set('intent', 'assign-organisation')
+    if (organisationId) formData.set('organisationId', organisationId)
+    fetcher.submit(formData, { method: 'post' })
   }
 
   const sharableLink = useMemo(() => {
@@ -503,93 +491,134 @@ const ProjectSettings = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, id])
 
-  const onSubmit = async (data: Form) => {
-    if (!isSaving) {
-      setIsSaving(true)
-      try {
-        const formalisedData = {
-          ...data,
-          origins: _isEmpty(data.origins)
-            ? null
-            : _map(_split(data.origins, ','), (origin) => {
-                try {
-                  if (_includes(origin, 'localhost')) {
-                    return origin
-                  }
-                  return new URL(origin).host
-                } catch {
-                  return origin
-                }
-              }),
-          ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist, ','),
-          countryBlacklist: _isEmpty(data.countryBlacklist) ? null : data.countryBlacklist,
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      const { intent, project: updatedProject } = fetcher.data
+
+      if (intent === 'update-project') {
+        if (updatedProject) {
+          // Merge with existing project to preserve fields like 'role' that aren't returned from update
+          setProject((prev) => (prev ? { ...prev, ...updatedProject } : updatedProject))
         }
-        await updateProject(id, formalisedData as Partial<Project>)
+        setBeenSubmitted(false)
         toast.success(t('project.settings.updated'))
-      } catch (reason: any) {
-        toast.error(reason)
-      } finally {
-        setIsSaving(false)
+      } else if (intent === 'delete-project') {
+        toast.success(t('project.settings.deleted'))
+        navigate(routes.dashboard)
+      } else if (intent === 'reset-project' || intent === 'delete-partially' || intent === 'reset-filters') {
+        toast.success(t('project.settings.resetSuccess'))
+        setShowReset(false)
+      } else if (intent === 'transfer-project') {
+        toast.success(t('apiNotifications.transferRequestSent'))
+        setShowTransfer(false)
+        setTransferEmail('')
+      } else if (intent === 'regenerate-captcha-key' && updatedProject?.captchaSecretKey) {
+        setCaptchaSecretKey(updatedProject.captchaSecretKey)
+        toast.success(t('project.settings.updated'))
+      } else if (intent === 'assign-organisation') {
+        toast.success(t('apiNotifications.projectAssigned'))
       }
+
+      setIsSaving(false)
+      setIsDeleting(false)
+      setIsResetting(false)
+    } else if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
+      setIsSaving(false)
+      setIsDeleting(false)
+      setIsResetting(false)
     }
+  }, [fetcher.data, t, navigate])
+
+  const onSubmit = (data: Form) => {
+    if (fetcher.state === 'submitting') return
+
+    setIsSaving(true)
+    const formData = new FormData()
+    formData.set('intent', 'update-project')
+    if (data.name) formData.set('name', data.name)
+    formData.set('public', data.public ? 'true' : 'false')
+    formData.set('isPasswordProtected', data.isPasswordProtected ? 'true' : 'false')
+    if (data.password) formData.set('password', data.password)
+    if (data.origins !== null) formData.set('origins', data.origins)
+    if (data.ipBlacklist !== null) formData.set('ipBlacklist', data.ipBlacklist)
+    if (data.botsProtectionLevel) formData.set('botsProtectionLevel', data.botsProtectionLevel)
+    if (data.countryBlacklist) formData.set('countryBlacklist', JSON.stringify(data.countryBlacklist))
+    if (data.websiteUrl !== undefined) formData.set('websiteUrl', data.websiteUrl || '')
+
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const onDelete = async () => {
+  const onDelete = () => {
     setShowDelete(false)
 
-    if (isDeleting) {
-      return
-    }
+    if (fetcher.state === 'submitting') return
 
     setIsDeleting(true)
-    try {
-      await deleteProject(id)
-      toast.success(t('project.settings.deleted'))
-      navigate(routes.dashboard)
-    } catch (reason: any) {
-      toast.error(reason)
-    } finally {
-      setIsDeleting(false)
-    }
+    const formData = new FormData()
+    formData.set('intent', 'delete-project')
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const onReset = async () => {
-    setShowReset(false)
-
-    if (setResetting) {
-      return
-    }
+  const onReset = (resetTab: string, dateRange?: Date[], filterType?: string, filterValue?: string) => {
+    if (fetcher.state === 'submitting') return
 
     setIsResetting(true)
+    const formData = new FormData()
 
-    try {
-      if (tab === DELETE_DATA_MODAL_TABS[1].name) {
-        if (_isEmpty(dateRange)) {
-          toast.error(t('project.settings.noDateRange'))
-          setIsResetting(false)
-          return
-        }
-        await deletePartially(id, {
-          from: getFormatDate(dateRange[0]),
-          to: getFormatDate(dateRange[1]),
-        })
-      } else if (tab === DELETE_DATA_MODAL_TABS[2].name) {
-        if (_isEmpty(activeFilter)) {
-          toast.error(t('project.settings.noFilters'))
-          setIsResetting(false)
-          return
-        }
+    if (resetTab === 'all') {
+      formData.set('intent', 'reset-project')
+    } else if (resetTab === 'partially' && dateRange) {
+      formData.set('intent', 'delete-partially')
+      formData.set('from', dateRange[0]?.toISOString() || '')
+      formData.set('to', dateRange[1]?.toISOString() || '')
+    } else if (resetTab === 'viaFilters' && filterType && filterValue) {
+      formData.set('intent', 'reset-filters')
+      formData.set('type', filterType)
+      formData.set('value', filterValue)
+    }
 
-        await resetFilters(id, filterType, activeFilter)
-      } else {
-        await resetProject(id)
+    fetcher.submit(formData, { method: 'post' })
+  }
+
+  const onTransfer = () => {
+    if (fetcher.state === 'submitting') return
+
+    const formData = new FormData()
+    formData.set('intent', 'transfer-project')
+    formData.set('email', transferEmail)
+    fetcher.submit(formData, { method: 'post' })
+  }
+
+  const onRegenerateCaptchaKey = () => {
+    if (fetcher.state === 'submitting') return
+
+    const formData = new FormData()
+    formData.set('intent', 'regenerate-captcha-key')
+    fetcher.submit(formData, { method: 'post' })
+  }
+
+  // Wrapper for reset that handles tab logic
+  const handleReset = () => {
+    setShowReset(false)
+
+    if (fetcher.state === 'submitting') return
+
+    if (tab === DELETE_DATA_MODAL_TABS[1].name) {
+      if (_isEmpty(dateRange)) {
+        toast.error(t('project.settings.noDateRange'))
+        return
       }
-      toast.success(t('project.settings.projectReset'))
-      navigate(routes.dashboard)
-    } catch (reason: any) {
-      toast.error(reason)
-    } finally {
-      setIsResetting(false)
+      onReset('partially', dateRange)
+    } else if (tab === DELETE_DATA_MODAL_TABS[2].name) {
+      if (_isEmpty(activeFilter)) {
+        toast.error(t('project.settings.noFilters'))
+        return
+      }
+      onReset('viaFilters', undefined, filterType, activeFilter[0])
+    } else {
+      onReset('all')
     }
   }
 
@@ -658,21 +687,6 @@ const ProjectSettings = () => {
     if (validated) {
       onSubmit(form)
     }
-  }
-
-  const onTransfer = async () => {
-    await transferProject(id, transferEmail)
-      .then(() => {
-        toast.success(t('apiNotifications.transferRequestSent'))
-        navigate(routes.dashboard)
-      })
-      .catch((reason) => {
-        toast.error(reason)
-      })
-      .finally(() => {
-        setShowTransfer(false)
-        setTransferEmail('')
-      })
   }
 
   const onProtected = async () => {
@@ -1070,19 +1084,12 @@ const ProjectSettings = () => {
                         <Button
                           type='button'
                           className='mt-4'
-                          loading={isSavingDifficulty}
-                          onClick={async () => {
-                            setIsSavingDifficulty(true)
-                            try {
-                              await updateProject(id, { captchaDifficulty })
-                              toast.success(t('project.settings.updated'))
-                            } catch (reason: any) {
-                              toast.error(
-                                typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'),
-                              )
-                            } finally {
-                              setIsSavingDifficulty(false)
-                            }
+                          loading={fetcher.state === 'submitting'}
+                          onClick={() => {
+                            const formData = new FormData()
+                            formData.set('intent', 'update-project')
+                            formData.set('captchaDifficulty', captchaDifficulty.toString())
+                            fetcher.submit(formData, { method: 'post' })
                           }}
                           primary
                           regular
@@ -1096,20 +1103,7 @@ const ProjectSettings = () => {
                       <p className='mb-4 text-sm text-gray-600 dark:text-gray-300'>
                         {t('project.settings.captcha.noKeyGenerated')}
                       </p>
-                      <Button
-                        type='button'
-                        onClick={async () => {
-                          try {
-                            const newKey = await reGenerateCaptchaSecretKey(id)
-                            setCaptchaSecretKey(newKey)
-                            toast.success(t('project.settings.captcha.keyGenerated'))
-                          } catch (reason: any) {
-                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-                          }
-                        }}
-                        primary
-                        regular
-                      >
+                      <Button type='button' onClick={onRegenerateCaptchaKey} primary regular>
                         {t('project.settings.captcha.generateKey')}
                       </Button>
                     </>
@@ -1145,7 +1139,7 @@ const ProjectSettings = () => {
       />
       <Modal
         onClose={() => setShowReset(false)}
-        onSubmit={onReset}
+        onSubmit={handleReset}
         size='large'
         submitText={t('project.settings.reset')}
         closeText={t('common.close')}
@@ -1225,15 +1219,9 @@ const ProjectSettings = () => {
       />
       <Modal
         onClose={() => setShowRegenerateSecret(false)}
-        onSubmit={async () => {
-          try {
-            const newKey = await reGenerateCaptchaSecretKey(id)
-            setCaptchaSecretKey(newKey)
-            setShowRegenerateSecret(false)
-            toast.success(t('project.settings.captcha.keyRegenerated'))
-          } catch (reason: any) {
-            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-          }
+        onSubmit={() => {
+          setShowRegenerateSecret(false)
+          onRegenerateCaptchaKey()
         }}
         submitText={t('project.settings.captcha.regenerateKey')}
         closeText={t('common.cancel')}
@@ -1247,4 +1235,4 @@ const ProjectSettings = () => {
   )
 }
 
-export default withAuthentication(ProjectSettings, auth.authenticated)
+export default ProjectSettings

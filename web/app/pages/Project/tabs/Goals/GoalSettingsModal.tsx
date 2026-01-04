@@ -4,9 +4,11 @@ import _map from 'lodash/map'
 import { Trash2Icon, PlusIcon } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { getGoal, createGoal, updateGoal, type CreateGoal } from '~/api'
+import { getGoal } from '~/api'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
@@ -32,10 +34,10 @@ interface GoalSettingsModalProps {
 
 const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: GoalSettingsModalProps) => {
   const { t } = useTranslation()
+  const fetcher = useFetcher<ProjectViewActionData>()
   const isNew = !goalId
 
   const [isLoading, setIsLoading] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
 
   // Form state
   const [name, setName] = useState('')
@@ -43,6 +45,8 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
   const [matchType, setMatchType] = useState<'exact' | 'contains'>('exact')
   const [value, setValue] = useState('')
   const [metadataFilters, setMetadataFilters] = useState<{ key: string; value: string }[]>([])
+
+  const isSaving = fetcher.state === 'submitting'
 
   const resetForm = () => {
     setName('')
@@ -81,39 +85,36 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, goalId])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSaving(true)
-
-    try {
-      if (isNew) {
-        const data: CreateGoal = {
-          pid: projectId,
-          name,
-          type,
-          matchType,
-          value: value || undefined,
-          metadataFilters: metadataFilters.length > 0 ? metadataFilters : undefined,
-        }
-        await createGoal(data)
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      const { intent } = fetcher.data
+      if (intent === 'create-goal') {
         toast.success(t('goals.created'))
-      } else if (goalId) {
-        await updateGoal(goalId, {
-          name,
-          type,
-          matchType,
-          value: value || null,
-          metadataFilters: metadataFilters.length > 0 ? metadataFilters : null,
-        })
+      } else if (intent === 'update-goal') {
         toast.success(t('goals.updated'))
       }
       onSuccess()
       onClose()
-    } catch (err: any) {
-      toast.error(err?.message || t('apiNotifications.somethingWentWrong'))
-    } finally {
-      setIsSaving(false)
+    } else if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
     }
+  }, [fetcher.data, t, onSuccess, onClose])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const formData = new FormData()
+    formData.set('intent', isNew ? 'create-goal' : 'update-goal')
+    formData.set('name', name)
+    formData.set('goalType', type)
+    formData.set('goalValue', value)
+
+    if (!isNew && goalId) {
+      formData.set('goalId', goalId)
+    }
+
+    fetcher.submit(formData, { method: 'post' })
   }
 
   const addMetadataFilter = () => {

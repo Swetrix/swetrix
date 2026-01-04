@@ -1,6 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import createAuthRefreshInterceptor from 'axios-auth-refresh'
-import _isArray from 'lodash/isArray'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 
@@ -85,70 +84,6 @@ export const authMe = (config?: AxiosRequestConfig) =>
     } => response.data,
   )
 
-export const deleteUser = (deletionFeedback?: string) =>
-  api
-    .delete('/user', {
-      data: {
-        feedback: deletionFeedback,
-      },
-    })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw new Error(JSON.stringify(error.response.data))
-    })
-
-export const changeUserDetails = (data: User) =>
-  api
-    .put('/user', data)
-    .then((response): User => response.data)
-    .catch((error) => {
-      const errorsArray = error.response.data.message
-      if (_isArray(errorsArray)) {
-        throw errorsArray
-      }
-      throw new Error(errorsArray)
-    })
-
-export const setShowLiveVisitorsInTitle = (show: boolean) =>
-  api
-    .put('/user/live-visitors', { show })
-    .then((response): Partial<User> => response.data)
-    .catch((error) => {
-      const errorsArray = error.response.data.message
-      if (_isArray(errorsArray)) {
-        throw errorsArray
-      }
-      throw new Error(errorsArray)
-    })
-
-export const forgotPassword = (email: { email: string }) =>
-  api
-    .post('v1/auth/reset-password', email)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const confirmEmail = () =>
-  api
-    .post('/user/confirm_email')
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const createNewPassword = (id: string, password: string) =>
-  api
-    .post(`v1/auth/reset-password/confirm/${id}`, { newPassword: password })
-    .then((response) => response.data)
-    .catch((error) => {
-      const errorsArray = error.response.data.message
-      if (_isArray(errorsArray)) {
-        throw errorsArray
-      }
-      throw new Error(errorsArray)
-    })
-
 export const verifyEmail = ({ id }: { id: string }) =>
   api
     .get(`v1/auth/verify-email/${id}`)
@@ -208,38 +143,6 @@ export const getOrganisations = (take = 0, skip = 0, search?: string) =>
 export const getOrganisation = (id: string) =>
   api
     .get(`/organisation/${id}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const deleteOrganisation = (id: string) =>
-  api
-    .delete(`/organisation/${id}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const assignProjectToOrganisation = (projectId: string, organisationId?: string) =>
-  api
-    .patch(`/project/${projectId}/organisation`, { organisationId })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const createOrganisation = (name: string) =>
-  api
-    .post('/organisation', { name })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const updateOrganisation = (organisationId: string, data: { name: string }) =>
-  api
-    .patch(`/organisation/${organisationId}`, data)
     .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
@@ -313,30 +216,6 @@ export const getProject = (pid: string, password?: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const createProject = (data: { name: string; organisationId?: string }) =>
-  api
-    .post('/project', data)
-    .then((response): Project => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const updateProject = (id: string, data: Partial<Project>) =>
-  api
-    .put(`/project/${id}`, data)
-    .then((response): Project => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const deleteProject = (id: string) =>
-  api
-    .delete(`/project/${id}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const pinProject = (id: string) =>
   api
     .post(`/project/${id}/pin`)
@@ -348,14 +227,6 @@ export const pinProject = (id: string) =>
 export const unpinProject = (id: string) =>
   api
     .delete(`/project/${id}/pin`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const resetProject = (id: string) =>
-  api
-    .delete(`/project/reset/${id}`)
     .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
@@ -1004,60 +875,6 @@ export const changeShareRole = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const generate2FA = () =>
-  api
-    .post('2fa/generate')
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const enable2FA = (twoFactorAuthenticationCode: string) =>
-  api
-    .post('2fa/enable', { twoFactorAuthenticationCode })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const disable2FA = (twoFactorAuthenticationCode: string) =>
-  api
-    .post('2fa/disable', { twoFactorAuthenticationCode })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const submit2FA = (twoFactorAuthenticationCode: string) =>
-  api
-    .post('2fa/authenticate', { twoFactorAuthenticationCode })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const generateApiKey = () =>
-  api
-    .post('user/api-key')
-    .then(
-      (
-        response,
-      ): {
-        apiKey: string
-      } => response.data,
-    )
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const deleteApiKey = () =>
-  api
-    .delete('user/api-key')
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export interface GetLiveVisitorsInfo {
   psid: string
   dv: string
@@ -1206,30 +1023,6 @@ export type CreateGoal = {
   value?: string
   metadataFilters?: { key: string; value: string }[]
 }
-
-export const createGoal = (data: CreateGoal) =>
-  api
-    .post('goal', data)
-    .then((response): Goal => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const updateGoal = (id: string, data: Partial<Goal>) =>
-  api
-    .put(`goal/${id}`, data)
-    .then((response): Goal => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const deleteGoal = (id: string) =>
-  api
-    .delete(`goal/${id}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
 
 export const getGoalStats = (goalId: string, period: string, from: string = '', to: string = '', timezone?: string) =>
   api
@@ -1608,14 +1401,6 @@ export const getExperimentResults = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const reGenerateCaptchaSecretKey = (pid: string) =>
-  api
-    .post(`project/secret-gen/${pid}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const addSubscriber = (
   id: string,
   data: {
@@ -1762,17 +1547,6 @@ export const getProjectDataCustomEvents = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const transferProject = (uuid: string, email: string) =>
-  api
-    .post('project/transfer', {
-      projectId: uuid,
-      email,
-    })
-    .then((response): unknown => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const rejectTransferProject = (uuid: string) =>
   api
     .delete(`project/transfer?token=${uuid}`)
@@ -1875,20 +1649,6 @@ export const processSSOToken = (token: string, hash: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const deletePartially = (
-  id: string,
-  data: {
-    from: string
-    to: string
-  },
-) =>
-  api
-    .delete(`project/partially/${id}?from=${data.from}&to=${data.to}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getUserFlow = (
   pid: string,
   tb = 'hour',
@@ -1979,22 +1739,6 @@ export const getVersionFilters = (pid: string, type: 'traffic' | 'errors', colum
       throw error
     })
 
-export const resetFilters = (pid: string, type: string, filters: string[]) =>
-  api
-    .delete(`project/reset-filters/${pid}?type=${type}&filters=${JSON.stringify(filters)}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw error
-    })
-
-export const receiveLoginNotification = (receiveLoginNotifications: boolean) =>
-  api
-    .post('user/recieve-login-notifications', { receiveLoginNotifications })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw error
-    })
-
 export const previewSubscriptionUpdate = (planId: number) =>
   api
     .post('user/preview-plan', { planId })
@@ -2063,22 +1807,6 @@ export const updateErrorStatus = (pid: string, status: 'resolved' | 'active', ei
   api
     .patch('log/error-status', { pid, eid, eids, status })
     .then((response): any => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const updateOnboardingStep = (step: string) =>
-  api
-    .post('/user/onboarding/step', { step })
-    .then((response): User => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const completeOnboarding = () =>
-  api
-    .post('/user/onboarding/complete')
-    .then((response): User => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

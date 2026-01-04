@@ -6,11 +6,11 @@ import _size from 'lodash/size'
 import { StretchHorizontalIcon, LayoutGridIcon, SearchIcon, XIcon, FolderPlusIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLoaderData, useNavigate, useSearchParams } from 'react-router'
+import { useLoaderData, useNavigate, useSearchParams, useFetcher } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { getProjects, getLiveVisitors, getOverallStats, createProject } from '~/api'
+import { getProjects, getLiveVisitors, getOverallStats } from '~/api'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import useBreakpoint from '~/hooks/useBreakpoint'
@@ -18,7 +18,7 @@ import useDebounce from '~/hooks/useDebounce'
 import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL, tbPeriodPairs } from '~/lib/constants'
 import { Overall, Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
-import type { DashboardLoaderData } from '~/routes/dashboard'
+import type { DashboardLoaderData, DashboardActionData } from '~/routes/dashboard'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
@@ -48,6 +48,7 @@ const Dashboard = () => {
   const loaderData = useLoaderData<DashboardLoaderData>()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const fetcher = useFetcher<DashboardActionData>()
 
   const { user } = useAuth()
 
@@ -105,7 +106,6 @@ const Dashboard = () => {
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
   const [newProjectOrganisationId, setNewProjectOrganisationId] = useState<string | undefined>(undefined)
-  const [isNewProjectLoading, setIsNewProjectLoading] = useState(false)
   const [newProjectError, setNewProjectError] = useState<string | null>(null)
   const [newProjectBeenSubmitted, setNewProjectBeenSubmitted] = useState(false)
 
@@ -203,11 +203,23 @@ const Dashboard = () => {
     return { errors, valid: _isEmpty(_keys(errors)) }
   }
 
-  const onCreateProject = async () => {
-    if (isNewProjectLoading) {
-      return
+  // Handle fetcher responses for create project
+  useEffect(() => {
+    if (fetcher.data?.success && fetcher.data?.intent === 'create-project') {
+      refetchProjects()
+      toast.success(t('project.settings.created'))
+      closeNewProjectModal()
+    } else if (fetcher.data?.error && fetcher.data?.intent === 'create-project') {
+      setNewProjectError(fetcher.data.error)
+      toast.error(fetcher.data.error)
+    } else if (fetcher.data?.fieldErrors?.name && fetcher.data?.intent === 'create-project') {
+      setNewProjectError(fetcher.data.fieldErrors.name)
     }
+  }, [fetcher.data, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const isNewProjectLoading = fetcher.state === 'submitting'
+
+  const onCreateProject = () => {
     setNewProjectBeenSubmitted(true)
     const { errors, valid } = validateProjectName()
 
@@ -216,33 +228,13 @@ const Dashboard = () => {
       return
     }
 
-    setIsNewProjectLoading(true)
-
-    try {
-      await createProject({
-        name: newProjectName || DEFAULT_PROJECT_NAME,
-        organisationId: newProjectOrganisationId,
-      })
-
-      await refetchProjects()
-
-      toast.success(t('project.settings.created'))
-      closeNewProjectModal()
-    } catch (reason: unknown) {
-      console.error('[ERROR] Error while creating project:', reason)
-
-      const normalizedMessage =
-        typeof reason === 'string'
-          ? reason
-          : (reason as any)?.response?.data?.message ||
-            (reason as any)?.message ||
-            t('apiNotifications.somethingWentWrong')
-
-      setNewProjectError(normalizedMessage)
-      toast.error(normalizedMessage)
-    } finally {
-      setIsNewProjectLoading(false)
+    const formData = new FormData()
+    formData.set('intent', 'create-project')
+    formData.set('name', newProjectName || DEFAULT_PROJECT_NAME)
+    if (newProjectOrganisationId) {
+      formData.set('organisationId', newProjectOrganisationId)
     }
+    fetcher.submit(formData, { method: 'post' })
   }
 
   const closeNewProjectModal = () => {

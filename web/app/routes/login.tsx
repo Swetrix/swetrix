@@ -1,9 +1,9 @@
 import type { ActionFunctionArgs, HeadersFunction, LoaderFunctionArgs } from 'react-router'
 import { redirect, data } from 'react-router'
 
-import { getAuthenticatedUser, loginUser } from '~/api/api.server'
+import { getAuthenticatedUser, loginUser, serverFetch } from '~/api/api.server'
 import Signin from '~/pages/Auth/Signin'
-import { createHeadersWithCookies } from '~/utils/session.server'
+import { createHeadersWithCookies, createAuthCookies } from '~/utils/session.server'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')
@@ -26,15 +26,51 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export interface LoginActionData {
   error?: string | string[]
   requires2FA?: boolean
+  twoFASuccess?: boolean
   fieldErrors?: {
     email?: string
     password?: string
+    twoFACode?: string
   }
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData()
+  const intent = formData.get('intent')?.toString()
 
+  // Handle 2FA submission
+  if (intent === 'submit-2fa') {
+    const twoFactorAuthenticationCode = formData.get('twoFACode')?.toString() || ''
+    const dontRemember = formData.get('dontRemember') === 'true'
+
+    if (!twoFactorAuthenticationCode || twoFactorAuthenticationCode.length !== 6) {
+      return data<LoginActionData>({ fieldErrors: { twoFACode: 'Please enter a valid 6-digit code' } }, { status: 400 })
+    }
+
+    const result = await serverFetch<{ accessToken: string; refreshToken: string; user: { hasCompletedOnboarding: boolean } }>(
+      request,
+      '2fa/authenticate',
+      {
+        method: 'POST',
+        body: { twoFactorAuthenticationCode },
+      },
+    )
+
+    if (result.error) {
+      return data<LoginActionData>({ fieldErrors: { twoFACode: 'Invalid 2FA code' } }, { status: 400 })
+    }
+
+    const { accessToken, refreshToken, user } = result.data!
+    const cookies = createAuthCookies({ accessToken, refreshToken }, !dontRemember)
+
+    const redirectTo = user.hasCompletedOnboarding ? '/dashboard' : '/onboarding'
+
+    return redirect(redirectTo, {
+      headers: createHeadersWithCookies(cookies),
+    })
+  }
+
+  // Handle regular login
   const email = formData.get('email')?.toString() || ''
   const password = formData.get('password')?.toString() || ''
   const dontRemember = formData.get('dontRemember') === 'true'

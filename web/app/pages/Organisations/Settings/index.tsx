@@ -4,13 +4,13 @@ import _size from 'lodash/size'
 import { Trash2Icon } from 'lucide-react'
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { transferProject, getOrganisation, updateOrganisation, deleteOrganisation } from '~/api'
-import { withAuthentication, auth } from '~/hoc/protected'
+import { getOrganisation } from '~/api'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { TITLE_SUFFIX } from '~/lib/constants'
+import type { OrganisationSettingsActionData } from '~/routes/organisations.$id'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
@@ -33,6 +33,7 @@ const OrganisationSettings = () => {
   const { t } = useTranslation('common')
   const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
+  const fetcher = useFetcher<OrganisationSettingsActionData>()
 
   const { user, isLoading: authLoading } = useAuth()
 
@@ -42,8 +43,6 @@ const OrganisationSettings = () => {
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const [showTransfer, setShowTransfer] = useState(false)
   const [transferEmail, setTransferEmail] = useState('')
 
@@ -54,6 +53,33 @@ const OrganisationSettings = () => {
   const [form, setForm] = useState<Pick<DetailedOrganisation, 'name'>>({
     name: '',
   })
+
+  const isSaving = fetcher.state === 'submitting'
+  const isDeleting = fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'delete-organisation'
+
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      const { intent, organisation: updatedOrg } = fetcher.data
+
+      if (intent === 'update-organisation') {
+        if (updatedOrg) {
+          setOrganisation(updatedOrg)
+        }
+        toast.success(t('apiNotifications.orgSettingsUpdated'))
+      } else if (intent === 'delete-organisation') {
+        toast.success(t('apiNotifications.organisationDeleted'))
+        setShowDelete(false)
+        navigate(routes.organisations)
+      } else if (intent === 'invite-member' || intent === 'remove-member' || intent === 'update-member-role') {
+        reloadOrganisation()
+        toast.success(t('apiNotifications.orgSettingsUpdated'))
+      }
+    } else if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
+      setShowDelete(false)
+    }
+  }, [fetcher.data, t, navigate]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const isOrganisationOwner = useMemo(() => {
     if (!organisation) {
@@ -106,40 +132,21 @@ const OrganisationSettings = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, id])
 
-  const onSubmit = async (data: any) => {
-    if (isSaving) {
-      return
-    }
+  const onSubmit = (formData: Pick<DetailedOrganisation, 'name'>) => {
+    if (fetcher.state === 'submitting') return
 
-    setIsSaving(true)
-
-    try {
-      await updateOrganisation(id, { name: data.name })
-      toast.success(t('apiNotifications.orgSettingsUpdated'))
-    } catch (reason: any) {
-      toast.error(reason)
-    } finally {
-      setIsSaving(false)
-    }
+    const fd = new FormData()
+    fd.set('intent', 'update-organisation')
+    fd.set('name', formData.name)
+    fetcher.submit(fd, { method: 'post' })
   }
 
-  const onDelete = async () => {
-    if (isDeleting) {
-      return
-    }
+  const onDelete = () => {
+    if (fetcher.state === 'submitting') return
 
-    setIsDeleting(true)
-
-    try {
-      await deleteOrganisation(id)
-      toast.success(t('apiNotifications.organisationDeleted'))
-      navigate(routes.organisations)
-    } catch (reason: any) {
-      toast.error(reason)
-    } finally {
-      setIsDeleting(false)
-      setShowDelete(false)
-    }
+    const fd = new FormData()
+    fd.set('intent', 'delete-organisation')
+    fetcher.submit(fd, { method: 'post' })
   }
 
   const validate = () => {
@@ -323,4 +330,4 @@ const OrganisationSettings = () => {
   )
 }
 
-export default withAuthentication(OrganisationSettings, auth.authenticated)
+export default OrganisationSettings

@@ -1,87 +1,33 @@
-import _isEmpty from 'lodash/isEmpty'
-import _keys from 'lodash/keys'
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link, useNavigate } from 'react-router'
+import { Link, Form, useActionData, useNavigation, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
-import { forgotPassword } from '~/api'
-import { withAuthentication, auth } from '~/hoc/protected'
 import { isSelfhosted, TRIAL_DAYS } from '~/lib/constants'
+import type { ForgotPasswordActionData } from '~/routes/recovery'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import routes from '~/utils/routes'
-import { isValidEmail } from '~/utils/validator'
 
 const ForgotPassword = () => {
   const { t } = useTranslation('common')
-  const navigate = useNavigate()
-  const [form, setForm] = useState<{
-    email: string
-  }>({
-    email: '',
-  })
-  const [validated, setValidated] = useState(false)
-  const [errors, setErrors] = useState<{
-    email?: string
-  }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const navigation = useNavigation()
+  const actionData = useActionData<ForgotPasswordActionData>()
+  const [searchParams] = useSearchParams()
 
-  const validate = () => {
-    const allErrors = {} as {
-      email?: string
-    }
-
-    if (!isValidEmail(form.email)) {
-      allErrors.email = t('auth.common.badEmailError')
-    }
-
-    const valid = _isEmpty(_keys(allErrors))
-
-    setErrors(allErrors)
-    setValidated(valid)
-  }
+  const isSubmitting = navigation.state === 'submitting'
 
   useEffect(() => {
-    validate()
-  }, [form]) // eslint-disable-line
-
-  const onSubmit = async (data: { email: string }) => {
-    if (!isLoading) {
-      setIsLoading(true)
-
-      try {
-        await forgotPassword(data)
-
-        toast.success(t('auth.forgot.sent'))
-        navigate(routes.main)
-      } catch (reason: any) {
-        toast.error(reason.toString())
-      } finally {
-        setIsLoading(false)
-      }
+    if (searchParams.get('password_reset_sent') === 'true') {
+      toast.success(t('auth.forgot.sent'))
     }
-  }
+  }, [searchParams, t])
 
-  const handleInput = ({ target }: { target: HTMLInputElement }) => {
-    const value = target.type === 'checkbox' ? target.checked : target.value
-
-    setForm((oldForm) => ({
-      ...oldForm,
-      [target.name]: value,
-    }))
-  }
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setBeenSubmitted(true)
-
-    if (validated) {
-      onSubmit(form)
+  useEffect(() => {
+    if (actionData?.error) {
+      toast.error(actionData.error)
     }
-  }
+  }, [actionData?.error])
 
   return (
     <div>
@@ -93,19 +39,19 @@ const ForgotPassword = () => {
         </div>
         <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
           <div className='bg-white px-6 py-12 shadow-xs ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-900 dark:ring-slate-800'>
-            <form className='space-y-6' onSubmit={handleSubmit}>
+            <Form method='post' className='space-y-6'>
               <Input
                 name='email'
                 type='email'
                 label={t('auth.common.email')}
-                value={form.email}
-                onChange={handleInput}
-                error={beenSubmitted ? errors.email : null}
+                error={actionData?.fieldErrors?.email}
+                placeholder='name@company.com'
+                disabled={isSubmitting}
               />
-              <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
+              <Button className='w-full justify-center' type='submit' loading={isSubmitting} primary giant>
                 {t('auth.forgot.reset')}
               </Button>
-            </form>
+            </Form>
           </div>
           {isSelfhosted ? null : (
             <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
@@ -133,4 +79,4 @@ const ForgotPassword = () => {
   )
 }
 
-export default withAuthentication(ForgotPassword, auth.notAuthenticated)
+export default ForgotPassword

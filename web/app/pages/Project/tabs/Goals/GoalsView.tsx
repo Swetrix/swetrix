@@ -19,11 +19,10 @@ import {
 } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router'
+import { useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import {
-  deleteGoal as deleteGoalApi,
   getProjectGoals,
   getGoalStats,
   getGoalChart,
@@ -32,6 +31,7 @@ import {
   type GoalStats,
   type GoalChartData,
 } from '~/api'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import {
   TimeFormat,
   tbsFormatMapper,
@@ -433,6 +433,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   const [searchParams] = useSearchParams()
   const isEmbedded = searchParams.get('embedded') === 'true'
   const { t } = useTranslation()
+  const fetcher = useFetcher<ProjectViewActionData>()
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const isLoadingRef = useRef(false) // Use ref to avoid stale closure issues in loadGoals
@@ -620,15 +621,21 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
     loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
   }
 
-  const handleDeleteGoal = async (goalId: string) => {
-    try {
-      await deleteGoalApi(goalId)
+  // Handle fetcher responses for delete
+  useEffect(() => {
+    if (fetcher.data?.success && fetcher.data?.intent === 'delete-goal') {
       toast.success(t('goals.deleted'))
-      // Reload goals
       loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
-    } catch (reason: any) {
-      toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
+    } else if (fetcher.data?.error && fetcher.data?.intent === 'delete-goal') {
+      toast.error(fetcher.data.error)
     }
+  }, [fetcher.data, t, page, debouncedSearch]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleDeleteGoal = (goalId: string) => {
+    const formData = new FormData()
+    formData.set('intent', 'delete-goal')
+    formData.set('goalId', goalId)
+    fetcher.submit(formData, { method: 'post' })
   }
 
   if (error && isLoading === false) {
