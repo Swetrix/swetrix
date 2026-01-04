@@ -54,17 +54,6 @@ const OrganisationSettings = () => {
   const isSaving = fetcher.state === 'submitting'
   const isDeleting = fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'delete-organisation'
 
-  // Handle fetcher responses
-  if (fetcher.data?.success && fetcher.state === 'idle') {
-    const { intent, organisation: updatedOrg } = fetcher.data
-
-    if (intent === 'update-organisation') {
-      if (updatedOrg && form.name !== updatedOrg.name) {
-        setForm({ name: updatedOrg.name })
-      }
-    }
-  }
-
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (fetcher.data?.success) {
