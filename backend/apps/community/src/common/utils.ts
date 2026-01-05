@@ -1191,7 +1191,7 @@ const getIPFromHeaders = (headers: any) => {
   if (header === 'cloudfront-viewer-address') {
     const lastColonIndex = ip.lastIndexOf(':')
     if (lastColonIndex > 0) {
-      return ip.substring(0, lastColonIndex)
+      return ip.substring(0, lastColonIndex).replace('[', '').replace(']', '')
     }
   }
   return ip
