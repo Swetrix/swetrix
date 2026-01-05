@@ -41,6 +41,17 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   )
 }
 
+interface AvailableProject {
+  id: string
+  name: string
+  uiHidden?: boolean
+}
+
+interface AvailableProjectsResponse {
+  results: AvailableProject[]
+  total: number
+}
+
 export interface OrganisationSettingsActionData {
   success?: boolean
   intent?: string
@@ -50,6 +61,7 @@ export interface OrganisationSettingsActionData {
     email?: string
   }
   organisation?: DetailedOrganisation
+  availableProjects?: AvailableProjectsResponse
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -212,6 +224,26 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
       return data<OrganisationSettingsActionData>(
         { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'get-available-projects': {
+      const take = parseInt(formData.get('take')?.toString() || '5', 10)
+      const skip = parseInt(formData.get('skip')?.toString() || '0', 10)
+      const search = formData.get('search')?.toString() || ''
+
+      const result = await serverFetch<AvailableProjectsResponse>(
+        request,
+        `project/available-for-organisation?take=${take}&skip=${skip}&search=${encodeURIComponent(search)}`,
+      )
+
+      if (result.error) {
+        return data<OrganisationSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<OrganisationSettingsActionData>(
+        { intent, success: true, availableProjects: result.data as AvailableProjectsResponse },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }

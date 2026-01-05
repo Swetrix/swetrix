@@ -28,6 +28,7 @@ export interface DashboardActionData {
     name?: string
   }
   project?: Project
+  isPinned?: boolean
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -69,6 +70,69 @@ export async function action({ request }: ActionFunctionArgs) {
 
       return data<DashboardActionData>(
         { intent, success: true, project: result.data as Project },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'pin-project': {
+      const projectId = formData.get('projectId')?.toString()
+
+      if (!projectId) {
+        return data<DashboardActionData>({ intent, error: 'Project ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `project/${projectId}/pin`, {
+        method: 'POST',
+      })
+
+      if (result.error) {
+        return data<DashboardActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<DashboardActionData>(
+        { intent, success: true, isPinned: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'unpin-project': {
+      const projectId = formData.get('projectId')?.toString()
+
+      if (!projectId) {
+        return data<DashboardActionData>({ intent, error: 'Project ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `project/${projectId}/pin`, {
+        method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<DashboardActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<DashboardActionData>(
+        { intent, success: true, isPinned: false },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'accept-project-share': {
+      const shareId = formData.get('shareId')?.toString()
+
+      if (!shareId) {
+        return data<DashboardActionData>({ intent, error: 'Share ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `user/share/${shareId}`, {
+        method: 'GET',
+      })
+
+      if (result.error) {
+        return data<DashboardActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<DashboardActionData>(
+        { intent, success: true },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }

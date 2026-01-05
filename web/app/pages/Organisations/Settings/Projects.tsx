@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next'
 import { Link, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { getProjectsAvailableForOrganisation } from '~/api'
 import useDebounce from '~/hooks/useDebounce'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { Project } from '~/lib/models/Project'
@@ -30,36 +29,34 @@ const PROJECT_LIST_PAGE_SIZE = 20
 
 const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
   const { t } = useTranslation('common')
+  const fetcher = useFetcher<OrganisationSettingsActionData>()
 
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
   const [total, setTotal] = useState(0)
 
   const debouncedSearch = useDebounce(search, 500)
   const pageAmount = Math.ceil(total / PROJECT_SELECT_PAGE_SIZE)
+  const isLoading = fetcher.state === 'submitting' || fetcher.state === 'loading'
 
+  // Fetch projects when page or search changes
   useEffect(() => {
-    const loadProjects = async () => {
-      setIsLoading(true)
-      try {
-        const { results, total: totalCount } = await getProjectsAvailableForOrganisation(
-          PROJECT_SELECT_PAGE_SIZE,
-          (currentPage - 1) * PROJECT_SELECT_PAGE_SIZE,
-          debouncedSearch,
-        )
-        setProjects(results)
-        setTotal(totalCount)
-      } catch (reason) {
-        console.error('Failed to load projects:', reason)
-      } finally {
-        setIsLoading(false)
-      }
-    }
+    const formData = new FormData()
+    formData.set('intent', 'get-available-projects')
+    formData.set('take', String(PROJECT_SELECT_PAGE_SIZE))
+    formData.set('skip', String((currentPage - 1) * PROJECT_SELECT_PAGE_SIZE))
+    formData.set('search', debouncedSearch)
+    fetcher.submit(formData, { method: 'post' })
+  }, [currentPage, debouncedSearch]) // eslint-disable-line react-hooks/exhaustive-deps
 
-    loadProjects()
-  }, [currentPage, debouncedSearch])
+  // Update local state when fetcher returns data
+  useEffect(() => {
+    if (fetcher.data?.intent === 'get-available-projects' && fetcher.data?.availableProjects) {
+      setProjects(fetcher.data.availableProjects.results as Project[])
+      setTotal(fetcher.data.availableProjects.total)
+    }
+  }, [fetcher.data])
 
   useEffect(() => {
     setCurrentPage(1)

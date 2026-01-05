@@ -99,14 +99,6 @@ export const getProjects = (take = 0, skip = 0, search = '', period = '7d', sort
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getProjectsAvailableForOrganisation = (take = 0, skip = 0, search?: string) =>
-  api
-    .get(`/project/available-for-organisation?take=${take}&skip=${skip}&search=${search}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const acceptOrganisationInvitation = (tokenId: string) =>
   api
     .post(`/user/organisation/${tokenId}`)
@@ -131,22 +123,6 @@ export const getProject = (pid: string, password?: string) =>
       },
     })
     .then((response): Project => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const pinProject = (id: string) =>
-  api
-    .post(`/project/${id}/pin`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const unpinProject = (id: string) =>
-  api
-    .delete(`/project/${id}/pin`)
-    .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -768,14 +744,6 @@ export const deleteShareProjectUsers = (pid: string, userId: string) =>
 export const rejectProjectShare = (actionId: string) =>
   api
     .delete(`/user/share/${actionId}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const transferProject = (projectId: string, email: string) =>
-  api
-    .post('/project/transfer', { projectId, email })
     .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message

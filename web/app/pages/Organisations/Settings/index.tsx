@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useFetcher, useLoaderData, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
-import { transferProject } from '~/api'
 import { TITLE_SUFFIX } from '~/lib/constants'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
@@ -24,8 +23,6 @@ import { Projects } from './Projects'
 
 const MAX_NAME_LENGTH = 50
 
-const DEFAULT_ORGANISATION_NAME = 'Untitled Organisation'
-
 const OrganisationSettings = () => {
   const { t } = useTranslation('common')
   const loaderData = useLoaderData<OrganisationLoaderData>()
@@ -41,8 +38,6 @@ const OrganisationSettings = () => {
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
-  const [showTransfer, setShowTransfer] = useState(false)
-  const [transferEmail, setTransferEmail] = useState('')
 
   const organisation = loaderData?.organisation || null
   const error = loaderData?.error
@@ -157,21 +152,6 @@ const OrganisationSettings = () => {
     }
   }
 
-  const onTransfer = async () => {
-    await transferProject(organisation?.id || '', transferEmail)
-      .then(() => {
-        toast.success(t('apiNotifications.transferRequestSent'))
-        navigate(routes.dashboard)
-      })
-      .catch((reason) => {
-        toast.error(reason)
-      })
-      .finally(() => {
-        setShowTransfer(false)
-        setTransferEmail('')
-      })
-  }
-
   const title = `${t('project.settings.settings')} ${form.name}`
 
   useEffect(() => {
@@ -259,34 +239,6 @@ const OrganisationSettings = () => {
         type='error'
         isOpened={showDelete}
         isLoading={isDeleting}
-      />
-      <Modal
-        onClose={() => {
-          setShowTransfer(false)
-        }}
-        submitText={t('project.settings.transfer')}
-        closeText={t('common.cancel')}
-        message={
-          <div>
-            <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>{t('project.settings.transferTo')}</h2>
-            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
-              {t('project.settings.transferHint', {
-                name: form.name || DEFAULT_ORGANISATION_NAME,
-              })}
-            </p>
-            <Input
-              name='email'
-              type='email'
-              label={t('project.settings.transfereeEmail')}
-              value={transferEmail}
-              placeholder='you@example.com'
-              className='mt-4'
-              onChange={(e) => setTransferEmail(e.target.value)}
-            />
-          </div>
-        }
-        isOpened={showTransfer}
-        onSubmit={onTransfer}
       />
     </div>
   )

@@ -7,10 +7,10 @@ import _size from 'lodash/size'
 import { Settings2Icon, PinIcon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { acceptProjectShare, pinProject, unpinProject } from '~/api'
+import type { DashboardActionData } from '~/routes/dashboard'
 import { OverallObject, Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
 import { Badge, BadgeProps } from '~/ui/Badge'
@@ -123,6 +123,7 @@ export const ProjectCard = ({
 }: ProjectCardProps) => {
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
+  const fetcher = useFetcher<DashboardActionData>()
 
   const { user, mergeUser } = useAuth()
   const isTouchDevice = useIsTouchDevice()
@@ -146,46 +147,65 @@ export const ProjectCard = ({
   } = project
 
   const faviconHost = useMemo(() => getFaviconHost(websiteUrl || null), [websiteUrl])
-  const [isPinning, setIsPinning] = useState(false)
   const [localIsPinned, setLocalIsPinned] = useState(isPinned)
+
+  const isPinning = fetcher.state === 'submitting' &&
+    (fetcher.formData?.get('intent') === 'pin-project' || fetcher.formData?.get('intent') === 'unpin-project')
 
   // Sync local state with prop
   useEffect(() => {
     setLocalIsPinned(isPinned)
   }, [isPinned])
 
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      const { intent } = fetcher.data
+
+      if (intent === 'pin-project') {
+        toast.success(t('dashboard.pinned'))
+        refetchProjects()
+      } else if (intent === 'unpin-project') {
+        toast.success(t('dashboard.unpinned'))
+        refetchProjects()
+      } else if (intent === 'accept-project-share') {
+        mergeUser({
+          sharedProjects: user?.sharedProjects?.map((item) => {
+            if (item.id === shareId) {
+              return { ...item, isAccessConfirmed: true }
+            }
+            return item
+          }),
+        })
+        refetchProjects()
+        toast.success(t('apiNotifications.acceptInvitation'))
+      }
+    } else if (fetcher.data?.error) {
+      // Revert optimistic update on error
+      if (fetcher.data.intent === 'pin-project' || fetcher.data.intent === 'unpin-project') {
+        setLocalIsPinned(isPinned)
+      }
+      toast.error(fetcher.data.error)
+    }
+  }, [fetcher.data]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handlePinToggle = useCallback(
-    async (e: React.MouseEvent) => {
+    (e: React.MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
 
       if (isPinning) return
 
-      setIsPinning(true)
       // Optimistically update local state
       const newPinnedState = !localIsPinned
       setLocalIsPinned(newPinnedState)
 
-      try {
-        if (!newPinnedState) {
-          await unpinProject(id)
-          toast.success(t('dashboard.unpinned'))
-        } else {
-          await pinProject(id)
-          toast.success(t('dashboard.pinned'))
-        }
-        // Silently refetch projects in background - don't await
-        refetchProjects()
-      } catch (reason: any) {
-        // Revert on error
-        setLocalIsPinned(!newPinnedState)
-        console.error('[ERROR] Error while toggling pin:', reason)
-        toast.error(t('apiNotifications.somethingWentWrong'))
-      } finally {
-        setIsPinning(false)
-      }
+      const formData = new FormData()
+      formData.set('intent', newPinnedState ? 'pin-project' : 'unpin-project')
+      formData.set('projectId', id)
+      fetcher.submit(formData, { method: 'post' })
     },
-    [id, localIsPinned, isPinning, refetchProjects, t],
+    [id, localIsPinned, isPinning, fetcher],
   )
 
   const badges = useMemo(() => {
@@ -224,31 +244,16 @@ export const ProjectCard = ({
     return list
   }, [t, active, isTransferring, isPublic, organisation, share, project.isAccessConfirmed, project.role, shareId])
 
-  const onAccept = async () => {
-    try {
-      if (!shareId) {
-        throw new Error('Project share not found')
-      }
-
-      await acceptProjectShare(shareId)
-
-      mergeUser({
-        sharedProjects: user?.sharedProjects?.map((item) => {
-          if (item.id === shareId) {
-            return { ...item, isAccessConfirmed: true }
-          }
-
-          return item
-        }),
-      })
-
-      await refetchProjects()
-
-      toast.success(t('apiNotifications.acceptInvitation'))
-    } catch (reason: any) {
-      console.error(`[ERROR] Error while accepting project invitation: ${reason}`)
+  const onAccept = () => {
+    if (!shareId) {
       toast.error(t('apiNotifications.acceptInvitationError'))
+      return
     }
+
+    const formData = new FormData()
+    formData.set('intent', 'accept-project-share')
+    formData.set('shareId', shareId)
+    fetcher.submit(formData, { method: 'post' })
   }
 
   const onElementClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
