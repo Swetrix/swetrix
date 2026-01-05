@@ -20,7 +20,6 @@ import {
   ProfileDetails,
 } from '~/lib/models/Project'
 import { Stats } from '~/lib/models/Stats'
-import { Subscriber } from '~/lib/models/Subscriber'
 import { User } from '~/lib/models/User'
 import { Filter, ProjectViewCustomEvent } from '~/pages/Project/View/interfaces/traffic'
 import { getAccessToken, setAccessToken } from '~/utils/accessToken'
@@ -719,57 +718,6 @@ export const getGeneralStats = () =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const shareProject = (
-  pid: string,
-  data: {
-    email: string
-    role: string
-  },
-) =>
-  api
-    .post(`/project/${pid}/share`, data)
-    .then((response): Project => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const deleteShareProjectUsers = (pid: string, userId: string) =>
-  api
-    .delete(`/project/${pid}/${userId}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const rejectProjectShare = (actionId: string) =>
-  api
-    .delete(`/user/share/${actionId}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const acceptProjectShare = (actionId: string) =>
-  api
-    .get(`/user/share/${actionId}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const changeShareRole = (
-  id: string,
-  data: {
-    role: string
-  },
-) =>
-  api
-    .put(`project/share/${id}`, data)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export interface GetLiveVisitorsInfo {
   psid: string
   dv: string
@@ -1296,20 +1244,6 @@ export const getExperimentResults = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const addSubscriber = (
-  id: string,
-  data: {
-    email: string
-    reportFrequency: string
-  },
-) =>
-  api
-    .post(`project/${id}/subscribers`, data)
-    .then((response): Subscriber => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const addFunnel = (pid: string, name: string, steps: string[]) =>
   api
     .post('project/funnel', { pid, name, steps })
@@ -1366,43 +1300,6 @@ export const deleteAnnotation = (id: string, pid: string) =>
   api
     .delete(`project/annotation/${id}/${pid}`)
     .then((response): any => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getSubscribers = (id: string, offset: number, limit: number) =>
-  api
-    .get(`project/${id}/subscribers?offset=${offset}&limit=${limit}`)
-    .then(
-      (
-        response,
-      ): {
-        subscribers: Subscriber[]
-        count: number
-      } => response.data,
-    )
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const updateSubscriber = (
-  id: string,
-  subscriberId: string,
-  data: {
-    reportFrequency: string
-  },
-) =>
-  api
-    .patch(`project/${id}/subscribers/${subscriberId}`, data)
-    .then((response): Subscriber => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const removeSubscriber = (id: string, subscriberId: string) =>
-  api
-    .delete(`project/${id}/subscribers/${subscriberId}`)
-    .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1621,38 +1518,6 @@ export const previewSubscriptionUpdate = (planId: number) =>
 export const changeSubscriptionPlan = (planId: number) =>
   api
     .post('user/change-plan', { planId })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw error
-    })
-
-export const getBlogPosts = () =>
-  api
-    .get('v1/blog')
-    .then((response) => response.data)
-    .catch((error) => {
-      throw error
-    })
-
-export const getBlogPost = (slug: string) =>
-  api
-    .get(`v1/blog/${slug}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw error
-    })
-
-export const getSitemap = () =>
-  api
-    .get('v1/blog/sitemap')
-    .then((response) => response.data)
-    .catch((error) => {
-      throw error
-    })
-
-export const getBlogPostWithCategory = (category: string, slug: string) =>
-  api
-    .get(`v1/blog/${category}/${slug}`)
     .then((response) => response.data)
     .catch((error) => {
       throw error
@@ -1949,40 +1814,6 @@ export const getRevenueStatus = async (pid: string): Promise<RevenueStatus> => {
   return api
     .get(`project/${pid}/revenue/status`)
     .then((response): RevenueStatus => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
-}
-
-export type RevenueProvider = 'stripe' | 'paddle'
-
-export const connectRevenue = async (
-  pid: string,
-  provider: RevenueProvider,
-  apiKey: string,
-  currency: string = 'USD',
-): Promise<{ success: boolean }> => {
-  return api
-    .post(`project/${pid}/revenue/connect`, { provider, apiKey, currency })
-    .then((response): { success: boolean } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
-}
-
-export const disconnectRevenue = async (pid: string): Promise<void> => {
-  return api
-    .delete(`project/${pid}/revenue/disconnect`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
-}
-
-export const updateRevenueCurrency = async (pid: string, currency: string): Promise<{ success: boolean }> => {
-  return api
-    .post(`project/${pid}/revenue/currency`, { currency })
-    .then((response): { success: boolean } => response.data)
     .catch((error) => {
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
     })

@@ -871,7 +871,7 @@ const ProjectSettings = () => {
             ) : null}
 
             {activeTab === 'emails' && !isSelfhosted ? <Emails projectId={id} /> : null}
-            {activeTab === 'people' ? <People project={project} reloadProject={reloadProject} /> : null}
+            {activeTab === 'people' ? <People project={project} /> : null}
             {activeTab === 'annotations' ? (
               <Annotations projectId={id} allowedToManage={project?.role === 'owner' || project?.role === 'admin'} />
             ) : null}

@@ -12,6 +12,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return { requestOrigin: request.headers.get('origin') }
 }
 
+export interface RevenueStatus {
+  connected: boolean
+  provider?: string
+  currency?: string
+  lastSyncAt?: string
+}
+
 export interface ProjectSettingsActionData {
   success?: boolean
   intent?: string
@@ -22,11 +29,13 @@ export interface ProjectSettingsActionData {
     ipBlacklist?: string
     password?: string
     transferEmail?: string
+    email?: string
   }
   project?: Project
   subscriber?: Subscriber
   subscribers?: Subscriber[]
   subscribersCount?: number
+  revenueStatus?: RevenueStatus
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -288,6 +297,147 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
       const result = await serverFetch(request, `project/${id}/subscribers/${subscriberId}`, {
         method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'share-project': {
+      const email = formData.get('email')?.toString()
+      const role = formData.get('role')?.toString()
+
+      if (!email) {
+        return data<ProjectSettingsActionData>({ intent, fieldErrors: { email: 'Email is required' } }, { status: 400 })
+      }
+
+      const result = await serverFetch<Project>(request, `project/${id}/share`, {
+        method: 'POST',
+        body: { email, role },
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, project: result.data as Project },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'delete-share-user': {
+      const userId = formData.get('userId')?.toString()
+
+      if (!userId) {
+        return data<ProjectSettingsActionData>({ intent, error: 'User ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `project/${id}/${userId}`, {
+        method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'change-share-role': {
+      const shareId = formData.get('shareId')?.toString()
+      const role = formData.get('role')?.toString()
+
+      if (!shareId) {
+        return data<ProjectSettingsActionData>({ intent, error: 'Share ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `project/share/${shareId}`, {
+        method: 'PUT',
+        body: { role },
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'get-revenue-status': {
+      const result = await serverFetch<RevenueStatus>(request, `project/${id}/revenue/status`)
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, revenueStatus: result.data as RevenueStatus },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'connect-revenue': {
+      const provider = formData.get('provider')?.toString()
+      const apiKey = formData.get('apiKey')?.toString()
+      const currency = formData.get('currency')?.toString() || 'USD'
+
+      if (!provider || !apiKey) {
+        return data<ProjectSettingsActionData>({ intent, error: 'Provider and API key are required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `project/${id}/revenue/connect`, {
+        method: 'POST',
+        body: { provider, apiKey, currency },
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'disconnect-revenue': {
+      const result = await serverFetch(request, `project/${id}/revenue/disconnect`, {
+        method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'update-revenue-currency': {
+      const currency = formData.get('currency')?.toString()
+
+      if (!currency) {
+        return data<ProjectSettingsActionData>({ intent, error: 'Currency is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `project/${id}/revenue/currency`, {
+        method: 'POST',
+        body: { currency },
       })
 
       if (result.error) {

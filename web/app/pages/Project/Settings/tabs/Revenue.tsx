@@ -1,12 +1,12 @@
 import { CheckCircleIcon } from '@heroicons/react/24/solid'
 import { ArrowUpRightIcon, ExternalLinkIcon } from 'lucide-react'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { connectRevenue, disconnectRevenue, getRevenueStatus, updateRevenueCurrency } from '~/api'
-import type { RevenueProvider } from '~/api'
 import { DOCS_URL } from '~/lib/constants'
+import type { ProjectSettingsActionData, RevenueStatus } from '~/routes/projects.settings.$id'
 import Button from '~/ui/Button'
 import PaddleSVG from '~/ui/icons/Paddle'
 import StripeSVG from '~/ui/icons/Stripe'
@@ -15,12 +15,7 @@ import Loader from '~/ui/Loader'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 
-interface RevenueStatus {
-  connected: boolean
-  provider?: string
-  currency?: string
-  lastSyncAt?: string
-}
+type RevenueProvider = 'stripe' | 'paddle'
 
 const SUPPORTED_CURRENCIES = [
   { code: 'USD', symbol: '$', name: 'US Dollar' },
@@ -85,82 +80,105 @@ interface Props {
 
 const Revenue = ({ projectId }: Props) => {
   const { t } = useTranslation('common')
+  const fetcher = useFetcher<ProjectSettingsActionData>()
 
   const [status, setStatus] = useState<RevenueStatus | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [apiKey, setApiKey] = useState('')
   const [selectedProvider, setSelectedProvider] = useState<RevenueProvider>('stripe')
   const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'EUR' | 'GBP'>('USD')
-  const [isConnecting, setIsConnecting] = useState(false)
-  const [isDisconnecting, setIsDisconnecting] = useState(false)
-  const [isSavingCurrency, setIsSavingCurrency] = useState(false)
 
-  const loadStatus = useCallback(async () => {
-    try {
-      const result = await getRevenueStatus(projectId)
-      setStatus(result)
-      if (result.provider === 'stripe' || result.provider === 'paddle') {
-        setSelectedProvider(result.provider)
-      }
-      if (result.currency === 'USD' || result.currency === 'EUR' || result.currency === 'GBP') {
-        setSelectedCurrency(result.currency)
-      }
-    } catch (error) {
-      console.error('Failed to load revenue status:', error)
-    } finally {
-      setIsLoading(false)
-    }
+  const isConnecting =
+    fetcher.state !== 'idle' && fetcher.formData?.get('intent') === 'connect-revenue'
+  const isDisconnecting =
+    fetcher.state !== 'idle' && fetcher.formData?.get('intent') === 'disconnect-revenue'
+  const isSavingCurrency =
+    fetcher.state !== 'idle' && fetcher.formData?.get('intent') === 'update-revenue-currency'
+
+  useEffect(() => {
+    fetcher.submit(
+      { intent: 'get-revenue-status' },
+      { method: 'POST', action: `/projects/settings/${projectId}` },
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
   useEffect(() => {
-    loadStatus()
-  }, [loadStatus])
+    if (fetcher.state === 'idle' && fetcher.data) {
+      const { intent, success, error, revenueStatus } = fetcher.data
 
-  const handleConnect = async () => {
+      if (intent === 'get-revenue-status') {
+        setIsLoading(false)
+        if (success && revenueStatus) {
+          setStatus(revenueStatus)
+          if (revenueStatus.provider === 'stripe' || revenueStatus.provider === 'paddle') {
+            setSelectedProvider(revenueStatus.provider)
+          }
+          if (
+            revenueStatus.currency === 'USD' ||
+            revenueStatus.currency === 'EUR' ||
+            revenueStatus.currency === 'GBP'
+          ) {
+            setSelectedCurrency(revenueStatus.currency)
+          }
+        } else if (error) {
+          console.error('Failed to load revenue status:', error)
+        }
+      } else if (intent === 'connect-revenue') {
+        if (success) {
+          toast.success(t('project.settings.revenue.connected'))
+          setApiKey('')
+          fetcher.submit(
+            { intent: 'get-revenue-status' },
+            { method: 'POST', action: `/projects/settings/${projectId}` },
+          )
+        } else if (error) {
+          toast.error(error)
+        }
+      } else if (intent === 'disconnect-revenue') {
+        if (success) {
+          toast.success(t('project.settings.revenue.disconnected'))
+          setStatus({ connected: false })
+        } else if (error) {
+          toast.error(error)
+        }
+      } else if (intent === 'update-revenue-currency') {
+        if (success) {
+          toast.success(t('project.settings.revenue.currencyUpdated'))
+          setStatus((prev) => (prev ? { ...prev, currency: selectedCurrency } : prev))
+        } else if (error) {
+          toast.error(error)
+        }
+      }
+    }
+  }, [fetcher.state, fetcher.data, t, projectId, selectedCurrency])
+
+  const handleConnect = () => {
     if (!apiKey.trim()) {
       toast.error(t('project.settings.revenue.apiKeyRequired'))
       return
     }
 
-    setIsConnecting(true)
-    try {
-      await connectRevenue(projectId, selectedProvider, apiKey, selectedCurrency)
-      toast.success(t('project.settings.revenue.connected'))
-      setApiKey('')
-      await loadStatus()
-    } catch (error: any) {
-      toast.error(typeof error === 'string' ? error : t('apiNotifications.somethingWentWrong'))
-    } finally {
-      setIsConnecting(false)
-    }
+    fetcher.submit(
+      { intent: 'connect-revenue', provider: selectedProvider, apiKey, currency: selectedCurrency },
+      { method: 'POST', action: `/projects/settings/${projectId}` },
+    )
   }
 
-  const handleDisconnect = async () => {
-    setIsDisconnecting(true)
-    try {
-      await disconnectRevenue(projectId)
-      toast.success(t('project.settings.revenue.disconnected'))
-      setStatus({ connected: false })
-    } catch (error: any) {
-      toast.error(typeof error === 'string' ? error : t('apiNotifications.somethingWentWrong'))
-    } finally {
-      setIsDisconnecting(false)
-    }
+  const handleDisconnect = () => {
+    fetcher.submit(
+      { intent: 'disconnect-revenue' },
+      { method: 'POST', action: `/projects/settings/${projectId}` },
+    )
   }
 
-  const handleCurrencyChange = async () => {
+  const handleCurrencyChange = () => {
     if (!status?.connected) return
 
-    setIsSavingCurrency(true)
-    try {
-      await updateRevenueCurrency(projectId, selectedCurrency)
-      toast.success(t('project.settings.revenue.currencyUpdated'))
-      setStatus((prev) => (prev ? { ...prev, currency: selectedCurrency } : prev))
-    } catch (error: any) {
-      toast.error(typeof error === 'string' ? error : t('apiNotifications.somethingWentWrong'))
-    } finally {
-      setIsSavingCurrency(false)
-    }
+    fetcher.submit(
+      { intent: 'update-revenue-currency', currency: selectedCurrency },
+      { method: 'POST', action: `/projects/settings/${projectId}` },
+    )
   }
 
   if (isLoading) {
