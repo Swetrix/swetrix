@@ -1157,7 +1157,7 @@ const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
 const getIPFromHeaders = (headers: any) => {
   const customHeader = process.env.CLIENT_IP_HEADER
 
-  // only use customer header if not present in IP_ADDRESS_HEADERS
+  // only use custom header if not present in IP_ADDRESS_HEADERS
   // since we might need some extra process based on proxy
   if (
     !!customHeader &&
