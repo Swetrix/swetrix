@@ -294,6 +294,91 @@ export async function action({ request }: ActionFunctionArgs) {
       )
     }
 
+    case 'unlink-sso': {
+      const provider = formData.get('provider')?.toString()
+
+      if (!provider) {
+        return data<UserSettingsActionData>({ intent, error: 'Provider is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, 'v1/auth/sso/unlink', {
+        method: 'DELETE',
+        body: { provider },
+      })
+
+      if (result.error) {
+        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'remove-tg-integration': {
+      const tgID = formData.get('tgID')?.toString()
+
+      if (!tgID) {
+        return data<UserSettingsActionData>({ intent, error: 'Telegram ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `user/tg/${tgID}`, {
+        method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'accept-organisation-invitation': {
+      const membershipId = formData.get('membershipId')?.toString()
+
+      if (!membershipId) {
+        return data<UserSettingsActionData>({ intent, error: 'Membership ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `user/organisation/${membershipId}`, {
+        method: 'POST',
+      })
+
+      if (result.error) {
+        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'reject-organisation-invitation': {
+      const membershipId = formData.get('membershipId')?.toString()
+
+      if (!membershipId) {
+        return data<UserSettingsActionData>({ intent, error: 'Membership ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `user/organisation/${membershipId}`, {
+        method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
     default:
       return data<UserSettingsActionData>({ error: 'Unknown action' }, { status: 400 })
   }

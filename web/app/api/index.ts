@@ -98,22 +98,6 @@ export const getProjects = (take = 0, skip = 0, search = '', period = '7d', sort
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const acceptOrganisationInvitation = (tokenId: string) =>
-  api
-    .post(`/user/organisation/${tokenId}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const rejectOrganisationInvitation = (tokenId: string) =>
-  api
-    .delete(`/user/organisation/${tokenId}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getProject = (pid: string, password?: string) =>
   api
     .get(`/project/${pid}`, {
@@ -734,14 +718,6 @@ export const getLiveVisitorsInfo = (pid: string, password?: string) =>
       },
     })
     .then((response): GetLiveVisitorsInfo[] => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const removeTgIntegration = (tgID: string) =>
-  api
-    .delete(`user/tg/${tgID}`)
-    .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1396,14 +1372,6 @@ export const processSSOTokenCommunityEdition = (code: string, hash: string, redi
 export const linkBySSOHash = (hash: string, provider: SSOProvider) =>
   api
     .post('v1/auth/sso/link_by_hash', { hash, provider })
-    .then((response): unknown => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const unlinkSSO = (provider: SSOProvider) =>
-  api
-    .delete('v1/auth/sso/unlink', { data: { provider } })
     .then((response): unknown => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
