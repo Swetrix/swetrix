@@ -165,9 +165,6 @@ function replaceSwetrixLogo(html: string): string {
   return html.replace(/::SWETRIX_LOGO::/g, SWETRIX_LOGO_HTML)
 }
 
-export const getSlugFromFilename = (filename: string) => filename.substring(11)
-export const getDateFromFilename = (filename: string) => filename.substring(0, 10)
-
 interface GetPost {
   slug: string
   title?: string

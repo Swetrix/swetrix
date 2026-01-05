@@ -361,6 +361,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
 
   const onSubmit = () => {
     setShowModal(false)
+    setBeenSubmitted(false)
     setErrors({})
     setValidated(false)
 
@@ -386,6 +387,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
 
   const closeModal = () => {
     setShowModal(false)
+    setBeenSubmitted(false)
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
     setTimeout(() => setForm({ email: '', reportFrequency: '' }), 300)
     setErrors({})

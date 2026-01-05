@@ -209,6 +209,7 @@ const People = ({ project, reloadProject }: PeopleProps) => {
 
   const onSubmit = async () => {
     setShowModal(false)
+    setBeenSubmitted(false)
     setErrors({})
     setValidated(false)
 
@@ -239,6 +240,7 @@ const People = ({ project, reloadProject }: PeopleProps) => {
 
   const closeModal = () => {
     setShowModal(false)
+    setBeenSubmitted(false)
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
     setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
     setErrors({})

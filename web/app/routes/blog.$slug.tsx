@@ -8,7 +8,8 @@ import type { SitemapFunction } from 'remix-sitemap'
 import { getSitemap as getSitemapClient } from '~/api'
 import { isSelfhosted, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
-import { getPost, getSlugFromFilename, getDateFromFilename } from '~/utils/getPosts.server'
+import { getSlugFromFilename, getDateFromFilename } from '~/utils/blog'
+import { getPost } from '~/utils/getPosts.server'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = (loaderData: any) => {
