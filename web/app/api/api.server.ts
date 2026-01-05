@@ -382,3 +382,72 @@ export async function logoutUser(
     cookies: clearAuthCookies(),
   }
 }
+
+// ============================================================================
+// MARK: Blog API
+// ============================================================================
+
+interface BlogPost {
+  slug: string
+  title: string
+  date: string
+  hidden?: boolean
+  intro?: string
+}
+
+interface BlogPostContent {
+  body: string
+  attributes?: {
+    title?: string
+    hidden?: boolean
+    intro?: string
+    date?: string
+    author?: string
+    twitter_handle?: string
+    standalone?: boolean
+  }
+}
+
+export async function getBlogPosts(request: Request): Promise<BlogPost[] | null> {
+  const result = await serverFetch<BlogPost[]>(request, 'v1/blog', { skipAuth: true })
+
+  if (result.error || !result.data) {
+    return null
+  }
+
+  return result.data
+}
+
+export async function getBlogPost(request: Request, slug: string): Promise<BlogPostContent | null> {
+  const result = await serverFetch<BlogPostContent>(request, `v1/blog/${slug}`, { skipAuth: true })
+
+  if (result.error || !result.data) {
+    return null
+  }
+
+  return result.data
+}
+
+export async function getBlogPostWithCategory(
+  request: Request,
+  category: string,
+  slug: string,
+): Promise<BlogPostContent | null> {
+  const result = await serverFetch<BlogPostContent>(request, `v1/blog/${category}/${slug}`, { skipAuth: true })
+
+  if (result.error || !result.data) {
+    return null
+  }
+
+  return result.data
+}
+
+export async function getSitemap(request: Request): Promise<(string | string[])[] | null> {
+  const result = await serverFetch<(string | string[])[]>(request, 'v1/blog/sitemap', { skipAuth: true })
+
+  if (result.error || !result.data) {
+    return null
+  }
+
+  return result.data
+}

@@ -3,6 +3,7 @@ import { data } from 'react-router'
 
 import { serverFetch } from '~/api/api.server'
 import { Project } from '~/lib/models/Project'
+import { Subscriber } from '~/lib/models/Subscriber'
 import ProjectSettings from '~/pages/Project/Settings'
 import { redirectIfNotAuthenticated, createHeadersWithCookies } from '~/utils/session.server'
 
@@ -23,6 +24,9 @@ export interface ProjectSettingsActionData {
     transferEmail?: string
   }
   project?: Project
+  subscriber?: Subscriber
+  subscribers?: Subscriber[]
+  subscribersCount?: number
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -206,6 +210,92 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
       return data<ProjectSettingsActionData>(
         { intent, success: true, project: { captchaSecretKey: result.data?.captchaSecretKey } as Project },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'get-subscribers': {
+      const offset = Number(formData.get('offset') || 0)
+      const limit = Number(formData.get('limit') || 10)
+
+      const result = await serverFetch<{ subscribers: Subscriber[]; count: number }>(
+        request,
+        `project/${id}/subscribers?offset=${offset}&limit=${limit}`,
+      )
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, subscribers: result.data?.subscribers, subscribersCount: result.data?.count },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'add-subscriber': {
+      const email = formData.get('email')?.toString()
+      const reportFrequency = formData.get('reportFrequency')?.toString()
+
+      if (!email) {
+        return data<ProjectSettingsActionData>({ intent, error: 'Email is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch<Subscriber>(request, `project/${id}/subscribers`, {
+        method: 'POST',
+        body: { email, reportFrequency },
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, subscriber: result.data as Subscriber },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'update-subscriber': {
+      const subscriberId = formData.get('subscriberId')?.toString()
+      const reportFrequency = formData.get('reportFrequency')?.toString()
+
+      if (!subscriberId) {
+        return data<ProjectSettingsActionData>({ intent, error: 'Subscriber ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch<Subscriber>(request, `project/${id}/subscribers/${subscriberId}`, {
+        method: 'PUT',
+        body: { reportFrequency },
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, subscriber: result.data as Subscriber },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'remove-subscriber': {
+      const subscriberId = formData.get('subscriberId')?.toString()
+
+      if (!subscriberId) {
+        return data<ProjectSettingsActionData>({ intent, error: 'Subscriber ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `project/${id}/subscribers/${subscriberId}`, {
+        method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }

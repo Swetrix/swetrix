@@ -252,6 +252,48 @@ export async function action({ request }: ActionFunctionArgs) {
       )
     }
 
+    case 'accept-project-share': {
+      const shareId = formData.get('shareId')?.toString()
+
+      if (!shareId) {
+        return data<UserSettingsActionData>({ intent, error: 'Share ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `user/share/${shareId}`, {
+        method: 'POST',
+      })
+
+      if (result.error) {
+        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'reject-project-share': {
+      const shareId = formData.get('shareId')?.toString()
+
+      if (!shareId) {
+        return data<UserSettingsActionData>({ intent, error: 'Share ID is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `user/share/${shareId}`, {
+        method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
     default:
       return data<UserSettingsActionData>({ error: 'Unknown action' }, { status: 400 })
   }
