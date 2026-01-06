@@ -23,21 +23,13 @@ import {
 import { marked } from 'marked'
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router'
+import { useSearchParams, useFetcher } from 'react-router'
 import sanitizeHtml from 'sanitize-html'
 import { toast } from 'sonner'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
-import {
-  askAI,
-  getRecentAIChats,
-  getAllAIChats,
-  getAIChat,
-  createAIChat,
-  updateAIChat,
-  deleteAIChat,
-  AIChatSummary,
-} from '~/api'
+import { askAI, AIChatSummary } from '~/api'
+import { ProjectViewActionData } from '~/routes/projects.$id'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
@@ -474,6 +466,16 @@ const getSuggestionPrompts = (t: any) => [
   t('project.askAi.suggestions.deviceTypesChart'),
 ]
 
+interface AIChat {
+  id: string
+  name: string | null
+  messages: { role: 'user' | 'assistant'; content: string }[]
+  isOwner?: boolean
+  branched?: boolean
+  created: string
+  updated: string
+}
+
 const AskAIView = ({ projectId }: AskAIViewProps) => {
   const { t } = useTranslation('common')
   const [searchParams, setSearchParams] = useSearchParams()
@@ -490,10 +492,17 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const [recentChats, setRecentChats] = useState<AIChatSummary[]>([])
   const [allChats, setAllChats] = useState<AIChatSummary[]>([])
   const [allChatsTotal, setAllChatsTotal] = useState(0)
-  const [isLoadingChats, setIsLoadingChats] = useState(false)
   const [isViewAllModalOpen, setIsViewAllModalOpen] = useState(false)
   const [chatToDelete, setChatToDelete] = useState<string | null>(null)
   const hasInitializedRef = useRef(false)
+
+  const recentChatsFetcher = useFetcher<ProjectViewActionData>()
+  const allChatsFetcher = useFetcher<ProjectViewActionData>()
+  const loadChatFetcher = useFetcher<ProjectViewActionData>()
+  const saveChatFetcher = useFetcher<ProjectViewActionData>()
+  const deleteChatFetcher = useFetcher<ProjectViewActionData>()
+
+  const isLoadingChats = allChatsFetcher.state !== 'idle'
 
   const { scrollRef, contentRef, isAtBottom, scrollToBottom } = useStickToBottom({
     resize: 'smooth',
@@ -508,39 +517,85 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
   const generateMessageId = () => `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
-  const loadRecentChats = useCallback(async () => {
-    try {
-      const chats = await getRecentAIChats(projectId, 3)
-      setRecentChats(chats)
-    } catch (err) {
-      console.error('Failed to load recent chats:', err)
+  const loadRecentChats = useCallback(() => {
+    if (recentChatsFetcher.state !== 'idle') return
+
+    const formData = new FormData()
+    formData.append('intent', 'get-recent-ai-chats')
+    formData.append('limit', '3')
+
+    recentChatsFetcher.submit(formData, { method: 'POST' })
+  }, [recentChatsFetcher])
+
+  // Handle recent chats fetcher response
+  useEffect(() => {
+    if (recentChatsFetcher.state === 'idle' && recentChatsFetcher.data) {
+      if (recentChatsFetcher.data.success && recentChatsFetcher.data.data) {
+        setRecentChats(recentChatsFetcher.data.data as AIChatSummary[])
+      }
     }
-  }, [projectId])
+  }, [recentChatsFetcher.state, recentChatsFetcher.data])
 
   const loadAllChats = useCallback(
-    async (skip: number = 0) => {
-      setIsLoadingChats(true)
-      try {
-        const result = await getAllAIChats(projectId, skip, 20)
-        if (skip === 0) {
+    (skip: number = 0) => {
+      if (allChatsFetcher.state !== 'idle') return
+
+      const formData = new FormData()
+      formData.append('intent', 'get-all-ai-chats')
+      formData.append('skip', skip.toString())
+      formData.append('take', '20')
+
+      allChatsFetcher.submit(formData, { method: 'POST' })
+    },
+    [allChatsFetcher],
+  )
+
+  // Handle all chats fetcher response
+  const [pendingAllChatsSkip, setPendingAllChatsSkip] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (allChatsFetcher.state === 'idle' && allChatsFetcher.data) {
+      if (allChatsFetcher.data.success && allChatsFetcher.data.data) {
+        const result = allChatsFetcher.data.data as { chats: AIChatSummary[]; total: number }
+        if (pendingAllChatsSkip === 0) {
           setAllChats(result.chats)
         } else {
           setAllChats((prev) => [...prev, ...result.chats])
         }
         setAllChatsTotal(result.total)
-      } catch (err) {
-        console.error('Failed to load all chats:', err)
-      } finally {
-        setIsLoadingChats(false)
       }
+      setPendingAllChatsSkip(null)
+    }
+  }, [allChatsFetcher.state, allChatsFetcher.data, pendingAllChatsSkip])
+
+  const loadAllChatsWithSkip = useCallback(
+    (skip: number) => {
+      setPendingAllChatsSkip(skip)
+      loadAllChats(skip)
     },
-    [projectId],
+    [loadAllChats],
   )
 
   const loadChat = useCallback(
-    async (chatId: string) => {
-      try {
-        const chat = await getAIChat(projectId, chatId)
+    (chatId: string) => {
+      if (loadChatFetcher.state !== 'idle') return
+
+      const formData = new FormData()
+      formData.append('intent', 'get-ai-chat')
+      formData.append('chatId', chatId)
+
+      loadChatFetcher.submit(formData, { method: 'POST' })
+    },
+    [loadChatFetcher],
+  )
+
+  // Handle load chat fetcher response
+  const [pendingChatId, setPendingChatId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (loadChatFetcher.state === 'idle' && loadChatFetcher.data) {
+      if (loadChatFetcher.data.success && loadChatFetcher.data.data) {
+        const chat = loadChatFetcher.data.data as AIChat
         setMessages(
           chat.messages.map((m) => ({
             id: generateMessageId(),
@@ -548,19 +603,45 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             content: m.content,
           })),
         )
-        setCurrentChatId(chatId)
-      } catch (err) {
-        console.error('Failed to load chat:', err)
+        setCurrentChatId(chat.id)
+      } else if (loadChatFetcher.data.error) {
+        console.error('Failed to load chat:', loadChatFetcher.data.error)
         const newParams = new URLSearchParams(searchParams)
         newParams.delete('chat')
         setSearchParams(newParams)
       }
+      setPendingChatId(null)
+    }
+  }, [loadChatFetcher.state, loadChatFetcher.data, searchParams, setSearchParams])
+
+  const loadChatById = useCallback(
+    (chatId: string) => {
+      setPendingChatId(chatId)
+      loadChat(chatId)
     },
-    [projectId, searchParams, setSearchParams],
+    [loadChat],
   )
 
+  // Handle save chat fetcher response
+  useEffect(() => {
+    if (saveChatFetcher.state === 'idle' && saveChatFetcher.data) {
+      if (saveChatFetcher.data.success && saveChatFetcher.data.data) {
+        const result = saveChatFetcher.data.data as AIChat
+        if (result.branched || !currentChatId) {
+          setCurrentChatId(result.id)
+          const newParams = new URLSearchParams(searchParams)
+          newParams.set('chat', result.id)
+          setSearchParams(newParams, { replace: true })
+        }
+        loadRecentChats()
+      } else if (saveChatFetcher.data.error) {
+        console.error('Failed to save chat:', saveChatFetcher.data.error)
+      }
+    }
+  }, [saveChatFetcher.state, saveChatFetcher.data, currentChatId, searchParams, setSearchParams, loadRecentChats])
+
   const saveChat = useCallback(
-    async (messagesToSave: Message[]) => {
+    (messagesToSave: Message[]) => {
       const apiMessages = messagesToSave
         .filter((m) => m.content.trim().length > 0)
         .map((m) => ({
@@ -570,30 +651,19 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
       if (apiMessages.length === 0) return
 
-      try {
-        if (currentChatId) {
-          const result = await updateAIChat(projectId, currentChatId, { messages: apiMessages })
+      const formData = new FormData()
+      formData.append('messages', JSON.stringify(apiMessages))
 
-          // If the chat was branched (user didn't own the original), update to the new chat ID
-          if (result.branched) {
-            setCurrentChatId(result.id)
-            const newParams = new URLSearchParams(searchParams)
-            newParams.set('chat', result.id)
-            setSearchParams(newParams, { replace: true })
-          }
-        } else {
-          const chat = await createAIChat(projectId, apiMessages)
-          setCurrentChatId(chat.id)
-          const newParams = new URLSearchParams(searchParams)
-          newParams.set('chat', chat.id)
-          setSearchParams(newParams, { replace: true })
-        }
-        loadRecentChats()
-      } catch (err) {
-        console.error('Failed to save chat:', err)
+      if (currentChatId) {
+        formData.append('intent', 'update-ai-chat')
+        formData.append('chatId', currentChatId)
+      } else {
+        formData.append('intent', 'create-ai-chat')
       }
+
+      saveChatFetcher.submit(formData, { method: 'POST' })
     },
-    [projectId, currentChatId, searchParams, setSearchParams, loadRecentChats],
+    [saveChatFetcher, currentChatId],
   )
 
   useEffect(() => {
@@ -602,12 +672,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
     const chatId = searchParams.get('chat')
     if (chatId) {
-      loadChat(chatId)
+      loadChatById(chatId)
     }
     loadRecentChats()
-  }, [searchParams, loadChat, loadRecentChats])
+  }, [searchParams, loadChatById, loadRecentChats])
 
-  const handleNewChat = () => {
+  const handleNewChat = useCallback(() => {
     setMessages([])
     setCurrentChatId(null)
     setStreamingMessage(null)
@@ -615,34 +685,59 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     const newParams = new URLSearchParams(searchParams)
     newParams.delete('chat')
     setSearchParams(newParams)
-  }
+  }, [searchParams, setSearchParams])
 
   const handleOpenChat = (chatId: string) => {
     setIsViewAllModalOpen(false)
-    loadChat(chatId)
+    loadChatById(chatId)
     const newParams = new URLSearchParams(searchParams)
     newParams.set('chat', chatId)
     setSearchParams(newParams)
   }
 
-  const handleDeleteChat = async (chatId: string) => {
-    try {
-      await deleteAIChat(projectId, chatId)
-      toast.success(t('project.askAi.chatDeleted'))
+  // Handle delete chat fetcher response
+  const [deletingChatId, setDeletingChatId] = useState<string | null>(null)
 
-      if (chatId === currentChatId) {
-        handleNewChat()
-      }
+  useEffect(() => {
+    if (deleteChatFetcher.state === 'idle' && deleteChatFetcher.data) {
+      if (deleteChatFetcher.data.success) {
+        toast.success(t('project.askAi.chatDeleted'))
 
-      loadRecentChats()
-      if (isViewAllModalOpen) {
-        loadAllChats(0)
+        if (deletingChatId === currentChatId) {
+          handleNewChat()
+        }
+
+        loadRecentChats()
+        if (isViewAllModalOpen) {
+          loadAllChatsWithSkip(0)
+        }
+      } else if (deleteChatFetcher.data.error) {
+        console.error('Failed to delete chat:', deleteChatFetcher.data.error)
       }
-    } catch (err) {
-      console.error('Failed to delete chat:', err)
-    } finally {
+      setDeletingChatId(null)
       setChatToDelete(null)
     }
+  }, [
+    deleteChatFetcher.state,
+    deleteChatFetcher.data,
+    deletingChatId,
+    currentChatId,
+    isViewAllModalOpen,
+    loadRecentChats,
+    loadAllChatsWithSkip,
+    t,
+  ])
+
+  const handleDeleteChat = (chatId: string) => {
+    if (deleteChatFetcher.state !== 'idle') return
+
+    setDeletingChatId(chatId)
+
+    const formData = new FormData()
+    formData.append('intent', 'delete-ai-chat')
+    formData.append('chatId', chatId)
+
+    deleteChatFetcher.submit(formData, { method: 'POST' })
   }
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -1060,7 +1155,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
               type='button'
               onClick={() => {
                 setIsViewAllModalOpen(true)
-                loadAllChats(0)
+                loadAllChatsWithSkip(0)
               }}
               className='text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
             >
@@ -1134,7 +1229,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 {allChats.length < allChatsTotal ? (
                   <button
                     type='button'
-                    onClick={() => loadAllChats(allChats.length)}
+                    onClick={() => loadAllChatsWithSkip(allChats.length)}
                     disabled={isLoadingChats}
                     className='flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
                   >

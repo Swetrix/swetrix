@@ -22,7 +22,6 @@ export const meta: MetaFunction = (loaderData: any) => {
   ]
 }
 
-// @ts-expect-error SitemapFunction does not support async, investigate it later
 export const sitemap: SitemapFunction = async () => {
   const files = await getSitemapClient()
 

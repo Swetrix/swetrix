@@ -2,10 +2,12 @@ import cx from 'clsx'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import { BookmarkIcon, DownloadIcon, PencilIcon, Trash2Icon } from 'lucide-react'
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router'
+import { useSearchParams, useFetcher } from 'react-router'
+import { toast } from 'sonner'
 
+import { ProjectViewActionData } from '~/routes/projects.$id'
 import Dropdown from '~/ui/Dropdown'
 import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
@@ -22,9 +24,7 @@ interface TrafficHeaderActionsProps {
   // Segments dropdown props
   projectViews: ProjectView[]
   projectViewsLoading: boolean | null
-  projectViewDeleting: boolean
-  loadProjectViews: () => Promise<void>
-  onProjectViewDelete: (viewId: string) => Promise<void>
+  loadProjectViews: (forced?: boolean) => void
   setProjectViewToUpdate: (view: ProjectView | undefined) => void
   setIsAddAViewOpened: (value: boolean) => void
   onCustomMetric: (metrics: ProjectViewCustomEvent[]) => void
@@ -40,9 +40,7 @@ interface TrafficHeaderActionsProps {
 const TrafficHeaderActions = ({
   projectViews,
   projectViewsLoading,
-  projectViewDeleting,
   loadProjectViews,
-  onProjectViewDelete,
   setProjectViewToUpdate,
   setIsAddAViewOpened,
   onCustomMetric,
@@ -53,6 +51,31 @@ const TrafficHeaderActions = ({
 }: TrafficHeaderActionsProps) => {
   const { t } = useTranslation('common')
   const [searchParams, setSearchParams] = useSearchParams()
+  const deleteFetcher = useFetcher<ProjectViewActionData>()
+  const isDeleting = deleteFetcher.state !== 'idle'
+  const hasHandledDelete = useRef(false)
+
+  useEffect(() => {
+    if (deleteFetcher.state === 'submitting') {
+      hasHandledDelete.current = false
+    }
+  }, [deleteFetcher.state])
+
+  useEffect(() => {
+    if (
+      deleteFetcher.state === 'idle' &&
+      deleteFetcher.data?.intent === 'delete-project-view' &&
+      !hasHandledDelete.current
+    ) {
+      hasHandledDelete.current = true
+      if (deleteFetcher.data.success) {
+        toast.success(t('apiNotifications.segmentDeleted'))
+        loadProjectViews(true)
+      } else if (deleteFetcher.data.error) {
+        toast.error(deleteFetcher.data.error)
+      }
+    }
+  }, [deleteFetcher.state, deleteFetcher.data, loadProjectViews, t])
 
   return (
     <>
@@ -110,22 +133,27 @@ const TrafficHeaderActions = ({
                   >
                     <PencilIcon className='size-3' />
                   </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      close()
-                      onProjectViewDelete(item.id)
-                    }}
-                    aria-label={t('common.settings')}
-                    className={cx(
-                      'rounded-md p-1 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-800 dark:hover:text-slate-200',
-                      {
-                        'cursor-not-allowed': projectViewDeleting,
-                      },
-                    )}
-                  >
-                    <Trash2Icon className='size-3' />
-                  </button>
+                  <deleteFetcher.Form method='post' className='inline'>
+                    <input type='hidden' name='intent' value='delete-project-view' />
+                    <input type='hidden' name='viewId' value={item.id} />
+                    <button
+                      type='submit'
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        close()
+                      }}
+                      disabled={isDeleting}
+                      aria-label={t('common.delete')}
+                      className={cx(
+                        'rounded-md p-1 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-800 dark:hover:text-slate-200',
+                        {
+                          'cursor-not-allowed opacity-50': isDeleting,
+                        },
+                      )}
+                    >
+                      <Trash2Icon className='size-3' />
+                    </button>
+                  </deleteFetcher.Form>
                 </div>
               ) : null}
             </div>

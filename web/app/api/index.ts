@@ -569,54 +569,6 @@ export const getFunnels = (pid: string, password: string | undefined = '') =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getProjectViews = (pid: string, password: string | undefined = '') =>
-  api
-    .get(`project/${pid}/views`, {
-      headers: {
-        'x-password': password,
-      },
-    })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const createProjectView = (
-  pid: string,
-  name: string,
-  type: 'traffic' | 'performance',
-  filters: Filter[],
-  customEvents: Partial<ProjectViewCustomEvent>[],
-) =>
-  api
-    .post(`project/${pid}/views`, { name, type, filters, customEvents })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const updateProjectView = (
-  pid: string,
-  viewId: string,
-  name: string,
-  filters: Filter[],
-  customEvents: Partial<ProjectViewCustomEvent>[],
-) =>
-  api
-    .patch(`project/${pid}/views/${viewId}`, { name, filters, customEvents })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const deleteProjectView = (pid: string, viewId: string) =>
-  api
-    .delete(`project/${pid}/views/${viewId}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getCaptchaData = (pid: string, tb = 'hour', period = '3d', filters: any[] = [], from = '', to = '') =>
   api
     .get(
@@ -1676,82 +1628,6 @@ export interface AIChatSummary {
   updated: string
 }
 
-interface AIChat extends AIChatSummary {
-  messages: AIChatMessage[]
-  isOwner?: boolean
-  branched?: boolean
-}
-
-export const getRecentAIChats = async (pid: string, limit: number = 5): Promise<AIChatSummary[]> => {
-  return api
-    .get(`ai/${pid}/chats`, {
-      params: { limit },
-    })
-    .then((response): AIChatSummary[] => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
-}
-
-export const getAllAIChats = async (
-  pid: string,
-  skip: number = 0,
-  take: number = 20,
-): Promise<{ chats: AIChatSummary[]; total: number }> => {
-  return api
-    .get(`ai/${pid}/chats/all`, {
-      params: { skip, take },
-    })
-    .then((response): { chats: AIChatSummary[]; total: number } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
-}
-
-export const getAIChat = async (pid: string, chatId: string): Promise<AIChat> => {
-  return api
-    .get(`ai/${pid}/chats/${chatId}`)
-    .then((response): AIChat => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
-}
-
-export const createAIChat = async (pid: string, messages: AIChatMessage[], name?: string): Promise<AIChat> => {
-  return api
-    .post(
-      `ai/${pid}/chats`,
-      { messages, name },
-      { headers: { Authorization: getAccessToken() ? `Bearer ${getAccessToken()}` : '' } },
-    )
-    .then((response): AIChat => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
-}
-
-export const updateAIChat = async (
-  pid: string,
-  chatId: string,
-  data: { messages?: AIChatMessage[]; name?: string },
-): Promise<AIChat> => {
-  return api
-    .post(`ai/${pid}/chats/${chatId}`, data)
-    .then((response): AIChat => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
-}
-
-export const deleteAIChat = async (pid: string, chatId: string): Promise<{ success: boolean }> => {
-  return api
-    .delete(`ai/${pid}/chats/${chatId}`)
-    .then((response): { success: boolean } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
-}
-
 // Revenue API
 interface RevenueStatus {
   connected: boolean
@@ -1804,3 +1680,12 @@ export const getRevenueData = async (
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
     })
 }
+
+// Blog Sitemap (kept client-side for SitemapFunction - no request object available)
+export const getSitemap = () =>
+  api
+    .get('v1/blog/sitemap')
+    .then((response): (string | string[])[] => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })

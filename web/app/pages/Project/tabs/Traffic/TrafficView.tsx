@@ -96,9 +96,7 @@ interface TrafficViewProps {
   // Segment/View props
   projectViews: ProjectView[]
   projectViewsLoading: boolean | null
-  projectViewDeleting: boolean
-  loadProjectViews: () => Promise<void>
-  onProjectViewDelete: (viewId: string) => Promise<void>
+  loadProjectViews: (forced?: boolean) => void
   setProjectViewToUpdate: (view: ProjectView | undefined) => void
   setIsAddAViewOpened: (value: boolean) => void
   onCustomMetric: (metrics: ProjectViewCustomEvent[]) => void
@@ -112,9 +110,7 @@ const TrafficView = ({
   mode,
   projectViews,
   projectViewsLoading,
-  projectViewDeleting,
   loadProjectViews,
-  onProjectViewDelete,
   setProjectViewToUpdate,
   setIsAddAViewOpened,
   onCustomMetric,
@@ -861,9 +857,7 @@ const TrafficView = ({
     <TrafficHeaderActions
       projectViews={projectViews}
       projectViewsLoading={projectViewsLoading}
-      projectViewDeleting={projectViewDeleting}
       loadProjectViews={loadProjectViews}
-      onProjectViewDelete={onProjectViewDelete}
       setProjectViewToUpdate={setProjectViewToUpdate}
       setIsAddAViewOpened={setIsAddAViewOpened}
       onCustomMetric={onCustomMetric}

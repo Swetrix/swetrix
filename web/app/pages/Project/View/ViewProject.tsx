@@ -26,11 +26,11 @@ import {
 import React, { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext, lazy } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams, LinkProps } from 'react-router'
+import { useNavigate, useSearchParams, LinkProps, useFetcher } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { getProjectViews, deleteProjectView } from '~/api'
+import { ProjectViewActionData } from '~/routes/projects.$id'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
@@ -402,49 +402,48 @@ const ViewProjectContent = () => {
   // null -> not loaded yet
   const [projectViews, setProjectViews] = useState<ProjectView[]>([])
   const [projectViewsLoading, setProjectViewsLoading] = useState<boolean | null>(null) //  // null - not loaded, true - loading, false - loaded
-  const [projectViewDeleting, setProjectViewDeleting] = useState(false)
   const [projectViewToUpdate, setProjectViewToUpdate] = useState<ProjectView | undefined>()
+
+  const viewsLoadFetcher = useFetcher<ProjectViewActionData>()
 
   const mode = activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode] ? 'cumulative' : 'periodical'
 
-  const loadProjectViews = async (forced?: boolean) => {
-    if (!forced && projectViewsLoading !== null) {
-      return
+  const loadProjectViews = useCallback(
+    (forced?: boolean) => {
+      if (!forced && projectViewsLoading !== null) {
+        return
+      }
+
+      if (viewsLoadFetcher.state !== 'idle') {
+        return
+      }
+
+      setProjectViewsLoading(true)
+
+      const formData = new FormData()
+      formData.append('intent', 'get-project-views')
+      if (projectPassword) {
+        formData.append('password', projectPassword)
+      }
+
+      viewsLoadFetcher.submit(formData, { method: 'POST' })
+    },
+    [projectViewsLoading, viewsLoadFetcher, projectPassword],
+  )
+
+  // Handle views load fetcher response
+  useEffect(() => {
+    if (viewsLoadFetcher.state === 'idle' && viewsLoadFetcher.data) {
+      setProjectViewsLoading(false)
+      if (viewsLoadFetcher.data.success && viewsLoadFetcher.data.data) {
+        setProjectViews((viewsLoadFetcher.data.data as ProjectView[]) || [])
+      } else if (viewsLoadFetcher.data.error) {
+        console.error('[ERROR] (loadProjectViews)', viewsLoadFetcher.data.error)
+        toast.error(viewsLoadFetcher.data.error)
+      }
     }
+  }, [viewsLoadFetcher.state, viewsLoadFetcher.data])
 
-    setProjectViewsLoading(true)
-
-    try {
-      const views = await getProjectViews(id, projectPassword)
-      setProjectViews(views)
-    } catch (reason: any) {
-      console.error('[ERROR] (loadProjectViews)', reason)
-      toast.error(reason)
-    }
-
-    setProjectViewsLoading(false)
-  }
-
-  const onProjectViewDelete = async (viewId: string) => {
-    if (projectViewDeleting) {
-      return
-    }
-
-    setProjectViewDeleting(true)
-
-    try {
-      await deleteProjectView(id, viewId)
-    } catch (reason: any) {
-      console.error('[ERROR] (deleteProjectView)', reason)
-      toast.error(reason)
-      setProjectViewDeleting(false)
-      return
-    }
-
-    toast.success(t('apiNotifications.segmentDeleted'))
-    await loadProjectViews(true)
-    setProjectViewDeleting(false)
-  }
 
   const getVersionFilterLink = useCallback(
     (parent: string | null, version: string | null, panelType: 'br' | 'os') => {
@@ -1261,9 +1260,7 @@ const ViewProjectContent = () => {
                               mode={mode}
                               projectViews={projectViews}
                               projectViewsLoading={projectViewsLoading}
-                              projectViewDeleting={projectViewDeleting}
                               loadProjectViews={loadProjectViews}
-                              onProjectViewDelete={onProjectViewDelete}
                               setProjectViewToUpdate={setProjectViewToUpdate}
                               setIsAddAViewOpened={setIsAddAViewOpened}
                               onCustomMetric={onCustomMetric}

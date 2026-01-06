@@ -232,6 +232,272 @@ export async function action({ request, params }: ActionFunctionArgs) {
       )
     }
 
+    // Annotations
+    case 'get-annotations': {
+      const password = formData.get('password')?.toString() || ''
+
+      const result = await serverFetch(request, `project/annotations/${projectId}`, {
+        method: 'GET',
+        headers: password ? { 'x-password': password } : undefined,
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'create-annotation': {
+      const date = formData.get('date')?.toString() || ''
+      const text = formData.get('text')?.toString() || ''
+
+      const result = await serverFetch(request, 'project/annotation', {
+        method: 'POST',
+        body: { pid: projectId, date, text },
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'update-annotation': {
+      const annotationId = formData.get('annotationId')?.toString() || ''
+      const date = formData.get('date')?.toString() || ''
+      const text = formData.get('text')?.toString() || ''
+
+      const result = await serverFetch(request, 'project/annotation', {
+        method: 'PATCH',
+        body: { id: annotationId, pid: projectId, date, text },
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'delete-annotation': {
+      const annotationId = formData.get('annotationId')?.toString()
+
+      const result = await serverFetch(request, `project/annotation/${annotationId}/${projectId}`, {
+        method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    // Project Views
+    case 'get-project-views': {
+      const password = formData.get('password')?.toString() || ''
+
+      const result = await serverFetch(request, `project/${projectId}/views`, {
+        method: 'GET',
+        headers: password ? { 'x-password': password } : undefined,
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'create-project-view': {
+      const name = formData.get('name')?.toString() || ''
+      const type = formData.get('type')?.toString() || 'traffic'
+      const filters = JSON.parse(formData.get('filters')?.toString() || '[]')
+      const customEvents = JSON.parse(formData.get('customEvents')?.toString() || '[]')
+
+      const result = await serverFetch(request, `project/${projectId}/views`, {
+        method: 'POST',
+        body: { name, type, filters, customEvents },
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'update-project-view': {
+      const viewId = formData.get('viewId')?.toString()
+      const name = formData.get('name')?.toString() || ''
+      const filters = JSON.parse(formData.get('filters')?.toString() || '[]')
+      const customEvents = JSON.parse(formData.get('customEvents')?.toString() || '[]')
+
+      const result = await serverFetch(request, `project/${projectId}/views/${viewId}`, {
+        method: 'PATCH',
+        body: { name, filters, customEvents },
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'delete-project-view': {
+      const viewId = formData.get('viewId')?.toString()
+
+      const result = await serverFetch(request, `project/${projectId}/views/${viewId}`, {
+        method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    // AI Chat
+    case 'get-recent-ai-chats': {
+      const limit = Number(formData.get('limit') || '5')
+
+      const result = await serverFetch(request, `ai/${projectId}/chats?limit=${limit}`, {
+        method: 'GET',
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'get-all-ai-chats': {
+      const skip = Number(formData.get('skip') || '0')
+      const take = Number(formData.get('take') || '20')
+
+      const result = await serverFetch(request, `ai/${projectId}/chats/all?skip=${skip}&take=${take}`, {
+        method: 'GET',
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'get-ai-chat': {
+      const chatId = formData.get('chatId')?.toString()
+
+      const result = await serverFetch(request, `ai/${projectId}/chats/${chatId}`, {
+        method: 'GET',
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'create-ai-chat': {
+      const messages = JSON.parse(formData.get('messages')?.toString() || '[]')
+      const name = formData.get('name')?.toString()
+
+      const result = await serverFetch(request, `ai/${projectId}/chats`, {
+        method: 'POST',
+        body: { messages, name },
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'update-ai-chat': {
+      const chatId = formData.get('chatId')?.toString()
+      const messages = formData.get('messages') ? JSON.parse(formData.get('messages')!.toString()) : undefined
+      const name = formData.get('name')?.toString()
+
+      const body: Record<string, unknown> = {}
+      if (messages) body.messages = messages
+      if (name !== undefined) body.name = name
+
+      const result = await serverFetch(request, `ai/${projectId}/chats/${chatId}`, {
+        method: 'POST',
+        body,
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'delete-ai-chat': {
+      const chatId = formData.get('chatId')?.toString()
+
+      const result = await serverFetch(request, `ai/${projectId}/chats/${chatId}`, {
+        method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
     default:
       return data<ProjectViewActionData>({ error: 'Unknown action' }, { status: 400 })
   }
