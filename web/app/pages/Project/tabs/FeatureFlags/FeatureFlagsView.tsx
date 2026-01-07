@@ -22,12 +22,10 @@ import {
 } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation, useSearchParams } from 'react-router'
+import { Link, useLocation, useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import {
-  deleteFeatureFlag as deleteFeatureFlagApi,
-  getProjectFeatureFlags,
   getFeatureFlagStats,
   getFeatureFlagProfiles,
   DEFAULT_FEATURE_FLAGS_TAKE,
@@ -39,6 +37,7 @@ import {
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Spin from '~/ui/icons/Spin'
@@ -433,6 +432,9 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   const isEmbedded = searchParams.get('embedded') === 'true'
   const { t } = useTranslation()
 
+  const listFetcher = useFetcher<ProjectViewActionData>()
+  const actionFetcher = useFetcher<ProjectViewActionData>()
+
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const isLoadingRef = useRef(false)
   const isMountedRef = useRef(true)
@@ -443,6 +445,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const [filterQuery, setFilterQuery] = useState('')
+  const processedActionRef = useRef<string | null>(null)
 
   // Expanded flag state
   const [expandedFlagId, setExpandedFlagId] = useState<string | null>(null)
@@ -465,30 +468,69 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
 
   const pageAmount = Math.ceil(total / DEFAULT_FEATURE_FLAGS_TAKE)
 
-  const loadFlags = async (take: number, skip: number, search?: string) => {
-    if (isLoadingRef.current) {
-      return
-    }
-    isLoadingRef.current = true
-    setIsLoading(true)
+  const loadFlags = useCallback(
+    (take: number, skip: number, search?: string) => {
+      if (isLoadingRef.current) {
+        return
+      }
+      isLoadingRef.current = true
+      setIsLoading(true)
 
-    try {
-      const result = await getProjectFeatureFlags(id, take, skip, search)
-      if (isMountedRef.current) {
-        setFlags(result.results)
-        setTotal(result.total)
-      }
-    } catch (reason: any) {
-      if (isMountedRef.current) {
-        setError(reason?.message || reason?.toString() || 'Unknown error')
-      }
-    } finally {
+      listFetcher.submit(
+        {
+          intent: 'get-project-feature-flags',
+          take: String(take),
+          skip: String(skip),
+          search: search || '',
+        },
+        { method: 'POST' },
+      )
+    },
+    [listFetcher],
+  )
+
+  // Handle list fetcher response
+  useEffect(() => {
+    if (listFetcher.data?.intent === 'get-project-feature-flags') {
       isLoadingRef.current = false
       if (isMountedRef.current) {
         setIsLoading(false)
+        if (listFetcher.data.success && listFetcher.data.data) {
+          const result = listFetcher.data.data as { results: ProjectFeatureFlag[]; total: number }
+          setFlags(result.results)
+          setTotal(result.total)
+        } else if (listFetcher.data.error) {
+          setError(listFetcher.data.error)
+        }
       }
     }
-  }
+  }, [listFetcher.data])
+
+  // Handle action fetcher responses (delete, update)
+  useEffect(() => {
+    if (!actionFetcher.data || actionFetcher.state !== 'idle') return
+
+    const actionKey = `${actionFetcher.data.intent}-${JSON.stringify(actionFetcher.data.data)}`
+    if (processedActionRef.current === actionKey) return
+    processedActionRef.current = actionKey
+
+    if (actionFetcher.data.intent === 'delete-feature-flag') {
+      if (actionFetcher.data.success) {
+        toast.success(t('featureFlags.deleted'))
+        loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+      } else if (actionFetcher.data.error) {
+        toast.error(actionFetcher.data.error)
+      }
+    } else if (actionFetcher.data.intent === 'update-feature-flag') {
+      if (actionFetcher.data.success && actionFetcher.data.data) {
+        const updated = actionFetcher.data.data as ProjectFeatureFlag
+        toast.success(updated.enabled ? t('featureFlags.flagEnabled') : t('featureFlags.flagDisabled'))
+        setFlags((prev) => prev.map((f) => (f.id === updated.id ? updated : f)))
+      } else if (actionFetcher.data.error) {
+        toast.error(actionFetcher.data.error)
+      }
+    }
+  }, [actionFetcher.data, actionFetcher.state, t, loadFlags, page, filterQuery])
 
   // Debounced search to avoid excessive API calls
   const debouncedLoadFlags = useMemo(
@@ -496,8 +538,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
       _debounce((search: string) => {
         loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, 0, search || undefined)
       }, 300),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [id],
+    [loadFlags],
   )
 
   // Handle search input change
@@ -518,145 +559,99 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     }
   }, [debouncedLoadFlags])
 
-  const loadFlagStats = async (flagId: string) => {
-    setStatsLoading((prev) => ({ ...prev, [flagId]: true }))
-    try {
-      const stats = await getFeatureFlagStats(flagId, period, from, to, timezone)
-      if (isMountedRef.current) {
-        setFlagStats((prev) => ({ ...prev, [flagId]: stats }))
-      }
-    } catch (err) {
-      console.error('Failed to load flag stats:', err)
-      if (isMountedRef.current) {
-        setFlagStats((prev) => ({ ...prev, [flagId]: null }))
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setStatsLoading((prev) => ({ ...prev, [flagId]: false }))
-      }
-    }
-  }
-
-  const loadFlagProfiles = async (flagId: string, append = false, resultFilter?: boolean) => {
-    const currentProfiles = append ? flagProfiles[flagId] || [] : []
-    const skip = append ? currentProfiles.length : 0
-    const filter = resultFilter ?? flagResultFilters[flagId] ?? true
-    const apiFilter = filter ? 'true' : 'false'
-
-    setProfilesLoading((prev) => ({ ...prev, [flagId]: true }))
-    try {
-      const result = await getFeatureFlagProfiles(
-        flagId,
-        period,
-        from,
-        to,
-        timezone,
-        DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
-        skip,
-        apiFilter,
-      )
-      if (isMountedRef.current) {
-        setFlagProfiles((prev) => ({
-          ...prev,
-          [flagId]: append ? [...currentProfiles, ...result.profiles] : result.profiles,
-        }))
-        setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: result.total }))
-      }
-    } catch (err) {
-      console.error('Failed to load flag profiles:', err)
-      if (isMountedRef.current) {
-        setFlagProfiles((prev) => ({ ...prev, [flagId]: append ? currentProfiles : [] }))
-        setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: 0 }))
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setProfilesLoading((prev) => ({ ...prev, [flagId]: false }))
-      }
-    }
-  }
-
-  const handleToggleExpand = async (flagId: string) => {
-    if (expandedFlagId === flagId) {
-      // Collapse if already expanded
-      setExpandedFlagId(null)
-    } else {
-      // Expand and load profiles if not already loaded
-      setExpandedFlagId(flagId)
-      if (!flagProfiles[flagId] && !profilesLoading[flagId]) {
-        // First try loading with true filter (served)
-        setProfilesLoading((prev) => ({ ...prev, [flagId]: true }))
-        try {
-          const trueResult = await getFeatureFlagProfiles(
-            flagId,
-            period,
-            from,
-            to,
-            timezone,
-            DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
-            0,
-            'true',
-          )
-
-          if (trueResult.total > 0) {
-            // Has true results, use them
-            if (isMountedRef.current) {
-              setFlagProfiles((prev) => ({ ...prev, [flagId]: trueResult.profiles }))
-              setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: trueResult.total }))
-              setFlagResultFilters((prev) => ({ ...prev, [flagId]: true }))
-            }
-          } else {
-            // No true results, try false
-            const falseResult = await getFeatureFlagProfiles(
-              flagId,
-              period,
-              from,
-              to,
-              timezone,
-              DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
-              0,
-              'false',
-            )
-
-            if (isMountedRef.current) {
-              if (falseResult.total > 0) {
-                // Has false results, use them and set filter to false
-                setFlagProfiles((prev) => ({ ...prev, [flagId]: falseResult.profiles }))
-                setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: falseResult.total }))
-                setFlagResultFilters((prev) => ({ ...prev, [flagId]: false }))
-              } else {
-                // No results at all, default to true filter with empty
-                setFlagProfiles((prev) => ({ ...prev, [flagId]: [] }))
-                setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: 0 }))
-                setFlagResultFilters((prev) => ({ ...prev, [flagId]: true }))
-              }
-            }
-          }
-        } catch (err) {
-          console.error('Failed to load flag profiles:', err)
-          if (isMountedRef.current) {
-            setFlagProfiles((prev) => ({ ...prev, [flagId]: [] }))
-            setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: 0 }))
-            setFlagResultFilters((prev) => ({ ...prev, [flagId]: true }))
-          }
-        } finally {
-          if (isMountedRef.current) {
-            setProfilesLoading((prev) => ({ ...prev, [flagId]: false }))
-          }
+  const loadFlagStats = useCallback(
+    async (flagId: string) => {
+      setStatsLoading((prev) => ({ ...prev, [flagId]: true }))
+      try {
+        const stats = await getFeatureFlagStats(flagId, period, from, to, timezone)
+        if (isMountedRef.current) {
+          setFlagStats((prev) => ({ ...prev, [flagId]: stats }))
+        }
+      } catch (err) {
+        console.error('Failed to load flag stats:', err)
+        if (isMountedRef.current) {
+          setFlagStats((prev) => ({ ...prev, [flagId]: null }))
+        }
+      } finally {
+        if (isMountedRef.current) {
+          setStatsLoading((prev) => ({ ...prev, [flagId]: false }))
         }
       }
-    }
-  }
+    },
+    [period, from, to, timezone],
+  )
 
-  const handleLoadMoreProfiles = (flagId: string) => {
-    loadFlagProfiles(flagId, true)
-  }
+  const loadFlagProfiles = useCallback(
+    async (flagId: string, append = false, resultFilter?: boolean) => {
+      const currentProfiles = append ? flagProfiles[flagId] || [] : []
+      const skip = append ? currentProfiles.length : 0
+      const filter = resultFilter ?? flagResultFilters[flagId] ?? true
+      const apiFilter = filter ? 'true' : 'false'
 
-  const handleResultFilterChange = (flagId: string, filter: boolean) => {
-    setFlagResultFilters((prev) => ({ ...prev, [flagId]: filter }))
-    // Reset profiles and reload with new filter
-    setFlagProfiles((prev) => ({ ...prev, [flagId]: [] }))
-    loadFlagProfiles(flagId, false, filter)
-  }
+      setProfilesLoading((prev) => ({ ...prev, [flagId]: true }))
+      try {
+        const result = await getFeatureFlagProfiles(
+          flagId,
+          period,
+          from,
+          to,
+          timezone,
+          DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
+          skip,
+          apiFilter,
+        )
+        if (isMountedRef.current) {
+          setFlagProfiles((prev) => ({
+            ...prev,
+            [flagId]: append ? [...currentProfiles, ...result.profiles] : result.profiles,
+          }))
+          setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: result.total }))
+        }
+      } catch (err) {
+        console.error('Failed to load flag profiles:', err)
+        if (isMountedRef.current) {
+          setFlagProfiles((prev) => ({ ...prev, [flagId]: append ? currentProfiles : [] }))
+          setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: 0 }))
+        }
+      } finally {
+        if (isMountedRef.current) {
+          setProfilesLoading((prev) => ({ ...prev, [flagId]: false }))
+        }
+      }
+    },
+    [period, from, to, timezone, flagProfiles, flagResultFilters],
+  )
+
+  const handleToggleExpand = useCallback(
+    (flagId: string) => {
+      if (expandedFlagId === flagId) {
+        setExpandedFlagId(null)
+      } else {
+        setExpandedFlagId(flagId)
+        if (!flagProfiles[flagId] && !profilesLoading[flagId]) {
+          setFlagResultFilters((prev) => ({ ...prev, [flagId]: true }))
+          loadFlagProfiles(flagId, false, true)
+        }
+      }
+    },
+    [expandedFlagId, flagProfiles, profilesLoading, loadFlagProfiles],
+  )
+
+  const handleLoadMoreProfiles = useCallback(
+    (flagId: string) => {
+      loadFlagProfiles(flagId, true)
+    },
+    [loadFlagProfiles],
+  )
+
+  const handleResultFilterChange = useCallback(
+    (flagId: string, filter: boolean) => {
+      setFlagResultFilters((prev) => ({ ...prev, [flagId]: filter }))
+      setFlagProfiles((prev) => ({ ...prev, [flagId]: [] }))
+      loadFlagProfiles(flagId, false, filter)
+    },
+    [loadFlagProfiles],
+  )
 
   useEffect(() => {
     loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
@@ -667,9 +662,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   useEffect(() => {
     if (featureFlagsRefreshTrigger > 0) {
       loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
-      // Clear cached stats data to force reload
       setFlagStats({})
-      // Refresh profiles for expanded flag
       if (expandedFlagId) {
         setFlagProfiles((prev) => ({ [expandedFlagId]: prev[expandedFlagId] }))
         loadFlagProfiles(expandedFlagId)
@@ -682,14 +675,12 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   }, [featureFlagsRefreshTrigger])
 
   useEffect(() => {
-    // Load stats for all flags when flags change or date range changes
     flags.forEach((flag) => {
       loadFlagStats(flag.id)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flags, period, from, to, timezone])
 
-  // Reload profiles when period changes for expanded flag
   useEffect(() => {
     if (expandedFlagId && flagProfiles[expandedFlagId]) {
       loadFlagProfiles(expandedFlagId)
@@ -716,27 +707,21 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
   }
 
-  const handleDeleteFlag = async (flagId: string) => {
-    try {
-      await deleteFeatureFlagApi(flagId)
-      toast.success(t('featureFlags.deleted'))
-      loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
-    } catch (reason: any) {
-      toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
-    }
-  }
+  const handleDeleteFlag = useCallback(
+    (flagId: string) => {
+      processedActionRef.current = null
+      actionFetcher.submit({ intent: 'delete-feature-flag', flagId }, { method: 'POST' })
+    },
+    [actionFetcher],
+  )
 
-  const handleToggleFlag = async (flagId: string, enabled: boolean) => {
-    try {
-      const { updateFeatureFlag } = await import('~/api')
-      await updateFeatureFlag(flagId, { enabled })
-      toast.success(enabled ? t('featureFlags.flagEnabled') : t('featureFlags.flagDisabled'))
-      // Update local state
-      setFlags((prev) => prev.map((f) => (f.id === flagId ? { ...f, enabled } : f)))
-    } catch (reason: any) {
-      toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
-    }
-  }
+  const handleToggleFlag = useCallback(
+    (flagId: string, enabled: boolean) => {
+      processedActionRef.current = null
+      actionFetcher.submit({ intent: 'update-feature-flag', flagId, enabled: String(enabled) }, { method: 'POST' })
+    },
+    [actionFetcher],
+  )
 
   if (error && isLoading === false) {
     return (

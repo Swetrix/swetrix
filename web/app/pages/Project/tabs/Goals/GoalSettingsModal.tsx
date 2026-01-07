@@ -2,7 +2,7 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/re
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
 import { Trash2Icon, PlusIcon } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
@@ -35,6 +35,7 @@ interface GoalSettingsModalProps {
 const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: GoalSettingsModalProps) => {
   const { t } = useTranslation()
   const fetcher = useFetcher<ProjectViewActionData>()
+  const processedRef = useRef<string | null>(null)
   const isNew = !goalId
 
   const [isLoading, setIsLoading] = useState(false)
@@ -87,7 +88,13 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
 
   // Handle fetcher responses
   useEffect(() => {
-    if (fetcher.data?.success) {
+    if (!fetcher.data || fetcher.state !== 'idle') return
+
+    const responseKey = `${fetcher.data.intent}-${fetcher.data.success}`
+    if (processedRef.current === responseKey) return
+    processedRef.current = responseKey
+
+    if (fetcher.data.success) {
       const { intent } = fetcher.data
       if (intent === 'create-goal') {
         toast.success(t('goals.created'))
@@ -96,19 +103,28 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
       }
       onSuccess()
       onClose()
-    } else if (fetcher.data?.error) {
+    } else if (fetcher.data.error) {
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data, t, onSuccess, onClose])
+  }, [fetcher.data, fetcher.state, t, onSuccess, onClose])
+
+  // Reset processed ref when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      processedRef.current = null
+    }
+  }, [isOpen])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    processedRef.current = null
 
     const formData = new FormData()
     formData.set('intent', isNew ? 'create-goal' : 'update-goal')
     formData.set('name', name)
-    formData.set('goalType', type)
-    formData.set('goalValue', value)
+    formData.set('type', type)
+    formData.set('matchType', matchType)
+    formData.set('value', value)
 
     if (!isNew && goalId) {
       formData.set('goalId', goalId)

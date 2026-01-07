@@ -13,20 +13,15 @@ import { XMarkIcon, ClipboardIcon, CheckIcon as HeroCheckIcon } from '@heroicons
 import cx from 'clsx'
 import _map from 'lodash/map'
 import { Trash2Icon, PlusIcon, CodeIcon, ChevronDownIcon, ChevronsUpDownIcon, CheckIcon } from 'lucide-react'
-import { useState, useEffect, useCallback, Fragment } from 'react'
+import { useState, useEffect, useCallback, Fragment, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import {
-  getFeatureFlag,
-  createFeatureFlag,
-  updateFeatureFlag,
-  getFilters,
-  type CreateFeatureFlag,
-  type TargetingRule,
-} from '~/api'
+import { getFilters, type ProjectFeatureFlag, type TargetingRule } from '~/api'
 import { API_URL, isSelfhosted } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import FilterValueInput, { filterCategoryIcons } from '~/ui/FilterValueInput'
@@ -64,9 +59,10 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
   } = useTranslation()
   const { theme } = useTheme()
   const isNew = !flagId
+  const fetcher = useFetcher<ProjectViewActionData>()
+  const processedRef = useRef<string | null>(null)
 
   const [isLoading, setIsLoading] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const [showImplementation, setShowImplementation] = useState(false)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
@@ -81,6 +77,8 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
   const [rolloutPercentage, setRolloutPercentage] = useState(100)
   const [targetingRules, setTargetingRules] = useState<TargetingRule[]>([])
   const [enabled, setEnabled] = useState(true)
+
+  const isSaving = fetcher.state === 'submitting'
 
   const resetForm = () => {
     setKey('')
@@ -117,7 +115,6 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
   // Pre-fetch filter values when modal opens
   useEffect(() => {
     if (isOpen) {
-      // Pre-fetch values for all targeting columns
       TARGETING_COLUMNS.forEach(({ value: column }) => {
         if (!filterValuesCache[column] && !loadingColumns.has(column)) {
           fetchFilterValues(column)
@@ -126,70 +123,96 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
     }
   }, [isOpen, fetchFilterValues, filterValuesCache, loadingColumns])
 
-  const loadFlag = async () => {
-    if (!flagId) return
-    setIsLoading(true)
-    try {
-      const flag = await getFeatureFlag(flagId)
-      setKey(flag.key)
-      setDescription(flag.description || '')
-      setFlagType(flag.flagType)
-      setRolloutPercentage(flag.rolloutPercentage)
-      setTargetingRules(flag.targetingRules || [])
-      setEnabled(flag.enabled)
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to load feature flag')
-      onClose()
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
+  // Load flag via fetcher
   useEffect(() => {
-    if (isOpen) {
-      if (flagId) {
-        loadFlag()
-      } else {
-        resetForm()
-      }
+    if (isOpen && flagId) {
+      setIsLoading(true)
+      fetcher.submit({ intent: 'get-feature-flag', flagId }, { method: 'POST' })
+    } else if (isOpen && !flagId) {
+      resetForm()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, flagId])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSaving(true)
+  // Handle fetcher responses
+  useEffect(() => {
+    if (!fetcher.data || fetcher.state !== 'idle') return
 
-    try {
-      if (isNew) {
-        const data: CreateFeatureFlag = {
-          pid: projectId,
-          key,
-          description: description || undefined,
-          flagType,
-          rolloutPercentage: flagType === 'rollout' ? rolloutPercentage : 100,
-          targetingRules: targetingRules.length > 0 ? targetingRules : undefined,
-          enabled,
-        }
-        await createFeatureFlag(data)
-        toast.success(t('featureFlags.created'))
-      } else if (flagId) {
-        await updateFeatureFlag(flagId, {
-          key,
-          description: description || null,
-          flagType,
-          rolloutPercentage: flagType === 'rollout' ? rolloutPercentage : 100,
-          targetingRules: targetingRules.length > 0 ? targetingRules : null,
-          enabled,
-        })
-        toast.success(t('featureFlags.updated'))
+    const responseKey = `${fetcher.data.intent}-${fetcher.data.success}`
+    if (processedRef.current === responseKey) return
+    processedRef.current = responseKey
+
+    if (fetcher.data.intent === 'get-feature-flag') {
+      setIsLoading(false)
+      if (fetcher.data.success && fetcher.data.data) {
+        const flag = fetcher.data.data as ProjectFeatureFlag
+        setKey(flag.key)
+        setDescription(flag.description || '')
+        setFlagType(flag.flagType)
+        setRolloutPercentage(flag.rolloutPercentage)
+        setTargetingRules(flag.targetingRules || [])
+        setEnabled(flag.enabled)
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+        onClose()
       }
-      onSuccess()
-      onClose()
-    } catch (err: any) {
-      toast.error(err?.message || t('apiNotifications.somethingWentWrong'))
-    } finally {
-      setIsSaving(false)
+    } else if (fetcher.data.intent === 'create-feature-flag') {
+      if (fetcher.data.success) {
+        toast.success(t('featureFlags.created'))
+        onSuccess()
+        onClose()
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+      }
+    } else if (fetcher.data.intent === 'update-feature-flag') {
+      if (fetcher.data.success) {
+        toast.success(t('featureFlags.updated'))
+        onSuccess()
+        onClose()
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+      }
+    }
+  }, [fetcher.data, fetcher.state, t, onSuccess, onClose])
+
+  // Reset processed ref when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      processedRef.current = null
+    }
+  }, [isOpen])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    processedRef.current = null
+
+    if (isNew) {
+      fetcher.submit(
+        {
+          intent: 'create-feature-flag',
+          key,
+          description: description || '',
+          flagType,
+          rolloutPercentage: String(flagType === 'rollout' ? rolloutPercentage : 100),
+          targetingRules: JSON.stringify(targetingRules.length > 0 ? targetingRules : []),
+          enabled: String(enabled),
+        },
+        { method: 'POST' },
+      )
+    } else if (flagId) {
+      fetcher.submit(
+        {
+          intent: 'update-feature-flag',
+          flagId,
+          key,
+          description: description || '',
+          flagType,
+          rolloutPercentage: String(flagType === 'rollout' ? rolloutPercentage : 100),
+          targetingRules: JSON.stringify(targetingRules.length > 0 ? targetingRules : []),
+          enabled: String(enabled),
+        },
+        { method: 'POST' },
+      )
     }
   }
 

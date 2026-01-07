@@ -17,22 +17,14 @@ import {
 } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router'
+import { useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import {
-  deleteExperiment as deleteExperimentApi,
-  getProjectExperiments,
-  startExperiment as startExperimentApi,
-  pauseExperiment as pauseExperimentApi,
-  completeExperiment as completeExperimentApi,
-  DEFAULT_EXPERIMENTS_TAKE,
-  type Experiment,
-  type ExperimentStatus,
-} from '~/api'
+import { DEFAULT_EXPERIMENTS_TAKE, type Experiment, type ExperimentStatus } from '~/api'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Spin from '~/ui/icons/Spin'
 import Loader from '~/ui/Loader'
@@ -290,6 +282,8 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   const [searchParams] = useSearchParams()
   const isEmbedded = searchParams.get('embedded') === 'true'
   const { t } = useTranslation()
+  const listFetcher = useFetcher<ProjectViewActionData>()
+  const actionFetcher = useFetcher<ProjectViewActionData>()
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const isLoadingRef = useRef(false)
@@ -299,6 +293,7 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const [filterQuery, setFilterQuery] = useState('')
+  const processedActionRef = useRef<string | null>(null)
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -319,50 +314,100 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
 
   const pageAmount = Math.ceil(total / DEFAULT_EXPERIMENTS_TAKE)
 
-  const loadExperiments = async (take: number, skip: number, showLoading = true, search?: string) => {
-    if (isLoadingRef.current) {
-      return
-    }
-    isLoadingRef.current = true
-
-    // `showLoading` means "show either initial Loader or refresh LoadingBar".
-    if (showLoading) {
-      setIsLoading(true)
-    }
-
-    try {
-      const result = await getProjectExperiments(id, take, skip, search)
-      if (isMountedRef.current) {
-        setExperiments(result.results)
-        setTotal(result.total)
-        setError(null) // Clear any previous error on success
+  const loadExperiments = useCallback(
+    (take: number, skip: number, showLoading = true, search?: string) => {
+      if (isLoadingRef.current) {
+        return
       }
-    } catch (reason: any) {
-      if (isMountedRef.current) {
-        setError(reason?.message || reason?.toString() || 'Unknown error')
+      isLoadingRef.current = true
+
+      if (showLoading) {
+        setIsLoading(true)
       }
-    } finally {
+
+      listFetcher.submit(
+        {
+          intent: 'get-project-experiments',
+          take: String(take),
+          skip: String(skip),
+          search: search || '',
+        },
+        { method: 'POST' },
+      )
+    },
+    [listFetcher],
+  )
+
+  // Handle list fetcher response
+  useEffect(() => {
+    if (listFetcher.data?.intent === 'get-project-experiments') {
       isLoadingRef.current = false
-      if (isMountedRef.current && showLoading) {
+      if (isMountedRef.current) {
         setIsLoading(false)
+        if (listFetcher.data.success && listFetcher.data.data) {
+          const result = listFetcher.data.data as { results: Experiment[]; total: number }
+          setExperiments(result.results)
+          setTotal(result.total)
+          setError(null)
+        } else if (listFetcher.data.error) {
+          setError(listFetcher.data.error)
+        }
       }
     }
-  }
+  }, [listFetcher.data])
+
+  // Handle action fetcher responses (delete, start, pause, complete)
+  useEffect(() => {
+    if (!actionFetcher.data || actionFetcher.state !== 'idle') return
+
+    const actionKey = `${actionFetcher.data.intent}-${JSON.stringify(actionFetcher.data.data)}`
+    if (processedActionRef.current === actionKey) return
+    processedActionRef.current = actionKey
+
+    if (actionFetcher.data.intent === 'delete-experiment') {
+      if (actionFetcher.data.success) {
+        toast.success(t('experiments.deleted'))
+        loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
+      } else if (actionFetcher.data.error) {
+        toast.error(actionFetcher.data.error)
+      }
+    } else if (actionFetcher.data.intent === 'start-experiment') {
+      if (actionFetcher.data.success) {
+        toast.success(t('experiments.started'))
+        loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
+      } else if (actionFetcher.data.error) {
+        toast.error(actionFetcher.data.error)
+      }
+    } else if (actionFetcher.data.intent === 'pause-experiment') {
+      if (actionFetcher.data.success) {
+        toast.success(t('experiments.paused'))
+        loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
+      } else if (actionFetcher.data.error) {
+        toast.error(actionFetcher.data.error)
+      }
+    } else if (actionFetcher.data.intent === 'complete-experiment') {
+      if (actionFetcher.data.success) {
+        toast.success(t('experiments.completed'))
+        loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
+      } else if (actionFetcher.data.error) {
+        toast.error(actionFetcher.data.error)
+      }
+    }
+  }, [actionFetcher.data, actionFetcher.state, t, loadExperiments, page, filterQuery])
 
   const debouncedLoadExperiments = useMemo(
     () =>
       _debounce((search: string) => {
         loadExperiments(DEFAULT_EXPERIMENTS_TAKE, 0, true, search || undefined)
       }, 300),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [id],
+    [loadExperiments],
   )
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value
       setFilterQuery(value)
-      setPage(1) // Reset to first page when searching
+      setPage(1)
       debouncedLoadExperiments(value)
     },
     [debouncedLoadExperiments],
@@ -379,8 +424,6 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
 
-  // Refresh experiments data when refresh button is clicked.
-  // If user is viewing results, refresh results instead and defer list refresh until they return.
   useEffect(() => {
     if (experimentsRefreshTrigger > 0) {
       if (viewingResultsId) {
@@ -388,14 +431,11 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
         setShouldRefreshListOnReturn(true)
         return
       }
-
-      // Refresh list (show LoadingBar if we already have data)
       loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experimentsRefreshTrigger, viewingResultsId, page])
 
-  // If refresh happened while in results view, refresh list once upon returning.
   useEffect(() => {
     if (!viewingResultsId && shouldRefreshListOnReturn) {
       setShouldRefreshListOnReturn(false)
@@ -421,48 +461,39 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
 
   const handleModalSuccess = useCallback(() => {
     loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, filterQuery])
+  }, [page, filterQuery, loadExperiments])
 
-  const handleDeleteExperiment = async (experimentId: string) => {
-    try {
-      await deleteExperimentApi(experimentId)
-      toast.success(t('experiments.deleted'))
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
-    } catch (reason: any) {
-      toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
-    }
-  }
+  const handleDeleteExperiment = useCallback(
+    (experimentId: string) => {
+      processedActionRef.current = null
+      actionFetcher.submit({ intent: 'delete-experiment', experimentId }, { method: 'POST' })
+    },
+    [actionFetcher],
+  )
 
-  const handleStartExperiment = async (experimentId: string) => {
-    try {
-      await startExperimentApi(experimentId)
-      toast.success(t('experiments.started'))
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
-    } catch (reason: any) {
-      toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
-    }
-  }
+  const handleStartExperiment = useCallback(
+    (experimentId: string) => {
+      processedActionRef.current = null
+      actionFetcher.submit({ intent: 'start-experiment', experimentId }, { method: 'POST' })
+    },
+    [actionFetcher],
+  )
 
-  const handlePauseExperiment = async (experimentId: string) => {
-    try {
-      await pauseExperimentApi(experimentId)
-      toast.success(t('experiments.paused'))
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
-    } catch (reason: any) {
-      toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
-    }
-  }
+  const handlePauseExperiment = useCallback(
+    (experimentId: string) => {
+      processedActionRef.current = null
+      actionFetcher.submit({ intent: 'pause-experiment', experimentId }, { method: 'POST' })
+    },
+    [actionFetcher],
+  )
 
-  const handleCompleteExperiment = async (experimentId: string) => {
-    try {
-      await completeExperimentApi(experimentId)
-      toast.success(t('experiments.completed'))
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
-    } catch (reason: any) {
-      toast.error(reason?.response?.data?.message || reason?.message || t('apiNotifications.somethingWentWrong'))
-    }
-  }
+  const handleCompleteExperiment = useCallback(
+    (experimentId: string) => {
+      processedActionRef.current = null
+      actionFetcher.submit({ intent: 'complete-experiment', experimentId }, { method: 'POST' })
+    },
+    [actionFetcher],
+  )
 
   const handleViewResults = (experimentId: string) => {
     setViewingResultsId(experimentId)

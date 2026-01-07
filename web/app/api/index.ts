@@ -786,15 +786,6 @@ export const getGoal = (goalId: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export type CreateGoal = {
-  pid: string
-  name: string
-  type: 'pageview' | 'custom_event'
-  matchType: 'exact' | 'contains'
-  value?: string
-  metadataFilters?: { key: string; value: string }[]
-}
-
 export const getGoalStats = (goalId: string, period: string, from: string = '', to: string = '', timezone?: string) =>
   api
     .get(`/goal/${goalId}/stats`, {
@@ -849,16 +840,6 @@ export interface FeatureFlagStats {
   truePercentage: number
 }
 
-export type CreateFeatureFlag = {
-  pid: string
-  key: string
-  description?: string
-  flagType?: 'boolean' | 'rollout'
-  rolloutPercentage?: number
-  targetingRules?: TargetingRule[]
-  enabled?: boolean
-}
-
 export const DEFAULT_FEATURE_FLAGS_TAKE = 20
 
 export const getProjectFeatureFlags = (
@@ -890,38 +871,6 @@ export const getProjectFeatureFlags = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 }
-
-export const getFeatureFlag = (flagId: string) =>
-  api
-    .get(`/feature-flag/${flagId}`)
-    .then((response): ProjectFeatureFlag => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const createFeatureFlag = (data: CreateFeatureFlag) =>
-  api
-    .post('feature-flag', data)
-    .then((response): ProjectFeatureFlag => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const updateFeatureFlag = (id: string, data: Partial<ProjectFeatureFlag>) =>
-  api
-    .put(`feature-flag/${id}`, data)
-    .then((response): ProjectFeatureFlag => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const deleteFeatureFlag = (id: string) =>
-  api
-    .delete(`feature-flag/${id}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
 
 export const getFeatureFlagStats = (
   flagId: string,
@@ -1069,36 +1018,6 @@ interface CreateExperiment {
 
 export const DEFAULT_EXPERIMENTS_TAKE = 20
 
-export const getProjectExperiments = (
-  projectId: string,
-  take: number = DEFAULT_EXPERIMENTS_TAKE,
-  skip = 0,
-  search?: string,
-) => {
-  const params = new URLSearchParams({
-    take: String(take),
-    skip: String(skip),
-  })
-
-  if (search) {
-    params.set('search', search)
-  }
-
-  return api
-    .get(`/experiment/project/${projectId}?${params.toString()}`)
-    .then(
-      (
-        response,
-      ): {
-        results: Experiment[]
-        total: number
-      } => response.data,
-    )
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-}
-
 export const getExperiment = (experimentId: string) =>
   api
     .get(`/experiment/${experimentId}`)
@@ -1118,38 +1037,6 @@ export const createExperiment = (data: CreateExperiment) =>
 export const updateExperiment = (id: string, data: Partial<CreateExperiment>) =>
   api
     .put(`experiment/${id}`, data)
-    .then((response): Experiment => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const deleteExperiment = (id: string) =>
-  api
-    .delete(`experiment/${id}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const startExperiment = (id: string) =>
-  api
-    .post(`experiment/${id}/start`)
-    .then((response): Experiment => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const pauseExperiment = (id: string) =>
-  api
-    .post(`experiment/${id}/pause`)
-    .then((response): Experiment => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const completeExperiment = (id: string) =>
-  api
-    .post(`experiment/${id}/complete`)
     .then((response): Experiment => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
@@ -1680,12 +1567,3 @@ export const getRevenueData = async (
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
     })
 }
-
-// Blog Sitemap (kept client-side for SitemapFunction - no request object available)
-export const getSitemap = () =>
-  api
-    .get('v1/blog/sitemap')
-    .then((response): (string | string[])[] => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
