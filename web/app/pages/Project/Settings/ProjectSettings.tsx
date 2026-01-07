@@ -22,20 +22,12 @@ import {
   ShieldCheckIcon,
   DollarSignIcon,
 } from 'lucide-react'
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useLoaderData, useNavigate, Link, useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import {
-  getFilters,
-  getProject,
-  generateGSCAuthURL,
-  getGSCStatus,
-  getGSCProperties,
-  setGSCProperty,
-  disconnectGSC,
-} from '~/api'
+import { getFilters, getProject } from '~/api'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
@@ -276,6 +268,7 @@ const ProjectSettings = () => {
   const navigate = useNavigate()
   const { requestOrigin } = useLoaderData<{ requestOrigin: string | null }>()
   const fetcher = useFetcher<ProjectSettingsActionData>()
+  const gscFetcher = useFetcher<ProjectSettingsActionData>()
 
   const [project, setProject] = useState<Project | null>(null)
   const [form, setForm] = useState<Form>({
@@ -453,33 +446,85 @@ const ProjectSettings = () => {
     }
   }
 
-  const refreshGSCStatus = useCallback(async () => {
-    if (isSelfhosted) {
-      return
-    }
+  const [gscPropertiesPending, setGscPropertiesPending] = useState(false)
+  const lastHandledGscData = useRef<ProjectSettingsActionData | null>(null)
+  const gscInitialized = useRef(false)
 
-    try {
-      const { connected, email } = await getGSCStatus(id)
-      setGscConnected(connected)
-      setGscEmail(email || null)
-      if (connected) {
-        try {
-          const props = await getGSCProperties(id)
-          setGscProperties(props)
-        } catch {
-          //
-        }
-      } else {
-        setGscProperties([])
-      }
-    } catch {
-      setGscConnected(false)
-    }
-  }, [id])
-
+  // Handle GSC fetcher responses
   useEffect(() => {
-    refreshGSCStatus()
-  }, [refreshGSCStatus])
+    if (gscFetcher.state !== 'idle' || !gscFetcher.data) return
+
+    // Prevent handling the same response twice
+    if (lastHandledGscData.current === gscFetcher.data) return
+    lastHandledGscData.current = gscFetcher.data
+
+    const { intent, success, gscStatus, gscProperties: properties, gscAuthUrl, error: gscError } = gscFetcher.data
+
+    if (success) {
+      if (intent === 'gsc-status' && gscStatus) {
+        setGscConnected(gscStatus.connected)
+        setGscEmail(gscStatus.email || null)
+        if (gscStatus.connected) {
+          setGscPropertiesPending(true)
+        } else {
+          setGscProperties([])
+        }
+      } else if (intent === 'gsc-properties' && properties) {
+        setGscProperties(properties)
+        setGscPropertiesPending(false)
+      } else if (intent === 'gsc-connect' && gscAuthUrl) {
+        const safeUrl = (() => {
+          try {
+            const parsed = new URL(gscAuthUrl)
+            if (parsed.protocol !== 'https:') return null
+            if (parsed.username || parsed.password) return null
+            if (parsed.hostname !== 'accounts.google.com') return null
+            return parsed.toString()
+          } catch {
+            return null
+          }
+        })()
+
+        if (!safeUrl) {
+          toast.error(t('apiNotifications.somethingWentWrong'))
+          return
+        }
+
+        window.location.href = safeUrl
+      } else if (intent === 'gsc-disconnect') {
+        setGscConnected(false)
+        setGscProperties([])
+        setGscEmail(null)
+        setForm((prevForm) => ({
+          ...prevForm,
+          gscPropertyUri: null,
+        }))
+        toast.success(t('project.settings.gsc.disconnected'))
+      } else if (intent === 'gsc-set-property') {
+        toast.success(t('project.settings.gsc.propertyConnected'))
+      }
+    } else if (gscError) {
+      toast.error(typeof gscError === 'string' ? gscError : t('apiNotifications.somethingWentWrong'))
+      setGscPropertiesPending(false)
+    }
+  }, [gscFetcher.state, gscFetcher.data, t])
+
+  // Fetch GSC properties after status confirms connected
+  useEffect(() => {
+    if (gscPropertiesPending && gscFetcher.state === 'idle') {
+      setGscPropertiesPending(false)
+      gscFetcher.submit({ intent: 'gsc-properties' }, { method: 'post' })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gscPropertiesPending, gscFetcher.state])
+
+  // Initial GSC status fetch
+  useEffect(() => {
+    if (isSelfhosted || gscInitialized.current) return
+    gscInitialized.current = true
+    gscFetcher.submit({ intent: 'gsc-status' }, { method: 'post' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (authLoading) {
@@ -891,32 +936,12 @@ const ProjectSettings = () => {
                       <Button
                         className='flex items-center gap-2'
                         type='button'
-                        onClick={async () => {
-                          try {
-                            const { url } = await generateGSCAuthURL(id)
-                            const safeUrl = (() => {
-                              try {
-                                const parsed = new URL(url)
-                                if (parsed.protocol !== 'https:') return null
-                                if (parsed.username || parsed.password) return null
-                                // Google OAuth consent screen
-                                if (parsed.hostname !== 'accounts.google.com') return null
-                                return parsed.toString()
-                              } catch {
-                                return null
-                              }
-                            })()
-
-                            if (!safeUrl) {
-                              toast.error(t('apiNotifications.somethingWentWrong'))
-                              return
-                            }
-
-                            window.location.href = safeUrl
-                          } catch (reason: any) {
-                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-                          }
+                        onClick={() => {
+                          gscFetcher.submit({ intent: 'gsc-connect' }, { method: 'post' })
                         }}
+                        loading={
+                          gscFetcher.state !== 'idle' ? gscFetcher.formData?.get('intent') === 'gsc-connect' : null
+                        }
                         primary
                         regular
                       >
@@ -938,21 +963,12 @@ const ProjectSettings = () => {
                         className='max-w-max'
                         semiDanger
                         regular
-                        onClick={async () => {
-                          try {
-                            await disconnectGSC(id)
-                            setGscConnected(false)
-                            setGscProperties([])
-                            setGscEmail(null)
-                            setForm((prevForm) => ({
-                              ...prevForm,
-                              gscPropertyUri: null,
-                            }))
-                            toast.success(t('project.settings.gsc.disconnected'))
-                          } catch (reason: any) {
-                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-                          }
+                        onClick={() => {
+                          gscFetcher.submit({ intent: 'gsc-disconnect' }, { method: 'post' })
                         }}
+                        loading={
+                          gscFetcher.state !== 'idle' ? gscFetcher.formData?.get('intent') === 'gsc-disconnect' : null
+                        }
                       >
                         {t('common.disconnect')}
                       </Button>
@@ -981,15 +997,16 @@ const ProjectSettings = () => {
                       <Button
                         type='button'
                         className='max-w-max'
-                        onClick={async () => {
+                        onClick={() => {
                           if (!form.gscPropertyUri) return
-                          try {
-                            await setGSCProperty(id, form.gscPropertyUri)
-                            toast.success(t('project.settings.gsc.propertyConnected'))
-                          } catch (reason: any) {
-                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-                          }
+                          gscFetcher.submit(
+                            { intent: 'gsc-set-property', propertyUri: form.gscPropertyUri },
+                            { method: 'post' },
+                          )
                         }}
+                        loading={
+                          gscFetcher.state !== 'idle' ? gscFetcher.formData?.get('intent') === 'gsc-set-property' : null
+                        }
                         primary
                         regular
                       >

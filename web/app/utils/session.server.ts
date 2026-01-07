@@ -157,3 +157,22 @@ export function createHeadersWithCookies(cookies: string[]): Headers {
   const headers = new Headers()
   return appendCookiesToHeaders(headers, cookies)
 }
+
+const PROJECT_PASSWORD_COOKIE_PREFIX = 'swx_pp_'
+const PROJECT_PASSWORD_MAX_AGE = 604800 // 1 week in seconds
+
+export function getProjectPasswordCookie(request: Request, projectId: string): string | null {
+  const cookies = parseCookies(request)
+  return cookies[`${PROJECT_PASSWORD_COOKIE_PREFIX}${projectId}`] || null
+}
+
+export function createProjectPasswordCookie(projectId: string, password: string): string {
+  return buildCookieHeader(`${PROJECT_PASSWORD_COOKIE_PREFIX}${projectId}`, password, {
+    maxAge: PROJECT_PASSWORD_MAX_AGE,
+    sameSite: 'Lax',
+  })
+}
+
+export function clearProjectPasswordCookie(projectId: string): string {
+  return `${PROJECT_PASSWORD_COOKIE_PREFIX}${projectId}=; Path=/; Max-Age=0; SameSite=Lax`
+}

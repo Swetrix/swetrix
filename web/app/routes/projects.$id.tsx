@@ -1,14 +1,20 @@
 import _split from 'lodash/split'
 import { type ActionFunctionArgs, type LinksFunction, type LoaderFunctionArgs, type MetaFunction } from 'react-router'
-import { data } from 'react-router'
+import { data, redirect } from 'react-router'
 
 import { serverFetch } from '~/api/api.server'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { API_URL, MAIN_URL } from '~/lib/constants'
+import { Project } from '~/lib/models/Project'
 import ViewProject from '~/pages/Project/View'
 import { CurrentProjectProvider } from '~/providers/CurrentProjectProvider'
 import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
-import { redirectIfNotAuthenticated, createHeadersWithCookies } from '~/utils/session.server'
+import {
+  redirectIfNotAuthenticated,
+  createHeadersWithCookies,
+  getProjectPasswordCookie,
+  createProjectPasswordCookie,
+} from '~/utils/session.server'
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: ProjectViewStyle }]
 
@@ -25,9 +31,53 @@ export const meta: MetaFunction = ({ location }) => {
   ]
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export interface ProjectLoaderData {
+  project: Project | null
+  isPasswordRequired: boolean
+  error?: string
+}
+
+export async function loader({ request, params }: LoaderFunctionArgs) {
   redirectIfNotAuthenticated(request)
-  return null
+
+  const { id: projectId } = params
+  const url = new URL(request.url)
+
+  const passwordFromQuery = url.searchParams.get('password') || ''
+  const passwordFromCookie = getProjectPasswordCookie(request, projectId || '')
+  const password = passwordFromQuery || passwordFromCookie
+
+  const result = await serverFetch<Project>(request, `project/${projectId}`, {
+    method: 'GET',
+    headers: password ? { 'x-password': password } : undefined,
+  })
+
+  if (result.error || !result.data) {
+    if (result.status === 404 || result.status === 403) {
+      return redirect('/dashboard')
+    }
+
+    return data<ProjectLoaderData>(
+      { project: null, isPasswordRequired: false, error: result.error as string },
+      { status: result.status, headers: createHeadersWithCookies(result.cookies) },
+    )
+  }
+
+  const project = result.data
+
+  if (project.isPasswordProtected && !project.role && !password) {
+    return data<ProjectLoaderData>(
+      { project: null, isPasswordRequired: true },
+      { headers: createHeadersWithCookies(result.cookies) },
+    )
+  }
+
+  const cookies = [...result.cookies]
+  if (password && passwordFromQuery && password !== passwordFromCookie) {
+    cookies.push(createProjectPasswordCookie(projectId || '', password))
+  }
+
+  return data<ProjectLoaderData>({ project, isPasswordRequired: false }, { headers: createHeadersWithCookies(cookies) })
 }
 
 export interface ProjectViewActionData {

@@ -19,6 +19,16 @@ export interface RevenueStatus {
   lastSyncAt?: string
 }
 
+export interface GscStatus {
+  connected: boolean
+  email?: string | null
+}
+
+export interface GscProperty {
+  siteUrl: string
+  permissionLevel?: string
+}
+
 export interface ProjectSettingsActionData {
   success?: boolean
   intent?: string
@@ -36,6 +46,9 @@ export interface ProjectSettingsActionData {
   subscribers?: Subscriber[]
   subscribersCount?: number
   revenueStatus?: RevenueStatus
+  gscAuthUrl?: string
+  gscStatus?: GscStatus
+  gscProperties?: GscProperty[]
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -438,6 +451,85 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const result = await serverFetch(request, `project/${id}/revenue/currency`, {
         method: 'POST',
         body: { currency },
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    // Google Search Console
+    case 'gsc-connect': {
+      const result = await serverFetch<{ url: string }>(request, `v1/project/gsc/${id}/connect`, {
+        method: 'POST',
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, gscAuthUrl: result.data?.url },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'gsc-status': {
+      const result = await serverFetch<GscStatus>(request, `v1/project/gsc/${id}/status`)
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, gscStatus: result.data as GscStatus },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'gsc-properties': {
+      const result = await serverFetch<GscProperty[]>(request, `v1/project/gsc/${id}/properties`)
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true, gscProperties: result.data as GscProperty[] },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'gsc-set-property': {
+      const propertyUri = formData.get('propertyUri')?.toString()
+
+      if (!propertyUri) {
+        return data<ProjectSettingsActionData>({ intent, error: 'Property URI is required' }, { status: 400 })
+      }
+
+      const result = await serverFetch(request, `v1/project/gsc/${id}/property`, {
+        method: 'POST',
+        body: { propertyUri },
+      })
+
+      if (result.error) {
+        return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectSettingsActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'gsc-disconnect': {
+      const result = await serverFetch(request, `v1/project/gsc/${id}/disconnect`, {
+        method: 'DELETE',
       })
 
       if (result.error) {
