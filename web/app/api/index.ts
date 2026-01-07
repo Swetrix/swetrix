@@ -6,7 +6,6 @@ import _map from 'lodash/map'
 import { DEFAULT_ALERTS_TAKE, API_URL } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import { SSOProvider } from '~/lib/models/Auth'
-import { Metainfo } from '~/lib/models/Metainfo'
 import {
   Project,
   Overall,
@@ -1250,34 +1249,6 @@ export const getUserFlow = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const checkPassword = (pid: string, password: string) =>
-  api
-    .get(`project/password/${pid}`, {
-      headers: {
-        'x-password': password,
-      },
-    })
-    .then((response): boolean => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getPaymentMetainfo = (config?: AxiosRequestConfig) =>
-  api
-    .get('user/metainfo', config)
-    .then((response): Metainfo => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getUsageInfo = () =>
-  api
-    .get('user/usageinfo')
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getFilters = (pid: string, type: string, password = '') =>
   api
     .get(`log/filters?pid=${pid}&type=${type}`, {
@@ -1310,22 +1281,6 @@ export const getVersionFilters = (pid: string, type: 'traffic' | 'errors', colum
       },
     })
     .then((response): Array<{ name: string; version: string }> => response.data)
-    .catch((error) => {
-      throw error
-    })
-
-export const previewSubscriptionUpdate = (planId: number) =>
-  api
-    .post('user/preview-plan', { planId })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw error
-    })
-
-export const changeSubscriptionPlan = (planId: number) =>
-  api
-    .post('user/change-plan', { planId })
-    .then((response) => response.data)
     .catch((error) => {
       throw error
     })
@@ -1567,3 +1522,12 @@ export const getRevenueData = async (
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
     })
 }
+
+// Blog Sitemap (kept client-side for SitemapFunction - no request object available)
+export const getSitemap = () =>
+  api
+    .get('v1/blog/sitemap')
+    .then((response): (string | string[])[] => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
+    })

@@ -29,7 +29,8 @@ import { Link, redirect, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
 
-import { getGeneralStats, getPaymentMetainfo } from '~/api'
+import { getGeneralStats } from '~/api'
+import { serverFetch } from '~/api/api.server'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import FAQ from '~/components/marketing/FAQ'
@@ -82,7 +83,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
-  return { deviceInfo }
+  const metainfoResult = await serverFetch<Metainfo>(request, 'user/metainfo', { skipAuth: true })
+
+  return {
+    deviceInfo,
+    metainfo: metainfoResult.data ?? DEFAULT_METAINFO,
+  }
 }
 
 interface FeedbackHighlightProps {
@@ -1365,18 +1371,7 @@ const FeaturesShowcase = () => {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
-  const { deviceInfo } = useLoaderData<typeof loader>()
-
-  useEffect(() => {
-    const abortController = new AbortController()
-
-    getPaymentMetainfo({ signal: abortController.signal })
-      .then(setMetainfo)
-      .catch(() => {})
-
-    return () => abortController.abort()
-  }, [])
+  const { deviceInfo, metainfo } = useLoaderData<typeof loader>()
 
   const geoOptions = [
     {
@@ -1701,6 +1696,8 @@ const FeaturesShowcase = () => {
 }
 
 export default function Index() {
+  const { metainfo } = useLoaderData<typeof loader>()
+
   return (
     <div className='overflow-hidden'>
       <main className='bg-gray-50 dark:bg-slate-900'>
@@ -1710,7 +1707,7 @@ export default function Index() {
 
         <FeaturesShowcase />
 
-        <MarketingPricing />
+        <MarketingPricing metainfo={metainfo} />
 
         <FAQ />
 

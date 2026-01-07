@@ -1162,6 +1162,43 @@ export async function action({ request, params }: ActionFunctionArgs) {
       )
     }
 
+    // Project data
+    case 'get-project': {
+      const password = formData.get('password')?.toString() || ''
+
+      const result = await serverFetch(request, `project/${projectId}`, {
+        method: 'GET',
+        headers: password ? { 'x-password': password } : undefined,
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: result.status })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'check-password': {
+      const password = formData.get('password')?.toString() || ''
+
+      const result = await serverFetch<boolean>(request, `project/password/${projectId}`, {
+        method: 'GET',
+        headers: { 'x-password': password },
+      })
+
+      if (result.error) {
+        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+      }
+
+      return data<ProjectViewActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
     default:
       return data<ProjectViewActionData>({ error: 'Unknown action' }, { status: 400 })
   }

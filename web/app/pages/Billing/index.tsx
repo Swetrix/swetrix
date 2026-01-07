@@ -5,18 +5,19 @@ import utc from 'dayjs/plugin/utc'
 import _round from 'lodash/round'
 import { memo, useMemo, useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
+import { useLoaderData, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { getPaymentMetainfo, getUsageInfo } from '~/api'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import FAQ from '~/components/marketing/FAQ'
 import BillingPricing from '~/components/pricing/BillingPricing'
 import { withAuthentication, auth } from '~/hoc/protected'
-import { isSelfhosted, PADDLE_JS_URL, PADDLE_VENDOR_ID, CONTACT_EMAIL, paddleLanguageMapping } from '~/lib/constants'
-import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
+import { PADDLE_JS_URL, PADDLE_VENDOR_ID, CONTACT_EMAIL, paddleLanguageMapping } from '~/lib/constants'
+import { DEFAULT_METAINFO } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import type { BillingActionData, BillingLoaderData } from '~/routes/billing'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -26,31 +27,43 @@ import { loadScript } from '~/utils/generic'
 dayjs.extend(utc)
 dayjs.extend(duration)
 
-const Billing = () => {
-  const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
+const DEFAULT_USAGE_INFO: UsageInfo = {
+  total: 0,
+  traffic: 0,
+  errors: 0,
+  customEvents: 0,
+  captcha: 0,
+  trafficPerc: 0,
+  errorsPerc: 0,
+  customEventsPerc: 0,
+  captchaPerc: 0,
+}
 
-  const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
-  const [lastEvent, setLastEvent] = useState<{
-    event: string
-  } | null>(null)
+const Billing = () => {
+  const loaderData = useLoaderData<BillingLoaderData>()
+  const metainfoFetcher = useFetcher<BillingActionData>()
+
+  const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
+  const [lastEvent, setLastEvent] = useState<{ event: string } | null>(null)
 
   const { user, isLoading: authLoading } = useAuth()
   const { theme } = useTheme()
-  const [usageInfo, setUsageInfo] = useState<UsageInfo>({
-    total: 0,
-    traffic: 0,
-    errors: 0,
-    customEvents: 0,
-    captcha: 0,
-    trafficPerc: 0,
-    errorsPerc: 0,
-    customEventsPerc: 0,
-    captchaPerc: 0,
-  })
+
+  const metainfo = useMemo(() => {
+    if (metainfoFetcher.data?.success && metainfoFetcher.data.data) {
+      return metainfoFetcher.data.data as typeof DEFAULT_METAINFO
+    }
+    return loaderData?.metainfo ?? DEFAULT_METAINFO
+  }, [loaderData?.metainfo, metainfoFetcher.data])
+
+  const usageInfo = useMemo(() => loaderData?.usageInfo ?? DEFAULT_USAGE_INFO, [loaderData?.usageInfo])
+  const isLoading = !loaderData
+
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
+
   const {
     nextBillDate,
     planCode,
@@ -69,30 +82,15 @@ const Billing = () => {
   const totalUsage = maxEventsCount ? _round((usageInfo.total / maxEventsCount) * 100, 2) : 0
   const remainingUsage = _round(100 - totalUsage, 2)
 
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const abortController = new AbortController()
-
-    getPaymentMetainfo({ signal: abortController.signal })
-      .then(setMetainfo)
-      .catch(() => {})
-
-    return () => abortController.abort()
-  }, [])
-
   // Paddle (payment processor) set-up
   useEffect(() => {
     loadScript(PADDLE_JS_URL)
 
     const interval = setInterval(paddleSetup, 200)
 
-    // prettier-ignore
     function paddleSetup() {
-      if (isSelfhosted) {
-        clearInterval(interval)
-      } else if ((window as any)?.Paddle) {
-        (window as any).Paddle.Setup({
+      if ((window as any)?.Paddle) {
+        ;(window as any).Paddle.Setup({
           vendor: PADDLE_VENDOR_ID,
           eventCallback: setLastEvent,
         })
@@ -100,31 +98,6 @@ const Billing = () => {
       }
     }
   }, [])
-
-  const loadUsageInfo = async () => {
-    if (!isLoading) {
-      return
-    }
-
-    try {
-      const result = await getUsageInfo()
-      setUsageInfo(result)
-    } catch (reason: any) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.failedToLoadUsageInfo'))
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (authLoading) {
-      return
-    }
-
-    loadUsageInfo()
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading])
 
   const isTrialEnded = useMemo(() => {
     if (!trialEndDate) {
@@ -307,11 +280,11 @@ const Billing = () => {
             </div>
           ) : null}
 
-          {isLoading ? (
+          {isLoading || authLoading ? (
             <Loader />
           ) : (
             <div className='mt-8 flex flex-col'>
-              <BillingPricing lastEvent={lastEvent} />
+              <BillingPricing lastEvent={lastEvent} metainfo={metainfo} />
               <div className='mt-2 space-y-2'>
                 {subUpdateURL && !cancellationEffectiveDate ? (
                   <Button className='mr-2' onClick={onUpdatePaymentDetails} type='button' primary large>
@@ -334,7 +307,7 @@ const Billing = () => {
           </h2>
           <p className='mt-1 max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('billing.planUsageDesc')}</p>
 
-          {isLoading ? (
+          {isLoading || authLoading ? (
             <Loader />
           ) : (
             <div className='mt-4 text-gray-900 dark:text-gray-50'>
