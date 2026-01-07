@@ -18,7 +18,6 @@ import {
   Profile,
   ProfileDetails,
 } from '~/lib/models/Project'
-import { Stats } from '~/lib/models/Stats'
 import { User } from '~/lib/models/User'
 import { Filter, ProjectViewCustomEvent } from '~/pages/Project/View/interfaces/traffic'
 import { getAccessToken, setAccessToken } from '~/utils/accessToken'
@@ -641,14 +640,6 @@ export const getLiveVisitors = (pids: string[], password?: string): Promise<Live
       },
     })
     .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getGeneralStats = () =>
-  api
-    .get('log/generalStats')
-    .then((response): Stats => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

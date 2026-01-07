@@ -451,3 +451,23 @@ export async function getSitemap(request: Request): Promise<(string | string[])[
 
   return result.data
 }
+
+// ============================================================================
+// MARK: General Stats API
+// ============================================================================
+
+interface GeneralStats {
+  users: number
+  projects: number
+  events: number
+}
+
+export async function getGeneralStats(request: Request): Promise<GeneralStats | null> {
+  const result = await serverFetch<GeneralStats>(request, 'log/generalStats', { skipAuth: true })
+
+  if (result.error || !result.data) {
+    return null
+  }
+
+  return result.data
+}
