@@ -17,12 +17,12 @@ import {
   FileTextIcon,
   BellOffIcon,
 } from 'lucide-react'
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { Link, useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { deleteAlert as deleteAlertApi, getProjectAlerts } from '~/api'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import PaidFeature from '~/modals/PaidFeature'
@@ -217,6 +217,8 @@ const ProjectAlerts = () => {
   const { user, isAuthenticated } = useAuth()
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
+  const fetcher = useFetcher<ProjectViewActionData>()
+  const lastHandledData = useRef<ProjectViewActionData | null>(null)
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [total, setTotal] = useState(0)
@@ -245,22 +247,40 @@ const ProjectAlerts = () => {
     return newSearchParams.toString()
   }, [searchParams])
 
-  const loadAlerts = async (take: number, skip: number) => {
-    if (isLoading) {
-      return
-    }
+  const loadAlerts = (take: number, skip: number) => {
+    if (fetcher.state !== 'idle') return
     setIsLoading(true)
 
-    try {
-      const result = await getProjectAlerts(id, take, skip)
-      setAlerts(result.results)
-      setTotal(result.total)
-    } catch (reason: any) {
-      setError(reason)
-    } finally {
+    fetcher.submit(
+      { intent: 'get-project-alerts', take: String(take), skip: String(skip) },
+      { method: 'POST', action: `/projects/${id}` },
+    )
+  }
+
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
+    const { intent, success, data, error: fetcherError } = fetcher.data
+
+    if (success) {
+      if (intent === 'get-project-alerts' && data) {
+        const result = data as { results: Alerts[]; total: number }
+        setAlerts(result.results)
+        setTotal(result.total)
+        setIsLoading(false)
+      } else if (intent === 'delete-alert') {
+        toast.success(t('alertsSettings.alertDeleted'))
+        loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+      }
+    } else if (fetcherError) {
+      setError(fetcherError)
       setIsLoading(false)
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetcher.state, fetcher.data, t, page])
 
   useEffect(() => {
     if (!canManageAlerts) {
@@ -325,15 +345,10 @@ const ProjectAlerts = () => {
     loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
   }
 
-  const onDelete = async (alertId: string) => {
-    try {
-      await deleteAlertApi(alertId)
-      toast.success(t('alertsSettings.alertDeleted'))
-      // Reload alerts after deletion
-      loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
-    } catch (reason: any) {
-      toast.error(reason?.response?.data?.message || reason?.message || 'Something went wrong')
-    }
+  const onDelete = (alertId: string) => {
+    if (fetcher.state !== 'idle') return
+
+    fetcher.submit({ intent: 'delete-alert', alertId }, { method: 'POST', action: `/projects/${id}` })
   }
 
   if (!canManageAlerts) {

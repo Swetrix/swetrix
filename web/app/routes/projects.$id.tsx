@@ -217,13 +217,27 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'create-alert': {
       const name = formData.get('name')?.toString() || ''
       const queryMetric = formData.get('queryMetric')?.toString() || 'page_views'
-      const queryCondition = formData.get('queryCondition')?.toString() || 'greater_than'
-      const queryValue = Number(formData.get('queryValue')?.toString() || '0')
-      const queryTime = Number(formData.get('queryTime')?.toString() || '1')
+      const queryCondition = formData.get('queryCondition')?.toString() || null
+      const queryValue = formData.get('queryValue') ? Number(formData.get('queryValue')) : null
+      const queryTime = formData.get('queryTime')?.toString() || null
+      const queryCustomEvent = formData.get('queryCustomEvent')?.toString() || null
+      const alertOnNewErrorsOnly = formData.get('alertOnNewErrorsOnly') === 'true'
+      const alertOnEveryCustomEvent = formData.get('alertOnEveryCustomEvent') === 'true'
 
       const result = await serverFetch(request, 'alert', {
         method: 'POST',
-        body: { pid: projectId, name, queryMetric, queryCondition, queryValue, queryTime, active: true },
+        body: {
+          pid: projectId,
+          name,
+          queryMetric,
+          queryCondition,
+          queryValue,
+          queryTime,
+          queryCustomEvent,
+          alertOnNewErrorsOnly,
+          alertOnEveryCustomEvent,
+          active: true,
+        },
       })
 
       if (result.error) {
@@ -241,17 +255,27 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const name = formData.get('name')?.toString()
       const active = formData.get('active') === 'true'
       const queryMetric = formData.get('queryMetric')?.toString()
-      const queryCondition = formData.get('queryCondition')?.toString()
-      const queryValue = formData.get('queryValue') ? Number(formData.get('queryValue')) : undefined
-      const queryTime = formData.get('queryTime') ? Number(formData.get('queryTime')) : undefined
+      const queryCondition = formData.get('queryCondition')?.toString() || null
+      const queryValue = formData.get('queryValue') ? Number(formData.get('queryValue')) : null
+      const queryTime = formData.get('queryTime')?.toString() || null
+      const queryCustomEvent = formData.get('queryCustomEvent')?.toString() || null
+      const alertOnNewErrorsOnly = formData.has('alertOnNewErrorsOnly')
+        ? formData.get('alertOnNewErrorsOnly') === 'true'
+        : undefined
+      const alertOnEveryCustomEvent = formData.has('alertOnEveryCustomEvent')
+        ? formData.get('alertOnEveryCustomEvent') === 'true'
+        : undefined
 
       const body: Record<string, unknown> = {}
       if (name !== undefined) body.name = name
       body.active = active
       if (queryMetric !== undefined) body.queryMetric = queryMetric
-      if (queryCondition !== undefined) body.queryCondition = queryCondition
-      if (queryValue !== undefined) body.queryValue = queryValue
-      if (queryTime !== undefined) body.queryTime = queryTime
+      body.queryCondition = queryCondition
+      body.queryValue = queryValue
+      body.queryTime = queryTime
+      body.queryCustomEvent = queryCustomEvent
+      if (alertOnNewErrorsOnly !== undefined) body.alertOnNewErrorsOnly = alertOnNewErrorsOnly
+      if (alertOnEveryCustomEvent !== undefined) body.alertOnEveryCustomEvent = alertOnEveryCustomEvent
 
       const result = await serverFetch(request, `alert/${alertId}`, {
         method: 'PUT',

@@ -6,10 +6,11 @@ import _isEmpty from 'lodash/isEmpty'
 import { FilterIcon } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { Link, useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { addFunnel, updateFunnel, deleteFunnel, getFunnelData, getFunnels } from '~/api'
+import { getFunnelData } from '~/api'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import { FUNNELS_PERIOD_PAIRS } from '~/lib/constants'
 import { Funnel, AnalyticsFunnel } from '~/lib/models/Project'
 import NewFunnel from '~/modals/NewFunnel'
@@ -43,17 +44,20 @@ const FunnelsView = () => {
   const isEmbedded = searchParams.get('embedded') === 'true'
 
   const isMountedRef = useRef(true)
+  const fetcher = useFetcher<ProjectViewActionData>()
+  const lastHandledData = useRef<ProjectViewActionData | null>(null)
 
   // Funnels state
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
   const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(undefined)
-  const [funnelActionLoading, setFunnelActionLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [funnelAnalytics, setFunnelAnalytics] = useState<{
     funnel: AnalyticsFunnel[]
     totalPageviews: number
   } | null>(null)
+
+  const funnelActionLoading = fetcher.state !== 'idle'
 
   // Search params without the funnel id. Needed for the back button.
   const pureSearchParams = useMemo(() => {
@@ -85,79 +89,68 @@ const FunnelsView = () => {
     }
   }, [])
 
-  const onFunnelCreate = async (name: string, steps: string[]) => {
-    if (funnelActionLoading) {
-      return
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
+    const { intent, success, error } = fetcher.data
+
+    if (success) {
+      if (intent === 'create-funnel') {
+        toast.success(t('apiNotifications.funnelCreated'))
+        setIsNewFunnelOpened(false)
+        setFunnelToEdit(undefined)
+        // Reload funnels list
+        fetcher.submit(
+          { intent: 'get-funnels', password: projectPassword },
+          { method: 'POST', action: `/projects/${id}` },
+        )
+      } else if (intent === 'update-funnel') {
+        toast.success(t('apiNotifications.funnelUpdated'))
+        setIsNewFunnelOpened(false)
+        setFunnelToEdit(undefined)
+        fetcher.submit(
+          { intent: 'get-funnels', password: projectPassword },
+          { method: 'POST', action: `/projects/${id}` },
+        )
+      } else if (intent === 'delete-funnel') {
+        toast.success(t('apiNotifications.funnelDeleted'))
+        fetcher.submit(
+          { intent: 'get-funnels', password: projectPassword },
+          { method: 'POST', action: `/projects/${id}` },
+        )
+      } else if (intent === 'get-funnels' && fetcher.data.data) {
+        mergeProject({ funnels: fetcher.data.data as Funnel[] })
+      }
+    } else if (error) {
+      toast.error(error)
     }
+  }, [fetcher.state, fetcher.data, t, id, projectPassword, fetcher, mergeProject])
 
-    setFunnelActionLoading(true)
+  const onFunnelCreate = (name: string, steps: string[]) => {
+    if (funnelActionLoading) return
 
-    try {
-      await addFunnel(id, name, steps)
-    } catch (reason: any) {
-      console.error('[ERROR] (onFunnelCreate)(addFunnel)', reason)
-      toast.error(reason)
-    }
-
-    try {
-      const funnels = await getFunnels(id, projectPassword)
-      mergeProject({ funnels })
-    } catch (reason: any) {
-      console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
-    }
-
-    toast.success(t('apiNotifications.funnelCreated'))
-    setFunnelActionLoading(false)
+    fetcher.submit(
+      { intent: 'create-funnel', name, steps: JSON.stringify(steps) },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
-  const onFunnelEdit = async (funnelId: string, name: string, steps: string[]) => {
-    if (funnelActionLoading) {
-      return
-    }
+  const onFunnelEdit = (funnelId: string, name: string, steps: string[]) => {
+    if (funnelActionLoading) return
 
-    setFunnelActionLoading(true)
-
-    try {
-      await updateFunnel(funnelId, id, name, steps)
-    } catch (reason: any) {
-      console.error('[ERROR] (onFunnelEdit)(updateFunnel)', reason)
-      toast.error(reason)
-    }
-
-    try {
-      const funnels = await getFunnels(id, projectPassword)
-      mergeProject({ funnels })
-    } catch (reason: any) {
-      console.error('[ERROR] (onFunnelEdit)(getFunnels)', reason)
-    }
-
-    toast.success(t('apiNotifications.funnelUpdated'))
-    setFunnelActionLoading(false)
+    fetcher.submit(
+      { intent: 'update-funnel', funnelId, name, steps: JSON.stringify(steps) },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
-  const onFunnelDelete = async (funnelId: string) => {
-    if (funnelActionLoading) {
-      return
-    }
+  const onFunnelDelete = (funnelId: string) => {
+    if (funnelActionLoading) return
 
-    setFunnelActionLoading(true)
-
-    try {
-      await deleteFunnel(funnelId, id)
-    } catch (reason: any) {
-      console.error('[ERROR] (onFunnelDelete)(deleteFunnel)', reason)
-      toast.error(reason)
-    }
-
-    try {
-      const funnels = await getFunnels(id, projectPassword)
-      mergeProject({ funnels })
-    } catch (reason: any) {
-      console.error('[ERROR] (onFunnelDelete)(getFunnels)', reason)
-    }
-
-    toast.success(t('apiNotifications.funnelDeleted'))
-    setFunnelActionLoading(false)
+    fetcher.submit({ intent: 'delete-funnel', funnelId }, { method: 'POST', action: `/projects/${id}` })
   }
 
   const loadFunnelsData = async () => {

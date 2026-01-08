@@ -172,7 +172,3 @@ export function createProjectPasswordCookie(projectId: string, password: string)
     sameSite: 'Lax',
   })
 }
-
-export function clearProjectPasswordCookie(projectId: string): string {
-  return `${PROJECT_PASSWORD_COOKIE_PREFIX}${projectId}=; Path=/; Max-Age=0; SameSite=Lax`
-}

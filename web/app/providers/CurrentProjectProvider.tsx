@@ -58,14 +58,12 @@ const useProject = (id: string) => {
   const lastHandledFetcherData = useRef<ProjectViewActionData | null>(null)
   const hasTriedStoredPassword = useRef(false)
 
-  // Handle initial loader error (only on mount)
   useEffect(() => {
     if (loaderData?.error && !loaderData.project && !loaderData.isPasswordRequired) {
       console.error('[ERROR] (getProject)', loaderData.error)
       toast.error(t('project.noExist'))
       navigate(routes.dashboard)
     }
-    // Only run on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

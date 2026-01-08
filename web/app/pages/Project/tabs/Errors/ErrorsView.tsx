@@ -18,11 +18,12 @@ import {
 } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation, useSearchParams, useNavigate, type LinkProps } from 'react-router'
+import { Link, useLocation, useSearchParams, useNavigate, useFetcher, type LinkProps } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { getErrors, getErrorOverview, getError, updateErrorStatus, type ErrorOverviewResponse } from '~/api'
+import { getErrors, getErrorOverview, getError, type ErrorOverviewResponse } from '~/api'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import {
   TimeFormat,
   tbsFormatMapper,
@@ -399,6 +400,9 @@ const ErrorsView = () => {
   const [searchParams] = useSearchParams()
   const isEmbedded = searchParams.get('embedded') === 'true'
   const navigate = useNavigate()
+  const errorStatusFetcher = useFetcher<ProjectViewActionData>()
+  const lastHandledStatusData = useRef<ProjectViewActionData | null>(null)
+  const pendingStatusUpdate = useRef<'resolved' | 'active' | null>(null)
 
   const from = dateRange ? getFormatDate(dateRange[0]) : ''
   const to = dateRange ? getFormatDate(dateRange[1]) : ''
@@ -423,7 +427,8 @@ const ErrorsView = () => {
   const prevActiveEIDRef = useRef<string | null>(activeEID)
   const [activeError, setActiveError] = useState<{ details: SwetrixErrorDetails; [key: string]: any } | null>(null)
   const [errorLoading, setErrorLoading] = useState(false)
-  const [errorStatusUpdating, setErrorStatusUpdating] = useState(false)
+
+  const errorStatusUpdating = errorStatusFetcher.state !== 'idle'
 
   const [errorsActiveTabs, setErrorsActiveTabs] = useState<{
     location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
@@ -572,44 +577,48 @@ const ErrorsView = () => {
     [activeError?.details?.eid],
   )
 
-  const markErrorAsResolved = async () => {
+  // Handle error status update response
+  useEffect(() => {
+    if (errorStatusFetcher.state !== 'idle' || !errorStatusFetcher.data) return
+    if (lastHandledStatusData.current === errorStatusFetcher.data) return
+    lastHandledStatusData.current = errorStatusFetcher.data
+
+    const { intent, success, error } = errorStatusFetcher.data
+
+    if (intent === 'update-error-status') {
+      if (success && pendingStatusUpdate.current) {
+        updateStatusInErrors(pendingStatusUpdate.current)
+        if (activeEID) {
+          loadError(activeEID)
+        }
+        toast.success(t('apiNotifications.errorStatusUpdated'))
+        pendingStatusUpdate.current = null
+      } else if (error) {
+        toast.error(error)
+        pendingStatusUpdate.current = null
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [errorStatusFetcher.state, errorStatusFetcher.data, t, activeEID])
+
+  const markErrorAsResolved = () => {
     if (errorStatusUpdating || !activeEID || !activeError?.details?.eid) return
 
-    setErrorStatusUpdating(true)
-
-    try {
-      await updateErrorStatus(id, 'resolved', activeEID)
-      await loadError(activeEID)
-      updateStatusInErrors('resolved')
-    } catch (reason) {
-      console.error('[markErrorAsResolved]', reason)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.updateErrorStatusFailed'))
-      setErrorStatusUpdating(false)
-      return
-    }
-
-    toast.success(t('apiNotifications.errorStatusUpdated'))
-    setErrorStatusUpdating(false)
+    pendingStatusUpdate.current = 'resolved'
+    errorStatusFetcher.submit(
+      { intent: 'update-error-status', eid: activeEID, status: 'resolved' },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
-  const markErrorAsActive = async () => {
+  const markErrorAsActive = () => {
     if (errorStatusUpdating || !activeEID || !activeError?.details?.eid) return
 
-    setErrorStatusUpdating(true)
-
-    try {
-      await updateErrorStatus(id, 'active', activeEID)
-      await loadError(activeEID)
-      updateStatusInErrors('active')
-    } catch (reason) {
-      console.error('[markErrorAsActive]', reason)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.updateErrorStatusFailed'))
-      setErrorStatusUpdating(false)
-      return
-    }
-
-    toast.success(t('apiNotifications.errorStatusUpdated'))
-    setErrorStatusUpdating(false)
+    pendingStatusUpdate.current = 'active'
+    errorStatusFetcher.submit(
+      { intent: 'update-error-status', eid: activeEID, status: 'active' },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
   const switchActiveErrorFilter = useMemo(

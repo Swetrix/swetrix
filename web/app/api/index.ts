@@ -3,14 +3,12 @@ import createAuthRefreshInterceptor from 'axios-auth-refresh'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 
-import { DEFAULT_ALERTS_TAKE, API_URL } from '~/lib/constants'
-import { Alerts } from '~/lib/models/Alerts'
+import { API_URL } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
 import {
   Project,
   Overall,
   LiveStats,
-  Funnel,
   SwetrixError,
   SwetrixErrorDetails,
   SessionDetails,
@@ -555,18 +553,6 @@ export const getFunnelData = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getFunnels = (pid: string, password: string | undefined = '') =>
-  api
-    .get(`project/funnels/${pid}`, {
-      headers: {
-        'x-password': password,
-      },
-    })
-    .then((response): Funnel[] => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getCaptchaData = (pid: string, tb = 'hour', period = '3d', filters: any[] = [], from = '', to = '') =>
   api
     .get(
@@ -660,56 +646,6 @@ export const getLiveVisitorsInfo = (pid: string, password?: string) =>
       },
     })
     .then((response): GetLiveVisitorsInfo[] => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getProjectAlerts = (projectId: string, take: number = DEFAULT_ALERTS_TAKE, skip = 0) =>
-  api
-    .get(`/alert/project/${projectId}?take=${take}&skip=${skip}`)
-    .then(
-      (
-        response,
-      ): {
-        results: Alerts[]
-        total: number
-        page_total: number
-      } => response.data,
-    )
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getAlert = (alertId: string) =>
-  api
-    .get(`/alert/${alertId}`)
-    .then((response): Alerts => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export type CreateAlert = Omit<Alerts, 'id' | 'lastTrigger' | 'lastTriggered' | 'created'>
-
-export const createAlert = (data: CreateAlert) =>
-  api
-    .post('alert', data)
-    .then((response): Alerts => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const updateAlert = (id: string, data: Partial<Alerts>) =>
-  api
-    .put(`alert/${id}`, data)
-    .then((response): Alerts => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const deleteAlert = (id: string) =>
-  api
-    .delete(`alert/${id}`)
-    .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1049,66 +985,6 @@ export const getExperimentResults = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const addFunnel = (pid: string, name: string, steps: string[]) =>
-  api
-    .post('project/funnel', { pid, name, steps })
-    .then((response): any => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const updateFunnel = (id: string, pid: string, name: string, steps: string[]) =>
-  api
-    .patch('project/funnel', { id, name, steps, pid })
-    .then((response): any => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const deleteFunnel = (id: string, pid: string) =>
-  api
-    .delete(`project/funnel/${id}/${pid}`)
-    .then((response): any => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getAnnotations = (pid: string, password: string | undefined = '') =>
-  api
-    .get(`project/annotations/${pid}`, {
-      headers: {
-        'x-password': password,
-      },
-    })
-    .then((response): any[] => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const createAnnotation = (pid: string, date: string, text: string) =>
-  api
-    .post('project/annotation', { pid, date, text })
-    .then((response): any => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const updateAnnotation = (id: string, pid: string, date: string, text: string) =>
-  api
-    .patch('project/annotation', { id, pid, date, text })
-    .then((response): any => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const deleteAnnotation = (id: string, pid: string) =>
-  api
-    .delete(`project/annotation/${id}/${pid}`)
-    .then((response): any => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getProjectDataCustomEvents = (
   pid: string,
   tb = 'hour',
@@ -1276,59 +1152,10 @@ export const getVersionFilters = (pid: string, type: 'traffic' | 'errors', colum
       throw error
     })
 
-export const updateErrorStatus = (pid: string, status: 'resolved' | 'active', eid?: string, eids?: string[]) =>
-  api
-    .patch('log/error-status', { pid, eid, eids, status })
-    .then((response): any => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-// Google Search Console integration
-export const generateGSCAuthURL = (pid: string) =>
-  api
-    .post(`v1/project/gsc/${pid}/connect`)
-    .then((response): { url: string } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getGSCStatus = (pid: string) =>
-  api
-    .get(`v1/project/gsc/${pid}/status`)
-    .then((response): { connected: boolean; email?: string | null } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const processGSCToken = (code: string, state: string) =>
   api
     .post(`v1/project/gsc/process-token`, { code, state })
     .then((response): { pid: string } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getGSCProperties = (pid: string) =>
-  api
-    .get(`v1/project/gsc/${pid}/properties`)
-    .then((response): { siteUrl: string; permissionLevel?: string }[] => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const setGSCProperty = (pid: string, propertyUri: string) =>
-  api
-    .post(`v1/project/gsc/${pid}/property`, { propertyUri })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const disconnectGSC = (pid: string) =>
-  api
-    .delete(`v1/project/gsc/${pid}/disconnect`)
-    .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
