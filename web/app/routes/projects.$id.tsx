@@ -1,10 +1,29 @@
+import _includes from 'lodash/includes'
+import _some from 'lodash/some'
 import _split from 'lodash/split'
+import _startsWith from 'lodash/startsWith'
 import { type ActionFunctionArgs, type LinksFunction, type LoaderFunctionArgs, type MetaFunction } from 'react-router'
 import { data, redirect } from 'react-router'
 
-import { serverFetch } from '~/api/api.server'
+import {
+  serverFetch,
+  getProjectDataServer,
+  getOverallStatsServer,
+  getCustomEventsDataServer,
+  getPerfDataServer,
+  getPerformanceOverallStatsServer,
+  getSessionsServer,
+  getErrorsServer,
+  type TrafficLogResponse,
+  type OverallObject,
+  type PerformanceDataResponse,
+  type PerformanceOverallObject,
+  type SessionsResponse,
+  type ErrorsResponse,
+  type AnalyticsFilter,
+} from '~/api/api.server'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
-import { API_URL, MAIN_URL } from '~/lib/constants'
+import { API_URL, MAIN_URL, DEFAULT_TIMEZONE, PROJECT_TABS } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import ViewProject from '~/pages/Project/View'
 import { CurrentProjectProvider } from '~/providers/CurrentProjectProvider'
@@ -31,10 +50,107 @@ export const meta: MetaFunction = ({ location }) => {
   ]
 }
 
+const validFilters = [
+  'host',
+  'cc',
+  'rg',
+  'ct',
+  'pg',
+  'entryPage',
+  'exitPage',
+  'lc',
+  'ref',
+  'refn',
+  'dv',
+  'br',
+  'brv',
+  'os',
+  'osv',
+  'so',
+  'me',
+  'ca',
+  'te',
+  'co',
+  'ev',
+  'tag:key',
+  'tag:value',
+  'ev:key',
+  'ev:value',
+]
+const validDynamicFilters = ['ev:key:', 'tag:key:']
+
+function isFilterValid(filter: string, checkDynamicFilters = false) {
+  let normalised = filter
+  if (_startsWith(normalised, '!') || _startsWith(normalised, '~') || _startsWith(normalised, '^')) {
+    normalised = normalised.substring(1)
+  }
+
+  if (_includes(validFilters, normalised)) {
+    return true
+  }
+
+  if (checkDynamicFilters && _some(validDynamicFilters, (prefix) => _startsWith(normalised, prefix))) {
+    return true
+  }
+
+  return false
+}
+
+function parseFiltersFromUrl(searchParams: URLSearchParams): AnalyticsFilter[] {
+  const filters: AnalyticsFilter[] = []
+
+  const entries = Array.from(searchParams.entries())
+
+  for (const [key, value] of entries) {
+    let actualColumn = key
+
+    let isExclusive = false
+    let isContains = false
+
+    if (key.startsWith('!')) {
+      isExclusive = true
+      actualColumn = key.substring(1)
+    } else if (key.startsWith('~')) {
+      isContains = true
+      actualColumn = key.substring(1)
+    } else if (key.startsWith('^')) {
+      isExclusive = true
+      isContains = true
+      actualColumn = key.substring(1)
+    }
+
+    if (!isFilterValid(actualColumn, true)) {
+      continue
+    }
+
+    filters.push({
+      column: actualColumn,
+      filter: value,
+      isExclusive: isExclusive,
+      isContains,
+    })
+  }
+
+  return filters
+}
+
 export interface ProjectLoaderData {
   project: Project | null
   isPasswordRequired: boolean
   error?: string
+  // Traffic data
+  trafficData?: Promise<TrafficLogResponse | null>
+  overallStats?: Promise<Record<string, OverallObject> | null>
+  trafficCompareData?: Promise<TrafficLogResponse | null>
+  overallCompareStats?: Promise<Record<string, OverallObject> | null>
+  customEventsData?: Promise<{ chart?: { events?: Record<string, unknown> } } | null>
+  // Performance data
+  perfData?: Promise<PerformanceDataResponse | null>
+  perfOverallStats?: Promise<Record<string, PerformanceOverallObject> | null>
+  // Sessions data
+  sessionsData?: Promise<SessionsResponse | null>
+  // Errors data
+  errorsData?: Promise<ErrorsResponse | null>
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -77,7 +193,102 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     cookies.push(createProjectPasswordCookie(projectId || '', password))
   }
 
-  return data<ProjectLoaderData>({ project, isPasswordRequired: false }, { headers: createHeadersWithCookies(cookies) })
+  // Parse URL params for analytics data
+  const tab = (url.searchParams.get('tab') as keyof typeof PROJECT_TABS) || PROJECT_TABS.traffic
+  const period = url.searchParams.get('period') || '7d'
+  const timeBucket = url.searchParams.get('timeBucket') || 'day'
+  const from = url.searchParams.get('from') || ''
+  const to = url.searchParams.get('to') || ''
+  const timezone = url.searchParams.get('timezone') || DEFAULT_TIMEZONE
+  const filters = parseFiltersFromUrl(url.searchParams)
+
+  // Performance-specific params
+  const measure = url.searchParams.get('measure') || 'median'
+  const perfMetric = url.searchParams.get('perfMetric') || 'timing' // 'timing' or 'quantiles'
+
+  // Traffic compare params
+  const compareEnabled = url.searchParams.get('compare') === 'true'
+  const compareFrom = url.searchParams.get('compareFrom') || ''
+  const compareTo = url.searchParams.get('compareTo') || ''
+
+  // Traffic custom events params
+  const customEventsParam = url.searchParams.get('customEvents') || ''
+  const customEvents = customEventsParam ? customEventsParam.split(',').filter(Boolean) : []
+
+  const analyticsParams = {
+    timeBucket,
+    period,
+    filters,
+    from: from || undefined,
+    to: to || undefined,
+    timezone,
+    password: password || undefined,
+  }
+
+  // Initialize deferred data promises
+  let trafficData: Promise<TrafficLogResponse | null> | undefined
+  let overallStats: Promise<Record<string, OverallObject> | null> | undefined
+  let trafficCompareData: Promise<TrafficLogResponse | null> | undefined
+  let overallCompareStats: Promise<Record<string, OverallObject> | null> | undefined
+  let customEventsData: Promise<{ chart?: { events?: Record<string, unknown> } } | null> | undefined
+  let perfData: Promise<PerformanceDataResponse | null> | undefined
+  let perfOverallStats: Promise<Record<string, PerformanceOverallObject> | null> | undefined
+  let sessionsData: Promise<SessionsResponse | null> | undefined
+  let errorsData: Promise<ErrorsResponse | null> | undefined
+
+  // Only fetch data if project is valid and not locked
+  if (project && !project.isLocked && projectId) {
+    if (tab === PROJECT_TABS.traffic) {
+      trafficData = getProjectDataServer(request, projectId, analyticsParams).then((res) => res.data)
+      overallStats = getOverallStatsServer(request, [projectId], analyticsParams).then((res) => res.data)
+
+      // Fetch compare data if enabled
+      if (compareEnabled && compareFrom && compareTo) {
+        const compareParams = {
+          ...analyticsParams,
+          period: 'custom' as const,
+          from: compareFrom,
+          to: compareTo,
+        }
+        trafficCompareData = getProjectDataServer(request, projectId, compareParams).then((res) => res.data)
+        overallCompareStats = getOverallStatsServer(request, [projectId], compareParams).then((res) => res.data)
+      }
+
+      // Fetch custom events data if any custom events are selected
+      if (customEvents.length > 0) {
+        customEventsData = getCustomEventsDataServer(request, projectId, analyticsParams, customEvents).then(
+          (res) => res.data,
+        )
+      }
+    } else if (tab === PROJECT_TABS.performance) {
+      // Use measure from URL, or 'quantiles' if perfMetric is quantiles
+      const effectiveMeasure = perfMetric === 'quantiles' ? 'quantiles' : measure
+      const perfParams = { ...analyticsParams, measure: effectiveMeasure }
+      perfData = getPerfDataServer(request, projectId, perfParams).then((res) => res.data)
+      perfOverallStats = getPerformanceOverallStatsServer(request, [projectId], perfParams).then((res) => res.data)
+    } else if (tab === PROJECT_TABS.sessions) {
+      sessionsData = getSessionsServer(request, projectId, analyticsParams).then((res) => res.data)
+    } else if (tab === PROJECT_TABS.errors) {
+      errorsData = getErrorsServer(request, projectId, analyticsParams).then((res) => res.data)
+    }
+  }
+
+  return data<ProjectLoaderData>(
+    {
+      project,
+      isPasswordRequired: false,
+      trafficData,
+      overallStats,
+      trafficCompareData,
+      overallCompareStats,
+      customEventsData,
+      perfData,
+      perfOverallStats,
+      sessionsData,
+      errorsData,
+    },
+    { headers: createHeadersWithCookies(cookies) },
+  )
 }
 
 export interface ProjectViewActionData {

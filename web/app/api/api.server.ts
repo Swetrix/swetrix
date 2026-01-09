@@ -471,3 +471,317 @@ export async function getGeneralStats(request: Request): Promise<GeneralStats | 
 
   return result.data
 }
+
+// ============================================================================
+// MARK: Analytics Data API (Deferred Loading)
+// ============================================================================
+
+export interface AnalyticsFilter {
+  column: string
+  filter: string
+  isExclusive: boolean
+  isContains?: boolean
+}
+
+export interface TrafficLogResponse {
+  params?: Record<string, { name: string; count: number }[]>
+  chart: {
+    x: string[]
+    visits: number[]
+    uniques: number[]
+    sdur: number[]
+  }
+  customs: Record<string, number>
+  properties: Record<string, number>
+  appliedFilters?: AnalyticsFilter[]
+  timeBucket?: string[]
+  meta?: { key: string; current: { sum: number; avg: number }; previous: { sum: number; avg: number } }[]
+}
+
+interface OverallPeriodStats {
+  all: number
+  unique?: number
+  users?: number
+  bounceRate?: number
+  sdur?: number
+}
+
+export interface OverallObject {
+  current: OverallPeriodStats
+  previous: OverallPeriodStats
+  change: number
+  uniqueChange?: number
+  usersChange?: number
+  bounceRateChange?: number
+  sdurChange?: number
+  customEVFilterApplied?: boolean
+  chart?: { x: string[]; visits: number[] }
+}
+
+export interface AnalyticsParams {
+  timeBucket: string
+  period: string
+  filters: AnalyticsFilter[]
+  from?: string
+  to?: string
+  timezone: string
+  mode?: 'periodical' | 'cumulative'
+  password?: string
+}
+
+function serializeFiltersForUrl(filters: AnalyticsFilter[]): string {
+  return JSON.stringify(filters)
+}
+
+export async function getProjectDataServer(
+  request: Request,
+  pid: string,
+  params: AnalyticsParams,
+): Promise<ServerFetchResult<TrafficLogResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    timeBucket: params.timeBucket,
+    period: params.period,
+    filters: serializeFiltersForUrl(params.filters),
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone,
+    mode: params.mode || 'periodical',
+    metrics: '[]',
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<TrafficLogResponse>(request, `log?${queryParams.toString()}`, { headers })
+}
+
+export async function getOverallStatsServer(
+  request: Request,
+  pids: string[],
+  params: AnalyticsParams,
+): Promise<ServerFetchResult<Record<string, OverallObject>>> {
+  const pidsParam = `[${pids.map((pid) => `"${pid}"`).join(',')}]`
+
+  const queryParams = new URLSearchParams({
+    pids: pidsParam,
+    timeBucket: params.timeBucket,
+    period: params.period,
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone,
+    filters: serializeFiltersForUrl(params.filters),
+    includeChart: 'false',
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<Record<string, OverallObject>>(request, `log/birdseye?${queryParams.toString()}`, { headers })
+}
+
+interface CustomEventsChartResponse {
+  chart?: {
+    events?: Record<string, unknown>
+  }
+}
+
+export async function getCustomEventsDataServer(
+  request: Request,
+  pid: string,
+  params: AnalyticsParams,
+  customEvents: string[],
+): Promise<ServerFetchResult<CustomEventsChartResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    timeBucket: params.timeBucket,
+    period: params.period,
+    filters: serializeFiltersForUrl(params.filters),
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone,
+    customEvents: JSON.stringify(customEvents),
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<CustomEventsChartResponse>(request, `log/customEvents?${queryParams.toString()}`, { headers })
+}
+
+export interface PerformanceDataResponse {
+  params: Record<string, { name: string; count: number }[]>
+  chart: {
+    x: string[]
+    dns: number[]
+    tls: number[]
+    conn: number[]
+    response: number[]
+    render: number[]
+    domLoad: number[]
+    pageLoad: number[]
+    ttfb: number[]
+  }
+  appliedFilters: AnalyticsFilter[]
+  timeBucket?: string[]
+}
+
+export async function getPerfDataServer(
+  request: Request,
+  pid: string,
+  params: AnalyticsParams & { measure?: string },
+): Promise<ServerFetchResult<PerformanceDataResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    timeBucket: params.timeBucket,
+    period: params.period,
+    filters: serializeFiltersForUrl(params.filters),
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone,
+    measure: params.measure || '',
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<PerformanceDataResponse>(request, `log/performance?${queryParams.toString()}`, { headers })
+}
+
+export interface PerformanceOverallObject {
+  current: { frontend: number; backend: number; network: number }
+  previous: { frontend: number; backend: number; network: number }
+  frontendChange: number
+  backendChange: number
+  networkChange: number
+}
+
+export async function getPerformanceOverallStatsServer(
+  request: Request,
+  pids: string[],
+  params: AnalyticsParams & { measure?: string },
+): Promise<ServerFetchResult<Record<string, PerformanceOverallObject>>> {
+  const pidsParam = `[${pids.map((pid) => `"${pid}"`).join(',')}]`
+
+  const queryParams = new URLSearchParams({
+    pids: pidsParam,
+    period: params.period,
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone,
+    filters: serializeFiltersForUrl(params.filters),
+    measure: params.measure || '',
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<Record<string, PerformanceOverallObject>>(
+    request,
+    `log/performance/birdseye?${queryParams.toString()}`,
+    { headers },
+  )
+}
+
+interface Session {
+  psid: string
+  cc: string | null
+  os: string | null
+  br: string | null
+  pageviews: number
+  customEvents: number
+  errors: number
+  revenue?: number
+  refunds?: number
+  created: string
+  isLive: 1 | 0
+  sdur?: number
+  sessionStart: string
+  lastActivity: string
+  profileId: string | null
+  isIdentified: 1 | 0
+  isFirstSession: 1 | 0
+}
+
+export interface SessionsResponse {
+  sessions: Session[]
+  take: number
+  skip: number
+  appliedFilters: AnalyticsFilter[]
+}
+
+export async function getSessionsServer(
+  request: Request,
+  pid: string,
+  params: AnalyticsParams & { take?: number; skip?: number },
+): Promise<ServerFetchResult<SessionsResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    period: params.period,
+    filters: serializeFiltersForUrl(params.filters),
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone,
+    take: String(params.take || 30),
+    skip: String(params.skip || 0),
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<SessionsResponse>(request, `log/sessions?${queryParams.toString()}`, { headers })
+}
+
+interface SwetrixError {
+  eid: string
+  name: string
+  message: string
+  filename: string
+  count: number
+  last_seen: string
+  status: 'active' | 'regressed' | 'fixed' | 'resolved'
+  users: number
+  sessions: number
+}
+
+export interface ErrorsResponse {
+  errors: SwetrixError[]
+}
+
+export async function getErrorsServer(
+  request: Request,
+  pid: string,
+  params: AnalyticsParams & { take?: number; skip?: number; options?: Record<string, unknown> },
+): Promise<ServerFetchResult<ErrorsResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    timeBucket: params.timeBucket,
+    period: params.period,
+    filters: serializeFiltersForUrl(params.filters),
+    options: JSON.stringify(params.options || {}),
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone,
+    take: String(params.take || 30),
+    skip: String(params.skip || 0),
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<ErrorsResponse>(request, `log/errors?${queryParams.toString()}`, { headers })
+}

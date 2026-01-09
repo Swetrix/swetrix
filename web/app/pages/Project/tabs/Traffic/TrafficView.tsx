@@ -1,32 +1,30 @@
 import cx from 'clsx'
-import dayjs from 'dayjs'
 import _filter from 'lodash/filter'
-import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _some from 'lodash/some'
 import { BanIcon, ChartColumnBigIcon, ChartLineIcon, EyeIcon } from 'lucide-react'
-import React, { useState, useEffect, useMemo, useRef, lazy, Suspense, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useRef, lazy, Suspense, useCallback, use } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, Link, useSearchParams } from 'react-router'
+import { useNavigate, Link, useSearchParams, useLoaderData, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
 import {
-  getProjectData,
-  getOverallStats,
-  getProjectDataCustomEvents,
-  getTrafficCompareData,
   getCustomEventsMetadata,
   getPropertyMetadata,
   getGSCKeywords,
   getRevenueData,
   getRevenueStatus,
 } from '~/api'
+import type {
+  TrafficLogResponse as ServerTrafficLogResponse,
+  OverallObject as ServerOverallObject,
+} from '~/api/api.server'
 import { useAnnotations } from '~/hooks/useAnnotations'
-import { TRAFFIC_PANELS_ORDER, chartTypes, PERIOD_PAIRS_COMPARE, isSelfhosted, type TimeBucket } from '~/lib/constants'
+import { TRAFFIC_PANELS_ORDER, chartTypes, isSelfhosted } from '~/lib/constants'
 import { CountryEntry, Entry } from '~/lib/models/Entry'
 import { OverallObject } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
@@ -51,7 +49,6 @@ import {
   ProjectView,
   ProjectViewCustomEvent,
   Properties,
-  TrafficLogResponse,
 } from '~/pages/Project/View/interfaces/traffic'
 import { Panel, CustomEvents, MetadataKeyPanel } from '~/pages/Project/View/Panels'
 import { FILTER_CHART_METRICS_MAPPING_FOR_COMPARE } from '~/pages/Project/View/utils/filters'
@@ -66,11 +63,11 @@ import {
 } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
-import { periodToCompareDate } from '~/utils/compareConvertDate'
 import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
 import routes from '~/utils/routes'
@@ -102,7 +99,47 @@ interface TrafficViewProps {
   onCustomMetric: (metrics: ProjectViewCustomEvent[]) => void
 }
 
-const TrafficView = ({
+interface DeferredTrafficData {
+  trafficData: ServerTrafficLogResponse | null
+  overallStats: Record<string, ServerOverallObject> | null
+  trafficCompareData: ServerTrafficLogResponse | null
+  overallCompareStats: Record<string, ServerOverallObject> | null
+  customEventsData: { chart?: { events?: Record<string, unknown> } } | null
+}
+
+function TrafficDataResolver({ children }: { children: (data: DeferredTrafficData) => React.ReactNode }) {
+  const {
+    trafficData: trafficDataPromise,
+    overallStats: overallStatsPromise,
+    trafficCompareData: trafficComparePromise,
+    overallCompareStats: overallComparePromise,
+    customEventsData: customEventsPromise,
+  } = useLoaderData<ProjectLoaderData>()
+
+  const trafficData = trafficDataPromise ? use(trafficDataPromise) : null
+  const overallStats = overallStatsPromise ? use(overallStatsPromise) : null
+  const trafficCompareData = trafficComparePromise ? use(trafficComparePromise) : null
+  const overallCompareStats = overallComparePromise ? use(overallComparePromise) : null
+  const customEventsData = customEventsPromise ? use(customEventsPromise) : null
+
+  return <>{children({ trafficData, overallStats, trafficCompareData, overallCompareStats, customEventsData })}</>
+}
+
+function TrafficViewWrapper(props: TrafficViewProps) {
+  return (
+    <Suspense fallback={<Loader />}>
+      <TrafficDataResolver>
+        {(deferredData) => <TrafficViewInner {...props} deferredData={deferredData} />}
+      </TrafficDataResolver>
+    </Suspense>
+  )
+}
+
+interface TrafficViewInnerProps extends TrafficViewProps {
+  deferredData: DeferredTrafficData
+}
+
+const TrafficViewInner = ({
   tnMapping,
   customMetrics,
   onRemoveCustomMetric,
@@ -114,9 +151,11 @@ const TrafficView = ({
   setProjectViewToUpdate,
   setIsAddAViewOpened,
   onCustomMetric,
-}: TrafficViewProps) => {
+  deferredData,
+}: TrafficViewInnerProps) => {
   const { id, project, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
+  const revalidator = useRevalidator()
   const {
     trafficRefreshTrigger,
     timezone,
@@ -171,17 +210,62 @@ const TrafficView = ({
     closeContextMenu,
   } = useAnnotations()
 
-  // Traffic-specific state
-  const [dataLoading, setDataLoading] = useState(false)
-  const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
-  const [panelsData, setPanelsData] = useState<PanelsData>({ data: {} })
-  const [chartData, setChartData] = useState<any>({})
-  const [overall, setOverall] = useState<Partial<OverallObject>>({})
-  const [overallCompare, setOverallCompare] = useState<Partial<OverallObject>>({})
-  const [dataChartCompare, setDataChartCompare] = useState<any>({})
-  const [customEventsChartData, setCustomEventsChartData] = useState<any>({})
+  // Derive base data directly from loader - no need to copy to state
+  const basePanelsData: PanelsData = useMemo(() => {
+    if (deferredData.trafficData?.params) {
+      return {
+        types: _keys(deferredData.trafficData.params),
+        data: deferredData.trafficData.params,
+        customs: deferredData.trafficData.customs,
+        properties: deferredData.trafficData.properties,
+        meta: deferredData.trafficData.meta,
+      }
+    }
+    return { data: {} }
+  }, [deferredData.trafficData])
+
+  const baseChartData = useMemo(() => deferredData.trafficData?.chart || {}, [deferredData.trafficData])
+
+  const overall: Partial<OverallObject> = useMemo(() => {
+    if (deferredData.overallStats && id) {
+      return deferredData.overallStats[id] || {}
+    }
+    return {}
+  }, [deferredData.overallStats, id])
+
+  const dataLoading = revalidator.state === 'loading'
+
+  // Derive compare data from loader
+  const overallCompare: Partial<OverallObject> = useMemo(() => {
+    if (deferredData.overallCompareStats && id) {
+      return deferredData.overallCompareStats[id] || {}
+    }
+    return {}
+  }, [deferredData.overallCompareStats, id])
+
+  const dataChartCompare = useMemo(() => deferredData.trafficCompareData?.chart || {}, [deferredData.trafficCompareData])
+
+  // Derive custom events data from loader
+  const customEventsChartData = useMemo(
+    () => (deferredData.customEventsData?.chart?.events || {}) as Record<string, string[]>,
+    [deferredData.customEventsData],
+  )
+
+  // Revenue state (still fetched client-side for now)
   const [isRevenueConnected, setIsRevenueConnected] = useState(false)
+  const [revenueOverlay, setRevenueOverlay] = useState<{ revenue: number[]; refundsAmount: number[] } | null>(null)
+
+  // Merge base chart with revenue data
+  const chartData = useMemo(() => {
+    if (revenueOverlay) {
+      return { ...baseChartData, ...revenueOverlay }
+    }
+    return baseChartData
+  }, [baseChartData, revenueOverlay])
+
+  // Use base panels data (no client-side modifications needed for panels)
+  const panelsData = basePanelsData
+  const isPanelsDataEmpty = useMemo(() => _isEmpty(panelsData.data), [panelsData.data])
 
   // Chart metrics state
   const [activeChartMetrics, setActiveChartMetrics] = useState({
@@ -195,7 +279,11 @@ const TrafficView = ({
     [CHART_METRICS_MAPPING.customEvents]: false,
     [CHART_METRICS_MAPPING.revenue]: false,
   })
-  const [activeChartMetricsCustomEvents, setActiveChartMetricsCustomEvents] = useState<string[]>([])
+  // Get custom events from URL params (SSR-friendly)
+  const activeChartMetricsCustomEvents = useMemo(() => {
+    const param = searchParams.get('customEvents')
+    return param ? param.split(',').filter(Boolean) : []
+  }, [searchParams])
 
   // Panel active tabs
   const [panelsActiveTabs, setPanelsActiveTabs] = useState<{
@@ -407,14 +495,27 @@ const TrafficView = ({
     [isConflicted, t],
   )
 
-  const switchCustomEventChart = useCallback((id: string) => {
-    setActiveChartMetricsCustomEvents((prev) => {
-      if (_includes(prev, id)) {
-        return _filter(prev, (item) => item !== id)
+  const switchCustomEventChart = useCallback(
+    (eventId: string) => {
+      const newParams = new URLSearchParams(searchParams.toString())
+      const currentEvents = newParams.get('customEvents')?.split(',').filter(Boolean) || []
+
+      let newEvents: string[]
+      if (currentEvents.includes(eventId)) {
+        newEvents = currentEvents.filter((e) => e !== eventId)
+      } else {
+        newEvents = [...currentEvents, eventId]
       }
-      return [...prev, id]
-    })
-  }, [])
+
+      if (newEvents.length > 0) {
+        newParams.set('customEvents', newEvents.join(','))
+      } else {
+        newParams.delete('customEvents')
+      }
+      setSearchParams(newParams)
+    },
+    [searchParams, setSearchParams],
+  )
 
   const setPanelTab = (panel: keyof typeof panelsActiveTabs, tab: string) => {
     setPanelsActiveTabs((prev) => ({
@@ -423,280 +524,71 @@ const TrafficView = ({
     }))
   }
 
-  const loadAnalytics = async () => {
-    if (!project) return
-
-    setDataLoading(true)
+  // Load revenue data (the only remaining client-side fetch)
+  const loadRevenueData = useCallback(async () => {
+    if (!project || !activeChartMetrics.revenue || isSelfhosted || !isRevenueConnected) {
+      setRevenueOverlay(null)
+      return
+    }
 
     try {
-      let data: TrafficLogResponse & { overall?: OverallObject }
-      let dataCompare: (TrafficLogResponse & { overall?: OverallObject }) | null = null
-      let from
-      let fromCompare: string | undefined
-      let to
-      let toCompare: string | undefined
-      let customEventsChart = customEventsChartData
-      let rawOverall: any
-
-      if (isActiveCompare) {
-        if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
-          let start
-          let end
-          let diff
-          const startCompare = dayjs.utc(dateRangeCompare[0])
-          const endCompare = dayjs.utc(dateRangeCompare[1])
-          const diffCompare = endCompare.diff(startCompare, 'day')
-
-          if (activePeriod?.period === 'custom' && dateRange) {
-            start = dayjs.utc(dateRange[0])
-            end = dayjs.utc(dateRange[1])
-            diff = end.diff(start, 'day')
-          }
-
-          // @ts-expect-error
-          if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
-            fromCompare = getFormatDate(dateRangeCompare[0])
-            toCompare = getFormatDate(dateRangeCompare[1])
-          } else {
-            toast.error(t('project.compareDateRangeError'))
-            compareDisable()
-          }
-        } else {
-          let date
-          if (dateRange) {
-            date = _find(periodToCompareDate, (item) => item.period === period)?.formula(dateRange)
-          } else {
-            date = _find(periodToCompareDate, (item) => item.period === period)?.formula()
-          }
-
-          if (date) {
-            fromCompare = date.from
-            toCompare = date.to
-          }
-        }
-
-        if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          dataCompare =
-            (await getTrafficCompareData(
-              id,
-              timeBucket,
-              '',
-              filters,
-              fromCompare,
-              toCompare,
-              timezone,
-              projectPassword,
-              mode,
-            )) || {}
-          const compareOverall = await getOverallStats(
-            [id],
-            timeBucket,
-            'custom',
-            fromCompare,
-            toCompare,
-            timezone,
-            filters,
-            projectPassword,
-          )
-
-          // @ts-expect-error
-          dataCompare.overall = compareOverall[id]
-        }
-      }
+      let from: string | undefined
+      let to: string | undefined
 
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
       }
 
-      if (period === 'custom' && dateRange) {
-        data = await getProjectData(
-          id,
-          timeBucket,
-          '',
-          filters,
-          customMetrics,
-          from,
-          to,
-          timezone,
-          projectPassword,
-          mode,
-        )
-        if (activeChartMetricsCustomEvents.length > 0) {
-          customEventsChart = await getProjectDataCustomEvents(
-            id,
-            timeBucket,
-            '',
-            filters,
-            from,
-            to,
-            timezone,
-            activeChartMetricsCustomEvents,
-            projectPassword,
-          )
-        }
-        rawOverall = await getOverallStats([id], timeBucket, period, from, to, timezone, filters, projectPassword)
-      } else {
-        data = await getProjectData(
-          id,
-          timeBucket,
-          period,
-          filters,
-          customMetrics,
-          '',
-          '',
-          timezone,
-          projectPassword,
-          mode,
-        )
-        if (activeChartMetricsCustomEvents.length > 0) {
-          customEventsChart = await getProjectDataCustomEvents(
-            id,
-            timeBucket,
-            period,
-            filters,
-            '',
-            '',
-            timezone,
-            activeChartMetricsCustomEvents,
-            projectPassword,
-          )
-        }
-        rawOverall = await getOverallStats([id], timeBucket, period, '', '', timezone, filters, projectPassword)
-      }
+      const revResult = await getRevenueData(
+        id,
+        period === 'custom' ? 'custom' : period,
+        from,
+        to,
+        timezone,
+        timeBucket,
+      )
+      const revChart = revResult?.chart
+      const revX = revChart?.x || []
+      const revY = revChart?.revenue || []
+      const revRefunds = revChart?.refundsAmount || []
 
-      customEventsChart = customEventsChart?.chart ? customEventsChart.chart.events : customEventsChartData
+      // Align revenue series to the main traffic chart x-axis
+      const chart = baseChartData as { x?: string[] }
+      let revenueData: number[] = []
+      let refundsData: number[] = []
 
-      if (isMountedRef.current) {
-        setCustomEventsChartData(customEventsChart)
-        data.overall = rawOverall[id]
-        setOverall(rawOverall[id])
-
-        if (_keys(data).length < 2) {
-          setAnalyticsLoading(false)
-          setDataLoading(false)
-          setIsPanelsDataEmpty(true)
-          return
-        }
-
-        const { chart, params, customs, properties, meta } = data
-        let newTimebucket = timeBucket
-
-        if (period === 'all' && !_isEmpty(data.timeBucket)) {
-          newTimebucket = _includes(data.timeBucket, timeBucket) ? timeBucket : (data.timeBucket?.[0] as TimeBucket)
-
-          const newSearchParams = new URLSearchParams(searchParams.toString())
-          newSearchParams.set('timeBucket', newTimebucket)
-          setSearchParams(newSearchParams)
-        }
-
-        if (!_isEmpty(dataCompare)) {
-          if (!_isEmpty(dataCompare?.chart)) {
-            setDataChartCompare(dataCompare.chart)
-          }
-
-          if (!_isEmpty(dataCompare?.overall)) {
-            setOverallCompare(dataCompare.overall)
-          }
-        }
-
-        if (_isEmpty(params)) {
-          setIsPanelsDataEmpty(true)
+      if (Array.isArray(chart?.x) && chart.x.length > 0 && Array.isArray(revX) && revX.length > 0) {
+        if (revX.length === chart.x.length && revX[0] === chart.x[0]) {
+          revenueData = revY.map((v: any) => Number(v ?? 0))
+          refundsData = revRefunds.map((v: any) => Number(v ?? 0))
         } else {
-          // Fetch revenue data if revenue metric is enabled and not selfhosted
-          let revenueData: number[] = []
-          let refundsData: number[] = []
-          if (activeChartMetrics.revenue && !isSelfhosted && isRevenueConnected) {
-            try {
-              const revResult = await getRevenueData(
-                id,
-                period === 'custom' ? 'custom' : period,
-                period === 'custom' && dateRange ? getFormatDate(dateRange[0]) : undefined,
-                period === 'custom' && dateRange ? getFormatDate(dateRange[1]) : undefined,
-                timezone,
-                timeBucket,
-              )
-              const revChart = revResult?.chart
-              const revX = revChart?.x || []
-              const revY = revChart?.revenue || []
-              const revRefunds = revChart?.refundsAmount || []
-
-              // Align revenue series to the main traffic chart x-axis to avoid empty/invalid renders
-              if (Array.isArray(chart?.x) && chart.x.length > 0) {
-                if (
-                  Array.isArray(revX) &&
-                  revX.length === chart.x.length &&
-                  revX[0] === chart.x[0] &&
-                  revX[revX.length - 1] === chart.x[chart.x.length - 1]
-                ) {
-                  revenueData = revY.map((v) => Number(v ?? 0))
-                  refundsData = revRefunds.map((v) => Number(v ?? 0))
-                } else if (Array.isArray(revX) && revX.length > 0) {
-                  const byX = new Map<string, number>()
-                  const refundsByX = new Map<string, number>()
-                  for (let i = 0; i < revX.length; i += 1) {
-                    byX.set(revX[i], Number(revY[i] ?? 0))
-                    refundsByX.set(revX[i], Number(revRefunds[i] ?? 0))
-                  }
-                  revenueData = chart.x.map((x: string) => Number(byX.get(x) ?? 0))
-                  refundsData = chart.x.map((x: string) => Number(refundsByX.get(x) ?? 0))
-
-                  // Fallback: if mapping produced all zeros but arrays match length, use index-based mapping
-                  if (revenueData.every((v) => v === 0) && revY.length === chart.x.length) {
-                    console.warn(
-                      '[Revenue] Key-based mapping failed, falling back to index-based alignment. Data may be misaligned.',
-                    )
-                    revenueData = revY.map((v) => Number(v ?? 0))
-                    refundsData = revRefunds.map((v) => Number(v ?? 0))
-                  }
-                } else {
-                  revenueData = revY.map((v) => Number(v ?? 0))
-                  refundsData = revRefunds.map((v) => Number(v ?? 0))
-                }
-              } else {
-                revenueData = revY.map((v) => Number(v ?? 0))
-                refundsData = revRefunds.map((v) => Number(v ?? 0))
-              }
-            } catch {
-              // Revenue data not available, continue without it
-              revenueData = []
-              refundsData = []
-            }
+          const byX = new Map<string, number>()
+          const refundsByX = new Map<string, number>()
+          for (let i = 0; i < revX.length; i += 1) {
+            byX.set(revX[i], Number(revY[i] ?? 0))
+            refundsByX.set(revX[i], Number(revRefunds[i] ?? 0))
           }
-
-          // Merge revenue data with chart
-          const chartWithRevenue = {
-            ...chart,
-            revenue: revenueData,
-            refundsAmount: refundsData,
-          }
-
-          setChartData(chartWithRevenue as any)
-
-          setPanelsData({
-            types: _keys(params),
-            data: params,
-            customs,
-            properties,
-            meta,
-          })
-
-          setIsPanelsDataEmpty(false)
+          revenueData = chart.x.map((x: string) => Number(byX.get(x) ?? 0))
+          refundsData = chart.x.map((x: string) => Number(refundsByX.get(x) ?? 0))
         }
+      }
 
-        setAnalyticsLoading(false)
-        setDataLoading(false)
-      }
-    } catch (reason) {
-      if (isMountedRef.current) {
-        setAnalyticsLoading(false)
-        setDataLoading(false)
-        setIsPanelsDataEmpty(true)
-        console.error('[ERROR](loadAnalytics) Loading analytics data failed')
-        console.error(reason)
-      }
+      setRevenueOverlay({ revenue: revenueData, refundsAmount: refundsData })
+    } catch {
+      setRevenueOverlay(null)
     }
-  }
+  }, [
+    project,
+    activeChartMetrics.revenue,
+    isRevenueConnected,
+    dateRange,
+    period,
+    timezone,
+    timeBucket,
+    baseChartData,
+    id,
+  ])
 
   const getCustomEventMetadata = async (event: string) => {
     if (period === 'custom' && dateRange) {
@@ -784,41 +676,15 @@ const TrafficView = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [panelsActiveTabs.source, period, dateRange, timezone, id, project])
 
-  // Load analytics on mount and when dependencies change
+  // Load revenue data when revenue metric is enabled
   useEffect(() => {
-    if (!project) return
-    loadAnalytics()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeChartMetrics.revenue,
-    isRevenueConnected,
-    mode,
-    customMetrics,
-    filters,
-    project,
-    isActiveCompare,
-    dateRange,
-    period,
-    timeBucket,
-    dateRangeCompare,
-    activePeriodCompare,
-  ])
+    loadRevenueData()
+  }, [loadRevenueData])
 
-  // Handle custom events chart loading
-  useEffect(() => {
-    if (!project) return
-    if (activeChartMetricsCustomEvents.length === 0) {
-      setCustomEventsChartData({})
-      return
-    }
-    loadAnalytics()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeChartMetricsCustomEvents])
-
-  // Handle refresh trigger
+  // Handle refresh trigger - use revalidator for URL-based data
   useEffect(() => {
     if (trafficRefreshTrigger > 0) {
-      loadAnalytics()
+      revalidator.revalidate()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trafficRefreshTrigger])
@@ -837,20 +703,6 @@ const TrafficView = ({
   // Show waiting state if project has no traffic data yet
   if (!project?.isDataExists) {
     return <WaitingForAnEvent />
-  }
-
-  // Show loader during initial load
-  if (analyticsLoading) {
-    return (
-      <div
-        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
-          'min-h-including-header': !isEmbedded,
-          'min-h-screen': isEmbedded,
-        })}
-      >
-        <Loader />
-      </div>
-    )
   }
 
   const headerRightContent = (
@@ -942,7 +794,7 @@ const TrafficView = ({
     <>
       <DashboardHeader rightContent={headerRightContent} />
       {dataLoading && !isPanelsDataEmpty ? <LoadingBar /> : null}
-      <div className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}>
+      <div className={cx({ hidden: isPanelsDataEmpty })}>
         {!isPanelsDataEmpty ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
         <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
           <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
@@ -983,7 +835,7 @@ const TrafficView = ({
                 return (
                   <Checkbox
                     classes={{
-                      label: cx('p-2', { hidden: analyticsLoading }),
+                      label: 'p-2',
                     }}
                     label={label}
                     disabled={conflicted}
@@ -1047,7 +899,7 @@ const TrafficView = ({
             </div>
           ) : null}
           {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData) ? (
-            <div onContextMenu={(e) => handleChartContextMenu(e, chartData.x)} className='relative'>
+            <div onContextMenu={(e) => handleChartContextMenu(e, (chartData as any).x)} className='relative'>
               <TrafficChart
                 chartData={chartData}
                 timeBucket={timeBucket}
@@ -1437,5 +1289,7 @@ const TrafficView = ({
     </>
   )
 }
+
+const TrafficView = TrafficViewWrapper
 
 export default TrafficView

@@ -1,11 +1,13 @@
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import { DownloadIcon } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router'
+import { useSearchParams, useLoaderData, useRevalidator } from 'react-router'
 
 import { getSessions, getSession } from '~/api'
+import type { SessionsResponse } from '~/api/api.server'
+import type { ProjectLoaderData } from '~/routes/projects.$id'
 import { Session, SessionDetails as SessionDetailsType } from '~/lib/models/Project'
 import NoSessions from '~/pages/Project/tabs/Sessions/components/NoSessions'
 import { SessionDetailView } from '~/pages/Project/tabs/Sessions/SessionDetailView'
@@ -47,16 +49,46 @@ interface SessionsViewProps {
   rotateXAxis: boolean
 }
 
-const SessionsView = ({ tnMapping, rotateXAxis }: SessionsViewProps) => {
+interface DeferredSessionsData {
+  sessionsData: SessionsResponse | null
+}
+
+function SessionsDataResolver({ children }: { children: (data: DeferredSessionsData) => React.ReactNode }) {
+  const { sessionsData: sessionsDataPromise } = useLoaderData<ProjectLoaderData>()
+
+  const sessionsData = sessionsDataPromise ? use(sessionsDataPromise) : null
+
+  return <>{children({ sessionsData })}</>
+}
+
+function SessionsViewWrapper(props: SessionsViewProps) {
+  return (
+    <Suspense fallback={<Loader />}>
+      <SessionsDataResolver>
+        {(deferredData) => <SessionsViewInner {...props} deferredData={deferredData} />}
+      </SessionsDataResolver>
+    </Suspense>
+  )
+}
+
+interface SessionsViewInnerProps extends SessionsViewProps {
+  deferredData: DeferredSessionsData
+}
+
+const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsViewInnerProps) => {
   const { id, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
+  const revalidator = useRevalidator()
   const { sessionsRefreshTrigger, timezone, period, dateRange, filters, timeFormat } = useViewProjectContext()
   const { t } = useTranslation('common')
   const [searchParams] = useSearchParams()
 
+  // Initialize state from deferred data
+  const initialDataProcessed = useRef(false)
+
   // Session list state
-  const [sessions, setSessions] = useState<Session[]>([])
-  const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null)
+  const [sessions, setSessions] = useState<Session[]>(() => deferredData.sessionsData?.sessions || [])
+  const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(() => deferredData.sessionsData ? false : null)
   const [sessionsSkip, setSessionsSkip] = useState(0)
   const [canLoadMoreSessions, setCanLoadMoreSessions] = useState(false)
   const sessionsRequestIdRef = useRef(0)
@@ -98,6 +130,42 @@ const SessionsView = ({ tnMapping, rotateXAxis }: SessionsViewProps) => {
       isMountedRef.current = false
     }
   }, [])
+
+  // Process deferred data on mount
+  useEffect(() => {
+    if (initialDataProcessed.current) return
+    initialDataProcessed.current = true
+
+    if (deferredData.sessionsData) {
+      const sessionsList = deferredData.sessionsData.sessions || []
+      setSessions(sessionsList)
+      setSessionsSkip(SESSIONS_TAKE)
+      setCanLoadMoreSessions(sessionsList.length >= SESSIONS_TAKE)
+    } else {
+      setSessions([])
+      setCanLoadMoreSessions(false)
+    }
+    setSessionsLoading(false)
+  }, [deferredData])
+
+  // Sync state when revalidation completes with new data
+  useEffect(() => {
+    if (!initialDataProcessed.current) return
+    if (revalidator.state === 'idle') {
+      if (deferredData.sessionsData) {
+        const sessionsList = deferredData.sessionsData.sessions || []
+        setSessions(sessionsList)
+        setSessionsSkip(SESSIONS_TAKE)
+        setCanLoadMoreSessions(sessionsList.length >= SESSIONS_TAKE)
+      } else {
+        setSessions([])
+        setCanLoadMoreSessions(false)
+      }
+      setSessionsLoading(false)
+    } else if (revalidator.state === 'loading') {
+      setSessionsLoading(true)
+    }
+  }, [revalidator.state, deferredData])
 
   // Reset sessions when filters change
   useEffect(() => {
@@ -228,8 +296,7 @@ const SessionsView = ({ tnMapping, rotateXAxis }: SessionsViewProps) => {
       if (activePSID) {
         loadSession(activePSID)
       } else {
-        setSessionsSkip(0)
-        loadSessions(0, true)
+        revalidator.revalidate()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -307,5 +374,7 @@ const SessionsView = ({ tnMapping, rotateXAxis }: SessionsViewProps) => {
     </>
   )
 }
+
+const SessionsView = SessionsViewWrapper
 
 export default SessionsView

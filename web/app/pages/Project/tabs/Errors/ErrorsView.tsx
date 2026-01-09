@@ -16,14 +16,15 @@ import {
   AlertTriangleIcon,
   UserIcon,
 } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation, useSearchParams, useNavigate, useFetcher, type LinkProps } from 'react-router'
+import { Link, useLocation, useSearchParams, useNavigate, useFetcher, useLoaderData, useRevalidator, type LinkProps } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
 import { getErrors, getErrorOverview, getError, type ErrorOverviewResponse } from '~/api'
-import type { ProjectViewActionData } from '~/routes/projects.$id'
+import type { ErrorsResponse } from '~/api/api.server'
+import type { ProjectViewActionData, ProjectLoaderData } from '~/routes/projects.$id'
 import {
   TimeFormat,
   tbsFormatMapper,
@@ -387,9 +388,34 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
 
 const ERRORS_TAKE = 30
 
-const ErrorsView = () => {
+interface DeferredErrorsData {
+  errorsData: ErrorsResponse | null
+}
+
+function ErrorsDataResolver({ children }: { children: (data: DeferredErrorsData) => React.ReactNode }) {
+  const { errorsData: errorsDataPromise } = useLoaderData<ProjectLoaderData>()
+
+  const errorsData = errorsDataPromise ? use(errorsDataPromise) : null
+
+  return <>{children({ errorsData })}</>
+}
+
+function ErrorsViewWrapper() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <ErrorsDataResolver>{(deferredData) => <ErrorsViewInner deferredData={deferredData} />}</ErrorsDataResolver>
+    </Suspense>
+  )
+}
+
+interface ErrorsViewInnerProps {
+  deferredData: DeferredErrorsData
+}
+
+const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   const { id, allowedToManage, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
+  const revalidator = useRevalidator()
   const { errorsRefreshTrigger, timeBucket, timeFormat, period, dateRange, timezone, filters, size } =
     useViewProjectContext()
   const {
@@ -409,6 +435,9 @@ const ErrorsView = () => {
   const tnMapping = typeNameMapping(t)
   const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
 
+  // Initialize state from deferred data
+  const initialDataProcessed = useRef(false)
+
   const [errorOptions, setErrorOptions] = useState<Record<string, boolean>>({
     [ERROR_FILTERS_MAPPING.showResolved]: false,
   })
@@ -417,10 +446,10 @@ const ErrorsView = () => {
   const [overview, setOverview] = useState<ErrorOverviewResponse | null>(null)
   const isMountedRef = useRef(true)
 
-  const [errorsLoading, setErrorsLoading] = useState<boolean | null>(null)
-  const [errors, setErrors] = useState<SwetrixError[]>([])
-  const [errorsSkip, setErrorsSkip] = useState(0)
-  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(false)
+  const [errorsLoading, setErrorsLoading] = useState<boolean | null>(() => deferredData.errorsData ? false : null)
+  const [errors, setErrors] = useState<SwetrixError[]>(() => deferredData.errorsData?.errors || [])
+  const [errorsSkip, setErrorsSkip] = useState(() => deferredData.errorsData?.errors?.length || 0)
+  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(() => (deferredData.errorsData?.errors?.length || 0) >= ERRORS_TAKE)
   const errorsRequestIdRef = useRef(0)
 
   const activeEID = useMemo(() => searchParams.get('eid'), [searchParams])
@@ -452,6 +481,42 @@ const ErrorsView = () => {
       isMountedRef.current = false
     }
   }, [])
+
+  // Process deferred data on mount
+  useEffect(() => {
+    if (initialDataProcessed.current) return
+    initialDataProcessed.current = true
+
+    if (deferredData.errorsData) {
+      const errorsList = deferredData.errorsData.errors || []
+      setErrors(errorsList)
+      setErrorsSkip(ERRORS_TAKE)
+      setCanLoadMoreErrors(errorsList.length >= ERRORS_TAKE)
+    } else {
+      setErrors([])
+      setCanLoadMoreErrors(false)
+    }
+    setErrorsLoading(false)
+  }, [deferredData])
+
+  // Sync state when revalidation completes with new data
+  useEffect(() => {
+    if (!initialDataProcessed.current) return
+    if (revalidator.state === 'idle') {
+      if (deferredData.errorsData) {
+        const errorsList = deferredData.errorsData.errors || []
+        setErrors(errorsList)
+        setErrorsSkip(ERRORS_TAKE)
+        setCanLoadMoreErrors(errorsList.length >= ERRORS_TAKE)
+      } else {
+        setErrors([])
+        setCanLoadMoreErrors(false)
+      }
+      setErrorsLoading(false)
+    } else if (revalidator.state === 'loading') {
+      setErrorsLoading(true)
+    }
+  }, [revalidator.state, deferredData])
 
   const loadOverview = useCallback(async () => {
     if (overviewLoading) return
@@ -678,8 +743,7 @@ const ErrorsView = () => {
       return
     }
 
-    setErrorsSkip(0)
-    loadErrors(0, true)
+    revalidator.revalidate()
     loadOverview()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [errorsRefreshTrigger])
@@ -1158,5 +1222,7 @@ const ErrorsView = () => {
     </div>
   )
 }
+
+const ErrorsView = ErrorsViewWrapper
 
 export default ErrorsView
