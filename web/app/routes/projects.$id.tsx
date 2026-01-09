@@ -13,13 +13,27 @@ import {
   getPerfDataServer,
   getPerformanceOverallStatsServer,
   getSessionsServer,
+  getSessionServer,
   getErrorsServer,
+  getErrorServer,
+  getErrorOverviewServer,
+  getProjectFeatureFlagsServer,
+  getProjectGoalsServer,
+  getProjectAlertsServer,
+  getFunnelDataServer,
   type TrafficLogResponse,
   type OverallObject,
   type PerformanceDataResponse,
   type PerformanceOverallObject,
   type SessionsResponse,
+  type SessionDetailsResponse,
   type ErrorsResponse,
+  type ErrorDetailsResponse,
+  type ErrorOverviewResponse,
+  type FeatureFlagsResponse,
+  type GoalsResponse,
+  type AlertsResponse,
+  type FunnelDataResponse,
   type AnalyticsFilter,
 } from '~/api/api.server'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
@@ -149,8 +163,19 @@ export interface ProjectLoaderData {
   perfOverallStats?: Promise<Record<string, PerformanceOverallObject> | null>
   // Sessions data
   sessionsData?: Promise<SessionsResponse | null>
+  sessionDetails?: Promise<SessionDetailsResponse | null>
   // Errors data
   errorsData?: Promise<ErrorsResponse | null>
+  errorDetails?: Promise<ErrorDetailsResponse | null>
+  errorOverview?: Promise<ErrorOverviewResponse | null>
+  // Feature Flags data
+  featureFlagsData?: Promise<FeatureFlagsResponse | null>
+  // Goals data
+  goalsData?: Promise<GoalsResponse | null>
+  // Alerts data
+  alertsData?: Promise<AlertsResponse | null>
+  // Funnels data
+  funnelData?: Promise<FunnelDataResponse | null>
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -234,7 +259,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   let perfData: Promise<PerformanceDataResponse | null> | undefined
   let perfOverallStats: Promise<Record<string, PerformanceOverallObject> | null> | undefined
   let sessionsData: Promise<SessionsResponse | null> | undefined
+  let sessionDetails: Promise<SessionDetailsResponse | null> | undefined
   let errorsData: Promise<ErrorsResponse | null> | undefined
+  let errorDetails: Promise<ErrorDetailsResponse | null> | undefined
+  let errorOverview: Promise<ErrorOverviewResponse | null> | undefined
+  let featureFlagsData: Promise<FeatureFlagsResponse | null> | undefined
+  let goalsData: Promise<GoalsResponse | null> | undefined
+  let alertsData: Promise<AlertsResponse | null> | undefined
+  let funnelData: Promise<FunnelDataResponse | null> | undefined
 
   // Only fetch data if project is valid and not locked
   if (project && !project.isLocked && projectId) {
@@ -268,8 +300,45 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       perfOverallStats = getPerformanceOverallStatsServer(request, [projectId], perfParams).then((res) => res.data)
     } else if (tab === PROJECT_TABS.sessions) {
       sessionsData = getSessionsServer(request, projectId, analyticsParams).then((res) => res.data)
+      // Fetch session details if psid is in URL
+      const psid = url.searchParams.get('psid')
+      if (psid) {
+        sessionDetails = getSessionServer(request, projectId, psid, timezone, password || undefined).then(
+          (res) => res.data,
+        )
+      }
     } else if (tab === PROJECT_TABS.errors) {
       errorsData = getErrorsServer(request, projectId, analyticsParams).then((res) => res.data)
+      errorOverview = getErrorOverviewServer(request, projectId, analyticsParams).then((res) => res.data)
+      // Fetch error details if eid is in URL
+      const eid = url.searchParams.get('eid')
+      if (eid) {
+        errorDetails = getErrorServer(request, projectId, eid, analyticsParams).then((res) => res.data)
+      }
+    } else if (tab === PROJECT_TABS.featureFlags) {
+      featureFlagsData = getProjectFeatureFlagsServer(request, projectId).then((res) => res.data)
+    } else if (tab === PROJECT_TABS.goals) {
+      goalsData = getProjectGoalsServer(request, projectId).then((res) => res.data)
+    } else if (tab === PROJECT_TABS.alerts) {
+      alertsData = getProjectAlertsServer(request, projectId).then((res) => res.data)
+    } else if (tab === PROJECT_TABS.funnels) {
+      // Fetch funnel data if funnelId is in URL
+      const funnelId = url.searchParams.get('funnelId')
+      if (funnelId) {
+        const funnelFrom = from || ''
+        const funnelTo = to || ''
+        const funnelPeriod = period === 'custom' ? '' : period
+        funnelData = getFunnelDataServer(
+          request,
+          projectId,
+          funnelId,
+          funnelPeriod,
+          funnelFrom,
+          funnelTo,
+          timezone,
+          password || undefined,
+        ).then((res) => res.data)
+      }
     }
   }
 
@@ -285,7 +354,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       perfData,
       perfOverallStats,
       sessionsData,
+      sessionDetails,
       errorsData,
+      errorDetails,
+      errorOverview,
+      featureFlagsData,
+      goalsData,
+      alertsData,
+      funnelData,
     },
     { headers: createHeadersWithCookies(cookies) },
   )

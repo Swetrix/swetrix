@@ -20,24 +20,22 @@ import {
   CheckIcon,
   XIcon,
 } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation, useSearchParams, useFetcher } from 'react-router'
+import { Link, useLocation, useFetcher, useLoaderData, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
-import {
-  getFeatureFlagStats,
-  getFeatureFlagProfiles,
-  DEFAULT_FEATURE_FLAGS_TAKE,
-  DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
-  type ProjectFeatureFlag,
-  type FeatureFlagStats,
-  type FeatureFlagProfile,
-} from '~/api'
+import type {
+  FeatureFlagsResponse,
+  ProjectFeatureFlag,
+  FeatureFlagStats,
+  FeatureFlagProfile,
+} from '~/api/api.server'
+import { useFeatureFlagStatsProxy, useFeatureFlagProfilesProxy } from '~/hooks/useAnalyticsProxy'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
-import type { ProjectViewActionData } from '~/routes/projects.$id'
+import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Spin from '~/ui/icons/Spin'
@@ -55,6 +53,9 @@ import routes from '~/utils/routes'
 import FeatureFlagSettingsModal from './FeatureFlagSettingsModal'
 
 dayjs.extend(relativeTime)
+
+const DEFAULT_FEATURE_FLAGS_TAKE = 20
+const DEFAULT_FEATURE_FLAG_PROFILES_TAKE = 15
 
 interface FeatureFlagProfileRowProps {
   profile: FeatureFlagProfile
@@ -425,27 +426,51 @@ interface FeatureFlagsViewProps {
   timezone?: string
 }
 
-const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlagsViewProps) => {
+interface DeferredFeatureFlagsData {
+  featureFlagsData: FeatureFlagsResponse | null
+}
+
+function FeatureFlagsDataResolver({ children }: { children: (data: DeferredFeatureFlagsData) => React.ReactNode }) {
+  const { featureFlagsData: featureFlagsDataPromise } = useLoaderData<ProjectLoaderData>()
+  const featureFlagsData = featureFlagsDataPromise ? use(featureFlagsDataPromise) : null
+  return <>{children({ featureFlagsData })}</>
+}
+
+function FeatureFlagsViewWrapper(props: FeatureFlagsViewProps) {
+  return (
+    <Suspense fallback={<Loader />}>
+      <FeatureFlagsDataResolver>
+        {(deferredData) => <FeatureFlagsViewInner {...props} deferredData={deferredData} />}
+      </FeatureFlagsDataResolver>
+    </Suspense>
+  )
+}
+
+interface FeatureFlagsViewInnerProps extends FeatureFlagsViewProps {
+  deferredData: DeferredFeatureFlagsData
+}
+
+const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredData }: FeatureFlagsViewInnerProps) => {
   const { id } = useCurrentProject()
+  const revalidator = useRevalidator()
   const { featureFlagsRefreshTrigger, timeFormat } = useViewProjectContext()
-  const [searchParams] = useSearchParams()
-  const isEmbedded = searchParams.get('embedded') === 'true'
   const { t } = useTranslation()
 
   const listFetcher = useFetcher<ProjectViewActionData>()
   const actionFetcher = useFetcher<ProjectViewActionData>()
 
-  const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const isLoadingRef = useRef(false)
-  const isMountedRef = useRef(true)
-  const [total, setTotal] = useState(0)
-  const [flags, setFlags] = useState<ProjectFeatureFlag[]>([])
+  // Track if we're in search/pagination mode (not using loader data)
+  const [isSearchMode, setIsSearchMode] = useState(false)
+  const [total, setTotal] = useState(() => deferredData.featureFlagsData?.total || 0)
+  const [flags, setFlags] = useState<ProjectFeatureFlag[]>(() => deferredData.featureFlagsData?.results || [])
   const [flagStats, setFlagStats] = useState<Record<string, FeatureFlagStats | null>>({})
   const [statsLoading, setStatsLoading] = useState<Record<string, boolean>>({})
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const [filterQuery, setFilterQuery] = useState('')
   const processedActionRef = useRef<string | null>(null)
+
+  const isMountedRef = useRef(true)
 
   // Expanded flag state
   const [expandedFlagId, setExpandedFlagId] = useState<string | null>(null)
@@ -458,6 +483,8 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingFlagId, setEditingFlagId] = useState<string | null>(null)
 
+  const isLoading = revalidator.state === 'loading' || listFetcher.state !== 'idle'
+
   // Cleanup on unmount
   useEffect(() => {
     isMountedRef.current = true
@@ -466,15 +493,22 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     }
   }, [])
 
+  // Sync state when loader provides new data
+  useEffect(() => {
+    if (deferredData.featureFlagsData && revalidator.state === 'idle' && !isSearchMode) {
+      setFlags(deferredData.featureFlagsData.results || [])
+      setTotal(deferredData.featureFlagsData.total || 0)
+    }
+  }, [revalidator.state, deferredData.featureFlagsData, isSearchMode])
+
   const pageAmount = Math.ceil(total / DEFAULT_FEATURE_FLAGS_TAKE)
 
   const loadFlags = useCallback(
     (take: number, skip: number, search?: string) => {
-      if (isLoadingRef.current) {
+      if (listFetcher.state !== 'idle') {
         return
       }
-      isLoadingRef.current = true
-      setIsLoading(true)
+      setIsSearchMode(true)
 
       listFetcher.submit(
         {
@@ -491,10 +525,8 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
 
   // Handle list fetcher response
   useEffect(() => {
-    if (listFetcher.data?.intent === 'get-project-feature-flags') {
-      isLoadingRef.current = false
+    if (listFetcher.data?.intent === 'get-project-feature-flags' && listFetcher.state === 'idle') {
       if (isMountedRef.current) {
-        setIsLoading(false)
         if (listFetcher.data.success && listFetcher.data.data) {
           const result = listFetcher.data.data as { results: ProjectFeatureFlag[]; total: number }
           setFlags(result.results)
@@ -504,7 +536,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
         }
       }
     }
-  }, [listFetcher.data])
+  }, [listFetcher.data, listFetcher.state])
 
   // Handle action fetcher responses (delete, update)
   useEffect(() => {
@@ -517,7 +549,12 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     if (actionFetcher.data.intent === 'delete-feature-flag') {
       if (actionFetcher.data.success) {
         toast.success(t('featureFlags.deleted'))
-        loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+        if (page === 1 && !filterQuery) {
+          setIsSearchMode(false)
+          revalidator.revalidate()
+        } else {
+          loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+        }
       } else if (actionFetcher.data.error) {
         toast.error(actionFetcher.data.error)
       }
@@ -530,7 +567,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
         toast.error(actionFetcher.data.error)
       }
     }
-  }, [actionFetcher.data, actionFetcher.state, t, loadFlags, page, filterQuery])
+  }, [actionFetcher.data, actionFetcher.state, t, loadFlags, page, filterQuery, revalidator])
 
   // Debounced search to avoid excessive API calls
   const debouncedLoadFlags = useMemo(
@@ -559,11 +596,15 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     }
   }, [debouncedLoadFlags])
 
+  // Proxy hooks for stats and profiles
+  const statsProxy = useFeatureFlagStatsProxy()
+  const profilesProxy = useFeatureFlagProfilesProxy()
+
   const loadFlagStats = useCallback(
     async (flagId: string) => {
       setStatsLoading((prev) => ({ ...prev, [flagId]: true }))
       try {
-        const stats = await getFeatureFlagStats(flagId, period, from, to, timezone)
+        const stats = await statsProxy.fetchStats(flagId, { period, from, to, timezone })
         if (isMountedRef.current) {
           setFlagStats((prev) => ({ ...prev, [flagId]: stats }))
         }
@@ -578,7 +619,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
         }
       }
     },
-    [period, from, to, timezone],
+    [period, from, to, timezone, statsProxy],
   )
 
   const loadFlagProfiles = useCallback(
@@ -590,17 +631,16 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
 
       setProfilesLoading((prev) => ({ ...prev, [flagId]: true }))
       try {
-        const result = await getFeatureFlagProfiles(
-          flagId,
+        const result = await profilesProxy.fetchProfiles(flagId, {
           period,
           from,
           to,
           timezone,
-          DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
+          take: DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
           skip,
-          apiFilter,
-        )
-        if (isMountedRef.current) {
+          resultFilter: apiFilter,
+        })
+        if (isMountedRef.current && result) {
           setFlagProfiles((prev) => ({
             ...prev,
             [flagId]: append ? [...currentProfiles, ...result.profiles] : result.profiles,
@@ -619,7 +659,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
         }
       }
     },
-    [period, from, to, timezone, flagProfiles, flagResultFilters],
+    [period, from, to, timezone, flagProfiles, flagResultFilters, profilesProxy],
   )
 
   const handleToggleExpand = useCallback(
@@ -653,15 +693,23 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     [loadFlagProfiles],
   )
 
+  // Handle page changes - use fetcher for pagination
   useEffect(() => {
-    loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+    if (page > 1 || isSearchMode) {
+      loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
 
   // Refresh feature flags data when refresh button is clicked
   useEffect(() => {
     if (featureFlagsRefreshTrigger > 0) {
-      loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+      if (page === 1 && !filterQuery) {
+        setIsSearchMode(false)
+        revalidator.revalidate()
+      } else {
+        loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+      }
       setFlagStats({})
       if (expandedFlagId) {
         setFlagProfiles((prev) => ({ [expandedFlagId]: prev[expandedFlagId] }))
@@ -704,7 +752,12 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
   }
 
   const handleModalSuccess = () => {
-    loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+    if (page === 1 && !filterQuery) {
+      setIsSearchMode(false)
+      revalidator.revalidate()
+    } else {
+      loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+    }
   }
 
   const handleDeleteFlag = useCallback(
@@ -723,7 +776,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     [actionFetcher],
   )
 
-  if (error && isLoading === false) {
+  if (error && !isLoading) {
     return (
       <StatusPage
         type='error'
@@ -734,20 +787,6 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
           { label: t('notFoundPage.support'), to: routes.contact },
         ]}
       />
-    )
-  }
-
-  // Show Loader only on initial load (no existing data)
-  if ((isLoading || isLoading === null) && _isEmpty(flags)) {
-    return (
-      <div
-        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
-          'min-h-including-header': !isEmbedded,
-          'min-h-screen': isEmbedded,
-        })}
-      >
-        <Loader />
-      </div>
     )
   }
 
@@ -854,5 +893,7 @@ const FeatureFlagsView = ({ period, from = '', to = '', timezone }: FeatureFlags
     </>
   )
 }
+
+const FeatureFlagsView = FeatureFlagsViewWrapper
 
 export default FeatureFlagsView

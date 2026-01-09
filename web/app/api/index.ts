@@ -5,19 +5,9 @@ import _map from 'lodash/map'
 
 import { API_URL } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
-import {
-  Project,
-  Overall,
-  LiveStats,
-  SwetrixError,
-  SwetrixErrorDetails,
-  SessionDetails,
-  Session,
-  Profile,
-  ProfileDetails,
-} from '~/lib/models/Project'
+import { Project, Overall, LiveStats, Session, Profile, ProfileDetails } from '~/lib/models/Project'
 import { User } from '~/lib/models/User'
-import { Filter, ProjectViewCustomEvent } from '~/pages/Project/View/interfaces/traffic'
+import { Filter } from '~/pages/Project/View/interfaces/traffic'
 import { getAccessToken, setAccessToken } from '~/utils/accessToken'
 import { clearLocalStorageOnLogout } from '~/utils/auth'
 import { getRefreshToken } from '~/utils/refreshToken'
@@ -106,34 +96,6 @@ export const getProject = (pid: string, password?: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getProjectData = (
-  pid: string,
-  tb = 'hour',
-  period = '1d',
-  filters: Filter[] = [],
-  metrics: ProjectViewCustomEvent[] = [],
-  from = '',
-  to = '',
-  timezone = '',
-  password: string | undefined = '',
-  mode: 'periodical' | 'cumulative' = 'periodical',
-) =>
-  api
-    .get(
-      `log?pid=${pid}&timeBucket=${tb}&period=${period}&metrics=${JSON.stringify(metrics)}&filters=${JSON.stringify(
-        filters,
-      )}&from=${from}&to=${to}&timezone=${timezone}&mode=${mode}`,
-      {
-        headers: {
-          'x-password': password,
-        },
-      },
-    )
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getCustomEventsMetadata = (
   pid: string,
   event: string,
@@ -181,155 +143,6 @@ export const getPropertyMetadata = (
       },
     )
     .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getTrafficCompareData = (
-  pid: string,
-  tb = 'hour',
-  period = '3d',
-  filters: any[] = [],
-  from = '',
-  to = '',
-  timezone = '',
-  password: string | undefined = '',
-  mode: 'periodical' | 'cumulative' = 'periodical',
-) =>
-  api
-    .get(
-      `log/chart?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
-        filters,
-      )}&from=${from}&to=${to}&timezone=${timezone}&mode=${mode}`,
-      {
-        headers: {
-          'x-password': password,
-        },
-      },
-    )
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getPerformanceCompareData = (
-  pid: string,
-  tb = 'hour',
-  period = '3d',
-  filters: any[] = [],
-  from = '',
-  to = '',
-  timezone = '',
-  measure = '',
-  password: string | undefined = '',
-) =>
-  api
-    .get(
-      `log/performance/chart?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
-        filters,
-      )}&from=${from}&to=${to}&timezone=${timezone}&measure=${measure}`,
-      {
-        headers: {
-          'x-password': password,
-        },
-      },
-    )
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getPerfData = (
-  pid: string,
-  tb = 'hour',
-  period = '3d',
-  filters: any[] = [],
-  from = '',
-  to = '',
-  timezone = '',
-  measure = '',
-  password: string | undefined = '',
-) =>
-  api
-    .get(
-      `log/performance?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
-        filters,
-      )}&from=${from}&to=${to}&timezone=${timezone}&measure=${measure}`,
-      {
-        headers: {
-          'x-password': password,
-        },
-      },
-    )
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getSessions = (
-  pid: string,
-  period = '3d',
-  filters: any[] = [],
-  from = '',
-  to = '',
-  take = 30,
-  skip = 0,
-  timezone = '',
-  password: string | undefined = '',
-) =>
-  api
-    .get(
-      `log/sessions?pid=${pid}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(
-        filters,
-      )}&from=${from}&to=${to}&timezone=${timezone}`,
-      {
-        headers: {
-          'x-password': password,
-        },
-      },
-    )
-    .then((response): { sessions: Session[]; take: number; skip: number; appliedFilters: Filter[] } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getErrors = (
-  pid: string,
-  timeBucket: string,
-  period = '3d',
-  filters: any[] = [],
-  options: any = {},
-  from = '',
-  to = '',
-  take = 30,
-  skip = 0,
-  timezone = '',
-  password: string | undefined = '',
-) =>
-  api
-    .get(
-      `log/errors?pid=${pid}&timeBucket=${timeBucket}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(
-        filters,
-      )}&options=${JSON.stringify(options)}&from=${from}&to=${to}&timezone=${timezone}`,
-      {
-        headers: {
-          'x-password': password,
-        },
-      },
-    )
-    .then((response): { errors: SwetrixError[] } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getSession = (pid: string, psid: string, timezone = '', password: string | undefined = '') =>
-  api
-    .get(`log/session?pid=${pid}&psid=${psid}&timezone=${timezone}`, {
-      headers: {
-        'x-password': password,
-      },
-    })
-    .then((response): { details: SessionDetails; [key: string]: any } => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -413,90 +226,6 @@ export const getProfileSessions = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getError = (
-  pid: string,
-  eid: string,
-  timeBucket = 'hour',
-  period = '7d',
-  filters: any[] = [],
-  from = '',
-  to = '',
-  timezone = '',
-  password: string | undefined = '',
-) =>
-  api
-    .get(
-      `log/get-error?pid=${pid}&eid=${eid}&timeBucket=${timeBucket}&period=${period}&filters=${JSON.stringify(
-        filters,
-      )}&from=${from}&to=${to}&timezone=${timezone}`,
-      {
-        headers: {
-          'x-password': password,
-        },
-      },
-    )
-    .then((response): { details: SwetrixErrorDetails; [key: string]: any } => response.data)
-    .catch((error) => {
-      throw error.response
-    })
-
-interface ErrorOverviewStats {
-  totalErrors: number
-  uniqueErrors: number
-  affectedSessions: number
-  affectedUsers: number
-  errorRate: number
-}
-
-interface MostFrequentError {
-  eid: string
-  name: string
-  message: string
-  count: number
-  usersAffected: number
-  lastSeen: string
-}
-
-interface ErrorOverviewChart {
-  x: string[]
-  occurrences: number[]
-  affectedUsers: number[]
-}
-
-export interface ErrorOverviewResponse {
-  stats: ErrorOverviewStats
-  mostFrequentError: MostFrequentError | null
-  chart: ErrorOverviewChart
-  timeBucket: string
-}
-
-export const getErrorOverview = (
-  pid: string,
-  timeBucket = 'hour',
-  period = '7d',
-  filters: any[] = [],
-  options: any = {},
-  from = '',
-  to = '',
-  timezone = '',
-  password: string | undefined = '',
-) =>
-  api
-    .get(
-      `log/error-overview?pid=${pid}&timeBucket=${timeBucket}&period=${period}&filters=${JSON.stringify(
-        filters,
-      )}&options=${JSON.stringify(options)}&from=${from}&to=${to}&timezone=${timezone}`,
-      {
-        headers: {
-          'x-password': password,
-        },
-      },
-    )
-    .then((response): ErrorOverviewResponse => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
-
 export interface ErrorAffectedSession {
   psid: string
   profileId: string | null
@@ -533,26 +262,6 @@ export const getErrorSessions = (
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
     })
 
-export const getFunnelData = (
-  pid: string,
-  period = '3d',
-  from = '',
-  to = '',
-  timezone = '',
-  funnelId = '',
-  password: string | undefined = '',
-) =>
-  api
-    .get(`log/funnel?pid=${pid}&period=${period}&from=${from}&to=${to}&timezone=${timezone}&funnelId=${funnelId}`, {
-      headers: {
-        'x-password': password,
-      },
-    })
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getCaptchaData = (pid: string, tb = 'hour', period = '3d', filters: any[] = [], from = '', to = '') =>
   api
     .get(
@@ -581,32 +290,6 @@ export const getOverallStats = (
       `log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(
         ',',
       )}]&timeBucket=${tb}&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}&includeChart=${includeChart}`,
-      {
-        headers: {
-          'x-password': password,
-        },
-      },
-    )
-    .then((response): Overall => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getPerformanceOverallStats = (
-  pids: string[],
-  period: string,
-  from = '',
-  to = '',
-  timezone = 'Etc/GMT',
-  filters: any = '',
-  measure: any = '',
-  password?: string,
-) =>
-  api
-    .get(
-      `log/performance/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(
-        ',',
-      )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}&measure=${measure}`,
       {
         headers: {
           'x-password': password,
@@ -712,33 +395,6 @@ export const getGoal = (goalId: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getGoalStats = (goalId: string, period: string, from: string = '', to: string = '', timezone?: string) =>
-  api
-    .get(`/goal/${goalId}/stats`, {
-      params: { period, from, to, timezone },
-    })
-    .then((response): GoalStats => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getGoalChart = (
-  goalId: string,
-  period: string,
-  from: string = '',
-  to: string = '',
-  timeBucket: string = 'day',
-  timezone?: string,
-) =>
-  api
-    .get(`/goal/${goalId}/chart`, {
-      params: { period, from, to, timeBucket, timezone },
-    })
-    .then((response): { chart: GoalChartData } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 // Feature Flags API
 export interface TargetingRule {
   column: string
@@ -797,61 +453,6 @@ export const getProjectFeatureFlags = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 }
-
-export const getFeatureFlagStats = (
-  flagId: string,
-  period: string,
-  from: string = '',
-  to: string = '',
-  timezone?: string,
-) =>
-  api
-    .get(`/feature-flag/${flagId}/stats`, {
-      params: { period, from, to, timezone },
-    })
-    .then((response): FeatureFlagStats => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export interface FeatureFlagProfile {
-  profileId: string
-  isIdentified: boolean
-  lastResult: boolean
-  evaluationCount: number
-  lastEvaluated: string
-}
-
-export const DEFAULT_FEATURE_FLAG_PROFILES_TAKE = 15
-
-type FeatureFlagResultFilter = 'all' | 'true' | 'false'
-
-export const getFeatureFlagProfiles = (
-  flagId: string,
-  period: string,
-  from: string = '',
-  to: string = '',
-  timezone?: string,
-  take: number = DEFAULT_FEATURE_FLAG_PROFILES_TAKE,
-  skip: number = 0,
-  resultFilter: FeatureFlagResultFilter = 'all',
-) =>
-  api
-    .get(`/feature-flag/${flagId}/profiles`, {
-      params: {
-        period,
-        from,
-        to,
-        timezone,
-        take,
-        skip,
-        result: resultFilter === 'all' ? undefined : resultFilter,
-      },
-    })
-    .then((response): { profiles: FeatureFlagProfile[]; total: number } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
 
 // Experiments (A/B Testing) API
 

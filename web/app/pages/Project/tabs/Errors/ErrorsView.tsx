@@ -18,13 +18,21 @@ import {
 } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation, useSearchParams, useNavigate, useFetcher, useLoaderData, useRevalidator, type LinkProps } from 'react-router'
+import {
+  Link,
+  useLocation,
+  useSearchParams,
+  useNavigate,
+  useFetcher,
+  useLoaderData,
+  useRevalidator,
+  type LinkProps,
+} from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { getErrors, getErrorOverview, getError, type ErrorOverviewResponse } from '~/api'
-import type { ErrorsResponse } from '~/api/api.server'
-import type { ProjectViewActionData, ProjectLoaderData } from '~/routes/projects.$id'
+import type { ErrorsResponse, ErrorDetailsResponse, ErrorOverviewResponse } from '~/api/api.server'
+import { useErrorsProxy } from '~/hooks/useAnalyticsProxy'
 import {
   TimeFormat,
   tbsFormatMapper,
@@ -55,6 +63,7 @@ import {
 } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import type { ProjectViewActionData, ProjectLoaderData } from '~/routes/projects.$id'
 import { Badge } from '~/ui/Badge'
 import BillboardChart from '~/ui/BillboardChart'
 import Checkbox from '~/ui/Checkbox'
@@ -390,14 +399,22 @@ const ERRORS_TAKE = 30
 
 interface DeferredErrorsData {
   errorsData: ErrorsResponse | null
+  errorDetails: ErrorDetailsResponse | null
+  errorOverview: ErrorOverviewResponse | null
 }
 
 function ErrorsDataResolver({ children }: { children: (data: DeferredErrorsData) => React.ReactNode }) {
-  const { errorsData: errorsDataPromise } = useLoaderData<ProjectLoaderData>()
+  const {
+    errorsData: errorsDataPromise,
+    errorDetails: errorDetailsPromise,
+    errorOverview: errorOverviewPromise,
+  } = useLoaderData<ProjectLoaderData>()
 
   const errorsData = errorsDataPromise ? use(errorsDataPromise) : null
+  const errorDetails = errorDetailsPromise ? use(errorDetailsPromise) : null
+  const errorOverview = errorOverviewPromise ? use(errorOverviewPromise) : null
 
-  return <>{children({ errorsData })}</>
+  return <>{children({ errorsData, errorDetails, errorOverview })}</>
 }
 
 function ErrorsViewWrapper() {
@@ -416,6 +433,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   const { id, allowedToManage, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const revalidator = useRevalidator()
+  const errorsProxy = useErrorsProxy()
   const { errorsRefreshTrigger, timeBucket, timeFormat, period, dateRange, timezone, filters, size } =
     useViewProjectContext()
   const {
@@ -442,20 +460,37 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     [ERROR_FILTERS_MAPPING.showResolved]: false,
   })
 
-  const [overviewLoading, setOverviewLoading] = useState<boolean | null>(null)
-  const [overview, setOverview] = useState<ErrorOverviewResponse | null>(null)
+  // Overview from loader
+  const overview = deferredData.errorOverview
+  const overviewLoading = revalidator.state === 'loading'
+
   const isMountedRef = useRef(true)
 
-  const [errorsLoading, setErrorsLoading] = useState<boolean | null>(() => deferredData.errorsData ? false : null)
+  const [errorsLoading, setErrorsLoading] = useState<boolean | null>(() => (deferredData.errorsData ? false : null))
   const [errors, setErrors] = useState<SwetrixError[]>(() => deferredData.errorsData?.errors || [])
   const [errorsSkip, setErrorsSkip] = useState(() => deferredData.errorsData?.errors?.length || 0)
-  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(() => (deferredData.errorsData?.errors?.length || 0) >= ERRORS_TAKE)
+  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(
+    () => (deferredData.errorsData?.errors?.length || 0) >= ERRORS_TAKE,
+  )
   const errorsRequestIdRef = useRef(0)
 
   const activeEID = useMemo(() => searchParams.get('eid'), [searchParams])
-  const prevActiveEIDRef = useRef<string | null>(activeEID)
-  const [activeError, setActiveError] = useState<{ details: SwetrixErrorDetails; [key: string]: any } | null>(null)
-  const [errorLoading, setErrorLoading] = useState(false)
+
+  // Error details from loader
+  const activeError = useMemo(() => {
+    if (deferredData.errorDetails) {
+      return {
+        details: deferredData.errorDetails.details as SwetrixErrorDetails,
+        chart: deferredData.errorDetails.chart,
+        params: deferredData.errorDetails.params,
+        metadata: deferredData.errorDetails.metadata,
+        timeBucket: deferredData.errorDetails.timeBucket,
+      }
+    }
+    return null
+  }, [deferredData.errorDetails])
+
+  const errorLoading = activeEID ? revalidator.state === 'loading' : false
 
   const errorStatusUpdating = errorStatusFetcher.state !== 'idle'
 
@@ -518,113 +553,35 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     }
   }, [revalidator.state, deferredData])
 
-  const loadOverview = useCallback(async () => {
-    if (overviewLoading) return
+  // Load more errors via proxy
+  const loadMoreErrors = useCallback(() => {
+    if (errorsLoading) return
 
-    setOverviewLoading(true)
-    try {
-      const result = await getErrorOverview(
-        id,
-        timeBucket,
-        period,
-        filters,
-        errorOptions,
-        from,
-        to,
-        timezone || '',
-        projectPassword,
-      )
-      if (isMountedRef.current) {
-        setOverview(result)
-      }
-    } catch (reason: any) {
-      console.error('[ErrorsView] Failed to load overview:', reason)
-      if (isMountedRef.current) {
-        toast.error(reason?.message || t('apiNotifications.somethingWentWrong'))
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setOverviewLoading(false)
-      }
+    errorsProxy.fetchErrors(id, {
+      timeBucket,
+      period: period === 'custom' ? '' : period,
+      from: from || undefined,
+      to: to || undefined,
+      timezone: timezone || '',
+      filters,
+      take: ERRORS_TAKE,
+      skip: errorsSkip,
+      options: errorOptions,
+    })
+  }, [id, timeBucket, period, from, to, timezone, filters, errorsSkip, errorOptions, errorsLoading, errorsProxy])
+
+  // Handle proxy response for pagination
+  useEffect(() => {
+    if (errorsProxy.data && !errorsProxy.isLoading) {
+      const newErrors = errorsProxy.data.errors || []
+      setErrors((prev) => [...prev, ...newErrors])
+      setErrorsSkip((prev) => prev + ERRORS_TAKE)
+      setCanLoadMoreErrors(newErrors.length >= ERRORS_TAKE)
     }
-  }, [id, timeBucket, period, filters, errorOptions, from, to, timezone, projectPassword, overviewLoading, t])
-
-  const loadErrors = useCallback(
-    async (forcedSkip?: number, override?: boolean) => {
-      if (errorsLoading && !override) return
-
-      const currentRequestId = ++errorsRequestIdRef.current
-      setErrorsLoading(true)
-
-      const skip = forcedSkip !== undefined ? forcedSkip : errorsSkip
-
-      try {
-        const { errors: newErrors } = await getErrors(
-          id,
-          timeBucket,
-          period === 'custom' ? '' : period,
-          filters,
-          errorOptions,
-          from,
-          to,
-          ERRORS_TAKE,
-          skip,
-          timezone || '',
-          projectPassword,
-        )
-
-        if (!isMountedRef.current || currentRequestId !== errorsRequestIdRef.current) return
-
-        if (skip === 0) {
-          setErrors(newErrors)
-        } else {
-          setErrors((prev) => [...prev, ...newErrors])
-        }
-
-        setErrorsSkip(skip + ERRORS_TAKE)
-        setCanLoadMoreErrors(newErrors.length >= ERRORS_TAKE)
-      } catch (reason: any) {
-        console.error('[ErrorsView] Failed to load errors:', reason)
-        if (isMountedRef.current && currentRequestId === errorsRequestIdRef.current) {
-          toast.error(reason?.message || t('apiNotifications.somethingWentWrong'))
-        }
-      } finally {
-        if (isMountedRef.current && currentRequestId === errorsRequestIdRef.current) {
-          setErrorsLoading(false)
-        }
-      }
-    },
-    [id, timeBucket, period, filters, errorOptions, from, to, timezone, projectPassword, errorsLoading, errorsSkip, t],
-  )
-
-  const loadError = useCallback(
-    async (eid: string) => {
-      setErrorLoading(true)
-
-      try {
-        let error
-        if (period === 'custom' && dateRange) {
-          error = await getError(id, eid, timeBucket, '', filters, from, to, timezone, projectPassword)
-        } else {
-          error = await getError(id, eid, timeBucket, period, filters, '', '', timezone, projectPassword)
-        }
-
-        setActiveError(error)
-      } catch (reason: any) {
-        if (reason?.status === 400) {
-          setErrorLoading(false)
-          setActiveError(null)
-          return
-        }
-
-        const message = _isEmpty(reason.data?.message) ? reason.data : reason.data.message
-        console.error('[ErrorsView] Failed to load error:', message)
-        toast.error(message)
-      }
-      setErrorLoading(false)
-    },
-    [dateRange, id, period, timeBucket, projectPassword, timezone, filters, from, to],
-  )
+    if (errorsProxy.error) {
+      toast.error(errorsProxy.error)
+    }
+  }, [errorsProxy.data, errorsProxy.error, errorsProxy.isLoading])
 
   const updateStatusInErrors = useCallback(
     (status: 'active' | 'resolved') => {
@@ -654,7 +611,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
       if (success && pendingStatusUpdate.current) {
         updateStatusInErrors(pendingStatusUpdate.current)
         if (activeEID) {
-          loadError(activeEID)
+          revalidator.revalidate()
         }
         toast.success(t('apiNotifications.errorStatusUpdated'))
         pendingStatusUpdate.current = null
@@ -705,46 +662,11 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     ]
   }, [t, errorOptions])
 
-  // Load data on mount and when params change (only for list view)
+  // Handle refresh trigger - use revalidator for URL-based data
   useEffect(() => {
-    if (!id || !timeBucket || !period || activeEID) return
-
-    loadOverview()
-    setErrorsSkip(0)
-    loadErrors(0, true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, period, from, to, timeBucket, timezone, filters, errorOptions])
-
-  // Handle activeEID changes
-  useEffect(() => {
-    if (!activeEID) {
-      setActiveError(null)
-      // Coming back from error detail to list: reset and reload
-      if (prevActiveEIDRef.current) {
-        setErrorsSkip(0)
-        loadErrors(0, true)
-        loadOverview()
-      }
-      prevActiveEIDRef.current = null
-      return
+    if (errorsRefreshTrigger > 0) {
+      revalidator.revalidate()
     }
-
-    loadError(activeEID)
-    prevActiveEIDRef.current = activeEID
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, dateRange, timeBucket, activeEID, filters])
-
-  // Handle refresh trigger (list + detail)
-  useEffect(() => {
-    if (errorsRefreshTrigger <= 0) return
-
-    if (activeEID) {
-      loadError(activeEID)
-      return
-    }
-
-    revalidator.revalidate()
-    loadOverview()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [errorsRefreshTrigger])
 
@@ -966,7 +888,6 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                           ? () => {
                               const countryData = activeError?.params?.cc || []
                               const regionData = activeError?.params?.rg || []
-                              // @ts-expect-error
                               const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
 
                               return (
@@ -1205,7 +1126,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
               <button
                 type='button'
                 title={t('project.loadMore')}
-                onClick={() => loadErrors()}
+                onClick={loadMoreErrors}
                 className={cx(
                   'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                   {

@@ -17,21 +17,14 @@ import {
   MousePointerClickIcon,
   ChevronDownIcon,
 } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams, useFetcher } from 'react-router'
+import { useSearchParams, useFetcher, useLoaderData, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
-import {
-  getProjectGoals,
-  getGoalStats,
-  getGoalChart,
-  DEFAULT_GOALS_TAKE,
-  type Goal,
-  type GoalStats,
-  type GoalChartData,
-} from '~/api'
-import type { ProjectViewActionData } from '~/routes/projects.$id'
+import type { GoalsResponse, Goal, GoalStats, GoalChartData } from '~/api/api.server'
+import { useGoalStatsProxy, useGoalChartProxy } from '~/hooks/useAnalyticsProxy'
+import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
 import {
   TimeFormat,
   tbsFormatMapper,
@@ -57,6 +50,8 @@ import { nFormatter } from '~/utils/generic'
 import routes from '~/utils/routes'
 
 import GoalSettingsModal from './GoalSettingsModal'
+
+const DEFAULT_GOALS_TAKE = 20
 
 // Calculate optimal Y axis ticks
 const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
@@ -427,19 +422,42 @@ interface GoalsViewProps {
   timezone?: string
 }
 
-const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => {
+interface DeferredGoalsData {
+  goalsData: GoalsResponse | null
+}
+
+function GoalsDataResolver({ children }: { children: (data: DeferredGoalsData) => React.ReactNode }) {
+  const { goalsData: goalsDataPromise } = useLoaderData<ProjectLoaderData>()
+  const goalsData = goalsDataPromise ? use(goalsDataPromise) : null
+  return <>{children({ goalsData })}</>
+}
+
+function GoalsViewWrapper(props: GoalsViewProps) {
+  return (
+    <Suspense fallback={<Loader />}>
+      <GoalsDataResolver>{(deferredData) => <GoalsViewInner {...props} deferredData={deferredData} />}</GoalsDataResolver>
+    </Suspense>
+  )
+}
+
+interface GoalsViewInnerProps extends GoalsViewProps {
+  deferredData: DeferredGoalsData
+}
+
+const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: GoalsViewInnerProps) => {
   const { id } = useCurrentProject()
+  const revalidator = useRevalidator()
   const { goalsRefreshTrigger, timeBucket, timeFormat } = useViewProjectContext()
   const [searchParams] = useSearchParams()
   const isEmbedded = searchParams.get('embedded') === 'true'
   const { t } = useTranslation()
   const fetcher = useFetcher<ProjectViewActionData>()
 
-  const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const isLoadingRef = useRef(false) // Use ref to avoid stale closure issues in loadGoals
-  const isMountedRef = useRef(true) // Track if component is mounted to prevent memory leaks
-  const [total, setTotal] = useState(0)
-  const [goals, setGoals] = useState<Goal[]>([])
+  // Track if we're in search/pagination mode
+  const [isSearchMode, setIsSearchMode] = useState(false)
+  const isMountedRef = useRef(true)
+  const [total, setTotal] = useState(() => deferredData.goalsData?.total || 0)
+  const [goals, setGoals] = useState<Goal[]>(() => deferredData.goalsData?.results || [])
   const [goalStats, setGoalStats] = useState<Record<string, GoalStats | null>>({})
   const [statsLoading, setStatsLoading] = useState<Record<string, boolean>>({})
   const [page, setPage] = useState(1)
@@ -456,6 +474,8 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingGoalId, setEditingGoalId] = useState<string | null>(null)
 
+  const isLoading = revalidator.state === 'loading' || fetcher.state !== 'idle'
+
   // Cleanup on unmount
   useEffect(() => {
     isMountedRef.current = true
@@ -463,6 +483,14 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
       isMountedRef.current = false
     }
   }, [])
+
+  // Sync state when loader provides new data
+  useEffect(() => {
+    if (deferredData.goalsData && revalidator.state === 'idle' && !isSearchMode) {
+      setGoals(deferredData.goalsData.results || [])
+      setTotal(deferredData.goalsData.total || 0)
+    }
+  }, [revalidator.state, deferredData.goalsData, isSearchMode])
 
   const pageAmount = Math.ceil(total / DEFAULT_GOALS_TAKE)
 
@@ -484,35 +512,47 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
     }
   }, [filterQuery, debouncedSetSearch])
 
-  const loadGoals = async (take: number, skip: number, search?: string) => {
-    if (isLoadingRef.current) {
-      return
-    }
-    isLoadingRef.current = true
-    setIsLoading(true)
+  const loadGoals = useCallback(
+    (take: number, skip: number, search?: string) => {
+      if (fetcher.state !== 'idle') return
+      setIsSearchMode(true)
 
-    try {
-      const result = await getProjectGoals(id, take, skip, search)
+      fetcher.submit(
+        {
+          intent: 'get-project-goals',
+          take: String(take),
+          skip: String(skip),
+          search: search || '',
+        },
+        { method: 'POST' },
+      )
+    },
+    [fetcher],
+  )
+
+  // Handle fetcher response for goals list
+  useEffect(() => {
+    if (fetcher.data?.intent === 'get-project-goals' && fetcher.state === 'idle') {
       if (isMountedRef.current) {
-        setGoals(result.results)
-        setTotal(result.total)
-      }
-    } catch (reason: any) {
-      if (isMountedRef.current) {
-        setError(reason?.message || reason?.toString() || 'Unknown error')
-      }
-    } finally {
-      isLoadingRef.current = false
-      if (isMountedRef.current) {
-        setIsLoading(false)
+        if (fetcher.data.success && fetcher.data.data) {
+          const result = fetcher.data.data as { results: Goal[]; total: number }
+          setGoals(result.results)
+          setTotal(result.total)
+        } else if (fetcher.data.error) {
+          setError(fetcher.data.error)
+        }
       }
     }
-  }
+  }, [fetcher.data, fetcher.state])
+
+  // Proxy hooks for stats and chart
+  const statsProxy = useGoalStatsProxy()
+  const chartProxy = useGoalChartProxy()
 
   const loadGoalStats = async (goalId: string) => {
     setStatsLoading((prev) => ({ ...prev, [goalId]: true }))
     try {
-      const stats = await getGoalStats(goalId, period, from, to, timezone)
+      const stats = await statsProxy.fetchStats(goalId, { period, from, to, timezone })
       if (isMountedRef.current) {
         setGoalStats((prev) => ({ ...prev, [goalId]: stats }))
       }
@@ -531,8 +571,8 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   const loadGoalChartData = async (goalId: string, showLoading = true) => {
     setChartLoading((prev) => ({ ...prev, [goalId]: showLoading ? true : prev[goalId] }))
     try {
-      const result = await getGoalChart(goalId, period, from, to, timeBucket, timezone)
-      if (isMountedRef.current) {
+      const result = await chartProxy.fetchChart(goalId, { period, from, to, timeBucket, timezone })
+      if (isMountedRef.current && result) {
         setGoalChartData((prev) => ({ ...prev, [goalId]: result.chart }))
       }
     } catch (err) {
@@ -541,7 +581,6 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
         setGoalChartData((prev) => ({ ...prev, [goalId]: null }))
       }
     } finally {
-      // Always clear loading state
       if (isMountedRef.current) {
         setChartLoading((prev) => ({ ...prev, [goalId]: false }))
       }
@@ -561,8 +600,11 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
     }
   }
 
+  // Handle page/search changes - use fetcher for pagination
   useEffect(() => {
-    loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
+    if (page > 1 || debouncedSearch || isSearchMode) {
+      loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, debouncedSearch])
 
@@ -587,15 +629,17 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   // Refresh goals data when refresh button is clicked
   useEffect(() => {
     if (goalsRefreshTrigger > 0) {
-      loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
+      if (page === 1 && !debouncedSearch) {
+        setIsSearchMode(false)
+        revalidator.revalidate()
+      } else {
+        loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
+      }
       // Clear cached chart data for non-expanded goals, silently refresh expanded goal
       if (expandedGoalId) {
-        // Keep only the expanded goal's data while we fetch fresh data
         setGoalChartData((prev) => ({ [expandedGoalId]: prev[expandedGoalId] }))
-        // Silently fetch new data without showing loading indicator
         loadGoalChartData(expandedGoalId, false)
       } else {
-        // No expanded goal, just clear all cached data
         setGoalChartData({})
       }
     }
@@ -618,18 +662,28 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
   }
 
   const handleModalSuccess = () => {
-    loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
+    if (page === 1 && !debouncedSearch) {
+      setIsSearchMode(false)
+      revalidator.revalidate()
+    } else {
+      loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
+    }
   }
 
   // Handle fetcher responses for delete
   useEffect(() => {
     if (fetcher.data?.success && fetcher.data?.intent === 'delete-goal') {
       toast.success(t('goals.deleted'))
-      loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
+      if (page === 1 && !debouncedSearch) {
+        setIsSearchMode(false)
+        revalidator.revalidate()
+      } else {
+        loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
+      }
     } else if (fetcher.data?.error && fetcher.data?.intent === 'delete-goal') {
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data, t, page, debouncedSearch]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetcher.data, t, page, debouncedSearch, revalidator]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDeleteGoal = (goalId: string) => {
     const formData = new FormData()
@@ -638,7 +692,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
     fetcher.submit(formData, { method: 'post' })
   }
 
-  if (error && isLoading === false) {
+  if (error && !isLoading) {
     return (
       <StatusPage
         type='error'
@@ -649,20 +703,6 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
           { label: t('notFoundPage.support'), to: routes.contact },
         ]}
       />
-    )
-  }
-
-  // Show Loader only on initial load (no existing data)
-  if ((isLoading || isLoading === null) && _isEmpty(goals)) {
-    return (
-      <div
-        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
-          'min-h-including-header': !isEmbedded,
-          'min-h-screen': isEmbedded,
-        })}
-      >
-        <Loader />
-      </div>
     )
   }
 
@@ -759,5 +799,7 @@ const GoalsView = ({ period, from = '', to = '', timezone }: GoalsViewProps) => 
     </>
   )
 }
+
+const GoalsView = GoalsViewWrapper
 
 export default GoalsView

@@ -17,12 +17,13 @@ import {
   FileTextIcon,
   BellOffIcon,
 } from 'lucide-react'
-import { useMemo, useState, useEffect, useRef } from 'react'
+import { useMemo, useState, useEffect, useRef, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams, useFetcher } from 'react-router'
+import { Link, useSearchParams, useFetcher, useLoaderData, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
-import type { ProjectViewActionData } from '~/routes/projects.$id'
+import type { AlertsResponse } from '~/api/api.server'
+import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
 import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import PaidFeature from '~/modals/PaidFeature'
@@ -211,8 +212,31 @@ const AlertRow = ({
   )
 }
 
-const ProjectAlerts = () => {
+interface DeferredAlertsData {
+  alertsData: AlertsResponse | null
+}
+
+function AlertsDataResolver({ children }: { children: (data: DeferredAlertsData) => React.ReactNode }) {
+  const { alertsData: alertsDataPromise } = useLoaderData<ProjectLoaderData>()
+  const alertsData = alertsDataPromise ? use(alertsDataPromise) : null
+  return <>{children({ alertsData })}</>
+}
+
+function ProjectAlertsWrapper() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <AlertsDataResolver>{(deferredData) => <ProjectAlertsInner deferredData={deferredData} />}</AlertsDataResolver>
+    </Suspense>
+  )
+}
+
+interface ProjectAlertsInnerProps {
+  deferredData: DeferredAlertsData
+}
+
+const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
   const { id, project } = useCurrentProject()
+  const revalidator = useRevalidator()
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuth()
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
@@ -220,12 +244,15 @@ const ProjectAlerts = () => {
   const fetcher = useFetcher<ProjectViewActionData>()
   const lastHandledData = useRef<ProjectViewActionData | null>(null)
 
-  const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const [total, setTotal] = useState(0)
-  const [alerts, setAlerts] = useState<Alerts[]>([])
+  // Track if we're in pagination mode
+  const [isSearchMode, setIsSearchMode] = useState(false)
+  const [total, setTotal] = useState(() => deferredData.alertsData?.total || 0)
+  const [alerts, setAlerts] = useState<Alerts[]>(() => (deferredData.alertsData?.results as Alerts[]) || [])
   const [page, setPage] = useState(1)
 
   const [error, setError] = useState<string | null>(null)
+
+  const isLoading = revalidator.state === 'loading' || fetcher.state !== 'idle'
 
   const pageAmount = Math.ceil(total / DEFAULT_ALERTS_TAKE)
 
@@ -247,9 +274,17 @@ const ProjectAlerts = () => {
     return newSearchParams.toString()
   }, [searchParams])
 
+  // Sync state when loader provides new data
+  useEffect(() => {
+    if (deferredData.alertsData && revalidator.state === 'idle' && !isSearchMode) {
+      setAlerts((deferredData.alertsData.results as Alerts[]) || [])
+      setTotal(deferredData.alertsData.total || 0)
+    }
+  }, [revalidator.state, deferredData.alertsData, isSearchMode])
+
   const loadAlerts = (take: number, skip: number) => {
     if (fetcher.state !== 'idle') return
-    setIsLoading(true)
+    setIsSearchMode(true)
 
     fetcher.submit(
       { intent: 'get-project-alerts', take: String(take), skip: String(skip) },
@@ -270,25 +305,27 @@ const ProjectAlerts = () => {
         const result = data as { results: Alerts[]; total: number }
         setAlerts(result.results)
         setTotal(result.total)
-        setIsLoading(false)
       } else if (intent === 'delete-alert') {
         toast.success(t('alertsSettings.alertDeleted'))
-        loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+        if (page === 1) {
+          setIsSearchMode(false)
+          revalidator.revalidate()
+        } else {
+          loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+        }
       }
     } else if (fetcherError) {
       setError(fetcherError)
-      setIsLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetcher.state, fetcher.data, t, page])
+  }, [fetcher.state, fetcher.data, t, page, revalidator])
 
+  // Handle page changes - use fetcher for pagination
   useEffect(() => {
-    if (!canManageAlerts) {
-      return
+    if (!canManageAlerts) return
+    if (page > 1 || isSearchMode) {
+      loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
     }
-
-    loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, canManageAlerts])
 
@@ -342,7 +379,12 @@ const ProjectAlerts = () => {
   const handleAlertSaved = () => {
     closeAlertSettings()
     // Reload alerts after saving
-    loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+    if (page === 1) {
+      setIsSearchMode(false)
+      revalidator.revalidate()
+    } else {
+      loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+    }
   }
 
   const onDelete = (alertId: string) => {
@@ -370,7 +412,7 @@ const ProjectAlerts = () => {
     )
   }
 
-  if (error && isLoading === false) {
+  if (error && !isLoading) {
     return (
       <StatusPage
         type='error'
@@ -381,14 +423,6 @@ const ProjectAlerts = () => {
           { label: t('notFoundPage.support'), to: routes.contact },
         ]}
       />
-    )
-  }
-
-  if (isLoading || isLoading === null) {
-    return (
-      <div className='mt-4'>
-        <Loader />
-      </div>
     )
   }
 
@@ -470,5 +504,7 @@ const ProjectAlerts = () => {
     </>
   )
 }
+
+const ProjectAlerts = ProjectAlertsWrapper
 
 export default ProjectAlerts

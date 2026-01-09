@@ -5,8 +5,8 @@ import { useState, useEffect, useMemo, useRef, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams, useLoaderData, useRevalidator } from 'react-router'
 
-import { getSessions, getSession } from '~/api'
-import type { SessionsResponse } from '~/api/api.server'
+import type { SessionsResponse, SessionDetailsResponse } from '~/api/api.server'
+import { useSessionsProxy } from '~/hooks/useAnalyticsProxy'
 import type { ProjectLoaderData } from '~/routes/projects.$id'
 import { Session, SessionDetails as SessionDetailsType } from '~/lib/models/Project'
 import NoSessions from '~/pages/Project/tabs/Sessions/components/NoSessions'
@@ -16,7 +16,7 @@ import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import Spin from '~/ui/icons/Spin'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
@@ -51,14 +51,17 @@ interface SessionsViewProps {
 
 interface DeferredSessionsData {
   sessionsData: SessionsResponse | null
+  sessionDetails: SessionDetailsResponse | null
 }
 
 function SessionsDataResolver({ children }: { children: (data: DeferredSessionsData) => React.ReactNode }) {
-  const { sessionsData: sessionsDataPromise } = useLoaderData<ProjectLoaderData>()
+  const { sessionsData: sessionsDataPromise, sessionDetails: sessionDetailsPromise } =
+    useLoaderData<ProjectLoaderData>()
 
   const sessionsData = sessionsDataPromise ? use(sessionsDataPromise) : null
+  const sessionDetails = sessionDetailsPromise ? use(sessionDetailsPromise) : null
 
-  return <>{children({ sessionsData })}</>
+  return <>{children({ sessionsData, sessionDetails })}</>
 }
 
 function SessionsViewWrapper(props: SessionsViewProps) {
@@ -77,31 +80,40 @@ interface SessionsViewInnerProps extends SessionsViewProps {
 
 const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsViewInnerProps) => {
   const { id, project } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const revalidator = useRevalidator()
   const { sessionsRefreshTrigger, timezone, period, dateRange, filters, timeFormat } = useViewProjectContext()
   const { t } = useTranslation('common')
   const [searchParams] = useSearchParams()
 
-  // Initialize state from deferred data
-  const initialDataProcessed = useRef(false)
+  // Proxy for pagination
+  const sessionsProxy = useSessionsProxy()
 
-  // Session list state
+  // Session list state - derived from loader
   const [sessions, setSessions] = useState<Session[]>(() => deferredData.sessionsData?.sessions || [])
-  const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(() => deferredData.sessionsData ? false : null)
-  const [sessionsSkip, setSessionsSkip] = useState(0)
-  const [canLoadMoreSessions, setCanLoadMoreSessions] = useState(false)
-  const sessionsRequestIdRef = useRef(0)
+  const [sessionsSkip, setSessionsSkip] = useState(SESSIONS_TAKE)
+  const [canLoadMoreSessions, setCanLoadMoreSessions] = useState(
+    () => (deferredData.sessionsData?.sessions?.length || 0) >= SESSIONS_TAKE,
+  )
 
-  // Session detail state
-  const [activeSession, setActiveSession] = useState<ActiveSession | null>(null)
-  const [sessionLoading, setSessionLoading] = useState(false)
+  // Session detail - derived from loader when available
+  const activeSession: ActiveSession | null = useMemo(() => {
+    if (deferredData.sessionDetails) {
+      return {
+        details: deferredData.sessionDetails.details as SessionDetailsType,
+        chart: deferredData.sessionDetails.chart,
+        pages: deferredData.sessionDetails.pages,
+        timeBucket: deferredData.sessionDetails.timeBucket,
+      }
+    }
+    return null
+  }, [deferredData.sessionDetails])
+
+  const sessionsLoading = revalidator.state === 'loading' || sessionsProxy.isLoading
 
   const [error, setError] = useState<string | null>(null)
 
   const isMountedRef = useRef(true)
   const prevActivePSIDRef = useRef<string | null>(null)
-  const skipNextSessionsAutoLoadRef = useRef(false)
 
   const activePSID = useMemo(() => {
     return searchParams.get('psid')
@@ -131,176 +143,63 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
     }
   }, [])
 
-  // Process deferred data on mount
+  // Sync sessions state when loader provides new data
   useEffect(() => {
-    if (initialDataProcessed.current) return
-    initialDataProcessed.current = true
-
-    if (deferredData.sessionsData) {
+    if (deferredData.sessionsData && revalidator.state === 'idle') {
       const sessionsList = deferredData.sessionsData.sessions || []
       setSessions(sessionsList)
       setSessionsSkip(SESSIONS_TAKE)
       setCanLoadMoreSessions(sessionsList.length >= SESSIONS_TAKE)
-    } else {
-      setSessions([])
-      setCanLoadMoreSessions(false)
     }
-    setSessionsLoading(false)
-  }, [deferredData])
+  }, [revalidator.state, deferredData.sessionsData])
 
-  // Sync state when revalidation completes with new data
+  // Handle proxy response for pagination
   useEffect(() => {
-    if (!initialDataProcessed.current) return
-    if (revalidator.state === 'idle') {
-      if (deferredData.sessionsData) {
-        const sessionsList = deferredData.sessionsData.sessions || []
-        setSessions(sessionsList)
-        setSessionsSkip(SESSIONS_TAKE)
-        setCanLoadMoreSessions(sessionsList.length >= SESSIONS_TAKE)
-      } else {
-        setSessions([])
-        setCanLoadMoreSessions(false)
-      }
-      setSessionsLoading(false)
-    } else if (revalidator.state === 'loading') {
-      setSessionsLoading(true)
+    if (sessionsProxy.data && !sessionsProxy.isLoading) {
+      const newSessions = sessionsProxy.data.sessions || []
+      setSessions((prev) => [...prev, ...newSessions])
+      setSessionsSkip((prev) => prev + SESSIONS_TAKE)
+      setCanLoadMoreSessions(newSessions.length >= SESSIONS_TAKE)
     }
-  }, [revalidator.state, deferredData])
+    if (sessionsProxy.error) {
+      setError(sessionsProxy.error)
+    }
+  }, [sessionsProxy.data, sessionsProxy.error, sessionsProxy.isLoading])
 
-  // Reset sessions when filters change
-  useEffect(() => {
-    sessionsRequestIdRef.current += 1
-    setSessionsSkip(0)
-    setSessions([])
-    setSessionsLoading(null)
-  }, [filters])
+  // Load more sessions via proxy
+  const loadMoreSessions = () => {
+    if (sessionsLoading) return
 
-  const loadSessions = async (forcedSkip?: number, override?: boolean) => {
-    if (sessionsLoading) {
-      return
+    let from: string | undefined
+    let to: string | undefined
+
+    if (dateRange) {
+      from = getFormatDate(dateRange[0])
+      to = getFormatDate(dateRange[1])
     }
 
-    const requestId = sessionsRequestIdRef.current
-    setSessionsLoading(true)
-
-    try {
-      const skip = typeof forcedSkip === 'number' ? forcedSkip : sessionsSkip
-      let dataSessions: { sessions: Session[] }
-      let from
-      let to
-
-      if (dateRange) {
-        from = getFormatDate(dateRange[0])
-        to = getFormatDate(dateRange[1])
-      }
-
-      if (period === 'custom' && dateRange) {
-        dataSessions = await getSessions(id, '', filters, from, to, SESSIONS_TAKE, skip, timezone, projectPassword)
-      } else {
-        dataSessions = await getSessions(id, period, filters, '', '', SESSIONS_TAKE, skip, timezone, projectPassword)
-      }
-
-      if (requestId === sessionsRequestIdRef.current && isMountedRef.current) {
-        if (override) {
-          setSessions(dataSessions?.sessions || [])
-        } else {
-          setSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
-        }
-        setSessionsSkip((prev) => {
-          if (typeof forcedSkip === 'number') {
-            return SESSIONS_TAKE + forcedSkip
-          }
-
-          return SESSIONS_TAKE + prev
-        })
-
-        if (dataSessions?.sessions?.length < SESSIONS_TAKE) {
-          setCanLoadMoreSessions(false)
-        } else {
-          setCanLoadMoreSessions(true)
-        }
-      }
-    } catch (reason: any) {
-      console.error('[ERROR](loadSessions) Loading sessions data failed:', reason)
-      if (isMountedRef.current) {
-        setError(reason?.message || reason?.toString() || 'Unknown error')
-      }
-    } finally {
-      if (requestId === sessionsRequestIdRef.current && isMountedRef.current) {
-        setSessionsLoading(false)
-      }
-    }
+    sessionsProxy.fetchSessions(id, {
+      timeBucket: 'day',
+      period: period === 'custom' ? '' : period,
+      from,
+      to,
+      timezone,
+      filters,
+      take: SESSIONS_TAKE,
+      skip: sessionsSkip,
+    })
   }
 
-  const loadSession = async (psid: string) => {
-    if (sessionLoading) {
-      return
-    }
-
-    setSessionLoading(true)
-
-    try {
-      const session = await getSession(id, psid, timezone, projectPassword)
-      if (isMountedRef.current) {
-        setActiveSession(session)
-      }
-    } catch (reason: any) {
-      console.error('[ERROR] (loadSession)(getSession)', reason)
-      if (isMountedRef.current) {
-        setError(reason?.message || reason?.toString() || 'Unknown error')
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setSessionLoading(false)
-      }
-    }
-  }
-
-  // Handle session detail loading
-  useEffect(() => {
-    if (!activePSID) {
-      setActiveSession(null)
-      // Coming back from a session detail to the list: reset pagination and reload first page
-      if (prevActivePSIDRef.current) {
-        skipNextSessionsAutoLoadRef.current = true
-        setSessionsSkip(0)
-        loadSessions(0, true)
-      }
-      prevActivePSIDRef.current = null
-      return
-    }
-
-    loadSession(activePSID)
-    prevActivePSIDRef.current = activePSID
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, dateRange, activePSID])
-
-  // Load sessions list
-  useEffect(() => {
-    if (!project || activePSID) {
-      return
-    }
-
-    if (skipNextSessionsAutoLoadRef.current) {
-      skipNextSessionsAutoLoadRef.current = false
-      return
-    }
-
-    loadSessions()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateRange, filters, id, period, timezone, project, activePSID])
-
-  // Handle refresh trigger
+  // Handle refresh trigger - use revalidator for URL-based data
   useEffect(() => {
     if (sessionsRefreshTrigger > 0) {
-      if (activePSID) {
-        loadSession(activePSID)
-      } else {
-        revalidator.revalidate()
-      }
+      revalidator.revalidate()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionsRefreshTrigger])
+
+  // Session detail loading state
+  const sessionLoading = activePSID ? revalidator.state === 'loading' : false
 
   if (error && sessionsLoading === false) {
     return (
@@ -353,7 +252,7 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
           <button
             type='button'
             title={t('project.loadMore')}
-            onClick={() => loadSessions()}
+            onClick={loadMoreSessions}
             className={cx(
               'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
               {

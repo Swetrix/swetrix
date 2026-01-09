@@ -744,6 +744,62 @@ export async function getSessionsServer(
   return serverFetch<SessionsResponse>(request, `log/sessions?${queryParams.toString()}`, { headers })
 }
 
+interface PageflowItem {
+  type: 'pageview' | 'event' | 'error'
+  value: string
+  created: string
+  metadata?: { key: string; value: string }[]
+}
+
+export interface SessionDetailsResponse {
+  details: {
+    psid: string
+    cc: string | null
+    os: string | null
+    br: string | null
+    dv: string | null
+    pageviews: number
+    customEvents: number
+    errors: number
+    revenue?: number
+    refunds?: number
+    created: string
+    sdur?: number
+    profileId: string | null
+    isIdentified: 1 | 0
+    isFirstSession: 1 | 0
+  }
+  chart?: {
+    x: string[]
+    pageviews?: number[]
+    customEvents?: number[]
+    errors?: number[]
+  }
+  pages?: PageflowItem[]
+  timeBucket?: string
+}
+
+export async function getSessionServer(
+  request: Request,
+  pid: string,
+  psid: string,
+  timezone: string,
+  password?: string,
+): Promise<ServerFetchResult<SessionDetailsResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    psid,
+    timezone,
+  })
+
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<SessionDetailsResponse>(request, `log/session?${queryParams.toString()}`, { headers })
+}
+
 interface SwetrixError {
   eid: string
   name: string
@@ -784,4 +840,382 @@ export async function getErrorsServer(
   }
 
   return serverFetch<ErrorsResponse>(request, `log/errors?${queryParams.toString()}`, { headers })
+}
+
+export interface ErrorDetailsResponse {
+  details: {
+    eid: string
+    name: string
+    message: string
+    filename: string
+    lineno: number
+    colno: number
+    count: number
+    last_seen: string
+    first_seen: string
+    status: 'active' | 'regressed' | 'fixed' | 'resolved'
+  }
+  chart?: {
+    x: string[]
+    occurrences: number[]
+    affectedUsers: number[]
+  }
+  params?: Record<string, { name: string; count: number }[]>
+  metadata?: { key: string; value: string; count: number }[]
+  timeBucket?: string
+}
+
+export async function getErrorServer(
+  request: Request,
+  pid: string,
+  eid: string,
+  params: AnalyticsParams & { options?: Record<string, unknown> },
+): Promise<ServerFetchResult<ErrorDetailsResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    eid,
+    timeBucket: params.timeBucket,
+    period: params.period,
+    filters: serializeFiltersForUrl(params.filters),
+    options: JSON.stringify(params.options || {}),
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone,
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<ErrorDetailsResponse>(request, `log/error?${queryParams.toString()}`, { headers })
+}
+
+export interface ErrorOverviewResponse {
+  chart?: {
+    x: string[]
+    occurrences: number[]
+    affectedUsers: number[]
+  }
+  stats?: {
+    totalErrors: number
+    uniqueErrors: number
+    affectedUsers: number
+    errorRate?: number
+    affectedSessions?: number
+  }
+  appliedFilters?: AnalyticsFilter[]
+}
+
+export async function getErrorOverviewServer(
+  request: Request,
+  pid: string,
+  params: AnalyticsParams & { options?: Record<string, unknown> },
+): Promise<ServerFetchResult<ErrorOverviewResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    timeBucket: params.timeBucket,
+    period: params.period,
+    filters: serializeFiltersForUrl(params.filters),
+    options: JSON.stringify(params.options || {}),
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone,
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<ErrorOverviewResponse>(request, `log/error-overview?${queryParams.toString()}`, { headers })
+}
+
+// ============================================================================
+// MARK: Feature Flags API (Deferred Loading)
+// ============================================================================
+
+export interface TargetingRule {
+  column: string
+  filter: string
+  isExclusive: boolean
+}
+
+export interface ProjectFeatureFlag {
+  id: string
+  key: string
+  description: string | null
+  flagType: 'boolean' | 'rollout'
+  rolloutPercentage: number
+  targetingRules: TargetingRule[] | null
+  enabled: boolean
+  pid: string
+  created: string
+}
+
+export interface FeatureFlagsResponse {
+  results: ProjectFeatureFlag[]
+  total: number
+}
+
+export async function getProjectFeatureFlagsServer(
+  request: Request,
+  projectId: string,
+  take = 20,
+  skip = 0,
+  search?: string,
+): Promise<ServerFetchResult<FeatureFlagsResponse>> {
+  const params = new URLSearchParams({
+    take: String(take),
+    skip: String(skip),
+  })
+
+  if (search?.trim()) {
+    params.append('search', search.trim())
+  }
+
+  return serverFetch<FeatureFlagsResponse>(request, `feature-flag/project/${projectId}?${params.toString()}`)
+}
+
+export interface FeatureFlagStats {
+  evaluations: number
+  profileCount: number
+  trueCount: number
+  falseCount: number
+  truePercentage: number
+}
+
+export async function getFeatureFlagStatsServer(
+  request: Request,
+  flagId: string,
+  period: string,
+  from = '',
+  to = '',
+  timezone?: string,
+): Promise<ServerFetchResult<FeatureFlagStats>> {
+  const params = new URLSearchParams({ period })
+  if (from) params.append('from', from)
+  if (to) params.append('to', to)
+  if (timezone) params.append('timezone', timezone)
+
+  return serverFetch<FeatureFlagStats>(request, `feature-flag/${flagId}/stats?${params.toString()}`)
+}
+
+export interface FeatureFlagProfile {
+  profileId: string
+  isIdentified: boolean
+  lastResult: boolean
+  evaluationCount: number
+  lastEvaluated: string
+}
+
+export interface FeatureFlagProfilesResponse {
+  profiles: FeatureFlagProfile[]
+  total: number
+}
+
+export async function getFeatureFlagProfilesServer(
+  request: Request,
+  flagId: string,
+  period: string,
+  from = '',
+  to = '',
+  timezone?: string,
+  take = 15,
+  skip = 0,
+  resultFilter?: string,
+): Promise<ServerFetchResult<FeatureFlagProfilesResponse>> {
+  const params = new URLSearchParams({
+    period,
+    take: String(take),
+    skip: String(skip),
+  })
+  if (from) params.append('from', from)
+  if (to) params.append('to', to)
+  if (timezone) params.append('timezone', timezone)
+  if (resultFilter && resultFilter !== 'all') params.append('result', resultFilter)
+
+  return serverFetch<FeatureFlagProfilesResponse>(request, `feature-flag/${flagId}/profiles?${params.toString()}`)
+}
+
+// ============================================================================
+// MARK: Goals API (Deferred Loading)
+// ============================================================================
+
+export interface Goal {
+  id: string
+  name: string
+  type: 'pageview' | 'custom_event'
+  matchType: 'exact' | 'contains'
+  value: string | null
+  metadataFilters: { key: string; value: string }[] | null
+  active: boolean
+  pid: string
+  created: string
+}
+
+export interface GoalsResponse {
+  results: Goal[]
+  total: number
+}
+
+export async function getProjectGoalsServer(
+  request: Request,
+  projectId: string,
+  take = 20,
+  skip = 0,
+  search?: string,
+): Promise<ServerFetchResult<GoalsResponse>> {
+  const params = new URLSearchParams({
+    take: String(take),
+    skip: String(skip),
+  })
+
+  if (search?.trim()) {
+    params.append('search', search.trim())
+  }
+
+  return serverFetch<GoalsResponse>(request, `goal/project/${projectId}?${params.toString()}`)
+}
+
+export interface GoalStats {
+  conversions: number
+  uniqueSessions: number
+  conversionRate: number
+  previousConversions: number
+  trend: number
+}
+
+export async function getGoalStatsServer(
+  request: Request,
+  goalId: string,
+  period: string,
+  from = '',
+  to = '',
+  timezone?: string,
+): Promise<ServerFetchResult<GoalStats>> {
+  const params = new URLSearchParams({ period })
+  if (from) params.append('from', from)
+  if (to) params.append('to', to)
+  if (timezone) params.append('timezone', timezone)
+
+  return serverFetch<GoalStats>(request, `goal/${goalId}/stats?${params.toString()}`)
+}
+
+export interface GoalChartData {
+  x: string[]
+  conversions: number[]
+  uniqueSessions: number[]
+}
+
+export async function getGoalChartServer(
+  request: Request,
+  goalId: string,
+  period: string,
+  from = '',
+  to = '',
+  timeBucket = 'day',
+  timezone?: string,
+): Promise<ServerFetchResult<{ chart: GoalChartData }>> {
+  const params = new URLSearchParams({ period, timeBucket })
+  if (from) params.append('from', from)
+  if (to) params.append('to', to)
+  if (timezone) params.append('timezone', timezone)
+
+  return serverFetch<{ chart: GoalChartData }>(request, `goal/${goalId}/chart?${params.toString()}`)
+}
+
+// ============================================================================
+// MARK: Alerts API (Deferred Loading)
+// ============================================================================
+
+type QueryMetric = 'page_views' | 'unique_page_views' | 'online_users' | 'custom_events' | 'errors'
+type QueryCondition = 'greater_than' | 'greater_equal_than' | 'less_than' | 'less_equal_than'
+type QueryTime =
+  | 'last_15_minutes'
+  | 'last_30_minutes'
+  | 'last_1_hour'
+  | 'last_4_hours'
+  | 'last_24_hours'
+  | 'last_48_hours'
+
+export interface Alert {
+  id: string
+  name: string
+  active: boolean
+  queryMetric: QueryMetric
+  queryCondition: QueryCondition | null
+  queryValue: number | null
+  queryTime: QueryTime | null
+  queryCustomEvent: string | null
+  lastTriggered: string | null
+  alertOnNewErrorsOnly: boolean
+  alertOnEveryCustomEvent: boolean
+  pid: string
+  created: string
+}
+
+export interface AlertsResponse {
+  results: Alert[]
+  total: number
+}
+
+export async function getProjectAlertsServer(
+  request: Request,
+  projectId: string,
+  take = 25,
+  skip = 0,
+): Promise<ServerFetchResult<AlertsResponse>> {
+  const params = new URLSearchParams({
+    take: String(take),
+    skip: String(skip),
+  })
+
+  return serverFetch<AlertsResponse>(request, `alert/project/${projectId}?${params.toString()}`)
+}
+
+// ============================================================================
+// MARK: Funnels API (Deferred Loading)
+// ============================================================================
+
+export interface AnalyticsFunnelStep {
+  value: string
+  events: number
+  eventsPerc: number
+  eventsPercStep: number
+  dropoff: number
+  dropoffPerc: number
+  dropoffPercStep: number
+}
+
+export interface FunnelDataResponse {
+  funnel: AnalyticsFunnelStep[]
+  totalPageviews: number
+}
+
+export async function getFunnelDataServer(
+  request: Request,
+  pid: string,
+  funnelId: string,
+  period: string,
+  from: string,
+  to: string,
+  timezone: string,
+  password?: string,
+): Promise<ServerFetchResult<FunnelDataResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    period,
+    from,
+    to,
+    timezone,
+    funnelId,
+  })
+
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<FunnelDataResponse>(request, `log/funnel?${queryParams.toString()}`, { headers })
 }
