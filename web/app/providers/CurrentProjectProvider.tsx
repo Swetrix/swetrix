@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams, useFetcher, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
 
-import { getLiveVisitors } from '~/api'
+import { useLiveVisitorsProxy } from '~/hooks/useAnalyticsProxy'
 import { LIVE_VISITORS_UPDATE_INTERVAL, LS_PROJECTS_PROTECTED_KEY, Period, TimeBucket } from '~/lib/constants'
 import { type Project } from '~/lib/models/Project'
 import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
@@ -152,17 +152,19 @@ const useProjectPreferences = (id: string) => {
 const useLiveVisitors = (project: Project | null) => {
   const projectId = project?.id
   const isLocked = project?.isLocked
-  const projectPassword = useProjectPassword(projectId)
   const [liveVisitors, setLiveVisitors] = useState(0)
+  const { fetchLiveVisitors } = useLiveVisitorsProxy()
 
   const updateLiveVisitors = useCallback(async () => {
     if (!projectId || isLocked) {
       return
     }
 
-    const result = await getLiveVisitors([projectId], projectPassword)
-    setLiveVisitors(result[projectId] || 0)
-  }, [projectId, isLocked, projectPassword])
+    const result = await fetchLiveVisitors([projectId])
+    if (result) {
+      setLiveVisitors(result[projectId] || 0)
+    }
+  }, [projectId, isLocked, fetchLiveVisitors])
 
   useEffect(() => {
     if (!projectId || isLocked) {

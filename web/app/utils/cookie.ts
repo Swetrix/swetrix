@@ -31,12 +31,3 @@ export const setCookie = (key: string, value: string | number | boolean, maxAge 
 
   document.cookie = generateCookieString(key, value, maxAge, sameSite)
 }
-
-export const deleteCookie = (key: string) => {
-  if (!isBrowser) {
-    return null
-  }
-
-  document.cookie = `${key}=; max-age=0; path=/; SameSite=strict`
-  document.cookie = `${key}=; max-age=0; path=/; SameSite=strict${COOKIE_SUFFIX}`
-}

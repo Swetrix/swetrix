@@ -48,8 +48,6 @@ interface UserShareProject {
   id: string
 }
 
-export type LiveStats = Record<string, number>
-
 export interface ShareOwnerProject {
   id: string
   confirmed: boolean

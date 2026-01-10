@@ -1,7 +1,6 @@
-import { isCancel } from 'axios'
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 
-import { authMe } from '~/api'
+import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { User } from '~/lib/models/User'
 import { getAccessToken } from '~/utils/accessToken'
 import { clearLocalStorageOnLogout } from '~/utils/auth'
@@ -35,6 +34,8 @@ export const AuthProvider = ({
   initialUser,
   initialTotalMonthlyEvents,
 }: AuthProviderProps) => {
+  const { authMe } = useAuthProxy()
+
   // If we have initial user from loader, we're definitely authenticated
   const [isAuthenticated, setIsAuthenticated] = useState(initialIsAuthenticated || !!initialUser)
 
@@ -83,12 +84,12 @@ export const AuthProvider = ({
   const loadUser = useCallback(
     async (signal?: AbortSignal) => {
       try {
-        const { user, totalMonthlyEvents } = await authMe({ signal })
+        const { user, totalMonthlyEvents } = await authMe(signal)
         setUser(user)
         setTotalMonthlyEvents(totalMonthlyEvents)
         setIsAuthenticated(true)
       } catch (error) {
-        if (isCancel(error)) {
+        if (error instanceof Error && error.name === 'AbortError') {
           return
         }
 
@@ -98,7 +99,7 @@ export const AuthProvider = ({
         setIsLoading(false)
       }
     },
-    [logout],
+    [logout, authMe],
   )
 
   useEffect(() => {

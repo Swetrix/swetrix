@@ -177,6 +177,56 @@ export async function serverFetch<T = unknown>(
   }
 }
 
+export async function streamingServerFetch(
+  request: Request,
+  endpoint: string,
+  options: ServerFetchOptions = {},
+): Promise<Response> {
+  const { method = 'GET', body, headers: customHeaders = {} } = options
+
+  const apiUrl = getApiUrl()
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
+  const url = `${apiUrl}${cleanEndpoint}`
+
+  const fetchHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...customHeaders,
+  }
+
+  const clientIP = getClientIP(request)
+  if (clientIP) {
+    fetchHeaders['X-Client-IP-Address'] = clientIP
+  }
+
+  const accessToken = getAccessToken(request)
+  if (accessToken) {
+    fetchHeaders['Authorization'] = `Bearer ${accessToken}`
+  }
+
+  const response = await fetch(url, {
+    method,
+    headers: fetchHeaders,
+    body: body ? JSON.stringify(body) : undefined,
+  })
+
+  // If 401/403, try to refresh the token and retry
+  if (response.status === 401 || response.status === 403) {
+    const refreshResult = await tryRefreshToken(request)
+
+    if (refreshResult.success && refreshResult.tokens) {
+      fetchHeaders['Authorization'] = `Bearer ${refreshResult.tokens.accessToken}`
+
+      return fetch(url, {
+        method,
+        headers: fetchHeaders,
+        body: body ? JSON.stringify(body) : undefined,
+      })
+    }
+  }
+
+  return response
+}
+
 async function tryRefreshToken(
   request: Request,
 ): Promise<{ success: boolean; tokens?: AuthTokens; cookies: string[] }> {
@@ -442,14 +492,17 @@ export async function getBlogPostWithCategory(
   return result.data
 }
 
-export async function getSitemap(request: Request): Promise<(string | string[])[] | null> {
-  const result = await serverFetch<(string | string[])[]>(request, 'v1/blog/sitemap', { skipAuth: true })
+// ============================================================================
+// MARK: Auth API
+// ============================================================================
 
-  if (result.error || !result.data) {
-    return null
-  }
+export interface AuthMeResponse {
+  user: User
+  totalMonthlyEvents: number
+}
 
-  return result.data
+export async function authMeServer(request: Request): Promise<ServerFetchResult<AuthMeResponse>> {
+  return serverFetch<AuthMeResponse>(request, 'user/me')
 }
 
 // ============================================================================
@@ -561,7 +614,7 @@ export async function getProjectDataServer(
 export async function getOverallStatsServer(
   request: Request,
   pids: string[],
-  params: AnalyticsParams,
+  params: AnalyticsParams & { includeChart?: boolean },
 ): Promise<ServerFetchResult<Record<string, OverallObject>>> {
   const pidsParam = `[${pids.map((pid) => `"${pid}"`).join(',')}]`
 
@@ -573,7 +626,7 @@ export async function getOverallStatsServer(
     to: params.to || '',
     timezone: params.timezone,
     filters: serializeFiltersForUrl(params.filters),
-    includeChart: 'false',
+    includeChart: params.includeChart !== false ? 'true' : 'false',
   })
 
   const headers: Record<string, string> = {}
@@ -1531,4 +1584,621 @@ export async function getProfileSessionsServer(
   }
 
   return serverFetch<ProfileSessionsResponse>(request, `log/profile/sessions?${params.toString()}`, { headers })
+}
+
+// ============================================================================
+// MARK: Projects API
+// ============================================================================
+
+export interface Project {
+  id: string
+  name: string
+  origins: string[] | null
+  ipBlacklist: string[] | null
+  active: boolean
+  public: boolean
+  isPasswordProtected: boolean
+  passwordHash: string | null
+  admin: {
+    id: string
+    email: string
+  }
+  created: string
+  isOwner: boolean
+  isLocked: boolean
+  isCaptchaProject: boolean
+  isCaptchaEnabled: boolean
+  isAnalyticsProject: boolean
+  captchaSecretKey: string | null
+  role: string
+  botsProtectionLevel: string
+  isTransferring: boolean
+  share?: {
+    id: string
+    confirmed: boolean
+    role: string
+  }
+  funnels?: { id: string; name: string }[]
+}
+
+export async function getProjectServer(
+  request: Request,
+  pid: string,
+  password?: string,
+): Promise<ServerFetchResult<Project>> {
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<Project>(request, `project/${pid}`, { headers })
+}
+
+// ============================================================================
+// MARK: Custom Events Metadata API
+// ============================================================================
+
+export interface CustomEventsMetadataResponse {
+  result: Array<{ key: string; value: string; count: number }>
+}
+
+export async function getCustomEventsMetadataServer(
+  request: Request,
+  pid: string,
+  event: string,
+  params: {
+    timeBucket?: string
+    period?: string
+    from?: string
+    to?: string
+    timezone?: string
+    password?: string
+  } = {},
+): Promise<ServerFetchResult<CustomEventsMetadataResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    event,
+    timeBucket: params.timeBucket || 'hour',
+    period: params.period || '1d',
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone || '',
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<CustomEventsMetadataResponse>(request, `log/meta?${queryParams.toString()}`, { headers })
+}
+
+// ============================================================================
+// MARK: Property Metadata API
+// ============================================================================
+
+export interface PropertyMetadataResponse {
+  result: Array<{ key: string; value: string; count: number }>
+}
+
+export async function getPropertyMetadataServer(
+  request: Request,
+  pid: string,
+  property: string,
+  params: {
+    timeBucket?: string
+    period?: string
+    from?: string
+    to?: string
+    filters?: AnalyticsFilter[]
+    timezone?: string
+    password?: string
+  } = {},
+): Promise<ServerFetchResult<PropertyMetadataResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    property,
+    timeBucket: params.timeBucket || 'hour',
+    period: params.period || '1d',
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone || '',
+    filters: JSON.stringify(params.filters || []),
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<PropertyMetadataResponse>(request, `log/property?${queryParams.toString()}`, { headers })
+}
+
+// ============================================================================
+// MARK: Error Sessions API
+// ============================================================================
+
+export interface ErrorAffectedSession {
+  psid: string
+  profileId: string | null
+  cc: string | null
+  br: string | null
+  os: string | null
+  firstErrorAt: string
+  lastErrorAt: string
+  errorCount: number
+}
+
+export interface ErrorSessionsResponse {
+  sessions: ErrorAffectedSession[]
+  total: number
+}
+
+export async function getErrorSessionsServer(
+  request: Request,
+  pid: string,
+  eid: string,
+  params: {
+    timeBucket?: string
+    period?: string
+    from?: string
+    to?: string
+    take?: number
+    skip?: number
+    password?: string
+  } = {},
+): Promise<ServerFetchResult<ErrorSessionsResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    eid,
+    timeBucket: params.timeBucket || 'hour',
+    period: params.period || '7d',
+    from: params.from || '',
+    to: params.to || '',
+    take: String(params.take || 10),
+    skip: String(params.skip || 0),
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<ErrorSessionsResponse>(request, `log/error-sessions?${queryParams.toString()}`, { headers })
+}
+
+// ============================================================================
+// MARK: Live Visitors API
+// ============================================================================
+
+export interface LiveStats {
+  [pid: string]: number
+}
+
+export async function getLiveVisitorsServer(
+  request: Request,
+  pids: string[],
+  password?: string,
+): Promise<ServerFetchResult<LiveStats>> {
+  const pidsParam = `[${pids.map((pid) => `"${pid}"`).join(',')}]`
+
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<LiveStats>(request, `log/hb?pids=${pidsParam}`, { headers })
+}
+
+export interface LiveVisitorInfo {
+  psid: string
+  dv: string
+  br: string
+  os: string
+  cc: string
+}
+
+export async function getLiveVisitorsInfoServer(
+  request: Request,
+  pid: string,
+  password?: string,
+): Promise<ServerFetchResult<LiveVisitorInfo[]>> {
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<LiveVisitorInfo[]>(request, `log/live-visitors?pid=${pid}`, { headers })
+}
+
+// ============================================================================
+// MARK: Custom Events Chart API
+// ============================================================================
+
+export interface ProjectDataCustomEventsResponse {
+  chart?: {
+    events?: Record<string, { x: string[]; y: number[] }>
+  }
+  customs?: Record<string, number>
+}
+
+export async function getProjectDataCustomEventsServer(
+  request: Request,
+  pid: string,
+  params: {
+    timeBucket?: string
+    period?: string
+    filters?: AnalyticsFilter[]
+    from?: string
+    to?: string
+    timezone?: string
+    customEvents?: string[]
+    password?: string
+  } = {},
+): Promise<ServerFetchResult<ProjectDataCustomEventsResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    timeBucket: params.timeBucket || 'hour',
+    period: params.period || '3d',
+    filters: JSON.stringify(params.filters || []),
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone || '',
+    customEvents: JSON.stringify(params.customEvents || []),
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<ProjectDataCustomEventsResponse>(request, `log/custom-events?${queryParams.toString()}`, {
+    headers,
+  })
+}
+
+// ============================================================================
+// MARK: SSO API
+// ============================================================================
+
+export type SSOProvider = 'google' | 'github' | 'openid-connect'
+
+export interface SSOAuthURLResponse {
+  uuid: string
+  auth_url: string
+  expires_in: number
+}
+
+export async function generateSSOAuthURLServer(
+  request: Request,
+  provider: SSOProvider,
+  redirectUrl?: string,
+): Promise<ServerFetchResult<SSOAuthURLResponse>> {
+  const payload: { provider: SSOProvider; redirectUrl?: string } = { provider }
+  if (redirectUrl) {
+    payload.redirectUrl = redirectUrl
+  }
+
+  const endpoint = provider === 'openid-connect' ? 'v1/auth/oidc/initiate' : 'v1/auth/sso/generate'
+
+  return serverFetch<SSOAuthURLResponse>(request, endpoint, {
+    method: 'POST',
+    body: payload,
+    skipAuth: true,
+  })
+}
+
+export interface SSOHashResponse {
+  accessToken: string
+  refreshToken: string
+  user: User
+  totalMonthlyEvents: number
+}
+
+export async function getJWTBySSOHashServer(
+  request: Request,
+  hash: string,
+  provider: SSOProvider,
+): Promise<ServerFetchResult<SSOHashResponse>> {
+  const endpoint = provider === 'openid-connect' ? 'v1/auth/oidc/hash' : 'v1/auth/sso/hash'
+  const body = provider === 'openid-connect' ? { hash } : { hash, provider }
+
+  return serverFetch<SSOHashResponse>(request, endpoint, {
+    method: 'POST',
+    body,
+    skipAuth: true,
+  })
+}
+
+export async function processSSOTokenCommunityEditionServer(
+  request: Request,
+  code: string,
+  hash: string,
+  redirectUrl: string,
+): Promise<ServerFetchResult<unknown>> {
+  return serverFetch<unknown>(request, 'v1/auth/oidc/process-token', {
+    method: 'POST',
+    body: { code, hash, redirectUrl },
+    skipAuth: true,
+  })
+}
+
+export async function linkBySSOHashServer(
+  request: Request,
+  hash: string,
+  provider: SSOProvider,
+): Promise<ServerFetchResult<unknown>> {
+  return serverFetch<unknown>(request, 'v1/auth/sso/link_by_hash', {
+    method: 'POST',
+    body: { hash, provider },
+  })
+}
+
+export async function processSSOTokenServer(
+  request: Request,
+  token: string,
+  hash: string,
+): Promise<ServerFetchResult<unknown>> {
+  return serverFetch<unknown>(request, 'v1/auth/sso/process-token', {
+    method: 'POST',
+    body: { token, hash },
+    skipAuth: true,
+  })
+}
+
+// ============================================================================
+// MARK: User Flow API
+// ============================================================================
+
+interface UserFlowNode {
+  id: string
+  name: string
+  count: number
+}
+
+interface UserFlowLink {
+  source: string
+  target: string
+  value: number
+}
+
+export interface UserFlowResponse {
+  nodes: UserFlowNode[]
+  links: UserFlowLink[]
+}
+
+export async function getUserFlowServer(
+  request: Request,
+  pid: string,
+  params: {
+    timeBucket?: string
+    period?: string
+    filters?: AnalyticsFilter[]
+    from?: string
+    to?: string
+    timezone?: string
+    password?: string
+  } = {},
+): Promise<ServerFetchResult<UserFlowResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    timeBucket: params.timeBucket || 'hour',
+    period: params.period || '3d',
+    filters: JSON.stringify(params.filters || []),
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone || '',
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<UserFlowResponse>(request, `log/user-flow?${queryParams.toString()}`, { headers })
+}
+
+// ============================================================================
+// MARK: Filters API
+// ============================================================================
+
+export async function getFiltersServer(
+  request: Request,
+  pid: string,
+  type: string,
+  password?: string,
+): Promise<ServerFetchResult<string[]>> {
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<string[]>(request, `log/filters?pid=${pid}&type=${type}`, { headers })
+}
+
+export async function getErrorsFiltersServer(
+  request: Request,
+  pid: string,
+  type: string,
+  password?: string,
+): Promise<ServerFetchResult<string[]>> {
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<string[]>(request, `log/errors-filters?pid=${pid}&type=${type}`, { headers })
+}
+
+export interface VersionFilter {
+  name: string
+  version: string
+}
+
+export async function getVersionFiltersServer(
+  request: Request,
+  pid: string,
+  type: 'traffic' | 'errors',
+  column: 'br' | 'os',
+  password?: string,
+): Promise<ServerFetchResult<VersionFilter[]>> {
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<VersionFilter[]>(request, `log/filters/versions?pid=${pid}&type=${type}&column=${column}`, {
+    headers,
+  })
+}
+
+// ============================================================================
+// MARK: Google Search Console API
+// ============================================================================
+
+export async function processGSCTokenServer(
+  request: Request,
+  code: string,
+  state: string,
+): Promise<ServerFetchResult<{ pid: string }>> {
+  return serverFetch<{ pid: string }>(request, 'v1/project/gsc/process-token', {
+    method: 'POST',
+    body: { code, state },
+  })
+}
+
+interface GSCKeyword {
+  name: string
+  count: number
+  impressions: number
+  position: number
+  ctr: number
+}
+
+export interface GSCKeywordsResponse {
+  keywords: GSCKeyword[]
+  notConnected?: boolean
+}
+
+export async function getGSCKeywordsServer(
+  request: Request,
+  pid: string,
+  params: {
+    period?: string
+    from?: string
+    to?: string
+    timezone?: string
+    password?: string
+  } = {},
+): Promise<ServerFetchResult<GSCKeywordsResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    period: params.period || '3d',
+    from: params.from || '',
+    to: params.to || '',
+    timezone: params.timezone || '',
+  })
+
+  const headers: Record<string, string> = {}
+  if (params.password) {
+    headers['x-password'] = params.password
+  }
+
+  return serverFetch<GSCKeywordsResponse>(request, `log/keywords?${queryParams.toString()}`, { headers })
+}
+
+// ============================================================================
+// MARK: Revenue API
+// ============================================================================
+
+export interface RevenueStatus {
+  connected: boolean
+  provider?: string
+  currency?: string
+  lastSyncAt?: string
+}
+
+export async function getRevenueStatusServer(request: Request, pid: string): Promise<ServerFetchResult<RevenueStatus>> {
+  return serverFetch<RevenueStatus>(request, `project/${pid}/revenue/status`)
+}
+
+interface RevenueStats {
+  totalRevenue: number
+  salesCount: number
+  refundsCount: number
+  refundsAmount: number
+  averageOrderValue: number
+  currency: string
+  mrr: number
+  revenueChange: number
+}
+
+interface RevenueChart {
+  x: string[]
+  revenue: number[]
+  salesCount: number[]
+  refundsAmount: number[]
+}
+
+export interface RevenueDataResponse {
+  stats: RevenueStats
+  chart: RevenueChart
+}
+
+export async function getRevenueDataServer(
+  request: Request,
+  pid: string,
+  params: {
+    period: string
+    from?: string
+    to?: string
+    timezone?: string
+    timeBucket?: string
+  },
+): Promise<ServerFetchResult<RevenueDataResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    period: params.period,
+  })
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+  if (params.timeBucket) queryParams.append('timeBucket', params.timeBucket)
+
+  return serverFetch<RevenueDataResponse>(request, `log/revenue?${queryParams.toString()}`)
+}
+
+// ============================================================================
+// MARK: AI Chat API (Proxy for streaming)
+// ============================================================================
+
+interface AIChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+export async function askAIServer(
+  request: Request,
+  pid: string,
+  messages: AIChatMessage[],
+  timezone: string,
+): Promise<Response> {
+  const apiUrl = getApiUrl()
+  const accessToken = getAccessToken(request)
+
+  const fetchHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+
+  if (accessToken) {
+    fetchHeaders['Authorization'] = `Bearer ${accessToken}`
+  }
+
+  const response = await fetch(`${apiUrl}ai/${pid}/chat`, {
+    method: 'POST',
+    headers: fetchHeaders,
+    body: JSON.stringify({ messages, timezone }),
+  })
+
+  return response
 }

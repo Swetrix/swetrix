@@ -18,7 +18,8 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { getFilters, type ProjectFeatureFlag, type TargetingRule } from '~/api'
+import type { ProjectFeatureFlag, TargetingRule } from '~/api'
+import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { API_URL, isSelfhosted } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
@@ -61,6 +62,7 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
   const isNew = !flagId
   const fetcher = useFetcher<ProjectViewActionData>()
   const processedRef = useRef<string | null>(null)
+  const { fetchFilters } = useFiltersProxy()
 
   const [isLoading, setIsLoading] = useState(false)
   const [showImplementation, setShowImplementation] = useState(false)
@@ -96,8 +98,8 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
 
       setLoadingColumns((prev) => new Set(prev).add(column))
       try {
-        const result = await getFilters(projectId, column)
-        setFilterValuesCache((prev) => ({ ...prev, [column]: result }))
+        const result = await fetchFilters(projectId, column)
+        setFilterValuesCache((prev) => ({ ...prev, [column]: result || [] }))
       } catch (error) {
         console.error('Failed to fetch filter values:', error)
         setFilterValuesCache((prev) => ({ ...prev, [column]: [] }))
@@ -109,7 +111,7 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
         })
       }
     },
-    [projectId, filterValuesCache, loadingColumns],
+    [projectId, filterValuesCache, loadingColumns, fetchFilters],
   )
 
   // Pre-fetch filter values when modal opens

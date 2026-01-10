@@ -16,6 +16,21 @@ import {
   getProfilesServer,
   getProfileServer,
   getProfileSessionsServer,
+  getProjectServer,
+  getFiltersServer,
+  getErrorsFiltersServer,
+  getVersionFiltersServer,
+  getCustomEventsMetadataServer,
+  getPropertyMetadataServer,
+  getErrorSessionsServer,
+  getLiveVisitorsServer,
+  getLiveVisitorsInfoServer,
+  getProjectDataCustomEventsServer,
+  getUserFlowServer,
+  getGSCKeywordsServer,
+  getRevenueStatusServer,
+  getRevenueDataServer,
+  getOverallStatsServer,
   type AnalyticsParams,
   type AnalyticsFilter,
   type SessionsResponse,
@@ -33,6 +48,19 @@ import {
   type ProfilesResponse,
   type ProfileDetailsResponse,
   type ProfileSessionsResponse,
+  type Project,
+  type VersionFilter,
+  type CustomEventsMetadataResponse,
+  type PropertyMetadataResponse,
+  type ErrorSessionsResponse,
+  type LiveStats,
+  type LiveVisitorInfo,
+  type ProjectDataCustomEventsResponse,
+  type UserFlowResponse,
+  type GSCKeywordsResponse,
+  type RevenueStatus,
+  type RevenueDataResponse,
+  type OverallObject,
 } from '~/api/api.server'
 import { getProjectPasswordCookie } from '~/utils/session.server'
 
@@ -53,11 +81,34 @@ interface ProxyRequest {
     | 'getProfiles'
     | 'getProfile'
     | 'getProfileSessions'
+    | 'getProject'
+    | 'getFilters'
+    | 'getErrorsFilters'
+    | 'getVersionFilters'
+    | 'getCustomEventsMetadata'
+    | 'getPropertyMetadata'
+    | 'getErrorSessions'
+    | 'getLiveVisitors'
+    | 'getLiveVisitorsInfo'
+    | 'getProjectDataCustomEvents'
+    | 'getUserFlow'
+    | 'getGSCKeywords'
+    | 'getRevenueStatus'
+    | 'getRevenueData'
+    | 'getOverallStats'
   projectId: string
+  pids?: string[]
   flagId?: string
   goalId?: string
   experimentId?: string
   profileId?: string
+  errorId?: string
+  filterType?: string
+  filterColumn?: 'br' | 'os'
+  dataType?: 'traffic' | 'errors'
+  event?: string
+  property?: string
+  customEvents?: string[]
   params: {
     timeBucket?: string
     period?: string
@@ -82,7 +133,7 @@ interface ProxyResponse<T> {
 export async function action({ request }: ActionFunctionArgs) {
   const body = (await request.json()) as ProxyRequest
 
-  const { action, projectId, params } = body
+  const { action, projectId, pids, params } = body
 
   const password = getProjectPasswordCookie(request, projectId)
 
@@ -337,6 +388,217 @@ export async function action({ request }: ActionFunctionArgs) {
           password || undefined,
         )
         return data<ProxyResponse<ProfileSessionsResponse>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getProject': {
+        const result = await getProjectServer(request, projectId, password || undefined)
+        return data<ProxyResponse<Project>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getFilters': {
+        if (!body.filterType) {
+          return data<ProxyResponse<null>>({ data: null, error: 'filterType is required' }, { status: 400 })
+        }
+        const result = await getFiltersServer(request, projectId, body.filterType, password || undefined)
+        return data<ProxyResponse<string[]>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getErrorsFilters': {
+        if (!body.filterType) {
+          return data<ProxyResponse<null>>({ data: null, error: 'filterType is required' }, { status: 400 })
+        }
+        const result = await getErrorsFiltersServer(request, projectId, body.filterType, password || undefined)
+        return data<ProxyResponse<string[]>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getVersionFilters': {
+        if (!body.filterColumn || !body.dataType) {
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'filterColumn and dataType are required' },
+            { status: 400 },
+          )
+        }
+        const result = await getVersionFiltersServer(
+          request,
+          projectId,
+          body.dataType,
+          body.filterColumn,
+          password || undefined,
+        )
+        return data<ProxyResponse<VersionFilter[]>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getCustomEventsMetadata': {
+        if (!body.event) {
+          return data<ProxyResponse<null>>({ data: null, error: 'event is required' }, { status: 400 })
+        }
+        const result = await getCustomEventsMetadataServer(request, projectId, body.event, {
+          timeBucket: params.timeBucket,
+          period: params.period,
+          from: params.from,
+          to: params.to,
+          timezone: params.timezone,
+          password: password || undefined,
+        })
+        return data<ProxyResponse<CustomEventsMetadataResponse>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getPropertyMetadata': {
+        if (!body.property) {
+          return data<ProxyResponse<null>>({ data: null, error: 'property is required' }, { status: 400 })
+        }
+        const result = await getPropertyMetadataServer(request, projectId, body.property, {
+          timeBucket: params.timeBucket,
+          period: params.period,
+          from: params.from,
+          to: params.to,
+          filters: params.filters,
+          timezone: params.timezone,
+          password: password || undefined,
+        })
+        return data<ProxyResponse<PropertyMetadataResponse>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getErrorSessions': {
+        if (!body.errorId) {
+          return data<ProxyResponse<null>>({ data: null, error: 'errorId is required' }, { status: 400 })
+        }
+        const result = await getErrorSessionsServer(request, projectId, body.errorId, {
+          timeBucket: params.timeBucket,
+          period: params.period,
+          from: params.from,
+          to: params.to,
+          take: params.take,
+          skip: params.skip,
+          password: password || undefined,
+        })
+        return data<ProxyResponse<ErrorSessionsResponse>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getLiveVisitors': {
+        const pids = body.pids || [projectId]
+        const result = await getLiveVisitorsServer(request, pids, password || undefined)
+        return data<ProxyResponse<LiveStats>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getLiveVisitorsInfo': {
+        const result = await getLiveVisitorsInfoServer(request, projectId, password || undefined)
+        return data<ProxyResponse<LiveVisitorInfo[]>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getProjectDataCustomEvents': {
+        const result = await getProjectDataCustomEventsServer(request, projectId, {
+          timeBucket: params.timeBucket,
+          period: params.period,
+          filters: params.filters,
+          from: params.from,
+          to: params.to,
+          timezone: params.timezone,
+          customEvents: body.customEvents,
+          password: password || undefined,
+        })
+        return data<ProxyResponse<ProjectDataCustomEventsResponse>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getUserFlow': {
+        const result = await getUserFlowServer(request, projectId, {
+          timeBucket: params.timeBucket,
+          period: params.period,
+          filters: params.filters,
+          from: params.from,
+          to: params.to,
+          timezone: params.timezone,
+          password: password || undefined,
+        })
+        return data<ProxyResponse<UserFlowResponse>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getGSCKeywords': {
+        const result = await getGSCKeywordsServer(request, projectId, {
+          period: params.period,
+          from: params.from,
+          to: params.to,
+          timezone: params.timezone,
+          password: password || undefined,
+        })
+        return data<ProxyResponse<GSCKeywordsResponse>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getRevenueStatus': {
+        const result = await getRevenueStatusServer(request, projectId)
+        return data<ProxyResponse<RevenueStatus>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getRevenueData': {
+        const result = await getRevenueDataServer(request, projectId, {
+          period: params.period || '7d',
+          from: params.from,
+          to: params.to,
+          timezone: params.timezone,
+          timeBucket: params.timeBucket,
+        })
+        return data<ProxyResponse<RevenueDataResponse>>({
+          data: result.data,
+          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+        })
+      }
+
+      case 'getOverallStats': {
+        if (!pids || pids.length === 0) {
+          return data<ProxyResponse<null>>({ data: null, error: 'pids is required' }, { status: 400 })
+        }
+        const result = await getOverallStatsServer(request, pids, {
+          timeBucket: params.timeBucket || 'day',
+          period: params.period || '7d',
+          from: params.from,
+          to: params.to,
+          timezone: params.timezone || 'UTC',
+          filters: params.filters,
+          includeChart: true,
+        })
+        return data<ProxyResponse<Record<string, OverallObject>>>({
           data: result.data,
           error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
         })

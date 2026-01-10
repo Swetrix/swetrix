@@ -27,7 +27,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useLoaderData, useNavigate, Link, useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { getFilters, getProject } from '~/api'
+import { useFiltersProxy, useProjectProxy } from '~/hooks/useAnalyticsProxy'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
@@ -88,6 +88,7 @@ interface ModalMessageProps {
   setActiveFilter: any
   filterType: string
   setFilterType: (a: string) => void
+  fetchFilters: (projectId: string, filterType: string) => Promise<string[] | null>
 }
 
 const ModalMessage = ({
@@ -100,6 +101,7 @@ const ModalMessage = ({
   setActiveFilter,
   filterType,
   setFilterType,
+  fetchFilters,
 }: ModalMessageProps) => {
   const {
     t,
@@ -110,9 +112,9 @@ const ModalMessage = ({
 
   const getFiltersList = async () => {
     if (!_isEmpty(filterType)) {
-      const res = await getFilters(pid, filterType)
-      setFilterList(res)
-      setSearchList(res)
+      const res = await fetchFilters(pid, filterType)
+      setFilterList(res || [])
+      setSearchList(res || [])
       if (!_isEmpty(activeFilter)) {
         setActiveFilter([])
       }
@@ -269,6 +271,8 @@ const ProjectSettings = () => {
   const { requestOrigin } = useLoaderData<{ requestOrigin: string | null }>()
   const fetcher = useFetcher<ProjectSettingsActionData>()
   const gscFetcher = useFetcher<ProjectSettingsActionData>()
+  const { fetchProject } = useProjectProxy()
+  const { fetchFilters } = useFiltersProxy()
 
   const [project, setProject] = useState<Project | null>(null)
   const [form, setForm] = useState<Form>({
@@ -428,17 +432,23 @@ const ProjectSettings = () => {
     setIsLoading(true)
 
     try {
-      const result = await getProject(projectId)
-      setProject(result)
-      setCaptchaSecretKey(result.captchaSecretKey)
-      setCaptchaDifficulty(result.captchaDifficulty || 4)
-      setForm({
-        ...result,
-        ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
-        origins: _isString(result.origins) ? result.origins : _join(result.origins, ', '),
-        countryBlacklist: result.countryBlacklist || [],
-        websiteUrl: result.websiteUrl || null,
-      })
+      const result = await fetchProject(projectId)
+      if (result) {
+        setProject(result as unknown as Project)
+        setCaptchaSecretKey(result.captchaSecretKey || null)
+        setCaptchaDifficulty(4)
+        setForm({
+          name: result.name,
+          id: result.id,
+          public: result.public,
+          isPasswordProtected: result.isPasswordProtected,
+          ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
+          origins: _isString(result.origins) ? result.origins : _join(result.origins, ', '),
+          botsProtectionLevel: result.botsProtectionLevel as 'off' | 'basic',
+          gscPropertyUri: null,
+          websiteUrl: null,
+        })
+      }
     } catch (reason: any) {
       setError(reason)
     } finally {
@@ -754,8 +764,8 @@ const ProjectSettings = () => {
 
   const reloadProject = useCallback(async () => {
     try {
-      const result = await getProject(id)
-      setProject(result)
+      const result = await fetchProject(id)
+      if (result) setProject(result as unknown as Project)
     } catch (reason: any) {
       console.error(`[ERROR] Error while reloading project: ${reason}`)
     }
@@ -1172,6 +1182,7 @@ const ProjectSettings = () => {
             setActiveFilter={setActiveFilter}
             filterType={filterType}
             setFilterType={setFilterType}
+            fetchFilters={fetchFilters}
           />
         }
         submitType='danger'

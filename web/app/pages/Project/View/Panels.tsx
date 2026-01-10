@@ -24,10 +24,10 @@ import React, { memo, useState, useEffect, useMemo, Fragment, useRef } from 'rea
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps, useNavigate } from 'react-router'
 
-import { getProjectDataCustomEvents } from '~/api'
+import { useProjectDataCustomEventsProxy } from '~/hooks/useAnalyticsProxy'
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import Button from '~/ui/Button'
 import Dropdown from '~/ui/Dropdown'
 import Sort from '~/ui/icons/Sort'
@@ -397,8 +397,8 @@ function sortDesc<T>(obj: T, sortByKeys?: boolean): T {
 const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, getFilterLink }: CustomEventsProps) => {
   const { t } = useTranslation('common')
   const { id } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const { timeBucket, timezone, period, dateRange, timeFormat, rotateXAxis } = useViewProjectContext()
+  const { fetchCustomEvents } = useProjectDataCustomEventsProxy()
 
   const [detailsOpened, setDetailsOpened] = useState(false)
   const [activeEvents, setActiveEvents] = useState<any>({})
@@ -467,17 +467,14 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
         const to = isCustomPeriod ? getFormatDate(dateRange![1]) : ''
         const periodValue = isCustomPeriod ? '' : period
 
-        const data = await getProjectDataCustomEvents(
-          id,
+        const data = await fetchCustomEvents(id, topEventsForChart, {
           timeBucket,
-          periodValue,
+          period: periodValue,
           filters,
           from,
           to,
           timezone,
-          topEventsForChart,
-          projectPassword,
-        )
+        })
 
         if (cancelled) {
           return
@@ -501,7 +498,7 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
     return () => {
       cancelled = true
     }
-  }, [id, timeBucket, period, dateRange, timezone, projectPassword, filters, topEventsForChart])
+  }, [id, timeBucket, period, dateRange, timezone, filters, topEventsForChart, fetchCustomEvents])
 
   useEffect(() => {
     setEventsMetadata({})

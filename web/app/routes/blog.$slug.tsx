@@ -5,8 +5,7 @@ import { redirect, data } from 'react-router'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
-import { getSitemap as getSitemapClient } from '~/api'
-import { isSelfhosted, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
+import { isSelfhosted, getOgImageUrl, isDisableMarketingPages, API_URL } from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
 import { getSlugFromFilename, getDateFromFilename } from '~/utils/blog'
 import { getPost } from '~/utils/getPosts.server'
@@ -22,8 +21,10 @@ export const meta: MetaFunction = (loaderData: any) => {
   ]
 }
 
+// @ts-expect-error
 export const sitemap: SitemapFunction = async () => {
-  const files = await getSitemapClient()
+  const response = await fetch(`${API_URL}v1/blog/sitemap`)
+  const files = await response.json()
 
   if (isSelfhosted || isDisableMarketingPages) {
     return {

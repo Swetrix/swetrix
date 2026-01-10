@@ -3,7 +3,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import { Link, useNavigate, useSearchParams, Form, useActionData, useNavigation, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { generateSSOAuthURL, getJWTBySSOHash } from '~/api'
+import { useAuthProxy } from '~/hooks/useAuthProxy'
 import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
 import OIDCAuth from '~/components/OIDCAuth'
@@ -45,6 +45,7 @@ const Signin = () => {
   const [clearedErrors, setClearedErrors] = useState<Set<string>>(new Set())
 
   const { setUser, setTotalMonthlyEvents, setIsAuthenticated } = useAuth()
+  const { generateSSOAuthURL, getJWTBySSOHash } = useAuthProxy()
 
   const isFormSubmitting = navigation.state === 'submitting'
   const is2FALoading = twoFAFetcher.state === 'submitting'
@@ -148,7 +149,11 @@ const Signin = () => {
         await delay(HASH_CHECK_FREQUENCY)
 
         try {
-          const { accessToken, refreshToken, user, totalMonthlyEvents } = await getJWTBySSOHash(uuid, provider)
+          const { accessToken, refreshToken, user, totalMonthlyEvents } = await getJWTBySSOHash(
+            uuid,
+            provider,
+            !dontRemember,
+          )
           authWindow.close()
 
           if (user.isTwoFactorAuthenticationEnabled) {
@@ -163,7 +168,7 @@ const Signin = () => {
           setUser(user)
           setIsAuthenticated(true)
           setTotalMonthlyEvents(totalMonthlyEvents)
-          setAccessToken(accessToken, false)
+          setAccessToken(accessToken, !dontRemember)
           setRefreshToken(refreshToken)
 
           // Redirect to onboarding if user hasn't completed it

@@ -5,7 +5,8 @@ import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 
-import { getErrorSessions, type ErrorAffectedSession } from '~/api'
+import type { ErrorAffectedSession } from '~/api/api.server'
+import { useErrorSessionsProxy } from '~/hooks/useAnalyticsProxy'
 import { BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants'
 import { SwetrixErrorDetails } from '~/lib/models/Project'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
@@ -120,13 +121,13 @@ export const ErrorDetails = ({
   from = '',
   to = '',
   timeBucket = 'hour',
-  projectPassword,
 }: ErrorDetailsProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const { id } = useCurrentProject()
+  const { fetchErrorSessions } = useErrorSessionsProxy()
 
   const [isStackTraceExpanded, setIsStackTraceExpanded] = useState(false)
   const [isCopiedStack, setIsCopiedStack] = useState(false)
@@ -230,27 +231,26 @@ export const ErrorDetails = ({
       const skip = reset ? 0 : sessionsSkip
 
       try {
-        const result = await getErrorSessions(
-          id,
-          details.eid,
+        const result = await fetchErrorSessions(id, details.eid, {
           timeBucket,
           period,
           from,
           to,
-          SESSIONS_TAKE,
+          take: SESSIONS_TAKE,
           skip,
-          projectPassword,
-        )
+        })
 
         if (!isMountedRef.current) return
 
-        if (reset) {
-          setSessions(result.sessions)
-        } else {
-          setSessions((prev) => [...prev, ...result.sessions])
+        if (result) {
+          if (reset) {
+            setSessions(result.sessions)
+          } else {
+            setSessions((prev) => [...prev, ...result.sessions])
+          }
+          setSessionsTotal(result.total)
+          setSessionsSkip(skip + SESSIONS_TAKE)
         }
-        setSessionsTotal(result.total)
-        setSessionsSkip(skip + SESSIONS_TAKE)
       } catch (reason) {
         console.error('[ErrorDetails] Failed to load sessions:', reason)
       } finally {
@@ -259,7 +259,7 @@ export const ErrorDetails = ({
         }
       }
     },
-    [id, details.eid, timeBucket, period, from, to, projectPassword, sessionsLoading, sessionsSkip],
+    [id, details.eid, timeBucket, period, from, to, sessionsLoading, sessionsSkip, fetchErrorSessions],
   )
 
   useEffect(() => {

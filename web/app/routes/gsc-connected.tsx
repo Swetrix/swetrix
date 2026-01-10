@@ -4,7 +4,7 @@ import type { LoaderFunctionArgs } from 'react-router'
 import { redirect, useLoaderData, useNavigate } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
-import { processGSCToken } from '~/api'
+import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { serverFetch } from '~/api/api.server'
 import { isSelfhosted } from '~/lib/constants'
 import StatusPage from '~/ui/StatusPage'
@@ -80,6 +80,7 @@ export default function GscConnectedRoute() {
 function GscHashHandler() {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
+  const { processGSCToken } = useAuthProxy()
   const [{ state, code }] = useState(() => {
     if (typeof window === 'undefined') return { state: null, code: null }
     // Fix Google's hash URL redirect (sometimes Google uses # instead of ?)
@@ -113,7 +114,7 @@ function GscHashHandler() {
         setError(String(reason))
         console.error(`[ERROR] Error while processing GSC integration: ${reason}`)
       })
-  }, [navigate, state, code])
+  }, [navigate, state, code, processGSCToken])
 
   if (!state || !code) {
     return (

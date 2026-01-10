@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { getFilters } from '~/api'
+import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { FILTERS_PANELS_ORDER } from '~/lib/constants'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import { ProjectViewActionData } from '~/routes/projects.$id'
@@ -203,14 +203,15 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
   const [activeFilters, setActiveFilters] = useState<FilterType[]>(defaultView?.filters || [])
   const [customEvents, setCustomEvents] = useState<Partial<ProjectViewCustomEvent>[]>(defaultView?.customEvents || [])
   const [errors, setErrors] = useState<AddAViewModalErrors>({})
+  const { fetchFilters } = useFiltersProxy()
 
   const getFiltersList = useCallback(
     async (category: string) => {
-      const result = await getFilters(id, category, projectPassword)
+      const result = await fetchFilters(id, category)
 
-      setSearchList(result)
+      setSearchList(result || [])
     },
-    [id, projectPassword],
+    [id, fetchFilters],
   )
 
   useEffect(() => {

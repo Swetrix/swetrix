@@ -7,8 +7,8 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate, useFetcher, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
 
-import { authMe } from '~/api'
 import { CONTACT_US_URL } from '~/components/Footer'
+import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { DOCS_URL, INTEGRATIONS_URL, isSelfhosted } from '~/lib/constants'
 import { getSnippet } from '~/modals/TrackingSnippet'
 import { useAuth } from '~/providers/AuthProvider'
@@ -70,6 +70,7 @@ const Onboarding = () => {
   const { t } = useTranslation('common')
   const loaderData = useLoaderData<OnboardingLoaderData>()
   const { user, loadUser, logout } = useAuth()
+  const { authMe } = useAuthProxy()
   const navigate = useNavigate()
   const fetcher = useFetcher<OnboardingActionData>()
 
@@ -163,7 +164,7 @@ const Onboarding = () => {
 
     const interval = setInterval(checkForEvents, 3000)
     return () => clearInterval(interval)
-  }, [isWaitingForEvents, project])
+  }, [isWaitingForEvents, project, authMe])
 
   const updateUserStep = (step: string) => {
     const formData = new FormData()

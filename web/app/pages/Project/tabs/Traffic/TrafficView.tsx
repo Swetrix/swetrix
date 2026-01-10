@@ -13,12 +13,11 @@ import { useNavigate, Link, useSearchParams, useLoaderData, useRevalidator } fro
 import { toast } from 'sonner'
 
 import {
-  getCustomEventsMetadata,
-  getPropertyMetadata,
-  getGSCKeywords,
-  getRevenueData,
-  getRevenueStatus,
-} from '~/api'
+  useCustomEventsMetadataProxy,
+  usePropertyMetadataProxy,
+  useGSCKeywordsProxy,
+  useRevenueProxy,
+} from '~/hooks/useAnalyticsProxy'
 import type {
   TrafficLogResponse as ServerTrafficLogResponse,
   OverallObject as ServerOverallObject,
@@ -156,6 +155,10 @@ const TrafficViewInner = ({
   const { id, project, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const revalidator = useRevalidator()
+  const { fetchMetadata: fetchCustomEventsMetadata } = useCustomEventsMetadataProxy()
+  const { fetchMetadata: fetchPropertyMetadata } = usePropertyMetadataProxy()
+  const { fetchKeywords: fetchGSCKeywords } = useGSCKeywordsProxy()
+  const { fetchRevenueStatus, fetchRevenueData } = useRevenueProxy()
   const {
     trafficRefreshTrigger,
     timezone,
@@ -319,14 +322,14 @@ const TrafficViewInner = ({
 
   // Fetch revenue status
   useEffect(() => {
-    const fetchRevenueStatus = async () => {
+    const loadRevenueStatus = async () => {
       if (!id || isSelfhosted) {
         return
       }
 
       try {
-        const status = await getRevenueStatus(id)
-        if (isMountedRef.current) {
+        const status = await fetchRevenueStatus(id)
+        if (isMountedRef.current && status) {
           setIsRevenueConnected(status.connected)
         }
       } catch (error) {
@@ -334,8 +337,8 @@ const TrafficViewInner = ({
       }
     }
 
-    fetchRevenueStatus()
-  }, [id])
+    loadRevenueStatus()
+  }, [id, fetchRevenueStatus])
 
   // Version data mapping for browser/OS versions
   const createVersionDataMapping = useMemo(() => {
@@ -540,14 +543,13 @@ const TrafficViewInner = ({
         to = getFormatDate(dateRange[1])
       }
 
-      const revResult = await getRevenueData(
-        id,
-        period === 'custom' ? 'custom' : period,
+      const revResult = await fetchRevenueData(id, {
+        period: period === 'custom' ? 'custom' : period,
         from,
         to,
         timezone,
         timeBucket,
-      )
+      })
       const revChart = revResult?.chart
       const revX = revChart?.x || []
       const revY = revChart?.revenue || []
@@ -591,38 +593,38 @@ const TrafficViewInner = ({
   ])
 
   const getCustomEventMetadata = async (event: string) => {
+    let result
     if (period === 'custom' && dateRange) {
-      return getCustomEventsMetadata(
-        id,
-        event,
+      result = await fetchCustomEventsMetadata(id, event, {
         timeBucket,
-        '',
-        getFormatDate(dateRange[0]),
-        getFormatDate(dateRange[1]),
+        period: '',
+        from: getFormatDate(dateRange[0]),
+        to: getFormatDate(dateRange[1]),
         timezone,
-        projectPassword,
-      )
+      })
+    } else {
+      result = await fetchCustomEventsMetadata(id, event, { timeBucket, period, timezone })
     }
 
-    return getCustomEventsMetadata(id, event, timeBucket, period, '', '', timezone, projectPassword)
+    return result || { result: [] }
   }
 
   const _getPropertyMetadata = async (property: string) => {
+    let result
     if (period === 'custom' && dateRange) {
-      return getPropertyMetadata(
-        id,
-        property,
+      result = await fetchPropertyMetadata(id, property, {
         timeBucket,
-        '',
-        getFormatDate(dateRange[0]),
-        getFormatDate(dateRange[1]),
+        period: '',
+        from: getFormatDate(dateRange[0]),
+        to: getFormatDate(dateRange[1]),
         filters,
         timezone,
-        projectPassword,
-      )
+      })
+    } else {
+      result = await fetchPropertyMetadata(id, property, { timeBucket, period, filters, timezone })
     }
 
-    return getPropertyMetadata(id, property, timeBucket, period, '', '', filters, timezone, projectPassword)
+    return result || { result: [] }
   }
 
   // Load GSC Keywords when the traffic sources panel switches to 'keywords'
@@ -647,10 +649,10 @@ const TrafficViewInner = ({
 
         const data =
           period === 'custom' && dateRange
-            ? await getGSCKeywords(id, '', from, to, timezone, projectPassword)
-            : await getGSCKeywords(id, period, '', '', timezone, projectPassword)
+            ? await fetchGSCKeywords(id, { period: '', from, to, timezone })
+            : await fetchGSCKeywords(id, { period, timezone })
 
-        if (isMountedRef.current) {
+        if (isMountedRef.current && data) {
           if (data.notConnected) {
             setKeywordsNotConnected(true)
             setKeywords([])

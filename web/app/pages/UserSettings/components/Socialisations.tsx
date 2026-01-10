@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { generateSSOAuthURL, linkBySSOHash } from '~/api'
+import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { SSO_PROVIDERS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
 import { User } from '~/lib/models/User'
@@ -67,6 +67,7 @@ const Socialisations = () => {
   const [isLoading, setIsLoading] = useState(false)
   const fetcher = useFetcher<UserSettingsActionData>()
   const isUnlinking = fetcher.state !== 'idle'
+  const { generateSSOAuthURL, linkBySSOHash } = useAuthProxy()
 
   useEffect(() => {
     if (fetcher.data?.intent === 'unlink-sso') {

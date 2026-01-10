@@ -10,7 +10,7 @@ import { useLoaderData, useNavigate, useSearchParams, useFetcher, useNavigation,
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { getLiveVisitors, getOverallStats } from '~/api'
+import { useLiveVisitorsProxy, useOverallStatsProxy } from '~/hooks/useAnalyticsProxy'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import useBreakpoint from '~/hooks/useBreakpoint'
@@ -89,6 +89,8 @@ const Dashboard = () => {
   const isLoading = navigation.state === 'loading' || revalidator.state === 'loading'
   const [liveStats, setLiveStats] = useState<Record<string, number>>({})
   const [overallStats, setOverallStats] = useState<Overall>({})
+  const { fetchLiveVisitors } = useLiveVisitorsProxy()
+  const { fetchOverallStats } = useOverallStatsProxy()
 
   const activePeriod = useMemo(() => {
     return searchParams.get('period') || '7d'
@@ -257,46 +259,43 @@ const Dashboard = () => {
 
       try {
         const projectIds = projects.map((p) => p.id)
-        const stats = await getLiveVisitors(projectIds)
-        setLiveStats(stats)
+        const stats = await fetchLiveVisitors(projectIds)
+        if (stats) {
+          setLiveStats(stats)
+        }
       } catch (reason) {
         console.error('Failed to fetch live visitors:', reason)
       }
     }
 
-    const updateOverallStats = async (projectIds: string[]) => {
-      if (!projectIds.length) return
+    updateLiveVisitors()
+
+    const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
+
+    return () => clearInterval(interval)
+  }, [projects, fetchLiveVisitors]) // Reset interval when projects change
+
+  // Fetch overall stats when projects or period changes
+  useEffect(() => {
+    const updateOverallStats = async () => {
+      if (!projects.length) return
 
       try {
-        const timeBucket = tbPeriodPairs(t).find((p) => p.period === activePeriod)?.tbs[0] || ''
-        const stats = await getOverallStats(
-          projectIds,
-          timeBucket,
-          activePeriod,
-          '',
-          '',
-          'Etc/GMT',
-          '',
-          undefined,
-          true,
-        )
-        setOverallStats((prev) => ({ ...prev, ...stats }))
+        const projectIds = projects.map((p) => p.id)
+        const stats = await fetchOverallStats(projectIds, {
+          period: activePeriod,
+          timezone: user?.timezone || 'UTC',
+        })
+        if (stats) {
+          setOverallStats(stats)
+        }
       } catch (reason) {
         console.error('Failed to fetch overall stats:', reason)
       }
     }
 
-    const updateAllOverallStats = async () => {
-      await updateOverallStats(projects.map((p) => p.id))
-    }
-
-    updateLiveVisitors()
-    updateAllOverallStats()
-
-    const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
-
-    return () => clearInterval(interval)
-  }, [projects, activePeriod, t]) // Reset interval when projects change
+    updateOverallStats()
+  }, [projects, activePeriod, user?.timezone, fetchOverallStats])
 
   const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)

@@ -17,6 +17,19 @@ import type {
   ProfilesResponse,
   ProfileDetailsResponse,
   ProfileSessionsResponse,
+  Project,
+  VersionFilter,
+  CustomEventsMetadataResponse,
+  PropertyMetadataResponse,
+  ErrorSessionsResponse,
+  LiveStats,
+  LiveVisitorInfo,
+  ProjectDataCustomEventsResponse,
+  UserFlowResponse,
+  GSCKeywordsResponse,
+  RevenueStatus,
+  RevenueDataResponse,
+  OverallObject,
 } from '~/api/api.server'
 
 interface AnalyticsParams {
@@ -462,7 +475,40 @@ export function useProfileSessionsProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchProfileSessions = useCallback(async (projectId: string, profileId: string, params: AnalyticsParams = {}) => {
+  const fetchProfileSessions = useCallback(
+    async (projectId: string, profileId: string, params: AnalyticsParams = {}) => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const response = await fetch('/api/analytics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'getProfileSessions', projectId, profileId, params }),
+        })
+        const result = (await response.json()) as ProxyResponse<ProfileSessionsResponse>
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
+
+  return { fetchProfileSessions, data, error, isLoading }
+}
+
+export function useProjectProxy() {
+  const [data, setData] = useState<Project | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchProject = useCallback(async (projectId: string) => {
     setIsLoading(true)
     setError(null)
 
@@ -470,9 +516,9 @@ export function useProfileSessionsProxy() {
       const response = await fetch('/api/analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getProfileSessions', projectId, profileId, params }),
+        body: JSON.stringify({ action: 'getProject', projectId, params: {} }),
       })
-      const result = (await response.json()) as ProxyResponse<ProfileSessionsResponse>
+      const result = (await response.json()) as ProxyResponse<Project>
       setData(result.data)
       setError(result.error)
       return result.data
@@ -484,5 +530,342 @@ export function useProfileSessionsProxy() {
     }
   }, [])
 
-  return { fetchProfileSessions, data, error, isLoading }
+  return { fetchProject, data, error, isLoading }
+}
+
+export function useFiltersProxy() {
+  const fetchFilters = useCallback(async (projectId: string, filterType: string): Promise<string[] | null> => {
+    try {
+      const response = await fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getFilters', projectId, filterType, params: {} }),
+      })
+      const result = (await response.json()) as ProxyResponse<string[]>
+      if (result.error) throw new Error(result.error)
+      return result.data
+    } catch (err) {
+      console.error('[useFiltersProxy] Error:', err)
+      throw err
+    }
+  }, [])
+
+  const fetchErrorsFilters = useCallback(async (projectId: string, filterType: string): Promise<string[] | null> => {
+    try {
+      const response = await fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getErrorsFilters', projectId, filterType, params: {} }),
+      })
+      const result = (await response.json()) as ProxyResponse<string[]>
+      if (result.error) throw new Error(result.error)
+      return result.data
+    } catch (err) {
+      console.error('[useFiltersProxy] Error:', err)
+      throw err
+    }
+  }, [])
+
+  const fetchVersionFilters = useCallback(
+    async (
+      projectId: string,
+      dataType: 'traffic' | 'errors',
+      filterColumn: 'br' | 'os',
+    ): Promise<VersionFilter[] | null> => {
+      try {
+        const response = await fetch('/api/analytics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'getVersionFilters', projectId, dataType, filterColumn, params: {} }),
+        })
+        const result = (await response.json()) as ProxyResponse<VersionFilter[]>
+        if (result.error) throw new Error(result.error)
+        return result.data
+      } catch (err) {
+        console.error('[useFiltersProxy] Error:', err)
+        throw err
+      }
+    },
+    [],
+  )
+
+  return { fetchFilters, fetchErrorsFilters, fetchVersionFilters }
+}
+
+export function useCustomEventsMetadataProxy() {
+  const fetchMetadata = useCallback(
+    async (
+      projectId: string,
+      event: string,
+      params: AnalyticsParams = {},
+    ): Promise<CustomEventsMetadataResponse | null> => {
+      try {
+        const response = await fetch('/api/analytics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'getCustomEventsMetadata', projectId, event, params }),
+        })
+        const result = (await response.json()) as ProxyResponse<CustomEventsMetadataResponse>
+        if (result.error) throw new Error(result.error)
+        return result.data
+      } catch (err) {
+        console.error('[useCustomEventsMetadataProxy] Error:', err)
+        throw err
+      }
+    },
+    [],
+  )
+
+  return { fetchMetadata }
+}
+
+export function usePropertyMetadataProxy() {
+  const fetchMetadata = useCallback(
+    async (
+      projectId: string,
+      property: string,
+      params: AnalyticsParams = {},
+    ): Promise<PropertyMetadataResponse | null> => {
+      try {
+        const response = await fetch('/api/analytics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'getPropertyMetadata', projectId, property, params }),
+        })
+        const result = (await response.json()) as ProxyResponse<PropertyMetadataResponse>
+        if (result.error) throw new Error(result.error)
+        return result.data
+      } catch (err) {
+        console.error('[usePropertyMetadataProxy] Error:', err)
+        throw err
+      }
+    },
+    [],
+  )
+
+  return { fetchMetadata }
+}
+
+export function useErrorSessionsProxy() {
+  const [data, setData] = useState<ErrorSessionsResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchErrorSessions = useCallback(async (projectId: string, errorId: string, params: AnalyticsParams = {}) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getErrorSessions', projectId, errorId, params }),
+      })
+      const result = (await response.json()) as ProxyResponse<ErrorSessionsResponse>
+      setData(result.data)
+      setError(result.error)
+      return result.data
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  return { fetchErrorSessions, data, error, isLoading }
+}
+
+export function useLiveVisitorsProxy() {
+  const fetchLiveVisitors = useCallback(async (pids: string[]): Promise<LiveStats | null> => {
+    try {
+      const response = await fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getLiveVisitors', projectId: pids[0] || '', pids, params: {} }),
+      })
+      const result = (await response.json()) as ProxyResponse<LiveStats>
+      if (result.error) throw new Error(result.error)
+      return result.data
+    } catch (err) {
+      console.error('[useLiveVisitorsProxy] Error:', err)
+      throw err
+    }
+  }, [])
+
+  const fetchLiveVisitorsInfo = useCallback(async (projectId: string): Promise<LiveVisitorInfo[] | null> => {
+    try {
+      const response = await fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getLiveVisitorsInfo', projectId, params: {} }),
+      })
+      const result = (await response.json()) as ProxyResponse<LiveVisitorInfo[]>
+      if (result.error) throw new Error(result.error)
+      return result.data
+    } catch (err) {
+      console.error('[useLiveVisitorsProxy] Error:', err)
+      throw err
+    }
+  }, [])
+
+  return { fetchLiveVisitors, fetchLiveVisitorsInfo }
+}
+
+export function useProjectDataCustomEventsProxy() {
+  const fetchCustomEvents = useCallback(
+    async (
+      projectId: string,
+      customEvents: string[],
+      params: AnalyticsParams = {},
+    ): Promise<ProjectDataCustomEventsResponse | null> => {
+      try {
+        const response = await fetch('/api/analytics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'getProjectDataCustomEvents', projectId, customEvents, params }),
+        })
+        const result = (await response.json()) as ProxyResponse<ProjectDataCustomEventsResponse>
+        if (result.error) throw new Error(result.error)
+        return result.data
+      } catch (err) {
+        console.error('[useProjectDataCustomEventsProxy] Error:', err)
+        throw err
+      }
+    },
+    [],
+  )
+
+  return { fetchCustomEvents }
+}
+
+export function useUserFlowProxy() {
+  const [data, setData] = useState<UserFlowResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchUserFlow = useCallback(async (projectId: string, params: AnalyticsParams = {}) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getUserFlow', projectId, params }),
+      })
+      const result = (await response.json()) as ProxyResponse<UserFlowResponse>
+      setData(result.data)
+      setError(result.error)
+      return result.data
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  return { fetchUserFlow, data, error, isLoading }
+}
+
+export function useGSCKeywordsProxy() {
+  const [data, setData] = useState<GSCKeywordsResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchKeywords = useCallback(async (projectId: string, params: AnalyticsParams = {}) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getGSCKeywords', projectId, params }),
+      })
+      const result = (await response.json()) as ProxyResponse<GSCKeywordsResponse>
+      setData(result.data)
+      setError(result.error)
+      return result.data
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  return { fetchKeywords, data, error, isLoading }
+}
+
+export function useRevenueProxy() {
+  const [statusData, setStatusData] = useState<RevenueStatus | null>(null)
+  const [revenueData, setRevenueData] = useState<RevenueDataResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchRevenueStatus = useCallback(async (projectId: string): Promise<RevenueStatus | null> => {
+    try {
+      const response = await fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getRevenueStatus', projectId, params: {} }),
+      })
+      const result = (await response.json()) as ProxyResponse<RevenueStatus>
+      setStatusData(result.data)
+      if (result.error) throw new Error(result.error)
+      return result.data
+    } catch (err) {
+      console.error('[useRevenueProxy] Error:', err)
+      throw err
+    }
+  }, [])
+
+  const fetchRevenueData = useCallback(async (projectId: string, params: AnalyticsParams = {}) => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getRevenueData', projectId, params }),
+      })
+      const result = (await response.json()) as ProxyResponse<RevenueDataResponse>
+      setRevenueData(result.data)
+      setError(result.error)
+      return result.data
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  return { fetchRevenueStatus, fetchRevenueData, statusData, revenueData, error, isLoading }
+}
+
+export function useOverallStatsProxy() {
+  const fetchOverallStats = useCallback(
+    async (pids: string[], params: AnalyticsParams = {}): Promise<Record<string, OverallObject> | null> => {
+      try {
+        const response = await fetch('/api/analytics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'getOverallStats', projectId: '', pids, params }),
+        })
+        const result = (await response.json()) as ProxyResponse<Record<string, OverallObject>>
+        if (result.error) throw new Error(result.error)
+        return result.data
+      } catch (err) {
+        console.error('[useOverallStatsProxy] Error:', err)
+        return null
+      }
+    },
+    [],
+  )
+
+  return { fetchOverallStats }
 }
