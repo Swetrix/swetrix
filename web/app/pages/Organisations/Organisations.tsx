@@ -6,16 +6,13 @@ import { SearchIcon, XIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useLoaderData, useNavigate } from 'react-router'
-import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import useDebounce from '~/hooks/useDebounce'
 import { ENTRIES_PER_PAGE_DASHBOARD } from '~/lib/constants'
-import { useAuth } from '~/providers/AuthProvider'
 import type { OrganisationsActionData, OrganisationsLoaderData } from '~/routes/organisations._index'
 import Input from '~/ui/Input'
-import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import StatusPage from '~/ui/StatusPage'
@@ -27,7 +24,6 @@ import { NoOrganisations } from './NoOrganisations'
 import { OrganisationCard } from './OrganisationCard'
 
 const Organisations = () => {
-  const { isLoading: authLoading } = useAuth()
   const loaderData = useLoaderData<OrganisationsLoaderData>()
   const fetcher = useFetcher<OrganisationsActionData>()
   const navigate = useNavigate()
@@ -234,34 +230,18 @@ const Organisations = () => {
                 </div>
               </div>
             ) : null}
-            {authLoading ? (
-              <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                <Loader />
-              </div>
-            ) : (
-              <ClientOnly
-                fallback={
-                  <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                    <Loader />
-                  </div>
-                }
-              >
-                {() => (
-                  <div>
-                    {_isEmpty(organisations) ? (
-                      <NoOrganisations onClick={onNewOrganisation} />
-                    ) : (
-                      <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
-                        {_map(organisations, (organisation) => (
-                          <OrganisationCard key={organisation.id} organisation={organisation} />
-                        ))}
-                        <AddOrganisation sitesCount={_size(organisations)} onClick={onNewOrganisation} />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </ClientOnly>
-            )}
+            <div>
+              {_isEmpty(organisations) ? (
+                <NoOrganisations onClick={onNewOrganisation} />
+              ) : (
+                <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
+                  {_map(organisations, (organisation) => (
+                    <OrganisationCard key={organisation.id} organisation={organisation} />
+                  ))}
+                  <AddOrganisation sitesCount={_size(organisations)} onClick={onNewOrganisation} />
+                </div>
+              )}
+            </div>
             {pageAmount > 1 ? (
               <Pagination
                 className='mt-2'
