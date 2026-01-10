@@ -30,7 +30,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const user = authResult?.user
   const cookies: string[] = authResult?.cookies || []
 
-  if (user?.onboardingStep === 'setup_tracking' || user?.onboardingStep === 'waiting_for_events') {
+  if (user?.user?.onboardingStep === 'setup_tracking' || user?.user?.onboardingStep === 'waiting_for_events') {
     const projectsResult = await serverFetch<{
       results: Project[]
       total: number

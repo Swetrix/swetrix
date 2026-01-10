@@ -445,8 +445,9 @@ const ProjectSettings = () => {
           ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
           origins: _isString(result.origins) ? result.origins : _join(result.origins, ', '),
           botsProtectionLevel: result.botsProtectionLevel as 'off' | 'basic',
-          gscPropertyUri: result.gscPropertyUri || null,
-          websiteUrl: result.websiteUrl || null,
+          countryBlacklist: (result as unknown as Project).countryBlacklist || [],
+          gscPropertyUri: (result as unknown as Project).gscPropertyUri || null,
+          websiteUrl: (result as unknown as Project).websiteUrl || null,
         })
       }
     } catch (reason: any) {
@@ -941,7 +942,7 @@ const ProjectSettings = () => {
                           gscFetcher.submit({ intent: 'gsc-connect' }, { method: 'post' })
                         }}
                         loading={
-                          gscFetcher.state !== 'idle' ? gscFetcher.formData?.get('intent') === 'gsc-connect' : null
+                          gscFetcher.state !== 'idle' ? gscFetcher.formData?.get('intent') === 'gsc-connect' : undefined
                         }
                         primary
                         regular
@@ -968,7 +969,9 @@ const ProjectSettings = () => {
                           gscFetcher.submit({ intent: 'gsc-disconnect' }, { method: 'post' })
                         }}
                         loading={
-                          gscFetcher.state !== 'idle' ? gscFetcher.formData?.get('intent') === 'gsc-disconnect' : null
+                          gscFetcher.state !== 'idle'
+                            ? gscFetcher.formData?.get('intent') === 'gsc-disconnect'
+                            : undefined
                         }
                       >
                         {t('common.disconnect')}
@@ -1006,7 +1009,9 @@ const ProjectSettings = () => {
                           )
                         }}
                         loading={
-                          gscFetcher.state !== 'idle' ? gscFetcher.formData?.get('intent') === 'gsc-set-property' : null
+                          gscFetcher.state !== 'idle'
+                            ? gscFetcher.formData?.get('intent') === 'gsc-set-property'
+                            : undefined
                         }
                         primary
                         regular

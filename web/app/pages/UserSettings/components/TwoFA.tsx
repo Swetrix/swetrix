@@ -42,7 +42,7 @@ const TwoFA = () => {
       } else if (intent === 'enable-2fa' && twoFAData?.twoFactorRecoveryCode) {
         mergeUser({ isTwoFactorAuthenticationEnabled: true })
         setTimeout(() => {
-          setTwoFARecovery(twoFAData.twoFactorRecoveryCode)
+          setTwoFARecovery(twoFAData.twoFactorRecoveryCode ?? null)
           setTwoFACode('')
         }, 0)
       } else if (intent === 'disable-2fa') {

@@ -99,7 +99,7 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
   const activeSession: ActiveSession | null = useMemo(() => {
     if (deferredData.sessionDetails) {
       return {
-        details: deferredData.sessionDetails.details as SessionDetailsType,
+        details: deferredData.sessionDetails.details as unknown as SessionDetailsType,
         chart: deferredData.sessionDetails.chart,
         pages: deferredData.sessionDetails.pages,
         timeBucket: deferredData.sessionDetails.timeBucket,

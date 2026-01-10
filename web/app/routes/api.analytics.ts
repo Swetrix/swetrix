@@ -595,7 +595,7 @@ export async function action({ request }: ActionFunctionArgs) {
           from: params.from,
           to: params.to,
           timezone: params.timezone || 'UTC',
-          filters: params.filters,
+          filters: params.filters || [],
           includeChart: true,
         })
         return data<ProxyResponse<Record<string, OverallObject>>>({

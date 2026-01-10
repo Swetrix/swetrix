@@ -480,7 +480,7 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
           return
         }
 
-        setStackedChart(data?.chart || null)
+        setStackedChart((data?.chart as unknown as typeof stackedChart) || null)
       } catch (reason) {
         console.error('[ERROR](CustomEvents) Failed to load stacked custom events chart', reason)
         if (!cancelled) {

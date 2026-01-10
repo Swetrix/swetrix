@@ -71,7 +71,7 @@ export async function action({ request }: ActionFunctionArgs) {
               error: null,
             },
             {
-              headers: cookies.map((cookie) => ['Set-Cookie', cookie]),
+              headers: cookies.map((cookie) => ['Set-Cookie', cookie]) as [string, string][],
             },
           )
         }
