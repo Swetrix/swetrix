@@ -46,7 +46,7 @@ interface ProjectCardProps {
   project: Project
   activePeriod: string
   viewMode: 'grid' | 'list'
-  refetchProjects: () => Promise<void>
+  refetchProjects: () => void
 }
 
 interface MiniCardProps {

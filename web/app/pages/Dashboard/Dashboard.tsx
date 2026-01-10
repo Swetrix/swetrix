@@ -6,24 +6,23 @@ import _size from 'lodash/size'
 import { StretchHorizontalIcon, LayoutGridIcon, SearchIcon, XIcon, FolderPlusIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLoaderData, useNavigate, useSearchParams, useFetcher } from 'react-router'
+import { useLoaderData, useNavigate, useSearchParams, useFetcher, useNavigation, useRevalidator } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { getProjects, getLiveVisitors, getOverallStats } from '~/api'
+import { getLiveVisitors, getOverallStats } from '~/api'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import useBreakpoint from '~/hooks/useBreakpoint'
 import useDebounce from '~/hooks/useDebounce'
 import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL, tbPeriodPairs } from '~/lib/constants'
-import { Overall, Project } from '~/lib/models/Project'
+import { Overall } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
 import type { DashboardLoaderData, DashboardActionData } from '~/routes/dashboard'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import Select from '~/ui/Select'
-import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
 import { setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
@@ -47,6 +46,8 @@ const DEFAULT_PROJECT_NAME = 'Untitled Project'
 const Dashboard = () => {
   const loaderData = useLoaderData<DashboardLoaderData>()
   const navigate = useNavigate()
+  const navigation = useNavigation()
+  const revalidator = useRevalidator()
   const [searchParams, setSearchParams] = useSearchParams()
   const fetcher = useFetcher<DashboardActionData>()
 
@@ -59,9 +60,8 @@ const Dashboard = () => {
   const [viewMode, setViewMode] = useState(loaderData.viewMode)
   const isAboveLgBreakpoint = useBreakpoint('lg')
 
-  // Initialize projects from loader data
-  const [projects, setProjects] = useState<Project[]>(loaderData.projects?.results || [])
-  const [paginationTotal, setPaginationTotal] = useState(loaderData.projects?.total || 0)
+  const projects = useMemo(() => loaderData.projects?.results || [], [loaderData.projects?.results])
+  const paginationTotal = loaderData.projects?.total || 0
 
   const page = useMemo(() => {
     const pageParam = searchParams.get('page')
@@ -79,28 +79,25 @@ const Dashboard = () => {
     return parsedPage
   }, [searchParams])
 
-  const [pageSize, setPageSize] = useState(() => {
+  const pageSize = useMemo(() => {
     const pageSizeParam = searchParams.get('pageSize')
     return pageSizeParam && PAGE_SIZE_OPTIONS.includes(parseInt(pageSizeParam, 10))
       ? parseInt(pageSizeParam, 10)
       : PAGE_SIZE_OPTIONS[0]
-  })
+  }, [searchParams])
 
-  // Start with false since we have initial data from loader
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [error, setError] = useState<string | null>(null)
+  const isLoading = navigation.state === 'loading' || revalidator.state === 'loading'
   const [liveStats, setLiveStats] = useState<Record<string, number>>({})
   const [overallStats, setOverallStats] = useState<Overall>({})
 
-  const [activePeriod, setActivePeriod] = useState(() => {
-    const periodParam = searchParams.get('period')
-    return periodParam || '7d'
-  })
+  const activePeriod = useMemo(() => {
+    return searchParams.get('period') || '7d'
+  }, [searchParams])
 
-  const [sortBy, setSortBy] = useState(() => {
+  const sortBy = useMemo(() => {
     const sortParam = searchParams.get('sort')
     return sortParam && Object.values(SORT_OPTIONS).includes(sortParam as any) ? sortParam : SORT_OPTIONS.ALPHA_ASC
-  })
+  }, [searchParams])
 
   // New project modal state
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false)
@@ -125,51 +122,34 @@ const Dashboard = () => {
   const pageAmount = Math.ceil(paginationTotal / pageSize)
 
   // This search represents what's inside the search input
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(searchParams.get('search') || '')
   const debouncedSearch = useDebounce(search, 500)
 
-  // Track if user has interacted (changed page, search, etc.) - need to refetch
-  const [hasUserInteracted, setHasUserInteracted] = useState(false)
-
-  // Update URL only when values are explicitly changed
   const updateURL = (params: Record<string, string>) => {
     const newSearchParams = new URLSearchParams(searchParams)
     Object.entries(params).forEach(([key, value]) => {
-      newSearchParams.set(key, value)
+      if (value) {
+        newSearchParams.set(key, value)
+      } else {
+        newSearchParams.delete(key)
+      }
     })
     setSearchParams(newSearchParams)
   }
 
-  const setPage = (newPage: number) => {
-    const newSearchParams = new URLSearchParams(searchParams)
-    newSearchParams.set('page', newPage.toString())
-    setSearchParams(newSearchParams)
-  }
-
   const handlePageChange = (newPage: number) => {
-    setHasUserInteracted(true)
-    setPage(newPage)
     updateURL({ page: newPage.toString() })
   }
 
   const handlePageSizeChange = (size: number) => {
-    setHasUserInteracted(true)
-    setPageSize(size)
-    setPage(1)
     updateURL({ pageSize: size.toString(), page: '1' })
   }
 
   const handlePeriodChange = (period: string) => {
-    setHasUserInteracted(true)
-    setActivePeriod(period)
-    setPage(1)
     updateURL({ period, page: '1' })
   }
 
   const handleSortChange = (sort: string) => {
-    setHasUserInteracted(true)
-    setSortBy(sort)
-    setPage(1)
     updateURL({ sort, page: '1' })
   }
 
@@ -249,25 +229,8 @@ const Dashboard = () => {
     setNewProjectBeenSubmitted(false)
   }
 
-  const refetchProjects = async () => {
-    await loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activePeriod, sortBy)
-  }
-
-  const loadProjects = async (take: number, skip: number, search?: string, period?: string, sort?: string) => {
-    if (isLoading) {
-      return
-    }
-    setIsLoading(true)
-
-    try {
-      const result = await getProjects(take, skip, search, period, sort)
-      setProjects(result.results)
-      setPaginationTotal(result.total)
-    } catch (reason: any) {
-      setError(reason)
-    } finally {
-      setIsLoading(false)
-    }
+  const refetchProjects = () => {
+    revalidator.revalidate()
   }
 
   // Redirect to onboarding if user hasn't completed it
@@ -278,22 +241,13 @@ const Dashboard = () => {
     }
   }, [user, navigate])
 
-  // Only fetch on user interaction (search, pagination, sort, period changes)
+  // Update URL when debounced search changes
   useEffect(() => {
-    if (!hasUserInteracted) {
-      return
+    const currentSearch = searchParams.get('search') || ''
+    if (debouncedSearch !== currentSearch) {
+      updateURL({ search: debouncedSearch, page: '1' })
     }
-
-    loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activePeriod, sortBy)
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, debouncedSearch, activePeriod, sortBy, hasUserInteracted])
-
-  // Track search changes as user interaction
-  useEffect(() => {
-    if (debouncedSearch !== '') {
-      setHasUserInteracted(true)
-    }
   }, [debouncedSearch])
 
   // Set up interval for live visitors
@@ -343,20 +297,6 @@ const Dashboard = () => {
 
     return () => clearInterval(interval)
   }, [projects, activePeriod, t]) // Reset interval when projects change
-
-  if (error && !isLoading) {
-    return (
-      <StatusPage
-        type='error'
-        title={t('apiNotifications.somethingWentWrong')}
-        description={t('apiNotifications.errorCode', { error })}
-        actions={[
-          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
-          { label: t('notFoundPage.support'), to: routes.contact },
-        ]}
-      />
-    )
-  }
 
   const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)

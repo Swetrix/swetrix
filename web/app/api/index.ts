@@ -67,22 +67,6 @@ export const authMe = (config?: AxiosRequestConfig) =>
     } => response.data,
   )
 
-export const getProjects = (take = 0, skip = 0, search = '', period = '7d', sort = 'alpha_asc') =>
-  api
-    .get(`/project?take=${take}&skip=${skip}&search=${search}&period=${period}&sort=${sort}`)
-    .then(
-      (
-        response,
-      ): {
-        results: Project[]
-        total: number
-        page_total: number
-      } => response.data,
-    )
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getProject = (pid: string, password?: string) =>
   api
     .get(`/project/${pid}`, {

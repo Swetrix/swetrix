@@ -2,7 +2,7 @@ import _isEmpty from 'lodash/isEmpty'
 
 import { TOKEN, isBrowser } from '~/lib/constants'
 
-import { getCookie, setCookie, deleteCookie } from './cookie'
+import { getCookie, setCookie } from './cookie'
 
 // 14 weeks in seconds
 const STORE_AUTH_TOKEN_FOR = 8467200
@@ -33,13 +33,4 @@ export const setAccessToken = (token: string, temporary = false) => {
   }
 
   setCookie(TOKEN, token, STORE_AUTH_TOKEN_FOR)
-}
-
-export const removeAccessToken = () => {
-  if (!isBrowser) {
-    return null
-  }
-
-  deleteCookie(TOKEN)
-  sessionStorage.removeItem(TOKEN)
 }

@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from 'react
 import { data } from 'react-router'
 import { SitemapFunction } from 'remix-sitemap'
 
-import { serverFetch } from '~/api/api.server'
+import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
 import { Project } from '~/lib/models/Project'
 import { User } from '~/lib/models/User'
 import Onboarding from '~/pages/Onboarding'
@@ -19,9 +19,44 @@ export const meta: MetaFunction = () => {
   ]
 }
 
+export interface OnboardingLoaderData {
+  project: Project | null
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
   redirectIfNotAuthenticated(request)
-  return null
+
+  const authResult = await getAuthenticatedUser(request)
+  const user = authResult?.user
+  const cookies: string[] = authResult?.cookies || []
+
+  if (user?.onboardingStep === 'setup_tracking' || user?.onboardingStep === 'waiting_for_events') {
+    const projectsResult = await serverFetch<{
+      results: Project[]
+      total: number
+    }>(request, '/project?take=1&skip=0')
+
+    const project = projectsResult.data?.results?.[0] || null
+    const allCookies = [...cookies, ...projectsResult.cookies]
+
+    const loaderData: OnboardingLoaderData = { project }
+
+    if (allCookies.length > 0) {
+      return data(loaderData, {
+        headers: createHeadersWithCookies(allCookies),
+      })
+    }
+
+    return loaderData
+  }
+
+  if (cookies.length > 0) {
+    return data({ project: null } as OnboardingLoaderData, {
+      headers: createHeadersWithCookies(cookies),
+    })
+  }
+
+  return { project: null } as OnboardingLoaderData
 }
 
 export interface OnboardingActionData {

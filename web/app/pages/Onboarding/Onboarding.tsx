@@ -4,15 +4,15 @@ import type { TFunction } from 'i18next'
 import { ChevronRightIcon, LaptopMinimalIcon, RocketIcon, CodeIcon, MailCheckIcon, SparklesIcon } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link, useNavigate, useFetcher } from 'react-router'
+import { Link, useNavigate, useFetcher, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
 
-import { authMe, getProjects } from '~/api'
+import { authMe } from '~/api'
 import { CONTACT_US_URL } from '~/components/Footer'
 import { DOCS_URL, INTEGRATIONS_URL, isSelfhosted } from '~/lib/constants'
-import type { OnboardingActionData } from '~/routes/onboarding'
 import { getSnippet } from '~/modals/TrackingSnippet'
 import { useAuth } from '~/providers/AuthProvider'
+import type { OnboardingActionData, OnboardingLoaderData } from '~/routes/onboarding'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
@@ -20,10 +20,8 @@ import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
-import { removeAccessToken } from '~/utils/accessToken'
 import { trackCustom } from '~/utils/analytics'
 import { cn } from '~/utils/generic'
-import { removeRefreshToken } from '~/utils/refreshToken'
 import routes from '~/utils/routes'
 
 const MAX_PROJECT_NAME_LENGTH = 50
@@ -70,13 +68,14 @@ interface Project {
 
 const Onboarding = () => {
   const { t } = useTranslation('common')
+  const loaderData = useLoaderData<OnboardingLoaderData>()
   const { user, loadUser, logout } = useAuth()
   const navigate = useNavigate()
   const fetcher = useFetcher<OnboardingActionData>()
 
   const [currentStep, setCurrentStep] = useState(0)
   const [projectName, setProjectName] = useState('')
-  const [project, setProject] = useState<Project | null>(null)
+  const [project, setProject] = useState<Project | null>(loaderData.project)
   const [isWaitingForEvents, setIsWaitingForEvents] = useState(false)
   const [hasEvents, setHasEvents] = useState(false)
 
@@ -121,43 +120,30 @@ const Onboarding = () => {
       return
     }
 
-    const determineCurrentStep = async () => {
-      if (!user?.isActive && !isSelfhosted) {
-        setCurrentStep(0)
-        return
-      }
-
-      if (!user?.onboardingStep) {
-        setCurrentStep(1)
-        return
-      }
-
-      switch (user.onboardingStep) {
-        case 'create_project':
-          setCurrentStep(1)
-          break
-        case 'setup_tracking':
-          setCurrentStep(2)
-          try {
-            const projectsData = await getProjects(1, 0)
-            if (projectsData.results.length > 0) {
-              setProject(projectsData.results[0])
-              setCurrentStep(2)
-            }
-          } catch (reason) {
-            console.error('Failed to get projects:', reason)
-          }
-          break
-        case 'waiting_for_events':
-          setCurrentStep(3)
-          setIsWaitingForEvents(true)
-          break
-        default:
-          setCurrentStep(1)
-      }
+    if (!user?.isActive && !isSelfhosted) {
+      setCurrentStep(0)
+      return
     }
 
-    determineCurrentStep()
+    if (!user?.onboardingStep) {
+      setCurrentStep(1)
+      return
+    }
+
+    switch (user.onboardingStep) {
+      case 'create_project':
+        setCurrentStep(1)
+        break
+      case 'setup_tracking':
+        setCurrentStep(2)
+        break
+      case 'waiting_for_events':
+        setCurrentStep(3)
+        setIsWaitingForEvents(true)
+        break
+      default:
+        setCurrentStep(1)
+    }
   }, [user, navigate])
 
   useEffect(() => {
