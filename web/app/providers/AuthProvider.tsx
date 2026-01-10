@@ -1,10 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { User } from '~/lib/models/User'
-import { getAccessToken } from '~/utils/accessToken'
 import { clearLocalStorageOnLogout } from '~/utils/auth'
-import { getRefreshToken } from '~/utils/refreshToken'
 
 interface AuthContextType {
   isAuthenticated: boolean
@@ -15,8 +13,8 @@ interface AuthContextType {
   setUser: (user: User) => void
   mergeUser: (newUser: Partial<User>) => void
   setTotalMonthlyEvents: (totalMonthlyEvents: number) => void
-  loadUser: (signal?: AbortSignal) => Promise<void>
   setIsAuthenticated: (isAuthenticated: boolean) => void
+  loadUser: (signal?: AbortSignal) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -36,30 +34,39 @@ export const AuthProvider = ({
 }: AuthProviderProps) => {
   const { authMe } = useAuthProxy()
 
-  // If we have initial user from loader, we're definitely authenticated
   const [isAuthenticated, setIsAuthenticated] = useState(initialIsAuthenticated || !!initialUser)
-
-  // If we have initial user data from loader, no need to load - start with isLoading = false
-  const [isLoading, setIsLoading] = useState(!initialUser && initialIsAuthenticated)
-
-  const [user, setUser] = useState<User | null>(initialUser || null)
-
+  const [user, setUserState] = useState<User | null>(initialUser || null)
   // TODO: @deprecated
   const [totalMonthlyEvents, setTotalMonthlyEvents] = useState(initialTotalMonthlyEvents || 0)
 
-  // Sync state with props when they change (e.g., after login redirect)
+  // Track whether this is the initial mount
+  const isInitialMount = useRef(true)
+
+  // Sync state with loader data when it changes (e.g., after login redirect)
   useEffect(() => {
+    // Skip the initial mount since state is already initialized from props
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+
     if (initialUser) {
-      setUser(initialUser)
-      setIsAuthenticated(true)
-      setIsLoading(false)
-      setTotalMonthlyEvents(initialTotalMonthlyEvents || 0)
+      // Defer state updates to avoid synchronous cascading renders
+      queueMicrotask(() => {
+        setUserState(initialUser)
+        setIsAuthenticated(true)
+        setTotalMonthlyEvents(initialTotalMonthlyEvents || 0)
+      })
     }
   }, [initialUser, initialTotalMonthlyEvents])
 
+  const setUser = useCallback((newUser: User) => {
+    setUserState(newUser)
+  }, [])
+
   const logout = useCallback((invalidateAllSessions?: boolean) => {
     setIsAuthenticated(false)
-    setUser(null)
+    setUserState(null)
     clearLocalStorageOnLogout()
 
     // Navigate to server-side logout route which handles cookie cleanup
@@ -68,7 +75,7 @@ export const AuthProvider = ({
   }, [])
 
   const mergeUser = useCallback((newUser: Partial<User>) => {
-    setUser((prev) => {
+    setUserState((prev) => {
       if (!prev) {
         // If no previous user, set the new user as full user (if it has required fields)
         if ('id' in newUser && 'email' in newUser) {
@@ -85,77 +92,33 @@ export const AuthProvider = ({
     async (signal?: AbortSignal) => {
       try {
         const { user, totalMonthlyEvents } = await authMe(signal)
-        setUser(user)
+        setUserState(user)
         setTotalMonthlyEvents(totalMonthlyEvents)
         setIsAuthenticated(true)
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
           return
         }
-
         logout()
         setIsAuthenticated(false)
-      } finally {
-        setIsLoading(false)
       }
     },
     [logout, authMe],
   )
 
-  useEffect(() => {
-    // If we already have user data from loader, no need to fetch again
-    if (initialUser) {
-      setIsLoading(false)
-      return
-    }
-
-    if (!initialIsAuthenticated) {
-      setIsLoading(false)
-      return
-    }
-
-    // No initial user but have cookies - need to fetch user data
-    const abortController = new AbortController()
-    loadUser(abortController.signal)
-
-    return () => abortController.abort()
-  }, [initialIsAuthenticated, initialUser, loadUser])
-
-  useEffect(() => {
-    // Skip if we already have user or are loading
-    if (user || isLoading) {
-      return
-    }
-
-    // Skip if initially authenticated (already handled above)
-    if (initialIsAuthenticated || initialUser) {
-      return
-    }
-
-    // Client-side rehydration: if tokens exist but SSR did not receive cookies
-    const hasClientToken = Boolean(getAccessToken() || getRefreshToken())
-
-    if (hasClientToken) {
-      const abortController = new AbortController()
-      setIsLoading(true)
-      loadUser(abortController.signal)
-      return () => abortController.abort()
-    }
-  }, [initialIsAuthenticated, initialUser, user, isLoading, loadUser])
-
   return (
     <AuthContext.Provider
       value={{
         isAuthenticated,
+        isLoading: false,
         user,
-        isLoading,
         logout,
         totalMonthlyEvents,
         setTotalMonthlyEvents,
         setUser,
         mergeUser,
-        loadUser,
         setIsAuthenticated,
+        loadUser,
       }}
     >
       {children}
