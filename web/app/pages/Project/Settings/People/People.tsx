@@ -353,7 +353,7 @@ const People = ({ project }: PeopleProps) => {
         title={t('project.settings.removeUser', { user: memberToRemove?.user?.email })}
         message={t('project.settings.removeConfirm')}
         isOpened={showDeleteModal}
-        isLoading={isSubmitting ? fetcher.formData?.get('intent') === 'delete-share-user' : null}
+        isLoading={isSubmitting ? (fetcher.formData?.get('intent') === 'delete-share-user') : undefined}
       />
       <Modal
         onClose={closeModal}

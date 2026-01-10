@@ -341,20 +341,9 @@ const ProjectAlertsSettings = ({
       <fetcher.Form method='POST' action={`/projects/${projectId}`} className='w-full pb-4' onSubmit={handleSubmit}>
         <input type='hidden' name='intent' value={isSettings && alertId ? 'update-alert' : 'create-alert'} />
         {isSettings && alertId ? <input type='hidden' name='alertId' value={alertId} /> : null}
-        <input type='hidden' name='active' value={String(form.active ?? true)} />
         <input type='hidden' name='queryMetric' value={form.queryMetric || QUERY_METRIC.PAGE_VIEWS} />
-        {form.queryCustomEvent ? <input type='hidden' name='queryCustomEvent' value={form.queryCustomEvent} /> : null}
-        {form.alertOnNewErrorsOnly !== undefined ? (
-          <input type='hidden' name='alertOnNewErrorsOnly' value={String(form.alertOnNewErrorsOnly)} />
-        ) : null}
-        {form.alertOnEveryCustomEvent !== undefined ? (
-          <input type='hidden' name='alertOnEveryCustomEvent' value={String(form.alertOnEveryCustomEvent)} />
-        ) : null}
         {shouldIncludeQueryFields && form.queryCondition ? (
           <input type='hidden' name='queryCondition' value={form.queryCondition} />
-        ) : null}
-        {shouldIncludeQueryFields && form.queryValue !== undefined ? (
-          <input type='hidden' name='queryValue' value={String(form.queryValue)} />
         ) : null}
         {shouldIncludeQueryFields && form.queryTime ? (
           <input type='hidden' name='queryTime' value={form.queryTime} />

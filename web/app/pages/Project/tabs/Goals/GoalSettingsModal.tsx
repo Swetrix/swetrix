@@ -129,6 +129,7 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId: _projectId, 
     formData.set('type', type)
     formData.set('matchType', matchType)
     formData.set('value', value)
+    formData.set('metadataFilters', JSON.stringify(metadataFilters))
 
     if (!isNew && goalId) {
       formData.set('goalId', goalId)

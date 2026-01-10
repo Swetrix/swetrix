@@ -287,6 +287,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [emailToRemove, setEmailToRemove] = useState<Subscriber | null>(null)
+  const removingEmailId = useRef<string | null>(null)
 
   const isDeleting = removeFetcher.state !== 'idle'
 
@@ -302,7 +303,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
       if (loadFetcher.data.success) {
         setTimeout(() => {
           setEmails(loadFetcher.data!.subscribers || [])
-          setPagination((old) => ({ ...old, count: loadFetcher.data!.subscribersCount || 0 }))
+          setPagination((old) => ({ ...old, total: loadFetcher.data!.subscribersCount || 0 }))
         }, 0)
       }
       setTimeout(() => setLoading(false), 0)
@@ -321,9 +322,15 @@ const Emails = ({ projectId }: { projectId: string }) => {
   }, [fetcher.data, t])
 
   useEffect(() => {
-    if (removeFetcher.data?.intent === 'remove-subscriber') {
+    if (removeFetcher.state === 'idle' && removeFetcher.data?.intent === 'remove-subscriber') {
       if (removeFetcher.data.success) {
-        setTimeout(() => setEmails((prev) => _filter(prev, (s) => s.id !== emailToRemove?.id)), 0)
+        const capturedId = removingEmailId.current
+        setTimeout(() => {
+          setEmails((prev) => _filter(prev, (s) => s.id !== capturedId))
+          setShowDeleteModal(false)
+          setEmailToRemove(null)
+        }, 0)
+        removingEmailId.current = null
       } else if (removeFetcher.data.error) {
         toast.error(
           typeof removeFetcher.data.error === 'string'
@@ -332,7 +339,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
         )
       }
     }
-  }, [removeFetcher.data, emailToRemove, t])
+  }, [removeFetcher.data, removeFetcher.state, t])
 
   const validate = () => {
     const allErrors: {
@@ -404,6 +411,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
       return
     }
 
+    removingEmailId.current = emailId
     removeFetcher.submit(
       { intent: 'remove-subscriber', subscriberId: emailId },
       { method: 'post', action: `/projects/settings/${projectId}` },
@@ -489,10 +497,8 @@ const Emails = ({ projectId }: { projectId: string }) => {
           setShowDeleteModal(false)
           setEmailToRemove(null)
         }}
-        onSubmit={async () => {
-          await onRemove(emailToRemove!.id)
-          setEmailToRemove(null)
-          setShowDeleteModal(false)
+        onSubmit={() => {
+          onRemove(emailToRemove!.id)
         }}
         submitText={t('common.yes')}
         type='confirmed'
