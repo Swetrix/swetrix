@@ -153,11 +153,7 @@ export const OrganisationCard = ({ organisation }: OrganisationCardProps) => {
   }
 
   return (
-    <Link
-      to={_replace(routes.organisation, ':id', organisation.id)}
-      onClick={onElementClick}
-      className={cardClassName}
-    >
+    <Link to={_replace(routes.organisation, ':id', organisation.id)} onClick={onElementClick} className={cardClassName}>
       {cardContent}
     </Link>
   )

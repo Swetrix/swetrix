@@ -435,7 +435,9 @@ function GoalsDataResolver({ children }: { children: (data: DeferredGoalsData) =
 function GoalsViewWrapper(props: GoalsViewProps) {
   return (
     <Suspense fallback={<Loader />}>
-      <GoalsDataResolver>{(deferredData) => <GoalsViewInner {...props} deferredData={deferredData} />}</GoalsDataResolver>
+      <GoalsDataResolver>
+        {(deferredData) => <GoalsViewInner {...props} deferredData={deferredData} />}
+      </GoalsDataResolver>
     </Suspense>
   )
 }

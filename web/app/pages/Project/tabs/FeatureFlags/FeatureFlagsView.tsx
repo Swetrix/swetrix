@@ -25,12 +25,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useFetcher, useLoaderData, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
-import type {
-  FeatureFlagsResponse,
-  ProjectFeatureFlag,
-  FeatureFlagStats,
-  FeatureFlagProfile,
-} from '~/api/api.server'
+import type { FeatureFlagsResponse, ProjectFeatureFlag, FeatureFlagStats, FeatureFlagProfile } from '~/api/api.server'
 import { useFeatureFlagStatsProxy, useFeatureFlagProfilesProxy } from '~/hooks/useAnalyticsProxy'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'

@@ -88,18 +88,12 @@ const Revenue = ({ projectId }: Props) => {
   const [selectedProvider, setSelectedProvider] = useState<RevenueProvider>('stripe')
   const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'EUR' | 'GBP'>('USD')
 
-  const isConnecting =
-    fetcher.state !== 'idle' && fetcher.formData?.get('intent') === 'connect-revenue'
-  const isDisconnecting =
-    fetcher.state !== 'idle' && fetcher.formData?.get('intent') === 'disconnect-revenue'
-  const isSavingCurrency =
-    fetcher.state !== 'idle' && fetcher.formData?.get('intent') === 'update-revenue-currency'
+  const isConnecting = fetcher.state !== 'idle' && fetcher.formData?.get('intent') === 'connect-revenue'
+  const isDisconnecting = fetcher.state !== 'idle' && fetcher.formData?.get('intent') === 'disconnect-revenue'
+  const isSavingCurrency = fetcher.state !== 'idle' && fetcher.formData?.get('intent') === 'update-revenue-currency'
 
   useEffect(() => {
-    fetcher.submit(
-      { intent: 'get-revenue-status' },
-      { method: 'POST', action: `/projects/settings/${projectId}` },
-    )
+    fetcher.submit({ intent: 'get-revenue-status' }, { method: 'POST', action: `/projects/settings/${projectId}` })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
@@ -166,10 +160,7 @@ const Revenue = ({ projectId }: Props) => {
   }
 
   const handleDisconnect = () => {
-    fetcher.submit(
-      { intent: 'disconnect-revenue' },
-      { method: 'POST', action: `/projects/settings/${projectId}` },
-    )
+    fetcher.submit({ intent: 'disconnect-revenue' }, { method: 'POST', action: `/projects/settings/${projectId}` })
   }
 
   const handleCurrencyChange = () => {

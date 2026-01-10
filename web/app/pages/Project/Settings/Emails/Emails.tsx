@@ -158,7 +158,9 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
         toast.success(t('apiNotifications.updatedPeriodEmailReports'))
       } else if (fetcher.data.error) {
         toast.error(
-          typeof fetcher.data.error === 'string' ? fetcher.data.error : t('apiNotifications.updatedPeriodEmailReportsError'),
+          typeof fetcher.data.error === 'string'
+            ? fetcher.data.error
+            : t('apiNotifications.updatedPeriodEmailReportsError'),
         )
       }
     }
@@ -324,7 +326,9 @@ const Emails = ({ projectId }: { projectId: string }) => {
         setTimeout(() => setEmails((prev) => _filter(prev, (s) => s.id !== emailToRemove?.id)), 0)
       } else if (removeFetcher.data.error) {
         toast.error(
-          typeof removeFetcher.data.error === 'string' ? removeFetcher.data.error : t('apiNotifications.somethingWentWrong'),
+          typeof removeFetcher.data.error === 'string'
+            ? removeFetcher.data.error
+            : t('apiNotifications.somethingWentWrong'),
         )
       }
     }

@@ -242,7 +242,10 @@ const TrafficViewInner = ({
     return {}
   }, [deferredData.overallCompareStats, id])
 
-  const dataChartCompare = useMemo(() => deferredData.trafficCompareData?.chart || {}, [deferredData.trafficCompareData])
+  const dataChartCompare = useMemo(
+    () => deferredData.trafficCompareData?.chart || {},
+    [deferredData.trafficCompareData],
+  )
 
   // Derive custom events data from loader
   const customEventsChartData = useMemo(

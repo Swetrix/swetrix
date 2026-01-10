@@ -43,10 +43,7 @@ export async function action({ request }: ActionFunctionArgs) {
       const organisationId = formData.get('organisationId')?.toString()
 
       if (!name.trim()) {
-        return data<DashboardActionData>(
-          { intent, fieldErrors: { name: 'Project name is required' } },
-          { status: 400 },
-        )
+        return data<DashboardActionData>({ intent, fieldErrors: { name: 'Project name is required' } }, { status: 400 })
       }
 
       if (name.length > 50) {
@@ -131,10 +128,7 @@ export async function action({ request }: ActionFunctionArgs) {
         return data<DashboardActionData>({ intent, error: result.error as string }, { status: 400 })
       }
 
-      return data<DashboardActionData>(
-        { intent, success: true },
-        { headers: createHeadersWithCookies(result.cookies) },
-      )
+      return data<DashboardActionData>({ intent, success: true }, { headers: createHeadersWithCookies(result.cookies) })
     }
 
     default:

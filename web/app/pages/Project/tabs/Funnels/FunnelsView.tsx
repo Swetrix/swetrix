@@ -73,7 +73,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
   const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(undefined)
   const [dataLoading, setDataLoading] = useState(false)
-  
+
   // Initialize funnelAnalytics from loader data
   const [funnelAnalytics, setFunnelAnalytics] = useState<{
     funnel: AnalyticsFunnel[]
@@ -218,7 +218,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   // The actual data fetching happens via the loader when URL changes
   useEffect(() => {
     if (!project || !activeFunnel) return
-    
+
     // If we have loader data for this funnel, use it
     if (deferredData.funnelData) {
       setFunnelAnalytics({

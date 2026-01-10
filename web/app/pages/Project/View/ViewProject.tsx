@@ -444,7 +444,6 @@ const ViewProjectContent = () => {
     }
   }, [viewsLoadFetcher.state, viewsLoadFetcher.data])
 
-
   const getVersionFilterLink = useCallback(
     (parent: string | null, version: string | null, panelType: 'br' | 'os') => {
       const filterParams = new URLSearchParams(searchParams.toString())

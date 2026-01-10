@@ -149,7 +149,8 @@ export const ProjectCard = ({
   const faviconHost = useMemo(() => getFaviconHost(websiteUrl || null), [websiteUrl])
   const [localIsPinned, setLocalIsPinned] = useState(isPinned)
 
-  const isPinning = fetcher.state === 'submitting' &&
+  const isPinning =
+    fetcher.state === 'submitting' &&
     (fetcher.formData?.get('intent') === 'pin-project' || fetcher.formData?.get('intent') === 'unpin-project')
 
   // Sync local state with prop

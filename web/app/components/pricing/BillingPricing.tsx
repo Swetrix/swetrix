@@ -102,7 +102,10 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
   // Handle preview fetcher error
   useEffect(() => {
     if (previewFetcher.data?.error) {
-      console.error('[ERROR] An error occured while loading subscription update pricing preview:', previewFetcher.data.error)
+      console.error(
+        '[ERROR] An error occured while loading subscription update pricing preview:',
+        previewFetcher.data.error,
+      )
       toast.error('An error occured while loading subscription update pricing preview')
     }
   }, [previewFetcher.data?.error])
@@ -460,8 +463,12 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
                         </td>
                         <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-50'>
                           {language === 'en'
-                            ? dayjs((subUpdatePreview as any).immediatePayment.date).locale(language).format('MMMM D, YYYY')
-                            : dayjs((subUpdatePreview as any).immediatePayment.date).locale(language).format('D MMMM, YYYY')}
+                            ? dayjs((subUpdatePreview as any).immediatePayment.date)
+                                .locale(language)
+                                .format('MMMM D, YYYY')
+                            : dayjs((subUpdatePreview as any).immediatePayment.date)
+                                .locale(language)
+                                .format('D MMMM, YYYY')}
                         </td>
                       </tr>
                     </tbody>
@@ -474,8 +481,12 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
                       dueNowAmount: -(subUpdatePreview as any).immediatePayment.amount,
                       dueNowDate:
                         language === 'en'
-                          ? dayjs((subUpdatePreview as any).immediatePayment.date).locale(language).format('MMMM D, YYYY')
-                          : dayjs((subUpdatePreview as any).immediatePayment.date).locale(language).format('D MMMM, YYYY'),
+                          ? dayjs((subUpdatePreview as any).immediatePayment.date)
+                              .locale(language)
+                              .format('MMMM D, YYYY')
+                          : dayjs((subUpdatePreview as any).immediatePayment.date)
+                              .locale(language)
+                              .format('D MMMM, YYYY'),
                       nextPaymentAmount: (subUpdatePreview as any).nextPayment.amount,
                     })}
                   </p>
@@ -506,8 +517,12 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
                         </td>
                         <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-50'>
                           {language === 'en'
-                            ? dayjs((subUpdatePreview as any).nextPayment.date).locale(language).format('MMMM D, YYYY')
-                            : dayjs((subUpdatePreview as any).nextPayment.date).locale(language).format('D MMMM, YYYY')}
+                            ? dayjs((subUpdatePreview as any).nextPayment.date)
+                                .locale(language)
+                                .format('MMMM D, YYYY')
+                            : dayjs((subUpdatePreview as any).nextPayment.date)
+                                .locale(language)
+                                .format('D MMMM, YYYY')}
                         </td>
                       </tr>
                     </tbody>
