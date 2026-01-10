@@ -30,8 +30,6 @@
     "@tanstack/react-virtual": "^3.13.13",
     "@types/leaflet": "^1.9.21",
     "@ua-parser-js/pro-business": "^2.0.6",
-    "axios": "^1.13.2",
-    "axios-auth-refresh": "^3.3.6",
     "billboard.js": "^3.17.2",
     "boring-avatars": "^2.0.4",
     "clsx": "^2.1.1",
