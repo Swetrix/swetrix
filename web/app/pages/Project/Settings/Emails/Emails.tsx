@@ -298,17 +298,19 @@ const Emails = ({ projectId }: { projectId: string }) => {
   useEffect(() => {
     if (loadFetcher.data?.intent === 'get-subscribers') {
       if (loadFetcher.data.success) {
-        setEmails(loadFetcher.data.subscribers || [])
-        setPagination((old) => ({ ...old, count: loadFetcher.data!.subscribersCount || 0 }))
+        setTimeout(() => {
+          setEmails(loadFetcher.data!.subscribers || [])
+          setPagination((old) => ({ ...old, count: loadFetcher.data!.subscribersCount || 0 }))
+        }, 0)
       }
-      setLoading(false)
+      setTimeout(() => setLoading(false), 0)
     }
   }, [loadFetcher.data])
 
   useEffect(() => {
     if (fetcher.data?.intent === 'add-subscriber') {
       if (fetcher.data.success && fetcher.data.subscriber) {
-        setEmails((prev) => [...prev, fetcher.data!.subscriber!])
+        setTimeout(() => setEmails((prev) => [...prev, fetcher.data!.subscriber!]), 0)
         toast.success(t('apiNotifications.userInvited'))
       } else if (fetcher.data.error) {
         toast.error(typeof fetcher.data.error === 'string' ? fetcher.data.error : t('apiNotifications.userInviteError'))
@@ -319,7 +321,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
   useEffect(() => {
     if (removeFetcher.data?.intent === 'remove-subscriber') {
       if (removeFetcher.data.success) {
-        setEmails((prev) => _filter(prev, (s) => s.id !== emailToRemove?.id))
+        setTimeout(() => setEmails((prev) => _filter(prev, (s) => s.id !== emailToRemove?.id)), 0)
       } else if (removeFetcher.data.error) {
         toast.error(
           typeof removeFetcher.data.error === 'string' ? removeFetcher.data.error : t('apiNotifications.somethingWentWrong'),
@@ -346,7 +348,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
 
   useEffect(() => {
     if (showModal) {
-      validate()
+      setTimeout(() => validate(), 0)
     }
   }, [form]) // eslint-disable-line
 

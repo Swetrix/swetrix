@@ -35,6 +35,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request: _request }: LoaderFunctionArgs) {
   return data({ error: 'Use POST method' }, { status: 405 })
 }

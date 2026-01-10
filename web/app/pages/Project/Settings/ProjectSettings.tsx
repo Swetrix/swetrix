@@ -22,7 +22,7 @@ import {
   ShieldCheckIcon,
   DollarSignIcon,
 } from 'lucide-react'
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useLoaderData, useNavigate, Link, useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
@@ -761,15 +761,6 @@ const ProjectSettings = () => {
       setShowProtected(false)
     }
   }
-
-  const reloadProject = useCallback(async () => {
-    try {
-      const result = await fetchProject(id)
-      if (result) setProject(result as unknown as Project)
-    } catch (reason: any) {
-      console.error(`[ERROR] Error while reloading project: ${reason}`)
-    }
-  }, [id])
 
   const title = `${t('project.settings.settings')} ${form.name}`
 

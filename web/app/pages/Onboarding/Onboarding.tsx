@@ -89,16 +89,16 @@ const Onboarding = () => {
   // Handle fetcher responses
   useEffect(() => {
     if (fetcher.data?.success) {
-      const { intent, project: newProject, user: updatedUser } = fetcher.data
+      const { intent, project: newProject } = fetcher.data
 
       if (intent === 'create-project' && newProject) {
-        setProject(newProject)
+        setTimeout(() => setProject(newProject), 0)
         // Update the step after project creation
         const stepFormData = new FormData()
         stepFormData.set('intent', 'update-step')
         stepFormData.set('step', 'setup_tracking')
         fetcher.submit(stepFormData, { method: 'post' })
-        setCurrentStep(2)
+        setTimeout(() => setCurrentStep(2), 0)
       } else if (intent === 'update-step') {
         loadUser()
       } else if (intent === 'complete-onboarding') {
@@ -111,9 +111,9 @@ const Onboarding = () => {
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
     } else if (fetcher.data?.fieldErrors?.name) {
-      setNewProjectErrors({ name: fetcher.data.fieldErrors.name })
+      setTimeout(() => setNewProjectErrors({ name: fetcher.data!.fieldErrors!.name }), 0)
     }
-  }, [fetcher.data, loadUser, logout, navigate, fetcher])
+  }, [fetcher.data, loadUser, logout, navigate, fetcher, t])
 
   useEffect(() => {
     if (user?.hasCompletedOnboarding) {
@@ -122,28 +122,30 @@ const Onboarding = () => {
     }
 
     if (!user?.isActive && !isSelfhosted) {
-      setCurrentStep(0)
+      setTimeout(() => setCurrentStep(0), 0)
       return
     }
 
     if (!user?.onboardingStep) {
-      setCurrentStep(1)
+      setTimeout(() => setCurrentStep(1), 0)
       return
     }
 
     switch (user.onboardingStep) {
       case 'create_project':
-        setCurrentStep(1)
+        setTimeout(() => setCurrentStep(1), 0)
         break
       case 'setup_tracking':
-        setCurrentStep(2)
+        setTimeout(() => setCurrentStep(2), 0)
         break
       case 'waiting_for_events':
-        setCurrentStep(3)
-        setIsWaitingForEvents(true)
+        setTimeout(() => {
+          setCurrentStep(3)
+          setIsWaitingForEvents(true)
+        }, 0)
         break
       default:
-        setCurrentStep(1)
+        setTimeout(() => setCurrentStep(1), 0)
     }
   }, [user, navigate])
 

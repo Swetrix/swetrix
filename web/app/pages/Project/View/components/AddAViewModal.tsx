@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 
 import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { FILTERS_PANELS_ORDER } from '~/lib/constants'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { ProjectViewActionData } from '~/routes/projects.$id'
 import Combobox from '~/ui/Combobox'
 import Input from '~/ui/Input'
@@ -191,7 +191,6 @@ const MAX_METRICS_IN_VIEW = 3
 
 const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultView }: AddAViewModalProps) => {
   const { id } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const {
     t,
     i18n: { language },
@@ -240,7 +239,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
     getFiltersList(filterType)
   }, [filterType, showModal, getFiltersList])
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setShowModal(false)
     setTimeout(() => {
       setName('')
@@ -249,7 +248,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
       setCustomEvents([])
       setErrors({})
     }, 300)
-  }
+  }, [setShowModal])
 
   const onItemSelect = (item: string) => {
     let processedItem = item

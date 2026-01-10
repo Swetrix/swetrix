@@ -62,7 +62,7 @@ export async function action({ request }: ActionFunctionArgs) {
         const result = await getJWTBySSOHashServer(request, body.hash, body.provider)
 
         if (result.data) {
-          const { accessToken, refreshToken, user } = result.data
+          const { accessToken, refreshToken } = result.data
           const cookies = createAuthCookies({ accessToken, refreshToken }, body.remember ?? false)
 
           return data<ProxyResponse<SSOHashResponse>>(
@@ -149,6 +149,6 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request: _request }: LoaderFunctionArgs) {
   return data({ error: 'Use POST method' }, { status: 405 })
 }

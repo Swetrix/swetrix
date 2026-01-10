@@ -151,7 +151,7 @@ const Revenue = ({ projectId }: Props) => {
         }
       }
     }
-  }, [fetcher.state, fetcher.data, t, projectId, selectedCurrency])
+  }, [fetcher.state, fetcher.data, t, projectId, selectedCurrency, fetcher])
 
   const handleConnect = () => {
     if (!apiKey.trim()) {

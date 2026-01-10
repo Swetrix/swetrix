@@ -53,13 +53,15 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
   // Update local state when fetcher returns data
   useEffect(() => {
     if (fetcher.data?.intent === 'get-available-projects' && fetcher.data?.availableProjects) {
-      setProjects(fetcher.data.availableProjects.results as Project[])
-      setTotal(fetcher.data.availableProjects.total)
+      setTimeout(() => {
+        setProjects(fetcher.data!.availableProjects!.results as Project[])
+        setTotal(fetcher.data!.availableProjects!.total)
+      }, 0)
     }
   }, [fetcher.data])
 
   useEffect(() => {
-    setCurrentPage(1)
+    setTimeout(() => setCurrentPage(1), 0)
   }, [debouncedSearch])
 
   return (

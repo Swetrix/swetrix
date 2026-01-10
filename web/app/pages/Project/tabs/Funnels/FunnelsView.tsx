@@ -53,7 +53,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   const projectPassword = useProjectPassword(id)
   const revalidator = useRevalidator()
   const { isAuthenticated } = useAuth()
-  const { timezone, period, dateRange, periodPairs, funnelsRefreshTrigger } = useViewProjectContext()
+  const { periodPairs, funnelsRefreshTrigger } = useViewProjectContext()
 
   // Filter periods to only include those valid for funnels
   const timeBucketSelectorItems = useMemo(() => {
@@ -195,16 +195,6 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
       setDataLoading(false)
     }
   }, [deferredData.funnelData, revalidator.state])
-
-  const loadFunnelsData = () => {
-    if (!activeFunnel?.id) {
-      return
-    }
-
-    setDataLoading(true)
-    // Use revalidator to trigger a new loader fetch with updated URL params
-    revalidator.revalidate()
-  }
 
   const funnelSummary = useMemo(() => {
     if (!funnelAnalytics || _isEmpty(funnelAnalytics.funnel)) {

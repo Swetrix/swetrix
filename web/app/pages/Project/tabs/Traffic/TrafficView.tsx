@@ -60,7 +60,7 @@ import {
   getDeviceRowMapper,
   onCSVExportClick,
 } from '~/pages/Project/View/ViewProject.helpers'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Checkbox from '~/ui/Checkbox'
@@ -143,7 +143,7 @@ const TrafficViewInner = ({
   customMetrics,
   onRemoveCustomMetric,
   resetCustomMetrics,
-  mode,
+  mode: _mode,
   projectViews,
   projectViewsLoading,
   loadProjectViews,
@@ -153,7 +153,6 @@ const TrafficViewInner = ({
   deferredData,
 }: TrafficViewInnerProps) => {
   const { id, project, allowedToManage } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const revalidator = useRevalidator()
   const { fetchMetadata: fetchCustomEventsMetadata } = useCustomEventsMetadataProxy()
   const { fetchMetadata: fetchPropertyMetadata } = usePropertyMetadataProxy()
@@ -170,9 +169,7 @@ const TrafficViewInner = ({
     activePeriod,
     // Comparison state from context
     isActiveCompare,
-    dateRangeCompare,
     activePeriodCompare,
-    compareDisable,
     // Chart state from context
     chartType,
     setChartTypeOnClick,
@@ -194,7 +191,6 @@ const TrafficViewInner = ({
   const { theme } = useTheme()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const isEmbedded = searchParams.get('embedded') === 'true'
 
   // Annotations hook
   const {
@@ -590,6 +586,7 @@ const TrafficViewInner = ({
     timeBucket,
     baseChartData,
     id,
+    fetchRevenueData,
   ])
 
   const getCustomEventMetadata = async (event: string) => {
@@ -681,7 +678,7 @@ const TrafficViewInner = ({
   // Load revenue data when revenue metric is enabled
   useEffect(() => {
     loadRevenueData()
-  }, [loadRevenueData])
+  }, [loadRevenueData, fetchRevenueData])
 
   // Handle refresh trigger - use revalidator for URL-based data
   useEffect(() => {

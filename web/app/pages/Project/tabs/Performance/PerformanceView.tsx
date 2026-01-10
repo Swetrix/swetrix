@@ -77,13 +77,10 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
   const revalidator = useRevalidator()
   const {
     performanceRefreshTrigger,
-    timezone,
     filters,
     timeFormat,
     timeBucket,
-    activePeriod,
     // Comparison state from context (not implemented via SSR yet)
-    isActiveCompare,
     activePeriodCompare,
     // Chart state from context
     chartType,
@@ -123,7 +120,6 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
   const { theme } = useTheme()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const isEmbedded = searchParams.get('embedded') === 'true'
 
   // State for data - initialized from loader, can be overridden by client-side fetches
   const [dataLoading, setDataLoading] = useState(false)

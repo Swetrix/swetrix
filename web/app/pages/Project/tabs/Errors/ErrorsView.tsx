@@ -472,7 +472,6 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(
     () => (deferredData.errorsData?.errors?.length || 0) >= ERRORS_TAKE,
   )
-  const errorsRequestIdRef = useRef(0)
 
   const activeEID = useMemo(() => searchParams.get('eid'), [searchParams])
 

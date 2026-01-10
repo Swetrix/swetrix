@@ -8,7 +8,7 @@ import { useNavigate, useSearchParams } from 'react-router'
 
 import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { FILTERS_PANELS_ORDER, ERRORS_FILTERS_PANELS_ORDER } from '~/lib/constants'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import FilterValueInput, { filterCategoryIcons, createVersionValue, parseVersionValue } from '~/ui/FilterValueInput'
 import Modal from '~/ui/Modal'
@@ -108,7 +108,6 @@ interface SearchFiltersProps {
 
 const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: SearchFiltersProps) => {
   const { id } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const { theme } = useTheme()
   const {
     t,

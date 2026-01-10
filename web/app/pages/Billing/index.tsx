@@ -99,7 +99,7 @@ const Billing = () => {
     }
   }, [])
 
-  const isTrialEnded = useMemo(() => {
+  const isTrialEnded = (() => {
     if (!trialEndDate) {
       return false
     }
@@ -109,9 +109,9 @@ const Billing = () => {
     const diff = future.diff(now)
 
     return diff < 0
-  }, [trialEndDate])
+  })()
 
-  const trialEndsOnMessage = useMemo(() => {
+  const trialEndsOnMessage = (() => {
     if (!trialEndDate || !isTrial) {
       return null
     }
@@ -137,7 +137,7 @@ const Billing = () => {
     return t('billing.trialEnds', {
       date,
     })
-  }, [language, trialEndDate, isTrial, timeFormat, isTrialEnded, t])
+  })()
 
   const onSubscriptionCancel = () => {
     if (!subCancelURL) {

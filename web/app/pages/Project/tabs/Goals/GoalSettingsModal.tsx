@@ -32,7 +32,7 @@ interface GoalSettingsModalProps {
   goalId?: string | null
 }
 
-const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: GoalSettingsModalProps) => {
+const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId: _projectId, goalId }: GoalSettingsModalProps) => {
   const { t } = useTranslation()
   const fetcher = useFetcher<ProjectViewActionData>()
   const processedRef = useRef<string | null>(null)

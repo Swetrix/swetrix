@@ -92,7 +92,7 @@ const Socialised = () => {
     } else {
       processCode()
     }
-  }, [])
+  }, [processSSOToken, processSSOTokenCommunityEdition])
 
   if (loading) {
     return <StatusPage loading />

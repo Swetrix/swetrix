@@ -113,7 +113,6 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
   const [error, setError] = useState<string | null>(null)
 
   const isMountedRef = useRef(true)
-  const prevActivePSIDRef = useRef<string | null>(null)
 
   const activePSID = useMemo(() => {
     return searchParams.get('psid')

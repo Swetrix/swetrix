@@ -187,10 +187,12 @@ const People = ({ project }: PeopleProps) => {
       if (fetcher.data.intent === 'share-project') {
         if (fetcher.data.success) {
           toast.success(t('apiNotifications.userInvited'))
-          setShowModal(false)
-          setBeenSubmitted(false)
-          setErrors({})
-          setValidated(false)
+          setTimeout(() => {
+            setShowModal(false)
+            setBeenSubmitted(false)
+            setErrors({})
+            setValidated(false)
+          }, 0)
           setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
         } else if (fetcher.data.error) {
           toast.error(fetcher.data.error)
@@ -198,8 +200,10 @@ const People = ({ project }: PeopleProps) => {
       } else if (fetcher.data.intent === 'delete-share-user') {
         if (fetcher.data.success) {
           toast.success(t('apiNotifications.userRemoved'))
-          setShowDeleteModal(false)
-          setMemberToRemove(null)
+          setTimeout(() => {
+            setShowDeleteModal(false)
+            setMemberToRemove(null)
+          }, 0)
         } else if (fetcher.data.error) {
           toast.error(fetcher.data.error)
         }
@@ -229,7 +233,7 @@ const People = ({ project }: PeopleProps) => {
 
   useEffect(() => {
     if (showModal) {
-      validate()
+      setTimeout(() => validate(), 0)
     }
   }, [form]) // eslint-disable-line
 

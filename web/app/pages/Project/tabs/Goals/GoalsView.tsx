@@ -448,8 +448,7 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
   const { id } = useCurrentProject()
   const revalidator = useRevalidator()
   const { goalsRefreshTrigger, timeBucket, timeFormat } = useViewProjectContext()
-  const [searchParams] = useSearchParams()
-  const isEmbedded = searchParams.get('embedded') === 'true'
+  const [_searchParams] = useSearchParams()
   const { t } = useTranslation()
   const fetcher = useFetcher<ProjectViewActionData>()
 

@@ -602,8 +602,6 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   )
 
   // Handle load chat fetcher response
-  const [pendingChatId, setPendingChatId] = useState<string | null>(null)
-
   useEffect(() => {
     if (loadChatFetcher.state === 'idle' && loadChatFetcher.data) {
       // Skip if we've already processed this response
@@ -626,13 +624,11 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         newParams.delete('chat')
         setSearchParams(newParams)
       }
-      setPendingChatId(null)
     }
   }, [loadChatFetcher.state, loadChatFetcher.data, searchParams, setSearchParams])
 
   const loadChatById = useCallback(
     (chatId: string) => {
-      setPendingChatId(chatId)
       loadChat(chatId)
     },
     [loadChat],
@@ -747,6 +743,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     loadRecentChats,
     loadAllChatsWithSkip,
     t,
+    handleNewChat,
   ])
 
   const handleDeleteChat = (chatId: string) => {

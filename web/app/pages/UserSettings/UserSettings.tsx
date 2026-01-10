@@ -189,7 +189,7 @@ const UserSettings = () => {
   }
 
   useEffect(() => {
-    validate()
+    setTimeout(() => validate(), 0)
   }, [form]) // eslint-disable-line
 
   useEffect(() => {
@@ -197,14 +197,16 @@ const UserSettings = () => {
       return
     }
 
-    setForm((prev) => ({
-      ...prev,
-      email: user.email || '',
-      timeFormat: user.timeFormat || TimeFormat['12-hour'],
-    }))
-    setTimezone(user.timezone || DEFAULT_TIMEZONE)
-    setReportFrequency(user.reportFrequency)
-    setFormPreset(true)
+    setTimeout(() => {
+      setForm((prev) => ({
+        ...prev,
+        email: user.email || '',
+        timeFormat: user.timeFormat || TimeFormat['12-hour'],
+      }))
+      setTimezone(user.timezone || DEFAULT_TIMEZONE)
+      setReportFrequency(user.reportFrequency)
+      setFormPreset(true)
+    }, 0)
   }, [isLoading, user, formPreset])
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -35,28 +35,38 @@ const TwoFA = () => {
       const { intent, twoFAData } = fetcher.data
 
       if (intent === 'generate-2fa' && twoFAData) {
-        setTwoFAConfigurating(true)
-        setTwoFAConfigData({ secret: twoFAData.secret, otpauthUrl: twoFAData.otpauthUrl })
+        setTimeout(() => {
+          setTwoFAConfigurating(true)
+          setTwoFAConfigData({ secret: twoFAData.secret, otpauthUrl: twoFAData.otpauthUrl })
+        }, 0)
       } else if (intent === 'enable-2fa' && twoFAData?.twoFactorRecoveryCode) {
         mergeUser({ isTwoFactorAuthenticationEnabled: true })
-        setTwoFARecovery(twoFAData.twoFactorRecoveryCode)
-        setTwoFACode('')
+        setTimeout(() => {
+          setTwoFARecovery(twoFAData.twoFactorRecoveryCode)
+          setTwoFACode('')
+        }, 0)
       } else if (intent === 'disable-2fa') {
         mergeUser({ isTwoFactorAuthenticationEnabled: false })
-        setTwoFADisabling(false)
-        setTwoFACode('')
+        setTimeout(() => {
+          setTwoFADisabling(false)
+          setTwoFACode('')
+        }, 0)
       }
     } else if (fetcher.data?.error) {
       const { intent, error } = fetcher.data
 
       if (intent === 'enable-2fa' || intent === 'disable-2fa') {
-        setTwoFACodeError(t('profileSettings.invalid2fa'))
-        setTwoFACode('')
+        setTimeout(() => {
+          setTwoFACodeError(t('profileSettings.invalid2fa'))
+          setTwoFACode('')
+        }, 0)
       } else {
         toast.error(error)
         if (intent === 'generate-2fa') {
-          setTwoFAConfigurating(false)
-          setTwoFAConfigData({})
+          setTimeout(() => {
+            setTwoFAConfigurating(false)
+            setTwoFAConfigData({})
+          }, 0)
         }
       }
     }
