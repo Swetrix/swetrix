@@ -110,7 +110,6 @@ const UserSettings = () => {
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState(false)
   const [reportFrequency, setReportFrequency] = useState(() => user?.reportFrequency)
-  const [errors, setErrors] = useState<Record<string, string>>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
@@ -180,7 +179,7 @@ const UserSettings = () => {
     }
   }, [fetcher.data, fetcher.state, mergeUser, t, logout, navigate])
 
-  const { validated, validationErrors } = useMemo(() => {
+  const errors = useMemo(() => {
     const allErrors: Record<string, string> = {}
 
     if (!isValidEmail(form.email)) {
@@ -197,15 +196,10 @@ const UserSettings = () => {
       allErrors.repeat = t('auth.common.noMatchError')
     }
 
-    return {
-      validated: _isEmpty(_keys(allErrors)),
-      validationErrors: allErrors,
-    }
+    return allErrors
   }, [form.email, form.password, form.repeat, t])
 
-  useEffect(() => {
-    setErrors(validationErrors)
-  }, [validationErrors])
+  const validated = _isEmpty(_keys(errors))
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
@@ -345,7 +339,7 @@ const UserSettings = () => {
     setShowPasswordFields((prev) => !prev)
   }
 
-  const SharedProjects = () => (
+  const sharedProjectsSection = (
     <>
       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
       <Text as='h3' size='lg' weight='bold' className='mt-2 flex items-center'>
@@ -544,7 +538,7 @@ const UserSettings = () => {
                 {isSelfhosted ? (
                   <>
                     {/* Shared projects setting */}
-                    <SharedProjects />
+                    {sharedProjectsSection}
                   </>
                 ) : (
                   <>
@@ -566,7 +560,7 @@ const UserSettings = () => {
                     <Socialisations />
 
                     {/* Shared projects setting */}
-                    <SharedProjects />
+                    {sharedProjectsSection}
 
                     {/* Organisations setting */}
                     <hr className='mt-5 border-gray-200 dark:border-gray-600' />
