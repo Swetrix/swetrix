@@ -27,7 +27,7 @@ const TwoFA = () => {
   const [twoFARecovery, setTwoFARecovery] = useState<string | null>(null)
   const { isTwoFactorAuthenticationEnabled } = user || {}
 
-  const isLoading = fetcher.state === 'submitting'
+  const isLoading = fetcher.state === 'submitting' || fetcher.state === 'loading'
 
   // Handle fetcher responses
   useEffect(() => {

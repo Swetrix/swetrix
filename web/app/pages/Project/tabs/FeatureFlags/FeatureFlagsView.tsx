@@ -515,7 +515,8 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
         { method: 'POST' },
       )
     },
-    [listFetcher],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [listFetcher.submit],
   )
 
   // Handle list fetcher response

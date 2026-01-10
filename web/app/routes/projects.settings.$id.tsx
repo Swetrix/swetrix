@@ -161,11 +161,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     case 'reset-filters': {
       const type = formData.get('type')?.toString()
-      const value = formData.get('value')?.toString()
+      const filters = formData.get('value')?.toString()
 
-      const result = await serverFetch(request, `project/reset-filters/${id}`, {
+      const result = await serverFetch(request, `project/reset-filters/${id}?type=${encodeURIComponent(type || '')}&filters=${encodeURIComponent(filters || '')}`, {
         method: 'DELETE',
-        body: { type, value },
       })
 
       if (result.error) {

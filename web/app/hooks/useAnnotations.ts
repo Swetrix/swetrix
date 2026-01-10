@@ -184,6 +184,12 @@ export const useAnnotations = (): UseAnnotationsReturn => {
     }
   }, [loadFetcher.state, loadFetcher.data])
 
+  const closeAnnotationModal = useCallback(() => {
+    setIsAnnotationModalOpen(false)
+    setAnnotationToEdit(undefined)
+    setAnnotationModalDate(undefined)
+  }, [])
+
   useEffect(() => {
     if (fetcher.state === 'idle' && fetcher.data && pendingAction) {
       if (fetcher.data.success) {
@@ -261,12 +267,6 @@ export const useAnnotations = (): UseAnnotationsReturn => {
     setAnnotationModalDate(date)
     setAnnotationToEdit(annotation)
     setIsAnnotationModalOpen(true)
-  }, [])
-
-  const closeAnnotationModal = useCallback(() => {
-    setIsAnnotationModalOpen(false)
-    setAnnotationToEdit(undefined)
-    setAnnotationModalDate(undefined)
   }, [])
 
   const handleChartContextMenu = useCallback(

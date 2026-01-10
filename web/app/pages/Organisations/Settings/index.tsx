@@ -53,7 +53,7 @@ const OrganisationSettings = () => {
     }
   }, [organisation])
 
-  const isSaving = fetcher.state === 'submitting'
+  const isSaving = fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'update-organisation'
   const isDeleting = fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'delete-organisation'
 
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -165,14 +165,6 @@ const OrganisationSettings = () => {
     document.title = `${t('project.settings.settings')} ${form.name} ${TITLE_SUFFIX}`
   }, [form, t])
 
-  if (!organisation) {
-    return (
-      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
-        <Loader />
-      </div>
-    )
-  }
-
   if (error) {
     return (
       <StatusPage
@@ -184,6 +176,14 @@ const OrganisationSettings = () => {
           { label: t('notFoundPage.support'), to: routes.contact },
         ]}
       />
+    )
+  }
+
+  if (!organisation) {
+    return (
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
+        <Loader />
+      </div>
     )
   }
 

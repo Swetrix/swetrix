@@ -370,7 +370,8 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
         { method: 'POST' },
       )
     },
-    [listFetcher],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [listFetcher.submit],
   )
 
   // Handle list fetcher response
@@ -394,7 +395,10 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   useEffect(() => {
     if (!actionFetcher.data || actionFetcher.state !== 'idle') return
 
-    const actionKey = `${actionFetcher.data.intent}-${JSON.stringify(actionFetcher.data.data)}`
+    const { intent, success, error, data } = actionFetcher.data
+    const responseData = actionFetcher.data as Record<string, unknown>
+    const uniqueSuffix = responseData.requestId ?? responseData.timestamp ?? actionFetcher.state
+    const actionKey = `${intent}-${success ?? false}-${error ?? ''}-${uniqueSuffix}-${JSON.stringify(data)}`
     if (processedActionRef.current === actionKey) return
     processedActionRef.current = actionKey
 

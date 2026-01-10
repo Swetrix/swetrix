@@ -908,7 +908,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         streamingPartsRef.current.push({ type: 'text', text: currentTextPartRef.current })
       }
 
-      if (finalContent.trim()) {
+      if (finalContent.trim() || streamingToolCallsRef.current.length > 0) {
         const assistantMessage: Message = {
           id: generateMessageId(),
           role: 'assistant',

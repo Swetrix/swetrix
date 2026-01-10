@@ -61,7 +61,7 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
   const { theme } = useTheme()
   const isNew = !flagId
   const fetcher = useFetcher<ProjectViewActionData>()
-  const processedRef = useRef<string | null>(null)
+  const lastHandledData = useRef<ProjectViewActionData | null>(null)
   const { fetchFilters } = useFiltersProxy()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -138,7 +138,6 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, flagId])
 
-  // Handle fetcher responses
   useEffect(() => {
     if (fetcher.state !== 'idle') return
 
@@ -147,10 +146,8 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
     }
 
     if (!fetcher.data) return
-
-    const responseKey = `${fetcher.data.intent}-${fetcher.data.success}`
-    if (processedRef.current === responseKey) return
-    processedRef.current = responseKey
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
 
     if (fetcher.data.intent === 'get-feature-flag') {
       if (fetcher.data.success && fetcher.data.data) {
@@ -184,16 +181,16 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
     }
   }, [fetcher.data, fetcher.state, t, onSuccess, onClose, isLoading])
 
-  // Reset processed ref when modal opens
+  // Reset ref when modal opens to allow fresh data handling
   useEffect(() => {
     if (isOpen) {
-      processedRef.current = null
+      lastHandledData.current = null
     }
   }, [isOpen])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    processedRef.current = null
+    lastHandledData.current = null
 
     if (isNew) {
       fetcher.submit(

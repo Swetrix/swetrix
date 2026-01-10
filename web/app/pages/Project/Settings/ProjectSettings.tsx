@@ -299,7 +299,7 @@ const ProjectSettings = () => {
   const [showDelete, setShowDelete] = useState(false)
   const [showReset, setShowReset] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [setResetting, setIsResetting] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [showTransfer, setShowTransfer] = useState(false)
   const [transferEmail, setTransferEmail] = useState('')
@@ -420,7 +420,7 @@ const ProjectSettings = () => {
   }
 
   const sharableLink = useMemo(() => {
-    const origin = requestOrigin || isBrowser ? window.location.origin : 'https://swetrix.com'
+    const origin = requestOrigin ?? (isBrowser ? window.location.origin : 'https://swetrix.com')
 
     return `${origin}/projects/${id}`
   }, [requestOrigin, id])
@@ -616,7 +616,7 @@ const ProjectSettings = () => {
     fetcher.submit(formData, { method: 'post' })
   }
 
-  const onReset = (resetTab: string, dateRange?: Date[], filterType?: string, filterValue?: string) => {
+  const onReset = (resetTab: string, dateRange?: Date[], filterType?: string, filterValue?: string[]) => {
     if (fetcher.state === 'submitting') return
 
     setIsResetting(true)
@@ -628,10 +628,10 @@ const ProjectSettings = () => {
       formData.set('intent', 'delete-partially')
       formData.set('from', dateRange[0]?.toISOString() || '')
       formData.set('to', dateRange[1]?.toISOString() || '')
-    } else if (resetTab === 'viaFilters' && filterType && filterValue) {
+    } else if (resetTab === 'viaFilters' && filterType && filterValue && filterValue.length > 0) {
       formData.set('intent', 'reset-filters')
       formData.set('type', filterType)
-      formData.set('value', filterValue)
+      formData.set('value', JSON.stringify(filterValue))
     }
 
     fetcher.submit(formData, { method: 'post' })
@@ -671,7 +671,7 @@ const ProjectSettings = () => {
         toast.error(t('project.settings.noFilters'))
         return
       }
-      onReset('viaFilters', undefined, filterType, activeFilter[0])
+      onReset('viaFilters', undefined, filterType, activeFilter)
     } else {
       onReset('all')
     }
@@ -1138,7 +1138,7 @@ const ProjectSettings = () => {
                 setShowReset={setShowReset}
                 setShowDelete={setShowDelete}
                 isDeleting={isDeleting}
-                setResetting={setResetting}
+                setResetting={isResetting}
               />
             ) : null}
           </section>

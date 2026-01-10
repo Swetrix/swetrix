@@ -2,7 +2,7 @@ import { EnvelopeIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid'
 import type { TFunction } from 'i18next'
 import { ChevronRightIcon, LaptopMinimalIcon, RocketIcon, CodeIcon, MailCheckIcon, SparklesIcon } from 'lucide-react'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate, useFetcher, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
@@ -73,6 +73,7 @@ const Onboarding = () => {
   const { authMe } = useAuthProxy()
   const navigate = useNavigate()
   const fetcher = useFetcher<OnboardingActionData>()
+  const lastHandledFetcherDataRef = useRef<OnboardingActionData | null>(null)
 
   const [currentStep, setCurrentStep] = useState(0)
   const [projectName, setProjectName] = useState('')
@@ -84,10 +85,13 @@ const Onboarding = () => {
     name?: string
   }>({})
 
-  const isLoading = fetcher.state === 'submitting'
+  const isLoading = fetcher.state === 'submitting' || fetcher.state === 'loading'
 
-  // Handle fetcher responses
   useEffect(() => {
+    if (!fetcher.data) return
+    if (lastHandledFetcherDataRef.current === fetcher.data) return
+    lastHandledFetcherDataRef.current = fetcher.data
+
     if (fetcher.data?.success) {
       const { intent, project: newProject } = fetcher.data
 
@@ -113,7 +117,8 @@ const Onboarding = () => {
     } else if (fetcher.data?.fieldErrors?.name) {
       setTimeout(() => setNewProjectErrors({ name: fetcher.data!.fieldErrors!.name }), 0)
     }
-  }, [fetcher.data, loadUser, logout, navigate, fetcher, t])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetcher.data, fetcher.submit, loadUser, logout, navigate])
 
   useEffect(() => {
     if (user?.hasCompletedOnboarding) {

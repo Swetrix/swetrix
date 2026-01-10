@@ -125,13 +125,13 @@ const UserSettings = () => {
 
   const lastHandledData = useRef<UserSettingsActionData | null>(null)
   const passwordChangedRef = useRef(false)
+  const pendingToggleRef = useRef<{ intent: string; previousValue: boolean } | null>(null)
 
   const isSubmitting = fetcher.state === 'submitting'
 
   const tabs = getTabs(t)
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
 
-  // Handle fetcher responses
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
     if (lastHandledData.current === fetcher.data) return
@@ -156,9 +156,11 @@ const UserSettings = () => {
         mergeUser({ apiKey: null })
         toast.success(t('profileSettings.updated'))
       } else if (intent === 'toggle-live-visitors' && updatedUser) {
+        pendingToggleRef.current = null
         mergeUser(updatedUser)
         toast.success(t('profileSettings.updated'))
       } else if (intent === 'toggle-login-notifications') {
+        pendingToggleRef.current = null
         toast.success(t('profileSettings.updated'))
       } else if (intent === 'confirm-email') {
         setCookie(CONFIRMATION_TIMEOUT, true, 600)
@@ -169,6 +171,15 @@ const UserSettings = () => {
         navigate(routes.main)
       }
     } else if (fetcher.data?.error) {
+      if (pendingToggleRef.current) {
+        const { intent, previousValue } = pendingToggleRef.current
+        if (intent === 'toggle-live-visitors') {
+          mergeUser({ showLiveVisitorsInTitle: previousValue })
+        } else if (intent === 'toggle-login-notifications') {
+          mergeUser({ receiveLoginNotifications: previousValue })
+        }
+        pendingToggleRef.current = null
+      }
       toast.error(fetcher.data.error)
     }
   }, [fetcher.data, fetcher.state, mergeUser, t, logout, navigate])
@@ -270,6 +281,10 @@ const UserSettings = () => {
   }
 
   const handleShowLiveVisitorsSave = (checked: boolean) => {
+    pendingToggleRef.current = {
+      intent: 'toggle-live-visitors',
+      previousValue: user?.showLiveVisitorsInTitle ?? false,
+    }
     const formData = new FormData()
     formData.set('intent', 'toggle-live-visitors')
     formData.set('show', checked.toString())
@@ -279,6 +294,10 @@ const UserSettings = () => {
   }
 
   const handleReceiveLoginNotifications = (checked: boolean) => {
+    pendingToggleRef.current = {
+      intent: 'toggle-login-notifications',
+      previousValue: user?.receiveLoginNotifications ?? false,
+    }
     const formData = new FormData()
     formData.set('intent', 'toggle-login-notifications')
     formData.set('receiveLoginNotifications', checked.toString())
@@ -319,6 +338,10 @@ const UserSettings = () => {
   }
 
   const onApiKeyGenerate = () => {
+    if (isSubmitting) {
+      return
+    }
+
     const formData = new FormData()
     formData.set('intent', 'generate-api-key')
     fetcher.submit(formData, { method: 'post' })

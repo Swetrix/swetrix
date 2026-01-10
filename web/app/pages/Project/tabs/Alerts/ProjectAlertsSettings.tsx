@@ -63,7 +63,6 @@ const ProjectAlertsSettings = ({
     alertOnNewErrorsOnly: true,
     alertOnEveryCustomEvent: false,
   })
-  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
@@ -239,7 +238,6 @@ const ProjectAlertsSettings = ({
     const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
-    setValidated(valid)
 
     return valid
   }

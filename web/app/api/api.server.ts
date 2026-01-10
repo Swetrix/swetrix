@@ -51,6 +51,16 @@ function getClientIP(request: Request): string | null {
   return null
 }
 
+async function fetchWithTimeout(
+  input: string | URL,
+  init: Parameters<typeof fetch>[1] = {},
+  timeoutMs = 15000,
+): Promise<Response> {
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort(), timeoutMs)
+  return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(id))
+}
+
 interface ServerFetchOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
   body?: Record<string, unknown>
@@ -96,7 +106,7 @@ export async function serverFetch<T = unknown>(
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method,
       headers: fetchHeaders,
       body: body ? JSON.stringify(body) : undefined,
@@ -108,7 +118,7 @@ export async function serverFetch<T = unknown>(
       if (refreshResult.success && refreshResult.tokens) {
         fetchHeaders['Authorization'] = `Bearer ${refreshResult.tokens.accessToken}`
 
-        const retryResponse = await fetch(url, {
+        const retryResponse = await fetchWithTimeout(url, {
           method,
           headers: fetchHeaders,
           body: body ? JSON.stringify(body) : undefined,
@@ -184,7 +194,7 @@ export async function streamingServerFetch(
   endpoint: string,
   options: ServerFetchOptions = {},
 ): Promise<Response> {
-  const { method = 'GET', body, headers: customHeaders = {} } = options
+  const { method = 'GET', body, headers: customHeaders = {}, skipAuth = false } = options
 
   const apiUrl = getApiUrl()
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
@@ -200,9 +210,11 @@ export async function streamingServerFetch(
     fetchHeaders['X-Client-IP-Address'] = clientIP
   }
 
-  const accessToken = getAccessToken(request)
-  if (accessToken) {
-    fetchHeaders['Authorization'] = `Bearer ${accessToken}`
+  if (!skipAuth) {
+    const accessToken = getAccessToken(request)
+    if (accessToken) {
+      fetchHeaders['Authorization'] = `Bearer ${accessToken}`
+    }
   }
 
   const response = await fetch(url, {
@@ -212,7 +224,7 @@ export async function streamingServerFetch(
   })
 
   // If 401/403, try to refresh the token and retry
-  if (response.status === 401 || response.status === 403) {
+  if ((response.status === 401 || response.status === 403) && !skipAuth) {
     const refreshResult = await tryRefreshToken(request)
 
     if (refreshResult.success && refreshResult.tokens) {

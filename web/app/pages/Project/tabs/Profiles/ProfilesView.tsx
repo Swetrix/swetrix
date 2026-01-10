@@ -95,7 +95,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       })
 
       if (requestId === profilesRequestIdRef.current && isMountedRef.current) {
-        const profilesList = (dataProfiles?.profiles || []) as unknown as Profile[]
+        const profilesList = dataProfiles?.profiles || []
         if (override) {
           setProfiles(profilesList)
         } else {
