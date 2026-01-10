@@ -27,7 +27,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useLoaderData, useNavigate, Link, useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { useFiltersProxy, useProjectProxy } from '~/hooks/useAnalyticsProxy'
+import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
@@ -43,7 +43,6 @@ import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import MultiSelect from '~/ui/MultiSelect'
 import Select from '~/ui/Select'
-import StatusPage from '~/ui/StatusPage'
 // Select is used inside tab components
 import countries from '~/utils/isoCountries'
 import routes from '~/utils/routes'
@@ -263,30 +262,34 @@ interface Form extends Partial<Project> {
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 const ProjectSettings = () => {
-  const { user, isLoading: authLoading } = useAuth()
+  const { user } = useAuth()
 
   const { t } = useTranslation('common')
   const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
-  const { requestOrigin } = useLoaderData<{ requestOrigin: string | null }>()
+  const { project: initialProject, requestOrigin } = useLoaderData<{
+    project: Project
+    requestOrigin: string | null
+  }>()
   const fetcher = useFetcher<ProjectSettingsActionData>()
   const gscFetcher = useFetcher<ProjectSettingsActionData>()
-  const { fetchProject } = useProjectProxy()
   const { fetchFilters } = useFiltersProxy()
 
-  const [project, setProject] = useState<Project | null>(null)
-  const [form, setForm] = useState<Form>({
-    name: '',
-    id,
-    public: false,
-    isPasswordProtected: false,
-    origins: null,
-    ipBlacklist: null,
-    countryBlacklist: [],
-    botsProtectionLevel: 'basic',
-    gscPropertyUri: null,
-    websiteUrl: null,
-  })
+  const [project, setProject] = useState<Project>(initialProject)
+  const [form, setForm] = useState<Form>(() => ({
+    name: initialProject.name || '',
+    id: initialProject.id,
+    public: initialProject.public || false,
+    isPasswordProtected: initialProject.isPasswordProtected || false,
+    origins: _isString(initialProject.origins) ? initialProject.origins : _join(initialProject.origins, ', '),
+    ipBlacklist: _isString(initialProject.ipBlacklist)
+      ? initialProject.ipBlacklist
+      : _join(initialProject.ipBlacklist, ', '),
+    countryBlacklist: initialProject.countryBlacklist || [],
+    botsProtectionLevel: (initialProject.botsProtectionLevel as 'off' | 'basic') || 'basic',
+    gscPropertyUri: initialProject.gscPropertyUri || null,
+    websiteUrl: initialProject.websiteUrl || null,
+  }))
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     name?: string
@@ -307,8 +310,6 @@ const ProjectSettings = () => {
   const [tab, setTab] = useState(DELETE_DATA_MODAL_TABS[0].name)
   const [showProtected, setShowProtected] = useState(false)
 
-  const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
   type SettingsTab =
@@ -378,7 +379,9 @@ const ProjectSettings = () => {
   const [gscEmail, setGscEmail] = useState<string | null>(null)
 
   // CAPTCHA state
-  const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(null)
+  const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(
+    () => initialProject.captchaSecretKey || null,
+  )
   const [captchaDifficulty, setCaptchaDifficulty] = useState<number>(4)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
 
@@ -424,38 +427,6 @@ const ProjectSettings = () => {
 
     return `${origin}/projects/${id}`
   }, [requestOrigin, id])
-
-  const loadProject = async (projectId: string) => {
-    if (isLoading) {
-      return
-    }
-    setIsLoading(true)
-
-    try {
-      const result = await fetchProject(projectId)
-      if (result) {
-        setProject(result as unknown as Project)
-        setCaptchaSecretKey(result.captchaSecretKey || null)
-        setCaptchaDifficulty(4)
-        setForm({
-          name: result.name,
-          id: result.id,
-          public: result.public,
-          isPasswordProtected: result.isPasswordProtected,
-          ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
-          origins: _isString(result.origins) ? result.origins : _join(result.origins, ', '),
-          botsProtectionLevel: result.botsProtectionLevel as 'off' | 'basic',
-          countryBlacklist: (result as unknown as Project).countryBlacklist || [],
-          gscPropertyUri: (result as unknown as Project).gscPropertyUri || null,
-          websiteUrl: (result as unknown as Project).websiteUrl || null,
-        })
-      }
-    } catch (reason: any) {
-      setError(reason)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const [gscPropertiesPending, setGscPropertiesPending] = useState(false)
   const lastHandledGscData = useRef<ProjectSettingsActionData | null>(null)
@@ -536,16 +507,6 @@ const ProjectSettings = () => {
     gscFetcher.submit({ intent: 'gsc-status' }, { method: 'post' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  useEffect(() => {
-    if (authLoading) {
-      return
-    }
-
-    loadProject(id)
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, id])
 
   // Handle fetcher responses
   useEffect(() => {
@@ -772,28 +733,6 @@ const ProjectSettings = () => {
   const currentTabLabel = useMemo(() => {
     return (tabs.find((t) => t.id === activeTab)?.label as string) || ''
   }, [tabs, activeTab])
-
-  if (error && !isLoading) {
-    return (
-      <StatusPage
-        type='error'
-        title={t('apiNotifications.somethingWentWrong')}
-        description={t('apiNotifications.errorCode', { error })}
-        actions={[
-          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
-          { label: t('notFoundPage.support'), to: routes.contact },
-        ]}
-      />
-    )
-  }
-
-  if (isLoading || isLoading === null || !project) {
-    return (
-      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
-        <Loader />
-      </div>
-    )
-  }
 
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 pb-40 dark:bg-slate-900'>

@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
-import { data } from 'react-router'
+import { data, redirect } from 'react-router'
 
 import { serverFetch } from '~/api/api.server'
 import { Project } from '~/lib/models/Project'
@@ -7,9 +7,28 @@ import { Subscriber } from '~/lib/models/Subscriber'
 import ProjectSettings from '~/pages/Project/Settings'
 import { redirectIfNotAuthenticated, createHeadersWithCookies } from '~/utils/session.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   redirectIfNotAuthenticated(request)
-  return { requestOrigin: request.headers.get('origin') }
+
+  const { id } = params
+
+  if (!id) {
+    throw new Response('Project ID is required', { status: 400 })
+  }
+
+  const result = await serverFetch<Project>(request, `project/${id}`)
+
+  if (result.error) {
+    return redirect('/dashboard')
+  }
+
+  return data(
+    {
+      project: result.data as Project,
+      requestOrigin: request.headers.get('origin'),
+    },
+    { headers: createHeadersWithCookies(result.cookies) },
+  )
 }
 
 export interface RevenueStatus {
