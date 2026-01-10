@@ -3,7 +3,7 @@ import _split from 'lodash/split'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { processSSOToken, processSSOTokenCommunityEdition } from '~/api'
+import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { isSelfhosted, SSO_PROVIDERS } from '~/lib/constants'
 import StatusPage from '~/ui/StatusPage'
 import routes from '~/utils/routes'
@@ -12,6 +12,7 @@ const Socialised = () => {
   const { t } = useTranslation('common')
   const [loading, setLoading] = useState(true)
   const [isError, setIsError] = useState(false)
+  const { processSSOToken, processSSOTokenCommunityEdition } = useAuthProxy()
 
   useEffect(() => {
     // For some reason, Google redirects to a hash URL, let's fix it
@@ -91,7 +92,7 @@ const Socialised = () => {
     } else {
       processCode()
     }
-  }, [])
+  }, [processSSOToken, processSSOTokenCommunityEdition])
 
   if (loading) {
     return <StatusPage loading />

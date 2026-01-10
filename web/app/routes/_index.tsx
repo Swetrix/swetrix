@@ -29,7 +29,7 @@ import { Link, redirect, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
 
-import { getGeneralStats, getPaymentMetainfo } from '~/api'
+import { getGeneralStats, serverFetch } from '~/api/api.server'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import FAQ from '~/components/marketing/FAQ'
@@ -82,7 +82,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
-  return { deviceInfo }
+  const [metainfoResult, stats] = await Promise.all([
+    serverFetch<Metainfo>(request, 'user/metainfo', { skipAuth: true }),
+    getGeneralStats(request),
+  ])
+
+  return {
+    deviceInfo,
+    metainfo: metainfoResult.data ?? DEFAULT_METAINFO,
+    stats,
+  }
 }
 
 interface FeedbackHighlightProps {
@@ -186,15 +195,8 @@ const REVIEWERS = [
   },
 ]
 
-const Testimonials = ({ className }: { className?: string }) => {
+const Testimonials = ({ className, stats }: { className?: string; stats: Stats | null }) => {
   const { t } = useTranslation('common')
-  const [stats, setStats] = useState<Stats>({} as Stats)
-
-  useEffect(() => {
-    getGeneralStats()
-      .then((stats) => setStats(stats))
-      .catch(console.error)
-  }, [])
 
   return (
     <div className={cn('flex flex-col items-center justify-center gap-3 md:flex-row', className)}>
@@ -217,31 +219,15 @@ const Testimonials = ({ className }: { className?: string }) => {
           <StarIcon className='size-5 text-yellow-500' />
         </div>
         <div className='text-base text-gray-900/70 dark:text-gray-200'>
-          <ClientOnly
-            fallback={
-              <Trans
-                values={{
-                  amount: '> 1000',
-                }}
-                t={t}
-                i18nKey='main.understandTheirUsers'
-              >
-                <span className='font-semibold text-gray-900 dark:text-gray-50' />
-              </Trans>
-            }
+          <Trans
+            values={{
+              amount: stats?.users || '> 1000',
+            }}
+            t={t}
+            i18nKey='main.understandTheirUsers'
           >
-            {() => (
-              <Trans
-                values={{
-                  amount: stats.users || '> 1000',
-                }}
-                t={t}
-                i18nKey='main.understandTheirUsers'
-              >
-                <span className='font-semibold text-gray-900 dark:text-gray-50' />
-              </Trans>
-            )}
-          </ClientOnly>
+            <span className='font-semibold text-gray-900 dark:text-gray-50' />
+          </Trans>
         </div>
       </div>
     </div>
@@ -312,6 +298,7 @@ const LiveDemoPreview = () => {
 
 const Hero = () => {
   const { t } = useTranslation('common')
+  const { stats } = useLoaderData<typeof loader>()
 
   return (
     <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-800/50'>
@@ -366,7 +353,7 @@ const Hero = () => {
                 <span>{t('main.heroBenefits.selfHostable')}</span>
               </div>
             </div>
-            <Testimonials className='mt-8 hidden lg:block' />
+            <Testimonials className='mt-8 hidden lg:block' stats={stats} />
           </div>
           <div className='col-span-6 mt-10 overflow-visible lg:mt-0 lg:mr-0 lg:ml-4'>
             <ClientOnly
@@ -377,7 +364,7 @@ const Hero = () => {
               {() => <LiveDemoPreview />}
             </ClientOnly>
           </div>
-          <Testimonials className='mt-8 lg:hidden' />
+          <Testimonials className='mt-8 lg:hidden' stats={stats} />
         </section>
       </div>
     </div>
@@ -1365,18 +1352,7 @@ const FeaturesShowcase = () => {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
-  const { deviceInfo } = useLoaderData<typeof loader>()
-
-  useEffect(() => {
-    const abortController = new AbortController()
-
-    getPaymentMetainfo({ signal: abortController.signal })
-      .then(setMetainfo)
-      .catch(() => {})
-
-    return () => abortController.abort()
-  }, [])
+  const { deviceInfo, metainfo } = useLoaderData<typeof loader>()
 
   const geoOptions = [
     {
@@ -1701,6 +1677,8 @@ const FeaturesShowcase = () => {
 }
 
 export default function Index() {
+  const { metainfo } = useLoaderData<typeof loader>()
+
   return (
     <div className='overflow-hidden'>
       <main className='bg-gray-50 dark:bg-slate-900'>
@@ -1710,7 +1688,7 @@ export default function Index() {
 
         <FeaturesShowcase />
 
-        <MarketingPricing />
+        <MarketingPricing metainfo={metainfo} />
 
         <FAQ />
 

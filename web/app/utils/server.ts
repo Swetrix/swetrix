@@ -36,17 +36,6 @@ export function detectTheme(request: Request): ThemeType {
   return 'light'
 }
 
-function getAccessToken(request: Request): string | null {
-  const cookie = request.headers.get('Cookie')
-  const accessToken = cookie?.match(/(?<=access_token=)[^;]*/)?.[0]
-
-  return accessToken || null
-}
-
-export function isAuthenticated(request: Request): boolean {
-  return !!getAccessToken(request)
-}
-
 export function isWWW(url: URL): boolean {
   return _startsWith(url.hostname, 'www.')
 }

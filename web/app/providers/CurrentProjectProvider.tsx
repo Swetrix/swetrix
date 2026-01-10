@@ -1,19 +1,17 @@
-import _replace from 'lodash/replace'
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams, useFetcher, useLoaderData } from 'react-router'
 import { toast } from 'sonner'
 
-import { checkPassword, getLiveVisitors, getProject } from '~/api'
+import { useLiveVisitorsProxy } from '~/hooks/useAnalyticsProxy'
 import { LIVE_VISITORS_UPDATE_INTERVAL, LS_PROJECTS_PROTECTED_KEY, Period, TimeBucket } from '~/lib/constants'
 import { type Project } from '~/lib/models/Project'
-import { getItemJSON, removeItem } from '~/utils/localstorage'
+import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
+import { getItemJSON } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
 import { getProjectPreferences, setProjectPassword, setProjectPreferences } from '../pages/Project/View/utils/cache'
 import { CHART_METRICS_MAPPING } from '../pages/Project/View/ViewProject.helpers'
-
-import { useAuth } from './AuthProvider'
 
 interface CurrentProjectContextType {
   id: string
@@ -49,110 +47,95 @@ export const useProjectPassword = (id?: string) => {
 const useProject = (id: string) => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
-  const { isLoading: authLoading } = useAuth()
-  const projectPassword = useProjectPassword(id)
-  const [project, setProject] = useState<Project | null>(null)
-  const [isPasswordRequired, setIsPasswordRequired] = useState(false)
-  const [passwordForRetry, setPasswordForRetry] = useState<string | null>(null)
+  const loaderData = useLoaderData<ProjectLoaderData>()
+  const storedPassword = useProjectPassword(id)
 
-  const [searchParams] = useSearchParams()
+  // Use loader data only for initial state (SSR hydration)
+  const [project, setProject] = useState<Project | null>(() => loaderData?.project || null)
+  const [isPasswordRequired, setIsPasswordRequired] = useState(() => loaderData?.isPasswordRequired || false)
 
-  const params = useMemo(() => {
-    const searchParamsObj = new URLSearchParams()
-
-    if (searchParams.has('theme')) {
-      searchParamsObj.set('theme', searchParams.get('theme')!)
-    }
-
-    if (searchParams.has('embedded')) {
-      searchParamsObj.set('embedded', searchParams.get('embedded')!)
-    }
-
-    const searchString = searchParamsObj.toString()
-    return searchString ? `?${searchString}` : undefined
-  }, [searchParams])
-
-  const onErrorLoading = useCallback(() => {
-    if (projectPassword) {
-      checkPassword(id, projectPassword).then((res) => {
-        if (res) {
-          navigate({
-            pathname: _replace(routes.project, ':id', id),
-            search: params,
-          })
-          return
-        }
-
-        toast.error(t('apiNotifications.incorrectPassword'))
-        setIsPasswordRequired(true)
-        removeItem(LS_PROJECTS_PROTECTED_KEY)
-      })
-      return
-    }
-
-    toast.error(t('project.noExist'))
-    navigate(routes.dashboard)
-  }, [id, projectPassword, navigate, t, params])
-
-  // Function to submit password and retry loading project
-  const submitPassword = useCallback(
-    async (password: string): Promise<{ success: boolean; error?: string }> => {
-      try {
-        const isValid = await checkPassword(id, password)
-
-        if (!isValid) {
-          return { success: false, error: t('apiNotifications.incorrectPassword') }
-        }
-
-        // Password is correct, store it for future use and trigger project reload
-        setProjectPassword(id, password)
-        setPasswordForRetry(password)
-        setIsPasswordRequired(false)
-        return { success: true }
-      } catch (error) {
-        console.error('[ERROR] (submitPassword)', error)
-        return { success: false, error: t('apiNotifications.somethingWentWrong') }
-      }
-    },
-    [id, t],
-  )
+  const passwordFetcher = useFetcher<ProjectViewActionData>()
+  const lastHandledFetcherData = useRef<ProjectViewActionData | null>(null)
+  const hasTriedStoredPassword = useRef(false)
+  const passwordResolverRef = useRef<((value: { success: boolean; error?: string }) => void) | null>(null)
+  const lastSubmittedPasswordRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (authLoading || project) {
-      return
+    if (loaderData?.error && !loaderData.project && !loaderData.isPasswordRequired) {
+      console.error('[ERROR] (getProject)', loaderData.error)
+      toast.error(t('project.noExist'))
+      navigate(routes.dashboard)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-    // Use passwordForRetry if available, otherwise use stored password
-    const effectivePassword = passwordForRetry || projectPassword
+  // Auto-submit stored password if loader says password is required but we have it in localStorage
+  useEffect(() => {
+    if (
+      loaderData?.isPasswordRequired &&
+      storedPassword &&
+      !hasTriedStoredPassword.current &&
+      passwordFetcher.state === 'idle'
+    ) {
+      hasTriedStoredPassword.current = true
+      passwordFetcher.submit(
+        { intent: 'get-project', password: storedPassword },
+        { method: 'POST', action: `/projects/${id}` },
+      )
+    }
+  }, [loaderData?.isPasswordRequired, storedPassword, id, passwordFetcher])
 
-    getProject(id, effectivePassword)
-      .then((result) => {
-        if (!result) {
-          onErrorLoading()
-          return
-        }
+  // Handle password fetcher response
+  useEffect(() => {
+    if (passwordFetcher.state !== 'idle' || !passwordFetcher.data) return
 
-        if (result.isPasswordProtected && !result.role && !effectivePassword) {
-          // Show password modal instead of redirecting
-          setIsPasswordRequired(true)
-          return
-        }
+    // Prevent handling the same response twice
+    if (lastHandledFetcherData.current === passwordFetcher.data) return
+    lastHandledFetcherData.current = passwordFetcher.data
 
-        setProject(result)
+    if (passwordFetcher.data.success && passwordFetcher.data.data) {
+      const result = passwordFetcher.data.data as Project
+      setProject(result)
+      setIsPasswordRequired(false)
+
+      if (lastSubmittedPasswordRef.current) {
+        setProjectPassword(id, lastSubmittedPasswordRef.current)
+        lastSubmittedPasswordRef.current = null
+      }
+
+      if (passwordResolverRef.current) {
+        passwordResolverRef.current({ success: true })
+        passwordResolverRef.current = null
+      }
+    } else if (passwordFetcher.data.error) {
+      toast.error(t('apiNotifications.incorrectPassword'))
+
+      lastSubmittedPasswordRef.current = null
+      if (passwordResolverRef.current) {
+        passwordResolverRef.current({ success: false, error: passwordFetcher.data.error })
+        passwordResolverRef.current = null
+      }
+    }
+  }, [passwordFetcher.state, passwordFetcher.data, t, id])
+
+  const submitPassword = useCallback(
+    async (password: string): Promise<{ success: boolean; error?: string }> => {
+      return new Promise((resolve) => {
+        passwordResolverRef.current = resolve
+        lastSubmittedPasswordRef.current = password
+        passwordFetcher.submit({ intent: 'get-project', password }, { method: 'POST', action: `/projects/${id}` })
       })
-      .catch((reason) => {
-        console.error('[ERROR] (getProject)', reason)
-        onErrorLoading()
-      })
-  }, [authLoading, project, id, projectPassword, passwordForRetry, navigate, onErrorLoading, params])
+    },
+    [id, passwordFetcher],
+  )
 
-  const mergeProject = useCallback((project: Partial<Project>) => {
+  const mergeProject = useCallback((updates: Partial<Project>) => {
     setProject((prev) => {
       if (!prev) {
         return null
       }
 
-      return { ...prev, ...project }
+      return { ...prev, ...updates }
     })
   }, [])
 
@@ -185,33 +168,41 @@ const useProjectPreferences = (id: string) => {
 }
 
 const useLiveVisitors = (project: Project | null) => {
-  const projectPassword = useProjectPassword(project?.id)
+  const projectId = project?.id
+  const isLocked = project?.isLocked
   const [liveVisitors, setLiveVisitors] = useState(0)
+  const { fetchLiveVisitors } = useLiveVisitorsProxy()
 
   const updateLiveVisitors = useCallback(async () => {
-    if (!project || project.isLocked) {
+    if (!projectId || isLocked) {
       return
     }
 
-    const { id: pid } = project
-    const result = await getLiveVisitors([pid], projectPassword)
-    setLiveVisitors(result[pid] || 0)
-  }, [project, projectPassword])
+    try {
+      const result = await fetchLiveVisitors([projectId])
+      if (result) {
+        setLiveVisitors(result[projectId] || 0)
+      }
+    } catch (reason) {
+      console.error('Failed to update live visitors:', reason)
+    }
+  }, [projectId, isLocked, fetchLiveVisitors])
 
   useEffect(() => {
-    if (!project || project.isLocked) {
+    if (!projectId || isLocked) {
       return
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Initial fetch and interval subscription
+    // Initial fetch on mount - eslint-disable needed as this is intentional
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     updateLiveVisitors()
 
-    const interval = setInterval(async () => {
-      await updateLiveVisitors()
+    const interval = setInterval(() => {
+      updateLiveVisitors()
     }, LIVE_VISITORS_UPDATE_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [project, updateLiveVisitors])
+  }, [projectId, isLocked, updateLiveVisitors])
 
   return { liveVisitors, updateLiveVisitors }
 }

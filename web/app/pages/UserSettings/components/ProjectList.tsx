@@ -1,13 +1,14 @@
 import dayjs from 'dayjs'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
-import { memo, useState } from 'react'
+import { memo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { rejectProjectShare, acceptProjectShare } from '~/api'
 import { SharedProject } from '~/lib/models/SharedProject'
 import { useAuth } from '~/providers/AuthProvider'
+import { UserSettingsActionData } from '~/routes/user-settings'
 import Button from '~/ui/Button'
 import Modal from '~/ui/Modal'
 
@@ -21,41 +22,48 @@ const ProjectList = ({ item }: ProjectListProps) => {
     i18n: { language },
   } = useTranslation('common')
   const { user, mergeUser } = useAuth()
+  const fetcher = useFetcher<UserSettingsActionData>()
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const { created, confirmed, id, role, project } = item
 
-  const onQuit = async () => {
-    try {
-      await rejectProjectShare(item.id)
-      mergeUser({
-        sharedProjects: _filter(user?.sharedProjects, (share) => share.id !== item.id),
-      })
-      toast.success(t('apiNotifications.quitProject'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while quitting project: ${reason}`)
-      toast.error(t('apiNotifications.quitProjectError'))
+  const isPending = fetcher.state !== 'idle'
+
+  useEffect(() => {
+    if (fetcher.data?.intent === 'reject-project-share') {
+      if (fetcher.data.success) {
+        mergeUser({
+          sharedProjects: _filter(user?.sharedProjects, (share) => share.id !== item.id),
+        })
+        toast.success(t('apiNotifications.quitProject'))
+      } else if (fetcher.data.error) {
+        toast.error(t('apiNotifications.quitProjectError'))
+      }
     }
+
+    if (fetcher.data?.intent === 'accept-project-share') {
+      if (fetcher.data.success) {
+        mergeUser({
+          sharedProjects: _map(user?.sharedProjects, (share) => {
+            if (share.id === id) {
+              return { ...share, confirmed: true }
+            }
+            return share
+          }),
+        })
+        toast.success(t('apiNotifications.acceptInvitation'))
+      } else if (fetcher.data.error) {
+        toast.error(t('apiNotifications.acceptInvitationError'))
+      }
+    }
+  }, [fetcher.data, id, item.id, mergeUser, t, user?.sharedProjects])
+
+  const onQuit = () => {
+    fetcher.submit({ intent: 'reject-project-share', shareId: item.id }, { method: 'post', action: '/user-settings' })
   }
 
-  const onAccept = async () => {
-    try {
-      await acceptProjectShare(id)
-
-      mergeUser({
-        sharedProjects: _map(user?.sharedProjects, (item) => {
-          if (item.id === id) {
-            return { ...item, confirmed: true }
-          }
-          return item
-        }),
-      })
-
-      toast.success(t('apiNotifications.acceptInvitation'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while accepting project invitation: ${reason}`)
-      toast.error(t('apiNotifications.acceptInvitationError'))
-    }
+  const onAccept = () => {
+    fetcher.submit({ intent: 'accept-project-share', shareId: id }, { method: 'post', action: '/user-settings' })
   }
 
   return (
@@ -71,15 +79,15 @@ const ProjectList = ({ item }: ProjectListProps) => {
       </td>
       <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
         {confirmed ? (
-          <Button onClick={() => setShowDeleteModal(true)} danger small>
+          <Button onClick={() => setShowDeleteModal(true)} danger small loading={isPending}>
             {t('common.quit')}
           </Button>
         ) : (
           <>
-            <Button className='mr-2' onClick={() => setShowDeleteModal(true)} primary small>
+            <Button className='mr-2' onClick={() => setShowDeleteModal(true)} primary small loading={isPending}>
               {t('common.reject')}
             </Button>
-            <Button onClick={onAccept} primary small>
+            <Button onClick={onAccept} primary small loading={isPending}>
               {t('common.accept')}
             </Button>
           </>

@@ -7,13 +7,14 @@ import _map from 'lodash/map'
 import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { changeOrganisationRole, inviteOrganisationMember, removeOrganisationMember } from '~/api'
 import useOnClickOutside from '~/hooks/useOnClickOutside'
 import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
 import { DetailedOrganisation, Role } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
+import type { OrganisationSettingsActionData } from '~/routes/organisations.$id'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
@@ -35,10 +36,10 @@ const NoPeople = () => {
 interface UsersListProps {
   members: DetailedOrganisation['members']
   onRemove: (member: DetailedOrganisation['members'][number]) => void
-  reloadOrganisation: () => Promise<void>
+  fetcher: ReturnType<typeof useFetcher<OrganisationSettingsActionData>>
 }
 
-const UsersList = ({ members, onRemove, reloadOrganisation }: UsersListProps) => {
+const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
   const {
     t,
     i18n: { language },
@@ -49,16 +50,12 @@ const UsersList = ({ members, onRemove, reloadOrganisation }: UsersListProps) =>
   const openRef = useRef<HTMLUListElement>(null)
   useOnClickOutside(openRef, () => setRoleEditDropdownId(null))
 
-  const changeRole = async (memberId: string, newRole: Role) => {
-    try {
-      await changeOrganisationRole(memberId, newRole)
-      await reloadOrganisation()
-      toast.success(t('apiNotifications.roleUpdated'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while updating user's role: ${reason}`)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.roleUpdateError'))
-    }
-
+  const changeRole = (memberId: string, newRole: Role) => {
+    const formData = new FormData()
+    formData.set('intent', 'update-member-role')
+    formData.set('memberId', memberId)
+    formData.set('role', newRole)
+    fetcher.submit(formData, { method: 'post' })
     setRoleEditDropdownId(null)
   }
 
@@ -148,12 +145,13 @@ const UsersList = ({ members, onRemove, reloadOrganisation }: UsersListProps) =>
 
 interface PeopleProps {
   organisation: DetailedOrganisation
-  reloadOrganisation: () => Promise<void>
 }
 
-const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
+const People = ({ organisation }: PeopleProps) => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
+  const fetcher = useFetcher<OrganisationSettingsActionData>()
+
   const [form, setForm] = useState<{
     email: string
     role: Role
@@ -169,10 +167,43 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
   const [validated, setValidated] = useState(false)
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
   const [memberToRemove, setMemberToRemove] = useState<DetailedOrganisation['members'][number] | null>(null)
 
   const { name, members } = organisation
+
+  const isSubmitting = fetcher.state === 'submitting'
+  const isDeleting = isSubmitting && fetcher.formData?.get('intent') === 'remove-member'
+
+  const closeModal = () => {
+    setShowModal(false)
+    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
+    setErrors({})
+    setBeenSubmitted(false)
+  }
+
+  const closeRemoveUserModal = () => {
+    setShowDeleteModal(false)
+    setTimeout(() => setMemberToRemove(null), 300)
+  }
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      const { intent } = fetcher.data
+      if (intent === 'invite-member') {
+        toast.success(t('apiNotifications.userInvited'))
+        closeModal()
+      } else if (intent === 'remove-member') {
+        toast.success(t('apiNotifications.orgUserRemoved'))
+        closeRemoveUserModal()
+      } else if (intent === 'update-member-role') {
+        toast.success(t('apiNotifications.roleUpdated'))
+      }
+    } else if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
+    }
+  }, [fetcher.data, t])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const validate = () => {
     const allErrors: {
@@ -194,11 +225,13 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
     setValidated(valid)
   }
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (showModal) {
       validate()
     }
-  }, [form]) // eslint-disable-line
+  }, [form]) // eslint-disable-line react-hooks/exhaustive-deps
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleInput = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
     const value = target.type === 'checkbox' ? target.checked : target.value
@@ -209,22 +242,12 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
     }))
   }
 
-  const onInviteToOrganisation = async () => {
-    setShowModal(false)
-    setErrors({})
-    setValidated(false)
-
-    try {
-      await inviteOrganisationMember(organisation.id, form)
-      await reloadOrganisation()
-      toast.success(t('apiNotifications.userInvited'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while inviting a user: ${reason}`)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.userInviteError'))
-    }
-
-    // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
+  const onInviteToOrganisation = () => {
+    const formData = new FormData()
+    formData.set('intent', 'invite-member')
+    formData.set('email', form.email)
+    formData.set('role', form.role)
+    fetcher.submit(formData, { method: 'post' })
   }
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -239,36 +262,11 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
     }
   }
 
-  const closeModal = () => {
-    setShowModal(false)
-    // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
-    setErrors({})
-  }
-
-  const closeRemoveUserModal = () => {
-    setShowDeleteModal(false)
-    setTimeout(() => setMemberToRemove(null), 300)
-  }
-
-  const onRemove = async (member: DetailedOrganisation['members'][number]) => {
-    if (isDeleting) {
-      return
-    }
-
-    setIsDeleting(true)
-
-    try {
-      await removeOrganisationMember(member.id)
-      await reloadOrganisation()
-
-      toast.success(t('apiNotifications.orgUserRemoved'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while removing user from the organisation: ${reason}`)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.orgUserRemoveError'))
-    } finally {
-      setIsDeleting(false)
-    }
+  const onRemove = (member: DetailedOrganisation['members'][number]) => {
+    const formData = new FormData()
+    formData.set('intent', 'remove-member')
+    formData.set('memberId', member.id)
+    fetcher.submit(formData, { method: 'post' })
   }
 
   return (
@@ -320,7 +318,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
                           setMemberToRemove(member)
                           setShowDeleteModal(true)
                         }}
-                        reloadOrganisation={reloadOrganisation}
+                        fetcher={fetcher}
                       />
                     </tbody>
                   </table>

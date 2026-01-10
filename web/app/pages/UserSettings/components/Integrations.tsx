@@ -1,13 +1,14 @@
 import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/solid'
 import type i18next from 'i18next'
 import _map from 'lodash/map'
-import React, { useState, memo } from 'react'
+import React, { useState, memo, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { removeTgIntegration } from '~/api'
 import { User } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
+import type { UserSettingsActionData } from '~/routes/user-settings'
 import Button from '~/ui/Button'
 import Discord from '~/ui/icons/Discord'
 import Slack from '~/ui/icons/Slack'
@@ -69,6 +70,23 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
   const [integrationInput, setIntegrationInput] = useState<string | null>(null)
   const [isIntegrationLoading, setIsIntegrationLoading] = useState(false)
   const [isRemovalLoading, setIsRemovalLoading] = useState(false)
+
+  const fetcher = useFetcher<UserSettingsActionData>()
+  const isTgRemovalLoading = fetcher.state !== 'idle'
+
+  useEffect(() => {
+    if (fetcher.data?.intent === 'remove-tg-integration') {
+      if (fetcher.data.success) {
+        mergeUser({
+          isTelegramChatIdConfirmed: false,
+          telegramChatId: null,
+        })
+        trackCustom('INTEGRATION_REMOVED', { integration: 'telegram' })
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+      }
+    }
+  }, [fetcher.data, mergeUser])
 
   const setupIntegration = (key: string) => () => {
     setIntegrationConfigurating(key)
@@ -166,30 +184,21 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
   }
 
   const removeIntegration = async (key: string) => {
-    if (isRemovalLoading || !user) {
+    if (isRemovalLoading || isTgRemovalLoading || !user) {
+      return
+    }
+
+    if (key === 'telegram') {
+      if (!user.telegramChatId) {
+        toast.error(t('apiNotifications.integrationRemovalError'))
+        return
+      }
+
+      fetcher.submit({ intent: 'remove-tg-integration', tgID: user.telegramChatId }, { method: 'POST' })
       return
     }
 
     setIsRemovalLoading(true)
-
-    if (key === 'telegram') {
-      try {
-        if (user.telegramChatId) {
-          await removeTgIntegration(user.telegramChatId)
-        } else {
-          throw new Error('No chat ID')
-        }
-        mergeUser({
-          isTelegramChatIdConfirmed: false,
-          telegramChatId: null,
-        })
-      } catch (reason: any) {
-        toast.error(typeof reason === 'string' ? reason : t('apiNotifications.integrationRemovalError'))
-        console.error(`[ERROR] Failed to remove TG integration: ${reason}`)
-      }
-
-      setIsRemovalLoading(false)
-    }
 
     if (key === 'slack') {
       handleIntegrationSave(
@@ -199,6 +208,8 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         (isSuccess: boolean) => {
           if (!isSuccess) {
             toast.error(t('apiNotifications.integrationRemovalError'))
+          } else {
+            trackCustom('INTEGRATION_REMOVED', { integration: key })
           }
 
           mergeUser({
@@ -217,6 +228,8 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         (isSuccess: boolean) => {
           if (!isSuccess) {
             toast.error(t('apiNotifications.integrationRemovalError'))
+          } else {
+            trackCustom('INTEGRATION_REMOVED', { integration: key })
           }
 
           mergeUser({
@@ -226,10 +239,6 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         },
       )
     }
-
-    trackCustom('INTEGRATION_REMOVED', {
-      integration: key,
-    })
   }
 
   if (integrationConfigurating) {

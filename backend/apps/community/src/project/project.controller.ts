@@ -621,7 +621,7 @@ export class ProjectController {
 
     await deleteProjectRedis(pid)
 
-    return secret
+    return { captchaSecretKey: secret }
   }
 
   @ApiBearerAuth()

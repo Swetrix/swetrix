@@ -3,11 +3,10 @@ import { CheckIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 import _map from 'lodash/map'
 import { ArrowRightIcon, CircleHelpIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { getPaymentMetainfo } from '~/api'
 import { CURRENCIES, PLAN_LIMITS, STANDARD_PLANS, BillingFrequency, TRIAL_DAYS } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { useAuth } from '~/providers/AuthProvider'
@@ -16,19 +15,14 @@ import routes from '~/utils/routes'
 
 const formatEventsLong = (value: number) => value.toLocaleString('en-US')
 
-const MarketingPricing = () => {
+interface MarketingPricingProps {
+  metainfo?: Metainfo
+}
+
+const MarketingPricing = ({ metainfo = DEFAULT_METAINFO }: MarketingPricingProps) => {
   const { isAuthenticated } = useAuth()
   const { t } = useTranslation('common')
-  const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
   const [billingFrequency, setBillingFrequency] = useState(BillingFrequency.monthly)
-
-  useEffect(() => {
-    const abortController = new AbortController()
-    getPaymentMetainfo({ signal: abortController.signal })
-      .then(setMetainfo)
-      .catch(() => {})
-    return () => abortController.abort()
-  }, [])
 
   const currencyCode = metainfo.code
   const currency = CURRENCIES[currencyCode]

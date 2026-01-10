@@ -22,16 +22,14 @@ import {
 import { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import {
-  getExperiment,
-  getExperimentResults,
-  getGoal,
-  type Experiment,
-  type ExperimentResults as ExperimentResultsType,
-  type ExperimentChartData,
-  type ExperimentVariantResult,
-  type Goal,
-} from '~/api'
+import type {
+  Experiment,
+  ExperimentResults as ExperimentResultsType,
+  ExperimentChartData,
+  ExperimentVariantResult,
+  Goal,
+} from '~/api/api.server'
+import { useExperimentProxy, useExperimentResultsProxy, useGoalProxy } from '~/hooks/useAnalyticsProxy'
 import {
   TimeFormat,
   tbsFormatMapper,
@@ -619,6 +617,9 @@ const ExperimentResults = ({
 }: ExperimentResultsProps) => {
   const { t } = useTranslation()
   const isMountedRef = useRef(true)
+  const experimentProxy = useExperimentProxy()
+  const resultsProxy = useExperimentResultsProxy()
+  const goalProxy = useGoalProxy()
 
   const [experiment, setExperiment] = useState<Experiment | null>(null)
   const [results, setResults] = useState<ExperimentResultsType | null>(null)
@@ -645,14 +646,14 @@ const ExperimentResults = ({
 
       try {
         const [experimentData, resultsData] = await Promise.all([
-          getExperiment(experimentId),
-          getExperimentResults(experimentId, period, timeBucket, from, to, timezone),
+          experimentProxy.fetchExperiment(experimentId),
+          resultsProxy.fetchResults(experimentId, { period, timeBucket, from, to, timezone }),
         ])
 
         let goalData: Goal | null = null
-        if (experimentData.goalId) {
+        if (experimentData?.goalId) {
           try {
-            goalData = await getGoal(experimentData.goalId)
+            goalData = await goalProxy.fetchGoal(experimentData.goalId)
           } catch {
             goalData = null
           }

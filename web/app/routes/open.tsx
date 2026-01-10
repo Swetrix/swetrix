@@ -1,7 +1,7 @@
-import { redirect } from 'react-router'
-import type { LinksFunction } from 'react-router'
+import { redirect, type LoaderFunctionArgs, useLoaderData, LinksFunction } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
+import { getGeneralStats } from '~/api/api.server'
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 import OpenStartup from '~/pages/OpenStartup'
 import Style from '~/styles/ProjectViewStyle.css?url'
@@ -15,14 +15,18 @@ export const sitemap: SitemapFunction = () => ({
   exclude: isSelfhosted || isDisableMarketingPages,
 })
 
-export async function loader() {
+export async function loader({ request }: LoaderFunctionArgs) {
   if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/login', 302)
   }
 
-  return null
+  const stats = await getGeneralStats(request)
+
+  return { stats }
 }
 
 export default function Index() {
-  return <OpenStartup />
+  const { stats } = useLoaderData<typeof loader>()
+
+  return <OpenStartup stats={stats} />
 }

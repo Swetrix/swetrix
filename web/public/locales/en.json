@@ -1458,6 +1458,7 @@
       "organisation": "Organisation",
       "shields": "Shields",
       "access": "Access settings",
+      "resetSuccess": "The project has been reset",
       "gsc": {
         "connect": "Connect your project to your Google Search Console account to get stats like what keywords people are using to find your website.",
         "disconnected": "The project has been disconnected from your Google Search Console account.",

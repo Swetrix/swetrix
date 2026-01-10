@@ -2,7 +2,7 @@ import _isEmpty from 'lodash/isEmpty'
 
 import { REFRESH_TOKEN, isBrowser } from '~/lib/constants'
 
-import { getCookie, setCookie, deleteCookie } from './cookie'
+import { getCookie, setCookie } from './cookie'
 
 // 14 weeks in seconds
 const STORE_REFRESH_TOKEN_FOR = 8467200
@@ -32,13 +32,4 @@ export const setRefreshToken = (token: string, temporary = false) => {
   }
 
   setCookie(REFRESH_TOKEN, token, STORE_REFRESH_TOKEN_FOR)
-}
-
-export const removeRefreshToken = () => {
-  if (!isBrowser) {
-    return null
-  }
-
-  deleteCookie(REFRESH_TOKEN)
-  sessionStorage.removeItem(REFRESH_TOKEN)
 }

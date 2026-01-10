@@ -13,8 +13,8 @@ const MAX_ANNOTATION_LENGTH = 120
 
 interface AnnotationModalProps {
   onClose: () => void
-  onSubmit: (date: string, text: string) => Promise<void>
-  onDelete?: () => Promise<void>
+  onSubmit: (date: string, text: string) => void
+  onDelete?: () => void
   isOpened: boolean
   loading: boolean
   annotation?: Annotation
@@ -57,22 +57,20 @@ const AnnotationModal = ({
     onClose()
   }
 
-  const _onSubmit = async () => {
+  const _onSubmit = () => {
     if (!date || !text.trim() || !allowedToManage) {
       return
     }
 
-    await onSubmit(date, text.trim())
-    _onClose()
+    onSubmit(date, text.trim())
   }
 
-  const _onDelete = async () => {
+  const _onDelete = () => {
     if (!onDelete || !allowedToManage) {
       return
     }
 
-    await onDelete()
-    _onClose()
+    onDelete()
   }
 
   const isEditMode = !!annotation

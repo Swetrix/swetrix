@@ -1,15 +1,17 @@
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _map from 'lodash/map'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { generateSSOAuthURL, linkBySSOHash, unlinkSSO } from '~/api'
+import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { SSO_PROVIDERS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
 import { User } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import type { UserSettingsActionData } from '~/routes/user-settings'
 import Button from '~/ui/Button'
 import GithubDark from '~/ui/icons/GithubDark'
 import GithubLight from '~/ui/icons/GithubLight'
@@ -63,6 +65,20 @@ const Socialisations = () => {
   const { theme } = useTheme()
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState(false)
+  const fetcher = useFetcher<UserSettingsActionData>()
+  const isUnlinking = fetcher.state !== 'idle'
+  const { generateSSOAuthURL, linkBySSOHash } = useAuthProxy()
+
+  useEffect(() => {
+    if (fetcher.data?.intent === 'unlink-sso') {
+      if (fetcher.data.success) {
+        loadUser()
+        toast.success(t('apiNotifications.socialAccountUninked'))
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+      }
+    }
+  }, [fetcher.data, loadUser, t])
 
   const linkSSO = async (provider: SSOProvider) => {
     setIsLoading(true)
@@ -135,19 +151,8 @@ const Socialisations = () => {
     }
   }
 
-  const onUnlinkSSO = async (provider: SSOProvider) => {
-    setIsLoading(true)
-
-    try {
-      await unlinkSSO(provider)
-      await loadUser()
-
-      toast.success(t('apiNotifications.socialAccountUninked'))
-    } catch (reason) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.socialisationUnlinkGenericError'))
-    } finally {
-      setIsLoading(false)
-    }
+  const onUnlinkSSO = (provider: SSOProvider) => {
+    fetcher.submit({ intent: 'unlink-sso', provider }, { method: 'POST' })
   }
 
   return (
@@ -212,7 +217,7 @@ const Socialisations = () => {
                       ) : null}
 
                       {connected && unlinkable ? (
-                        <Button onClick={() => onUnlinkSSO(key)} loading={isLoading} small danger>
+                        <Button onClick={() => onUnlinkSSO(key)} loading={isUnlinking} small danger>
                           {t('common.unlink')}
                         </Button>
                       ) : null}
