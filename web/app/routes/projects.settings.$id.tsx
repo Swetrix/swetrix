@@ -163,9 +163,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const type = formData.get('type')?.toString()
       const filters = formData.get('value')?.toString()
 
-      const result = await serverFetch(request, `project/reset-filters/${id}?type=${encodeURIComponent(type || '')}&filters=${encodeURIComponent(filters || '')}`, {
-        method: 'DELETE',
-      })
+      const result = await serverFetch(
+        request,
+        `project/reset-filters/${id}?type=${encodeURIComponent(type || '')}&filters=${encodeURIComponent(filters || '')}`,
+        {
+          method: 'DELETE',
+        },
+      )
 
       if (result.error) {
         return data<ProjectSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
