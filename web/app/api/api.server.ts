@@ -935,7 +935,7 @@ export async function getErrorOverviewServer(
 // MARK: Feature Flags API (Deferred Loading)
 // ============================================================================
 
-export interface TargetingRule {
+interface TargetingRule {
   column: string
   filter: string
   isExclusive: boolean
@@ -1139,7 +1139,7 @@ type QueryTime =
   | 'last_24_hours'
   | 'last_48_hours'
 
-export interface Alert {
+interface Alert {
   id: string
   name: string
   active: boolean
@@ -1178,7 +1178,7 @@ export async function getProjectAlertsServer(
 // MARK: Funnels API (Deferred Loading)
 // ============================================================================
 
-export interface AnalyticsFunnelStep {
+interface AnalyticsFunnelStep {
   value: string
   events: number
   eventsPerc: number
@@ -1218,4 +1218,317 @@ export async function getFunnelDataServer(
   }
 
   return serverFetch<FunnelDataResponse>(request, `log/funnel?${queryParams.toString()}`, { headers })
+}
+
+// ============================================================================
+// MARK: Captcha API (Deferred Loading)
+// ============================================================================
+
+interface CaptchaPanelData {
+  name: string
+  count: number
+  cc?: string
+}
+
+interface CaptchaChartData {
+  x: string[]
+  results: number[]
+}
+
+export interface CaptchaDataResponse {
+  params: Record<string, CaptchaPanelData[]>
+  chart?: CaptchaChartData
+}
+
+export async function getCaptchaDataServer(
+  request: Request,
+  pid: string,
+  timeBucket = 'hour',
+  period = '3d',
+  filters: AnalyticsFilter[] = [],
+  from = '',
+  to = '',
+  password?: string,
+): Promise<ServerFetchResult<CaptchaDataResponse>> {
+  const queryParams = new URLSearchParams({
+    pid,
+    timeBucket,
+    period,
+    filters: JSON.stringify(filters),
+    from,
+    to,
+  })
+
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<CaptchaDataResponse>(request, `log/captcha?${queryParams.toString()}`, { headers })
+}
+
+// ============================================================================
+// MARK: Experiments API (Deferred Loading)
+// ============================================================================
+
+type ExperimentStatus = 'draft' | 'running' | 'paused' | 'completed'
+
+export type ExposureTrigger = 'feature_flag' | 'custom_event'
+
+export type MultipleVariantHandling = 'exclude' | 'first_exposure'
+
+export type FeatureFlagMode = 'create' | 'link'
+
+export interface ExperimentVariant {
+  id?: string
+  name: string
+  key: string
+  description?: string | null
+  rolloutPercentage: number
+  isControl: boolean
+}
+
+export interface Experiment {
+  id: string
+  name: string
+  description: string | null
+  hypothesis?: string | null
+  status: ExperimentStatus
+  startedAt: string | null
+  endedAt: string | null
+  featureFlagKey: string | null
+  exposureTrigger: ExposureTrigger
+  customEventName?: string | null
+  multipleVariantHandling: MultipleVariantHandling
+  featureFlagMode: FeatureFlagMode
+  featureFlagId: string | null
+  goalId: string | null
+  variants: ExperimentVariant[]
+  pid: string
+  created: string
+}
+
+export async function getExperimentServer(
+  request: Request,
+  experimentId: string,
+): Promise<ServerFetchResult<Experiment>> {
+  return serverFetch<Experiment>(request, `experiment/${experimentId}`)
+}
+
+export interface ExperimentVariantResult {
+  key: string
+  name: string
+  isControl: boolean
+  exposures: number
+  conversions: number
+  conversionRate: number
+  improvement: number
+  probabilityOfBeingBest: number
+}
+
+export interface ExperimentChartData {
+  x: string[]
+  winProbability: Record<string, number[]>
+}
+
+export interface ExperimentResults {
+  experimentId: string
+  status: ExperimentStatus
+  hasWinner: boolean
+  winnerKey: string | null
+  totalExposures: number
+  totalConversions: number
+  confidenceLevel: number
+  variants: ExperimentVariantResult[]
+  chart?: ExperimentChartData
+}
+
+export async function getExperimentResultsServer(
+  request: Request,
+  experimentId: string,
+  period: string,
+  timeBucket: string,
+  from = '',
+  to = '',
+  timezone?: string,
+): Promise<ServerFetchResult<ExperimentResults>> {
+  const params = new URLSearchParams({ period, timeBucket })
+  if (from) params.append('from', from)
+  if (to) params.append('to', to)
+  if (timezone) params.append('timezone', timezone)
+
+  return serverFetch<ExperimentResults>(request, `experiment/${experimentId}/results?${params.toString()}`)
+}
+
+export async function getGoalServer(request: Request, goalId: string): Promise<ServerFetchResult<Goal>> {
+  return serverFetch<Goal>(request, `goal/${goalId}`)
+}
+
+// ============================================================================
+// MARK: Profiles API (Deferred Loading)
+// ============================================================================
+
+interface Profile {
+  id: string
+  isAnonymous: boolean
+  created: string
+  pageviews: number
+  sessions: number
+  customEvents: number
+  errors: number
+  revenue?: number
+  refunds?: number
+  revenueCurrency?: string
+  lastSeen: string
+  country?: string
+  city?: string
+  region?: string
+  properties?: Record<string, unknown>
+}
+
+export interface ProfilesResponse {
+  profiles: Profile[]
+}
+
+export async function getProfilesServer(
+  request: Request,
+  pid: string,
+  period = '3d',
+  filters: AnalyticsFilter[] = [],
+  from = '',
+  to = '',
+  take = 30,
+  skip = 0,
+  timezone = '',
+  profileType: 'all' | 'anonymous' | 'identified' = 'all',
+  password?: string,
+): Promise<ServerFetchResult<ProfilesResponse>> {
+  const params = new URLSearchParams({
+    pid,
+    take: String(take),
+    skip: String(skip),
+    period,
+    filters: JSON.stringify(filters),
+    from,
+    to,
+    timezone,
+    profileType,
+  })
+
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<ProfilesResponse>(request, `log/profiles?${params.toString()}`, { headers })
+}
+
+interface ProfileDetails {
+  profileId: string
+  isAnonymous: boolean
+  created: string
+  pageviews: number
+  sessions: number
+  customEvents: number
+  errors: number
+  revenue?: number
+  refunds?: number
+  revenueCurrency?: string
+  lastSeen: string
+  country?: string
+  city?: string
+  region?: string
+  locale?: string
+  os?: string
+  browser?: string
+  device?: string
+  properties?: Record<string, unknown>
+  eventsInPeriod?: number
+  sessionsInPeriod?: number
+}
+
+export interface ProfileDetailsResponse extends ProfileDetails {
+  chart: unknown
+  timeBucket: string
+}
+
+export async function getProfileServer(
+  request: Request,
+  pid: string,
+  profileId: string,
+  period = '7d',
+  from = '',
+  to = '',
+  timezone = '',
+  password?: string,
+): Promise<ServerFetchResult<ProfileDetailsResponse>> {
+  const params = new URLSearchParams({
+    pid,
+    profileId: encodeURIComponent(profileId),
+    period,
+    from,
+    to,
+    timezone,
+  })
+
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<ProfileDetailsResponse>(request, `log/profile?${params.toString()}`, { headers })
+}
+
+interface ProfileSession {
+  psid: string
+  cc: string | null
+  os: string | null
+  br: string | null
+  dv: string | null
+  pageviews: number
+  customEvents: number
+  errors: number
+  revenue?: number
+  refunds?: number
+  created: string
+  duration?: number
+  active?: boolean
+  isLive?: boolean
+}
+
+export interface ProfileSessionsResponse {
+  sessions: ProfileSession[]
+}
+
+export async function getProfileSessionsServer(
+  request: Request,
+  pid: string,
+  profileId: string,
+  period = '3d',
+  filters: AnalyticsFilter[] = [],
+  from = '',
+  to = '',
+  take = 30,
+  skip = 0,
+  timezone = '',
+  password?: string,
+): Promise<ServerFetchResult<ProfileSessionsResponse>> {
+  const params = new URLSearchParams({
+    pid,
+    profileId: encodeURIComponent(profileId),
+    take: String(take),
+    skip: String(skip),
+    period,
+    filters: JSON.stringify(filters),
+    from,
+    to,
+    timezone,
+  })
+
+  const headers: Record<string, string> = {}
+  if (password) {
+    headers['x-password'] = password
+  }
+
+  return serverFetch<ProfileSessionsResponse>(request, `log/profile/sessions?${params.toString()}`, { headers })
 }

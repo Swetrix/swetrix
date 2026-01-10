@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { getGoal } from '~/api'
+import { useGoalProxy } from '~/hooks/useAnalyticsProxy'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
@@ -36,6 +36,7 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
   const { t } = useTranslation()
   const fetcher = useFetcher<ProjectViewActionData>()
   const processedRef = useRef<string | null>(null)
+  const goalProxy = useGoalProxy()
   const isNew = !goalId
 
   const [isLoading, setIsLoading] = useState(false)
@@ -61,7 +62,10 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
     if (!goalId) return
     setIsLoading(true)
     try {
-      const goal = await getGoal(goalId)
+      const goal = await goalProxy.fetchGoal(goalId)
+      if (!goal) {
+        throw new Error('Failed to load goal')
+      }
       setName(goal.name)
       setType(goal.type)
       setMatchType(goal.matchType)

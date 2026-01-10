@@ -5,9 +5,8 @@ import _map from 'lodash/map'
 
 import { API_URL } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
-import { Project, Overall, LiveStats, Session, Profile, ProfileDetails } from '~/lib/models/Project'
+import { Project, Overall, LiveStats } from '~/lib/models/Project'
 import { User } from '~/lib/models/User'
-import { Filter } from '~/pages/Project/View/interfaces/traffic'
 import { getAccessToken, setAccessToken } from '~/utils/accessToken'
 import { clearLocalStorageOnLogout } from '~/utils/auth'
 import { getRefreshToken } from '~/utils/refreshToken'
@@ -147,85 +146,6 @@ export const getPropertyMetadata = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getProfiles = (
-  pid: string,
-  period = '3d',
-  filters: any[] = [],
-  from = '',
-  to = '',
-  take = 30,
-  skip = 0,
-  timezone = '',
-  profileType: 'all' | 'anonymous' | 'identified' = 'all',
-  password: string | undefined = '',
-) =>
-  api
-    .get(
-      `log/profiles?pid=${pid}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(
-        filters,
-      )}&from=${from}&to=${to}&timezone=${timezone}&profileType=${profileType}`,
-      {
-        headers: {
-          'x-password': password,
-        },
-      },
-    )
-    .then((response): { profiles: Profile[]; take: number; skip: number; appliedFilters: Filter[] } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getProfile = (
-  pid: string,
-  profileId: string,
-  period = '7d',
-  from = '',
-  to = '',
-  timezone = '',
-  password: string | undefined = '',
-) =>
-  api
-    .get(
-      `log/profile?pid=${pid}&profileId=${encodeURIComponent(profileId)}&period=${period}&from=${from}&to=${to}&timezone=${timezone}`,
-      {
-        headers: {
-          'x-password': password,
-        },
-      },
-    )
-    .then((response): ProfileDetails & { chart: any; timeBucket: string } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getProfileSessions = (
-  pid: string,
-  profileId: string,
-  period = '3d',
-  filters: any[] = [],
-  from = '',
-  to = '',
-  take = 30,
-  skip = 0,
-  timezone = '',
-  password: string | undefined = '',
-) =>
-  api
-    .get(
-      `log/profile/sessions?pid=${pid}&profileId=${encodeURIComponent(profileId)}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(
-        filters,
-      )}&from=${from}&to=${to}&timezone=${timezone}`,
-      {
-        headers: {
-          'x-password': password,
-        },
-      },
-    )
-    .then((response): { sessions: Session[]; take: number; skip: number; appliedFilters: Filter[] } => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export interface ErrorAffectedSession {
   psid: string
   profileId: string | null
@@ -260,18 +180,6 @@ export const getErrorSessions = (
     .then((response): { sessions: ErrorAffectedSession[]; total: number } => response.data)
     .catch((error) => {
       throw _isEmpty(error.response?.data?.message) ? error.response?.data : error.response?.data?.message
-    })
-
-export const getCaptchaData = (pid: string, tb = 'hour', period = '3d', filters: any[] = [], from = '', to = '') =>
-  api
-    .get(
-      `log/captcha?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
-        filters,
-      )}&from=${from}&to=${to}`,
-    )
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getOverallStats = (
@@ -333,68 +241,6 @@ export const getLiveVisitorsInfo = (pid: string, password?: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-// Goals API
-export interface Goal {
-  id: string
-  name: string
-  type: 'pageview' | 'custom_event'
-  matchType: 'exact' | 'contains'
-  value: string | null
-  metadataFilters: { key: string; value: string }[] | null
-  active: boolean
-  pid: string
-  created: string
-}
-
-export interface GoalStats {
-  conversions: number
-  uniqueSessions: number
-  conversionRate: number
-  previousConversions: number
-  trend: number
-}
-
-export interface GoalChartData {
-  x: string[]
-  conversions: number[]
-  uniqueSessions: number[]
-}
-
-export const DEFAULT_GOALS_TAKE = 20
-
-export const getProjectGoals = (projectId: string, take: number = DEFAULT_GOALS_TAKE, skip = 0, search?: string) => {
-  const params = new URLSearchParams({
-    take: String(take),
-    skip: String(skip),
-  })
-
-  if (search?.trim()) {
-    params.append('search', search.trim())
-  }
-
-  return api
-    .get(`/goal/project/${projectId}?${params.toString()}`)
-    .then(
-      (
-        response,
-      ): {
-        results: Goal[]
-        total: number
-      } => response.data,
-    )
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-}
-
-export const getGoal = (goalId: string) =>
-  api
-    .get(`/goal/${goalId}`)
-    .then((response): Goal => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 // Feature Flags API
 export interface TargetingRule {
   column: string
@@ -414,57 +260,17 @@ export interface ProjectFeatureFlag {
   created: string
 }
 
-export interface FeatureFlagStats {
-  evaluations: number
-  profileCount: number
-  trueCount: number
-  falseCount: number
-  truePercentage: number
-}
-
-export const DEFAULT_FEATURE_FLAGS_TAKE = 20
-
-export const getProjectFeatureFlags = (
-  projectId: string,
-  take: number = DEFAULT_FEATURE_FLAGS_TAKE,
-  skip = 0,
-  search?: string,
-) => {
-  const params = new URLSearchParams({
-    take: String(take),
-    skip: String(skip),
-  })
-
-  if (search?.trim()) {
-    params.append('search', search.trim())
-  }
-
-  return api
-    .get(`/feature-flag/project/${projectId}?${params.toString()}`)
-    .then(
-      (
-        response,
-      ): {
-        results: ProjectFeatureFlag[]
-        total: number
-      } => response.data,
-    )
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-}
-
 // Experiments (A/B Testing) API
 
-export type ExperimentStatus = 'draft' | 'running' | 'paused' | 'completed'
+type ExperimentStatus = 'draft' | 'running' | 'paused' | 'completed'
 
-export type ExposureTrigger = 'feature_flag' | 'custom_event'
+type ExposureTrigger = 'feature_flag' | 'custom_event'
 
-export type MultipleVariantHandling = 'exclude' | 'first_exposure'
+type MultipleVariantHandling = 'exclude' | 'first_exposure'
 
-export type FeatureFlagMode = 'create' | 'link'
+type FeatureFlagMode = 'create' | 'link'
 
-export interface ExperimentVariant {
+interface ExperimentVariant {
   id?: string
   name: string
   key: string
@@ -496,95 +302,7 @@ export interface Experiment {
   created: string
 }
 
-export interface ExperimentVariantResult {
-  key: string
-  name: string
-  isControl: boolean
-  exposures: number
-  conversions: number
-  conversionRate: number
-  probabilityOfBeingBest: number
-  improvement: number
-}
-
-export interface ExperimentChartData {
-  x: string[]
-  winProbability: Record<string, number[]>
-}
-
-export interface ExperimentResults {
-  experimentId: string
-  status: ExperimentStatus
-  variants: ExperimentVariantResult[]
-  totalExposures: number
-  totalConversions: number
-  hasWinner: boolean
-  winnerKey: string | null
-  confidenceLevel: number
-  chart?: ExperimentChartData
-  timeBucket?: string[]
-}
-
-interface CreateExperiment {
-  pid: string
-  name: string
-  description?: string
-  hypothesis?: string
-  // Exposure criteria
-  exposureTrigger?: ExposureTrigger
-  customEventName?: string
-  multipleVariantHandling?: MultipleVariantHandling
-  filterInternalUsers?: boolean
-  // Feature flag configuration
-  featureFlagMode?: FeatureFlagMode
-  featureFlagKey?: string
-  existingFeatureFlagId?: string
-  goalId?: string
-  variants: ExperimentVariant[]
-}
-
 export const DEFAULT_EXPERIMENTS_TAKE = 20
-
-export const getExperiment = (experimentId: string) =>
-  api
-    .get(`/experiment/${experimentId}`)
-    .then((response): Experiment => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const createExperiment = (data: CreateExperiment) =>
-  api
-    .post('experiment', data)
-    .then((response): Experiment => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const updateExperiment = (id: string, data: Partial<CreateExperiment>) =>
-  api
-    .put(`experiment/${id}`, data)
-    .then((response): Experiment => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getExperimentResults = (
-  experimentId: string,
-  period: string,
-  timeBucket: string,
-  from: string = '',
-  to: string = '',
-  timezone?: string,
-) =>
-  api
-    .get(`/experiment/${experimentId}/results`, {
-      params: { period, timeBucket, from, to, timezone },
-    })
-    .then((response): ExperimentResults => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
 
 export const getProjectDataCustomEvents = (
   pid: string,
