@@ -13,7 +13,6 @@ import { MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
 import React, { useState, useEffect, memo, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useFetcher } from 'react-router'
-import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
 import { reportFrequencies, DEFAULT_TIMEZONE, CONFIRMATION_TIMEOUT, TimeFormat, isSelfhosted } from '~/lib/constants'
@@ -24,7 +23,6 @@ import type { UserSettingsActionData } from '~/routes/user-settings'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
-import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
@@ -94,33 +92,31 @@ interface Form extends Partial<User> {
 }
 
 const UserSettings = () => {
-  const { user, isLoading, logout, mergeUser } = useAuth()
+  const { user, logout, mergeUser } = useAuth()
 
   const navigate = useNavigate()
   const { t } = useTranslation('common')
   const fetcher = useFetcher<UserSettingsActionData>()
 
   const [activeTab, setActiveTab] = useState(TAB_MAPPING.ACCOUNT)
-  const [form, setForm] = useState<Form>({
+  const [form, setForm] = useState<Form>(() => ({
     email: user?.email || '',
     password: '',
     repeat: '',
     timeFormat: user?.timeFormat || TimeFormat['12-hour'],
-  })
+  }))
   const [showPasswordFields, setShowPasswordFields] = useState(false)
-  const [timezone, setTimezone] = useState(user?.timezone || DEFAULT_TIMEZONE)
+  const [timezone, setTimezone] = useState(() => user?.timezone || DEFAULT_TIMEZONE)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState(false)
-  const [reportFrequency, setReportFrequency] = useState(user?.reportFrequency)
-  const [formPreset, setFormPreset] = useState(false)
-  const [validated, setValidated] = useState(false)
+  const [reportFrequency, setReportFrequency] = useState(() => user?.reportFrequency)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const [error, setError] = useState<null | string>(null)
-  const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`))
-  const translatedTimeFormat = _map(TimeFormat, (key) => t(`profileSettings.${key}`))
+  const translatedFrequencies = useMemo(() => _map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
+  const translatedTimeFormat = useMemo(() => _map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
   const [deletionFeedback, setDeletionFeedback] = useState('')
 
   const lastHandledData = useRef<UserSettingsActionData | null>(null)
@@ -184,8 +180,8 @@ const UserSettings = () => {
     }
   }, [fetcher.data, fetcher.state, mergeUser, t, logout, navigate])
 
-  const validate = () => {
-    const allErrors = {} as Record<string, string>
+  const { validated, validationErrors } = useMemo(() => {
+    const allErrors: Record<string, string> = {}
 
     if (!isValidEmail(form.email)) {
       allErrors.email = t('auth.common.badEmailError')
@@ -201,32 +197,15 @@ const UserSettings = () => {
       allErrors.repeat = t('auth.common.noMatchError')
     }
 
-    const valid = _isEmpty(_keys(allErrors))
-
-    setErrors(allErrors)
-    setValidated(valid)
-  }
-
-  useEffect(() => {
-    setTimeout(() => validate(), 0)
-  }, [form]) // eslint-disable-line
-
-  useEffect(() => {
-    if (isLoading || !user || formPreset) {
-      return
+    return {
+      validated: _isEmpty(_keys(allErrors)),
+      validationErrors: allErrors,
     }
+  }, [form.email, form.password, form.repeat, t])
 
-    setTimeout(() => {
-      setForm((prev) => ({
-        ...prev,
-        email: user.email || '',
-        timeFormat: user.timeFormat || TimeFormat['12-hour'],
-      }))
-      setTimezone(user.timezone || DEFAULT_TIMEZONE)
-      setReportFrequency(user.reportFrequency)
-      setFormPreset(true)
-    }, 0)
-  }, [isLoading, user, formPreset])
+  useEffect(() => {
+    setErrors(validationErrors)
+  }, [validationErrors])
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
@@ -476,333 +455,307 @@ const UserSettings = () => {
           </aside>
 
           <section className='flex-1'>
-            <ClientOnly fallback={<Loader />}>
-              {() => {
-                if (isLoading) {
-                  return <Loader />
-                }
+            {activeTab === TAB_MAPPING.ACCOUNT ? (
+              <>
+                <Input
+                  name='email'
+                  type='email'
+                  label={t('auth.common.email')}
+                  value={form.email}
+                  placeholder='you@example.com'
+                  onChange={handleInput}
+                  error={beenSubmitted ? errors.email : null}
+                />
+                <span
+                  onClick={toggleShowPasswordFields}
+                  className='mt-2 flex max-w-max cursor-pointer items-center text-sm text-gray-900 hover:underline dark:text-gray-50'
+                >
+                  {t('auth.common.changePassword')}
+                  <ChevronDownIcon
+                    className={cx('ml-2 size-3', {
+                      'rotate-180': showPasswordFields,
+                    })}
+                  />
+                </span>
+                {showPasswordFields ? (
+                  <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6'>
+                    <Input
+                      name='password'
+                      type='password'
+                      label={t('auth.common.password')}
+                      hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+                      value={form.password}
+                      placeholder={t('auth.common.password')}
+                      className='sm:col-span-3'
+                      onChange={handleInput}
+                      error={beenSubmitted ? errors.password : null}
+                    />
+                    <Input
+                      name='repeat'
+                      type='password'
+                      label={t('auth.common.repeat')}
+                      value={form.repeat}
+                      placeholder={t('auth.common.repeat')}
+                      className='sm:col-span-3'
+                      onChange={handleInput}
+                      error={beenSubmitted ? errors.repeat : null}
+                    />
+                  </div>
+                ) : null}
+                <Button className='mt-4' type='submit' primary large>
+                  {t('profileSettings.update')}
+                </Button>
 
-                if (activeTab === TAB_MAPPING.ACCOUNT) {
-                  return (
-                    <>
+                <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+
+                <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+                  {t('profileSettings.apiKey')}
+                </h3>
+                {user?.apiKey ? (
+                  <>
+                    <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                      {t('profileSettings.apiKeyWarning')}
+                    </p>
+                    <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
                       <Input
-                        name='email'
-                        type='email'
-                        label={t('auth.common.email')}
-                        value={form.email}
-                        placeholder='you@example.com'
-                        onChange={handleInput}
-                        error={beenSubmitted ? errors.email : null}
+                        label={t('profileSettings.apiKey')}
+                        name='apiKey'
+                        className='mt-4'
+                        value={user.apiKey}
+                        disabled
                       />
-                      <span
-                        onClick={toggleShowPasswordFields}
-                        className='mt-2 flex max-w-max cursor-pointer items-center text-sm text-gray-900 hover:underline dark:text-gray-50'
+                    </div>
+                  </>
+                ) : (
+                  <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                    {t('profileSettings.noApiKey')}
+                  </p>
+                )}
+                {user?.apiKey ? (
+                  <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
+                    {t('profileSettings.deleteApiKeyBtn')}
+                  </Button>
+                ) : (
+                  <Button className='mt-4' onClick={onApiKeyGenerate} primary large>
+                    {t('profileSettings.addApiKeyBtn')}
+                  </Button>
+                )}
+
+                {isSelfhosted ? (
+                  <>
+                    {/* Shared projects setting */}
+                    <SharedProjects />
+                  </>
+                ) : (
+                  <>
+                    {/* 2FA setting */}
+                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                    <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+                      {t('profileSettings.2fa')}
+                    </h3>
+                    <TwoFA />
+
+                    {/* Socialisations setup */}
+                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                    <h3
+                      id='socialisations'
+                      className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'
+                    >
+                      {t('profileSettings.socialisations')}
+                    </h3>
+                    <Socialisations />
+
+                    {/* Shared projects setting */}
+                    <SharedProjects />
+
+                    {/* Organisations setting */}
+                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                    <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+                      {t('profileSettings.organisations')}
+                    </h3>
+                    <div>
+                      {!_isEmpty(user?.organisationMemberships) ? (
+                        <div className='mt-3 overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
+                          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
+                            <thead className='bg-gray-50 dark:bg-slate-800'>
+                              <tr>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('profileSettings.organisationsTable.organisation')}
+                                </th>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('profileSettings.organisationsTable.role')}
+                                </th>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('profileSettings.organisationsTable.joinedOn')}
+                                </th>
+                                <th scope='col' />
+                              </tr>
+                            </thead>
+                            <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+                              {_map(user?.organisationMemberships, (membership) => (
+                                <Organisations key={membership.id} membership={membership} />
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <NoOrganisations />
+                      )}
+                    </div>
+
+                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                    {!user?.isActive ? (
+                      <div
+                        className='mt-4 flex max-w-max cursor-pointer pl-0 text-blue-600 underline hover:text-indigo-800 dark:hover:text-indigo-600'
+                        onClick={onEmailConfirm}
                       >
-                        {t('auth.common.changePassword')}
-                        <ChevronDownIcon
-                          className={cx('ml-2 size-3', {
-                            'rotate-180': showPasswordFields,
-                          })}
-                        />
-                      </span>
-                      {showPasswordFields ? (
-                        <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6'>
-                          <Input
-                            name='password'
-                            type='password'
-                            label={t('auth.common.password')}
-                            hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
-                            value={form.password}
-                            placeholder={t('auth.common.password')}
-                            className='sm:col-span-3'
-                            onChange={handleInput}
-                            error={beenSubmitted ? errors.password : null}
-                          />
-                          <Input
-                            name='repeat'
-                            type='password'
-                            label={t('auth.common.repeat')}
-                            value={form.repeat}
-                            placeholder={t('auth.common.repeat')}
-                            className='sm:col-span-3'
-                            onChange={handleInput}
-                            error={beenSubmitted ? errors.repeat : null}
-                          />
-                        </div>
-                      ) : null}
-                      <Button className='mt-4' type='submit' primary large>
-                        {t('profileSettings.update')}
-                      </Button>
-
-                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-
-                      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-                        {t('profileSettings.apiKey')}
-                      </h3>
-                      {user?.apiKey ? (
-                        <>
-                          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                            {t('profileSettings.apiKeyWarning')}
-                          </p>
-                          <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-                            <Input
-                              label={t('profileSettings.apiKey')}
-                              name='apiKey'
-                              className='mt-4'
-                              value={user.apiKey}
-                              disabled
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                          {t('profileSettings.noApiKey')}
-                        </p>
-                      )}
-                      {user?.apiKey ? (
-                        <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
-                          {t('profileSettings.deleteApiKeyBtn')}
-                        </Button>
-                      ) : (
-                        <Button className='mt-4' onClick={onApiKeyGenerate} primary large>
-                          {t('profileSettings.addApiKeyBtn')}
-                        </Button>
-                      )}
-
-                      {isSelfhosted ? (
-                        <>
-                          {/* Shared projects setting */}
-                          <SharedProjects />
-                        </>
-                      ) : (
-                        <>
-                          {/* 2FA setting */}
-                          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                          <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-                            {t('profileSettings.2fa')}
-                          </h3>
-                          <TwoFA />
-
-                          {/* Socialisations setup */}
-                          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                          <h3
-                            id='socialisations'
-                            className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'
-                          >
-                            {t('profileSettings.socialisations')}
-                          </h3>
-                          <Socialisations />
-
-                          {/* Shared projects setting */}
-                          <SharedProjects />
-
-                          {/* Organisations setting */}
-                          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                          <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-                            {t('profileSettings.organisations')}
-                          </h3>
-                          <div>
-                            {!_isEmpty(user?.organisationMemberships) ? (
-                              <div className='mt-3 overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
-                                <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-                                  <thead className='bg-gray-50 dark:bg-slate-800'>
-                                    <tr>
-                                      <th
-                                        scope='col'
-                                        className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
-                                      >
-                                        {t('profileSettings.organisationsTable.organisation')}
-                                      </th>
-                                      <th
-                                        scope='col'
-                                        className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
-                                      >
-                                        {t('profileSettings.organisationsTable.role')}
-                                      </th>
-                                      <th
-                                        scope='col'
-                                        className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
-                                      >
-                                        {t('profileSettings.organisationsTable.joinedOn')}
-                                      </th>
-                                      <th scope='col' />
-                                    </tr>
-                                  </thead>
-                                  <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
-                                    {_map(user?.organisationMemberships, (membership) => (
-                                      <Organisations key={membership.id} membership={membership} />
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            ) : (
-                              <NoOrganisations />
-                            )}
-                          </div>
-
-                          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                          {!user?.isActive ? (
-                            <div
-                              className='mt-4 flex max-w-max cursor-pointer pl-0 text-blue-600 underline hover:text-indigo-800 dark:hover:text-indigo-600'
-                              onClick={onEmailConfirm}
-                            >
-                              <EnvelopeIcon className='mt-0.5 mr-2 h-6 w-6 text-blue-500' />
-                              {t('profileSettings.noLink')}
-                            </div>
-                          ) : null}
-                        </>
-                      )}
-                      <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-end'>
-                        <Button
-                          onClick={() => {
-                            logout(true)
-                          }}
-                          semiSmall
-                          semiDanger
-                        >
-                          <>
-                            {/* We need this div for the button to match the height of the button after it */}
-                            <div className='h-5' />
-                            {t('profileSettings.logoutAll')}
-                          </>
-                        </Button>
-                        <Button onClick={() => setShowModal(true)} semiSmall semiDanger>
-                          <>
-                            <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
-                            {t('profileSettings.delete')}
-                          </>
-                        </Button>
+                        <EnvelopeIcon className='mt-0.5 mr-2 h-6 w-6 text-blue-500' />
+                        {t('profileSettings.noLink')}
                       </div>
-                    </>
-                  )
-                }
-
-                if (activeTab === TAB_MAPPING.INTERFACE) {
-                  return (
+                    ) : null}
+                  </>
+                )}
+                <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-end'>
+                  <Button
+                    onClick={() => {
+                      logout(true)
+                    }}
+                    semiSmall
+                    semiDanger
+                  >
                     <>
-                      <h3 className='flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-                        {t('profileSettings.timezone')}
-                      </h3>
-                      <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-                        <div>
-                          <TimezonePicker value={timezone} onChange={setTimezone} />
-                        </div>
-                      </div>
-                      <Button className='mt-4' onClick={handleTimezoneSave} primary large>
-                        {t('common.save')}
-                      </Button>
-                      {/* Timeformat selector (12 / 24 hour format) */}
-                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                      <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                        {t('profileSettings.timeFormat')}
-                      </h3>
-                      <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-                        <div>
-                          <Select
-                            title={t(`profileSettings.${form.timeFormat}`)}
-                            label={t('profileSettings.selectTimeFormat')}
-                            className='w-full'
-                            items={translatedTimeFormat}
-                            onSelect={(f) =>
-                              setForm((prev) => ({
-                                ...prev,
-                                timeFormat: timeFormatArray[_findIndex(translatedTimeFormat, (freq) => freq === f)],
-                              }))
-                            }
-                            capitalise
-                            selectedItem={
-                              translatedTimeFormat[_findIndex(timeFormatArray, (freq) => freq === form.timeFormat)]
-                            }
-                          />
-                        </div>
-                      </div>
-                      <Button className='mt-4' onClick={setAsyncTimeFormat} primary large>
-                        {t('common.save')}
-                      </Button>
-
-                      {/* UI Settings */}
-                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                      <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                        {t('profileSettings.uiSettings')}
-                      </h3>
-                      <Checkbox
-                        checked={user?.showLiveVisitorsInTitle}
-                        onChange={handleShowLiveVisitorsSave}
-                        disabled={isSubmitting}
-                        name='active'
-                        classes={{
-                          label: 'mt-4',
-                        }}
-                        label={t('profileSettings.showVisitorsInTitle')}
-                      />
+                      {/* We need this div for the button to match the height of the button after it */}
+                      <div className='h-5' />
+                      {t('profileSettings.logoutAll')}
                     </>
-                  )
-                }
-
-                if (activeTab === TAB_MAPPING.COMMUNICATIONS) {
-                  return (
+                  </Button>
+                  <Button onClick={() => setShowModal(true)} semiSmall semiDanger>
                     <>
-                      {!isSelfhosted ? (
-                        <>
-                          {/* Email reports frequency selector (e.g. monthly, weekly, etc.) */}
-                          <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
-                            {t('profileSettings.email')}
-                          </h3>
-                          <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-                            <div>
-                              <Select
-                                title={t(`profileSettings.${reportFrequency}`)}
-                                label={t('profileSettings.frequency')}
-                                className='w-full'
-                                items={translatedFrequencies}
-                                onSelect={(f) =>
-                                  setReportFrequency(
-                                    reportFrequencies[_findIndex(translatedFrequencies, (freq) => freq === f)],
-                                  )
-                                }
-                                capitalise
-                                selectedItem={
-                                  translatedFrequencies[
-                                    _findIndex(reportFrequencies, (freq) => freq === reportFrequency)
-                                  ]
-                                }
-                              />
-                            </div>
-                          </div>
-                          <Button className='mt-4' onClick={handleReportSave} primary large>
-                            {t('common.save')}
-                          </Button>
-
-                          <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                          {/* Integrations setup */}
-                          <h3
-                            id='integrations'
-                            className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'
-                          >
-                            {t('profileSettings.integrations')}
-                          </h3>
-                          <Integrations handleIntegrationSave={handleIntegrationSave} />
-                          {user?.isTelegramChatIdConfirmed ? (
-                            <Checkbox
-                              checked={user?.receiveLoginNotifications}
-                              onChange={handleReceiveLoginNotifications}
-                              disabled={isSubmitting}
-                              name='receiveLoginNotifications'
-                              classes={{
-                                label: 'mt-4',
-                              }}
-                              label={t('profileSettings.receiveLoginNotifications')}
-                            />
-                          ) : null}
-                        </>
-                      ) : null}
+                      <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
+                      {t('profileSettings.delete')}
                     </>
-                  )
-                }
+                  </Button>
+                </div>
+              </>
+            ) : null}
 
-                return null
-              }}
-            </ClientOnly>
+            {activeTab === TAB_MAPPING.INTERFACE ? (
+              <>
+                <h3 className='flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+                  {t('profileSettings.timezone')}
+                </h3>
+                <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
+                  <div>
+                    <TimezonePicker value={timezone} onChange={setTimezone} />
+                  </div>
+                </div>
+                <Button className='mt-4' onClick={handleTimezoneSave} primary large>
+                  {t('common.save')}
+                </Button>
+                {/* Timeformat selector (12 / 24 hour format) */}
+                <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                  {t('profileSettings.timeFormat')}
+                </h3>
+                <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
+                  <div>
+                    <Select
+                      title={t(`profileSettings.${form.timeFormat}`)}
+                      label={t('profileSettings.selectTimeFormat')}
+                      className='w-full'
+                      items={translatedTimeFormat}
+                      onSelect={(f) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          timeFormat: timeFormatArray[_findIndex(translatedTimeFormat, (freq) => freq === f)],
+                        }))
+                      }
+                      capitalise
+                      selectedItem={
+                        translatedTimeFormat[_findIndex(timeFormatArray, (freq) => freq === form.timeFormat)]
+                      }
+                    />
+                  </div>
+                </div>
+                <Button className='mt-4' onClick={setAsyncTimeFormat} primary large>
+                  {t('common.save')}
+                </Button>
+
+                {/* UI Settings */}
+                <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                  {t('profileSettings.uiSettings')}
+                </h3>
+                <Checkbox
+                  checked={user?.showLiveVisitorsInTitle}
+                  onChange={handleShowLiveVisitorsSave}
+                  disabled={isSubmitting}
+                  name='active'
+                  classes={{
+                    label: 'mt-4',
+                  }}
+                  label={t('profileSettings.showVisitorsInTitle')}
+                />
+              </>
+            ) : null}
+
+            {activeTab === TAB_MAPPING.COMMUNICATIONS && !isSelfhosted ? (
+              <>
+                {/* Email reports frequency selector (e.g. monthly, weekly, etc.) */}
+                <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.email')}</h3>
+                <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
+                  <div>
+                    <Select
+                      title={t(`profileSettings.${reportFrequency}`)}
+                      label={t('profileSettings.frequency')}
+                      className='w-full'
+                      items={translatedFrequencies}
+                      onSelect={(f) =>
+                        setReportFrequency(reportFrequencies[_findIndex(translatedFrequencies, (freq) => freq === f)])
+                      }
+                      capitalise
+                      selectedItem={
+                        translatedFrequencies[_findIndex(reportFrequencies, (freq) => freq === reportFrequency)]
+                      }
+                    />
+                  </div>
+                </div>
+                <Button className='mt-4' onClick={handleReportSave} primary large>
+                  {t('common.save')}
+                </Button>
+
+                <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                {/* Integrations setup */}
+                <h3
+                  id='integrations'
+                  className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'
+                >
+                  {t('profileSettings.integrations')}
+                </h3>
+                <Integrations handleIntegrationSave={handleIntegrationSave} />
+                {user?.isTelegramChatIdConfirmed ? (
+                  <Checkbox
+                    checked={user?.receiveLoginNotifications}
+                    onChange={handleReceiveLoginNotifications}
+                    disabled={isSubmitting}
+                    name='receiveLoginNotifications'
+                    classes={{
+                      label: 'mt-4',
+                    }}
+                    label={t('profileSettings.receiveLoginNotifications')}
+                  />
+                ) : null}
+              </>
+            ) : null}
           </section>
         </div>
       </form>
