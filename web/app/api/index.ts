@@ -1,67 +1,3 @@
-// Feature Flags API
-export interface TargetingRule {
-  column: string
-  filter: string
-  isExclusive: boolean
-}
-
-export interface ProjectFeatureFlag {
-  id: string
-  key: string
-  description: string | null
-  flagType: 'boolean' | 'rollout'
-  rolloutPercentage: number
-  targetingRules: TargetingRule[] | null
-  enabled: boolean
-  pid: string
-  created: string
-}
-
-// Experiments (A/B Testing) API
-
-type ExperimentStatus = 'draft' | 'running' | 'paused' | 'completed'
-
-type ExposureTrigger = 'feature_flag' | 'custom_event'
-
-type MultipleVariantHandling = 'exclude' | 'first_exposure'
-
-type FeatureFlagMode = 'create' | 'link'
-
-interface ExperimentVariant {
-  id?: string
-  name: string
-  key: string
-  description?: string | null
-  rolloutPercentage: number
-  isControl: boolean
-}
-
-export interface Experiment {
-  id: string
-  name: string
-  description: string | null
-  hypothesis: string | null
-  status: ExperimentStatus
-  // Exposure criteria
-  exposureTrigger: ExposureTrigger
-  customEventName: string | null
-  multipleVariantHandling: MultipleVariantHandling
-  filterInternalUsers: boolean
-  // Feature flag configuration
-  featureFlagMode: FeatureFlagMode
-  featureFlagKey: string | null
-  startedAt: string | null
-  endedAt: string | null
-  pid: string
-  goalId: string | null
-  featureFlagId: string | null
-  variants: ExperimentVariant[]
-  created: string
-}
-
-export const DEFAULT_EXPERIMENTS_TAKE = 20
-
-// AI Chat API with SSE streaming (proxied through /api/ai)
 interface AIChatMessage {
   role: 'user' | 'assistant'
   content: string
@@ -152,12 +88,4 @@ export const askAI = async (
     }
     callbacks.onError(error as Error)
   }
-}
-
-// AI Chat History API
-export interface AIChatSummary {
-  id: string
-  name: string | null
-  created: string
-  updated: string
 }

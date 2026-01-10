@@ -28,7 +28,7 @@ import sanitizeHtml from 'sanitize-html'
 import { toast } from 'sonner'
 import { useStickToBottom } from 'use-stick-to-bottom'
 
-import { askAI, AIChatSummary } from '~/api'
+import { askAI } from '~/api'
 import { ProjectViewActionData } from '~/routes/projects.$id'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 import Modal from '~/ui/Modal'
@@ -43,6 +43,13 @@ interface MessagePart {
   text?: string
   toolName?: string
   args?: unknown
+}
+
+interface AIChatSummary {
+  id: string
+  name: string | null
+  created: string
+  updated: string
 }
 
 interface Message {
@@ -501,6 +508,8 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   const loadChatFetcher = useFetcher<ProjectViewActionData>()
   const saveChatFetcher = useFetcher<ProjectViewActionData>()
   const deleteChatFetcher = useFetcher<ProjectViewActionData>()
+  const lastProcessedSaveDataRef = useRef<ProjectViewActionData | null>(null)
+  const lastProcessedLoadDataRef = useRef<ProjectViewActionData | null>(null)
 
   const isLoadingChats = allChatsFetcher.state !== 'idle'
 
@@ -525,7 +534,8 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     formData.append('limit', '3')
 
     recentChatsFetcher.submit(formData, { method: 'POST' })
-  }, [recentChatsFetcher])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recentChatsFetcher.submit])
 
   // Handle recent chats fetcher response
   useEffect(() => {
@@ -547,7 +557,8 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
       allChatsFetcher.submit(formData, { method: 'POST' })
     },
-    [allChatsFetcher],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allChatsFetcher.submit],
   )
 
   // Handle all chats fetcher response
@@ -586,7 +597,8 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
       loadChatFetcher.submit(formData, { method: 'POST' })
     },
-    [loadChatFetcher],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [loadChatFetcher.submit],
   )
 
   // Handle load chat fetcher response
@@ -594,6 +606,10 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
   useEffect(() => {
     if (loadChatFetcher.state === 'idle' && loadChatFetcher.data) {
+      // Skip if we've already processed this response
+      if (lastProcessedLoadDataRef.current === loadChatFetcher.data) return
+      lastProcessedLoadDataRef.current = loadChatFetcher.data
+
       if (loadChatFetcher.data.success && loadChatFetcher.data.data) {
         const chat = loadChatFetcher.data.data as AIChat
         setMessages(
@@ -625,6 +641,10 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   // Handle save chat fetcher response
   useEffect(() => {
     if (saveChatFetcher.state === 'idle' && saveChatFetcher.data) {
+      // Skip if we've already processed this response
+      if (lastProcessedSaveDataRef.current === saveChatFetcher.data) return
+      lastProcessedSaveDataRef.current = saveChatFetcher.data
+
       if (saveChatFetcher.data.success && saveChatFetcher.data.data) {
         const result = saveChatFetcher.data.data as AIChat
         if (result.branched || !currentChatId) {
@@ -663,7 +683,8 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
       saveChatFetcher.submit(formData, { method: 'POST' })
     },
-    [saveChatFetcher, currentChatId],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [saveChatFetcher.submit, currentChatId],
   )
 
   useEffect(() => {

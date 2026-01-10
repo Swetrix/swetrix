@@ -2167,38 +2167,3 @@ export async function getRevenueDataServer(
 
   return serverFetch<RevenueDataResponse>(request, `log/revenue?${queryParams.toString()}`)
 }
-
-// ============================================================================
-// MARK: AI Chat API (Proxy for streaming)
-// ============================================================================
-
-interface AIChatMessage {
-  role: 'user' | 'assistant'
-  content: string
-}
-
-export async function askAIServer(
-  request: Request,
-  pid: string,
-  messages: AIChatMessage[],
-  timezone: string,
-): Promise<Response> {
-  const apiUrl = getApiUrl()
-  const accessToken = getAccessToken(request)
-
-  const fetchHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
-  }
-
-  if (accessToken) {
-    fetchHeaders['Authorization'] = `Bearer ${accessToken}`
-  }
-
-  const response = await fetch(`${apiUrl}ai/${pid}/chat`, {
-    method: 'POST',
-    headers: fetchHeaders,
-    body: JSON.stringify({ messages, timezone }),
-  })
-
-  return response
-}

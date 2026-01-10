@@ -18,7 +18,6 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import type { ProjectFeatureFlag, TargetingRule } from '~/api'
 import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { API_URL, isSelfhosted } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -44,6 +43,24 @@ const TARGETING_COLUMNS = [
   { value: 'br', label: 'Browser' },
   { value: 'os', label: 'OS' },
 ]
+
+interface TargetingRule {
+  column: string
+  filter: string
+  isExclusive: boolean
+}
+
+interface ProjectFeatureFlag {
+  id: string
+  key: string
+  description: string | null
+  flagType: 'boolean' | 'rollout'
+  rolloutPercentage: number
+  targetingRules: TargetingRule[] | null
+  enabled: boolean
+  pid: string
+  created: string
+}
 
 interface FeatureFlagSettingsModalProps {
   isOpen: boolean

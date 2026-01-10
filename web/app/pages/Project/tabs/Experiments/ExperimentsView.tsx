@@ -20,7 +20,6 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { DEFAULT_EXPERIMENTS_TAKE, type Experiment, type ExperimentStatus } from '~/api'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
@@ -45,6 +44,48 @@ const STATUS_COLORS: Record<ExperimentStatus, { bg: string; text: string }> = {
   running: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-400' },
   paused: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-400' },
   completed: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-400' },
+}
+
+const DEFAULT_EXPERIMENTS_TAKE = 20
+
+type ExperimentStatus = 'draft' | 'running' | 'paused' | 'completed'
+
+type ExposureTrigger = 'feature_flag' | 'custom_event'
+
+type MultipleVariantHandling = 'exclude' | 'first_exposure'
+
+type FeatureFlagMode = 'create' | 'link'
+
+interface ExperimentVariant {
+  id?: string
+  name: string
+  key: string
+  description?: string | null
+  rolloutPercentage: number
+  isControl: boolean
+}
+
+interface Experiment {
+  id: string
+  name: string
+  description: string | null
+  hypothesis: string | null
+  status: ExperimentStatus
+  // Exposure criteria
+  exposureTrigger: ExposureTrigger
+  customEventName: string | null
+  multipleVariantHandling: MultipleVariantHandling
+  filterInternalUsers: boolean
+  // Feature flag configuration
+  featureFlagMode: FeatureFlagMode
+  featureFlagKey: string | null
+  startedAt: string | null
+  endedAt: string | null
+  pid: string
+  goalId: string | null
+  featureFlagId: string | null
+  variants: ExperimentVariant[]
+  created: string
 }
 
 interface ExperimentRowProps {
