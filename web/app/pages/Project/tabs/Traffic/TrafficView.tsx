@@ -12,16 +12,16 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, Link, useSearchParams, useLoaderData, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
+import type {
+  TrafficLogResponse as ServerTrafficLogResponse,
+  OverallObject as ServerOverallObject,
+} from '~/api/api.server'
 import {
   useCustomEventsMetadataProxy,
   usePropertyMetadataProxy,
   useGSCKeywordsProxy,
   useRevenueProxy,
 } from '~/hooks/useAnalyticsProxy'
-import type {
-  TrafficLogResponse as ServerTrafficLogResponse,
-  OverallObject as ServerOverallObject,
-} from '~/api/api.server'
 import { useAnnotations } from '~/hooks/useAnnotations'
 import { TRAFFIC_PANELS_ORDER, chartTypes, isSelfhosted } from '~/lib/constants'
 import { CountryEntry, Entry } from '~/lib/models/Entry'

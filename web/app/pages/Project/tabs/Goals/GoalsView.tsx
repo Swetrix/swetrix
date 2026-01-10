@@ -24,7 +24,6 @@ import { toast } from 'sonner'
 
 import type { GoalsResponse, Goal, GoalStats, GoalChartData } from '~/api/api.server'
 import { useGoalStatsProxy, useGoalChartProxy } from '~/hooks/useAnalyticsProxy'
-import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
 import {
   TimeFormat,
   tbsFormatMapper,
@@ -36,6 +35,7 @@ import {
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
 import BillboardChart from '~/ui/BillboardChart'
 import Button from '~/ui/Button'
 import Spin from '~/ui/icons/Spin'

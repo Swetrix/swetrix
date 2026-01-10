@@ -23,12 +23,12 @@ import { Link, useSearchParams, useFetcher, useLoaderData, useRevalidator } from
 import { toast } from 'sonner'
 
 import type { AlertsResponse } from '~/api/api.server'
-import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
 import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
 import { Badge, type BadgeProps } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'

@@ -30,7 +30,6 @@ import { useNavigate, useSearchParams, LinkProps, useFetcher } from 'react-route
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { ProjectViewActionData } from '~/routes/projects.$id'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
@@ -59,6 +58,7 @@ import {
 import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import { ProjectViewActionData } from '~/routes/projects.$id'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
