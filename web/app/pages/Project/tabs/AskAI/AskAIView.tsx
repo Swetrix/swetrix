@@ -581,10 +581,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
   const loadAllChatsWithSkip = useCallback(
     (skip: number) => {
+      if (allChatsFetcher.state !== 'idle') return
+
       setPendingAllChatsSkip(skip)
       loadAllChats(skip)
     },
-    [loadAllChats],
+    [allChatsFetcher.state, loadAllChats],
   )
 
   const loadChat = useCallback(

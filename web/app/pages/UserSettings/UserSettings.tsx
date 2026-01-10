@@ -10,7 +10,7 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import { MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
-import React, { useState, useEffect, memo, useMemo } from 'react'
+import React, { useState, useEffect, memo, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useFetcher } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
@@ -123,6 +123,9 @@ const UserSettings = () => {
   const translatedTimeFormat = _map(TimeFormat, (key) => t(`profileSettings.${key}`))
   const [deletionFeedback, setDeletionFeedback] = useState('')
 
+  const lastHandledData = useRef<UserSettingsActionData | null>(null)
+  const passwordChangedRef = useRef(false)
+
   const isSubmitting = fetcher.state === 'submitting'
 
   const tabs = getTabs(t)
@@ -130,7 +133,11 @@ const UserSettings = () => {
 
   // Handle fetcher responses
   useEffect(() => {
-    if (fetcher.data?.success) {
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
+    if (fetcher.data.success) {
       const { intent, user: updatedUser, apiKey } = fetcher.data
 
       if (intent === 'update-profile' && updatedUser) {
@@ -138,7 +145,8 @@ const UserSettings = () => {
         toast.success(t('profileSettings.updated'))
 
         // If password was changed, log out the user
-        if (form.password) {
+        if (passwordChangedRef.current) {
+          passwordChangedRef.current = false
           logout()
         }
       } else if (intent === 'generate-api-key' && apiKey) {
@@ -163,7 +171,7 @@ const UserSettings = () => {
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data, mergeUser, t, logout, navigate, form.password])
+  }, [fetcher.data, fetcher.state, mergeUser, t, logout, navigate])
 
   const validate = () => {
     const allErrors = {} as Record<string, string>
@@ -235,6 +243,7 @@ const UserSettings = () => {
     }
     if (additionalData?.reportFrequency) formData.set('reportFrequency', additionalData.reportFrequency as string)
 
+    passwordChangedRef.current = !!form.password
     fetcher.submit(formData, { method: 'post' })
   }
 

@@ -240,6 +240,8 @@ const ProjectAlertsSettings = ({
 
     setErrors(allErrors)
     setValidated(valid)
+
+    return valid
   }
 
   const shouldIncludeQueryFields =
@@ -268,7 +270,9 @@ const ProjectAlertsSettings = ({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     setBeenSubmitted(true)
 
-    if (!validated) {
+    const isValid = validate()
+
+    if (!isValid) {
       e.preventDefault()
     }
   }

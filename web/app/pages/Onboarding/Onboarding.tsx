@@ -169,6 +169,8 @@ const Onboarding = () => {
   }, [isWaitingForEvents, project, authMe])
 
   const updateUserStep = (step: string) => {
+    if (fetcher.state !== 'idle') return
+
     const formData = new FormData()
     formData.set('intent', 'update-step')
     formData.set('step', step)
@@ -178,6 +180,8 @@ const Onboarding = () => {
   const handleCreateProject = (e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault()
     e?.stopPropagation()
+
+    if (fetcher.state !== 'idle') return
 
     const trimmedName = projectName.trim()
 
@@ -199,6 +203,8 @@ const Onboarding = () => {
   }
 
   const handleCompleteOnboarding = (skipped: boolean) => {
+    if (fetcher.state !== 'idle') return
+
     trackCustom('ONBOARDING_COMPLETED', { skipped })
 
     const formData = new FormData()
@@ -207,6 +213,8 @@ const Onboarding = () => {
   }
 
   const handleDeleteAccount = () => {
+    if (fetcher.state !== 'idle') return
+
     const formData = new FormData()
     formData.set('intent', 'delete-account')
     fetcher.submit(formData, { method: 'post' })

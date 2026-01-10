@@ -1,8 +1,8 @@
-import type { ActionFunctionArgs, HeadersFunction } from 'react-router'
+import type { ActionFunctionArgs, HeadersFunction, LoaderFunctionArgs } from 'react-router'
 import { data, redirect } from 'react-router'
 import { SitemapFunction } from 'remix-sitemap'
 
-import { serverFetch } from '~/api/api.server'
+import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
 import ForgotPassword from '~/pages/Auth/ForgotPassword'
 import { isValidEmail } from '~/utils/validator'
 
@@ -13,6 +13,16 @@ export const sitemap: SitemapFunction = () => ({
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')
   return parentHeaders
+}
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const authResult = await getAuthenticatedUser(request)
+
+  if (authResult) {
+    return redirect('/dashboard')
+  }
+
+  return null
 }
 
 export interface ForgotPasswordActionData {

@@ -445,8 +445,8 @@ const ProjectSettings = () => {
           ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
           origins: _isString(result.origins) ? result.origins : _join(result.origins, ', '),
           botsProtectionLevel: result.botsProtectionLevel as 'off' | 'basic',
-          gscPropertyUri: null,
-          websiteUrl: null,
+          gscPropertyUri: result.gscPropertyUri || null,
+          websiteUrl: result.websiteUrl || null,
         })
       }
     } catch (reason: any) {

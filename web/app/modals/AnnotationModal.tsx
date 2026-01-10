@@ -63,7 +63,6 @@ const AnnotationModal = ({
     }
 
     onSubmit(date, text.trim())
-    _onClose()
   }
 
   const _onDelete = () => {
@@ -72,7 +71,6 @@ const AnnotationModal = ({
     }
 
     onDelete()
-    _onClose()
   }
 
   const isEditMode = !!annotation

@@ -327,7 +327,6 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   const actionFetcher = useFetcher<ProjectViewActionData>()
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const isLoadingRef = useRef(false)
   const isMountedRef = useRef(true)
   const [total, setTotal] = useState(0)
   const [experiments, setExperiments] = useState<Experiment[]>([])
@@ -357,11 +356,6 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
 
   const loadExperiments = useCallback(
     (take: number, skip: number, showLoading = true, search?: string) => {
-      if (isLoadingRef.current) {
-        return
-      }
-      isLoadingRef.current = true
-
       if (showLoading) {
         setIsLoading(true)
       }
@@ -382,7 +376,6 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   // Handle list fetcher response
   useEffect(() => {
     if (listFetcher.data?.intent === 'get-project-experiments') {
-      isLoadingRef.current = false
       if (isMountedRef.current) {
         setIsLoading(false)
         if (listFetcher.data.success && listFetcher.data.data) {

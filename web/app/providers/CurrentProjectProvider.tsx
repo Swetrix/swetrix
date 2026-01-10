@@ -57,6 +57,8 @@ const useProject = (id: string) => {
   const passwordFetcher = useFetcher<ProjectViewActionData>()
   const lastHandledFetcherData = useRef<ProjectViewActionData | null>(null)
   const hasTriedStoredPassword = useRef(false)
+  const passwordResolverRef = useRef<((value: { success: boolean; error?: string }) => void) | null>(null)
+  const lastSubmittedPasswordRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (loaderData?.error && !loaderData.project && !loaderData.isPasswordRequired) {
@@ -95,18 +97,34 @@ const useProject = (id: string) => {
       const result = passwordFetcher.data.data as Project
       setProject(result)
       setIsPasswordRequired(false)
+
+      if (lastSubmittedPasswordRef.current) {
+        setProjectPassword(id, lastSubmittedPasswordRef.current)
+        lastSubmittedPasswordRef.current = null
+      }
+
+      if (passwordResolverRef.current) {
+        passwordResolverRef.current({ success: true })
+        passwordResolverRef.current = null
+      }
     } else if (passwordFetcher.data.error) {
       toast.error(t('apiNotifications.incorrectPassword'))
+
+      lastSubmittedPasswordRef.current = null
+      if (passwordResolverRef.current) {
+        passwordResolverRef.current({ success: false, error: passwordFetcher.data.error })
+        passwordResolverRef.current = null
+      }
     }
-  }, [passwordFetcher.state, passwordFetcher.data, t])
+  }, [passwordFetcher.state, passwordFetcher.data, t, id])
 
   const submitPassword = useCallback(
     async (password: string): Promise<{ success: boolean; error?: string }> => {
-      setProjectPassword(id, password)
-
-      passwordFetcher.submit({ intent: 'get-project', password }, { method: 'POST', action: `/projects/${id}` })
-
-      return { success: true }
+      return new Promise((resolve) => {
+        passwordResolverRef.current = resolve
+        lastSubmittedPasswordRef.current = password
+        passwordFetcher.submit({ intent: 'get-project', password }, { method: 'POST', action: `/projects/${id}` })
+      })
     },
     [id, passwordFetcher],
   )
@@ -160,9 +178,13 @@ const useLiveVisitors = (project: Project | null) => {
       return
     }
 
-    const result = await fetchLiveVisitors([projectId])
-    if (result) {
-      setLiveVisitors(result[projectId] || 0)
+    try {
+      const result = await fetchLiveVisitors([projectId])
+      if (result) {
+        setLiveVisitors(result[projectId] || 0)
+      }
+    } catch (reason) {
+      console.error('Failed to update live visitors:', reason)
     }
   }, [projectId, isLocked, fetchLiveVisitors])
 

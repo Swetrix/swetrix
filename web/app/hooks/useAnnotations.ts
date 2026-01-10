@@ -178,6 +178,8 @@ export const useAnnotations = (): UseAnnotationsReturn => {
       setAnnotationsLoading(false)
       if (loadFetcher.data.success && loadFetcher.data.data) {
         setAnnotations((loadFetcher.data.data as Annotation[]) || [])
+      } else if (loadFetcher.data.error) {
+        toast.error(loadFetcher.data.error)
       }
     }
   }, [loadFetcher.state, loadFetcher.data])
@@ -193,13 +195,14 @@ export const useAnnotations = (): UseAnnotationsReturn => {
           toast.success(t('apiNotifications.annotationDeleted'))
         }
         loadAnnotations()
+        closeAnnotationModal()
       } else if (fetcher.data.error) {
         toast.error(fetcher.data.error)
       }
       setPendingAction(null)
       setAnnotationToEdit(undefined)
     }
-  }, [fetcher.state, fetcher.data, pendingAction, loadAnnotations, t])
+  }, [fetcher.state, fetcher.data, pendingAction, loadAnnotations, t, closeAnnotationModal])
 
   const onAnnotationCreate = useCallback(
     (date: string, text: string) => {

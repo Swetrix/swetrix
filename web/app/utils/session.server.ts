@@ -56,6 +56,11 @@ export function getRefreshToken(request: Request): string | null {
   return cookies[REFRESH_TOKEN_COOKIE] || null
 }
 
+export function isPersistentSession(request: Request): boolean {
+  const cookies = parseCookies(request)
+  return cookies['is_persistent'] === 'true'
+}
+
 export function hasAuthTokens(request: Request): boolean {
   return !!getAccessToken(request) || !!getRefreshToken(request)
 }
@@ -120,10 +125,16 @@ function buildCookieHeader(
 export function createAuthCookies(tokens: AuthTokens, remember: boolean): string[] {
   const maxAge = remember ? PERSISTENT_COOKIE_MAX_AGE : undefined
 
-  return [
+  const cookies = [
     buildCookieHeader(ACCESS_TOKEN_COOKIE, tokens.accessToken, { maxAge }),
     buildCookieHeader(REFRESH_TOKEN_COOKIE, tokens.refreshToken, { maxAge }),
   ]
+
+  if (remember) {
+    cookies.push(buildCookieHeader('is_persistent', 'true', { maxAge: PERSISTENT_COOKIE_MAX_AGE }))
+  }
+
+  return cookies
 }
 
 /**

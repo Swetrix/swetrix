@@ -1,3 +1,4 @@
+import { Alerts } from '~/lib/models/Alerts'
 import { Auth } from '~/lib/models/Auth'
 import { User } from '~/lib/models/User'
 import {
@@ -6,6 +7,7 @@ import {
   createAuthCookies,
   clearAuthCookies,
   AuthTokens,
+  isPersistentSession,
 } from '~/utils/session.server'
 
 // ============================================================================
@@ -216,11 +218,19 @@ export async function streamingServerFetch(
     if (refreshResult.success && refreshResult.tokens) {
       fetchHeaders['Authorization'] = `Bearer ${refreshResult.tokens.accessToken}`
 
-      return fetch(url, {
+      const retryResponse = await fetch(url, {
         method,
         headers: fetchHeaders,
         body: body ? JSON.stringify(body) : undefined,
       })
+
+      // If the response is not ok, we still want to propagate the refreshed cookies
+      const finalResponse = new Response(retryResponse.body, retryResponse)
+      for (const cookie of refreshResult.cookies) {
+        finalResponse.headers.append('Set-Cookie', cookie)
+      }
+
+      return finalResponse
     }
   }
 
@@ -258,7 +268,8 @@ async function tryRefreshToken(
       refreshToken: refreshToken,
     }
 
-    const cookies = createAuthCookies(tokens, true)
+    const remember = isPersistentSession(request)
+    const cookies = createAuthCookies(tokens, remember)
 
     return { success: true, tokens, cookies }
   } catch {
@@ -988,7 +999,7 @@ export async function getErrorOverviewServer(
 // MARK: Feature Flags API (Deferred Loading)
 // ============================================================================
 
-interface TargetingRule {
+export interface TargetingRule {
   column: string
   filter: string
   isExclusive: boolean
@@ -1182,34 +1193,8 @@ export async function getGoalChartServer(
 // MARK: Alerts API (Deferred Loading)
 // ============================================================================
 
-type QueryMetric = 'page_views' | 'unique_page_views' | 'online_users' | 'custom_events' | 'errors'
-type QueryCondition = 'greater_than' | 'greater_equal_than' | 'less_than' | 'less_equal_than'
-type QueryTime =
-  | 'last_15_minutes'
-  | 'last_30_minutes'
-  | 'last_1_hour'
-  | 'last_4_hours'
-  | 'last_24_hours'
-  | 'last_48_hours'
-
-interface Alert {
-  id: string
-  name: string
-  active: boolean
-  queryMetric: QueryMetric
-  queryCondition: QueryCondition | null
-  queryValue: number | null
-  queryTime: QueryTime | null
-  queryCustomEvent: string | null
-  lastTriggered: string | null
-  alertOnNewErrorsOnly: boolean
-  alertOnEveryCustomEvent: boolean
-  pid: string
-  created: string
-}
-
 export interface AlertsResponse {
-  results: Alert[]
+  results: Alerts[]
   total: number
 }
 

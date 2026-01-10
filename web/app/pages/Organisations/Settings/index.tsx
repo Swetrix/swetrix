@@ -46,6 +46,13 @@ const OrganisationSettings = () => {
     name: organisation?.name || '',
   }))
 
+  useEffect(() => {
+    if (organisation) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setForm({ name: organisation.name || '' })
+    }
+  }, [organisation])
+
   const isSaving = fetcher.state === 'submitting'
   const isDeleting = fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'delete-organisation'
 

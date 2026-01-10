@@ -247,7 +247,7 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
   // Track if we're in pagination mode
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [total, setTotal] = useState(() => deferredData.alertsData?.total || 0)
-  const [alerts, setAlerts] = useState<Alerts[]>(() => (deferredData.alertsData?.results as Alerts[]) || [])
+  const [alerts, setAlerts] = useState<Alerts[]>(() => deferredData.alertsData?.results || [])
   const [page, setPage] = useState(1)
 
   const [error, setError] = useState<string | null>(null)
@@ -277,7 +277,7 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
   // Sync state when loader provides new data
   useEffect(() => {
     if (deferredData.alertsData && revalidator.state === 'idle' && !isSearchMode) {
-      setAlerts((deferredData.alertsData.results as Alerts[]) || [])
+      setAlerts(deferredData.alertsData.results || [])
       setTotal(deferredData.alertsData.total || 0)
     }
   }, [revalidator.state, deferredData.alertsData, isSearchMode])

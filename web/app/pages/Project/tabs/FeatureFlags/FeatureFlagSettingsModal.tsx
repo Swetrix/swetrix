@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import type { ProjectFeatureFlag, TargetingRule } from '~/api/api.server'
 import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { API_URL, isSelfhosted } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -43,24 +44,6 @@ const TARGETING_COLUMNS = [
   { value: 'br', label: 'Browser' },
   { value: 'os', label: 'OS' },
 ]
-
-interface TargetingRule {
-  column: string
-  filter: string
-  isExclusive: boolean
-}
-
-interface ProjectFeatureFlag {
-  id: string
-  key: string
-  description: string | null
-  flagType: 'boolean' | 'rollout'
-  rolloutPercentage: number
-  targetingRules: TargetingRule[] | null
-  enabled: boolean
-  pid: string
-  created: string
-}
 
 interface FeatureFlagSettingsModalProps {
   isOpen: boolean
@@ -111,15 +94,16 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
 
   const fetchFilterValues = useCallback(
     async (column: string) => {
-      if (filterValuesCache[column] || loadingColumns.has(column)) return
+      const cacheKey = `${projectId}-${column}`
+      if (filterValuesCache[cacheKey] || loadingColumns.has(column)) return
 
       setLoadingColumns((prev) => new Set(prev).add(column))
       try {
         const result = await fetchFilters(projectId, column)
-        setFilterValuesCache((prev) => ({ ...prev, [column]: result || [] }))
+        setFilterValuesCache((prev) => ({ ...prev, [cacheKey]: result || [] }))
       } catch (error) {
         console.error('Failed to fetch filter values:', error)
-        setFilterValuesCache((prev) => ({ ...prev, [column]: [] }))
+        setFilterValuesCache((prev) => ({ ...prev, [cacheKey]: [] }))
       } finally {
         setLoadingColumns((prev) => {
           const newSet = new Set(prev)
@@ -135,12 +119,13 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
   useEffect(() => {
     if (isOpen) {
       TARGETING_COLUMNS.forEach(({ value: column }) => {
-        if (!filterValuesCache[column] && !loadingColumns.has(column)) {
+        const cacheKey = `${projectId}-${column}`
+        if (!filterValuesCache[cacheKey] && !loadingColumns.has(column)) {
           fetchFilterValues(column)
         }
       })
     }
-  }, [isOpen, fetchFilterValues, filterValuesCache, loadingColumns])
+  }, [isOpen, fetchFilterValues, filterValuesCache, loadingColumns, projectId])
 
   // Load flag via fetcher
   useEffect(() => {
@@ -155,14 +140,19 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
 
   // Handle fetcher responses
   useEffect(() => {
-    if (!fetcher.data || fetcher.state !== 'idle') return
+    if (fetcher.state !== 'idle') return
+
+    if (isLoading) {
+      setIsLoading(false)
+    }
+
+    if (!fetcher.data) return
 
     const responseKey = `${fetcher.data.intent}-${fetcher.data.success}`
     if (processedRef.current === responseKey) return
     processedRef.current = responseKey
 
     if (fetcher.data.intent === 'get-feature-flag') {
-      setIsLoading(false)
       if (fetcher.data.success && fetcher.data.data) {
         const flag = fetcher.data.data as ProjectFeatureFlag
         setKey(flag.key)
@@ -192,7 +182,7 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
         toast.error(fetcher.data.error)
       }
     }
-  }, [fetcher.data, fetcher.state, t, onSuccess, onClose])
+  }, [fetcher.data, fetcher.state, t, onSuccess, onClose, isLoading])
 
   // Reset processed ref when modal opens
   useEffect(() => {
@@ -245,11 +235,12 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
       // Reset filter value when column changes
       updated[index] = { ...updated[index], column: value as string, filter: '' }
       // Fetch filter values for the new column if not already cached
-      if (value && !filterValuesCache[value as string] && !loadingColumns.has(value as string)) {
+      const cacheKey = `${projectId}-${value as string}`
+      if (value && !filterValuesCache[cacheKey] && !loadingColumns.has(value as string)) {
         fetchFilterValues(value as string)
       }
     } else {
-      // @ts-expect-error - TypeScript doesn't like dynamic field assignment
+      // @ts-ignore - TypeScript doesn't like dynamic field assignment
       updated[index][field] = value
     }
     setTargetingRules(updated)
@@ -567,7 +558,7 @@ const { flags } = await response.json()
 
                               {/* Value Input with Autocomplete */}
                               <FilterValueInput
-                                items={filterValuesCache[rule.column] || []}
+                                items={filterValuesCache[`${projectId}-${rule.column}`] || []}
                                 value={rule.filter}
                                 onChange={(value) => updateTargetingRule(index, 'filter', value)}
                                 placeholder={t('featureFlags.valuePlaceholder')}

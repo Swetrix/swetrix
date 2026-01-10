@@ -70,7 +70,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       return
     }
 
-    const requestId = profilesRequestIdRef.current
+    const requestId = ++profilesRequestIdRef.current
     setProfilesLoading(true)
 
     try {
