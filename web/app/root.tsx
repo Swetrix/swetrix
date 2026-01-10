@@ -24,7 +24,7 @@ import { getAuthenticatedUser } from '~/api/api.server'
 import { LocaleLinks } from '~/components/LocaleLinks'
 import SelfhostedApiUrlBanner from '~/components/SelfhostedApiUrlBanner'
 import { SEO } from '~/components/SEO'
-import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
+import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER, isDevelopment } from '~/lib/constants'
 import mainCss from '~/styles/index.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
 import { trackViews, trackErrors, trackError } from '~/utils/analytics'
@@ -285,6 +285,7 @@ export default function App() {
         <SEO />
         <meta name='google' content='notranslate' />
         <link rel='icon' type='image/x-icon' href={isSelfhosted ? '/favicon-ce.ico' : '/favicon.ico'} />
+        {isDevelopment ? <script src='https://unpkg.com/react-scan@0.4.3/dist/auto.global.js' /> : null}
         <Meta />
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Links />
