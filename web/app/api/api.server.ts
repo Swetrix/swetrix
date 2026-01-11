@@ -98,6 +98,11 @@ export async function serverFetch<T = unknown>(
     fetchHeaders['X-Client-IP-Address'] = clientIP
   }
 
+  const userAgent = request.headers.get('user-agent')
+  if (userAgent) {
+    fetchHeaders['User-Agent'] = userAgent
+  }
+
   if (!skipAuth) {
     const accessToken = getAccessToken(request)
     if (accessToken) {
@@ -208,6 +213,11 @@ export async function streamingServerFetch(
   const clientIP = getClientIP(request)
   if (clientIP) {
     fetchHeaders['X-Client-IP-Address'] = clientIP
+  }
+
+  const userAgent = request.headers.get('user-agent')
+  if (userAgent) {
+    fetchHeaders['User-Agent'] = userAgent
   }
 
   if (!skipAuth) {
