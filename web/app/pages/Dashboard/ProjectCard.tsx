@@ -7,7 +7,7 @@ import _size from 'lodash/size'
 import { Settings2Icon, PinIcon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useFetcher } from 'react-router'
+import { Link, useFetcher, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { OverallObject, Project } from '~/lib/models/Project'
@@ -25,13 +25,17 @@ import Sparkline from './Sparkline'
 
 // Detect if device supports hover (i.e., not a touch-only device)
 const useIsTouchDevice = () => {
-  const [isTouchDevice, setIsTouchDevice] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia('(hover: none)').matches
-  })
+  // Important for SSR hydration: first client render must match server output.
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
     const mediaQuery = window.matchMedia('(hover: none)')
+    queueMicrotask(() => setIsTouchDevice(mediaQuery.matches))
+
     const handler = (e: MediaQueryListEvent) => setIsTouchDevice(e.matches)
     mediaQuery.addEventListener('change', handler)
     return () => mediaQuery.removeEventListener('change', handler)
@@ -124,6 +128,7 @@ export const ProjectCard = ({
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
   const fetcher = useFetcher<DashboardActionData>()
+  const navigate = useNavigate()
 
   const { user, mergeUser } = useAuth()
   const isTouchDevice = useIsTouchDevice()
@@ -327,19 +332,23 @@ export const ProjectCard = ({
               aria-label={localIsPinned ? t('dashboard.unpin') : t('dashboard.pin')}
             >
               <PinIcon
-                className={cx('size-5 transition-transform', localIsPinned && 'rotate-[30deg]')}
+                className={cx('size-5 transition-transform', localIsPinned && 'rotate-30')}
                 strokeWidth={1.5}
               />
             </button>
             {project.isAccessConfirmed && role !== 'viewer' ? (
-              <Link
+              <button
+                type='button'
                 className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
-                onClick={(e) => e.stopPropagation()}
-                to={_replace(routes.project_settings, ':id', id)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  navigate(_replace(routes.project_settings, ':id', id))
+                }}
                 aria-label={`${t('project.settings.settings')} ${name}`}
               >
                 <Settings2Icon className='size-5' strokeWidth={1.5} />
-              </Link>
+              </button>
             ) : null}
           </div>
         </div>
@@ -420,7 +429,7 @@ export const ProjectCardSkeleton = ({ viewMode }: ProjectCardSkeletonProps) => {
               <div className='h-6 w-16 rounded-sm bg-gray-200 dark:bg-slate-700' />
             </div>
           </div>
-          <div className={cx('flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-[1.375rem] px-4 pb-4')}>
+          <div className={cx('flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-5.5 px-4 pb-4')}>
             <div className='h-10 w-24 rounded-sm bg-gray-200 dark:bg-slate-700' />
             <div className='h-10 w-24 rounded-sm bg-gray-200 dark:bg-slate-700' />
           </div>

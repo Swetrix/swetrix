@@ -7,7 +7,6 @@ import { StretchHorizontalIcon, LayoutGridIcon, SearchIcon, XIcon, FolderPlusIco
 import React, { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLoaderData, useNavigate, useSearchParams, useFetcher, useNavigation, useRevalidator } from 'react-router'
-import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
@@ -20,6 +19,7 @@ import { Overall } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
 import type { DashboardLoaderData, DashboardActionData } from '~/routes/dashboard'
 import Input from '~/ui/Input'
+import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import Select from '~/ui/Select'
@@ -30,7 +30,7 @@ import routes from '~/utils/routes'
 import { AddProject } from './AddProject'
 import { NoProjects } from './NoProjects'
 import { PeriodSelector } from './PeriodSelector'
-import { ProjectCard, ProjectCardSkeleton } from './ProjectCard'
+import { ProjectCard } from './ProjectCard'
 import { SortSelector, SORT_OPTIONS } from './SortSelector'
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
@@ -435,48 +435,31 @@ const Dashboard = () => {
                 </div>
               </div>
             ) : null}
-            {isLoading ? (
-              <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                <ProjectCardSkeleton viewMode={_viewMode} />
-              </div>
+            {isLoading && !_isEmpty(projects) ? <LoadingBar /> : null}
+            {_isEmpty(projects) ? (
+              <NoProjects search={debouncedSearch} onClick={onNewProject} />
             ) : (
-              <ClientOnly
-                fallback={
-                  <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                    <ProjectCardSkeleton viewMode={_viewMode} />
-                  </div>
-                }
-              >
-                {() => (
-                  <>
-                    {_isEmpty(projects) ? (
-                      <NoProjects search={debouncedSearch} onClick={onNewProject} />
-                    ) : (
-                      <div
-                        className={cx(
-                          'grid gap-3',
-                          _viewMode === DASHBOARD_VIEW.GRID ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1',
-                        )}
-                      >
-                        {_map(projects, (project) => (
-                          <ProjectCard
-                            key={`${project.id}-${project.name}`}
-                            project={project}
-                            live={liveStats[project.id] ?? (_isEmpty(liveStats) ? null : 'N/A')}
-                            overallStats={overallStats[project.id]}
-                            activePeriod={activePeriod}
-                            viewMode={_viewMode}
-                            refetchProjects={refetchProjects}
-                          />
-                        ))}
-                        {_size(projects) % 12 !== 0 ? (
-                          <AddProject sitesCount={_size(projects)} onClick={onNewProject} viewMode={_viewMode} />
-                        ) : null}
-                      </div>
-                    )}
-                  </>
+              <div
+                className={cx(
+                  'grid gap-3',
+                  _viewMode === DASHBOARD_VIEW.GRID ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1',
                 )}
-              </ClientOnly>
+              >
+                {_map(projects, (project) => (
+                  <ProjectCard
+                    key={`${project.id}-${project.name}`}
+                    project={project}
+                    live={liveStats[project.id] ?? (_isEmpty(liveStats) ? null : 'N/A')}
+                    overallStats={overallStats[project.id]}
+                    activePeriod={activePeriod}
+                    viewMode={_viewMode}
+                    refetchProjects={refetchProjects}
+                  />
+                ))}
+                {_size(projects) % 12 !== 0 ? (
+                  <AddProject sitesCount={_size(projects)} onClick={onNewProject} viewMode={_viewMode} />
+                ) : null}
+              </div>
             )}
             {paginationTotal > PAGE_SIZE_OPTIONS[0] ? (
               <Pagination
