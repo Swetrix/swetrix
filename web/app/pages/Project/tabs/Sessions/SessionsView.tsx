@@ -115,6 +115,13 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
 
   const isMountedRef = useRef(true)
 
+  // Track if we've ever shown actual content to prevent NoSessions flash during exit animation
+  const hasShownContentRef = useRef(false)
+
+  if (!_isEmpty(sessions)) {
+    hasShownContentRef.current = true
+  }
+
   const activePSID = useMemo(() => {
     return searchParams.get('psid')
   }, [searchParams])
@@ -244,7 +251,7 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
       <div>
         {!_isEmpty(sessions) ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
         {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) ? <Loader /> : null}
-        {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) ? (
+        {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) && !hasShownContentRef.current ? (
           <NoSessions filters={filters} />
         ) : null}
         <Sessions sessions={sessions} timeFormat={timeFormat} currency={project?.revenueCurrency} />

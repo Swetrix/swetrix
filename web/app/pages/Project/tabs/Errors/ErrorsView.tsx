@@ -677,7 +677,17 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     })
   }, [overview?.chart, timeBucket, timeFormat, t])
 
-  const hasErrors = !_isEmpty(errors) || overview?.stats?.totalErrors
+  const hasErrorsRaw = !_isEmpty(errors) || overview?.stats?.totalErrors
+
+  // Track if we've ever shown actual content to prevent NoEvents flash during exit animation
+  const hasShownContentRef = useRef(false)
+
+  if (hasErrorsRaw) {
+    hasShownContentRef.current = true
+  }
+
+  // Don't show NoEvents if we've previously shown content (prevents flash during tab switch)
+  const hasErrors = hasErrorsRaw || hasShownContentRef.current
 
   const getFilterLink = useCallback(
     (column: string, value: string | null): LinkProps['to'] => {

@@ -192,6 +192,9 @@ const TrafficViewInner = ({
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
+  // Track if we've ever shown actual content to prevent NoEvents flash during exit animation
+  const hasShownContentRef = useRef(false)
+
   // Annotations hook
   const {
     annotations,
@@ -264,10 +267,18 @@ const TrafficViewInner = ({
     return baseChartData
   }, [baseChartData, revenueOverlay])
 
-  const isPanelsDataEmpty = useMemo(
+  const isPanelsDataEmptyRaw = useMemo(
     () => _isEmpty(panelsData.data) && _isEmpty(panelsData.customs),
     [panelsData.data, panelsData.customs],
   )
+
+  // Track when we've shown content to prevent NoEvents flash during exit animation
+  if (!isPanelsDataEmptyRaw) {
+    hasShownContentRef.current = true
+  }
+
+  // Don't show NoEvents if we've previously shown content (prevents flash during tab switch)
+  const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
 
   // Chart metrics state
   const [activeChartMetrics, setActiveChartMetrics] = useState({

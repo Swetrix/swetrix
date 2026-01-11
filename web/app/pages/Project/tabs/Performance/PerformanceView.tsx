@@ -3,7 +3,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import { EyeIcon, PercentIcon } from 'lucide-react'
-import { useState, useEffect, useMemo, lazy, Suspense, use } from 'react'
+import { useState, useEffect, useMemo, useRef, lazy, Suspense, use } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams, useLoaderData, useRevalidator } from 'react-router'
@@ -140,7 +140,18 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
     return {}
   })
 
-  const isPanelsDataEmpty = _isEmpty(panelsData.data)
+  // Track if we've ever shown actual content to prevent NoEvents flash during exit animation
+  const hasShownContentRef = useRef(false)
+
+  const isPanelsDataEmptyRaw = _isEmpty(panelsData.data)
+
+  // Track when we've shown content to prevent NoEvents flash during exit animation
+  if (!isPanelsDataEmptyRaw) {
+    hasShownContentRef.current = true
+  }
+
+  // Don't show NoEvents if we've previously shown content (prevents flash during tab switch)
+  const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
 
   // Sync state when loader provides new data (e.g., after URL changes)
   useEffect(() => {
