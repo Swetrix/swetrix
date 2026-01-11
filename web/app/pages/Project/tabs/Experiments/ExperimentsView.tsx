@@ -21,7 +21,7 @@ import { useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
@@ -319,7 +319,8 @@ interface ExperimentsViewProps {
 
 const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsViewProps) => {
   const { id } = useCurrentProject()
-  const { experimentsRefreshTrigger, timeBucket } = useViewProjectContext()
+  const { experimentsRefreshTrigger } = useRefreshTriggers()
+  const { timeBucket } = useViewProjectContext()
   const [searchParams] = useSearchParams()
   const isEmbedded = searchParams.get('embedded') === 'true'
   const { t } = useTranslation()

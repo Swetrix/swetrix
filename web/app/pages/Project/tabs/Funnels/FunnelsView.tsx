@@ -16,7 +16,7 @@ import NewFunnel from '~/modals/NewFunnel'
 import { FunnelChart } from '~/pages/Project/tabs/Funnels/FunnelChart'
 import FunnelsList from '~/pages/Project/tabs/Funnels/FunnelsList'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
 import { useAuth } from '~/providers/AuthProvider'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
@@ -53,7 +53,8 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   const projectPassword = useProjectPassword(id)
   const revalidator = useRevalidator()
   const { isAuthenticated } = useAuth()
-  const { periodPairs, funnelsRefreshTrigger } = useViewProjectContext()
+  const { funnelsRefreshTrigger } = useRefreshTriggers()
+  const { periodPairs } = useViewProjectContext()
 
   // Filter periods to only include those valid for funnels
   const timeBucketSelectorItems = useMemo(() => {

@@ -54,7 +54,7 @@ import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { Panel, MetadataPanel } from '~/pages/Project/View/Panels'
 import { ERROR_FILTERS_MAPPING } from '~/pages/Project/View/utils/filters'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
 import {
   getFormatDate,
   typeNameMapping,
@@ -434,8 +434,8 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   const projectPassword = useProjectPassword(id)
   const revalidator = useRevalidator()
   const errorsProxy = useErrorsProxy()
-  const { errorsRefreshTrigger, timeBucket, timeFormat, period, dateRange, timezone, filters, size } =
-    useViewProjectContext()
+  const { errorsRefreshTrigger } = useRefreshTriggers()
+  const { timeBucket, timeFormat, period, dateRange, timezone, filters, size } = useViewProjectContext()
   const {
     t,
     i18n: { language },

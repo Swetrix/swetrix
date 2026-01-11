@@ -33,7 +33,7 @@ import {
   chartTypes,
 } from '~/lib/constants'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
 import BillboardChart from '~/ui/BillboardChart'
@@ -449,7 +449,8 @@ interface GoalsViewInnerProps extends GoalsViewProps {
 const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: GoalsViewInnerProps) => {
   const { id } = useCurrentProject()
   const revalidator = useRevalidator()
-  const { goalsRefreshTrigger, timeBucket, timeFormat } = useViewProjectContext()
+  const { goalsRefreshTrigger } = useRefreshTriggers()
+  const { timeBucket, timeFormat } = useViewProjectContext()
   const [_searchParams] = useSearchParams()
   const { t } = useTranslation()
   const fetcher = useFetcher<ProjectViewActionData>()

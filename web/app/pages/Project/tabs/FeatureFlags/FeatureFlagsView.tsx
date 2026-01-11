@@ -28,7 +28,7 @@ import { toast } from 'sonner'
 import type { FeatureFlagsResponse, ProjectFeatureFlag, FeatureFlagStats, FeatureFlagProfile } from '~/api/api.server'
 import { useFeatureFlagStatsProxy, useFeatureFlagProfilesProxy } from '~/hooks/useAnalyticsProxy'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
 import { Badge } from '~/ui/Badge'
@@ -448,7 +448,8 @@ interface FeatureFlagsViewInnerProps extends FeatureFlagsViewProps {
 const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredData }: FeatureFlagsViewInnerProps) => {
   const { id } = useCurrentProject()
   const revalidator = useRevalidator()
-  const { featureFlagsRefreshTrigger, timeFormat } = useViewProjectContext()
+  const { featureFlagsRefreshTrigger } = useRefreshTriggers()
+  const { timeFormat } = useViewProjectContext()
   const { t } = useTranslation()
 
   const listFetcher = useFetcher<ProjectViewActionData>()

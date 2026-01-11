@@ -1315,9 +1315,7 @@ interface PanelProps {
   getVersionFilterLink?: (parent: string | null, version: string | null) => LinkProps['to']
   valuesHeaderName?: string
   highlightColour?: 'blue' | 'red' | 'orange'
-  // When true, rows are non-interactive (no filter link/navigation)
   disableRowClick?: boolean
-  // Details modal specific overrides
   hidePercentageInDetails?: boolean
   detailsExtraColumns?: Array<{
     header: string
@@ -1325,6 +1323,8 @@ interface PanelProps {
     sortLabel: string
     getSortValue: (entry: Entry) => number
   }>
+  dataLoading?: boolean
+  activeTab?: keyof typeof PROJECT_TABS
 }
 
 interface DetailsTableProps extends Pick<
@@ -1338,6 +1338,7 @@ interface DetailsTableProps extends Pick<
   | 'rowMapper'
   | 'valueMapper'
   | 'getFilterLink'
+  | 'activeTab'
 > {
   total: number
   closeDetails: () => void
@@ -1366,12 +1367,12 @@ const DetailsTable = ({
   disableRowClick,
   hidePercentageInDetails,
   detailsExtraColumns,
+  activeTab = PROJECT_TABS.traffic,
 }: DetailsTableProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const { activeTab } = useViewProjectContext()
   const tnMapping = typeNameMapping(t)
   const parentRef = useRef<HTMLDivElement>(null)
   const [search, setSearch] = useState('')
@@ -1666,8 +1667,12 @@ const Panel = ({
   disableRowClick = false,
   hidePercentageInDetails,
   detailsExtraColumns,
+  dataLoading: dataLoadingProp,
+  activeTab: activeTabProp,
 }: PanelProps) => {
-  const { dataLoading, activeTab } = useViewProjectContext()
+  const ctx = useViewProjectContext()
+  const dataLoading = dataLoadingProp ?? ctx.dataLoading
+  const activeTab = activeTabProp ?? ctx.activeTab
   const { t } = useTranslation('common')
   const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
   const [detailsOpened, setDetailsOpened] = useState(false)
@@ -1914,6 +1919,7 @@ const Panel = ({
             disableRowClick={disableRowClick}
             hidePercentageInDetails={hidePercentageInDetails}
             detailsExtraColumns={detailsExtraColumns}
+            activeTab={activeTab}
           />
         }
         size='large'

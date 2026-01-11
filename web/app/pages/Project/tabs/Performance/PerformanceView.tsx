@@ -23,7 +23,7 @@ import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { Panel } from '~/pages/Project/View/Panels'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
 import {
   panelIconMapping,
   CHART_METRICS_MAPPING_PERF,
@@ -75,8 +75,8 @@ interface PerformanceViewInnerProps extends PerformanceViewProps {
 const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerProps) => {
   const { id, project, allowedToManage } = useCurrentProject()
   const revalidator = useRevalidator()
+  const { performanceRefreshTrigger } = useRefreshTriggers()
   const {
-    performanceRefreshTrigger,
     filters,
     timeFormat,
     timeBucket,

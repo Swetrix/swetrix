@@ -11,7 +11,7 @@ import NoProfiles from '~/pages/Project/tabs/Profiles/components/NoProfiles'
 import { ProfileDetails } from '~/pages/Project/tabs/Profiles/ProfileDetails'
 import { Profiles, ProfilesFilter } from '~/pages/Project/tabs/Profiles/Profiles'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import Loader from '~/ui/Loader'
@@ -28,7 +28,8 @@ interface ProfilesViewProps {
 const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
   const { id, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
-  const { timezone, period, dateRange, filters, timeFormat, profilesRefreshTrigger } = useViewProjectContext()
+  const { profilesRefreshTrigger } = useRefreshTriggers()
+  const { timezone, period, dateRange, filters, timeFormat } = useViewProjectContext()
   const { t } = useTranslation('common')
   const [searchParams] = useSearchParams()
   const profilesProxy = useProfilesProxy()

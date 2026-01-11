@@ -13,7 +13,7 @@ import { SessionDetailView } from '~/pages/Project/tabs/Sessions/SessionDetailVi
 import { Sessions } from '~/pages/Project/tabs/Sessions/Sessions'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type { ProjectLoaderData } from '~/routes/projects.$id'
@@ -81,7 +81,8 @@ interface SessionsViewInnerProps extends SessionsViewProps {
 const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsViewInnerProps) => {
   const { id, project } = useCurrentProject()
   const revalidator = useRevalidator()
-  const { sessionsRefreshTrigger, timezone, period, dateRange, filters, timeFormat } = useViewProjectContext()
+  const { sessionsRefreshTrigger } = useRefreshTriggers()
+  const { timezone, period, dateRange, filters, timeFormat } = useViewProjectContext()
   const { t } = useTranslation('common')
   const [searchParams] = useSearchParams()
 

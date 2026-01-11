@@ -111,16 +111,6 @@ interface ViewProjectContextType {
   dataLoading: boolean
   activeTab: keyof typeof PROJECT_TABS
   filters: Filter[]
-  captchaRefreshTrigger: number
-  goalsRefreshTrigger: number
-  experimentsRefreshTrigger: number
-  featureFlagsRefreshTrigger: number
-  sessionsRefreshTrigger: number
-  errorsRefreshTrigger: number
-  performanceRefreshTrigger: number
-  trafficRefreshTrigger: number
-  funnelsRefreshTrigger: number
-  profilesRefreshTrigger: number
 
   isActiveCompare: boolean
   dateRangeCompare: Date[] | null
@@ -157,6 +147,19 @@ interface ViewProjectContextType {
   setIsMapFullscreen: (value: boolean) => void
 }
 
+interface RefreshTriggersContextType {
+  captchaRefreshTrigger: number
+  goalsRefreshTrigger: number
+  experimentsRefreshTrigger: number
+  featureFlagsRefreshTrigger: number
+  sessionsRefreshTrigger: number
+  errorsRefreshTrigger: number
+  performanceRefreshTrigger: number
+  trafficRefreshTrigger: number
+  funnelsRefreshTrigger: number
+  profilesRefreshTrigger: number
+}
+
 const defaultViewProjectContext: ViewProjectContextType = {
   timezone: DEFAULT_TIMEZONE,
   dateRange: null,
@@ -170,16 +173,6 @@ const defaultViewProjectContext: ViewProjectContextType = {
   dataLoading: false,
   activeTab: PROJECT_TABS.traffic,
   filters: [],
-  captchaRefreshTrigger: 0,
-  goalsRefreshTrigger: 0,
-  experimentsRefreshTrigger: 0,
-  featureFlagsRefreshTrigger: 0,
-  sessionsRefreshTrigger: 0,
-  errorsRefreshTrigger: 0,
-  performanceRefreshTrigger: 0,
-  trafficRefreshTrigger: 0,
-  funnelsRefreshTrigger: 0,
-  profilesRefreshTrigger: 0,
 
   isActiveCompare: false,
   dateRangeCompare: null,
@@ -215,10 +208,29 @@ const defaultViewProjectContext: ViewProjectContextType = {
   setIsMapFullscreen: () => {},
 }
 
+const defaultRefreshTriggersContext: RefreshTriggersContextType = {
+  captchaRefreshTrigger: 0,
+  goalsRefreshTrigger: 0,
+  experimentsRefreshTrigger: 0,
+  featureFlagsRefreshTrigger: 0,
+  sessionsRefreshTrigger: 0,
+  errorsRefreshTrigger: 0,
+  performanceRefreshTrigger: 0,
+  trafficRefreshTrigger: 0,
+  funnelsRefreshTrigger: 0,
+  profilesRefreshTrigger: 0,
+}
+
 export const ViewProjectContext = createContext<ViewProjectContextType>(defaultViewProjectContext)
+export const RefreshTriggersContext = createContext<RefreshTriggersContextType>(defaultRefreshTriggersContext)
 
 export const useViewProjectContext = () => {
   const context = useContext(ViewProjectContext)
+  return context
+}
+
+export const useRefreshTriggers = () => {
+  const context = useContext(RefreshTriggersContext)
   return context
 }
 
@@ -640,18 +652,21 @@ const ViewProjectContent = () => {
     setCustomMetrics([])
   }
 
-  const setDashboardTab = (key: keyof typeof PROJECT_TABS) => {
-    if (dataLoading) {
-      return
-    }
+  const setDashboardTab = useCallback(
+    (key: keyof typeof PROJECT_TABS) => {
+      if (dataLoading) {
+        return
+      }
 
-    setIsMapFullscreen(false)
+      setIsMapFullscreen(false)
 
-    const newSearchParams = new URLSearchParams(searchParams.toString())
-    newSearchParams.set('tab', key)
-    setSearchParams(newSearchParams)
-    trackCustom('DASHBOARD_TAB_CHANGED', { tab: key })
-  }
+      const newSearchParams = new URLSearchParams(searchParams.toString())
+      newSearchParams.set('tab', key)
+      setSearchParams(newSearchParams)
+      trackCustom('DASHBOARD_TAB_CHANGED', { tab: key })
+    },
+    [dataLoading, searchParams, setSearchParams],
+  )
 
   const refreshStats = useCallback(
     async (_isManual = true) => {
@@ -944,16 +959,6 @@ const ViewProjectContent = () => {
       dataLoading,
       activeTab,
       filters,
-      captchaRefreshTrigger,
-      goalsRefreshTrigger,
-      experimentsRefreshTrigger,
-      featureFlagsRefreshTrigger,
-      sessionsRefreshTrigger,
-      errorsRefreshTrigger,
-      performanceRefreshTrigger,
-      trafficRefreshTrigger,
-      funnelsRefreshTrigger,
-      profilesRefreshTrigger,
 
       isActiveCompare,
       dateRangeCompare,
@@ -1001,16 +1006,6 @@ const ViewProjectContent = () => {
       dataLoading,
       activeTab,
       filters,
-      captchaRefreshTrigger,
-      goalsRefreshTrigger,
-      experimentsRefreshTrigger,
-      featureFlagsRefreshTrigger,
-      sessionsRefreshTrigger,
-      errorsRefreshTrigger,
-      performanceRefreshTrigger,
-      trafficRefreshTrigger,
-      funnelsRefreshTrigger,
-      profilesRefreshTrigger,
       isActiveCompare,
       dateRangeCompare,
       activePeriodCompare,
@@ -1038,6 +1033,33 @@ const ViewProjectContent = () => {
       fullscreenMapRef,
       isMapFullscreen,
       setIsMapFullscreen,
+    ],
+  )
+
+  const refreshTriggersValue = useMemo(
+    () => ({
+      captchaRefreshTrigger,
+      goalsRefreshTrigger,
+      experimentsRefreshTrigger,
+      featureFlagsRefreshTrigger,
+      sessionsRefreshTrigger,
+      errorsRefreshTrigger,
+      performanceRefreshTrigger,
+      trafficRefreshTrigger,
+      funnelsRefreshTrigger,
+      profilesRefreshTrigger,
+    }),
+    [
+      captchaRefreshTrigger,
+      goalsRefreshTrigger,
+      experimentsRefreshTrigger,
+      featureFlagsRefreshTrigger,
+      sessionsRefreshTrigger,
+      errorsRefreshTrigger,
+      performanceRefreshTrigger,
+      trafficRefreshTrigger,
+      funnelsRefreshTrigger,
+      profilesRefreshTrigger,
     ],
   )
 
@@ -1181,9 +1203,10 @@ const ViewProjectContent = () => {
     <ClientOnly>
       {() => (
         <ViewProjectContext.Provider value={contextValue}>
-          <>
-            <div
-              className={cx('flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900', {
+          <RefreshTriggersContext.Provider value={refreshTriggersValue}>
+            <>
+              <div
+                className={cx('flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900', {
                 'min-h-including-header': !isEmbedded,
                 'min-h-screen': isEmbedded,
               })}
@@ -1418,7 +1441,8 @@ const ViewProjectContent = () => {
               defaultView={projectViewToUpdate}
               tnMapping={tnMapping}
             />
-          </>
+            </>
+          </RefreshTriggersContext.Provider>
         </ViewProjectContext.Provider>
       )}
     </ClientOnly>

@@ -22,7 +22,7 @@ import Filters from '../../View/components/Filters'
 import { Filter } from '../../View/interfaces/traffic'
 import { Panel } from '../../View/Panels'
 import { parseFilters } from '../../View/utils/filters'
-import { ViewProjectContext } from '../../View/ViewProject'
+import { ViewProjectContext, RefreshTriggersContext } from '../../View/ViewProject'
 import { deviceIconMapping } from '../../View/ViewProject.helpers'
 
 import { CaptchaChart } from './CaptchaChart'
@@ -53,7 +53,8 @@ interface CaptchaViewProps {
 const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const { theme } = useTheme()
   const { project } = useCurrentProject()
-  const { period, timeBucket, dateRange, captchaRefreshTrigger, timeFormat, size } = useContext(ViewProjectContext)
+  const { captchaRefreshTrigger } = useContext(RefreshTriggersContext)
+  const { period, timeBucket, dateRange, timeFormat, size } = useContext(ViewProjectContext)
   const [searchParams] = useSearchParams()
   const isEmbedded = searchParams.get('embedded') === 'true'
   const isMountedRef = useRef(true)

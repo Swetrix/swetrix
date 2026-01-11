@@ -51,7 +51,7 @@ import {
 } from '~/pages/Project/View/interfaces/traffic'
 import { Panel, CustomEvents, MetadataKeyPanel } from '~/pages/Project/View/Panels'
 import { FILTER_CHART_METRICS_MAPPING_FOR_COMPARE } from '~/pages/Project/View/utils/filters'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
 import {
   getFormatDate,
   panelIconMapping,
@@ -158,8 +158,8 @@ const TrafficViewInner = ({
   const { fetchMetadata: fetchPropertyMetadata } = usePropertyMetadataProxy()
   const { fetchKeywords: fetchGSCKeywords } = useGSCKeywordsProxy()
   const { fetchRevenueStatus, fetchRevenueData } = useRevenueProxy()
+  const { trafficRefreshTrigger } = useRefreshTriggers()
   const {
-    trafficRefreshTrigger,
     timezone,
     period,
     dateRange,
