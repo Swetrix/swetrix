@@ -3259,12 +3259,6 @@ export class AnalyticsService {
           customEVFilterApplied,
           parsedFilters,
         )
-
-        if (!_some(_values(params), val => !_isEmpty(val))) {
-          throw new BadRequestException(
-            'There are no parameters for the specified time frames',
-          )
-        }
       })(),
 
       // Getting chart & average session duration data
@@ -4614,21 +4608,22 @@ export class AnalyticsService {
     }
 
     if (!details) {
-      const querySessionDetailsBackup = `
+      const querySessionDetailsFromCustomEV = `
         SELECT
           dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, profileId
-        FROM analytics
+        FROM customEV
         WHERE
           pid = {pid:FixedString(12)}
           AND psid IS NOT NULL
           AND toString(psid) = {psid:String}
+        ORDER BY created ASC
         LIMIT 1;
       `
 
       details = (
         await clickhouse
           .query({
-            query: querySessionDetailsBackup,
+            query: querySessionDetailsFromCustomEV,
             query_params: paramsData.params,
           })
           .then(resultSet => resultSet.json())
@@ -4708,23 +4703,55 @@ export class AnalyticsService {
     skip = 0,
     customEVFilterApplied = false,
   ): Promise<object | void> {
-    const primaryEventsTable = customEVFilterApplied ? 'customEV' : 'analytics'
+    let primaryEventsSubquery: string
 
-    const primaryEventsSubquery = `
-      SELECT
-        CAST(${primaryEventsTable}.psid, 'String') AS psidCasted,
-        ${primaryEventsTable}.pid,
-        ${primaryEventsTable}.cc,
-        ${primaryEventsTable}.os,
-        ${primaryEventsTable}.br,
-        toTimeZone(${primaryEventsTable}.created, {timezone:String}) AS created_for_grouping
-      FROM ${primaryEventsTable}
-      WHERE
-        ${primaryEventsTable}.pid = {pid:FixedString(12)}
-        AND ${primaryEventsTable}.psid IS NOT NULL
-        AND ${primaryEventsTable}.created BETWEEN {groupFrom:String} AND {groupTo:String}
-        ${filtersQuery} 
-    `
+    if (customEVFilterApplied) {
+      primaryEventsSubquery = `
+        SELECT
+          CAST(customEV.psid, 'String') AS psidCasted,
+          customEV.pid,
+          customEV.cc,
+          customEV.os,
+          customEV.br,
+          toTimeZone(customEV.created, {timezone:String}) AS created_for_grouping
+        FROM customEV
+        WHERE
+          customEV.pid = {pid:FixedString(12)}
+          AND customEV.psid IS NOT NULL
+          AND customEV.created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+      `
+    } else {
+      primaryEventsSubquery = `
+        SELECT
+          CAST(analytics.psid, 'String') AS psidCasted,
+          analytics.pid,
+          analytics.cc,
+          analytics.os,
+          analytics.br,
+          toTimeZone(analytics.created, {timezone:String}) AS created_for_grouping
+        FROM analytics
+        WHERE
+          analytics.pid = {pid:FixedString(12)}
+          AND analytics.psid IS NOT NULL
+          AND analytics.created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+        UNION ALL
+        SELECT
+          CAST(customEV.psid, 'String') AS psidCasted,
+          customEV.pid,
+          customEV.cc,
+          customEV.os,
+          customEV.br,
+          toTimeZone(customEV.created, {timezone:String}) AS created_for_grouping
+        FROM customEV
+        WHERE
+          customEV.pid = {pid:FixedString(12)}
+          AND customEV.psid IS NOT NULL
+          AND customEV.created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+      `
+    }
 
     const query = `
       WITH distinct_sessions_filtered AS (
@@ -4871,34 +4898,54 @@ export class AnalyticsService {
     }
 
     const query = `
-      WITH profile_analytics AS (
+      WITH all_profile_data AS (
         SELECT
           profileId,
-          count() AS pageviewsCount,
-          countDistinct(psid) AS sessionsCount,
-          min(created) AS firstSeen,
-          max(created) AS lastSeen,
-          any(cc) AS cc_agg,
-          any(os) AS os_agg,
-          any(br) AS br_agg,
-          any(dv) AS dv_agg
+          psid,
+          cc,
+          os,
+          br,
+          dv,
+          created,
+          1 AS isPageview,
+          0 AS isEvent
         FROM analytics
         WHERE pid = {pid:FixedString(12)}
           AND profileId IS NOT NULL
           AND profileId != ''
           ${profileTypeFilter}
           ${filtersQuery}
-        GROUP BY profileId
-      ),
-      profile_events AS (
+        UNION ALL
         SELECT
           profileId,
-          count() AS eventsCount
+          psid,
+          cc,
+          os,
+          br,
+          dv,
+          created,
+          0 AS isPageview,
+          1 AS isEvent
         FROM customEV
         WHERE pid = {pid:FixedString(12)}
           AND profileId IS NOT NULL
           AND profileId != ''
           ${profileTypeFilter}
+          ${filtersQuery}
+      ),
+      profile_aggregated AS (
+        SELECT
+          profileId,
+          sum(isPageview) AS pageviewsCount,
+          countDistinct(psid) AS sessionsCount,
+          sum(isEvent) AS eventsCount,
+          min(created) AS firstSeen,
+          max(created) AS lastSeen,
+          any(cc) AS cc_agg,
+          any(os) AS os_agg,
+          any(br) AS br_agg,
+          any(dv) AS dv_agg
+        FROM all_profile_data
         GROUP BY profileId
       ),
       profile_errors AS (
@@ -4916,7 +4963,7 @@ export class AnalyticsService {
         pa.profileId AS profileId,
         pa.sessionsCount AS sessionsCount,
         pa.pageviewsCount AS pageviewsCount,
-        COALESCE(pe.eventsCount, 0) AS eventsCount,
+        pa.eventsCount AS eventsCount,
         COALESCE(perr.errorsCount, 0) AS errorsCount,
         pa.firstSeen AS firstSeen,
         pa.lastSeen AS lastSeen,
@@ -4924,8 +4971,7 @@ export class AnalyticsService {
         pa.os_agg AS os,
         pa.br_agg AS br,
         pa.dv_agg AS dv
-      FROM profile_analytics AS pa
-      LEFT JOIN profile_events AS pe ON pa.profileId = pe.profileId
+      FROM profile_aggregated AS pa
       LEFT JOIN profile_errors AS perr ON pa.profileId = perr.profileId
       ORDER BY pa.lastSeen DESC
       LIMIT {take:UInt32}

@@ -209,12 +209,11 @@ const TrafficViewInner = ({
     closeContextMenu,
   } = useAnnotations()
 
-  // Derive base data directly from loader - no need to copy to state
-  const basePanelsData: PanelsData = useMemo(() => {
-    if (deferredData.trafficData?.params) {
+  const panelsData: PanelsData = useMemo(() => {
+    if (deferredData.trafficData) {
       return {
-        types: _keys(deferredData.trafficData.params),
-        data: deferredData.trafficData.params,
+        types: _keys(deferredData.trafficData.params || {}),
+        data: deferredData.trafficData.params || {},
         customs: deferredData.trafficData.customs,
         properties: deferredData.trafficData.properties,
         meta: deferredData.trafficData.meta,
@@ -265,9 +264,10 @@ const TrafficViewInner = ({
     return baseChartData
   }, [baseChartData, revenueOverlay])
 
-  // Use base panels data (no client-side modifications needed for panels)
-  const panelsData = basePanelsData
-  const isPanelsDataEmpty = useMemo(() => _isEmpty(panelsData.data), [panelsData.data])
+  const isPanelsDataEmpty = useMemo(
+    () => _isEmpty(panelsData.data) && _isEmpty(panelsData.customs),
+    [panelsData.data, panelsData.customs],
+  )
 
   // Chart metrics state
   const [activeChartMetrics, setActiveChartMetrics] = useState({
