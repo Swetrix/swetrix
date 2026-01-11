@@ -220,6 +220,11 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, metrics: ${metrics}`,
+      'GET /analytics',
+    )
+
     let parsedMetrics
 
     if (!isCaptcha) {
@@ -398,6 +403,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(`pid: ${pid}, period: ${period}`, 'GET /analytics/funnel')
+
     let diff
 
     if (period === 'all') {
@@ -457,6 +464,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(`pid: ${pid}`, 'GET /analytics/meta')
+
     return this.analyticsService.getCustomEventMetadata(data)
   }
 
@@ -475,6 +484,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(`pid: ${pid}`, 'GET /analytics/property')
+
     return this.analyticsService.getPagePropertyMeta(data)
   }
 
@@ -492,6 +503,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}, type: ${type}`, 'GET /analytics/filters')
 
     return this.analyticsService.getFilters(pid, type)
   }
@@ -530,6 +543,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}, period: ${period}`, 'GET /analytics/chart')
 
     const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
@@ -573,10 +588,11 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(`pid: ${pid}, period: ${period}, measure: ${measure}`, 'GET /analytics/performance')
+
     let newTimeBucket = timeBucket
     let allowedTumebucketForPeriodAll
     let diff
-
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
@@ -663,6 +679,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(`pid: ${pid}, period: ${period}, measure: ${measure}`, 'GET /analytics/performance/chart')
+
     const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
     const chart = await this.analyticsService.getPerfChartData(
@@ -692,6 +710,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}, period: ${period}`, 'GET /analytics/user-flow')
 
     let diff
 
@@ -744,6 +764,8 @@ export class AnalyticsController {
       includeChart,
     } = data
     const pidsArray = getPIDsArray(pids, pid)
+
+    this.logger.log(`pidsArray: ${pidsArray}`, 'GET /analytics/birdseye')
 
     const validationPromises = _map(pidsArray, async currentPID => {
       await this.analyticsService.checkProjectAccess(
@@ -802,6 +824,8 @@ export class AnalyticsController {
 
     await Promise.all(validationPromises)
 
+    this.logger.log(`pidsArray: ${pidsArray}, measure: ${measure}`, 'GET /analytics/performance/birdseye')
+
     return this.analyticsService.getPerformanceSummary(
       pidsArray,
       period,
@@ -821,6 +845,8 @@ export class AnalyticsController {
   ): Promise<object> {
     const { pids, pid } = data
     const pidsArray = getPIDsArray(pids, pid)
+
+    this.logger.log(`pidsArray: ${pidsArray}`, 'GET /analytics/hb')
 
     const validationPromises = _map(pidsArray, async currentPID => {
       await this.analyticsService.checkProjectAccess(
@@ -863,6 +889,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}`, 'GET /analytics/live-visitors')
 
     const since = dayjs
       .utc()
@@ -958,6 +986,11 @@ export class AnalyticsController {
     )
 
     this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(
+      `pid: ${eventsDTO.pid}, ev: ${eventsDTO.ev}, pg: ${eventsDTO.pg}`,
+      'POST /analytics/custom',
+    )
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1065,6 +1098,8 @@ export class AnalyticsController {
     await this.analyticsService.extendSessionTTL(psid)
     await this.analyticsService.recordSessionActivity(psid, pid, profileId)
 
+    this.logger.log(`pid: ${pid}, psid: ${psid}`, 'POST /analytics/hb')
+
     return {}
   }
 
@@ -1112,6 +1147,8 @@ export class AnalyticsController {
     const { city, region, regionCode, country } = getGeoDetails(ip, logDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(`pid: ${logDTO.pid}, pg: ${logDTO.pg}`, 'POST /analytics')
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1226,8 +1263,6 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const logDTO: PageviewsDto = { pid }
-
     const project = await this.analyticsService.validate(logDTO, origin, ip)
 
     const [, psid] = await this.analyticsService.generateAndStoreSessionId(
@@ -1253,6 +1288,8 @@ export class AnalyticsController {
     const { city, region, regionCode, country } = getGeoDetails(ip, null)
 
     this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(`pid: ${pid}`, 'GET /analytics/noscript')
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1321,6 +1358,8 @@ export class AnalyticsController {
       )
     }
 
+    this.logger.log(`pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`, 'GET /analytics/sessions')
+
     let timeBucket
     let diff
 
@@ -1384,6 +1423,9 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}, psid: ${psid}`, 'GET /analytics/session')
+
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
 
     const result = await this.analyticsService.getSessionDetails(
@@ -1418,6 +1460,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}, period: ${period}, customEvents: ${customEvents}`, 'GET /analytics/custom-events')
 
     let newTimeBucket = timeBucket
     let diff
@@ -1500,6 +1544,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(`pid: ${pid}, type: ${type}`, 'GET /analytics/errors-filters')
+
     return this.analyticsService.getErrorsFilters(pid, type)
   }
 
@@ -1517,6 +1563,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}, type: ${type}, column: ${column}`, 'GET /analytics/filters/versions')
 
     return this.analyticsService.getVersionFilters(pid, type, column)
   }
@@ -1558,6 +1606,11 @@ export class AnalyticsController {
     const { city, region, regionCode, country } = getGeoDetails(ip, errorDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(
+      `pid: ${errorDTO.pid}, pg: ${errorDTO.pg}, name: ${errorDTO.name}, message: ${errorDTO.message}`,
+      'POST /analytics/error',
+    )
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1667,6 +1720,8 @@ export class AnalyticsController {
       )
     }
 
+    this.logger.log(`pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`, 'GET /analytics/errors')
+
     let timeBucket
     let diff
 
@@ -1739,6 +1794,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(`pid: ${pid}, eid: ${eid}, period: ${period}`, 'GET /analytics/get-error')
+
     let newTimeBucket = timeBucket
     let diff
 
@@ -1797,6 +1854,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}, period: ${period}`, 'GET /analytics/error-overview')
 
     let parsedOptions: GetErrorOverviewOptions = {}
 
@@ -1884,6 +1943,8 @@ export class AnalyticsController {
       )
     }
 
+    this.logger.log(`pid: ${pid}, eid: ${eid}, period: ${period}, take: ${take}, skip: ${skip}`, 'GET /analytics/error-sessions')
+
     let newTimeBucket = timeBucket
     let diff
 
@@ -1948,6 +2009,8 @@ export class AnalyticsController {
         'The maximum number of profiles to return is 150',
       )
     }
+
+    this.logger.log(`pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`, 'GET /analytics/profiles')
 
     let timeBucket
     let diff
@@ -2020,6 +2083,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}, profileId: ${profileId}, period: ${period}`, 'GET /analytics/profile')
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
 
@@ -2101,6 +2166,8 @@ export class AnalyticsController {
       )
     }
 
+    this.logger.log(`pid: ${pid}, profileId: ${profileId}, period: ${period}, take: ${take}, skip: ${skip}`, 'GET /analytics/profile/sessions')
+
     let timeBucket
     let diff
 
@@ -2170,6 +2237,8 @@ export class AnalyticsController {
         ip,
       )
 
+      this.logger.log(`pid: ${pid}, profileId: ${profileId}`, 'POST /analytics/profile-id')
+
       return { profileId }
     } catch (error) {
       this.logger.error({ error, pid }, 'Error generating profile ID')
@@ -2195,6 +2264,8 @@ export class AnalyticsController {
         userAgent,
         ip,
       )
+
+      this.logger.log(`pid: ${pid}, sessionId: ${psid}`, 'POST /analytics/session-id')
 
       return { sessionId: psid }
     } catch (error) {
