@@ -15,7 +15,10 @@ const LockedDashboard = () => {
 
   const message = useMemo(() => {
     if (project?.role === 'owner') {
-      if (user?.dashboardBlockReason === DashboardBlockReason.exceeding_plan_limits) {
+      if (
+        user?.dashboardBlockReason ===
+        DashboardBlockReason.exceeding_plan_limits
+      ) {
         return t('project.locked.descExceedingTier')
       }
       if (user?.dashboardBlockReason === DashboardBlockReason.trial_ended) {
@@ -24,7 +27,10 @@ const LockedDashboard = () => {
       if (user?.dashboardBlockReason === DashboardBlockReason.payment_failed) {
         return t('project.locked.descPaymentFailed')
       }
-      if (user?.dashboardBlockReason === DashboardBlockReason.subscription_cancelled) {
+      if (
+        user?.dashboardBlockReason ===
+        DashboardBlockReason.subscription_cancelled
+      ) {
         return t('project.locked.descSubCancelled')
       }
     }

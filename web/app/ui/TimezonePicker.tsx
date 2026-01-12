@@ -16,12 +16,17 @@ const options = _reduce(
     const tz = now.timezone()
     const tzStrings = soft(zone[0])
 
-    const abbr = now.isDST() ? tzStrings[0].daylight?.abbr : tzStrings[0].standard?.abbr
-    const altName = now.isDST() ? tzStrings[0].daylight?.name : tzStrings[0].standard?.name
+    const abbr = now.isDST()
+      ? tzStrings[0].daylight?.abbr
+      : tzStrings[0].standard?.abbr
+    const altName = now.isDST()
+      ? tzStrings[0].daylight?.name
+      : tzStrings[0].standard?.name
 
     const min = tz.current.offset * 60
 
-    const hr = `${(min / 60) ^ 0}:` + (min % 60 === 0 ? '00' : Math.abs(min % 60))
+    const hr =
+      `${(min / 60) ^ 0}:` + (min % 60 === 0 ? '00' : Math.abs(min % 60))
     const label = `(GMT${_includes(hr, '-') ? hr : `+${hr}`}) ${zone[1]}`
 
     selectOptions.push({

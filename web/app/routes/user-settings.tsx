@@ -5,8 +5,17 @@ import type { SitemapFunction } from 'remix-sitemap'
 import { serverFetch } from '~/api/api.server'
 import { User } from '~/lib/models/User'
 import UserSettings from '~/pages/UserSettings'
-import { redirectIfNotAuthenticated, createHeadersWithCookies, createAuthCookies } from '~/utils/session.server'
-import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from '~/utils/validator'
+import {
+  redirectIfNotAuthenticated,
+  createHeadersWithCookies,
+  createAuthCookies,
+} from '~/utils/session.server'
+import {
+  isValidEmail,
+  isValidPassword,
+  MIN_PASSWORD_CHARS,
+  MAX_PASSWORD_CHARS,
+} from '~/utils/validator'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,
@@ -69,7 +78,10 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       if (fieldErrors.email || fieldErrors.password || fieldErrors.repeat) {
-        return data<UserSettingsActionData>({ intent, fieldErrors }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, fieldErrors },
+          { status: 400 },
+        )
       }
 
       const updateData: Record<string, unknown> = {}
@@ -85,7 +97,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -95,12 +110,19 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case 'generate-api-key': {
-      const result = await serverFetch<{ apiKey: string }>(request, 'user/api-key', {
-        method: 'POST',
-      })
+      const result = await serverFetch<{ apiKey: string }>(
+        request,
+        'user/api-key',
+        {
+          method: 'POST',
+        },
+      )
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -115,7 +137,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -127,13 +152,20 @@ export async function action({ request }: ActionFunctionArgs) {
     case 'toggle-live-visitors': {
       const show = formData.get('show') === 'true'
 
-      const result = await serverFetch<Partial<User>>(request, 'user/live-visitors', {
-        method: 'PUT',
-        body: { show },
-      })
+      const result = await serverFetch<Partial<User>>(
+        request,
+        'user/live-visitors',
+        {
+          method: 'PUT',
+          body: { show },
+        },
+      )
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -143,15 +175,23 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case 'toggle-login-notifications': {
-      const receiveLoginNotifications = formData.get('receiveLoginNotifications') === 'true'
+      const receiveLoginNotifications =
+        formData.get('receiveLoginNotifications') === 'true'
 
-      const result = await serverFetch(request, 'user/recieve-login-notifications', {
-        method: 'POST',
-        body: { receiveLoginNotifications },
-      })
+      const result = await serverFetch(
+        request,
+        'user/recieve-login-notifications',
+        {
+          method: 'POST',
+          body: { receiveLoginNotifications },
+        },
+      )
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -166,7 +206,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -184,7 +227,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -194,16 +240,27 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case 'generate-2fa': {
-      const result = await serverFetch<{ secret: string; otpauthUrl: string }>(request, '2fa/generate', {
-        method: 'POST',
-      })
+      const result = await serverFetch<{ secret: string; otpauthUrl: string }>(
+        request,
+        '2fa/generate',
+        {
+          method: 'POST',
+        },
+      )
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
-        { intent, success: true, twoFAData: result.data as { secret: string; otpauthUrl: string } },
+        {
+          intent,
+          success: true,
+          twoFAData: result.data as { secret: string; otpauthUrl: string },
+        },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }
@@ -211,17 +268,20 @@ export async function action({ request }: ActionFunctionArgs) {
     case 'enable-2fa': {
       const twoFactorAuthenticationCode = formData.get('code')?.toString() || ''
 
-      const result = await serverFetch<{ twoFactorRecoveryCode: string; accessToken: string; refreshToken: string }>(
-        request,
-        '2fa/enable',
-        {
-          method: 'POST',
-          body: { twoFactorAuthenticationCode },
-        },
-      )
+      const result = await serverFetch<{
+        twoFactorRecoveryCode: string
+        accessToken: string
+        refreshToken: string
+      }>(request, '2fa/enable', {
+        method: 'POST',
+        body: { twoFactorAuthenticationCode },
+      })
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       // Set new auth cookies from the response
@@ -243,7 +303,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -256,7 +319,10 @@ export async function action({ request }: ActionFunctionArgs) {
       const shareId = formData.get('shareId')?.toString()
 
       if (!shareId) {
-        return data<UserSettingsActionData>({ intent, error: 'Share ID is required' }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: 'Share ID is required' },
+          { status: 400 },
+        )
       }
 
       const result = await serverFetch(request, `user/share/${shareId}`, {
@@ -264,7 +330,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -277,7 +346,10 @@ export async function action({ request }: ActionFunctionArgs) {
       const shareId = formData.get('shareId')?.toString()
 
       if (!shareId) {
-        return data<UserSettingsActionData>({ intent, error: 'Share ID is required' }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: 'Share ID is required' },
+          { status: 400 },
+        )
       }
 
       const result = await serverFetch(request, `user/share/${shareId}`, {
@@ -285,7 +357,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -298,7 +373,10 @@ export async function action({ request }: ActionFunctionArgs) {
       const provider = formData.get('provider')?.toString()
 
       if (!provider) {
-        return data<UserSettingsActionData>({ intent, error: 'Provider is required' }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: 'Provider is required' },
+          { status: 400 },
+        )
       }
 
       const result = await serverFetch(request, 'v1/auth/sso/unlink', {
@@ -307,7 +385,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -320,7 +401,10 @@ export async function action({ request }: ActionFunctionArgs) {
       const tgID = formData.get('tgID')?.toString()
 
       if (!tgID) {
-        return data<UserSettingsActionData>({ intent, error: 'Telegram ID is required' }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: 'Telegram ID is required' },
+          { status: 400 },
+        )
       }
 
       const result = await serverFetch(request, `user/tg/${tgID}`, {
@@ -328,7 +412,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -341,15 +428,25 @@ export async function action({ request }: ActionFunctionArgs) {
       const membershipId = formData.get('membershipId')?.toString()
 
       if (!membershipId) {
-        return data<UserSettingsActionData>({ intent, error: 'Membership ID is required' }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: 'Membership ID is required' },
+          { status: 400 },
+        )
       }
 
-      const result = await serverFetch(request, `user/organisation/${membershipId}`, {
-        method: 'POST',
-      })
+      const result = await serverFetch(
+        request,
+        `user/organisation/${membershipId}`,
+        {
+          method: 'POST',
+        },
+      )
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -362,15 +459,25 @@ export async function action({ request }: ActionFunctionArgs) {
       const membershipId = formData.get('membershipId')?.toString()
 
       if (!membershipId) {
-        return data<UserSettingsActionData>({ intent, error: 'Membership ID is required' }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: 'Membership ID is required' },
+          { status: 400 },
+        )
       }
 
-      const result = await serverFetch(request, `user/organisation/${membershipId}`, {
-        method: 'DELETE',
-      })
+      const result = await serverFetch(
+        request,
+        `user/organisation/${membershipId}`,
+        {
+          method: 'DELETE',
+        },
+      )
 
       if (result.error) {
-        return data<UserSettingsActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<UserSettingsActionData>(
@@ -380,7 +487,10 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     default:
-      return data<UserSettingsActionData>({ error: 'Unknown action' }, { status: 400 })
+      return data<UserSettingsActionData>(
+        { error: 'Unknown action' },
+        { status: 400 },
+      )
   }
 }
 

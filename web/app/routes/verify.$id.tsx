@@ -16,7 +16,10 @@ export interface VerifyEmailLoaderData {
   error?: string
 }
 
-export async function loader({ request, params }: LoaderFunctionArgs): Promise<VerifyEmailLoaderData | Response> {
+export async function loader({
+  request,
+  params,
+}: LoaderFunctionArgs): Promise<VerifyEmailLoaderData | Response> {
   if (isSelfhosted) {
     return redirect('/login', 302)
   }
@@ -32,7 +35,8 @@ export async function loader({ request, params }: LoaderFunctionArgs): Promise<V
   })
 
   if (result.error) {
-    const errorMessage = typeof result.error === 'string' ? result.error : 'Verification failed'
+    const errorMessage =
+      typeof result.error === 'string' ? result.error : 'Verification failed'
     return { success: false, error: errorMessage }
   }
 
@@ -59,7 +63,13 @@ export default function VerifyEmailRoute() {
     <StatusPage
       type='success'
       title='Email verified successfully'
-      actions={[{ label: 'Continue to Onboarding', to: routes.onboarding, primary: true }]}
+      actions={[
+        {
+          label: 'Continue to Onboarding',
+          to: routes.onboarding,
+          primary: true,
+        },
+      ]}
     />
   )
 }

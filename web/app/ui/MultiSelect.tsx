@@ -39,7 +39,10 @@ const MultiSelect = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false)
         setSearchValue('')
         if (onSearch) {
@@ -84,7 +87,10 @@ const MultiSelect = ({
   }
 
   return (
-    <div ref={dropdownRef} className={cx('relative flex w-full flex-col', className)}>
+    <div
+      ref={dropdownRef}
+      className={cx('relative flex w-full flex-col', className)}
+    >
       {/* Search input as the dropdown trigger */}
       <div className='relative'>
         <input
@@ -112,20 +118,27 @@ const MultiSelect = ({
             {/* Options list */}
             <div className='px-1'>
               {_isEmpty(items) ? (
-                <div className='px-3 py-2 text-gray-500 dark:text-gray-400'>No options available</div>
+                <div className='px-3 py-2 text-gray-500 dark:text-gray-400'>
+                  No options available
+                </div>
               ) : (
                 _map(items, (item) => {
                   const isSelected = _includes(label, item)
                   return (
                     <button
                       type='button'
-                      key={keyExtractor ? `${keyExtractor(item)}select` : `${item}select`}
+                      key={
+                        keyExtractor
+                          ? `${keyExtractor(item)}select`
+                          : `${item}select`
+                      }
                       onClick={() => handleSelectItem(item)}
                       className={cx(
                         'relative flex w-full cursor-pointer items-center gap-2 rounded-md py-2 pr-4 pl-3 text-left text-sm transition-colors select-none',
                         {
                           'bg-indigo-50 dark:bg-indigo-900/30': isSelected,
-                          'hover:bg-gray-100 dark:hover:bg-slate-700': !isSelected,
+                          'hover:bg-gray-100 dark:hover:bg-slate-700':
+                            !isSelected,
                           'text-gray-900 dark:text-white': isSelected,
                           'text-gray-700 dark:text-gray-50': !isSelected,
                         },
@@ -166,7 +179,9 @@ const MultiSelect = ({
               key={keyExtractor ? keyExtractor(item) : item}
               className='inline-flex items-center gap-1.5 rounded-md bg-gray-100 py-1.5 pr-2 pl-2.5 text-sm font-medium text-gray-700 dark:bg-slate-700 dark:text-gray-200'
             >
-              <span className='flex items-center gap-1.5'>{labelExtractor ? labelExtractor(item) : item}</span>
+              <span className='flex items-center gap-1.5'>
+                {labelExtractor ? labelExtractor(item) : item}
+              </span>
               <button
                 type='button'
                 onClick={(e) => {
@@ -177,8 +192,17 @@ const MultiSelect = ({
                 className='inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-600 focus:bg-gray-300 focus:text-gray-700 focus:outline-hidden dark:text-gray-400 dark:hover:bg-slate-600 dark:hover:text-gray-200'
               >
                 <span className='sr-only'>Remove</span>
-                <svg className='h-2.5 w-2.5' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
-                  <path strokeLinecap='round' strokeWidth='1.5' d='m1 1 6 6m0-6-6 6' />
+                <svg
+                  className='h-2.5 w-2.5'
+                  stroke='currentColor'
+                  fill='none'
+                  viewBox='0 0 8 8'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeWidth='1.5'
+                    d='m1 1 6 6m0-6-6 6'
+                  />
                 </svg>
               </button>
             </span>
@@ -187,7 +211,11 @@ const MultiSelect = ({
       ) : null}
 
       {/* Hint text */}
-      {hint ? <p className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</p> : null}
+      {hint ? (
+        <p className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>
+          {hint}
+        </p>
+      ) : null}
     </div>
   )
 }

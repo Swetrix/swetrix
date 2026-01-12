@@ -216,7 +216,9 @@ export class AuthController {
     await this.mailerService.sendEmail(
       user.email,
       LetterTemplate.MailAddressChangeConfirmation,
-      { url },
+      {
+        url,
+      },
     )
   }
   @ApiOperation({ summary: 'Request a password reset' })

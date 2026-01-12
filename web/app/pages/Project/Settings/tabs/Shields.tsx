@@ -54,14 +54,18 @@ const Shields = ({
     })
   }, [language])
 
-  const [searchedCountries, setSearchedCountries] = useState<string[]>(allCountries)
+  const [searchedCountries, setSearchedCountries] =
+    useState<string[]>(allCountries)
 
   const handleCountrySearch = (search: string) => {
     if (search.length > 0) {
       setSearchedCountries(
         _filter(allCountries, (cc) => {
           const countryName = countries.getName(cc, language) || cc
-          return _includes(_toUpper(countryName), _toUpper(search)) || _includes(_toUpper(cc), _toUpper(search))
+          return (
+            _includes(_toUpper(countryName), _toUpper(search)) ||
+            _includes(_toUpper(cc), _toUpper(search))
+          )
         }),
       )
     } else {
@@ -83,7 +87,13 @@ const Shields = ({
 
   const renderCountryOption = (cc: string) => (
     <div className='flex items-center gap-2'>
-      <Flag className='rounded-xs' country={cc} size={21} alt='' aria-hidden='true' />
+      <Flag
+        className='rounded-xs'
+        country={cc}
+        size={21}
+        alt=''
+        aria-hidden='true'
+      />
       <span>{countries.getName(cc, language) || cc}</span>
       <span className='text-gray-400'>{cc}</span>
     </div>
@@ -91,7 +101,9 @@ const Shields = ({
 
   return (
     <>
-      <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.settings.shields')}</h3>
+      <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+        {t('project.settings.shields')}
+      </h3>
       <Input
         name='origins'
         label={t('project.settings.origins')}
@@ -134,11 +146,17 @@ const Shields = ({
           label={t('project.settings.botsProtectionLevel.title')}
           // @ts-expect-error
           items={botsProtectionLevels}
-          title={botsProtectionLevels.find((predicate) => predicate.name === form.botsProtectionLevel)?.title || ''}
+          title={
+            botsProtectionLevels.find(
+              (predicate) => predicate.name === form.botsProtectionLevel,
+            )?.title || ''
+          }
           labelExtractor={(item: any) => item.title}
           onSelect={(item) => setBotsLevel(item.name)}
           capitalise
-          selectedItem={botsProtectionLevels.find((predicate) => predicate.name === form.botsProtectionLevel)}
+          selectedItem={botsProtectionLevels.find(
+            (predicate) => predicate.name === form.botsProtectionLevel,
+          )}
         />
       </div>
     </>

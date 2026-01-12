@@ -16,7 +16,11 @@ const Socialised = () => {
 
   useEffect(() => {
     // For some reason, Google redirects to a hash URL, let's fix it
-    const _location = _replace(window.location.href, `${routes.socialised}#`, `${routes.socialised}?`)
+    const _location = _replace(
+      window.location.href,
+      `${routes.socialised}#`,
+      `${routes.socialised}?`,
+    )
 
     const { searchParams } = new URL(_location)
     const state = searchParams.get('state')
@@ -75,7 +79,11 @@ const Socialised = () => {
         if (processedKey) {
           sessionStorage.setItem(processedKey, '1')
         }
-        await processSSOTokenCommunityEdition(code, state, `${window.location.origin}${routes.socialised}`)
+        await processSSOTokenCommunityEdition(
+          code,
+          state,
+          `${window.location.origin}${routes.socialised}`,
+        )
       } catch (reason) {
         setIsError(true)
         setLoading(false)

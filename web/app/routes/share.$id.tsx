@@ -15,7 +15,10 @@ export interface ShareLoaderData {
   error?: string
 }
 
-export async function loader({ request, params }: LoaderFunctionArgs): Promise<ShareLoaderData> {
+export async function loader({
+  request,
+  params,
+}: LoaderFunctionArgs): Promise<ShareLoaderData> {
   const { id } = params
 
   if (!id) {
@@ -25,7 +28,10 @@ export async function loader({ request, params }: LoaderFunctionArgs): Promise<S
   const result = await serverFetch(request, `/project/share/${id}`)
 
   if (result.error) {
-    const errorMessage = typeof result.error === 'string' ? result.error : 'Failed to accept invitation'
+    const errorMessage =
+      typeof result.error === 'string'
+        ? result.error
+        : 'Failed to accept invitation'
     return { success: false, error: errorMessage }
   }
 

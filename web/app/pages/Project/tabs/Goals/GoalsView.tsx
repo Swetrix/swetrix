@@ -17,12 +17,30 @@ import {
   MousePointerClickIcon,
   ChevronDownIcon,
 } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef, useCallback, Suspense, use } from 'react'
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  Suspense,
+  use,
+} from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams, useFetcher, useLoaderData, useRevalidator } from 'react-router'
+import {
+  useSearchParams,
+  useFetcher,
+  useLoaderData,
+  useRevalidator,
+} from 'react-router'
 import { toast } from 'sonner'
 
-import type { GoalsResponse, Goal, GoalStats, GoalChartData } from '~/api/api.server'
+import type {
+  GoalsResponse,
+  Goal,
+  GoalStats,
+  GoalChartData,
+} from '~/api/api.server'
 import { useGoalStatsProxy, useGoalChartProxy } from '~/hooks/useAnalyticsProxy'
 import {
   TimeFormat,
@@ -33,9 +51,15 @@ import {
   chartTypes,
 } from '~/lib/constants'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
+import {
+  useViewProjectContext,
+  useRefreshTriggers,
+} from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
-import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
+import type {
+  ProjectLoaderData,
+  ProjectViewActionData,
+} from '~/routes/projects.$id'
 import BillboardChart from '~/ui/BillboardChart'
 import Button from '~/ui/Button'
 import Spin from '~/ui/icons/Spin'
@@ -54,8 +78,13 @@ import GoalSettingsModal from './GoalSettingsModal'
 const DEFAULT_GOALS_TAKE = 20
 
 // Calculate optimal Y axis ticks
-const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
-  const validData = data.filter((n) => n !== undefined && n !== null && Number.isFinite(n))
+const calculateOptimalTicks = (
+  data: number[],
+  targetCount: number = 6,
+): number[] => {
+  const validData = data.filter(
+    (n) => n !== undefined && n !== null && Number.isFinite(n),
+  )
 
   if (validData.length === 0) {
     return [0, 1]
@@ -116,11 +145,13 @@ const getGoalChartSettings = (
   ]
 
   // Calculate optimal Y axis ticks
-  const allYValues: number[] = [...chartData.conversions, ...chartData.uniqueSessions].filter(
-    (n) => n !== undefined && n !== null,
-  )
+  const allYValues: number[] = [
+    ...chartData.conversions,
+    ...chartData.uniqueSessions,
+  ].filter((n) => n !== undefined && n !== null)
 
-  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+  const optimalTicks =
+    allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
   return {
     data: {
@@ -157,8 +188,14 @@ const getGoalChartSettings = (
           format:
             // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+              ? (x: string) =>
+                  d3.timeFormat(tbsFormatMapper24h[timeBucket])(
+                    x as unknown as Date,
+                  )
+              : (x: string) =>
+                  d3.timeFormat(tbsFormatMapper[timeBucket])(
+                    x as unknown as Date,
+                  ),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -257,16 +294,27 @@ const GoalRow = ({
 
   const patternDisplay = useMemo(() => {
     if (!goal.value) return null
-    const matchPrefix = goal.matchType === 'exact' ? '= ' : goal.matchType === 'contains' ? '~ ' : ''
+    const matchPrefix =
+      goal.matchType === 'exact'
+        ? '= '
+        : goal.matchType === 'contains'
+          ? '~ '
+          : ''
     return `${matchPrefix}${goal.value}`
   }, [goal.value, goal.matchType])
 
   const chartOptions = useMemo(() => {
     if (!chartData || !chartData.x || chartData.x.length === 0) return null
-    return getGoalChartSettings(chartData, timeBucket, timeFormat, chartTypes.line, {
-      conversions: t('goals.conversions'),
-      sessions: t('project.sessions'),
-    })
+    return getGoalChartSettings(
+      chartData,
+      timeBucket,
+      timeFormat,
+      chartTypes.line,
+      {
+        conversions: t('goals.conversions'),
+        sessions: t('project.sessions'),
+      },
+    )
   }, [chartData, timeBucket, timeFormat, t])
 
   return (
@@ -279,16 +327,33 @@ const GoalRow = ({
         >
           <div className='flex min-w-0 gap-x-4'>
             <div className='min-w-0 flex-auto'>
-              <Text as='p' weight='semibold' truncate className='flex items-center gap-x-1.5'>
+              <Text
+                as='p'
+                weight='semibold'
+                truncate
+                className='flex items-center gap-x-1.5'
+              >
                 {goal.type === 'pageview' ? (
-                  <FileTextIcon className='size-4 text-blue-500' strokeWidth={1.5} />
+                  <FileTextIcon
+                    className='size-4 text-blue-500'
+                    strokeWidth={1.5}
+                  />
                 ) : (
-                  <MousePointerClickIcon className='size-4 text-amber-500' strokeWidth={1.5} />
+                  <MousePointerClickIcon
+                    className='size-4 text-amber-500'
+                    strokeWidth={1.5}
+                  />
                 )}
                 <span>{goal.name}</span>
               </Text>
               {patternDisplay ? (
-                <Text className='mt-1 max-w-max' as='p' size='xs' colour='secondary' code>
+                <Text
+                  className='mt-1 max-w-max'
+                  as='p'
+                  size='xs'
+                  colour='secondary'
+                  code
+                >
                   {patternDisplay}
                 </Text>
               ) : null}
@@ -308,7 +373,11 @@ const GoalRow = ({
                         {t('goals.conversions').toLowerCase()}
                       </Text>
                     </span>
-                    <ProgressRing value={stats.conversionRate} size={36} strokeWidth={3} />
+                    <ProgressRing
+                      value={stats.conversionRate}
+                      size={36}
+                      strokeWidth={3}
+                    />
                   </>
                 ) : (
                   <Text as='p' size='xs' colour='muted'>
@@ -334,7 +403,11 @@ const GoalRow = ({
                       {t('goals.conversions').toLowerCase()}
                     </Text>
                   </p>
-                  <ProgressRing value={stats.conversionRate} size={44} strokeWidth={3.5} />
+                  <ProgressRing
+                    value={stats.conversionRate}
+                    size={44}
+                    strokeWidth={3.5}
+                  />
                 </>
               ) : (
                 <Text as='p' size='sm' colour='muted'>
@@ -369,9 +442,12 @@ const GoalRow = ({
                 <Trash2Icon className='size-4' strokeWidth={1.5} />
               </button>
               <ChevronDownIcon
-                className={cx('size-5 text-gray-500 transition-transform dark:text-gray-400', {
-                  'rotate-180': isExpanded,
-                })}
+                className={cx(
+                  'size-5 text-gray-500 transition-transform dark:text-gray-400',
+                  {
+                    'rotate-180': isExpanded,
+                  },
+                )}
                 strokeWidth={1.5}
               />
             </div>
@@ -385,7 +461,10 @@ const GoalRow = ({
               <div className='flex h-[200px] items-center justify-center'>
                 <Spin className='size-8' />
               </div>
-            ) : chartData && chartData.x && chartData.x.length > 0 && chartOptions ? (
+            ) : chartData &&
+              chartData.x &&
+              chartData.x.length > 0 &&
+              chartOptions ? (
               <BillboardChart options={chartOptions} className='h-[200px]' />
             ) : (
               <div className='flex h-[200px] items-center justify-center'>
@@ -426,7 +505,11 @@ interface DeferredGoalsData {
   goalsData: GoalsResponse | null
 }
 
-function GoalsDataResolver({ children }: { children: (data: DeferredGoalsData) => React.ReactNode }) {
+function GoalsDataResolver({
+  children,
+}: {
+  children: (data: DeferredGoalsData) => React.ReactNode
+}) {
   const { goalsData: goalsDataPromise } = useLoaderData<ProjectLoaderData>()
   const goalsData = goalsDataPromise ? use(goalsDataPromise) : null
   return <>{children({ goalsData })}</>
@@ -436,7 +519,9 @@ function GoalsViewWrapper(props: GoalsViewProps) {
   return (
     <Suspense fallback={<Loader />}>
       <GoalsDataResolver>
-        {(deferredData) => <GoalsViewInner {...props} deferredData={deferredData} />}
+        {(deferredData) => (
+          <GoalsViewInner {...props} deferredData={deferredData} />
+        )}
       </GoalsDataResolver>
     </Suspense>
   )
@@ -446,7 +531,13 @@ interface GoalsViewInnerProps extends GoalsViewProps {
   deferredData: DeferredGoalsData
 }
 
-const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: GoalsViewInnerProps) => {
+const GoalsViewInner = ({
+  period,
+  from = '',
+  to = '',
+  timezone,
+  deferredData,
+}: GoalsViewInnerProps) => {
   const { id } = useCurrentProject()
   const revalidator = useRevalidator()
   const { goalsRefreshTrigger } = useRefreshTriggers()
@@ -459,8 +550,12 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
   const [isSearchMode, setIsSearchMode] = useState(false)
   const isMountedRef = useRef(true)
   const [total, setTotal] = useState(() => deferredData.goalsData?.total || 0)
-  const [goals, setGoals] = useState<Goal[]>(() => deferredData.goalsData?.results || [])
-  const [goalStats, setGoalStats] = useState<Record<string, GoalStats | null>>({})
+  const [goals, setGoals] = useState<Goal[]>(
+    () => deferredData.goalsData?.results || [],
+  )
+  const [goalStats, setGoalStats] = useState<Record<string, GoalStats | null>>(
+    {},
+  )
   const [statsLoading, setStatsLoading] = useState<Record<string, boolean>>({})
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
@@ -469,7 +564,9 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
 
   // Expanded goal state
   const [expandedGoalId, setExpandedGoalId] = useState<string | null>(null)
-  const [goalChartData, setGoalChartData] = useState<Record<string, GoalChartData | null>>({})
+  const [goalChartData, setGoalChartData] = useState<
+    Record<string, GoalChartData | null>
+  >({})
   const [chartLoading, setChartLoading] = useState<Record<string, boolean>>({})
 
   // Modal state
@@ -488,7 +585,11 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
 
   // Sync state when loader provides new data
   useEffect(() => {
-    if (deferredData.goalsData && revalidator.state === 'idle' && !isSearchMode) {
+    if (
+      deferredData.goalsData &&
+      revalidator.state === 'idle' &&
+      !isSearchMode
+    ) {
       setGoals(deferredData.goalsData.results || [])
       setTotal(deferredData.goalsData.total || 0)
     }
@@ -535,7 +636,10 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
 
   // Handle fetcher response for goals list
   useEffect(() => {
-    if (fetcher.data?.intent === 'get-project-goals' && fetcher.state === 'idle') {
+    if (
+      fetcher.data?.intent === 'get-project-goals' &&
+      fetcher.state === 'idle'
+    ) {
       if (isMountedRef.current) {
         if (fetcher.data.success && fetcher.data.data) {
           const result = fetcher.data.data as { results: Goal[]; total: number }
@@ -556,7 +660,12 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
   const loadGoalStats = async (goalId: string) => {
     setStatsLoading((prev) => ({ ...prev, [goalId]: true }))
     try {
-      const stats = await statsProxy.fetchStats(goalId, { period, from, to, timezone })
+      const stats = await statsProxy.fetchStats(goalId, {
+        period,
+        from,
+        to,
+        timezone,
+      })
       if (isMountedRef.current) {
         setGoalStats((prev) => ({ ...prev, [goalId]: stats }))
       }
@@ -573,9 +682,18 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
   }
 
   const loadGoalChartData = async (goalId: string, showLoading = true) => {
-    setChartLoading((prev) => ({ ...prev, [goalId]: showLoading ? true : prev[goalId] }))
+    setChartLoading((prev) => ({
+      ...prev,
+      [goalId]: showLoading ? true : prev[goalId],
+    }))
     try {
-      const result = await chartProxy.fetchChart(goalId, { period, from, to, timeBucket, timezone })
+      const result = await chartProxy.fetchChart(goalId, {
+        period,
+        from,
+        to,
+        timeBucket,
+        timezone,
+      })
       if (isMountedRef.current && result) {
         setGoalChartData((prev) => ({ ...prev, [goalId]: result.chart }))
       }
@@ -607,7 +725,11 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
   // Handle page/search changes - use fetcher for pagination
   useEffect(() => {
     if (page > 1 || debouncedSearch || isSearchMode) {
-      loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
+      loadGoals(
+        DEFAULT_GOALS_TAKE,
+        (page - 1) * DEFAULT_GOALS_TAKE,
+        debouncedSearch || undefined,
+      )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, debouncedSearch])
@@ -637,7 +759,11 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
         setIsSearchMode(false)
         revalidator.revalidate()
       } else {
-        loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
+        loadGoals(
+          DEFAULT_GOALS_TAKE,
+          (page - 1) * DEFAULT_GOALS_TAKE,
+          debouncedSearch || undefined,
+        )
       }
       // Clear cached chart data for non-expanded goals, silently refresh expanded goal
       if (expandedGoalId) {
@@ -670,7 +796,11 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
       setIsSearchMode(false)
       revalidator.revalidate()
     } else {
-      loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
+      loadGoals(
+        DEFAULT_GOALS_TAKE,
+        (page - 1) * DEFAULT_GOALS_TAKE,
+        debouncedSearch || undefined,
+      )
     }
   }
 
@@ -682,7 +812,11 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
         setIsSearchMode(false)
         revalidator.revalidate()
       } else {
-        loadGoals(DEFAULT_GOALS_TAKE, (page - 1) * DEFAULT_GOALS_TAKE, debouncedSearch || undefined)
+        loadGoals(
+          DEFAULT_GOALS_TAKE,
+          (page - 1) * DEFAULT_GOALS_TAKE,
+          debouncedSearch || undefined,
+        )
       }
     } else if (fetcher.data?.error && fetcher.data?.intent === 'delete-goal') {
       toast.error(fetcher.data.error)
@@ -703,7 +837,11 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
         title={t('apiNotifications.somethingWentWrong')}
         description={t('apiNotifications.errorCode', { error })}
         actions={[
-          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
+          {
+            label: t('dashboard.reloadPage'),
+            onClick: () => window.location.reload(),
+            primary: true,
+          },
           { label: t('notFoundPage.support'), to: routes.contact },
         ]}
       />
@@ -721,7 +859,9 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
               <TargetIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
               <p className='text-3xl font-bold'>{t('goals.title')}</p>
             </div>
-            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('goals.description')}</p>
+            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
+              {t('goals.description')}
+            </p>
             <Button
               onClick={handleNewGoal}
               className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'

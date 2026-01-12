@@ -1,4 +1,8 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs, data } from 'react-router'
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  data,
+} from 'react-router'
 
 import {
   generateSSOAuthURLServer,
@@ -46,24 +50,45 @@ export async function action({ request }: ActionFunctionArgs) {
     switch (action) {
       case 'generateSSOAuthURL': {
         if (!body.provider) {
-          return data<ProxyResponse<null>>({ data: null, error: 'provider is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'provider is required' },
+            { status: 400 },
+          )
         }
-        const result = await generateSSOAuthURLServer(request, body.provider, body.redirectUrl)
+        const result = await generateSSOAuthURLServer(
+          request,
+          body.provider,
+          body.redirectUrl,
+        )
         return data<ProxyResponse<SSOAuthURLResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getJWTBySSOHash': {
         if (!body.hash || !body.provider) {
-          return data<ProxyResponse<null>>({ data: null, error: 'hash and provider are required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'hash and provider are required' },
+            { status: 400 },
+          )
         }
-        const result = await getJWTBySSOHashServer(request, body.hash, body.provider)
+        const result = await getJWTBySSOHashServer(
+          request,
+          body.hash,
+          body.provider,
+        )
 
         if (result.data) {
           const { accessToken, refreshToken } = result.data
-          const cookies = createAuthCookies({ accessToken, refreshToken }, body.remember ?? false)
+          const cookies = createAuthCookies(
+            { accessToken, refreshToken },
+            body.remember ?? false,
+          )
 
           return data<ProxyResponse<SSOHashResponse>>(
             {
@@ -71,14 +96,21 @@ export async function action({ request }: ActionFunctionArgs) {
               error: null,
             },
             {
-              headers: cookies.map((cookie) => ['Set-Cookie', cookie]) as [string, string][],
+              headers: cookies.map((cookie) => ['Set-Cookie', cookie]) as [
+                string,
+                string,
+              ][],
             },
           )
         }
 
         return data<ProxyResponse<SSOHashResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
@@ -89,43 +121,85 @@ export async function action({ request }: ActionFunctionArgs) {
             { status: 400 },
           )
         }
-        const result = await processSSOTokenCommunityEditionServer(request, body.code, body.hash, body.redirectUrl)
+        const result = await processSSOTokenCommunityEditionServer(
+          request,
+          body.code,
+          body.hash,
+          body.redirectUrl,
+        )
         return data<ProxyResponse<unknown>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'linkBySSOHash': {
         if (!body.hash || !body.provider) {
-          return data<ProxyResponse<null>>({ data: null, error: 'hash and provider are required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'hash and provider are required' },
+            { status: 400 },
+          )
         }
-        const result = await linkBySSOHashServer(request, body.hash, body.provider)
+        const result = await linkBySSOHashServer(
+          request,
+          body.hash,
+          body.provider,
+        )
         return data<ProxyResponse<unknown>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'processSSOToken': {
         if (!body.token || !body.hash) {
-          return data<ProxyResponse<null>>({ data: null, error: 'token and hash are required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'token and hash are required' },
+            { status: 400 },
+          )
         }
-        const result = await processSSOTokenServer(request, body.token, body.hash)
+        const result = await processSSOTokenServer(
+          request,
+          body.token,
+          body.hash,
+        )
         return data<ProxyResponse<unknown>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'processGSCToken': {
         if (!body.code || !body.state) {
-          return data<ProxyResponse<null>>({ data: null, error: 'code and state are required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'code and state are required' },
+            { status: 400 },
+          )
         }
-        const result = await processGSCTokenServer(request, body.code, body.state)
+        const result = await processGSCTokenServer(
+          request,
+          body.code,
+          body.state,
+        )
         return data<ProxyResponse<{ pid: string }>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
@@ -133,17 +207,27 @@ export async function action({ request }: ActionFunctionArgs) {
         const result = await authMeServer(request)
         return data<ProxyResponse<AuthMeResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       default:
-        return data<ProxyResponse<null>>({ data: null, error: `Unknown action: ${action}` }, { status: 400 })
+        return data<ProxyResponse<null>>(
+          { data: null, error: `Unknown action: ${action}` },
+          { status: 400 },
+        )
     }
   } catch (error) {
     console.error('[api.auth] Proxy request failed:', error)
     return data<ProxyResponse<null>>(
-      { data: null, error: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        data: null,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 },
     )
   }

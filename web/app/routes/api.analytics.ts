@@ -1,4 +1,8 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs, data } from 'react-router'
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  data,
+} from 'react-router'
 
 import {
   getSessionsServer,
@@ -137,7 +141,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const password = getProjectPasswordCookie(request, projectId)
 
-  const analyticsParams: AnalyticsParams & { take?: number; skip?: number; options?: Record<string, unknown> } = {
+  const analyticsParams: AnalyticsParams & {
+    take?: number
+    skip?: number
+    options?: Record<string, unknown>
+  } = {
     timeBucket: params.timeBucket || 'day',
     period: params.period || '7d',
     from: params.from,
@@ -152,10 +160,18 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     switch (action) {
       case 'getSessions': {
-        const result = await getSessionsServer(request, projectId, analyticsParams)
+        const result = await getSessionsServer(
+          request,
+          projectId,
+          analyticsParams,
+        )
         return data<ProxyResponse<SessionsResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
@@ -164,13 +180,20 @@ export async function action({ request }: ActionFunctionArgs) {
         const result = await getErrorsServer(request, projectId, errorsParams)
         return data<ProxyResponse<ErrorsResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getFeatureFlagStats': {
         if (!body.flagId) {
-          return data<ProxyResponse<null>>({ data: null, error: 'flagId is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'flagId is required' },
+            { status: 400 },
+          )
         }
         const result = await getFeatureFlagStatsServer(
           request,
@@ -182,13 +205,20 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         return data<ProxyResponse<FeatureFlagStats>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getFeatureFlagProfiles': {
         if (!body.flagId) {
-          return data<ProxyResponse<null>>({ data: null, error: 'flagId is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'flagId is required' },
+            { status: 400 },
+          )
         }
         const result = await getFeatureFlagProfilesServer(
           request,
@@ -203,13 +233,20 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         return data<ProxyResponse<FeatureFlagProfilesResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getGoalStats': {
         if (!body.goalId) {
-          return data<ProxyResponse<null>>({ data: null, error: 'goalId is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'goalId is required' },
+            { status: 400 },
+          )
         }
         const result = await getGoalStatsServer(
           request,
@@ -221,13 +258,20 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         return data<ProxyResponse<GoalStats>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getGoalChart': {
         if (!body.goalId) {
-          return data<ProxyResponse<null>>({ data: null, error: 'goalId is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'goalId is required' },
+            { status: 400 },
+          )
         }
         const result = await getGoalChartServer(
           request,
@@ -240,7 +284,11 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         return data<ProxyResponse<{ chart: GoalChartData }>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
@@ -257,13 +305,20 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         return data<ProxyResponse<CaptchaDataResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getExperimentResults': {
         if (!body.experimentId) {
-          return data<ProxyResponse<null>>({ data: null, error: 'experimentId is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'experimentId is required' },
+            { status: 400 },
+          )
         }
         const result = await getExperimentResultsServer(
           request,
@@ -276,29 +331,47 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         return data<ProxyResponse<ExperimentResults>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getExperiment': {
         if (!body.experimentId) {
-          return data<ProxyResponse<null>>({ data: null, error: 'experimentId is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'experimentId is required' },
+            { status: 400 },
+          )
         }
         const result = await getExperimentServer(request, body.experimentId)
         return data<ProxyResponse<Experiment>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getGoal': {
         if (!body.goalId) {
-          return data<ProxyResponse<null>>({ data: null, error: 'goalId is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'goalId is required' },
+            { status: 400 },
+          )
         }
         const result = await getGoalServer(request, body.goalId)
         return data<ProxyResponse<Goal>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
@@ -312,7 +385,11 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         return data<ProxyResponse<GoalsResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
@@ -326,7 +403,11 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         return data<ProxyResponse<FeatureFlagsResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
@@ -346,13 +427,20 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         return data<ProxyResponse<ProfilesResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getProfile': {
         if (!body.profileId) {
-          return data<ProxyResponse<null>>({ data: null, error: 'profileId is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'profileId is required' },
+            { status: 400 },
+          )
         }
         const result = await getProfileServer(
           request,
@@ -366,13 +454,20 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         return data<ProxyResponse<ProfileDetailsResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getProfileSessions': {
         if (!body.profileId) {
-          return data<ProxyResponse<null>>({ data: null, error: 'profileId is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'profileId is required' },
+            { status: 400 },
+          )
         }
         const result = await getProfileSessionsServer(
           request,
@@ -389,37 +484,73 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         return data<ProxyResponse<ProfileSessionsResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getProject': {
-        const result = await getProjectServer(request, projectId, password || undefined)
+        const result = await getProjectServer(
+          request,
+          projectId,
+          password || undefined,
+        )
         return data<ProxyResponse<Project>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getFilters': {
         if (!body.filterType) {
-          return data<ProxyResponse<null>>({ data: null, error: 'filterType is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'filterType is required' },
+            { status: 400 },
+          )
         }
-        const result = await getFiltersServer(request, projectId, body.filterType, password || undefined)
+        const result = await getFiltersServer(
+          request,
+          projectId,
+          body.filterType,
+          password || undefined,
+        )
         return data<ProxyResponse<string[]>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getErrorsFilters': {
         if (!body.filterType) {
-          return data<ProxyResponse<null>>({ data: null, error: 'filterType is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'filterType is required' },
+            { status: 400 },
+          )
         }
-        const result = await getErrorsFiltersServer(request, projectId, body.filterType, password || undefined)
+        const result = await getErrorsFiltersServer(
+          request,
+          projectId,
+          body.filterType,
+          password || undefined,
+        )
         return data<ProxyResponse<string[]>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
@@ -439,97 +570,161 @@ export async function action({ request }: ActionFunctionArgs) {
         )
         return data<ProxyResponse<VersionFilter[]>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getCustomEventsMetadata': {
         if (!body.event) {
-          return data<ProxyResponse<null>>({ data: null, error: 'event is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'event is required' },
+            { status: 400 },
+          )
         }
-        const result = await getCustomEventsMetadataServer(request, projectId, body.event, {
-          timeBucket: params.timeBucket,
-          period: params.period,
-          from: params.from,
-          to: params.to,
-          timezone: params.timezone,
-          password: password || undefined,
-        })
+        const result = await getCustomEventsMetadataServer(
+          request,
+          projectId,
+          body.event,
+          {
+            timeBucket: params.timeBucket,
+            period: params.period,
+            from: params.from,
+            to: params.to,
+            timezone: params.timezone,
+            password: password || undefined,
+          },
+        )
         return data<ProxyResponse<CustomEventsMetadataResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getPropertyMetadata': {
         if (!body.property) {
-          return data<ProxyResponse<null>>({ data: null, error: 'property is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'property is required' },
+            { status: 400 },
+          )
         }
-        const result = await getPropertyMetadataServer(request, projectId, body.property, {
-          timeBucket: params.timeBucket,
-          period: params.period,
-          from: params.from,
-          to: params.to,
-          filters: params.filters,
-          timezone: params.timezone,
-          password: password || undefined,
-        })
+        const result = await getPropertyMetadataServer(
+          request,
+          projectId,
+          body.property,
+          {
+            timeBucket: params.timeBucket,
+            period: params.period,
+            from: params.from,
+            to: params.to,
+            filters: params.filters,
+            timezone: params.timezone,
+            password: password || undefined,
+          },
+        )
         return data<ProxyResponse<PropertyMetadataResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getErrorSessions': {
         if (!body.errorId) {
-          return data<ProxyResponse<null>>({ data: null, error: 'errorId is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'errorId is required' },
+            { status: 400 },
+          )
         }
-        const result = await getErrorSessionsServer(request, projectId, body.errorId, {
-          timeBucket: params.timeBucket,
-          period: params.period,
-          from: params.from,
-          to: params.to,
-          take: params.take,
-          skip: params.skip,
-          password: password || undefined,
-        })
+        const result = await getErrorSessionsServer(
+          request,
+          projectId,
+          body.errorId,
+          {
+            timeBucket: params.timeBucket,
+            period: params.period,
+            from: params.from,
+            to: params.to,
+            take: params.take,
+            skip: params.skip,
+            password: password || undefined,
+          },
+        )
         return data<ProxyResponse<ErrorSessionsResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getLiveVisitors': {
         const pids = body.pids || [projectId]
-        const result = await getLiveVisitorsServer(request, pids, password || undefined)
+        const result = await getLiveVisitorsServer(
+          request,
+          pids,
+          password || undefined,
+        )
         return data<ProxyResponse<LiveStats>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getLiveVisitorsInfo': {
-        const result = await getLiveVisitorsInfoServer(request, projectId, password || undefined)
+        const result = await getLiveVisitorsInfoServer(
+          request,
+          projectId,
+          password || undefined,
+        )
         return data<ProxyResponse<LiveVisitorInfo[]>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getProjectDataCustomEvents': {
-        const result = await getProjectDataCustomEventsServer(request, projectId, {
-          timeBucket: params.timeBucket,
-          period: params.period,
-          filters: params.filters,
-          from: params.from,
-          to: params.to,
-          timezone: params.timezone,
-          customEvents: body.customEvents,
-          password: password || undefined,
-        })
+        const result = await getProjectDataCustomEventsServer(
+          request,
+          projectId,
+          {
+            timeBucket: params.timeBucket,
+            period: params.period,
+            filters: params.filters,
+            from: params.from,
+            to: params.to,
+            timezone: params.timezone,
+            customEvents: body.customEvents,
+            password: password || undefined,
+          },
+        )
         return data<ProxyResponse<ProjectDataCustomEventsResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
@@ -545,7 +740,11 @@ export async function action({ request }: ActionFunctionArgs) {
         })
         return data<ProxyResponse<UserFlowResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
@@ -559,7 +758,11 @@ export async function action({ request }: ActionFunctionArgs) {
         })
         return data<ProxyResponse<GSCKeywordsResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
@@ -567,7 +770,11 @@ export async function action({ request }: ActionFunctionArgs) {
         const result = await getRevenueStatusServer(request, projectId)
         return data<ProxyResponse<RevenueStatus>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
@@ -581,13 +788,20 @@ export async function action({ request }: ActionFunctionArgs) {
         })
         return data<ProxyResponse<RevenueDataResponse>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       case 'getOverallStats': {
         if (!pids || pids.length === 0) {
-          return data<ProxyResponse<null>>({ data: null, error: 'pids is required' }, { status: 400 })
+          return data<ProxyResponse<null>>(
+            { data: null, error: 'pids is required' },
+            { status: 400 },
+          )
         }
         const result = await getOverallStatsServer(request, pids, {
           timeBucket: params.timeBucket || 'day',
@@ -600,17 +814,27 @@ export async function action({ request }: ActionFunctionArgs) {
         })
         return data<ProxyResponse<Record<string, OverallObject>>>({
           data: result.data,
-          error: result.error ? (Array.isArray(result.error) ? result.error.join(', ') : result.error) : null,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
         })
       }
 
       default:
-        return data<ProxyResponse<null>>({ data: null, error: `Unknown action: ${action}` }, { status: 400 })
+        return data<ProxyResponse<null>>(
+          { data: null, error: `Unknown action: ${action}` },
+          { status: 400 },
+        )
     }
   } catch (error) {
     console.error('[api.analytics] Proxy request failed:', error)
     return data<ProxyResponse<null>>(
-      { data: null, error: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        data: null,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 },
     )
   }

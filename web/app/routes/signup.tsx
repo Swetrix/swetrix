@@ -1,4 +1,8 @@
-import type { ActionFunctionArgs, HeadersFunction, LoaderFunctionArgs } from 'react-router'
+import type {
+  ActionFunctionArgs,
+  HeadersFunction,
+  LoaderFunctionArgs,
+} from 'react-router'
 import { redirect, data } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
@@ -72,11 +76,20 @@ export async function action({ request }: ActionFunctionArgs) {
     fieldErrors.tos = 'You must accept the Terms of Service'
   }
 
-  if (fieldErrors.email || fieldErrors.password || fieldErrors.repeat || fieldErrors.tos) {
+  if (
+    fieldErrors.email ||
+    fieldErrors.password ||
+    fieldErrors.repeat ||
+    fieldErrors.tos
+  ) {
     return data({ fieldErrors, timestamp: Date.now() }, { status: 400 })
   }
 
-  const result = await registerUser(request, { email, password, checkIfLeaked }, true)
+  const result = await registerUser(
+    request,
+    { email, password, checkIfLeaked },
+    true,
+  )
 
   if (!result.success) {
     return data({ error: result.error, timestamp: Date.now() }, { status: 400 })

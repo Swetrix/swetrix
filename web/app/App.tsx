@@ -67,7 +67,11 @@ const App = () => {
 
   return (
     <>
-      {!_includes(routesWithOutHeader, pathname) && !isReferralPage && !isProjectViewPage ? <Header /> : null}
+      {!_includes(routesWithOutHeader, pathname) &&
+      !isReferralPage &&
+      !isProjectViewPage ? (
+        <Header />
+      ) : null}
       <Outlet />
       <Toaster
         theme={theme}

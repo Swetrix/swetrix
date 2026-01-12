@@ -1,4 +1,9 @@
-import { redirect, type LoaderFunctionArgs, useLoaderData, LinksFunction } from 'react-router'
+import {
+  redirect,
+  type LoaderFunctionArgs,
+  useLoaderData,
+  LinksFunction,
+} from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { getGeneralStats } from '~/api/api.server'

@@ -1,13 +1,32 @@
-import { ChevronDownIcon, ChevronUpIcon, ClipboardIcon, CheckIcon } from '@heroicons/react/24/outline'
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ClipboardIcon,
+  CheckIcon,
+} from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
-import { FileCodeIcon, CalendarIcon, HashIcon, ExternalLinkIcon, UsersIcon, ActivityIcon } from 'lucide-react'
+import {
+  FileCodeIcon,
+  CalendarIcon,
+  HashIcon,
+  ExternalLinkIcon,
+  UsersIcon,
+  ActivityIcon,
+} from 'lucide-react'
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 
-import type { ErrorAffectedSession, ErrorDetailsResponse } from '~/api/api.server'
+import type {
+  ErrorAffectedSession,
+  ErrorDetailsResponse,
+} from '~/api/api.server'
 import { useErrorSessionsProxy } from '~/hooks/useAnalyticsProxy'
-import { BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants'
+import {
+  BROWSER_LOGO_MAP,
+  OS_LOGO_MAP,
+  OS_LOGO_MAP_DARK,
+} from '~/lib/constants'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import { Badge } from '~/ui/Badge'
@@ -28,9 +47,22 @@ interface ErrorDetailsProps {
   projectPassword?: string
 }
 
-const StatItem = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) => (
+const StatItem = ({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: string | number
+}) => (
   <div className='flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
-    <Text size='xs' weight='medium' colour='muted' className='flex items-center gap-1.5 tracking-wide uppercase'>
+    <Text
+      size='xs'
+      weight='medium'
+      colour='muted'
+      className='flex items-center gap-1.5 tracking-wide uppercase'
+    >
       {icon}
       {label}
     </Text>
@@ -93,16 +125,30 @@ const SessionRow = ({ session }: SessionRowProps) => {
     >
       <div className='flex min-w-0 flex-1 items-start gap-3'>
         <div className='flex shrink-0 items-center gap-2 pt-0.5'>
-          {session.cc ? <Flag className='rounded-xs' country={session.cc} size={16} alt='' aria-hidden='true' /> : null}
+          {session.cc ? (
+            <Flag
+              className='rounded-xs'
+              country={session.cc}
+              size={16}
+              alt=''
+              aria-hidden='true'
+            />
+          ) : null}
           <BrowserIcon browser={session.br} />
           <OSIcon os={session.os} theme={theme} />
         </div>
         <div className='flex min-w-0 flex-col gap-0.5'>
-          <Text size='xs' weight='medium' truncate className='text-gray-900 dark:text-gray-200'>
+          <Text
+            size='xs'
+            weight='medium'
+            truncate
+            className='text-gray-900 dark:text-gray-200'
+          >
             {session.profileId || t('project.unknownUser')}
           </Text>
           <Text size='xs' colour='muted' truncate>
-            {lastErrorAt} · {session.errorCount} {t('project.occurrences').toLowerCase()}
+            {lastErrorAt} · {session.errorCount}{' '}
+            {t('project.occurrences').toLowerCase()}
           </Text>
         </div>
       </div>
@@ -156,15 +202,16 @@ export const ErrorDetails = ({
     return getRelativeDateIfPossible(details.last_seen, language)
   }, [details.last_seen, language])
 
-  const status: { label: string; colour: 'red' | 'yellow' | 'slate' } = useMemo(() => {
-    if (details.status === 'active') {
-      return { label: t('error.status.active'), colour: 'red' }
-    }
-    if (details.status === 'regressed') {
-      return { label: t('error.status.regressed'), colour: 'yellow' }
-    }
-    return { label: t('error.status.resolved'), colour: 'slate' }
-  }, [details.status, t])
+  const status: { label: string; colour: 'red' | 'yellow' | 'slate' } =
+    useMemo(() => {
+      if (details.status === 'active') {
+        return { label: t('error.status.active'), colour: 'red' }
+      }
+      if (details.status === 'regressed') {
+        return { label: t('error.status.regressed'), colour: 'yellow' }
+      }
+      return { label: t('error.status.resolved'), colour: 'slate' }
+    }, [details.status, t])
 
   const stackTraceLines = useMemo(
     () => (details.stackTrace ? details.stackTrace.split('\n') : []),
@@ -178,7 +225,8 @@ export const ErrorDetails = ({
   }, [details.filename, details.lineno, details.colno])
 
   useEffect(() => {
-    const shouldExpand = stackTraceLines.length > 0 && stackTraceLines.length <= 8
+    const shouldExpand =
+      stackTraceLines.length > 0 && stackTraceLines.length <= 8
     setIsStackTraceExpanded(shouldExpand)
     setIsCopiedStack(false)
     setIsCopiedEid(false)
@@ -258,7 +306,17 @@ export const ErrorDetails = ({
         }
       }
     },
-    [id, details.eid, timeBucket, period, from, to, sessionsLoading, sessionsSkip, fetchErrorSessions],
+    [
+      id,
+      details.eid,
+      timeBucket,
+      period,
+      from,
+      to,
+      sessionsLoading,
+      sessionsSkip,
+      fetchErrorSessions,
+    ],
   )
 
   useEffect(() => {
@@ -277,11 +335,15 @@ export const ErrorDetails = ({
       return (
         <p>
           <span className='text-slate-500 dark:text-slate-400'>{prefix}</span>
-          <span className='font-medium text-slate-700 dark:text-slate-300'>{funcName}</span>
+          <span className='font-medium text-slate-700 dark:text-slate-300'>
+            {funcName}
+          </span>
           {location ? (
             <>
               <span className='text-slate-600 dark:text-slate-400'> (</span>
-              <span className='text-slate-800 dark:text-slate-300'>{location}</span>
+              <span className='text-slate-800 dark:text-slate-300'>
+                {location}
+              </span>
               <span className='text-slate-600 dark:text-slate-400'>)</span>
             </>
           ) : null}
@@ -306,7 +368,10 @@ export const ErrorDetails = ({
   }
 
   const stackPreviewLines = stackTraceLines.slice(0, STACK_PREVIEW_LINES_COUNT)
-  const stackHiddenCount = Math.max(0, stackTraceLines.length - STACK_PREVIEW_LINES_COUNT)
+  const stackHiddenCount = Math.max(
+    0,
+    stackTraceLines.length - STACK_PREVIEW_LINES_COUNT,
+  )
 
   return (
     <div className='space-y-3'>
@@ -335,7 +400,9 @@ export const ErrorDetails = ({
             </div>
 
             <div>
-              <h2 className='text-2xl font-bold wrap-break-word text-gray-900 dark:text-white'>{details.name}</h2>
+              <h2 className='text-2xl font-bold wrap-break-word text-gray-900 dark:text-white'>
+                {details.name}
+              </h2>
               {details.message ? (
                 <p className='mt-1 font-mono text-sm wrap-break-word text-gray-600 dark:text-gray-400'>
                   {details.message}
@@ -348,7 +415,10 @@ export const ErrorDetails = ({
         {details.filename ? (
           <div className='flex items-center gap-2'>
             <div className='flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 font-mono text-xs text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
-              <FileCodeIcon className='size-3.5 text-gray-500' strokeWidth={1.5} />
+              <FileCodeIcon
+                className='size-3.5 text-gray-500'
+                strokeWidth={1.5}
+              />
               <span className='break-all'>{fileLocation}</span>
               <button
                 type='button'
@@ -368,21 +438,40 @@ export const ErrorDetails = ({
       </div>
 
       <div className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
-        <StatItem icon={<HashIcon className='size-4' />} label={t('project.occurrences')} value={details.count || 0} />
-        <StatItem icon={<UsersIcon className='size-4' />} label={t('dashboard.users')} value={details.users || 0} />
+        <StatItem
+          icon={<HashIcon className='size-4' />}
+          label={t('project.occurrences')}
+          value={details.count || 0}
+        />
+        <StatItem
+          icon={<UsersIcon className='size-4' />}
+          label={t('dashboard.users')}
+          value={details.users || 0}
+        />
         <StatItem
           icon={<CalendarIcon className='size-4' />}
           label={t('dashboard.firstSeen')}
           value={firstSeen || '-'}
         />
-        <StatItem icon={<ActivityIcon className='size-4' />} label={t('dashboard.lastSeen')} value={lastSeen || '-'} />
+        <StatItem
+          icon={<ActivityIcon className='size-4' />}
+          label={t('dashboard.lastSeen')}
+          value={lastSeen || '-'}
+        />
       </div>
 
       <div className='space-y-3'>
         {details.stackTrace ? (
           <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
             <div className='mb-3 flex items-center justify-between gap-3'>
-              <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
+              <Text
+                as='h3'
+                size='xs'
+                weight='semibold'
+                colour='primary'
+                className='mb-2 uppercase'
+                tracking='wide'
+              >
                 {t('project.stackTraceXFrames', { x: stackTraceLines.length })}
               </Text>
               <div className='flex items-center gap-2'>
@@ -428,14 +517,23 @@ export const ErrorDetails = ({
             </div>
 
             <div className='rounded-lg border border-gray-100 bg-gray-50 dark:border-slate-700 dark:bg-slate-900/50'>
-              <div className={isStackTraceExpanded ? 'max-h-80 overflow-auto p-3' : 'p-3'}>
+              <div
+                className={
+                  isStackTraceExpanded ? 'max-h-80 overflow-auto p-3' : 'p-3'
+                }
+              >
                 <div className='space-y-0.5 font-mono text-xs leading-relaxed'>
-                  {(isStackTraceExpanded ? stackTraceLines : stackPreviewLines).map((line, index) => (
+                  {(isStackTraceExpanded
+                    ? stackTraceLines
+                    : stackPreviewLines
+                  ).map((line, index) => (
                     <div key={index} className='flex'>
                       <span className='mr-3 inline-block w-6 text-right text-gray-400 select-none dark:text-slate-500'>
                         {index + 1}
                       </span>
-                      <div className='min-w-0 flex-1'>{formatStackTraceLine(line)}</div>
+                      <div className='min-w-0 flex-1'>
+                        {formatStackTraceLine(line)}
+                      </div>
                     </div>
                   ))}
                   {!isStackTraceExpanded && stackHiddenCount > 0 ? (
@@ -450,8 +548,16 @@ export const ErrorDetails = ({
         ) : null}
 
         <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-          <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
-            {t('project.affectedSessionsList')} {sessionsTotal > 0 ? `(${sessionsTotal})` : ''}
+          <Text
+            as='h3'
+            size='xs'
+            weight='semibold'
+            colour='primary'
+            className='mb-2 uppercase'
+            tracking='wide'
+          >
+            {t('project.affectedSessionsList')}{' '}
+            {sessionsTotal > 0 ? `(${sessionsTotal})` : ''}
           </Text>
 
           {sessionsLoading && sessions.length === 0 ? (

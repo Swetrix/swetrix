@@ -1,9 +1,16 @@
-import type { ActionFunctionArgs, HeadersFunction, LoaderFunctionArgs } from 'react-router'
+import type {
+  ActionFunctionArgs,
+  HeadersFunction,
+  LoaderFunctionArgs,
+} from 'react-router'
 import { redirect, data } from 'react-router'
 
 import { getAuthenticatedUser, loginUser, serverFetch } from '~/api/api.server'
 import Signin from '~/pages/Auth/Signin'
-import { createHeadersWithCookies, createAuthCookies } from '~/utils/session.server'
+import {
+  createHeadersWithCookies,
+  createAuthCookies,
+} from '~/utils/session.server'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')
@@ -41,12 +48,19 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // Handle 2FA submission
   if (intent === 'submit-2fa') {
-    const twoFactorAuthenticationCode = formData.get('twoFACode')?.toString() || ''
+    const twoFactorAuthenticationCode =
+      formData.get('twoFACode')?.toString() || ''
     const dontRemember = formData.get('dontRemember') === 'true'
 
-    if (!twoFactorAuthenticationCode || twoFactorAuthenticationCode.length !== 6) {
+    if (
+      !twoFactorAuthenticationCode ||
+      twoFactorAuthenticationCode.length !== 6
+    ) {
       return data<LoginActionData>(
-        { fieldErrors: { twoFACode: 'Please enter a valid 6-digit code' }, timestamp: Date.now() },
+        {
+          fieldErrors: { twoFACode: 'Please enter a valid 6-digit code' },
+          timestamp: Date.now(),
+        },
         { status: 400 },
       )
     }
@@ -62,15 +76,23 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (result.error) {
       return data<LoginActionData>(
-        { fieldErrors: { twoFACode: 'Invalid 2FA code' }, timestamp: Date.now() },
+        {
+          fieldErrors: { twoFACode: 'Invalid 2FA code' },
+          timestamp: Date.now(),
+        },
         { status: 400 },
       )
     }
 
     const { accessToken, refreshToken, user } = result.data!
-    const cookies = createAuthCookies({ accessToken, refreshToken }, !dontRemember)
+    const cookies = createAuthCookies(
+      { accessToken, refreshToken },
+      !dontRemember,
+    )
 
-    const redirectTo = user.hasCompletedOnboarding ? '/dashboard' : '/onboarding'
+    const redirectTo = user.hasCompletedOnboarding
+      ? '/dashboard'
+      : '/onboarding'
 
     return redirect(redirectTo, {
       headers: createHeadersWithCookies(cookies),
@@ -112,7 +134,9 @@ export async function action({ request }: ActionFunctionArgs) {
     )
   }
 
-  const redirectTo = result.data?.user.hasCompletedOnboarding ? '/dashboard' : '/onboarding'
+  const redirectTo = result.data?.user.hasCompletedOnboarding
+    ? '/dashboard'
+    : '/onboarding'
 
   return redirect(redirectTo, {
     headers: createHeadersWithCookies(result.cookies),

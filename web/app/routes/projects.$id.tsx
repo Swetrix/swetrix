@@ -2,7 +2,12 @@ import _includes from 'lodash/includes'
 import _some from 'lodash/some'
 import _split from 'lodash/split'
 import _startsWith from 'lodash/startsWith'
-import { type ActionFunctionArgs, type LinksFunction, type LoaderFunctionArgs, type MetaFunction } from 'react-router'
+import {
+  type ActionFunctionArgs,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from 'react-router'
 import { data, redirect } from 'react-router'
 
 import {
@@ -37,7 +42,12 @@ import {
   type AnalyticsFilter,
 } from '~/api/api.server'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
-import { API_URL, MAIN_URL, DEFAULT_TIMEZONE, PROJECT_TABS } from '~/lib/constants'
+import {
+  API_URL,
+  MAIN_URL,
+  DEFAULT_TIMEZONE,
+  PROJECT_TABS,
+} from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import ViewProject from '~/pages/Project/View'
 import { CurrentProjectProvider } from '~/providers/CurrentProjectProvider'
@@ -49,7 +59,9 @@ import {
   createProjectPasswordCookie,
 } from '~/utils/session.server'
 
-export const links: LinksFunction = () => [{ rel: 'stylesheet', href: ProjectViewStyle }]
+export const links: LinksFunction = () => [
+  { rel: 'stylesheet', href: ProjectViewStyle },
+]
 
 export const meta: MetaFunction = ({ location }) => {
   const { pathname } = location
@@ -95,7 +107,11 @@ const validDynamicFilters = ['ev:key:', 'tag:key:']
 
 function isFilterValid(filter: string, checkDynamicFilters = false) {
   let normalised = filter
-  if (_startsWith(normalised, '!') || _startsWith(normalised, '~') || _startsWith(normalised, '^')) {
+  if (
+    _startsWith(normalised, '!') ||
+    _startsWith(normalised, '~') ||
+    _startsWith(normalised, '^')
+  ) {
     normalised = normalised.substring(1)
   }
 
@@ -103,7 +119,10 @@ function isFilterValid(filter: string, checkDynamicFilters = false) {
     return true
   }
 
-  if (checkDynamicFilters && _some(validDynamicFilters, (prefix) => _startsWith(normalised, prefix))) {
+  if (
+    checkDynamicFilters &&
+    _some(validDynamicFilters, (prefix) => _startsWith(normalised, prefix))
+  ) {
     return true
   }
 
@@ -157,7 +176,9 @@ export interface ProjectLoaderData {
   overallStats?: Promise<Record<string, OverallObject> | null>
   trafficCompareData?: Promise<TrafficLogResponse | null>
   overallCompareStats?: Promise<Record<string, OverallObject> | null>
-  customEventsData?: Promise<{ chart?: { events?: Record<string, unknown> } } | null>
+  customEventsData?: Promise<{
+    chart?: { events?: Record<string, unknown> }
+  } | null>
   // Performance data
   perfData?: Promise<PerformanceDataResponse | null>
   perfOverallStats?: Promise<Record<string, PerformanceOverallObject> | null>
@@ -197,8 +218,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     }
 
     return data<ProjectLoaderData>(
-      { project: null, isPasswordRequired: false, error: result.error as string },
-      { status: result.status, headers: createHeadersWithCookies(result.cookies) },
+      {
+        project: null,
+        isPasswordRequired: false,
+        error: result.error as string,
+      },
+      {
+        status: result.status,
+        headers: createHeadersWithCookies(result.cookies),
+      },
     )
   }
 
@@ -217,7 +245,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
 
   // Parse URL params for analytics data
-  const tab = (url.searchParams.get('tab') as keyof typeof PROJECT_TABS) || PROJECT_TABS.traffic
+  const tab =
+    (url.searchParams.get('tab') as keyof typeof PROJECT_TABS) ||
+    PROJECT_TABS.traffic
   const period = url.searchParams.get('period') || '7d'
   const timeBucket = url.searchParams.get('timeBucket') || 'day'
   const from = url.searchParams.get('from') || ''
@@ -236,7 +266,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   // Traffic custom events params
   const customEventsParam = url.searchParams.get('customEvents') || ''
-  const customEvents = customEventsParam ? customEventsParam.split(',').filter(Boolean) : []
+  const customEvents = customEventsParam
+    ? customEventsParam.split(',').filter(Boolean)
+    : []
 
   const analyticsParams = {
     timeBucket,
@@ -252,10 +284,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   let trafficData: Promise<TrafficLogResponse | null> | undefined
   let overallStats: Promise<Record<string, OverallObject> | null> | undefined
   let trafficCompareData: Promise<TrafficLogResponse | null> | undefined
-  let overallCompareStats: Promise<Record<string, OverallObject> | null> | undefined
-  let customEventsData: Promise<{ chart?: { events?: Record<string, unknown> } } | null> | undefined
+  let overallCompareStats:
+    | Promise<Record<string, OverallObject> | null>
+    | undefined
+  let customEventsData:
+    | Promise<{ chart?: { events?: Record<string, unknown> } } | null>
+    | undefined
   let perfData: Promise<PerformanceDataResponse | null> | undefined
-  let perfOverallStats: Promise<Record<string, PerformanceOverallObject> | null> | undefined
+  let perfOverallStats:
+    | Promise<Record<string, PerformanceOverallObject> | null>
+    | undefined
   let sessionsData: Promise<SessionsResponse | null> | undefined
   let sessionDetails: Promise<SessionDetailsResponse | null> | undefined
   let errorsData: Promise<ErrorsResponse | null> | undefined
@@ -269,8 +307,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   // Only fetch data if project is valid and not locked
   if (project && !project.isLocked && projectId) {
     if (tab === PROJECT_TABS.traffic) {
-      trafficData = getProjectDataServer(request, projectId, analyticsParams).then((res) => res.data)
-      overallStats = getOverallStatsServer(request, [projectId], analyticsParams).then((res) => res.data)
+      trafficData = getProjectDataServer(
+        request,
+        projectId,
+        analyticsParams,
+      ).then((res) => res.data)
+      overallStats = getOverallStatsServer(
+        request,
+        [projectId],
+        analyticsParams,
+      ).then((res) => res.data)
 
       // Fetch compare data if enabled
       if (compareEnabled && compareFrom && compareTo) {
@@ -280,45 +326,88 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           from: compareFrom,
           to: compareTo,
         }
-        trafficCompareData = getProjectDataServer(request, projectId, compareParams).then((res) => res.data)
-        overallCompareStats = getOverallStatsServer(request, [projectId], compareParams).then((res) => res.data)
+        trafficCompareData = getProjectDataServer(
+          request,
+          projectId,
+          compareParams,
+        ).then((res) => res.data)
+        overallCompareStats = getOverallStatsServer(
+          request,
+          [projectId],
+          compareParams,
+        ).then((res) => res.data)
       }
 
       // Fetch custom events data if any custom events are selected
       if (customEvents.length > 0) {
-        customEventsData = getCustomEventsDataServer(request, projectId, analyticsParams, customEvents).then(
-          (res) => res.data,
-        )
+        customEventsData = getCustomEventsDataServer(
+          request,
+          projectId,
+          analyticsParams,
+          customEvents,
+        ).then((res) => res.data)
       }
     } else if (tab === PROJECT_TABS.performance) {
       // Use measure from URL, or 'quantiles' if perfMetric is quantiles
-      const effectiveMeasure = perfMetric === 'quantiles' ? 'quantiles' : measure
+      const effectiveMeasure =
+        perfMetric === 'quantiles' ? 'quantiles' : measure
       const perfParams = { ...analyticsParams, measure: effectiveMeasure }
-      perfData = getPerfDataServer(request, projectId, perfParams).then((res) => res.data)
-      perfOverallStats = getPerformanceOverallStatsServer(request, [projectId], perfParams).then((res) => res.data)
+      perfData = getPerfDataServer(request, projectId, perfParams).then(
+        (res) => res.data,
+      )
+      perfOverallStats = getPerformanceOverallStatsServer(
+        request,
+        [projectId],
+        perfParams,
+      ).then((res) => res.data)
     } else if (tab === PROJECT_TABS.sessions) {
-      sessionsData = getSessionsServer(request, projectId, analyticsParams).then((res) => res.data)
+      sessionsData = getSessionsServer(
+        request,
+        projectId,
+        analyticsParams,
+      ).then((res) => res.data)
       // Fetch session details if psid is in URL
       const psid = url.searchParams.get('psid')
       if (psid) {
-        sessionDetails = getSessionServer(request, projectId, psid, timezone, password || undefined).then(
-          (res) => res.data,
-        )
+        sessionDetails = getSessionServer(
+          request,
+          projectId,
+          psid,
+          timezone,
+          password || undefined,
+        ).then((res) => res.data)
       }
     } else if (tab === PROJECT_TABS.errors) {
-      errorsData = getErrorsServer(request, projectId, analyticsParams).then((res) => res.data)
-      errorOverview = getErrorOverviewServer(request, projectId, analyticsParams).then((res) => res.data)
+      errorsData = getErrorsServer(request, projectId, analyticsParams).then(
+        (res) => res.data,
+      )
+      errorOverview = getErrorOverviewServer(
+        request,
+        projectId,
+        analyticsParams,
+      ).then((res) => res.data)
       // Fetch error details if eid is in URL
       const eid = url.searchParams.get('eid')
       if (eid) {
-        errorDetails = getErrorServer(request, projectId, eid, analyticsParams).then((res) => res.data)
+        errorDetails = getErrorServer(
+          request,
+          projectId,
+          eid,
+          analyticsParams,
+        ).then((res) => res.data)
       }
     } else if (tab === PROJECT_TABS.featureFlags) {
-      featureFlagsData = getProjectFeatureFlagsServer(request, projectId).then((res) => res.data)
+      featureFlagsData = getProjectFeatureFlagsServer(request, projectId).then(
+        (res) => res.data,
+      )
     } else if (tab === PROJECT_TABS.goals) {
-      goalsData = getProjectGoalsServer(request, projectId).then((res) => res.data)
+      goalsData = getProjectGoalsServer(request, projectId).then(
+        (res) => res.data,
+      )
     } else if (tab === PROJECT_TABS.alerts) {
-      alertsData = getProjectAlertsServer(request, projectId).then((res) => res.data)
+      alertsData = getProjectAlertsServer(request, projectId).then(
+        (res) => res.data,
+      )
     } else if (tab === PROJECT_TABS.funnels) {
       // Fetch funnel data if funnelId is in URL
       const funnelId = url.searchParams.get('funnelId')
@@ -393,7 +482,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -415,7 +507,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -432,7 +527,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -452,7 +550,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -472,7 +573,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -484,12 +588,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'delete-funnel': {
       const funnelId = formData.get('funnelId')?.toString()
 
-      const result = await serverFetch(request, `project/funnel/${funnelId}/${projectId}`, {
-        method: 'DELETE',
-      })
+      const result = await serverFetch(
+        request,
+        `project/funnel/${funnelId}/${projectId}`,
+        {
+          method: 'DELETE',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -501,13 +612,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
     // Alerts
     case 'create-alert': {
       const name = formData.get('name')?.toString() || ''
-      const queryMetric = formData.get('queryMetric')?.toString() || 'page_views'
+      const queryMetric =
+        formData.get('queryMetric')?.toString() || 'page_views'
       const queryCondition = formData.get('queryCondition')?.toString() || null
-      const queryValue = formData.get('queryValue') ? Number(formData.get('queryValue')) : null
+      const queryValue = formData.get('queryValue')
+        ? Number(formData.get('queryValue'))
+        : null
       const queryTime = formData.get('queryTime')?.toString() || null
-      const queryCustomEvent = formData.get('queryCustomEvent')?.toString() || null
-      const alertOnNewErrorsOnly = formData.get('alertOnNewErrorsOnly') === 'true'
-      const alertOnEveryCustomEvent = formData.get('alertOnEveryCustomEvent') === 'true'
+      const queryCustomEvent =
+        formData.get('queryCustomEvent')?.toString() || null
+      const alertOnNewErrorsOnly =
+        formData.get('alertOnNewErrorsOnly') === 'true'
+      const alertOnEveryCustomEvent =
+        formData.get('alertOnEveryCustomEvent') === 'true'
 
       const result = await serverFetch(request, 'alert', {
         method: 'POST',
@@ -526,7 +643,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -541,9 +661,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const active = formData.get('active') === 'true'
       const queryMetric = formData.get('queryMetric')?.toString()
       const queryCondition = formData.get('queryCondition')?.toString() || null
-      const queryValue = formData.get('queryValue') ? Number(formData.get('queryValue')) : null
+      const queryValue = formData.get('queryValue')
+        ? Number(formData.get('queryValue'))
+        : null
       const queryTime = formData.get('queryTime')?.toString() || null
-      const queryCustomEvent = formData.get('queryCustomEvent')?.toString() || null
+      const queryCustomEvent =
+        formData.get('queryCustomEvent')?.toString() || null
       const alertOnNewErrorsOnly = formData.has('alertOnNewErrorsOnly')
         ? formData.get('alertOnNewErrorsOnly') === 'true'
         : undefined
@@ -559,8 +682,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       body.queryValue = queryValue
       body.queryTime = queryTime
       body.queryCustomEvent = queryCustomEvent
-      if (alertOnNewErrorsOnly !== undefined) body.alertOnNewErrorsOnly = alertOnNewErrorsOnly
-      if (alertOnEveryCustomEvent !== undefined) body.alertOnEveryCustomEvent = alertOnEveryCustomEvent
+      if (alertOnNewErrorsOnly !== undefined)
+        body.alertOnNewErrorsOnly = alertOnNewErrorsOnly
+      if (alertOnEveryCustomEvent !== undefined)
+        body.alertOnEveryCustomEvent = alertOnEveryCustomEvent
 
       const result = await serverFetch(request, `alert/${alertId}`, {
         method: 'PUT',
@@ -568,7 +693,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -585,7 +713,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -598,13 +729,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'get-annotations': {
       const password = formData.get('password')?.toString() || ''
 
-      const result = await serverFetch(request, `project/annotations/${projectId}`, {
-        method: 'GET',
-        headers: password ? { 'x-password': password } : undefined,
-      })
+      const result = await serverFetch(
+        request,
+        `project/annotations/${projectId}`,
+        {
+          method: 'GET',
+          headers: password ? { 'x-password': password } : undefined,
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -623,7 +761,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -643,7 +784,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -655,12 +799,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'delete-annotation': {
       const annotationId = formData.get('annotationId')?.toString()
 
-      const result = await serverFetch(request, `project/annotation/${annotationId}/${projectId}`, {
-        method: 'DELETE',
-      })
+      const result = await serverFetch(
+        request,
+        `project/annotation/${annotationId}/${projectId}`,
+        {
+          method: 'DELETE',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -679,7 +830,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -692,7 +846,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const name = formData.get('name')?.toString() || ''
       const type = formData.get('type')?.toString() || 'traffic'
       const filters = JSON.parse(formData.get('filters')?.toString() || '[]')
-      const customEvents = JSON.parse(formData.get('customEvents')?.toString() || '[]')
+      const customEvents = JSON.parse(
+        formData.get('customEvents')?.toString() || '[]',
+      )
 
       const result = await serverFetch(request, `project/${projectId}/views`, {
         method: 'POST',
@@ -700,7 +856,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -713,15 +872,24 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const viewId = formData.get('viewId')?.toString()
       const name = formData.get('name')?.toString() || ''
       const filters = JSON.parse(formData.get('filters')?.toString() || '[]')
-      const customEvents = JSON.parse(formData.get('customEvents')?.toString() || '[]')
+      const customEvents = JSON.parse(
+        formData.get('customEvents')?.toString() || '[]',
+      )
 
-      const result = await serverFetch(request, `project/${projectId}/views/${viewId}`, {
-        method: 'PATCH',
-        body: { name, filters, customEvents },
-      })
+      const result = await serverFetch(
+        request,
+        `project/${projectId}/views/${viewId}`,
+        {
+          method: 'PATCH',
+          body: { name, filters, customEvents },
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -733,12 +901,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'delete-project-view': {
       const viewId = formData.get('viewId')?.toString()
 
-      const result = await serverFetch(request, `project/${projectId}/views/${viewId}`, {
-        method: 'DELETE',
-      })
+      const result = await serverFetch(
+        request,
+        `project/${projectId}/views/${viewId}`,
+        {
+          method: 'DELETE',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -751,12 +926,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'get-recent-ai-chats': {
       const limit = Number(formData.get('limit') || '5')
 
-      const result = await serverFetch(request, `ai/${projectId}/chats?limit=${limit}`, {
-        method: 'GET',
-      })
+      const result = await serverFetch(
+        request,
+        `ai/${projectId}/chats?limit=${limit}`,
+        {
+          method: 'GET',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -769,12 +951,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const skip = Number(formData.get('skip') || '0')
       const take = Number(formData.get('take') || '20')
 
-      const result = await serverFetch(request, `ai/${projectId}/chats/all?skip=${skip}&take=${take}`, {
-        method: 'GET',
-      })
+      const result = await serverFetch(
+        request,
+        `ai/${projectId}/chats/all?skip=${skip}&take=${take}`,
+        {
+          method: 'GET',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -786,12 +975,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'get-ai-chat': {
       const chatId = formData.get('chatId')?.toString()
 
-      const result = await serverFetch(request, `ai/${projectId}/chats/${chatId}`, {
-        method: 'GET',
-      })
+      const result = await serverFetch(
+        request,
+        `ai/${projectId}/chats/${chatId}`,
+        {
+          method: 'GET',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -810,7 +1006,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -821,20 +1020,29 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     case 'update-ai-chat': {
       const chatId = formData.get('chatId')?.toString()
-      const messages = formData.get('messages') ? JSON.parse(formData.get('messages')!.toString()) : undefined
+      const messages = formData.get('messages')
+        ? JSON.parse(formData.get('messages')!.toString())
+        : undefined
       const name = formData.get('name')?.toString()
 
       const body: Record<string, unknown> = {}
       if (messages) body.messages = messages
       if (name !== undefined) body.name = name
 
-      const result = await serverFetch(request, `ai/${projectId}/chats/${chatId}`, {
-        method: 'POST',
-        body,
-      })
+      const result = await serverFetch(
+        request,
+        `ai/${projectId}/chats/${chatId}`,
+        {
+          method: 'POST',
+          body,
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -846,12 +1054,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'delete-ai-chat': {
       const chatId = formData.get('chatId')?.toString()
 
-      const result = await serverFetch(request, `ai/${projectId}/chats/${chatId}`, {
-        method: 'DELETE',
-      })
+      const result = await serverFetch(
+        request,
+        `ai/${projectId}/chats/${chatId}`,
+        {
+          method: 'DELETE',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -866,15 +1081,25 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const skip = Number(formData.get('skip') || '0')
       const search = formData.get('search')?.toString() || ''
 
-      const params = new URLSearchParams({ take: String(take), skip: String(skip) })
+      const params = new URLSearchParams({
+        take: String(take),
+        skip: String(skip),
+      })
       if (search) params.append('search', search)
 
-      const result = await serverFetch(request, `feature-flag/project/${projectId}?${params.toString()}`, {
-        method: 'GET',
-      })
+      const result = await serverFetch(
+        request,
+        `feature-flag/project/${projectId}?${params.toString()}`,
+        {
+          method: 'GET',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -891,7 +1116,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -904,17 +1132,32 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const key = formData.get('key')?.toString() || ''
       const description = formData.get('description')?.toString() || ''
       const flagType = formData.get('flagType')?.toString() || 'boolean'
-      const rolloutPercentage = Number(formData.get('rolloutPercentage') || '100')
-      const targetingRules = JSON.parse(formData.get('targetingRules')?.toString() || '[]')
+      const rolloutPercentage = Number(
+        formData.get('rolloutPercentage') || '100',
+      )
+      const targetingRules = JSON.parse(
+        formData.get('targetingRules')?.toString() || '[]',
+      )
       const enabled = formData.get('enabled') === 'true'
 
       const result = await serverFetch(request, 'feature-flag', {
         method: 'POST',
-        body: { pid: projectId, key, description, flagType, rolloutPercentage, targetingRules, enabled },
+        body: {
+          pid: projectId,
+          key,
+          description,
+          flagType,
+          rolloutPercentage,
+          targetingRules,
+          enabled,
+        },
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -934,13 +1177,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const targetingRules = formData.get('targetingRules')
         ? JSON.parse(formData.get('targetingRules')!.toString())
         : undefined
-      const enabled = formData.has('enabled') ? formData.get('enabled') === 'true' : undefined
+      const enabled = formData.has('enabled')
+        ? formData.get('enabled') === 'true'
+        : undefined
 
       const body: Record<string, unknown> = {}
       if (key !== undefined) body.key = key
       if (description !== undefined) body.description = description
       if (flagType !== undefined) body.flagType = flagType
-      if (rolloutPercentage !== undefined) body.rolloutPercentage = rolloutPercentage
+      if (rolloutPercentage !== undefined)
+        body.rolloutPercentage = rolloutPercentage
       if (targetingRules !== undefined) body.targetingRules = targetingRules
       if (enabled !== undefined) body.enabled = enabled
 
@@ -950,7 +1196,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -967,7 +1216,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -988,12 +1240,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
 
-      const result = await serverFetch(request, `feature-flag/${flagId}/stats?${params.toString()}`, {
-        method: 'GET',
-      })
+      const result = await serverFetch(
+        request,
+        `feature-flag/${flagId}/stats?${params.toString()}`,
+        {
+          method: 'GET',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1012,23 +1271,43 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const skip = Number(formData.get('skip') || '0')
       const resultFilter = formData.get('result')?.toString() || ''
 
-      const params = new URLSearchParams({ period, take: String(take), skip: String(skip) })
+      const params = new URLSearchParams({
+        period,
+        take: String(take),
+        skip: String(skip),
+      })
       if (fromDate) params.append('from', fromDate)
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
-      if (resultFilter && resultFilter !== 'all') params.append('result', resultFilter)
+      if (resultFilter && resultFilter !== 'all')
+        params.append('result', resultFilter)
 
-      const result = await serverFetch(request, `feature-flag/${flagId}/profiles?${params.toString()}`, {
-        method: 'GET',
-      })
+      const result = await serverFetch(
+        request,
+        `feature-flag/${flagId}/profiles?${params.toString()}`,
+        {
+          method: 'GET',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       const profilesData = result.data as { profiles: unknown[]; total: number }
       return data<ProjectViewActionData>(
-        { intent, success: true, data: { flagId, profiles: profilesData.profiles, total: profilesData.total } },
+        {
+          intent,
+          success: true,
+          data: {
+            flagId,
+            profiles: profilesData.profiles,
+            total: profilesData.total,
+          },
+        },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }
@@ -1039,15 +1318,25 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const skip = Number(formData.get('skip') || '0')
       const search = formData.get('search')?.toString() || ''
 
-      const params = new URLSearchParams({ take: String(take), skip: String(skip) })
+      const params = new URLSearchParams({
+        take: String(take),
+        skip: String(skip),
+      })
       if (search) params.append('search', search)
 
-      const result = await serverFetch(request, `experiment/project/${projectId}?${params.toString()}`, {
-        method: 'GET',
-      })
+      const result = await serverFetch(
+        request,
+        `experiment/project/${projectId}?${params.toString()}`,
+        {
+          method: 'GET',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1064,7 +1353,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1077,13 +1369,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const name = formData.get('name')?.toString() || ''
       const description = formData.get('description')?.toString() || ''
       const hypothesis = formData.get('hypothesis')?.toString() || ''
-      const exposureTrigger = formData.get('exposureTrigger')?.toString() || 'feature_flag'
+      const exposureTrigger =
+        formData.get('exposureTrigger')?.toString() || 'feature_flag'
       const customEventName = formData.get('customEventName')?.toString() || ''
-      const multipleVariantHandling = formData.get('multipleVariantHandling')?.toString() || 'exclude'
+      const multipleVariantHandling =
+        formData.get('multipleVariantHandling')?.toString() || 'exclude'
       const filterInternalUsers = formData.get('filterInternalUsers') === 'true'
-      const featureFlagMode = formData.get('featureFlagMode')?.toString() || 'create'
+      const featureFlagMode =
+        formData.get('featureFlagMode')?.toString() || 'create'
       const featureFlagKey = formData.get('featureFlagKey')?.toString() || ''
-      const existingFeatureFlagId = formData.get('existingFeatureFlagId')?.toString() || ''
+      const existingFeatureFlagId =
+        formData.get('existingFeatureFlagId')?.toString() || ''
       const goalId = formData.get('goalId')?.toString() || ''
       const variants = JSON.parse(formData.get('variants')?.toString() || '[]')
 
@@ -1096,11 +1392,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (hypothesis) body.hypothesis = hypothesis
       if (exposureTrigger) body.exposureTrigger = exposureTrigger
       if (customEventName) body.customEventName = customEventName
-      if (multipleVariantHandling) body.multipleVariantHandling = multipleVariantHandling
+      if (multipleVariantHandling)
+        body.multipleVariantHandling = multipleVariantHandling
       body.filterInternalUsers = filterInternalUsers
       if (featureFlagMode) body.featureFlagMode = featureFlagMode
       if (featureFlagKey) body.featureFlagKey = featureFlagKey
-      if (existingFeatureFlagId) body.existingFeatureFlagId = existingFeatureFlagId
+      if (existingFeatureFlagId)
+        body.existingFeatureFlagId = existingFeatureFlagId
       if (goalId) body.goalId = goalId
 
       const result = await serverFetch(request, 'experiment', {
@@ -1109,7 +1407,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1125,15 +1426,21 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const hypothesis = formData.get('hypothesis')?.toString()
       const exposureTrigger = formData.get('exposureTrigger')?.toString()
       const customEventName = formData.get('customEventName')?.toString()
-      const multipleVariantHandling = formData.get('multipleVariantHandling')?.toString()
+      const multipleVariantHandling = formData
+        .get('multipleVariantHandling')
+        ?.toString()
       const filterInternalUsers = formData.has('filterInternalUsers')
         ? formData.get('filterInternalUsers') === 'true'
         : undefined
       const featureFlagMode = formData.get('featureFlagMode')?.toString()
       const featureFlagKey = formData.get('featureFlagKey')?.toString()
-      const existingFeatureFlagId = formData.get('existingFeatureFlagId')?.toString()
+      const existingFeatureFlagId = formData
+        .get('existingFeatureFlagId')
+        ?.toString()
       const goalId = formData.get('goalId')?.toString()
-      const variants = formData.get('variants') ? JSON.parse(formData.get('variants')!.toString()) : undefined
+      const variants = formData.get('variants')
+        ? JSON.parse(formData.get('variants')!.toString())
+        : undefined
 
       const body: Record<string, unknown> = {}
       if (name !== undefined) body.name = name
@@ -1141,11 +1448,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (hypothesis !== undefined) body.hypothesis = hypothesis
       if (exposureTrigger !== undefined) body.exposureTrigger = exposureTrigger
       if (customEventName !== undefined) body.customEventName = customEventName
-      if (multipleVariantHandling !== undefined) body.multipleVariantHandling = multipleVariantHandling
-      if (filterInternalUsers !== undefined) body.filterInternalUsers = filterInternalUsers
+      if (multipleVariantHandling !== undefined)
+        body.multipleVariantHandling = multipleVariantHandling
+      if (filterInternalUsers !== undefined)
+        body.filterInternalUsers = filterInternalUsers
       if (featureFlagMode !== undefined) body.featureFlagMode = featureFlagMode
       if (featureFlagKey !== undefined) body.featureFlagKey = featureFlagKey
-      if (existingFeatureFlagId !== undefined) body.existingFeatureFlagId = existingFeatureFlagId
+      if (existingFeatureFlagId !== undefined)
+        body.existingFeatureFlagId = existingFeatureFlagId
       if (goalId !== undefined) body.goalId = goalId
       if (variants !== undefined) body.variants = variants
 
@@ -1155,7 +1465,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1172,7 +1485,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1184,12 +1500,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'start-experiment': {
       const experimentId = formData.get('experimentId')?.toString()
 
-      const result = await serverFetch(request, `experiment/${experimentId}/start`, {
-        method: 'POST',
-      })
+      const result = await serverFetch(
+        request,
+        `experiment/${experimentId}/start`,
+        {
+          method: 'POST',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1201,12 +1524,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'pause-experiment': {
       const experimentId = formData.get('experimentId')?.toString()
 
-      const result = await serverFetch(request, `experiment/${experimentId}/pause`, {
-        method: 'POST',
-      })
+      const result = await serverFetch(
+        request,
+        `experiment/${experimentId}/pause`,
+        {
+          method: 'POST',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1218,12 +1548,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'complete-experiment': {
       const experimentId = formData.get('experimentId')?.toString()
 
-      const result = await serverFetch(request, `experiment/${experimentId}/complete`, {
-        method: 'POST',
-      })
+      const result = await serverFetch(
+        request,
+        `experiment/${experimentId}/complete`,
+        {
+          method: 'POST',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1245,12 +1582,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
 
-      const result = await serverFetch(request, `experiment/${experimentId}/results?${params.toString()}`, {
-        method: 'GET',
-      })
+      const result = await serverFetch(
+        request,
+        `experiment/${experimentId}/results?${params.toString()}`,
+        {
+          method: 'GET',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1265,15 +1609,25 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const skip = Number(formData.get('skip') || '0')
       const search = formData.get('search')?.toString() || ''
 
-      const params = new URLSearchParams({ take: String(take), skip: String(skip) })
+      const params = new URLSearchParams({
+        take: String(take),
+        skip: String(skip),
+      })
       if (search) params.append('search', search)
 
-      const result = await serverFetch(request, `goal/project/${projectId}?${params.toString()}`, {
-        method: 'GET',
-      })
+      const result = await serverFetch(
+        request,
+        `goal/project/${projectId}?${params.toString()}`,
+        {
+          method: 'GET',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1290,7 +1644,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1311,12 +1668,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
 
-      const result = await serverFetch(request, `goal/${goalId}/stats?${params.toString()}`, {
-        method: 'GET',
-      })
+      const result = await serverFetch(
+        request,
+        `goal/${goalId}/stats?${params.toString()}`,
+        {
+          method: 'GET',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1338,12 +1702,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (toDate) params.append('to', toDate)
       if (tz) params.append('timezone', tz)
 
-      const result = await serverFetch(request, `goal/${goalId}/chart?${params.toString()}`, {
-        method: 'GET',
-      })
+      const result = await serverFetch(
+        request,
+        `goal/${goalId}/chart?${params.toString()}`,
+        {
+          method: 'GET',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1356,13 +1727,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'get-funnels': {
       const password = formData.get('password')?.toString() || ''
 
-      const result = await serverFetch(request, `project/funnels/${projectId}`, {
-        method: 'GET',
-        headers: password ? { 'x-password': password } : undefined,
-      })
+      const result = await serverFetch(
+        request,
+        `project/funnels/${projectId}`,
+        {
+          method: 'GET',
+          headers: password ? { 'x-password': password } : undefined,
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1386,13 +1764,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
       if (tz) params.append('timezone', tz)
       if (funnelId) params.append('funnelId', funnelId)
 
-      const result = await serverFetch(request, `log/funnel?${params.toString()}`, {
-        method: 'GET',
-        headers: password ? { 'x-password': password } : undefined,
-      })
+      const result = await serverFetch(
+        request,
+        `log/funnel?${params.toString()}`,
+        {
+          method: 'GET',
+          headers: password ? { 'x-password': password } : undefined,
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1406,12 +1791,19 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const take = Number(formData.get('take') || '25')
       const skip = Number(formData.get('skip') || '0')
 
-      const result = await serverFetch(request, `alert/project/${projectId}?take=${take}&skip=${skip}`, {
-        method: 'GET',
-      })
+      const result = await serverFetch(
+        request,
+        `alert/project/${projectId}?take=${take}&skip=${skip}`,
+        {
+          method: 'GET',
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1428,7 +1820,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1442,13 +1837,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const filterType = formData.get('type')?.toString() || ''
       const password = formData.get('password')?.toString() || ''
 
-      const result = await serverFetch(request, `log/filters?pid=${projectId}&type=${filterType}`, {
-        method: 'GET',
-        headers: password ? { 'x-password': password } : undefined,
-      })
+      const result = await serverFetch(
+        request,
+        `log/filters?pid=${projectId}&type=${filterType}`,
+        {
+          method: 'GET',
+          headers: password ? { 'x-password': password } : undefined,
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1461,13 +1863,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const filterType = formData.get('type')?.toString() || ''
       const password = formData.get('password')?.toString() || ''
 
-      const result = await serverFetch(request, `log/errors-filters?pid=${projectId}&type=${filterType}`, {
-        method: 'GET',
-        headers: password ? { 'x-password': password } : undefined,
-      })
+      const result = await serverFetch(
+        request,
+        `log/errors-filters?pid=${projectId}&type=${filterType}`,
+        {
+          method: 'GET',
+          headers: password ? { 'x-password': password } : undefined,
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1491,7 +1900,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1503,7 +1915,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
     // Error status update
     case 'update-error-status': {
       const eid = formData.get('eid')?.toString()
-      const eids = formData.get('eids') ? JSON.parse(formData.get('eids')!.toString()) : undefined
+      const eids = formData.get('eids')
+        ? JSON.parse(formData.get('eids')!.toString())
+        : undefined
       const status = formData.get('status')?.toString() || 'active'
 
       const result = await serverFetch(request, 'log/error-status', {
@@ -1512,7 +1926,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1531,7 +1948,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: result.status })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: result.status },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1543,13 +1963,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
     case 'check-password': {
       const password = formData.get('password')?.toString() || ''
 
-      const result = await serverFetch<boolean>(request, `project/password/${projectId}`, {
-        method: 'GET',
-        headers: { 'x-password': password },
-      })
+      const result = await serverFetch<boolean>(
+        request,
+        `project/password/${projectId}`,
+        {
+          method: 'GET',
+          headers: { 'x-password': password },
+        },
+      )
 
       if (result.error) {
-        return data<ProjectViewActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<ProjectViewActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<ProjectViewActionData>(
@@ -1559,7 +1986,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
 
     default:
-      return data<ProjectViewActionData>({ error: 'Unknown action' }, { status: 400 })
+      return data<ProjectViewActionData>(
+        { error: 'Unknown action' },
+        { status: 400 },
+      )
   }
 }
 

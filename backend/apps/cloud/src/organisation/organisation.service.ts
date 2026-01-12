@@ -108,7 +108,7 @@ export class OrganisationService {
   validateManageAccess(organisation: Organisation, userId: string) {
     const membership = _find(
       organisation.members,
-      member => member.user?.id === userId,
+      (member) => member.user?.id === userId,
     )
 
     if (!membership || membership.role === OrganisationRole.viewer) {

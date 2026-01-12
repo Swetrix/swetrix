@@ -17,10 +17,10 @@ export class Organisation {
   @Column('varchar', { length: 50 })
   name: string
 
-  @OneToMany(() => OrganisationMember, member => member.organisation)
+  @OneToMany(() => OrganisationMember, (member) => member.organisation)
   members: OrganisationMember[]
 
-  @OneToMany(() => Project, project => project.organisation)
+  @OneToMany(() => Project, (project) => project.organisation)
   projects: Project[]
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

@@ -1,4 +1,9 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs, redirect, data } from 'react-router'
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  redirect,
+  data,
+} from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
@@ -6,7 +11,10 @@ import { isSelfhosted } from '~/lib/constants'
 import { Metainfo } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import Billing from '~/pages/Billing'
-import { redirectIfNotAuthenticated, createHeadersWithCookies } from '~/utils/session.server'
+import {
+  redirectIfNotAuthenticated,
+  createHeadersWithCookies,
+} from '~/utils/session.server'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,
@@ -63,7 +71,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<BillingActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<BillingActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<BillingActionData>(
@@ -81,7 +92,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<BillingActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<BillingActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<BillingActionData>(
@@ -94,7 +108,10 @@ export async function action({ request }: ActionFunctionArgs) {
       const result = await serverFetch<Metainfo>(request, 'user/metainfo')
 
       if (result.error) {
-        return data<BillingActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<BillingActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<BillingActionData>(
@@ -104,7 +121,10 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     default:
-      return data<BillingActionData>({ error: 'Unknown action' }, { status: 400 })
+      return data<BillingActionData>(
+        { error: 'Unknown action' },
+        { status: 400 },
+      )
   }
 }
 

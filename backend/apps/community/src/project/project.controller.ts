@@ -187,17 +187,17 @@ export class ProjectController {
     // 3) Combine owned and shared projects, remove duplicates (prefer owned)
     const combinedProjectsMap: Record<string, Project> = {}
 
-    _map(ownedProjects, p => {
+    _map(ownedProjects, (p) => {
       combinedProjectsMap[p.id] = p
     })
 
-    _map(sharedProjects, p => {
+    _map(sharedProjects, (p) => {
       if (!combinedProjectsMap[p.id]) {
         combinedProjectsMap[p.id] = p
       }
     })
 
-    let combinedProjects = _map(combinedProjectsMap, p => p)
+    let combinedProjects = _map(combinedProjectsMap, (p) => p)
 
     // Get pinned project IDs to mark shared projects as pinned too
     const pinnedProjectIds = await getPinnedProjectsClickhouse(userId)
@@ -248,7 +248,7 @@ export class ProjectController {
       await this.projectService.getPIDsWhereErrorsDataExists(paginatedPids)
 
     const funnelsData = await Promise.allSettled(
-      pidsWithData.map(async pid => {
+      pidsWithData.map(async (pid) => {
         return {
           pid,
           data: await getFunnelsClickhouse(pid),
@@ -274,7 +274,7 @@ export class ProjectController {
       {},
     )
 
-    const results = _map(paginatedProjects, project => {
+    const results = _map(paginatedProjects, (project) => {
       const userShare = sharesByProjectId[project.id]
       const isOwner = userId && project.adminId === userId
       const role = isOwner

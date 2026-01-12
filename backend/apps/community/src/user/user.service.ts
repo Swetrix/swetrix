@@ -49,7 +49,7 @@ export class UserService {
         query: `SELECT * FROM user WHERE ${where}`,
         query_params: queryParams,
       })
-      .then(resultSet => resultSet.json<ClickhouseInputUser>())
+      .then((resultSet) => resultSet.json<ClickhouseInputUser>())
 
     return this.formatUser(data[0])
   }
@@ -156,7 +156,7 @@ export class UserService {
       .query({
         query: 'SELECT count() as total FROM user',
       })
-      .then(resultSet => resultSet.json<{ total: number }>())
+      .then((resultSet) => resultSet.json<{ total: number }>())
 
     const total = Array.isArray(data) && data.length > 0 ? data[0].total : 0
     return Number(total) || 0

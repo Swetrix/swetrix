@@ -31,8 +31,15 @@ const NoSessions = ({ filters }: NoSessionsProps) => {
         <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
           {t('project.noSessionsTitle')}
         </Text>
-        <Text as='p' size='sm' colour='secondary' className='mx-auto mt-2 max-w-md'>
-          {hasFilters ? t('project.noSessionsFiltersDesc') : t('project.noSessionsContent')}
+        <Text
+          as='p'
+          size='sm'
+          colour='secondary'
+          className='mx-auto mt-2 max-w-md'
+        >
+          {hasFilters
+            ? t('project.noSessionsFiltersDesc')
+            : t('project.noSessionsContent')}
         </Text>
       </div>
     </>

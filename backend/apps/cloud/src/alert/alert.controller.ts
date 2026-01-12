@@ -113,7 +113,7 @@ export class AlertController {
     )
 
     // @ts-expect-error
-    result.results = _map(result.results, alert => ({
+    result.results = _map(result.results, (alert) => ({
       ..._omit(alert, ['project']),
       pid: alert.project.id,
     }))
@@ -167,7 +167,7 @@ export class AlertController {
       'You are not allowed to add alerts to this project',
     )
 
-    const pids = _map(user.projects, userProject => userProject.id)
+    const pids = _map(user.projects, (userProject) => userProject.id)
     const alertsCount = await this.alertService.count({
       where: { project: { id: In(pids) } },
     })

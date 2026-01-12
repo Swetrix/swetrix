@@ -1,6 +1,12 @@
-import { isDevelopment, isSelfhosted, isBrowser, COOKIE_DOMAIN } from '~/lib/constants'
+import {
+  isDevelopment,
+  isSelfhosted,
+  isBrowser,
+  COOKIE_DOMAIN,
+} from '~/lib/constants'
 
-const COOKIE_SUFFIX = isDevelopment || isSelfhosted ? '' : `; domain=${COOKIE_DOMAIN}; secure`
+const COOKIE_SUFFIX =
+  isDevelopment || isSelfhosted ? '' : `; domain=${COOKIE_DOMAIN}; secure`
 
 export const getCookie = (key: string) => {
   if (!isBrowser) {
@@ -20,11 +26,21 @@ export const getCookie = (key: string) => {
   return null
 }
 
-const generateCookieString = (key: string, value: string | number | boolean, maxAge = 3600, sameSite = 'strict') => {
+const generateCookieString = (
+  key: string,
+  value: string | number | boolean,
+  maxAge = 3600,
+  sameSite = 'strict',
+) => {
   return `${key}=${value}; max-age=${maxAge}; path=/; SameSite=${sameSite}${COOKIE_SUFFIX}`
 }
 
-export const setCookie = (key: string, value: string | number | boolean, maxAge = 3600, sameSite = 'strict') => {
+export const setCookie = (
+  key: string,
+  value: string | number | boolean,
+  maxAge = 3600,
+  sameSite = 'strict',
+) => {
   if (!isBrowser) {
     return null
   }

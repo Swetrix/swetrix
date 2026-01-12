@@ -1,4 +1,7 @@
-import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import {
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+} from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import utc from 'dayjs/plugin/utc'
@@ -11,7 +14,12 @@ import { toast } from 'sonner'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import FAQ from '~/components/marketing/FAQ'
 import BillingPricing from '~/components/pricing/BillingPricing'
-import { PADDLE_JS_URL, PADDLE_VENDOR_ID, CONTACT_EMAIL, paddleLanguageMapping } from '~/lib/constants'
+import {
+  PADDLE_JS_URL,
+  PADDLE_VENDOR_ID,
+  CONTACT_EMAIL,
+  paddleLanguageMapping,
+} from '~/lib/constants'
 import { DEFAULT_METAINFO } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import { useAuth } from '~/providers/AuthProvider'
@@ -55,7 +63,10 @@ const Billing = () => {
     return loaderData?.metainfo ?? DEFAULT_METAINFO
   }, [loaderData?.metainfo, metainfoFetcher.data])
 
-  const usageInfo = useMemo(() => loaderData?.usageInfo ?? DEFAULT_USAGE_INFO, [loaderData?.usageInfo])
+  const usageInfo = useMemo(
+    () => loaderData?.usageInfo ?? DEFAULT_USAGE_INFO,
+    [loaderData?.usageInfo],
+  )
   const isLoading = !loaderData
 
   const {
@@ -78,7 +89,9 @@ const Billing = () => {
   const isTrial = planCode === 'trial'
   const isNoSub = planCode === 'none'
 
-  const totalUsage = maxEventsCount ? _round((usageInfo.total / maxEventsCount) * 100, 2) : 0
+  const totalUsage = maxEventsCount
+    ? _round((usageInfo.total / maxEventsCount) * 100, 2)
+    : 0
   const remainingUsage = _round(100 - totalUsage, 2)
 
   // Paddle (payment processor) set-up
@@ -197,30 +210,44 @@ const Billing = () => {
       <DashboardLockedBanner />
 
       <div className='mx-auto px-4 pt-12 whitespace-pre-line sm:px-6 md:w-11/12'>
-        <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>{t('billing.title')}</h1>
+        <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>
+          {t('billing.title')}
+        </h1>
       </div>
 
       <div className='mx-auto mt-5 grid gap-x-10 gap-y-8 px-4 pb-4 whitespace-pre-line sm:px-6 md:w-11/12 lg:grid-cols-3'>
         <div className='lg:col-span-2'>
-          <h2 id='billing' className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'>
+          <h2
+            id='billing'
+            className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'
+          >
             {t('billing.subscription')}
           </h2>
           <p className='mt-1 text-base text-gray-900 dark:text-gray-50'>
             {isSubscriber ? t('billing.selectPlan') : t('billing.changePlan')}
           </p>
-          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('billing.membersNotification')}</p>
+          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+            {t('billing.membersNotification')}
+          </p>
           {isSubscriber && nextBillDate ? (
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
+                  <InformationCircleIcon
+                    aria-hidden='true'
+                    className='h-5 w-5 text-blue-400 dark:text-blue-100'
+                  />
                 </div>
                 <p className='ml-3 text-sm font-medium text-blue-700 dark:text-blue-100'>
                   {t('billing.nextBillDateIs', {
                     date:
                       language === 'en'
-                        ? dayjs(nextBillDate).locale(language).format('MMMM D, YYYY')
-                        : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY'),
+                        ? dayjs(nextBillDate)
+                            .locale(language)
+                            .format('MMMM D, YYYY')
+                        : dayjs(nextBillDate)
+                            .locale(language)
+                            .format('D MMMM, YYYY'),
                   })}
                 </p>
               </div>
@@ -230,7 +257,10 @@ const Billing = () => {
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
+                  <InformationCircleIcon
+                    aria-hidden='true'
+                    className='h-5 w-5 text-blue-400 dark:text-blue-100'
+                  />
                 </div>
                 <div className='ml-3'>
                   <h3 className='text-sm font-medium text-blue-700 dark:text-blue-100'>
@@ -240,8 +270,12 @@ const Billing = () => {
                     {t('billing.subscriptionCancelledDescription', {
                       date:
                         language === 'en'
-                          ? dayjs(cancellationEffectiveDate).locale(language).format('MMMM D, YYYY')
-                          : dayjs(cancellationEffectiveDate).locale(language).format('D MMMM, YYYY'),
+                          ? dayjs(cancellationEffectiveDate)
+                              .locale(language)
+                              .format('MMMM D, YYYY')
+                          : dayjs(cancellationEffectiveDate)
+                              .locale(language)
+                              .format('D MMMM, YYYY'),
                     })}
                   </p>
                 </div>
@@ -252,11 +286,18 @@ const Billing = () => {
             <div className='mt-5 max-w-prose rounded-md bg-amber-400/10 p-4 dark:bg-amber-600/20'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-amber-400 dark:text-amber-50' />
+                  <InformationCircleIcon
+                    aria-hidden='true'
+                    className='h-5 w-5 text-amber-400 dark:text-amber-50'
+                  />
                 </div>
                 <div className='ml-3'>
-                  <h3 className='text-sm font-medium text-amber-700 dark:text-amber-50'>{trialEndsOnMessage}</h3>
-                  <p className='mt-1 text-sm text-amber-700 dark:text-amber-50'>{t('billing.trialDescription')}</p>
+                  <h3 className='text-sm font-medium text-amber-700 dark:text-amber-50'>
+                    {trialEndsOnMessage}
+                  </h3>
+                  <p className='mt-1 text-sm text-amber-700 dark:text-amber-50'>
+                    {t('billing.trialDescription')}
+                  </p>
                 </div>
               </div>
             </div>
@@ -265,7 +306,10 @@ const Billing = () => {
             <div className='mt-5 max-w-prose rounded-md bg-red-50 p-4 dark:bg-red-600/20'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <ExclamationTriangleIcon aria-hidden='true' className='h-5 w-5 text-red-400 dark:text-red-100' />
+                  <ExclamationTriangleIcon
+                    aria-hidden='true'
+                    className='h-5 w-5 text-red-400 dark:text-red-100'
+                  />
                 </div>
                 <div className='ml-3'>
                   <h3 className='text-sm font-medium text-red-800 dark:text-red-100'>
@@ -286,12 +330,23 @@ const Billing = () => {
               <BillingPricing lastEvent={lastEvent} metainfo={metainfo} />
               <div className='mt-2 space-y-2'>
                 {subUpdateURL && !cancellationEffectiveDate ? (
-                  <Button className='mr-2' onClick={onUpdatePaymentDetails} type='button' primary large>
+                  <Button
+                    className='mr-2'
+                    onClick={onUpdatePaymentDetails}
+                    type='button'
+                    primary
+                    large
+                  >
                     {t('billing.update')}
                   </Button>
                 ) : null}
                 {subCancelURL && !cancellationEffectiveDate ? (
-                  <Button onClick={() => setIsCancelSubModalOpened(true)} type='button' semiDanger large>
+                  <Button
+                    onClick={() => setIsCancelSubModalOpened(true)}
+                    type='button'
+                    semiDanger
+                    large
+                  >
                     {t('billing.cancelSub')}
                   </Button>
                 ) : null}
@@ -301,10 +356,15 @@ const Billing = () => {
         </div>
 
         <div className='lg:col-span-1'>
-          <h2 id='usage' className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'>
+          <h2
+            id='usage'
+            className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'
+          >
             {t('billing.planUsage')}
           </h2>
-          <p className='mt-1 max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('billing.planUsageDesc')}</p>
+          <p className='mt-1 max-w-prose text-base text-gray-900 dark:text-gray-50'>
+            {t('billing.planUsageDesc')}
+          </p>
 
           {isLoading || authLoading ? (
             <Loader />
@@ -322,8 +382,12 @@ const Billing = () => {
                     <div className='ml-3'>
                       <p className='text-sm text-amber-800 dark:text-amber-100'>
                         {totalUsage >= 90
-                          ? t('billing.usageWarningCritical', { percentage: totalUsage })
-                          : t('billing.usageWarningHigh', { percentage: totalUsage })}
+                          ? t('billing.usageWarningCritical', {
+                              percentage: totalUsage,
+                            })
+                          : t('billing.usageWarningHigh', {
+                              percentage: totalUsage,
+                            })}
                       </p>
                     </div>
                   </div>
@@ -399,22 +463,34 @@ const Billing = () => {
                 className='w-full'
                 progress={[
                   {
-                    value: usageInfo.traffic === 0 ? 0 : (usageInfo.traffic / maxEventsCount) * 100,
+                    value:
+                      usageInfo.traffic === 0
+                        ? 0
+                        : (usageInfo.traffic / maxEventsCount) * 100,
                     lightColour: '#2563eb',
                     darkColour: '#1d4ed8',
                   },
                   {
-                    value: usageInfo.customEvents === 0 ? 0 : (usageInfo.customEvents / maxEventsCount) * 100,
+                    value:
+                      usageInfo.customEvents === 0
+                        ? 0
+                        : (usageInfo.customEvents / maxEventsCount) * 100,
                     lightColour: '#c026d3',
                     darkColour: '#a21caf',
                   },
                   {
-                    value: usageInfo.captcha === 0 ? 0 : (usageInfo.captcha / maxEventsCount) * 100,
+                    value:
+                      usageInfo.captcha === 0
+                        ? 0
+                        : (usageInfo.captcha / maxEventsCount) * 100,
                     lightColour: '#65a30d',
                     darkColour: '#4d7c0f',
                   },
                   {
-                    value: usageInfo.errors === 0 ? 0 : (usageInfo.errors / maxEventsCount) * 100,
+                    value:
+                      usageInfo.errors === 0
+                        ? 0
+                        : (usageInfo.errors / maxEventsCount) * 100,
                     lightColour: '#dc2626',
                     darkColour: '#b91c1c',
                   },
@@ -426,14 +502,20 @@ const Billing = () => {
                   {t('billing.xPercentUsed', { percentage: totalUsage })}
                 </p>
                 <p className='text-sm text-gray-600 dark:text-gray-400'>
-                  {t('billing.xPercentRemaining', { percentage: remainingUsage })}
+                  {t('billing.xPercentRemaining', {
+                    percentage: remainingUsage,
+                  })}
                 </p>
               </div>
 
               <p className='mt-4 text-sm text-gray-600 dark:text-gray-400'>
                 {t('billing.resetDate', {
                   days: Math.ceil(
-                    (new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).getTime() -
+                    (new Date(
+                      new Date().getFullYear(),
+                      new Date().getMonth() + 1,
+                      1,
+                    ).getTime() -
                       new Date().getTime()) /
                       (1000 * 60 * 60 * 24),
                   ),

@@ -30,7 +30,13 @@ export const CaptchaChart = ({
     if (!chart) {
       return {} as ChartOptions
     }
-    return getSettingsCaptcha(chart, timeBucket, timeFormat, rotateXAxis, chartType)
+    return getSettingsCaptcha(
+      chart,
+      timeBucket,
+      timeFormat,
+      rotateXAxis,
+      chartType,
+    )
   }, [chart, timeBucket, timeFormat, rotateXAxis, chartType])
 
   const deps = useMemo(

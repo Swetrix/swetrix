@@ -25,7 +25,7 @@ export class PatchStatusDto {
     example: 'c138c2b1826d9fec65d230e471ab2c25',
     description: 'Error id',
   })
-  @ValidateIf(o => !o.eids || o.eid)
+  @ValidateIf((o) => !o.eids || o.eid)
   @IsNotEmpty()
   @IsString()
   eid: string
@@ -37,7 +37,7 @@ export class PatchStatusDto {
     ],
     description: 'Error id list',
   })
-  @ValidateIf(o => o.eids || !o.eid)
+  @ValidateIf((o) => o.eids || !o.eid)
   @IsNotEmpty()
   @IsArray()
   @IsString({ each: true })

@@ -6,7 +6,13 @@ import _isEmpty from 'lodash/isEmpty'
 import { FilterIcon } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams, useFetcher, useLoaderData, useRevalidator } from 'react-router'
+import {
+  Link,
+  useSearchParams,
+  useFetcher,
+  useLoaderData,
+  useRevalidator,
+} from 'react-router'
 import { toast } from 'sonner'
 
 import type { FunnelDataResponse } from '~/api/api.server'
@@ -16,10 +22,19 @@ import NewFunnel from '~/modals/NewFunnel'
 import { FunnelChart } from '~/pages/Project/tabs/Funnels/FunnelChart'
 import FunnelsList from '~/pages/Project/tabs/Funnels/FunnelsList'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
+import {
+  useViewProjectContext,
+  useRefreshTriggers,
+} from '~/pages/Project/View/ViewProject'
 import { useAuth } from '~/providers/AuthProvider'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
-import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
+import {
+  useCurrentProject,
+  useProjectPassword,
+} from '~/providers/CurrentProjectProvider'
+import type {
+  ProjectLoaderData,
+  ProjectViewActionData,
+} from '~/routes/projects.$id'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
@@ -30,7 +45,11 @@ interface DeferredFunnelData {
   funnelData: FunnelDataResponse | null
 }
 
-function FunnelDataResolver({ children }: { children: (data: DeferredFunnelData) => React.ReactNode }) {
+function FunnelDataResolver({
+  children,
+}: {
+  children: (data: DeferredFunnelData) => React.ReactNode
+}) {
   const { funnelData: funnelDataPromise } = useLoaderData<ProjectLoaderData>()
   const funnelData = funnelDataPromise ? use(funnelDataPromise) : null
   return <>{children({ funnelData })}</>
@@ -39,7 +58,9 @@ function FunnelDataResolver({ children }: { children: (data: DeferredFunnelData)
 function FunnelsViewWrapper() {
   return (
     <Suspense fallback={<Loader />}>
-      <FunnelDataResolver>{(deferredData) => <FunnelsViewInner deferredData={deferredData} />}</FunnelDataResolver>
+      <FunnelDataResolver>
+        {(deferredData) => <FunnelsViewInner deferredData={deferredData} />}
+      </FunnelDataResolver>
     </Suspense>
   )
 }
@@ -72,7 +93,9 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
 
   // Funnels state
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
-  const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(undefined)
+  const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(
+    undefined,
+  )
   const [dataLoading, setDataLoading] = useState(false)
 
   // Initialize funnelAnalytics from loader data
@@ -166,7 +189,17 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
     } else if (error) {
       toast.error(error)
     }
-  }, [fetcher.state, fetcher.data, t, id, projectPassword, fetcher, mergeProject, activeFunnel?.id, revalidator])
+  }, [
+    fetcher.state,
+    fetcher.data,
+    t,
+    id,
+    projectPassword,
+    fetcher,
+    mergeProject,
+    activeFunnel?.id,
+    revalidator,
+  ])
 
   const onFunnelCreate = (name: string, steps: string[]) => {
     if (funnelActionLoading) return
@@ -189,7 +222,10 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   const onFunnelDelete = (funnelId: string) => {
     if (funnelActionLoading) return
 
-    fetcher.submit({ intent: 'delete-funnel', funnelId }, { method: 'POST', action: `/projects/${id}` })
+    fetcher.submit(
+      { intent: 'delete-funnel', funnelId },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
   // Sync funnelAnalytics when loader data changes
@@ -211,7 +247,9 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
     const stepsCount = funnelAnalytics.funnel.length
     const startVisitors = funnelAnalytics.funnel[0]?.events || 0
     const endVisitors = funnelAnalytics.funnel[stepsCount - 1]?.events || 0
-    const conversionRate = Number(((endVisitors / Math.max(startVisitors, 1)) * 100).toFixed(2))
+    const conversionRate = Number(
+      ((endVisitors / Math.max(startVisitors, 1)) * 100).toFixed(2),
+    )
 
     return {
       stepsCount,
@@ -277,7 +315,12 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
           hideTimeBucket
           timeBucketSelectorItems={timeBucketSelectorItems}
           leftContent={
-            <Text as='h2' size='xl' weight='bold' className='wrap-break-word break-all'>
+            <Text
+              as='h2'
+              size='xl'
+              weight='bold'
+              className='wrap-break-word break-all'
+            >
               {activeFunnel?.name}
             </Text>
           }
@@ -294,14 +337,20 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
           {funnelSummary ? (
             <>
               <p className='font-medium text-gray-900 lg:text-left dark:text-gray-50'>
-                {t('project.funnelSummary.xStepFunnel', { x: funnelSummary.stepsCount })}
+                {t('project.funnelSummary.xStepFunnel', {
+                  x: funnelSummary.stepsCount,
+                })}
                 <span className='mx-2 text-gray-400'>•</span>
-                {t('project.funnelSummary.conversionRateShort', { x: funnelSummary.conversionRate })}
+                {t('project.funnelSummary.conversionRateShort', {
+                  x: funnelSummary.conversionRate,
+                })}
               </p>
               <p className='text-center text-gray-900 lg:text-left dark:text-gray-50'>
-                {t('project.funnelSummary.startShort')}: {nLocaleFormatter(funnelSummary.startVisitors)}
+                {t('project.funnelSummary.startShort')}:{' '}
+                {nLocaleFormatter(funnelSummary.startVisitors)}
                 <span className='mx-1'>→</span>
-                {t('project.funnelSummary.endShort')}: {nLocaleFormatter(funnelSummary.endVisitors)}
+                {t('project.funnelSummary.endShort')}:{' '}
+                {nLocaleFormatter(funnelSummary.endVisitors)}
               </p>
             </>
           ) : null}
@@ -385,7 +434,9 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
           <FilterIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
           <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
         </div>
-        <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.funnelsDesc')}</p>
+        <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
+          {t('dashboard.funnelsDesc')}
+        </p>
         {isAuthenticated ? (
           <button
             type='button'

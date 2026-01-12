@@ -101,7 +101,7 @@ export class FeatureFlagController {
       search,
     )
 
-    result.results = _map(result.results, flag => ({
+    result.results = _map(result.results, (flag) => ({
       ...flag,
       pid: flag.projectId,
     })) as any
@@ -284,7 +284,7 @@ export class FeatureFlagController {
       flags,
       evaluatedFlags,
       profileId,
-    ).catch(err => {
+    ).catch((err) => {
       this.logger.error({ err }, 'Failed to track flag evaluations')
     })
 
@@ -301,7 +301,7 @@ export class FeatureFlagController {
 
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
 
-    const values = flags.map(flag => ({
+    const values = flags.map((flag) => ({
       pid,
       flagId: flag.id,
       flagKey: flag.key,
@@ -474,7 +474,7 @@ export class FeatureFlagController {
     try {
       const { data } = await clickhouse
         .query({ query: statsQuery, query_params: queryParams })
-        .then(resultSet =>
+        .then((resultSet) =>
           resultSet.json<{
             evaluations: number
             profileCount: number
@@ -617,7 +617,7 @@ export class FeatureFlagController {
       const [profilesResult, countResult] = await Promise.all([
         clickhouse
           .query({ query: profilesQuery, query_params: queryParams })
-          .then(resultSet =>
+          .then((resultSet) =>
             resultSet.json<{
               profileId: string
               lastEvaluated: string
@@ -627,10 +627,10 @@ export class FeatureFlagController {
           ),
         clickhouse
           .query({ query: countQuery, query_params: queryParams })
-          .then(resultSet => resultSet.json<{ total: number }>()),
+          .then((resultSet) => resultSet.json<{ total: number }>()),
       ])
 
-      const profiles = profilesResult.data.map(row => ({
+      const profiles = profilesResult.data.map((row) => ({
         profileId: row.profileId,
         isIdentified: row.profileId.startsWith('usr_'),
         lastResult: row.lastResult === 1,

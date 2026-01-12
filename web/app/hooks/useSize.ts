@@ -2,7 +2,10 @@ import _get from 'lodash/get'
 import type { MutableRefObject } from 'react'
 import { useEffect, useRef, useState } from 'react'
 
-const useSize = (): [MutableRefObject<null>, { width: number; height: number }] => {
+const useSize = (): [
+  MutableRefObject<null>,
+  { width: number; height: number },
+] => {
   const [size, setSize] = useState({
     width: 0,
     height: 0,

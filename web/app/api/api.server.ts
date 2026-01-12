@@ -58,7 +58,9 @@ async function fetchWithTimeout(
 ): Promise<Response> {
   const controller = new AbortController()
   const id = setTimeout(() => controller.abort(), timeoutMs)
-  return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(id))
+  return fetch(input, { ...init, signal: controller.signal }).finally(() =>
+    clearTimeout(id),
+  )
 }
 
 interface ServerFetchOptions {
@@ -82,7 +84,12 @@ export async function serverFetch<T = unknown>(
   endpoint: string,
   options: ServerFetchOptions = {},
 ): Promise<ServerFetchResult<T>> {
-  const { method = 'GET', body, headers: customHeaders = {}, skipAuth = false } = options
+  const {
+    method = 'GET',
+    body,
+    headers: customHeaders = {},
+    skipAuth = false,
+  } = options
 
   const apiUrl = getApiUrl()
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
@@ -121,7 +128,8 @@ export async function serverFetch<T = unknown>(
       const refreshResult = await tryRefreshToken(request)
 
       if (refreshResult.success && refreshResult.tokens) {
-        fetchHeaders['Authorization'] = `Bearer ${refreshResult.tokens.accessToken}`
+        fetchHeaders['Authorization'] =
+          `Bearer ${refreshResult.tokens.accessToken}`
 
         const retryResponse = await fetchWithTimeout(url, {
           method,
@@ -209,7 +217,12 @@ export async function streamingServerFetch(
   endpoint: string,
   options: ServerFetchOptions = {},
 ): Promise<Response> {
-  const { method = 'GET', body, headers: customHeaders = {}, skipAuth = false } = options
+  const {
+    method = 'GET',
+    body,
+    headers: customHeaders = {},
+    skipAuth = false,
+  } = options
 
   const apiUrl = getApiUrl()
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
@@ -248,7 +261,8 @@ export async function streamingServerFetch(
     const refreshResult = await tryRefreshToken(request)
 
     if (refreshResult.success && refreshResult.tokens) {
-      fetchHeaders['Authorization'] = `Bearer ${refreshResult.tokens.accessToken}`
+      fetchHeaders['Authorization'] =
+        `Bearer ${refreshResult.tokens.accessToken}`
 
       const retryResponse = await fetch(url, {
         method,
@@ -317,7 +331,9 @@ async function tryRefreshToken(
   }
 }
 
-async function parseErrorResponse(response: Response): Promise<string | string[]> {
+async function parseErrorResponse(
+  response: Response,
+): Promise<string | string[]> {
   try {
     const contentType = response.headers.get('content-type')
     if (!contentType?.includes('application/json')) {
@@ -509,8 +525,12 @@ interface BlogPostContent {
   }
 }
 
-export async function getBlogPosts(request: Request): Promise<BlogPost[] | null> {
-  const result = await serverFetch<BlogPost[]>(request, 'v1/blog', { skipAuth: true })
+export async function getBlogPosts(
+  request: Request,
+): Promise<BlogPost[] | null> {
+  const result = await serverFetch<BlogPost[]>(request, 'v1/blog', {
+    skipAuth: true,
+  })
 
   if (result.error || !result.data) {
     return null
@@ -519,8 +539,15 @@ export async function getBlogPosts(request: Request): Promise<BlogPost[] | null>
   return result.data
 }
 
-export async function getBlogPost(request: Request, slug: string): Promise<BlogPostContent | null> {
-  const result = await serverFetch<BlogPostContent>(request, `v1/blog/${slug}`, { skipAuth: true })
+export async function getBlogPost(
+  request: Request,
+  slug: string,
+): Promise<BlogPostContent | null> {
+  const result = await serverFetch<BlogPostContent>(
+    request,
+    `v1/blog/${slug}`,
+    { skipAuth: true },
+  )
 
   if (result.error || !result.data) {
     return null
@@ -534,7 +561,11 @@ export async function getBlogPostWithCategory(
   category: string,
   slug: string,
 ): Promise<BlogPostContent | null> {
-  const result = await serverFetch<BlogPostContent>(request, `v1/blog/${category}/${slug}`, { skipAuth: true })
+  const result = await serverFetch<BlogPostContent>(
+    request,
+    `v1/blog/${category}/${slug}`,
+    { skipAuth: true },
+  )
 
   if (result.error || !result.data) {
     return null
@@ -552,7 +583,9 @@ export interface AuthMeResponse {
   totalMonthlyEvents: number
 }
 
-export async function authMeServer(request: Request): Promise<ServerFetchResult<AuthMeResponse>> {
+export async function authMeServer(
+  request: Request,
+): Promise<ServerFetchResult<AuthMeResponse>> {
   return serverFetch<AuthMeResponse>(request, 'user/me')
 }
 
@@ -566,8 +599,12 @@ interface GeneralStats {
   events: number
 }
 
-export async function getGeneralStats(request: Request): Promise<GeneralStats | null> {
-  const result = await serverFetch<GeneralStats>(request, 'log/generalStats', { skipAuth: true })
+export async function getGeneralStats(
+  request: Request,
+): Promise<GeneralStats | null> {
+  const result = await serverFetch<GeneralStats>(request, 'log/generalStats', {
+    skipAuth: true,
+  })
 
   if (result.error || !result.data) {
     return null
@@ -599,7 +636,11 @@ export interface TrafficLogResponse {
   properties: Record<string, number>
   appliedFilters?: AnalyticsFilter[]
   timeBucket?: string[]
-  meta?: { key: string; current: { sum: number; avg: number }; previous: { sum: number; avg: number } }[]
+  meta?: {
+    key: string
+    current: { sum: number; avg: number }
+    previous: { sum: number; avg: number }
+  }[]
 }
 
 interface OverallPeriodStats {
@@ -657,7 +698,11 @@ export async function getProjectDataServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<TrafficLogResponse>(request, `log?${queryParams.toString()}`, { headers })
+  return serverFetch<TrafficLogResponse>(
+    request,
+    `log?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 export async function getOverallStatsServer(
@@ -672,7 +717,10 @@ export async function getOverallStatsServer(
   queryParams.append('timeBucket', params.timeBucket)
   queryParams.append('period', params.period)
   queryParams.append('filters', serializeFiltersForUrl(params.filters))
-  queryParams.append('includeChart', params.includeChart !== false ? 'true' : 'false')
+  queryParams.append(
+    'includeChart',
+    params.includeChart !== false ? 'true' : 'false',
+  )
   if (params.from) queryParams.append('from', params.from)
   if (params.to) queryParams.append('to', params.to)
   if (params.timezone) queryParams.append('timezone', params.timezone)
@@ -682,7 +730,11 @@ export async function getOverallStatsServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<Record<string, OverallObject>>(request, `log/birdseye?${queryParams.toString()}`, { headers })
+  return serverFetch<Record<string, OverallObject>>(
+    request,
+    `log/birdseye?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 interface CustomEventsChartResponse {
@@ -712,7 +764,11 @@ export async function getCustomEventsDataServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<CustomEventsChartResponse>(request, `log/customEvents?${queryParams.toString()}`, { headers })
+  return serverFetch<CustomEventsChartResponse>(
+    request,
+    `log/customEvents?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 export interface PerformanceDataResponse {
@@ -752,7 +808,11 @@ export async function getPerfDataServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<PerformanceDataResponse>(request, `log/performance?${queryParams.toString()}`, { headers })
+  return serverFetch<PerformanceDataResponse>(
+    request,
+    `log/performance?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 export interface PerformanceOverallObject {
@@ -838,7 +898,11 @@ export async function getSessionsServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<SessionsResponse>(request, `log/sessions?${queryParams.toString()}`, { headers })
+  return serverFetch<SessionsResponse>(
+    request,
+    `log/sessions?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 interface PageflowItem {
@@ -894,7 +958,11 @@ export async function getSessionServer(
     headers['x-password'] = password
   }
 
-  return serverFetch<SessionDetailsResponse>(request, `log/session?${queryParams.toString()}`, { headers })
+  return serverFetch<SessionDetailsResponse>(
+    request,
+    `log/session?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 interface SwetrixError {
@@ -916,7 +984,11 @@ export interface ErrorsResponse {
 export async function getErrorsServer(
   request: Request,
   pid: string,
-  params: AnalyticsParams & { take?: number; skip?: number; options?: Record<string, unknown> },
+  params: AnalyticsParams & {
+    take?: number
+    skip?: number
+    options?: Record<string, unknown>
+  },
 ): Promise<ServerFetchResult<ErrorsResponse>> {
   const queryParams = new URLSearchParams()
   queryParams.append('pid', pid)
@@ -935,7 +1007,11 @@ export async function getErrorsServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<ErrorsResponse>(request, `log/errors?${queryParams.toString()}`, { headers })
+  return serverFetch<ErrorsResponse>(
+    request,
+    `log/errors?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 export interface ErrorDetailsResponse {
@@ -986,7 +1062,11 @@ export async function getErrorServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<ErrorDetailsResponse>(request, `log/error?${queryParams.toString()}`, { headers })
+  return serverFetch<ErrorDetailsResponse>(
+    request,
+    `log/error?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 export interface ErrorOverviewResponse {
@@ -1025,7 +1105,11 @@ export async function getErrorOverviewServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<ErrorOverviewResponse>(request, `log/error-overview?${queryParams.toString()}`, { headers })
+  return serverFetch<ErrorOverviewResponse>(
+    request,
+    `log/error-overview?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 // ============================================================================
@@ -1071,7 +1155,10 @@ export async function getProjectFeatureFlagsServer(
     params.append('search', search.trim())
   }
 
-  return serverFetch<FeatureFlagsResponse>(request, `feature-flag/project/${projectId}?${params.toString()}`)
+  return serverFetch<FeatureFlagsResponse>(
+    request,
+    `feature-flag/project/${projectId}?${params.toString()}`,
+  )
 }
 
 export interface FeatureFlagStats {
@@ -1095,7 +1182,10 @@ export async function getFeatureFlagStatsServer(
   if (to) params.append('to', to)
   if (timezone) params.append('timezone', timezone)
 
-  return serverFetch<FeatureFlagStats>(request, `feature-flag/${flagId}/stats?${params.toString()}`)
+  return serverFetch<FeatureFlagStats>(
+    request,
+    `feature-flag/${flagId}/stats?${params.toString()}`,
+  )
 }
 
 export interface FeatureFlagProfile {
@@ -1130,9 +1220,13 @@ export async function getFeatureFlagProfilesServer(
   if (from) params.append('from', from)
   if (to) params.append('to', to)
   if (timezone) params.append('timezone', timezone)
-  if (resultFilter && resultFilter !== 'all') params.append('result', resultFilter)
+  if (resultFilter && resultFilter !== 'all')
+    params.append('result', resultFilter)
 
-  return serverFetch<FeatureFlagProfilesResponse>(request, `feature-flag/${flagId}/profiles?${params.toString()}`)
+  return serverFetch<FeatureFlagProfilesResponse>(
+    request,
+    `feature-flag/${flagId}/profiles?${params.toString()}`,
+  )
 }
 
 // ============================================================================
@@ -1172,7 +1266,10 @@ export async function getProjectGoalsServer(
     params.append('search', search.trim())
   }
 
-  return serverFetch<GoalsResponse>(request, `goal/project/${projectId}?${params.toString()}`)
+  return serverFetch<GoalsResponse>(
+    request,
+    `goal/project/${projectId}?${params.toString()}`,
+  )
 }
 
 export interface GoalStats {
@@ -1196,7 +1293,10 @@ export async function getGoalStatsServer(
   if (to) params.append('to', to)
   if (timezone) params.append('timezone', timezone)
 
-  return serverFetch<GoalStats>(request, `goal/${goalId}/stats?${params.toString()}`)
+  return serverFetch<GoalStats>(
+    request,
+    `goal/${goalId}/stats?${params.toString()}`,
+  )
 }
 
 export interface GoalChartData {
@@ -1219,7 +1319,10 @@ export async function getGoalChartServer(
   if (to) params.append('to', to)
   if (timezone) params.append('timezone', timezone)
 
-  return serverFetch<{ chart: GoalChartData }>(request, `goal/${goalId}/chart?${params.toString()}`)
+  return serverFetch<{ chart: GoalChartData }>(
+    request,
+    `goal/${goalId}/chart?${params.toString()}`,
+  )
 }
 
 // ============================================================================
@@ -1242,7 +1345,10 @@ export async function getProjectAlertsServer(
     skip: String(skip),
   })
 
-  return serverFetch<AlertsResponse>(request, `alert/project/${projectId}?${params.toString()}`)
+  return serverFetch<AlertsResponse>(
+    request,
+    `alert/project/${projectId}?${params.toString()}`,
+  )
 }
 
 // ============================================================================
@@ -1285,7 +1391,11 @@ export async function getFunnelDataServer(
     headers['x-password'] = password
   }
 
-  return serverFetch<FunnelDataResponse>(request, `log/funnel?${queryParams.toString()}`, { headers })
+  return serverFetch<FunnelDataResponse>(
+    request,
+    `log/funnel?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 // ============================================================================
@@ -1331,7 +1441,11 @@ export async function getCaptchaDataServer(
     headers['x-password'] = password
   }
 
-  return serverFetch<CaptchaDataResponse>(request, `log/captcha?${queryParams.toString()}`, { headers })
+  return serverFetch<CaptchaDataResponse>(
+    request,
+    `log/captcha?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 // ============================================================================
@@ -1425,10 +1539,16 @@ export async function getExperimentResultsServer(
   if (to) params.append('to', to)
   if (timezone) params.append('timezone', timezone)
 
-  return serverFetch<ExperimentResults>(request, `experiment/${experimentId}/results?${params.toString()}`)
+  return serverFetch<ExperimentResults>(
+    request,
+    `experiment/${experimentId}/results?${params.toString()}`,
+  )
 }
 
-export async function getGoalServer(request: Request, goalId: string): Promise<ServerFetchResult<Goal>> {
+export async function getGoalServer(
+  request: Request,
+  goalId: string,
+): Promise<ServerFetchResult<Goal>> {
   return serverFetch<Goal>(request, `goal/${goalId}`)
 }
 
@@ -1484,7 +1604,11 @@ export async function getProfilesServer(
     headers['x-password'] = password
   }
 
-  return serverFetch<ProfilesResponse>(request, `log/profiles?${params.toString()}`, { headers })
+  return serverFetch<ProfilesResponse>(
+    request,
+    `log/profiles?${params.toString()}`,
+    { headers },
+  )
 }
 
 interface ProfileDetails {
@@ -1539,7 +1663,11 @@ export async function getProfileServer(
     headers['x-password'] = password
   }
 
-  return serverFetch<ProfileDetailsResponse>(request, `log/profile?${params.toString()}`, { headers })
+  return serverFetch<ProfileDetailsResponse>(
+    request,
+    `log/profile?${params.toString()}`,
+    { headers },
+  )
 }
 
 interface ProfileSession {
@@ -1592,7 +1720,11 @@ export async function getProfileSessionsServer(
     headers['x-password'] = password
   }
 
-  return serverFetch<ProfileSessionsResponse>(request, `log/profile/sessions?${params.toString()}`, { headers })
+  return serverFetch<ProfileSessionsResponse>(
+    request,
+    `log/profile/sessions?${params.toString()}`,
+    { headers },
+  )
 }
 
 // ============================================================================
@@ -1678,7 +1810,11 @@ export async function getCustomEventsMetadataServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<CustomEventsMetadataResponse>(request, `log/meta?${queryParams.toString()}`, { headers })
+  return serverFetch<CustomEventsMetadataResponse>(
+    request,
+    `log/meta?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 // ============================================================================
@@ -1718,7 +1854,11 @@ export async function getPropertyMetadataServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<PropertyMetadataResponse>(request, `log/property?${queryParams.toString()}`, { headers })
+  return serverFetch<PropertyMetadataResponse>(
+    request,
+    `log/property?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 // ============================================================================
@@ -1770,7 +1910,11 @@ export async function getErrorSessionsServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<ErrorSessionsResponse>(request, `log/error-sessions?${queryParams.toString()}`, { headers })
+  return serverFetch<ErrorSessionsResponse>(
+    request,
+    `log/error-sessions?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 // ============================================================================
@@ -1793,7 +1937,9 @@ export async function getLiveVisitorsServer(
     headers['x-password'] = password
   }
 
-  return serverFetch<LiveStats>(request, `log/hb?pids=${pidsParam}`, { headers })
+  return serverFetch<LiveStats>(request, `log/hb?pids=${pidsParam}`, {
+    headers,
+  })
 }
 
 export interface LiveVisitorInfo {
@@ -1814,7 +1960,11 @@ export async function getLiveVisitorsInfoServer(
     headers['x-password'] = password
   }
 
-  return serverFetch<LiveVisitorInfo[]>(request, `log/live-visitors?pid=${pid}`, { headers })
+  return serverFetch<LiveVisitorInfo[]>(
+    request,
+    `log/live-visitors?pid=${pid}`,
+    { headers },
+  )
 }
 
 // ============================================================================
@@ -1857,9 +2007,13 @@ export async function getProjectDataCustomEventsServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<ProjectDataCustomEventsResponse>(request, `log/custom-events?${queryParams.toString()}`, {
-    headers,
-  })
+  return serverFetch<ProjectDataCustomEventsResponse>(
+    request,
+    `log/custom-events?${queryParams.toString()}`,
+    {
+      headers,
+    },
+  )
 }
 
 // ============================================================================
@@ -1884,7 +2038,10 @@ export async function generateSSOAuthURLServer(
     payload.redirectUrl = redirectUrl
   }
 
-  const endpoint = provider === 'openid-connect' ? 'v1/auth/oidc/initiate' : 'v1/auth/sso/generate'
+  const endpoint =
+    provider === 'openid-connect'
+      ? 'v1/auth/oidc/initiate'
+      : 'v1/auth/sso/generate'
 
   return serverFetch<SSOAuthURLResponse>(request, endpoint, {
     method: 'POST',
@@ -1905,7 +2062,8 @@ export async function getJWTBySSOHashServer(
   hash: string,
   provider: SSOProvider,
 ): Promise<ServerFetchResult<SSOHashResponse>> {
-  const endpoint = provider === 'openid-connect' ? 'v1/auth/oidc/hash' : 'v1/auth/sso/hash'
+  const endpoint =
+    provider === 'openid-connect' ? 'v1/auth/oidc/hash' : 'v1/auth/sso/hash'
   const body = provider === 'openid-connect' ? { hash } : { hash, provider }
 
   return serverFetch<SSOHashResponse>(request, endpoint, {
@@ -1999,7 +2157,11 @@ export async function getUserFlowServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<UserFlowResponse>(request, `log/user-flow?${queryParams.toString()}`, { headers })
+  return serverFetch<UserFlowResponse>(
+    request,
+    `log/user-flow?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 // ============================================================================
@@ -2017,7 +2179,9 @@ export async function getFiltersServer(
     headers['x-password'] = password
   }
 
-  return serverFetch<string[]>(request, `log/filters?pid=${pid}&type=${type}`, { headers })
+  return serverFetch<string[]>(request, `log/filters?pid=${pid}&type=${type}`, {
+    headers,
+  })
 }
 
 export async function getErrorsFiltersServer(
@@ -2031,7 +2195,11 @@ export async function getErrorsFiltersServer(
     headers['x-password'] = password
   }
 
-  return serverFetch<string[]>(request, `log/errors-filters?pid=${pid}&type=${type}`, { headers })
+  return serverFetch<string[]>(
+    request,
+    `log/errors-filters?pid=${pid}&type=${type}`,
+    { headers },
+  )
 }
 
 export interface VersionFilter {
@@ -2051,9 +2219,13 @@ export async function getVersionFiltersServer(
     headers['x-password'] = password
   }
 
-  return serverFetch<VersionFilter[]>(request, `log/filters/versions?pid=${pid}&type=${type}&column=${column}`, {
-    headers,
-  })
+  return serverFetch<VersionFilter[]>(
+    request,
+    `log/filters/versions?pid=${pid}&type=${type}&column=${column}`,
+    {
+      headers,
+    },
+  )
 }
 
 // ============================================================================
@@ -2107,7 +2279,11 @@ export async function getGSCKeywordsServer(
     headers['x-password'] = params.password
   }
 
-  return serverFetch<GSCKeywordsResponse>(request, `log/keywords?${queryParams.toString()}`, { headers })
+  return serverFetch<GSCKeywordsResponse>(
+    request,
+    `log/keywords?${queryParams.toString()}`,
+    { headers },
+  )
 }
 
 // ============================================================================
@@ -2121,7 +2297,10 @@ export interface RevenueStatus {
   lastSyncAt?: string
 }
 
-export async function getRevenueStatusServer(request: Request, pid: string): Promise<ServerFetchResult<RevenueStatus>> {
+export async function getRevenueStatusServer(
+  request: Request,
+  pid: string,
+): Promise<ServerFetchResult<RevenueStatus>> {
   return serverFetch<RevenueStatus>(request, `project/${pid}/revenue/status`)
 }
 
@@ -2168,5 +2347,8 @@ export async function getRevenueDataServer(
   if (params.timezone) queryParams.append('timezone', params.timezone)
   if (params.timeBucket) queryParams.append('timeBucket', params.timeBucket)
 
-  return serverFetch<RevenueDataResponse>(request, `log/revenue?${queryParams.toString()}`)
+  return serverFetch<RevenueDataResponse>(
+    request,
+    `log/revenue?${queryParams.toString()}`,
+  )
 }

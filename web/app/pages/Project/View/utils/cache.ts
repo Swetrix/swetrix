@@ -1,4 +1,8 @@
-import { isBrowser, LS_PROJECTS_PROTECTED_KEY, LS_VIEW_PREFS_SETTING } from '~/lib/constants'
+import {
+  isBrowser,
+  LS_PROJECTS_PROTECTED_KEY,
+  LS_VIEW_PREFS_SETTING,
+} from '~/lib/constants'
 import { type Project } from '~/lib/models/Project'
 import { getItemJSON, removeItem, setItem } from '~/utils/localstorage'
 
@@ -22,12 +26,17 @@ const getAllProjectPreferences = (): Record<string, ProjectPreferences> => {
   return {}
 }
 
-export const getProjectPreferences = (id: Project['id']): ProjectPreferences => {
+export const getProjectPreferences = (
+  id: Project['id'],
+): ProjectPreferences => {
   const preferences = getAllProjectPreferences()
   return preferences?.[id] || {}
 }
 
-export const setProjectPreferences = (id: Project['id'], preferences: ProjectPreferences) => {
+export const setProjectPreferences = (
+  id: Project['id'],
+  preferences: ProjectPreferences,
+) => {
   setItem(
     LS_VIEW_PREFS_SETTING,
     JSON.stringify({
@@ -37,7 +46,8 @@ export const setProjectPreferences = (id: Project['id'], preferences: ProjectPre
   )
 }
 
-const getAllProjectPasswords = () => getItemJSON(LS_PROJECTS_PROTECTED_KEY) || {}
+const getAllProjectPasswords = () =>
+  getItemJSON(LS_PROJECTS_PROTECTED_KEY) || {}
 
 export const setProjectPassword = (id: Project['id'], password: string) => {
   setItem(

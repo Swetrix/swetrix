@@ -21,7 +21,10 @@ export function detectLanguage(request: Request): string {
   // Stage 1: Getting the language from the query ?lng= parameter
   const url = new URL(request.url)
 
-  if (url.searchParams.has('lng') && _includes(whitelist, url.searchParams.get('lng'))) {
+  if (
+    url.searchParams.has('lng') &&
+    _includes(whitelist, url.searchParams.get('lng'))
+  ) {
     return url.searchParams.get('lng') as string
   }
 
@@ -34,7 +37,10 @@ export function detectLanguage(request: Request): string {
   }
 
   // Stage 3: Getting the language from the Accept-Language header or fallback to default
-  if (request.headers.has('accept-language') && _includes(whitelist, request.headers.get('accept-language'))) {
+  if (
+    request.headers.has('accept-language') &&
+    _includes(whitelist, request.headers.get('accept-language'))
+  ) {
     return request.headers.get('accept-language') as string
   }
 

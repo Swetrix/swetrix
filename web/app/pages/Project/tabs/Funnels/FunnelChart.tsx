@@ -13,7 +13,12 @@ interface FunnelChartProps {
   className?: string
 }
 
-export const FunnelChart = ({ funnel, totalPageviews, t, className }: FunnelChartProps) => {
+export const FunnelChart = ({
+  funnel,
+  totalPageviews,
+  t,
+  className,
+}: FunnelChartProps) => {
   const options: ChartOptions = useMemo(() => {
     return getSettingsFunnels(funnel, totalPageviews, t)
   }, [funnel, totalPageviews, t])
@@ -26,7 +31,18 @@ export const FunnelChart = ({ funnel, totalPageviews, t, className }: FunnelChar
     [t],
   )
 
-  const deps = useMemo(() => [funnel, totalPageviews, t], [funnel, totalPageviews, t])
+  const deps = useMemo(
+    () => [funnel, totalPageviews, t],
+    [funnel, totalPageviews, t],
+  )
 
-  return <MainChart chartId='funnel-chart' options={options} dataNames={dataNames} className={className} deps={deps} />
+  return (
+    <MainChart
+      chartId='funnel-chart'
+      options={options}
+      dataNames={dataNames}
+      className={className}
+      deps={deps}
+    />
+  )
 }

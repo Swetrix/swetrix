@@ -32,8 +32,15 @@ const NoProfiles = ({ filters }: NoProfilesProps) => {
         <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
           {t('project.noProfilesTitle')}
         </Text>
-        <Text as='p' size='sm' colour='secondary' className='mx-auto mt-2 max-w-md'>
-          {hasFilters ? t('project.noProfilesFiltersDesc') : t('project.noProfilesContent')}
+        <Text
+          as='p'
+          size='sm'
+          colour='secondary'
+          className='mx-auto mt-2 max-w-md'
+        >
+          {hasFilters
+            ? t('project.noProfilesFiltersDesc')
+            : t('project.noProfilesContent')}
         </Text>
       </div>
     </>

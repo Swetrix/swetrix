@@ -3,7 +3,12 @@ import cx from 'clsx'
 import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 
-const COMPETITORS_LIST = ['Google Analytics', 'Fathom', 'Plausible', 'Simple Analytics']
+const COMPETITORS_LIST = [
+  'Google Analytics',
+  'Fathom',
+  'Plausible',
+  'Simple Analytics',
+]
 const SWETRIX_AND_COMPETITORS_LIST = ['Swetrix', ...COMPETITORS_LIST]
 
 // The order in the table is defined by the Swetrix object
@@ -111,9 +116,14 @@ export const ComparisonTable = ({ className }: ComparisonTableProps) => {
                 <tbody className='divide-y divide-slate-300 bg-gray-50 dark:divide-slate-700 dark:bg-slate-800'>
                   {_map(COMPETITOR_FEATURE_TABLE.Swetrix, (_, key) => (
                     <tr key={key}>
-                      <td className='w-1/6 px-3 py-4 text-sm text-slate-700 sm:pl-6 dark:text-gray-50'>{t(key)}</td>
+                      <td className='w-1/6 px-3 py-4 text-sm text-slate-700 sm:pl-6 dark:text-gray-50'>
+                        {t(key)}
+                      </td>
                       {_map(SWETRIX_AND_COMPETITORS_LIST, (service) => (
-                        <td key={`${key}-${service}`} className='w-1/6 px-3 py-4 text-sm text-gray-50 sm:pl-6'>
+                        <td
+                          key={`${key}-${service}`}
+                          className='w-1/6 px-3 py-4 text-sm text-gray-50 sm:pl-6'
+                        >
                           {COMPETITOR_FEATURE_TABLE[service][key] ? (
                             <CheckIcon
                               className='h-5 w-5 shrink-0 text-green-600 dark:text-green-500'

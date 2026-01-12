@@ -21,7 +21,10 @@ import { useSearchParams, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
+import {
+  useViewProjectContext,
+  useRefreshTriggers,
+} from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
@@ -40,10 +43,22 @@ import ExperimentSettingsModal from './ExperimentSettingsModal'
 dayjs.extend(relativeTime)
 
 const STATUS_COLORS: Record<ExperimentStatus, { bg: string; text: string }> = {
-  draft: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-600 dark:text-gray-400' },
-  running: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-400' },
-  paused: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-400' },
-  completed: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-400' },
+  draft: {
+    bg: 'bg-gray-100 dark:bg-gray-700',
+    text: 'text-gray-600 dark:text-gray-400',
+  },
+  running: {
+    bg: 'bg-green-100 dark:bg-green-900/30',
+    text: 'text-green-800 dark:text-green-400',
+  },
+  paused: {
+    bg: 'bg-yellow-100 dark:bg-yellow-900/30',
+    text: 'text-yellow-800 dark:text-yellow-400',
+  },
+  completed: {
+    bg: 'bg-blue-100 dark:bg-blue-900/30',
+    text: 'text-blue-800 dark:text-blue-400',
+  },
 }
 
 const DEFAULT_EXPERIMENTS_TAKE = 20
@@ -114,7 +129,8 @@ const ExperimentRow = ({
 
   const statusColors = STATUS_COLORS[experiment.status]
   const variantsCount = experiment.variants?.length || 0
-  const isEditDisabled = experiment.status === 'running' || experiment.status === 'completed'
+  const isEditDisabled =
+    experiment.status === 'running' || experiment.status === 'completed'
 
   const handleStart = async () => {
     setActionLoading(true)
@@ -151,8 +167,16 @@ const ExperimentRow = ({
           <div className='flex min-w-0 gap-x-4'>
             <div className='min-w-0 flex-auto'>
               <div className='flex items-center gap-x-2'>
-                <Text as='p' weight='semibold' truncate className='flex items-center gap-x-1.5'>
-                  <FlaskConicalIcon className='size-4 text-purple-500' strokeWidth={1.5} />
+                <Text
+                  as='p'
+                  weight='semibold'
+                  truncate
+                  className='flex items-center gap-x-1.5'
+                >
+                  <FlaskConicalIcon
+                    className='size-4 text-purple-500'
+                    strokeWidth={1.5}
+                  />
                   <span>{experiment.name}</span>
                 </Text>
                 {/* Status badge */}
@@ -184,12 +208,14 @@ const ExperimentRow = ({
               <div className='mt-2 flex items-center gap-x-3 text-xs text-gray-500 dark:text-gray-400'>
                 {experiment.startedAt ? (
                   <span>
-                    {t('experiments.startedAt')}: {dayjs(experiment.startedAt).format('MMM D, YYYY')}
+                    {t('experiments.startedAt')}:{' '}
+                    {dayjs(experiment.startedAt).format('MMM D, YYYY')}
                   </span>
                 ) : null}
                 {experiment.endedAt ? (
                   <span>
-                    {t('experiments.endedAt')}: {dayjs(experiment.endedAt).format('MMM D, YYYY')}
+                    {t('experiments.endedAt')}:{' '}
+                    {dayjs(experiment.endedAt).format('MMM D, YYYY')}
                   </span>
                 ) : null}
               </div>
@@ -201,17 +227,28 @@ const ExperimentRow = ({
               <Button
                 onClick={handleStart}
                 disabled={actionLoading || !experiment.goalId}
-                title={!experiment.goalId ? t('experiments.needGoal') : undefined}
+                title={
+                  !experiment.goalId ? t('experiments.needGoal') : undefined
+                }
                 ghost
                 small
               >
-                {actionLoading ? <Spin className='size-4' /> : <PlayIcon className='mr-1 size-4' strokeWidth={1.5} />}
+                {actionLoading ? (
+                  <Spin className='size-4' />
+                ) : (
+                  <PlayIcon className='mr-1 size-4' strokeWidth={1.5} />
+                )}
                 {t('experiments.start')}
               </Button>
             ) : null}
             {experiment.status === 'running' ? (
               <>
-                <Button onClick={handlePause} disabled={actionLoading} ghost small>
+                <Button
+                  onClick={handlePause}
+                  disabled={actionLoading}
+                  ghost
+                  small
+                >
                   {actionLoading ? (
                     <Spin className='size-4' />
                   ) : (
@@ -219,7 +256,11 @@ const ExperimentRow = ({
                   )}
                   {t('experiments.pause')}
                 </Button>
-                <Button onClick={() => onViewResults(experiment.id)} ghost small>
+                <Button
+                  onClick={() => onViewResults(experiment.id)}
+                  ghost
+                  small
+                >
                   <BarChart3Icon className='mr-1 size-4' strokeWidth={1.5} />
                   {t('experiments.results')}
                 </Button>
@@ -227,11 +268,25 @@ const ExperimentRow = ({
             ) : null}
             {experiment.status === 'paused' ? (
               <>
-                <Button onClick={handleStart} disabled={actionLoading} ghost small>
-                  {actionLoading ? <Spin className='size-4' /> : <PlayIcon className='mr-1 size-4' strokeWidth={1.5} />}
+                <Button
+                  onClick={handleStart}
+                  disabled={actionLoading}
+                  ghost
+                  small
+                >
+                  {actionLoading ? (
+                    <Spin className='size-4' />
+                  ) : (
+                    <PlayIcon className='mr-1 size-4' strokeWidth={1.5} />
+                  )}
                   {t('experiments.resume')}
                 </Button>
-                <Button onClick={() => setShowCompleteModal(true)} disabled={actionLoading} ghost small>
+                <Button
+                  onClick={() => setShowCompleteModal(true)}
+                  disabled={actionLoading}
+                  ghost
+                  small
+                >
                   <CheckCircleIcon className='mr-1 size-4' strokeWidth={1.5} />
                   {t('experiments.complete')}
                 </Button>
@@ -248,7 +303,9 @@ const ExperimentRow = ({
             <div className='flex items-center gap-1 border-l border-gray-200 pl-2 dark:border-slate-700'>
               <button
                 type='button'
-                onClick={() => (!isEditDisabled ? onEdit(experiment.id) : undefined)}
+                onClick={() =>
+                  !isEditDisabled ? onEdit(experiment.id) : undefined
+                }
                 disabled={isEditDisabled}
                 aria-label={t('common.edit')}
                 title={
@@ -260,7 +317,8 @@ const ExperimentRow = ({
                 }
                 className={cx(
                   'rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300',
-                  isEditDisabled && 'cursor-not-allowed opacity-50 hover:border-transparent hover:bg-transparent',
+                  isEditDisabled &&
+                    'cursor-not-allowed opacity-50 hover:border-transparent hover:bg-transparent',
                 )}
               >
                 <PencilIcon className='size-4' strokeWidth={1.5} />
@@ -317,7 +375,12 @@ interface ExperimentsViewProps {
   timezone?: string
 }
 
-const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsViewProps) => {
+const ExperimentsView = ({
+  period,
+  from = '',
+  to = '',
+  timezone,
+}: ExperimentsViewProps) => {
   const { id } = useCurrentProject()
   const { experimentsRefreshTrigger } = useRefreshTriggers()
   const { timeBucket } = useViewProjectContext()
@@ -338,12 +401,15 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingExperimentId, setEditingExperimentId] = useState<string | null>(null)
+  const [editingExperimentId, setEditingExperimentId] = useState<string | null>(
+    null,
+  )
 
   // Results view state
   const [viewingResultsId, setViewingResultsId] = useState<string | null>(null)
   const [resultsRefreshTrigger, setResultsRefreshTrigger] = useState(0)
-  const [shouldRefreshListOnReturn, setShouldRefreshListOnReturn] = useState(false)
+  const [shouldRefreshListOnReturn, setShouldRefreshListOnReturn] =
+    useState(false)
 
   // Cleanup on unmount
   useEffect(() => {
@@ -381,7 +447,10 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
       if (isMountedRef.current) {
         setIsLoading(false)
         if (listFetcher.data.success && listFetcher.data.data) {
-          const result = listFetcher.data.data as { results: Experiment[]; total: number }
+          const result = listFetcher.data.data as {
+            results: Experiment[]
+            total: number
+          }
           setExperiments(result.results)
           setTotal(result.total)
           setError(null)
@@ -398,7 +467,8 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
 
     const { intent, success, error, data } = actionFetcher.data
     const responseData = actionFetcher.data as Record<string, unknown>
-    const uniqueSuffix = responseData.requestId ?? responseData.timestamp ?? actionFetcher.state
+    const uniqueSuffix =
+      responseData.requestId ?? responseData.timestamp ?? actionFetcher.state
     const actionKey = `${intent}-${success ?? false}-${error ?? ''}-${uniqueSuffix}-${JSON.stringify(data)}`
     if (processedActionRef.current === actionKey) return
     processedActionRef.current = actionKey
@@ -406,33 +476,60 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
     if (actionFetcher.data.intent === 'delete-experiment') {
       if (actionFetcher.data.success) {
         toast.success(t('experiments.deleted'))
-        loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
+        loadExperiments(
+          DEFAULT_EXPERIMENTS_TAKE,
+          (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+          true,
+          filterQuery || undefined,
+        )
       } else if (actionFetcher.data.error) {
         toast.error(actionFetcher.data.error)
       }
     } else if (actionFetcher.data.intent === 'start-experiment') {
       if (actionFetcher.data.success) {
         toast.success(t('experiments.started'))
-        loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
+        loadExperiments(
+          DEFAULT_EXPERIMENTS_TAKE,
+          (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+          true,
+          filterQuery || undefined,
+        )
       } else if (actionFetcher.data.error) {
         toast.error(actionFetcher.data.error)
       }
     } else if (actionFetcher.data.intent === 'pause-experiment') {
       if (actionFetcher.data.success) {
         toast.success(t('experiments.paused'))
-        loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
+        loadExperiments(
+          DEFAULT_EXPERIMENTS_TAKE,
+          (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+          true,
+          filterQuery || undefined,
+        )
       } else if (actionFetcher.data.error) {
         toast.error(actionFetcher.data.error)
       }
     } else if (actionFetcher.data.intent === 'complete-experiment') {
       if (actionFetcher.data.success) {
         toast.success(t('experiments.completed'))
-        loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
+        loadExperiments(
+          DEFAULT_EXPERIMENTS_TAKE,
+          (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+          true,
+          filterQuery || undefined,
+        )
       } else if (actionFetcher.data.error) {
         toast.error(actionFetcher.data.error)
       }
     }
-  }, [actionFetcher.data, actionFetcher.state, t, loadExperiments, page, filterQuery])
+  }, [
+    actionFetcher.data,
+    actionFetcher.state,
+    t,
+    loadExperiments,
+    page,
+    filterQuery,
+  ])
 
   const debouncedLoadExperiments = useMemo(
     () =>
@@ -459,7 +556,12 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   }, [debouncedLoadExperiments])
 
   useEffect(() => {
-    loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
+    loadExperiments(
+      DEFAULT_EXPERIMENTS_TAKE,
+      (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+      true,
+      filterQuery || undefined,
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
 
@@ -470,7 +572,12 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
         setShouldRefreshListOnReturn(true)
         return
       }
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
+      loadExperiments(
+        DEFAULT_EXPERIMENTS_TAKE,
+        (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+        true,
+        filterQuery || undefined,
+      )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experimentsRefreshTrigger, viewingResultsId, page])
@@ -478,7 +585,12 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   useEffect(() => {
     if (!viewingResultsId && shouldRefreshListOnReturn) {
       setShouldRefreshListOnReturn(false)
-      loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
+      loadExperiments(
+        DEFAULT_EXPERIMENTS_TAKE,
+        (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+        true,
+        filterQuery || undefined,
+      )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewingResultsId, shouldRefreshListOnReturn, page])
@@ -499,13 +611,21 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   }, [])
 
   const handleModalSuccess = useCallback(() => {
-    loadExperiments(DEFAULT_EXPERIMENTS_TAKE, (page - 1) * DEFAULT_EXPERIMENTS_TAKE, true, filterQuery || undefined)
+    loadExperiments(
+      DEFAULT_EXPERIMENTS_TAKE,
+      (page - 1) * DEFAULT_EXPERIMENTS_TAKE,
+      true,
+      filterQuery || undefined,
+    )
   }, [page, filterQuery, loadExperiments])
 
   const handleDeleteExperiment = useCallback(
     (experimentId: string) => {
       processedActionRef.current = null
-      actionFetcher.submit({ intent: 'delete-experiment', experimentId }, { method: 'POST' })
+      actionFetcher.submit(
+        { intent: 'delete-experiment', experimentId },
+        { method: 'POST' },
+      )
     },
     [actionFetcher],
   )
@@ -513,7 +633,10 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   const handleStartExperiment = useCallback(
     (experimentId: string) => {
       processedActionRef.current = null
-      actionFetcher.submit({ intent: 'start-experiment', experimentId }, { method: 'POST' })
+      actionFetcher.submit(
+        { intent: 'start-experiment', experimentId },
+        { method: 'POST' },
+      )
     },
     [actionFetcher],
   )
@@ -521,7 +644,10 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   const handlePauseExperiment = useCallback(
     (experimentId: string) => {
       processedActionRef.current = null
-      actionFetcher.submit({ intent: 'pause-experiment', experimentId }, { method: 'POST' })
+      actionFetcher.submit(
+        { intent: 'pause-experiment', experimentId },
+        { method: 'POST' },
+      )
     },
     [actionFetcher],
   )
@@ -529,7 +655,10 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
   const handleCompleteExperiment = useCallback(
     (experimentId: string) => {
       processedActionRef.current = null
-      actionFetcher.submit({ intent: 'complete-experiment', experimentId }, { method: 'POST' })
+      actionFetcher.submit(
+        { intent: 'complete-experiment', experimentId },
+        { method: 'POST' },
+      )
     },
     [actionFetcher],
   )
@@ -545,7 +674,11 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
         title={t('apiNotifications.somethingWentWrong')}
         description={t('apiNotifications.errorCode', { error })}
         actions={[
-          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
+          {
+            label: t('dashboard.reloadPage'),
+            onClick: () => window.location.reload(),
+            primary: true,
+          },
           { label: t('notFoundPage.support'), to: routes.contact },
         ]}
       />
@@ -591,7 +724,9 @@ const ExperimentsView = ({ period, from = '', to = '', timezone }: ExperimentsVi
               <FlaskConicalIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
               <p className='text-3xl font-bold'>{t('experiments.title')}</p>
             </div>
-            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('experiments.description')}</p>
+            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
+              {t('experiments.description')}
+            </p>
             <Button
               onClick={handleNewExperiment}
               className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'

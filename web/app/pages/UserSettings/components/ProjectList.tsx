@@ -33,7 +33,10 @@ const ProjectList = ({ item }: ProjectListProps) => {
     if (fetcher.data?.intent === 'reject-project-share') {
       if (fetcher.data.success) {
         mergeUser({
-          sharedProjects: _filter(user?.sharedProjects, (share) => share.id !== item.id),
+          sharedProjects: _filter(
+            user?.sharedProjects,
+            (share) => share.id !== item.id,
+          ),
         })
         toast.success(t('apiNotifications.quitProject'))
       } else if (fetcher.data.error) {
@@ -59,16 +62,24 @@ const ProjectList = ({ item }: ProjectListProps) => {
   }, [fetcher.data, id, item.id, mergeUser, t, user?.sharedProjects])
 
   const onQuit = () => {
-    fetcher.submit({ intent: 'reject-project-share', shareId: item.id }, { method: 'post', action: '/user-settings' })
+    fetcher.submit(
+      { intent: 'reject-project-share', shareId: item.id },
+      { method: 'post', action: '/user-settings' },
+    )
   }
 
   const onAccept = () => {
-    fetcher.submit({ intent: 'accept-project-share', shareId: id }, { method: 'post', action: '/user-settings' })
+    fetcher.submit(
+      { intent: 'accept-project-share', shareId: id },
+      { method: 'post', action: '/user-settings' },
+    )
   }
 
   return (
     <tr className='bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/50'>
-      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>{project.name}</td>
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
+        {project.name}
+      </td>
       <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         {t(`project.settings.roles.${role}.name`)}
       </td>
@@ -79,12 +90,23 @@ const ProjectList = ({ item }: ProjectListProps) => {
       </td>
       <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
         {confirmed ? (
-          <Button onClick={() => setShowDeleteModal(true)} danger small loading={isPending}>
+          <Button
+            onClick={() => setShowDeleteModal(true)}
+            danger
+            small
+            loading={isPending}
+          >
             {t('common.quit')}
           </Button>
         ) : (
           <>
-            <Button className='mr-2' onClick={() => setShowDeleteModal(true)} primary small loading={isPending}>
+            <Button
+              className='mr-2'
+              onClick={() => setShowDeleteModal(true)}
+              primary
+              small
+              loading={isPending}
+            >
               {t('common.reject')}
             </Button>
             <Button onClick={onAccept} primary small loading={isPending}>

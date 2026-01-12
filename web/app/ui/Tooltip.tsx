@@ -41,8 +41,17 @@ interface TooltipProps {
   disableHoverableContent?: boolean
 }
 
-const Tooltip = ({ text, className, tooltipNode, delay = 50, disableHoverableContent }: TooltipProps) => (
-  <TooltipProvider delayDuration={delay} disableHoverableContent={disableHoverableContent}>
+const Tooltip = ({
+  text,
+  className,
+  tooltipNode,
+  delay = 50,
+  disableHoverableContent,
+}: TooltipProps) => (
+  <TooltipProvider
+    delayDuration={delay}
+    disableHoverableContent={disableHoverableContent}
+  >
     <TooltipRoot>
       <TooltipTrigger className={className}>
         {tooltipNode || (
@@ -52,7 +61,11 @@ const Tooltip = ({ text, className, tooltipNode, delay = 50, disableHoverableCon
           />
         )}
       </TooltipTrigger>
-      <TooltipContent className={disableHoverableContent ? 'pointer-events-none' : undefined}>{text}</TooltipContent>
+      <TooltipContent
+        className={disableHoverableContent ? 'pointer-events-none' : undefined}
+      >
+        {text}
+      </TooltipContent>
     </TooltipRoot>
   </TooltipProvider>
 )

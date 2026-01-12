@@ -5,13 +5,21 @@ import _size from 'lodash/size'
 import { SearchIcon, XIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFetcher, useLoaderData, useNavigate, useRevalidator } from 'react-router'
+import {
+  useFetcher,
+  useLoaderData,
+  useNavigate,
+  useRevalidator,
+} from 'react-router'
 import { toast } from 'sonner'
 
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import useDebounce from '~/hooks/useDebounce'
 import { ENTRIES_PER_PAGE_DASHBOARD } from '~/lib/constants'
-import type { OrganisationsActionData, OrganisationsLoaderData } from '~/routes/organisations._index'
+import type {
+  OrganisationsActionData,
+  OrganisationsLoaderData,
+} from '~/routes/organisations._index'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
@@ -30,15 +38,20 @@ const Organisations = () => {
   const { revalidate } = useRevalidator()
 
   const { t } = useTranslation('common')
-  const [isSearchActive, setIsSearchActive] = useState(() => !!loaderData?.search)
+  const [isSearchActive, setIsSearchActive] = useState(
+    () => !!loaderData?.search,
+  )
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const [search, setSearch] = useState(loaderData?.search || '')
   const debouncedSearch = useDebounce<string>(search, 500)
 
-  const [newOrganisationModalOpen, setNewOrganisationModalOpen] = useState(false)
+  const [newOrganisationModalOpen, setNewOrganisationModalOpen] =
+    useState(false)
   const [newOrganisationName, setNewOrganisationName] = useState('')
-  const [newOrganisationError, setNewOrganisationError] = useState<string | null>(null)
+  const [newOrganisationError, setNewOrganisationError] = useState<
+    string | null
+  >(null)
 
   const isNewOrganisationLoading = fetcher.state === 'submitting'
 
@@ -53,7 +66,10 @@ const Organisations = () => {
     const params = new URLSearchParams()
     if (newPage > 1) params.set('page', String(newPage))
     if (newSearch) params.set('search', newSearch)
-    navigate(`${routes.organisations}${params.toString() ? `?${params.toString()}` : ''}`, { replace: true })
+    navigate(
+      `${routes.organisations}${params.toString() ? `?${params.toString()}` : ''}`,
+      { replace: true },
+    )
   }
 
   const closeNewOrganisationModal = useCallback(() => {
@@ -137,7 +153,11 @@ const Organisations = () => {
         title={t('apiNotifications.somethingWentWrong')}
         description={t('apiNotifications.errorCode', { error })}
         actions={[
-          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
+          {
+            label: t('dashboard.reloadPage'),
+            onClick: () => window.location.reload(),
+            primary: true,
+          },
           { label: t('notFoundPage.support'), to: routes.contact },
         ]}
       />
@@ -156,7 +176,12 @@ const Organisations = () => {
           <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
             <div className='mb-6 flex flex-wrap justify-between gap-2'>
               <div className='flex items-end justify-between'>
-                <Text as='h2' size='3xl' weight='bold' className='mt-2 flex items-baseline gap-2'>
+                <Text
+                  as='h2'
+                  size='3xl'
+                  weight='bold'
+                  className='mt-2 flex items-baseline gap-2'
+                >
                   <span>{t('titles.organisations')}</span>
                   {isSearchActive ? (
                     <button
@@ -255,9 +280,15 @@ const Organisations = () => {
               ) : (
                 <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
                   {_map(organisations, (organisation) => (
-                    <OrganisationCard key={organisation.id} organisation={organisation} />
+                    <OrganisationCard
+                      key={organisation.id}
+                      organisation={organisation}
+                    />
                   ))}
-                  <AddOrganisation sitesCount={_size(organisations)} onClick={onNewOrganisation} />
+                  <AddOrganisation
+                    sitesCount={_size(organisations)}
+                    onClick={onNewOrganisation}
+                  />
                 </div>
               )}
             </div>
@@ -296,8 +327,16 @@ const Organisations = () => {
               onChange={(e) => setNewOrganisationName(e.target.value)}
             />
             {newOrganisationError ? (
-              <Text as='p' size='sm' weight='medium' colour='error' className='mt-2'>
-                {t('apiNotifications.errorOccured', { error: newOrganisationError })}
+              <Text
+                as='p'
+                size='sm'
+                weight='medium'
+                colour='error'
+                className='mt-2'
+              >
+                {t('apiNotifications.errorOccured', {
+                  error: newOrganisationError,
+                })}
               </Text>
             ) : null}
           </div>

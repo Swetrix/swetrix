@@ -48,12 +48,15 @@ const Organisations = ({ membership }: OrganisationsProps) => {
     if (fetcher.data?.intent === 'accept-organisation-invitation') {
       if (fetcher.data.success) {
         mergeUser({
-          organisationMemberships: _map(user?.organisationMemberships, (item) => {
-            if (item.id === membership.id) {
-              return { ...item, confirmed: true }
-            }
-            return item
-          }),
+          organisationMemberships: _map(
+            user?.organisationMemberships,
+            (item) => {
+              if (item.id === membership.id) {
+                return { ...item, confirmed: true }
+              }
+              return item
+            },
+          ),
         })
         toast.success(t('apiNotifications.acceptInvitation'))
       } else if (fetcher.data.error) {
@@ -63,16 +66,24 @@ const Organisations = ({ membership }: OrganisationsProps) => {
   }, [fetcher.data, mergeUser, membership.id, t, user?.organisationMemberships])
 
   const onQuit = () => {
-    fetcher.submit({ intent: 'reject-organisation-invitation', membershipId: membership.id }, { method: 'POST' })
+    fetcher.submit(
+      { intent: 'reject-organisation-invitation', membershipId: membership.id },
+      { method: 'POST' },
+    )
   }
 
   const onAccept = () => {
-    fetcher.submit({ intent: 'accept-organisation-invitation', membershipId: membership.id }, { method: 'POST' })
+    fetcher.submit(
+      { intent: 'accept-organisation-invitation', membershipId: membership.id },
+      { method: 'POST' },
+    )
   }
 
   return (
     <tr className='bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/50'>
-      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>{organisation.name}</td>
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
+        {organisation.name}
+      </td>
       <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         {t(`organisations.role.${role}.name`)}
       </td>
@@ -92,7 +103,12 @@ const Organisations = ({ membership }: OrganisationsProps) => {
           </Button>
         ) : (
           <>
-            <Button className='mr-2' onClick={() => setShowDeleteModal(true)} primary small>
+            <Button
+              className='mr-2'
+              onClick={() => setShowDeleteModal(true)}
+              primary
+              small
+            >
               {t('common.reject')}
             </Button>
             <Button onClick={onAccept} loading={isLoading} primary small>

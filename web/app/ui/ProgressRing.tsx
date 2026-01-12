@@ -57,7 +57,10 @@ const ProgressRing = ({
   showValue = true,
   thresholds = DEFAULT_THRESHOLDS,
 }: ProgressRingProps) => {
-  const normalizedValue = useMemo(() => Math.min(100, Math.max(0, value)), [value])
+  const normalizedValue = useMemo(
+    () => Math.min(100, Math.max(0, value)),
+    [value],
+  )
 
   const { radius, circumference, strokeDashoffset } = useMemo(() => {
     const r = (size - strokeWidth) / 2
@@ -71,12 +74,20 @@ const ProgressRing = ({
     }
   }, [size, strokeWidth, normalizedValue])
 
-  const colourClasses = useMemo(() => getColourClasses(normalizedValue, thresholds), [normalizedValue, thresholds])
+  const colourClasses = useMemo(
+    () => getColourClasses(normalizedValue, thresholds),
+    [normalizedValue, thresholds],
+  )
 
   const center = size / 2
 
   return (
-    <div className={cn('relative inline-flex items-center justify-center', className)}>
+    <div
+      className={cn(
+        'relative inline-flex items-center justify-center',
+        className,
+      )}
+    >
       <svg width={size} height={size} className='-rotate-90'>
         {/* Background circle */}
         <circle
@@ -97,12 +108,18 @@ const ProgressRing = ({
           strokeLinecap='round'
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className={cn('transition-all duration-300 ease-out', colourClasses.stroke)}
+          className={cn(
+            'transition-all duration-300 ease-out',
+            colourClasses.stroke,
+          )}
         />
       </svg>
       {showValue ? (
         <span
-          className={cn('absolute text-center font-semibold', colourClasses.text)}
+          className={cn(
+            'absolute text-center font-semibold',
+            colourClasses.text,
+          )}
           style={{ fontSize: size * 0.22 }}
         >
           {Math.round(normalizedValue)}%

@@ -1,10 +1,18 @@
-import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
+import {
+  ExclamationTriangleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from '@heroicons/react/24/outline'
 import BillboardCss from 'billboard.js/dist/billboard.min.css?url'
 import cx from 'clsx'
 import _replace from 'lodash/replace'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { LinksFunction, LoaderFunctionArgs, HeadersFunction } from 'react-router'
+import type {
+  LinksFunction,
+  LoaderFunctionArgs,
+  HeadersFunction,
+} from 'react-router'
 import {
   data,
   redirect,
@@ -24,7 +32,13 @@ import { getAuthenticatedUser } from '~/api/api.server'
 import { LocaleLinks } from '~/components/LocaleLinks'
 import SelfhostedApiUrlBanner from '~/components/SelfhostedApiUrlBanner'
 import { SEO } from '~/components/SEO'
-import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER, isDevelopment } from '~/lib/constants'
+import {
+  CONTACT_EMAIL,
+  LS_THEME_SETTING,
+  isSelfhosted,
+  I18N_CACHE_BREAKER,
+  isDevelopment,
+} from '~/lib/constants'
 import mainCss from '~/styles/index.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
 import { trackViews, trackErrors, trackError } from '~/utils/analytics'
@@ -72,7 +86,8 @@ export const headers: HeadersFunction = () => ({
   'Accept-CH': 'Sec-CH-Prefers-Color-Scheme',
   Vary: 'Sec-CH-Prefers-Color-Scheme, Cookie',
   'Critical-CH': 'Sec-CH-Prefers-Color-Scheme',
-  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+  'Cache-Control':
+    'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
   Pragma: 'no-cache',
   Expires: '0',
 })
@@ -80,7 +95,10 @@ export const headers: HeadersFunction = () => ({
 // Fix for "You made a POST request to ... but did not provide an `action`" error
 // caused by bots probing endpoints that don't support POST requests.
 export async function action() {
-  return data(null, { status: 405, statusText: 'Method Not Allowed - non existent endpoint' })
+  return data(null, {
+    status: 405,
+    statusText: 'Method Not Allowed - non existent endpoint',
+  })
 }
 
 export function ErrorBoundary() {
@@ -115,14 +133,19 @@ export function ErrorBoundary() {
       </head>
       <body>
         {/* Using style because for some reason min-h-screen doesn't work */}
-        <div style={{ minHeight: '100vh' }} className='flex flex-col bg-gray-50 pt-16 pb-12 dark:bg-slate-900'>
+        <div
+          style={{ minHeight: '100vh' }}
+          className='flex flex-col bg-gray-50 pt-16 pb-12 dark:bg-slate-900'
+        >
           <div className='mx-auto flex w-full max-w-7xl flex-grow flex-col justify-center px-4 sm:px-6 lg:px-8'>
             <div className='flex shrink-0 justify-center'>
               <ExclamationTriangleIcon className='h-24 w-auto text-yellow-400 dark:text-yellow-600' />
             </div>
             <div className='py-8'>
               <div className='text-center'>
-                <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>Uh-oh..</h1>
+                <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
+                  Uh-oh..
+                </h1>
                 <p className='mt-2 text-base font-medium text-gray-800 dark:text-gray-300'>
                   The app has crashed. We are sorry about that :(
                   <br />
@@ -254,9 +277,18 @@ const Body = () => {
   const { theme } = useTheme()
 
   return (
-    <body className={cx(theme, { 'bg-gray-50': theme === 'light', 'bg-slate-900': theme === 'dark' })}>
+    <body
+      className={cx(theme, {
+        'bg-gray-50': theme === 'light',
+        'bg-slate-900': theme === 'dark',
+      })}
+    >
       <SelfhostedApiUrlBanner />
-      <AuthProvider initialIsAuthenticated={isAuthed} initialUser={user} initialTotalMonthlyEvents={totalMonthlyEvents}>
+      <AuthProvider
+        initialIsAuthenticated={isAuthed}
+        initialUser={user}
+        initialTotalMonthlyEvents={totalMonthlyEvents}
+      >
         <AppWrapper />
       </AuthProvider>
       <ScrollRestoration />
@@ -279,13 +311,23 @@ export default function App() {
   const isEmbedded = searchParams.get('embedded') === 'true'
 
   return (
-    <html className={cx('font-sans antialiased', { 'scrollbar-thin': isEmbedded })} lang={locale} dir={i18n.dir()}>
+    <html
+      className={cx('font-sans antialiased', { 'scrollbar-thin': isEmbedded })}
+      lang={locale}
+      dir={i18n.dir()}
+    >
       <head>
         <meta charSet='utf-8' />
         <SEO />
         <meta name='google' content='notranslate' />
-        <link rel='icon' type='image/x-icon' href={isSelfhosted ? '/favicon-ce.ico' : '/favicon.ico'} />
-        {isDevelopment ? <script src='https://unpkg.com/react-scan@0.4.3/dist/auto.global.js' /> : null}
+        <link
+          rel='icon'
+          type='image/x-icon'
+          href={isSelfhosted ? '/favicon-ce.ico' : '/favicon.ico'}
+        />
+        {isDevelopment ? (
+          <script src='https://unpkg.com/react-scan@0.4.3/dist/auto.global.js' />
+        ) : null}
         <Meta />
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Links />

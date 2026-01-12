@@ -33,7 +33,7 @@ export class ProjectSubscriber {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @ManyToOne(() => Project, project => project.subscribers)
+  @ManyToOne(() => Project, (project) => project.subscribers)
   @JoinColumn()
   project: Project
 }

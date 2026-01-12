@@ -36,8 +36,13 @@ const CHART_COLORS = [
   '#db2777', // pink-600
 ]
 
-const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
-  const validData = data.filter((n) => n !== undefined && n !== null && Number.isFinite(n))
+const calculateOptimalTicks = (
+  data: number[],
+  targetCount: number = 6,
+): number[] => {
+  const validData = data.filter(
+    (n) => n !== undefined && n !== null && Number.isFinite(n),
+  )
 
   if (validData.length === 0) {
     return [0, 1]
@@ -108,14 +113,21 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
     const isPieDonut = isPieOrDonutChart(chart.chartType)
 
     if (isPieDonut) {
-      if (_isEmpty(chart.data) || _isEmpty(chart.data.labels) || _isEmpty(chart.data.values)) {
+      if (
+        _isEmpty(chart.data) ||
+        _isEmpty(chart.data.labels) ||
+        _isEmpty(chart.data.values)
+      ) {
         return {}
       }
 
       const labels = chart.data.labels as string[]
       const values = chart.data.values as number[]
 
-      const columns: any[] = labels.map((label, idx) => [label, values[idx] || 0])
+      const columns: any[] = labels.map((label, idx) => [
+        label,
+        values[idx] || 0,
+      ])
 
       const colors: Record<string, string> = {}
       labels.forEach((label, idx) => {
@@ -133,7 +145,8 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
             ? {
                 title: '',
                 label: {
-                  format: (_value: number, ratio: number) => `${(ratio * 100).toFixed(1)}%`,
+                  format: (_value: number, ratio: number) =>
+                    `${(ratio * 100).toFixed(1)}%`,
                 },
               }
             : undefined,
@@ -141,7 +154,8 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
           chart.chartType === 'pie'
             ? {
                 label: {
-                  format: (_value: number, ratio: number) => `${(ratio * 100).toFixed(1)}%`,
+                  format: (_value: number, ratio: number) =>
+                    `${(ratio * 100).toFixed(1)}%`,
                 },
               }
             : undefined,
@@ -159,8 +173,10 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
           format: {
             value: (value: number, ratio: number) => {
               const percentage = (ratio * 100).toFixed(1)
-              if (value >= 1000000) return `${(value / 1000000).toFixed(2)}M (${percentage}%)`
-              if (value >= 1000) return `${(value / 1000).toFixed(2)}K (${percentage}%)`
+              if (value >= 1000000)
+                return `${(value / 1000000).toFixed(2)}M (${percentage}%)`
+              if (value >= 1000)
+                return `${(value / 1000).toFixed(2)}K (${percentage}%)`
               return `${value.toLocaleString()} (${percentage}%)`
             },
           },
@@ -176,11 +192,22 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
     }
 
     const xData = chart.data.x as string[]
-    const seriesKeys = _filter(_keys(chart.data), (key) => key !== 'x' && key !== 'labels' && key !== 'values')
+    const seriesKeys = _filter(
+      _keys(chart.data),
+      (key) => key !== 'x' && key !== 'labels' && key !== 'values',
+    )
 
-    const columns: any[] = [['x', ..._map(xData, (el) => (dayjs(el).isValid() ? dayjs(el).toDate() : el))]]
+    const columns: any[] = [
+      [
+        'x',
+        ..._map(xData, (el) => (dayjs(el).isValid() ? dayjs(el).toDate() : el)),
+      ],
+    ]
 
-    const types: Record<string, ReturnType<typeof line | typeof bar | typeof area | typeof spline>> = {}
+    const types: Record<
+      string,
+      ReturnType<typeof line | typeof bar | typeof area | typeof spline>
+    > = {}
     const colors: Record<string, string> = {}
 
     seriesKeys.forEach((key, idx) => {
@@ -201,7 +228,8 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
       }
     })
 
-    const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+    const optimalTicks =
+      allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
     const isDateAxis = xData.length > 0 && dayjs(xData[0]).isValid()
 
@@ -298,7 +326,11 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
   const isPieDonut = isPieOrDonutChart(chart.chartType)
 
   if (isPieDonut) {
-    if (_isEmpty(chart.data) || _isEmpty(chart.data.labels) || _isEmpty(chart.data.values)) {
+    if (
+      _isEmpty(chart.data) ||
+      _isEmpty(chart.data.labels) ||
+      _isEmpty(chart.data.values)
+    ) {
       return null
     }
   } else {
@@ -310,7 +342,9 @@ const AIChart: React.FC<AIChartProps> = ({ chart }) => {
   return (
     <div className='rounded-lg border border-gray-200 bg-white p-3 dark:border-slate-600 dark:bg-slate-800'>
       {chart.title ? (
-        <h4 className='mb-2 text-sm font-medium text-gray-700 dark:text-gray-300'>{chart.title}</h4>
+        <h4 className='mb-2 text-sm font-medium text-gray-700 dark:text-gray-300'>
+          {chart.title}
+        </h4>
       ) : null}
       <div className={isPieDonut ? 'h-[280px] w-full' : 'h-[200px] w-full'}>
         <BillboardChart options={chartOptions} className='h-full w-full' />

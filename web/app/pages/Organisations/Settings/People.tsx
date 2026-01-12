@@ -27,7 +27,9 @@ const NoPeople = () => {
   return (
     <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
       <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
+        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>
+          {t('project.settings.noPeople')}
+        </h2>
       </div>
     </div>
   )
@@ -46,7 +48,9 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
   } = useTranslation('common')
   const { user } = useAuth()
 
-  const [roleEditDropdownId, setRoleEditDropdownId] = useState<string | null>(null)
+  const [roleEditDropdownId, setRoleEditDropdownId] = useState<string | null>(
+    null,
+  )
   const openRef = useRef<HTMLUListElement>(null)
   useOnClickOutside(openRef, () => setRoleEditDropdownId(null))
 
@@ -73,14 +77,23 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
         {member.confirmed ? (
           <div>
             <button
-              onClick={() => setRoleEditDropdownId((prev) => (prev === member.id ? null : member.id))}
+              onClick={() =>
+                setRoleEditDropdownId((prev) =>
+                  prev === member.id ? null : member.id,
+                )
+              }
               type='button'
-              disabled={member.user.email === user?.email || member.role === 'owner'}
+              disabled={
+                member.user.email === user?.email || member.role === 'owner'
+              }
               className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`organisations.role.${member.role}.name`)}
               <ChevronDownIcon
-                style={{ transform: roleEditDropdownId === member.id ? 'rotate(180deg)' : '' }}
+                style={{
+                  transform:
+                    roleEditDropdownId === member.id ? 'rotate(180deg)' : '',
+                }}
                 className='ml-0.5 h-4 w-4 pt-px'
               />
             </button>
@@ -120,14 +133,20 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
                   }}
                   className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
                 >
-                  <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
+                  <p className='font-bold text-red-600 dark:text-red-500'>
+                    {t('project.settings.removeMember')}
+                  </p>
                 </li>
               </ul>
             ) : null}
           </div>
         ) : (
           <div className='flex items-center justify-end'>
-            <Badge colour='yellow' className='mr-3' label={t('common.pending')} />
+            <Badge
+              colour='yellow'
+              className='mr-3'
+              label={t('common.pending')}
+            />
             <Button
               type='button'
               className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
@@ -167,12 +186,15 @@ const People = ({ organisation }: PeopleProps) => {
   const [validated, setValidated] = useState(false)
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [memberToRemove, setMemberToRemove] = useState<DetailedOrganisation['members'][number] | null>(null)
+  const [memberToRemove, setMemberToRemove] = useState<
+    DetailedOrganisation['members'][number] | null
+  >(null)
 
   const { name, members } = organisation
 
   const isSubmitting = fetcher.state === 'submitting'
-  const isDeleting = isSubmitting && fetcher.formData?.get('intent') === 'remove-member'
+  const isDeleting =
+    isSubmitting && fetcher.formData?.get('intent') === 'remove-member'
 
   const closeModal = () => {
     setShowModal(false)
@@ -276,9 +298,17 @@ const People = ({ organisation }: PeopleProps) => {
           <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('project.settings.people')}
           </h3>
-          <p className='text-sm text-gray-500 dark:text-gray-400'>{t('project.settings.inviteCoworkers')}</p>
+          <p className='text-sm text-gray-500 dark:text-gray-400'>
+            {t('project.settings.inviteCoworkers')}
+          </p>
         </div>
-        <Button className='h-8 pl-2' primary regular type='button' onClick={() => setShowModal(true)}>
+        <Button
+          className='h-8 pl-2'
+          primary
+          regular
+          type='button'
+          onClick={() => setShowModal(true)}
+        >
           <>
             <UserRoundPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             {t('project.settings.invite')}
@@ -337,7 +367,9 @@ const People = ({ organisation }: PeopleProps) => {
         submitText={t('common.yes')}
         type='confirmed'
         closeText={t('common.no')}
-        title={t('project.settings.removeUser', { user: memberToRemove?.user.email })}
+        title={t('project.settings.removeUser', {
+          user: memberToRemove?.user.email,
+        })}
         message={t('project.settings.removeConfirm')}
         isOpened={showDeleteModal}
         isLoading={isDeleting}
@@ -378,13 +410,19 @@ const People = ({ organisation }: PeopleProps) => {
             />
             <fieldset className='mt-4'>
               {}
-              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300' htmlFor='role'>
+              <label
+                className='block text-sm font-medium text-gray-700 dark:text-gray-300'
+                htmlFor='role'
+              >
                 {t('project.settings.role')}
               </label>
               <div
-                className={cx('mt-1 -space-y-px rounded-md bg-white dark:bg-slate-900', {
-                  'border border-red-300': errors.role,
-                })}
+                className={cx(
+                  'mt-1 -space-y-px rounded-md bg-white dark:bg-slate-900',
+                  {
+                    'border border-red-300': errors.role,
+                  },
+                )}
               >
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                 <label
@@ -409,16 +447,20 @@ const People = ({ organisation }: PeopleProps) => {
                   <div className='ml-3 flex flex-col'>
                     <span
                       className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white': form.role === 'admin',
-                        'text-gray-700 dark:text-gray-200': form.role !== 'admin',
+                        'text-indigo-900 dark:text-white':
+                          form.role === 'admin',
+                        'text-gray-700 dark:text-gray-200':
+                          form.role !== 'admin',
                       })}
                     >
                       {t('organisations.role.admin.name')}
                     </span>
                     <span
                       className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100': form.role === 'admin',
-                        'text-gray-700 dark:text-gray-200': form.role !== 'admin',
+                        'text-indigo-700 dark:text-gray-100':
+                          form.role === 'admin',
+                        'text-gray-700 dark:text-gray-200':
+                          form.role !== 'admin',
                       })}
                     >
                       {t('organisations.role.admin.desc')}
@@ -448,16 +490,20 @@ const People = ({ organisation }: PeopleProps) => {
                   <div className='ml-3 flex flex-col'>
                     <span
                       className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white': form.role === 'viewer',
-                        'text-gray-700 dark:text-gray-200': form.role !== 'viewer',
+                        'text-indigo-900 dark:text-white':
+                          form.role === 'viewer',
+                        'text-gray-700 dark:text-gray-200':
+                          form.role !== 'viewer',
                       })}
                     >
                       {t('organisations.role.viewer.name')}
                     </span>
                     <span
                       className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100': form.role === 'viewer',
-                        'text-gray-700 dark:text-gray-200': form.role !== 'viewer',
+                        'text-indigo-700 dark:text-gray-100':
+                          form.role === 'viewer',
+                        'text-gray-700 dark:text-gray-200':
+                          form.role !== 'viewer',
                       })}
                     >
                       {t('organisations.role.viewer.desc')}
@@ -466,7 +512,10 @@ const People = ({ organisation }: PeopleProps) => {
                 </label>
               </div>
               {errors.role ? (
-                <p className='mt-2 text-sm text-red-600 dark:text-red-500' id='email-error'>
+                <p
+                  className='mt-2 text-sm text-red-600 dark:text-red-500'
+                  id='email-error'
+                >
                   {errors.role}
                 </p>
               ) : null}

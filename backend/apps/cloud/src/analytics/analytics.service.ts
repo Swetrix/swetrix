@@ -665,7 +665,7 @@ export class AnalyticsService {
   removeCyclicDependencies(links: IUserFlowLink[]): IUserFlowLink[] {
     const visited = new Set<string>()
 
-    return links.filter(link => {
+    return links.filter((link) => {
       const key = `${link.source}_${link.target}`
       if (visited.has(key)) {
         return false
@@ -723,7 +723,7 @@ export class AnalyticsService {
         query,
         query_params: params,
       })
-      .then(res => res.json<IUserFlowLink>())
+      .then((res) => res.json<IUserFlowLink>())
 
     if (_isEmpty(data)) {
       const empty = { nodes: [], links: [] }
@@ -795,7 +795,7 @@ export class AnalyticsService {
         )
       }
 
-      if (_some(pages, page => !_isString(page))) {
+      if (_some(pages, (page) => !_isString(page))) {
         throw new UnprocessableEntityException(
           'Pages array must contain string values only',
         )
@@ -821,7 +821,7 @@ export class AnalyticsService {
         query: `SELECT min(created) AS firstCreated FROM ${table} WHERE pid = {pid:FixedString(12)}`,
         query_params: { pid },
       })
-      .then(res => res.json<{ firstCreated?: string }>())
+      .then((res) => res.json<{ firstCreated?: string }>())
 
     const firstCreated = fromData?.[0]?.firstCreated
 
@@ -861,7 +861,7 @@ export class AnalyticsService {
         const { column, filter, isExclusive, isContains = false } = curr
 
         if (_isArray(filter)) {
-          const filterArray = _map(filter, f => ({
+          const filterArray = _map(filter, (f) => ({
             column,
             filter: f,
             isExclusive,
@@ -1041,7 +1041,7 @@ export class AnalyticsService {
               `(domain(ref) != '' AND (lower(domain(ref)) = {${dp}:String} OR endsWith(lower(domain(ref)), concat('.', {${dp}:String})))) OR (domain(ref) = '' AND (lower(ref) = {${dp}:String} OR endsWith(lower(ref), concat('.', {${dp}:String}))))`,
             )
           }
-          const combined = parts.map(p => `(${p})`).join(' OR ')
+          const combined = parts.map((p) => `(${p})`).join(' OR ')
           query += isExclusive ? `NOT (${combined})` : `(${combined})`
           continue
         }
@@ -1117,9 +1117,7 @@ export class AnalyticsService {
           }
         } else {
           query += isArrayDataset
-            ? `indexOf(${sqlColumn}, {${param}:String}) ${
-                isExclusive ? '=' : '>'
-              } 0`
+            ? `indexOf(${sqlColumn}, {${param}:String}) ${isExclusive ? '=' : '>'} 0`
             : `${isExclusive ? 'NOT ' : ''}${sqlColumn} = {${param}:String}`
         }
       }
@@ -1262,7 +1260,7 @@ export class AnalyticsService {
           query,
           query_params: { psid, pid },
         })
-        .then(resultSet =>
+        .then((resultSet) =>
           resultSet.json<{
             firstSeen: string | null
           }>(),
@@ -1315,7 +1313,7 @@ export class AnalyticsService {
           query,
           query_params: { psid, pid, cutoff },
         })
-        .then(resultSet => resultSet.json())
+        .then((resultSet) => resultSet.json())
 
       return data.length > 0
     } catch (error) {
@@ -1341,7 +1339,7 @@ export class AnalyticsService {
           query,
           query_params: { psid, pid },
         })
-        .then(resultSet => resultSet.json<{ duration: number }>())
+        .then((resultSet) => resultSet.json<{ duration: number }>())
 
       return data[0]?.duration ?? null
     } catch (error) {
@@ -1425,7 +1423,7 @@ export class AnalyticsService {
   }
 
   generateEmptyFunnel(pages: string[]): IFunnel[] {
-    return _map(pages, value => ({
+    return _map(pages, (value) => ({
       value,
       events: 0,
       eventsPerc: 0,
@@ -1488,7 +1486,7 @@ export class AnalyticsService {
         query,
         query_params: { ...params, ...pageParams },
       })
-      .then(resultSet => resultSet.json<IFunnelCHResponse>())
+      .then((resultSet) => resultSet.json<IFunnelCHResponse>())
 
     if (_isEmpty(data)) {
       return this.generateEmptyFunnel(pages)
@@ -1515,7 +1513,7 @@ export class AnalyticsService {
         query,
         query_params: { pid, groupFrom, groupTo },
       })
-      .then(resultSet => resultSet.json<{ c: number }>())
+      .then((resultSet) => resultSet.json<{ c: number }>())
 
     return data[0]?.c || 0
   }
@@ -1621,7 +1619,7 @@ export class AnalyticsService {
         query,
         query_params: { pid, groupFrom, groupTo },
       })
-      .then(resultSet => resultSet.json<{ cc: string; count: number }>())
+      .then((resultSet) => resultSet.json<{ cc: string; count: number }>())
 
     return data[0] || null
   }
@@ -1662,7 +1660,7 @@ export class AnalyticsService {
         query,
         query_params: { pids, groupFrom, groupTo },
       })
-      .then(resultSet =>
+      .then((resultSet) =>
         resultSet.json<{ pid: string; cc: string; count: any }>(),
       )
 
@@ -1700,7 +1698,7 @@ export class AnalyticsService {
         query,
         query_params: { pid, groupFrom, groupTo },
       })
-      .then(resultSet =>
+      .then((resultSet) =>
         resultSet.json<{ count: number; uniqueErrors: number }>(),
       )
 
@@ -1733,7 +1731,7 @@ export class AnalyticsService {
         query,
         query_params: { pids, groupFrom, groupTo },
       })
-      .then(resultSet =>
+      .then((resultSet) =>
         resultSet.json<{
           pid: string
           count: any
@@ -1780,7 +1778,9 @@ export class AnalyticsService {
         query,
         query_params: { pids, groupFrom, groupTo },
       })
-      .then(resultSet => resultSet.json<{ pid: string; totalSessions: any }>())
+      .then((resultSet) =>
+        resultSet.json<{ pid: string; totalSessions: any }>(),
+      )
 
     const result: Record<string, number> = {}
     for (const row of data || []) {
@@ -1830,7 +1830,7 @@ export class AnalyticsService {
     const [filtersQuery, filtersParams, , customEVFilterApplied] =
       this.getFiltersQuery(filters, DataType.ANALYTICS)
 
-    const promises = pids.map(async pid => {
+    const promises = pids.map(async (pid) => {
       try {
         if (period === 'all') {
           let queryAll = `
@@ -1899,7 +1899,7 @@ export class AnalyticsService {
                 ...filtersParams,
               },
             })
-            .then(resultSet => resultSet.json<BirdseyeCHResponse>())
+            .then((resultSet) => resultSet.json<BirdseyeCHResponse>())
 
           let bounceRate = 0
 
@@ -2131,7 +2131,7 @@ export class AnalyticsService {
               ...filtersParams,
             },
           })
-          .then(resultSet => resultSet.json<BirdseyeCHResponse>())
+          .then((resultSet) => resultSet.json<BirdseyeCHResponse>())
 
         data = _sortBy(data, 'sortOrder')
 
@@ -2250,7 +2250,7 @@ export class AnalyticsService {
           query,
           query_params: { ...paramsData.params, timezone: safeTimezone },
         })
-        .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
+        .then((resultSet) => resultSet.json<TrafficCEFilterCHResponse>())
 
       const visits =
         this.extractCustomEventsChartData(data, xShifted)?._unknown_event || []
@@ -2269,7 +2269,7 @@ export class AnalyticsService {
         query,
         query_params: { ...paramsData.params, timezone: safeTimezone },
       })
-      .then(resultSet => resultSet.json<TrafficCHResponse>())
+      .then((resultSet) => resultSet.json<TrafficCHResponse>())
 
     const { visits } = this.extractChartData(data, xShifted)
 
@@ -2315,10 +2315,10 @@ export class AnalyticsService {
     const cols = ['dns', 'tls', 'conn', 'response', 'render', 'domLoad', 'ttfb']
 
     const columnSelectors = cols
-      .map(col => `${MEASURES_MAP[measure]}(${col}) as ${col}`)
+      .map((col) => `${MEASURES_MAP[measure]}(${col}) as ${col}`)
       .join(', ')
 
-    const promises = pids.map(async pid => {
+    const promises = pids.map(async (pid) => {
       try {
         if (period === 'all') {
           const queryAll = `SELECT ${columnSelectors} FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
@@ -2331,7 +2331,9 @@ export class AnalyticsService {
                 ...filtersParams,
               },
             })
-            .then(resultSet => resultSet.json<Partial<PerformanceCHResponse>>())
+            .then((resultSet) =>
+              resultSet.json<Partial<PerformanceCHResponse>>(),
+            )
 
           result[pid] = {
             current: {
@@ -2398,7 +2400,7 @@ export class AnalyticsService {
               ...filtersParams,
             },
           })
-          .then(resultSet => resultSet.json<Partial<PerformanceCHResponse>>())
+          .then((resultSet) => resultSet.json<Partial<PerformanceCHResponse>>())
 
         data = _sortBy(data, 'sortOrder')
 
@@ -2492,7 +2494,7 @@ export class AnalyticsService {
           query,
           query_params: { pid },
         })
-        .then(resultSet => resultSet.json<any>())
+        .then((resultSet) => resultSet.json<any>())
 
       return _map(data, 'page')
     }
@@ -2510,7 +2512,7 @@ export class AnalyticsService {
           pid,
         },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     return _map(data, type)
   }
@@ -2531,7 +2533,7 @@ export class AnalyticsService {
           pid,
         },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     return _map(data, type)
   }
@@ -2556,9 +2558,9 @@ export class AnalyticsService {
         query,
         query_params: { pid },
       })
-      .then(resultSet => resultSet.json<Record<string, string>[]>())
+      .then((resultSet) => resultSet.json<Record<string, string>[]>())
 
-    return data.map(row => ({
+    return data.map((row) => ({
       name: row[column],
       version: row[safeVersionCol],
     }))
@@ -2578,7 +2580,7 @@ export class AnalyticsService {
       : !_isEmpty(
           _find(
             parsedFilters,
-            filter =>
+            (filter) =>
               (filter.column === 'pg' || filter.column === 'host') &&
               !filter.isExclusive,
           ),
@@ -2599,7 +2601,7 @@ export class AnalyticsService {
     }
 
     // Build a single query combining all metrics
-    const withClauses = columns.map(col => {
+    const withClauses = columns.map((col) => {
       const baseQuery = generateParamsQuery(
         col,
         subQuery,
@@ -2627,7 +2629,7 @@ export class AnalyticsService {
         extra_fields
       FROM (
         ${columns
-          .map(col => {
+          .map((col) => {
             let extraField = `CAST([] AS Array(Nullable(String))) as extra_fields`
 
             if (col === 'rg') {
@@ -2659,9 +2661,9 @@ export class AnalyticsService {
         query,
         query_params: paramsData.params,
       })
-      .then(resultSet => resultSet.json<any>())
+      .then((resultSet) => resultSet.json<any>())
 
-    const params = Object.fromEntries(columns.map(col => [col, []]))
+    const params = Object.fromEntries(columns.map((col) => [col, []]))
 
     const { length } = data
 
@@ -3102,7 +3104,7 @@ export class AnalyticsService {
     const cols = ['dns', 'tls', 'conn', 'response', 'render', 'domLoad', 'ttfb']
 
     const columnSelectors = cols
-      .map(col => `${MEASURES_MAP[measure]}(${col}) as ${col}`)
+      .map((col) => `${MEASURES_MAP[measure]}(${col}) as ${col}`)
       .join(', ')
 
     return `
@@ -3135,7 +3137,9 @@ export class AnalyticsService {
     const cols = ['dns', 'tls', 'conn', 'response', 'render', 'domLoad', 'ttfb']
 
     const columnSelectors = cols
-      .map(col => `quantilesExactInclusive(0.5, 0.75, 0.95)(${col}) as ${col}`)
+      .map(
+        (col) => `quantilesExactInclusive(0.5, 0.75, 0.95)(${col}) as ${col}`,
+      )
       .join(', ')
 
     return `
@@ -3312,7 +3316,7 @@ export class AnalyticsService {
         query,
         query_params: paramsData.params,
       })
-      .then(resultSet => resultSet.json<any>())
+      .then((resultSet) => resultSet.json<any>())
 
     return data || []
   }
@@ -3342,7 +3346,7 @@ export class AnalyticsService {
         query,
         query_params: paramsData.params,
       })
-      .then(resultSet => resultSet.json<any>())
+      .then((resultSet) => resultSet.json<any>())
 
     return data || []
   }
@@ -3400,7 +3404,7 @@ export class AnalyticsService {
           query,
           query_params: { ...paramsData.params, timezone: safeTimezone },
         })
-        .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
+        .then((resultSet) => resultSet.json<TrafficCEFilterCHResponse>())
 
       const uniques =
         this.extractCustomEventsChartData(data, xShifted)?._unknown_event || []
@@ -3428,7 +3432,7 @@ export class AnalyticsService {
         query,
         query_params: { ...paramsData.params, timezone: safeTimezone },
       })
-      .then(resultSet => resultSet.json<TrafficCHResponse>())
+      .then((resultSet) => resultSet.json<TrafficCHResponse>())
 
     const { visits, uniques, sdur } = this.extractChartData(data, xShifted)
 
@@ -3541,19 +3545,19 @@ export class AnalyticsService {
           query: pageviewsQuery,
           query_params: queryParams,
         })
-        .then(resultSet => resultSet.json<any>()),
+        .then((resultSet) => resultSet.json<any>()),
       clickhouse
         .query({
           query: customEventsQuery,
           query_params: queryParams,
         })
-        .then(resultSet => resultSet.json<any>()),
+        .then((resultSet) => resultSet.json<any>()),
       clickhouse
         .query({
           query: errorsQuery,
           query_params: queryParams,
         })
-        .then(resultSet => resultSet.json<any>()),
+        .then((resultSet) => resultSet.json<any>()),
     ])
 
     const pageviews = this.extractCountsForSessionChart(
@@ -3581,15 +3585,15 @@ export class AnalyticsService {
       x: xShifted,
     }
 
-    if (_some(pageviews, count => count > 0)) {
+    if (_some(pageviews, (count) => count > 0)) {
       chartOutput.pageviews = pageviews
     }
 
-    if (_some(customEvents, count => count > 0)) {
+    if (_some(customEvents, (count) => count > 0)) {
       chartOutput.customEvents = customEvents
     }
 
-    if (_some(errors, count => count > 0)) {
+    if (_some(errors, (count) => count > 0)) {
       chartOutput.errors = errors
     }
 
@@ -3676,7 +3680,7 @@ export class AnalyticsService {
           'captcha',
         )
 
-        if (!_some(_values(params), val => !_isEmpty(val))) {
+        if (!_some(_values(params), (val) => !_isEmpty(val))) {
           throw new BadRequestException(
             'There are no parameters for the specified time frames',
           )
@@ -3703,7 +3707,7 @@ export class AnalyticsService {
             query,
             query_params: { ...paramsData.params, timezone: safeTimezone },
           })
-          .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
+          .then((resultSet) => resultSet.json<TrafficCEFilterCHResponse>())
         const { count } = this.extractCaptchaChartData(data, xShifted)
 
         chart = {
@@ -3745,7 +3749,7 @@ export class AnalyticsService {
           'errors',
         )
 
-        if (!_some(_values(params), val => !_isEmpty(val))) {
+        if (!_some(_values(params), (val) => !_isEmpty(val))) {
           throw new BadRequestException(
             'There are no error details for specified time frame',
           )
@@ -3767,7 +3771,7 @@ export class AnalyticsService {
             query,
             query_params: paramsData.params,
           })
-          .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
+          .then((resultSet) => resultSet.json<TrafficCEFilterCHResponse>())
         const { count, affectedUsers } = this.extractErrorsChartData(data, x)
 
         chart = {
@@ -3897,7 +3901,7 @@ export class AnalyticsService {
           query,
           query_params: { ...paramsData.params, timezone: safeTimezone },
         })
-        .then(resultSet => resultSet.json())
+        .then((resultSet) => resultSet.json())
 
       return {
         x: xShifted,
@@ -3916,7 +3920,7 @@ export class AnalyticsService {
         query,
         query_params: { ...paramsData.params, timezone: safeTimezone },
       })
-      .then(resultSet => resultSet.json<PerformanceCHResponse>())
+      .then((resultSet) => resultSet.json<PerformanceCHResponse>())
 
     return {
       x: xShifted,
@@ -3949,7 +3953,7 @@ export class AnalyticsService {
           measure,
         )
 
-        if (!_some(_values(params), val => !_isEmpty(val))) {
+        if (!_some(_values(params), (val) => !_isEmpty(val))) {
           throw new BadRequestException(
             'There are no parameters for the specified time frames',
           )
@@ -3990,7 +3994,7 @@ export class AnalyticsService {
         query,
         query_params: params.params,
       })
-      .then(resultSet => resultSet.json<CustomsCHResponse>())
+      .then((resultSet) => resultSet.json<CustomsCHResponse>())
     const size = _size(data)
 
     for (let i = 0; i < size; ++i) {
@@ -4028,7 +4032,7 @@ export class AnalyticsService {
         query,
         query_params: params.params,
       })
-      .then(resultSet => resultSet.json<PropertiesCHResponse>())
+      .then((resultSet) => resultSet.json<PropertiesCHResponse>())
     const size = _size(data)
 
     for (let i = 0; i < size; ++i) {
@@ -4125,7 +4129,7 @@ export class AnalyticsService {
           query,
           query_params: paramsData.params,
         })
-        .then(resultSet => resultSet.json<IAggregatedMetadata>())
+        .then((resultSet) => resultSet.json<IAggregatedMetadata>())
 
       return {
         result,
@@ -4227,7 +4231,7 @@ export class AnalyticsService {
           query,
           query_params: paramsData.params,
         })
-        .then(resultSet => resultSet.json<IAggregatedMetadata>())
+        .then((resultSet) => resultSet.json<IAggregatedMetadata>())
 
       return {
         result,
@@ -4273,7 +4277,7 @@ export class AnalyticsService {
             since,
           },
         })
-        .then(resultSet => resultSet.json<{ count: string }>())
+        .then((resultSet) => resultSet.json<{ count: string }>())
 
       return Number(data[0]?.count || 0)
     } catch (error) {
@@ -4330,7 +4334,7 @@ export class AnalyticsService {
           customEvents: customEvents || [],
         },
       })
-      .then(resultSet => resultSet.json<CustomsCHAggregatedResponse>())
+      .then((resultSet) => resultSet.json<CustomsCHAggregatedResponse>())
 
     const events = this.extractCustomEventsChartData(data, xShifted)
 
@@ -4375,8 +4379,10 @@ export class AnalyticsService {
         (page.type === 'sale' || page.type === 'refund') &&
         processedMetadata
       ) {
-        const amountEntry = processedMetadata.find(m => m.key === 'amount')
-        const currencyEntry = processedMetadata.find(m => m.key === 'currency')
+        const amountEntry = processedMetadata.find((m) => m.key === 'amount')
+        const currencyEntry = processedMetadata.find(
+          (m) => m.key === 'currency',
+        )
 
         let amount: number | undefined
 
@@ -4391,7 +4397,7 @@ export class AnalyticsService {
         return {
           ...page,
           metadata: processedMetadata.filter(
-            m => m.key !== 'amount' && m.key !== 'currency',
+            (m) => m.key !== 'amount' && m.key !== 'currency',
           ),
           amount,
           currency: currencyEntry ? currencyEntry.value : undefined,
@@ -4552,7 +4558,7 @@ export class AnalyticsService {
         query: queryPages,
         query_params: paramsData.params,
       })
-      .then(resultSet => resultSet.json<IPageflow>())
+      .then((resultSet) => resultSet.json<IPageflow>())
 
     let details = (
       await clickhouse
@@ -4560,7 +4566,7 @@ export class AnalyticsService {
           query: querySessionDetails,
           query_params: paramsData.params,
         })
-        .then(resultSet => resultSet.json())
+        .then((resultSet) => resultSet.json())
         .then(({ data }) => data)
     )[0] as any
 
@@ -4571,7 +4577,7 @@ export class AnalyticsService {
         query: querySessionDuration,
         query_params: paramsData.params,
       })
-      .then(resultSet =>
+      .then((resultSet) =>
         resultSet.json<{
           duration: number | null
           lastSeen: string | null
@@ -4626,7 +4632,7 @@ export class AnalyticsService {
             query: querySessionDetailsFromCustomEV,
             query_params: paramsData.params,
           })
-          .then(resultSet => resultSet.json())
+          .then((resultSet) => resultSet.json())
           .then(({ data }) => data)
       )[0]
     }
@@ -4909,7 +4915,7 @@ export class AnalyticsService {
           skip,
         },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     return data
   }
@@ -5016,7 +5022,7 @@ export class AnalyticsService {
         query,
         query_params: { pid, ...paramsData.params, take, skip },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     return data
       .filter((profile: any) => profile.profileId)
@@ -5122,22 +5128,22 @@ export class AnalyticsService {
     ] = await Promise.all([
       clickhouse
         .query({ query: querySessionCount, query_params: params })
-        .then(resultSet => resultSet.json()),
+        .then((resultSet) => resultSet.json()),
       clickhouse
         .query({ query: queryAvgDuration, query_params: params })
-        .then(resultSet => resultSet.json()),
+        .then((resultSet) => resultSet.json()),
       clickhouse
         .query({ query: queryPageviews, query_params: params })
-        .then(resultSet => resultSet.json()),
+        .then((resultSet) => resultSet.json()),
       clickhouse
         .query({ query: queryEvents, query_params: params })
-        .then(resultSet => resultSet.json()),
+        .then((resultSet) => resultSet.json()),
       clickhouse
         .query({ query: queryDetails, query_params: params })
-        .then(resultSet => resultSet.json()),
+        .then((resultSet) => resultSet.json()),
       clickhouse
         .query({ query: queryRevenue, query_params: params })
-        .then(resultSet => resultSet.json()),
+        .then((resultSet) => resultSet.json()),
     ])
 
     const sessionCount = (sessionCountResult.data[0] || {}) as Record<
@@ -5187,7 +5193,7 @@ export class AnalyticsService {
         query,
         query_params: { pid, profileId, limit: Number(limit) },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     return data as { page: string; count: number }[]
   }
@@ -5220,7 +5226,7 @@ export class AnalyticsService {
         query,
         query_params: { pid, profileId, startDate },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     return data as { date: string; count: number }[]
   }
@@ -5282,13 +5288,13 @@ export class AnalyticsService {
     const [pageviewsResult, eventsResult, errorsResult] = await Promise.all([
       clickhouse
         .query({ query: queryPageviews, query_params: params })
-        .then(resultSet => resultSet.json()),
+        .then((resultSet) => resultSet.json()),
       clickhouse
         .query({ query: queryEvents, query_params: params })
-        .then(resultSet => resultSet.json()),
+        .then((resultSet) => resultSet.json()),
       clickhouse
         .query({ query: queryErrors, query_params: params })
-        .then(resultSet => resultSet.json()),
+        .then((resultSet) => resultSet.json()),
     ])
 
     // Merge all timestamps and create aligned data
@@ -5325,9 +5331,9 @@ export class AnalyticsService {
 
     return {
       x: sortedTimes,
-      pageviews: sortedTimes.map(t => pageviewsMap.get(t) || 0),
-      customEvents: sortedTimes.map(t => eventsMap.get(t) || 0),
-      errors: sortedTimes.map(t => errorsMap.get(t) || 0),
+      pageviews: sortedTimes.map((t) => pageviewsMap.get(t) || 0),
+      customEvents: sortedTimes.map((t) => eventsMap.get(t) || 0),
+      errors: sortedTimes.map((t) => errorsMap.get(t) || 0),
     }
   }
 
@@ -5440,7 +5446,7 @@ export class AnalyticsService {
           skip,
         },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     return data as object[]
   }
@@ -5510,7 +5516,7 @@ export class AnalyticsService {
           skip,
         },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     return data
   }
@@ -5609,21 +5615,21 @@ export class AnalyticsService {
           query: queryErrorDetails,
           query_params: paramsData.params,
         })
-        .then(resultSet => resultSet.json<any>())
+        .then((resultSet) => resultSet.json<any>())
         .then(({ data }) => data[0]),
       clickhouse
         .query({
           query: queryFirstLastSeen,
           query_params: paramsData.params,
         })
-        .then(resultSet => resultSet.json<any>())
+        .then((resultSet) => resultSet.json<any>())
         .then(({ data }) => data[0]),
       clickhouse
         .query({
           query: queryMetadata,
           query_params: paramsData.params,
         })
-        .then(resultSet => resultSet.json<IAggregatedMetadata>())
+        .then((resultSet) => resultSet.json<IAggregatedMetadata>())
         .then(({ data }) => data),
     ])
 
@@ -5764,28 +5770,28 @@ export class AnalyticsService {
           query: queryTotalSessions,
           query_params: paramsData.params,
         })
-        .then(resultSet => resultSet.json<any>())
+        .then((resultSet) => resultSet.json<any>())
         .then(({ data }) => data[0]),
       clickhouse
         .query({
           query: queryErrorStats,
           query_params: paramsWithTimezone,
         })
-        .then(resultSet => resultSet.json<any>())
+        .then((resultSet) => resultSet.json<any>())
         .then(({ data }) => data[0]),
       clickhouse
         .query({
           query: queryMostFrequentError,
           query_params: paramsWithTimezone,
         })
-        .then(resultSet => resultSet.json<any>())
+        .then((resultSet) => resultSet.json<any>())
         .then(({ data }) => data[0] || null),
       clickhouse
         .query({
           query: queryChart,
           query_params: paramsWithTimezone,
         })
-        .then(resultSet => resultSet.json<any>())
+        .then((resultSet) => resultSet.json<any>())
         .then(({ data }) => data),
     ])
 
@@ -5883,11 +5889,11 @@ export class AnalyticsService {
     const [countResult, sessionsResult] = await Promise.all([
       clickhouse
         .query({ query: queryCount, query_params: params })
-        .then(resultSet => resultSet.json<any>())
+        .then((resultSet) => resultSet.json<any>())
         .then(({ data }) => data[0]),
       clickhouse
         .query({ query: querySessions, query_params: params })
-        .then(resultSet => resultSet.json<any>())
+        .then((resultSet) => resultSet.json<any>())
         .then(({ data }) => data),
     ])
 
@@ -5930,7 +5936,7 @@ export class AnalyticsService {
             query,
             query_params: { ...params, pid },
           })
-          .then(resultSet => resultSet.json())
+          .then((resultSet) => resultSet.json())
           .then(({ data }) => data)
       )[0]
     } catch (reason) {
@@ -6020,7 +6026,7 @@ export class AnalyticsService {
       .query({
         query,
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     // @ts-expect-error
     const events = data.reduce((total, row) => total + row.count, 0) as number
@@ -6070,7 +6076,7 @@ export class AnalyticsService {
     const results = []
 
     await Promise.all(
-      customEvents.map(async event => {
+      customEvents.map(async (event) => {
         const result = await this.getMetaResult(
           pid,
           event,
@@ -6084,7 +6090,7 @@ export class AnalyticsService {
       }),
     )
 
-    return results.filter(r => !!r)
+    return results.filter((r) => !!r)
   }
 
   async getMetaResult(
@@ -6204,7 +6210,7 @@ export class AnalyticsService {
           query: `${queryCurrent} UNION ALL ${queryPrevious}`,
           query_params: params,
         })
-        .then(resultSet =>
+        .then((resultSet) =>
           resultSet.json<{
             sortOrder: 1 | 2
             key: string

@@ -97,15 +97,22 @@ export default function UTMGenerator() {
     // If URL field is being updated, try to extract UTM parameters from it
     if (key === 'url' && value) {
       try {
-        const url = new URL(value.startsWith('http') ? value : `https://${value}`)
+        const url = new URL(
+          value.startsWith('http') ? value : `https://${value}`,
+        )
         const urlParams = new URLSearchParams(url.search)
 
         // Extract UTM parameters and populate the fields
-        if (urlParams.has('utm_source')) newParams.utm_source = urlParams.get('utm_source') || ''
-        if (urlParams.has('utm_medium')) newParams.utm_medium = urlParams.get('utm_medium') || ''
-        if (urlParams.has('utm_campaign')) newParams.utm_campaign = urlParams.get('utm_campaign') || ''
-        if (urlParams.has('utm_content')) newParams.utm_content = urlParams.get('utm_content') || ''
-        if (urlParams.has('utm_term')) newParams.utm_term = urlParams.get('utm_term') || ''
+        if (urlParams.has('utm_source'))
+          newParams.utm_source = urlParams.get('utm_source') || ''
+        if (urlParams.has('utm_medium'))
+          newParams.utm_medium = urlParams.get('utm_medium') || ''
+        if (urlParams.has('utm_campaign'))
+          newParams.utm_campaign = urlParams.get('utm_campaign') || ''
+        if (urlParams.has('utm_content'))
+          newParams.utm_content = urlParams.get('utm_content') || ''
+        if (urlParams.has('utm_term'))
+          newParams.utm_term = urlParams.get('utm_term') || ''
       } catch {
         // If URL parsing fails, that's fine, just keep the URL as is
       }
@@ -171,7 +178,13 @@ export default function UTMGenerator() {
 
   // Using native <details>/<summary> for FAQ to ensure content is present in the DOM for SEO
 
-  const sourceExamples = ['google', 'facebook', 'twitter', 'newsletter', 'linkedin']
+  const sourceExamples = [
+    'google',
+    'facebook',
+    'twitter',
+    'newsletter',
+    'linkedin',
+  ]
   const mediumExamples = ['cpc', 'email', 'social', 'referral', 'banner']
   const campaignExamples = ['spring_sale', 'product_launch', 'black_friday']
 
@@ -184,14 +197,17 @@ export default function UTMGenerator() {
               UTM Link Generator
             </h1>
             <p className='mt-4 text-lg text-gray-600 dark:text-gray-400'>
-              Create trackable URLs with UTM parameters to measure your marketing campaigns effectively
+              Create trackable URLs with UTM parameters to measure your
+              marketing campaigns effectively
             </p>
           </div>
 
           <div className='mt-12 rounded-xl bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
             <div className='space-y-6'>
               <div>
-                <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>Build your UTM link</h2>
+                <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                  Build your UTM link
+                </h2>
 
                 <div className='space-y-6'>
                   <Input
@@ -205,7 +221,9 @@ export default function UTMGenerator() {
 
                   <div className='grid gap-6 md:grid-cols-2'>
                     <div>
-                      <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>Campaign parameters</h3>
+                      <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                        Campaign parameters
+                      </h3>
 
                       <div className='space-y-4'>
                         <div>
@@ -222,7 +240,9 @@ export default function UTMGenerator() {
                               </>
                             }
                             value={params.utm_source}
-                            onChange={(e) => handleParamChange('utm_source', e.target.value)}
+                            onChange={(e) =>
+                              handleParamChange('utm_source', e.target.value)
+                            }
                             className='w-full'
                           />
                         </div>
@@ -241,7 +261,9 @@ export default function UTMGenerator() {
                               </>
                             }
                             value={params.utm_medium}
-                            onChange={(e) => handleParamChange('utm_medium', e.target.value)}
+                            onChange={(e) =>
+                              handleParamChange('utm_medium', e.target.value)
+                            }
                             className='w-full'
                           />
                         </div>
@@ -260,7 +282,9 @@ export default function UTMGenerator() {
                               </>
                             }
                             value={params.utm_campaign}
-                            onChange={(e) => handleParamChange('utm_campaign', e.target.value)}
+                            onChange={(e) =>
+                              handleParamChange('utm_campaign', e.target.value)
+                            }
                             className='w-full'
                           />
                         </div>
@@ -268,7 +292,9 @@ export default function UTMGenerator() {
                     </div>
 
                     <div>
-                      <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>Optional parameters</h3>
+                      <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                        Optional parameters
+                      </h3>
 
                       <div className='space-y-4'>
                         <div>
@@ -285,7 +311,9 @@ export default function UTMGenerator() {
                               </>
                             }
                             value={params.utm_content}
-                            onChange={(e) => handleParamChange('utm_content', e.target.value)}
+                            onChange={(e) =>
+                              handleParamChange('utm_content', e.target.value)
+                            }
                             className='w-full'
                           />
                         </div>
@@ -304,7 +332,9 @@ export default function UTMGenerator() {
                                 />
                               </>
                             }
-                            onChange={(e) => handleParamChange('utm_term', e.target.value)}
+                            onChange={(e) =>
+                              handleParamChange('utm_term', e.target.value)
+                            }
                             className='w-full'
                           />
                         </div>
@@ -315,7 +345,9 @@ export default function UTMGenerator() {
               </div>
 
               <div className='border-t border-gray-200 pt-6 dark:border-gray-700'>
-                <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>Result</h3>
+                <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                  Result
+                </h3>
                 <div className='flex flex-col items-center gap-2 md:flex-row'>
                   <Input
                     type='text'
@@ -324,7 +356,12 @@ export default function UTMGenerator() {
                     className='w-full font-mono text-sm tracking-tight'
                     disabled={!generatedURL}
                   />
-                  <Button onClick={copyToClipboard} disabled={!generatedURL} primary regular>
+                  <Button
+                    onClick={copyToClipboard}
+                    disabled={!generatedURL}
+                    primary
+                    regular
+                  >
                     <CopyIcon className='mr-1 h-4 w-4' />
                     {copied ? 'Copied!' : 'Copy'}
                   </Button>
@@ -345,11 +382,15 @@ export default function UTMGenerator() {
                   className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
                 >
                   <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
-                    <h3 className='text-lg font-medium text-gray-900 dark:text-white'>{item.question}</h3>
+                    <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
+                      {item.question}
+                    </h3>
                     <ChevronDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
                   </summary>
                   <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
-                    <p className='text-gray-600 dark:text-gray-400'>{item.answer}</p>
+                    <p className='text-gray-600 dark:text-gray-400'>
+                      {item.answer}
+                    </p>
                   </div>
                 </details>
               ))}

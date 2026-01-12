@@ -1,7 +1,14 @@
 import { EnvelopeIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid'
 import type { TFunction } from 'i18next'
-import { ChevronRightIcon, LaptopMinimalIcon, RocketIcon, CodeIcon, MailCheckIcon, SparklesIcon } from 'lucide-react'
+import {
+  ChevronRightIcon,
+  LaptopMinimalIcon,
+  RocketIcon,
+  CodeIcon,
+  MailCheckIcon,
+  SparklesIcon,
+} from 'lucide-react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate, useFetcher, useLoaderData } from 'react-router'
@@ -12,7 +19,10 @@ import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { DOCS_URL, INTEGRATIONS_URL, isSelfhosted } from '~/lib/constants'
 import { getSnippet } from '~/modals/TrackingSnippet'
 import { useAuth } from '~/providers/AuthProvider'
-import type { OnboardingActionData, OnboardingLoaderData } from '~/routes/onboarding'
+import type {
+  OnboardingActionData,
+  OnboardingLoaderData,
+} from '~/routes/onboarding'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
@@ -85,7 +95,8 @@ const Onboarding = () => {
     name?: string
   }>({})
 
-  const isLoading = fetcher.state === 'submitting' || fetcher.state === 'loading'
+  const isLoading =
+    fetcher.state === 'submitting' || fetcher.state === 'loading'
 
   useEffect(() => {
     if (!fetcher.data) return
@@ -115,7 +126,10 @@ const Onboarding = () => {
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
     } else if (fetcher.data?.fieldErrors?.name) {
-      setTimeout(() => setNewProjectErrors({ name: fetcher.data!.fieldErrors!.name }), 0)
+      setTimeout(
+        () => setNewProjectErrors({ name: fetcher.data!.fieldErrors!.name }),
+        0,
+      )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.data, fetcher.submit, loadUser, logout, navigate])
@@ -196,7 +210,11 @@ const Onboarding = () => {
     }
 
     if (trimmedName.length > MAX_PROJECT_NAME_LENGTH) {
-      setNewProjectErrors({ name: t('project.settings.pxCharsError', { amount: MAX_PROJECT_NAME_LENGTH }) })
+      setNewProjectErrors({
+        name: t('project.settings.pxCharsError', {
+          amount: MAX_PROJECT_NAME_LENGTH,
+        }),
+      })
       return
     }
 
@@ -254,10 +272,22 @@ const Onboarding = () => {
         {/* Sidebar - Desktop */}
         <aside className='sticky top-6 hidden h-fit w-72 shrink-0 self-start overflow-hidden rounded-lg border border-gray-200 bg-white md:block dark:border-slate-800/60 dark:bg-slate-800/25'>
           <div className='border-b border-gray-200 p-5 dark:border-slate-800/60'>
-            <Text as='span' size='xs' weight='medium' colour='muted' className='tracking-wide uppercase'>
+            <Text
+              as='span'
+              size='xs'
+              weight='medium'
+              colour='muted'
+              className='tracking-wide uppercase'
+            >
               {t('onboarding.welcome')}
             </Text>
-            <Text as='h1' size='xl' weight='semibold' tracking='tight' className='mt-1'>
+            <Text
+              as='h1'
+              size='xl'
+              weight='semibold'
+              tracking='tight'
+              className='mt-1'
+            >
               {t('onboarding.title')}
             </Text>
           </div>
@@ -267,7 +297,11 @@ const Onboarding = () => {
               {steps.map((step) => {
                 if (step.uiHidden) return null
 
-                const status = step.completed ? 'complete' : step.current ? 'current' : 'upcoming'
+                const status = step.completed
+                  ? 'complete'
+                  : step.current
+                    ? 'current'
+                    : 'upcoming'
                 const StepIcon = STEP_ICONS[step.id as keyof typeof STEP_ICONS]
 
                 return (
@@ -277,16 +311,20 @@ const Onboarding = () => {
                         'group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors',
                         status === 'current' &&
                           'bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20',
-                        status === 'complete' && 'bg-green-50/50 dark:bg-green-500/10',
+                        status === 'complete' &&
+                          'bg-green-50/50 dark:bg-green-500/10',
                         status === 'upcoming' && 'opacity-60',
                       )}
                     >
                       <div
                         className={cn(
                           'flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors',
-                          status === 'complete' && 'bg-green-100 dark:bg-green-500/20',
-                          status === 'current' && 'bg-indigo-100 dark:bg-indigo-500/20',
-                          status === 'upcoming' && 'bg-gray-100 dark:bg-slate-700',
+                          status === 'complete' &&
+                            'bg-green-100 dark:bg-green-500/20',
+                          status === 'current' &&
+                            'bg-indigo-100 dark:bg-indigo-500/20',
+                          status === 'upcoming' &&
+                            'bg-gray-100 dark:bg-slate-700',
                         )}
                       >
                         {status === 'complete' ? (
@@ -295,8 +333,10 @@ const Onboarding = () => {
                           <StepIcon
                             className={cn(
                               'size-4',
-                              status === 'current' && 'text-indigo-600 dark:text-indigo-400',
-                              status === 'upcoming' && 'text-gray-400 dark:text-gray-500',
+                              status === 'current' &&
+                                'text-indigo-600 dark:text-indigo-400',
+                              status === 'upcoming' &&
+                                'text-gray-400 dark:text-gray-500',
                             )}
                             strokeWidth={1.5}
                           />
@@ -309,13 +349,20 @@ const Onboarding = () => {
                           weight='medium'
                           className={cn(
                             'block',
-                            status === 'current' && 'text-indigo-700 dark:text-indigo-300',
-                            status === 'complete' && 'text-green-700 dark:text-green-300',
+                            status === 'current' &&
+                              'text-indigo-700 dark:text-indigo-300',
+                            status === 'complete' &&
+                              'text-green-700 dark:text-green-300',
                           )}
                         >
                           {step.title}
                         </Text>
-                        <Text as='span' size='xs' colour='muted' className='block'>
+                        <Text
+                          as='span'
+                          size='xs'
+                          colour='muted'
+                          className='block'
+                        >
                           {step.description}
                         </Text>
                       </div>
@@ -350,7 +397,10 @@ const Onboarding = () => {
                 {steps[currentStep]?.title}
               </Text>
               <Text as='span' size='xs' colour='muted'>
-                {visibleSteps.findIndex((s) => s.id === steps[currentStep]?.id) + 1} / {visibleSteps.length}
+                {visibleSteps.findIndex(
+                  (s) => s.id === steps[currentStep]?.id,
+                ) + 1}{' '}
+                / {visibleSteps.length}
               </Text>
             </div>
             <div className='mt-3 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700'>
@@ -379,17 +429,37 @@ const Onboarding = () => {
                 <div className='mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20'>
                   <EnvelopeIcon className='size-8 text-indigo-600 dark:text-indigo-400' />
                 </div>
-                <Text as='h1' size='3xl' weight='semibold' tracking='tight' className='text-center'>
+                <Text
+                  as='h1'
+                  size='3xl'
+                  weight='semibold'
+                  tracking='tight'
+                  className='text-center'
+                >
                   {t('onboarding.confirm.title')}
                 </Text>
-                <Text as='p' colour='secondary' className='mx-auto mt-4 max-w-md text-center whitespace-pre-line'>
+                <Text
+                  as='p'
+                  colour='secondary'
+                  className='mx-auto mt-4 max-w-md text-center whitespace-pre-line'
+                >
                   {t('onboarding.confirm.linkSent', { email: user?.email })}
                 </Text>
 
-                <Text as='p' size='sm' colour='muted' className='mx-auto mt-8 max-w-md text-center'>
+                <Text
+                  as='p'
+                  size='sm'
+                  colour='muted'
+                  className='mx-auto mt-8 max-w-md text-center'
+                >
                   {t('onboarding.confirm.spam')}
                 </Text>
-                <Text as='p' size='sm' colour='muted' className='mt-2 text-center'>
+                <Text
+                  as='p'
+                  size='sm'
+                  colour='muted'
+                  className='mt-2 text-center'
+                >
                   <Trans
                     t={t}
                     i18nKey='onboarding.confirm.wrongEmail'
@@ -412,12 +482,25 @@ const Onboarding = () => {
             {currentStep === 1 ? (
               <form onSubmit={handleCreateProject} className='p-6 md:p-8'>
                 <div className='mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20'>
-                  <RocketIcon className='size-8 text-indigo-600 dark:text-indigo-400' strokeWidth={1.5} />
+                  <RocketIcon
+                    className='size-8 text-indigo-600 dark:text-indigo-400'
+                    strokeWidth={1.5}
+                  />
                 </div>
-                <Text as='h1' size='3xl' weight='semibold' tracking='tight' className='text-center'>
+                <Text
+                  as='h1'
+                  size='3xl'
+                  weight='semibold'
+                  tracking='tight'
+                  className='text-center'
+                >
                   {t('onboarding.createProject.title')}
                 </Text>
-                <Text as='p' colour='secondary' className='mx-auto mt-4 max-w-md text-center whitespace-pre-line'>
+                <Text
+                  as='p'
+                  colour='secondary'
+                  className='mx-auto mt-4 max-w-md text-center whitespace-pre-line'
+                >
                   {t('onboarding.createProject.desc')}
                 </Text>
 
@@ -447,12 +530,25 @@ const Onboarding = () => {
             {currentStep === 2 && project ? (
               <div className='p-6 md:p-8'>
                 <div className='mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20'>
-                  <CodeIcon className='size-8 text-indigo-600 dark:text-indigo-400' strokeWidth={1.5} />
+                  <CodeIcon
+                    className='size-8 text-indigo-600 dark:text-indigo-400'
+                    strokeWidth={1.5}
+                  />
                 </div>
-                <Text as='h1' size='3xl' weight='semibold' tracking='tight' className='text-center'>
+                <Text
+                  as='h1'
+                  size='3xl'
+                  weight='semibold'
+                  tracking='tight'
+                  className='text-center'
+                >
                   {t('onboarding.installTracking.title')}
                 </Text>
-                <Text as='p' colour='secondary' className='mx-auto mt-4 max-w-lg text-center whitespace-pre-line'>
+                <Text
+                  as='p'
+                  colour='secondary'
+                  className='mx-auto mt-4 max-w-lg text-center whitespace-pre-line'
+                >
                   <Trans
                     t={t}
                     i18nKey='onboarding.installTracking.desc'
@@ -472,7 +568,10 @@ const Onboarding = () => {
                 <div className='mt-8 rounded-lg border border-gray-200 bg-gray-50 p-5 dark:border-slate-700/60 dark:bg-slate-800/50'>
                   <div className='flex items-center gap-3'>
                     <div className='flex size-11 items-center justify-center rounded-lg bg-white dark:bg-slate-700'>
-                      <LaptopMinimalIcon className='size-5 text-gray-700 dark:text-gray-200' strokeWidth={1.5} />
+                      <LaptopMinimalIcon
+                        className='size-5 text-gray-700 dark:text-gray-200'
+                        strokeWidth={1.5}
+                      />
                     </div>
                     <div>
                       <Text as='h3' size='sm' weight='semibold'>
@@ -497,7 +596,8 @@ const Onboarding = () => {
                   <Textarea
                     classes={{
                       container: 'mt-3 font-mono text-sm',
-                      textarea: 'bg-white dark:bg-slate-900 ring-1 ring-gray-200 dark:ring-slate-700',
+                      textarea:
+                        'bg-white dark:bg-slate-900 ring-1 ring-gray-200 dark:ring-slate-700',
                     }}
                     value={getSnippet(project.id)}
                     rows={15}
@@ -555,10 +655,22 @@ const Onboarding = () => {
                     <PulsatingCircle type='giant' />
                   )}
                 </div>
-                <Text as='h1' size='3xl' weight='semibold' tracking='tight' className='text-center'>
-                  {hasEvents ? t('onboarding.verifyInstallation.perfect') : t('onboarding.verifyInstallation.navTitle')}
+                <Text
+                  as='h1'
+                  size='3xl'
+                  weight='semibold'
+                  tracking='tight'
+                  className='text-center'
+                >
+                  {hasEvents
+                    ? t('onboarding.verifyInstallation.perfect')
+                    : t('onboarding.verifyInstallation.navTitle')}
                 </Text>
-                <Text as='p' colour='secondary' className='mx-auto mt-4 max-w-md text-center whitespace-pre-line'>
+                <Text
+                  as='p'
+                  colour='secondary'
+                  className='mx-auto mt-4 max-w-md text-center whitespace-pre-line'
+                >
                   {hasEvents
                     ? t('onboarding.verifyInstallation.eventReceived')
                     : t('onboarding.verifyInstallation.desc')}
@@ -566,7 +678,11 @@ const Onboarding = () => {
 
                 {hasEvents ? (
                   <div className='mx-auto mt-8 max-w-sm rounded-lg bg-green-50 p-4 dark:bg-green-500/10'>
-                    <Text as='p' size='sm' className='text-center text-green-700 dark:text-green-300'>
+                    <Text
+                      as='p'
+                      size='sm'
+                      className='text-center text-green-700 dark:text-green-300'
+                    >
                       {t('onboarding.verifyInstallation.perfectDesc')}
                     </Text>
                   </div>
@@ -582,7 +698,9 @@ const Onboarding = () => {
                         </Text>
                         <Text as='p' size='xs' colour='muted'>
                           {project?.name
-                            ? t('onboarding.verifyInstallation.onTheXProject', { project: project.name })
+                            ? t('onboarding.verifyInstallation.onTheXProject', {
+                                project: project.name,
+                              })
                             : t('onboarding.verifyInstallation.onYourProject')}
                         </Text>
                       </div>
@@ -617,7 +735,9 @@ const Onboarding = () => {
                           components={{
                             url: (
                               <Link
-                                to={isSelfhosted ? CONTACT_US_URL : routes.contact}
+                                to={
+                                  isSelfhosted ? CONTACT_US_URL : routes.contact
+                                }
                                 target='_blank'
                                 rel='noopener noreferrer'
                                 className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
@@ -644,7 +764,11 @@ const Onboarding = () => {
                       {t('common.goBack')}
                     </Button>
                   ) : null}
-                  <Button onClick={() => handleCompleteOnboarding(false)} primary large>
+                  <Button
+                    onClick={() => handleCompleteOnboarding(false)}
+                    primary
+                    large
+                  >
                     {t('onboarding.finishOnboarding')}
                   </Button>
                 </div>

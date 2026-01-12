@@ -1,4 +1,11 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { User } from '~/lib/models/User'
@@ -34,10 +41,14 @@ export const AuthProvider = ({
 }: AuthProviderProps) => {
   const { authMe } = useAuthProxy()
 
-  const [isAuthenticated, setIsAuthenticated] = useState(initialIsAuthenticated || !!initialUser)
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    initialIsAuthenticated || !!initialUser,
+  )
   const [user, setUserState] = useState<User | null>(initialUser || null)
   // TODO: @deprecated
-  const [totalMonthlyEvents, setTotalMonthlyEvents] = useState(initialTotalMonthlyEvents || 0)
+  const [totalMonthlyEvents, setTotalMonthlyEvents] = useState(
+    initialTotalMonthlyEvents || 0,
+  )
 
   // Track whether this is the initial mount
   const isInitialMount = useRef(true)
@@ -72,7 +83,9 @@ export const AuthProvider = ({
     clearLocalStorageOnLogout()
 
     // Navigate to server-side logout route which handles cookie cleanup
-    const logoutUrl = invalidateAllSessions ? '/logout?logoutAll=true' : '/logout'
+    const logoutUrl = invalidateAllSessions
+      ? '/logout?logoutAll=true'
+      : '/logout'
     window.location.href = logoutUrl
   }, [])
 

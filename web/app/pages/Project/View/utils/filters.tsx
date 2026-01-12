@@ -13,7 +13,12 @@ export const ERROR_FILTERS_MAPPING = {
   showResolved: 'showResolved',
 }
 
-export const FILTER_CHART_METRICS_MAPPING_FOR_COMPARE = ['bounce', 'viewsPerUnique', 'trendlines', 'customEvents']
+export const FILTER_CHART_METRICS_MAPPING_FOR_COMPARE = [
+  'bounce',
+  'viewsPerUnique',
+  'trendlines',
+  'customEvents',
+]
 
 const validFilters = [
   'host',
@@ -55,7 +60,10 @@ export const filterInvalidPreferences = (
     (prev: string[], curr: string) => {
       const { period, timeBucket } = prefs[curr]
 
-      if (!_includes(VALID_PERIODS, period) || !_includes(VALID_TIME_BUCKETS, timeBucket)) {
+      if (
+        !_includes(VALID_PERIODS, period) ||
+        !_includes(VALID_TIME_BUCKETS, timeBucket)
+      ) {
         return prev
       }
 
@@ -79,7 +87,11 @@ export const filterInvalidPreferences = (
 export const isFilterValid = (filter: string, checkDynamicFilters = false) => {
   // normalise by removing operator prefixes from the URL key
   let normalised = filter
-  if (_startsWith(normalised, '!') || _startsWith(normalised, '~') || _startsWith(normalised, '^')) {
+  if (
+    _startsWith(normalised, '!') ||
+    _startsWith(normalised, '~') ||
+    _startsWith(normalised, '^')
+  ) {
     normalised = normalised.substring(1)
   }
 
@@ -87,7 +99,10 @@ export const isFilterValid = (filter: string, checkDynamicFilters = false) => {
     return true
   }
 
-  if (checkDynamicFilters && _some(validDynamicFilters, (prefix) => _startsWith(normalised, prefix))) {
+  if (
+    checkDynamicFilters &&
+    _some(validDynamicFilters, (prefix) => _startsWith(normalised, prefix))
+  ) {
     return true
   }
 

@@ -48,7 +48,13 @@ const CreateNewPassword = () => {
                 error={actionData?.fieldErrors?.repeat}
                 disabled={isSubmitting}
               />
-              <Button className='w-full justify-center' type='submit' loading={isSubmitting} primary giant>
+              <Button
+                className='w-full justify-center'
+                type='submit'
+                loading={isSubmitting}
+                primary
+                giant
+              >
                 {t('auth.recovery.save')}
               </Button>
             </Form>

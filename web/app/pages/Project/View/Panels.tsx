@@ -1,6 +1,9 @@
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import { ChevronRightIcon, CircleStackIcon } from '@heroicons/react/24/outline'
-import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
+import {
+  ArrowLongRightIcon,
+  ArrowLongLeftIcon,
+} from '@heroicons/react/24/solid'
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
 import type { ChartOptions } from 'billboard.js'
 import cx from 'clsx'
@@ -20,7 +23,14 @@ import _sortBy from 'lodash/sortBy'
 import _sum from 'lodash/sum'
 import _toPairs from 'lodash/toPairs'
 import { FilterIcon, ScanIcon } from 'lucide-react'
-import React, { memo, useState, useEffect, useMemo, Fragment, useRef } from 'react'
+import React, {
+  memo,
+  useState,
+  useEffect,
+  useMemo,
+  Fragment,
+  useRef,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps, useNavigate } from 'react-router'
 
@@ -40,7 +50,11 @@ import countries from '~/utils/isoCountries'
 import { MainChart } from './components/MainChart'
 import { Customs, Filter } from './interfaces/traffic'
 import { useViewProjectContext } from './ViewProject'
-import { getFormatDate, getSettingsCustomEventsStacked, typeNameMapping } from './ViewProject.helpers'
+import {
+  getFormatDate,
+  getSettingsCustomEventsStacked,
+  typeNameMapping,
+} from './ViewProject.helpers'
 
 const ENTRIES_PER_PANEL = 8
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
@@ -98,13 +112,19 @@ const PanelContainer = ({
         'overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-800/25',
         hideHeader ? 'pt-3' : 'pt-5',
         {
-          'col-span-full sm:col-span-2': type === 'metadata' || type === 'customEvents',
+          'col-span-full sm:col-span-2':
+            type === 'metadata' || type === 'customEvents',
         },
       )}
     >
       {!hideHeader ? (
         <div className='mb-2 flex items-center justify-between gap-4'>
-          <Text as='h3' size='lg' weight='semibold' className='flex items-center leading-6 whitespace-nowrap'>
+          <Text
+            as='h3'
+            size='lg'
+            weight='semibold'
+            className='flex items-center leading-6 whitespace-nowrap'
+          >
             {icon ? <span className='mr-1'>{icon}</span> : null}
             {name}
           </Text>
@@ -114,7 +134,9 @@ const PanelContainer = ({
                 {tabs.map((tab, index) => {
                   if (Array.isArray(tab)) {
                     const dropdownTabs = tab
-                    const activeDropdownTab = dropdownTabs.find((t) => t.id === activeTabId)
+                    const activeDropdownTab = dropdownTabs.find(
+                      (t) => t.id === activeTabId,
+                    )
                     const dropdownTitle = activeDropdownTab
                       ? activeDropdownTab.label
                       : dropdownPlaceholder || t('project.campaigns')
@@ -130,11 +152,10 @@ const PanelContainer = ({
                           onTabChange(item.id)
                         }}
                         buttonClassName={cx(
-                          'relative border-b-2 px-0 md:px-0 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                          'relative border-b-2 px-0 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200 md:px-0',
                           {
-                            'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': dropdownTabs.some(
-                              (t) => t.id === activeTabId,
-                            ),
+                            'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
+                              dropdownTabs.some((t) => t.id === activeTabId),
                             'border-transparent text-gray-500 hover:border-gray-200 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-200 dark:hover:text-gray-300':
                               !dropdownTabs.some((t) => t.id === activeTabId),
                           },
@@ -172,7 +193,9 @@ const PanelContainer = ({
           </div>
         </div>
       ) : null}
-      <div className='relative flex h-[19.6rem] flex-col overflow-auto'>{children}</div>
+      <div className='relative flex h-[19.6rem] flex-col overflow-auto'>
+        {children}
+      </div>
       {onDetailsClick ? (
         <div className='mt-2 flex items-center justify-center'>
           <Button
@@ -221,7 +244,12 @@ interface KVTableProps {
   displayKeyAsHeader?: KVTableContainerProps['displayKeyAsHeader']
 }
 
-const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) => {
+const KVTable = ({
+  listId,
+  data,
+  displayKeyAsHeader,
+  onClick,
+}: KVTableProps) => {
   const { t } = useTranslation('common')
   const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
@@ -232,14 +260,20 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
   const sortedData = useMemo(() => {
     return data.sort((a: any, b: any) => {
       if (sort.label === 'quantity') {
-        return sort.sortByAscend ? a.quantity - b.quantity : b.quantity - a.quantity
+        return sort.sortByAscend
+          ? a.quantity - b.quantity
+          : b.quantity - a.quantity
       }
 
       if (sort.label === 'conversion') {
-        return sort.sortByAscend ? a.conversion - b.conversion : b.conversion - a.conversion
+        return sort.sortByAscend
+          ? a.conversion - b.conversion
+          : b.conversion - a.conversion
       }
 
-      return sort.sortByAscend ? a.event.localeCompare(b.event) : b.event.localeCompare(a.event)
+      return sort.sortByAscend
+        ? a.event.localeCompare(b.event)
+        : b.event.localeCompare(a.event)
     })
   }, [data, sort])
 
@@ -285,22 +319,36 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
             />
           </th>
           <th className='w-[30%] sm:w-1/6'>
-            <p onClick={() => onSortBy('quantity')} className='flex cursor-pointer items-center justify-end'>
+            <p
+              onClick={() => onSortBy('quantity')}
+              className='flex cursor-pointer items-center justify-end'
+            >
               {t('project.quantity')}
               <Sort
                 className='ml-1'
-                sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
-                sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
+                sortByAscend={
+                  sort.label === 'quantity' ? sort.sortByAscend : null
+                }
+                sortByDescend={
+                  sort.label === 'quantity' ? sort.sortByDescend : null
+                }
               />
             </p>
           </th>
           <th className='w-[30%] pr-2 sm:w-1/6'>
-            <p onClick={() => onSortBy('conversion')} className='flex cursor-pointer items-center justify-end'>
+            <p
+              onClick={() => onSortBy('conversion')}
+              className='flex cursor-pointer items-center justify-end'
+            >
               {t('project.conversion')}
               <Sort
                 className='ml-1'
-                sortByAscend={sort.label === 'conversion' ? sort.sortByAscend : null}
-                sortByDescend={sort.label === 'conversion' ? sort.sortByDescend : null}
+                sortByAscend={
+                  sort.label === 'conversion' ? sort.sortByAscend : null
+                }
+                sortByDescend={
+                  sort.label === 'conversion' ? sort.sortByDescend : null
+                }
               />
             </p>
           </th>
@@ -327,7 +375,9 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
               {quantity}
               &nbsp;&nbsp;
             </td>
-            <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>{conversion}%</td>
+            <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>
+              {conversion}%
+            </td>
           </tr>
         ))}
       </tbody>
@@ -335,7 +385,12 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
   )
 }
 
-const KVTableContainer = ({ data, uniques, displayKeyAsHeader, onClick }: KVTableContainerProps) => {
+const KVTableContainer = ({
+  data,
+  uniques,
+  displayKeyAsHeader,
+  onClick,
+}: KVTableContainerProps) => {
   const { t } = useTranslation('common')
   const processed = useMemo(() => {
     return _reduce(
@@ -348,7 +403,8 @@ const KVTableContainer = ({ data, uniques, displayKeyAsHeader, onClick }: KVTabl
         acc[curr.key].push({
           event: curr.value,
           quantity: curr.count,
-          conversion: uniques === 0 ? 100 : _round((curr.count / uniques) * 100, 2),
+          conversion:
+            uniques === 0 ? 100 : _round((curr.count / uniques) * 100, 2),
         })
 
         return acc
@@ -362,7 +418,15 @@ const KVTableContainer = ({ data, uniques, displayKeyAsHeader, onClick }: KVTabl
   }
 
   return _map(processed, (value, key) => {
-    return <KVTable key={key} listId={key} data={value} displayKeyAsHeader={displayKeyAsHeader} onClick={onClick} />
+    return (
+      <KVTable
+        key={key}
+        listId={key}
+        data={value}
+        displayKeyAsHeader={displayKeyAsHeader}
+        onClick={onClick}
+      />
+    )
   })
 }
 
@@ -394,10 +458,17 @@ function sortDesc<T>(obj: T, sortByKeys?: boolean): T {
   ) as T
 }
 
-const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, getFilterLink }: CustomEventsProps) => {
+const CustomEvents = ({
+  customs,
+  chartData,
+  filters,
+  getCustomEventMetadata,
+  getFilterLink,
+}: CustomEventsProps) => {
   const { t } = useTranslation('common')
   const { id } = useCurrentProject()
-  const { timeBucket, timezone, period, dateRange, timeFormat, rotateXAxis } = useViewProjectContext()
+  const { timeBucket, timezone, period, dateRange, timeFormat, rotateXAxis } =
+    useViewProjectContext()
   const { fetchCustomEvents } = useProjectDataCustomEventsProxy()
 
   const [detailsOpened, setDetailsOpened] = useState(false)
@@ -405,7 +476,8 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
   const [loadingEvents, setLoadingEvents] = useState<any>({})
   const [eventsMetadata, setEventsMetadata] = useState<any>({})
   const [eventsData, setEventsData] = useState<any>(customs)
-  const [triggerEventWhenFiltersChange, setTriggerEventWhenFiltersChange] = useState<string | null>(null)
+  const [triggerEventWhenFiltersChange, setTriggerEventWhenFiltersChange] =
+    useState<string | null>(null)
   const [stackedChartLoading, setStackedChartLoading] = useState(false)
   const [stackedChart, setStackedChart] = useState<{
     x: string[]
@@ -413,7 +485,10 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
   } | null>(null)
 
   const keys = _keys(eventsData)
-  const keysToDisplay = useMemo(() => _slice(keys, 0, ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
+  const keysToDisplay = useMemo(
+    () => _slice(keys, 0, ENTRIES_PER_CUSTOM_EVENTS_PANEL),
+    [keys],
+  )
 
   const uniques = _sum(chartData.uniques)
   const totalCustomEvents = useMemo(
@@ -426,7 +501,10 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
     }
 
     const sorted = _orderBy(
-      _map(_toPairs(customs), ([event, count]) => ({ event, count: Number(count) || 0 })),
+      _map(_toPairs(customs), ([event, count]) => ({
+        event,
+        count: Number(count) || 0,
+      })),
       'count',
       'desc',
     )
@@ -482,7 +560,10 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
 
         setStackedChart((data?.chart as unknown as typeof stackedChart) || null)
       } catch (reason) {
-        console.error('[ERROR](CustomEvents) Failed to load stacked custom events chart', reason)
+        console.error(
+          '[ERROR](CustomEvents) Failed to load stacked custom events chart',
+          reason,
+        )
         if (!cancelled) {
           setStackedChart(null)
         }
@@ -498,12 +579,23 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
     return () => {
       cancelled = true
     }
-  }, [id, timeBucket, period, dateRange, timezone, filters, topEventsForChart, fetchCustomEvents])
+  }, [
+    id,
+    timeBucket,
+    period,
+    dateRange,
+    timezone,
+    filters,
+    topEventsForChart,
+    fetchCustomEvents,
+  ])
 
   useEffect(() => {
     setEventsMetadata({})
     const evToSkip = triggerEventWhenFiltersChange
-    const openEvents = Object.keys(activeEvents).filter((key) => activeEvents[key] && key !== evToSkip)
+    const openEvents = Object.keys(activeEvents).filter(
+      (key) => activeEvents[key] && key !== evToSkip,
+    )
     openEvents.forEach((ev) => {
       toggleDetails(ev)()
     })
@@ -521,42 +613,46 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
   }, [filters, triggerEventWhenFiltersChange])
 
   // is "e" is not set, then details loading is forced and all checks are skipped
-  const toggleDetails = (ev: string) => async (e?: React.MouseEvent<HTMLButtonElement>) => {
-    if (e) {
-      e.stopPropagation()
+  const toggleDetails =
+    (ev: string) => async (e?: React.MouseEvent<HTMLButtonElement>) => {
+      if (e) {
+        e.stopPropagation()
 
-      setActiveEvents((events: any) => ({
-        ...events,
-        [ev]: !events[ev],
-      }))
-    }
-
-    if (!e || !eventsMetadata[ev]) {
-      setLoadingEvents((events: any) => ({
-        ...events,
-        [ev]: true,
-      }))
-
-      try {
-        const { result } = await getCustomEventMetadata(ev)
-        setEventsMetadata((metadata: any) => ({
-          ...metadata,
-          [ev]: result,
-        }))
-      } catch (reason) {
-        console.error(`[ERROR](toggleDetails) Failed to get metadata for event ${ev}`, reason)
-        setEventsMetadata((metadata: any) => ({
-          ...metadata,
-          [ev]: [],
+        setActiveEvents((events: any) => ({
+          ...events,
+          [ev]: !events[ev],
         }))
       }
 
-      setLoadingEvents((events: any) => ({
-        ...events,
-        [ev]: false,
-      }))
+      if (!e || !eventsMetadata[ev]) {
+        setLoadingEvents((events: any) => ({
+          ...events,
+          [ev]: true,
+        }))
+
+        try {
+          const { result } = await getCustomEventMetadata(ev)
+          setEventsMetadata((metadata: any) => ({
+            ...metadata,
+            [ev]: result,
+          }))
+        } catch (reason) {
+          console.error(
+            `[ERROR](toggleDetails) Failed to get metadata for event ${ev}`,
+            reason,
+          )
+          setEventsMetadata((metadata: any) => ({
+            ...metadata,
+            [ev]: [],
+          }))
+        }
+
+        setLoadingEvents((events: any) => ({
+          ...events,
+          [ev]: false,
+        }))
+      }
     }
-  }
 
   const onModalClose = () => {
     setDetailsOpened(false)
@@ -616,7 +712,9 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
               <Sort
                 className='ml-1'
                 sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
-                sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
+                sortByDescend={
+                  sort.label === 'event' ? sort.sortByDescend : null
+                }
               />
             </th>
             <th className='w-[40%] pr-2 sm:w-2/6'>
@@ -627,8 +725,12 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
                 {t('project.quantity')}
                 <Sort
                   className='ml-1'
-                  sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
+                  sortByAscend={
+                    sort.label === 'quantity' ? sort.sortByAscend : null
+                  }
+                  sortByDescend={
+                    sort.label === 'quantity' ? sort.sortByDescend : null
+                  }
                 />
                 &nbsp;&nbsp;
               </p>
@@ -678,7 +780,10 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
                       |
                     </Text>
                     <Text size='sm' colour='muted'>
-                      {totalCustomEvents === 0 ? 0 : _round((eventsData[ev] / totalCustomEvents) * 100, 0)}%
+                      {totalCustomEvents === 0
+                        ? 0
+                        : _round((eventsData[ev] / totalCustomEvents) * 100, 0)}
+                      %
                     </Text>
                   </span>
                 </td>
@@ -717,7 +822,12 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
           <Text size='sm' weight='medium' colour='muted' className='w-4/6'>
             {t('project.event')}
           </Text>
-          <Text size='sm' weight='medium' colour='muted' className='w-2/6 text-right'>
+          <Text
+            size='sm'
+            weight='medium'
+            colour='muted'
+            className='w-2/6 text-right'
+          >
             {t('project.quantity')}
           </Text>
         </div>
@@ -731,9 +841,14 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
             ),
             (item) => {
               const ev = item.key
-              const maxValue = Math.max(...(Object.values(eventsData) as number[]))
+              const maxValue = Math.max(
+                ...(Object.values(eventsData) as number[]),
+              )
               const link = _getFilterLink(null, ev)
-              const perc = totalCustomEvents === 0 ? 0 : _round((eventsData[ev] / totalCustomEvents) * 100, 0)
+              const perc =
+                totalCustomEvents === 0
+                  ? 0
+                  : _round((eventsData[ev] / totalCustomEvents) * 100, 0)
 
               return (
                 <div
@@ -792,7 +907,12 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
       return {}
     }
 
-    return getSettingsCustomEventsStacked(stackedChart, timeBucket, rotateXAxis, timeFormat)
+    return getSettingsCustomEventsStacked(
+      stackedChart,
+      timeBucket,
+      rotateXAxis,
+      timeFormat,
+    )
   }, [stackedChart, timeBucket, rotateXAxis, timeFormat])
 
   const renderStackedChart = () => {
@@ -831,7 +951,11 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
         {renderContent()}
       </PanelContainer>
 
-      <PanelContainer name={t('dashboard.events')} type='customEventsChart' hideHeader>
+      <PanelContainer
+        name={t('dashboard.events')}
+        type='customEventsChart'
+        hideHeader
+      >
         {renderStackedChart()}
       </PanelContainer>
     </div>
@@ -841,7 +965,9 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
 interface MetadataKeyPanelProps {
   title: string
   metadataKeys: string[]
-  getMetadataValues: (key: string) => Promise<{ result: Array<{ key: string; value: string; count: number }> }>
+  getMetadataValues: (
+    key: string,
+  ) => Promise<{ result: Array<{ key: string; value: string; count: number }> }>
   getFilterLink: (column: string, value: string | null) => LinkProps['to']
   chartData: any
   filters: Filter[]
@@ -870,8 +996,12 @@ const MetadataKeyPanel = ({
   const [loading, setLoading] = useState(false)
   // For property mode: simple value/count pairs
   // For customEvent mode: raw data with key/value/count (grouped by metadata key)
-  const [valuesData, setValuesData] = useState<Array<{ value: string; count: number }>>([])
-  const [rawMetadata, setRawMetadata] = useState<Array<{ key: string; value: string; count: number }>>([])
+  const [valuesData, setValuesData] = useState<
+    Array<{ value: string; count: number }>
+  >([])
+  const [rawMetadata, setRawMetadata] = useState<
+    Array<{ key: string; value: string; count: number }>
+  >([])
   const [detailsOpened, setDetailsOpened] = useState(false)
 
   const uniques = _sum(chartData.uniques)
@@ -898,11 +1028,17 @@ const MetadataKeyPanel = ({
           // For custom events: show all metadata (result is already for this event)
           setRawMetadata(result)
           // Flatten for display purposes
-          const values = result.map((item) => ({ value: `${item.key}: ${item.value}`, count: item.count }))
+          const values = result.map((item) => ({
+            value: `${item.key}: ${item.value}`,
+            count: item.count,
+          }))
           setValuesData(values)
         }
       } catch (error) {
-        console.error(`[ERROR](MetadataKeyPanel) Failed to load values for key ${activeKey}`, error)
+        console.error(
+          `[ERROR](MetadataKeyPanel) Failed to load values for key ${activeKey}`,
+          error,
+        )
         setValuesData([])
         setRawMetadata([])
       } finally {
@@ -927,11 +1063,17 @@ const MetadataKeyPanel = ({
             setValuesData(values)
           } else {
             setRawMetadata(result)
-            const values = result.map((item) => ({ value: `${item.key}: ${item.value}`, count: item.count }))
+            const values = result.map((item) => ({
+              value: `${item.key}: ${item.value}`,
+              count: item.count,
+            }))
             setValuesData(values)
           }
         } catch (error) {
-          console.error(`[ERROR](MetadataKeyPanel) Failed to reload values for key ${activeKey}`, error)
+          console.error(
+            `[ERROR](MetadataKeyPanel) Failed to reload values for key ${activeKey}`,
+            error,
+          )
           setValuesData([])
           setRawMetadata([])
         } finally {
@@ -966,8 +1108,14 @@ const MetadataKeyPanel = ({
     return metadataKeys.map((key) => ({ id: key, label: key }))
   }, [metadataKeys])
 
-  const sortedRawMetadata = useMemo(() => _orderBy(rawMetadata, 'count', 'desc'), [rawMetadata])
-  const sortedValuesData = useMemo(() => _orderBy(valuesData, 'count', 'desc'), [valuesData])
+  const sortedRawMetadata = useMemo(
+    () => _orderBy(rawMetadata, 'count', 'desc'),
+    [rawMetadata],
+  )
+  const sortedValuesData = useMemo(
+    () => _orderBy(valuesData, 'count', 'desc'),
+    [valuesData],
+  )
 
   const DetailsTable = () => {
     if (mode === 'customEvent') {
@@ -992,7 +1140,8 @@ const MetadataKeyPanel = ({
             </thead>
             <tbody>
               {_map(sortedRawMetadata, ({ key, value, count }) => {
-                const perc = uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
+                const perc =
+                  uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
                 const link = _getFilterLink(key, value)
 
                 return (
@@ -1044,7 +1193,8 @@ const MetadataKeyPanel = ({
           </thead>
           <tbody>
             {_map(sortedValuesData, ({ value, count }) => {
-              const perc = uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
+              const perc =
+                uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
               const link = _getFilterLink(null, value)
 
               return (
@@ -1091,7 +1241,10 @@ const MetadataKeyPanel = ({
       )
     }
 
-    if (_isEmpty(valuesData) && (mode === 'property' || _isEmpty(rawMetadata))) {
+    if (
+      _isEmpty(valuesData) &&
+      (mode === 'property' || _isEmpty(rawMetadata))
+    ) {
       return <PanelEmptyState message={t('project.noData')} />
     }
 
@@ -1108,62 +1261,80 @@ const MetadataKeyPanel = ({
             <Text size='sm' weight='medium' colour='muted' className='w-2/6'>
               {t('project.value')}
             </Text>
-            <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
+            <Text
+              size='sm'
+              weight='medium'
+              colour='muted'
+              className='w-1/6 text-right'
+            >
               {t('project.quantity')}
             </Text>
-            <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
+            <Text
+              size='sm'
+              weight='medium'
+              colour='muted'
+              className='w-1/6 text-right'
+            >
               {t('project.conversion')}
             </Text>
           </div>
 
           <div className='space-y-0.5'>
-            {_map(valuesToDisplay as Array<{ key: string; value: string; count: number }>, ({ key, value, count }) => {
-              const perc = uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
-              const link = _getFilterLink(key, value)
+            {_map(
+              valuesToDisplay as Array<{
+                key: string
+                value: string
+                count: number
+              }>,
+              ({ key, value, count }) => {
+                const perc =
+                  uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
+                const link = _getFilterLink(key, value)
 
-              return (
-                <div
-                  key={`${key}-${value}`}
-                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800'
-                  onClick={() => {
-                    navigate(link)
-                  }}
-                >
+                return (
                   <div
-                    className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
-                    style={{
-                      width: `${(count / maxValue) * 100}%`,
+                    key={`${key}-${value}`}
+                    className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800'
+                    onClick={() => {
+                      navigate(link)
                     }}
-                  />
-
-                  <div className='relative z-10 w-2/6 min-w-0 truncate'>
-                    <Text size='sm' truncate>
-                      {key}
-                    </Text>
-                  </div>
-                  <div className='relative z-10 flex w-2/6 min-w-0 items-center'>
-                    <Text size='sm' truncate>
-                      {value}
-                    </Text>
-                    <FilterIcon
-                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                      strokeWidth={1.5}
+                  >
+                    <div
+                      className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                      style={{
+                        width: `${(count / maxValue) * 100}%`,
+                      }}
                     />
-                    <div className='ml-2 h-4 w-4 group-hover:hidden' />
+
+                    <div className='relative z-10 w-2/6 min-w-0 truncate'>
+                      <Text size='sm' truncate>
+                        {key}
+                      </Text>
+                    </div>
+                    <div className='relative z-10 flex w-2/6 min-w-0 items-center'>
+                      <Text size='sm' truncate>
+                        {value}
+                      </Text>
+                      <FilterIcon
+                        className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
+                        strokeWidth={1.5}
+                      />
+                      <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                    </div>
+                    <div className='relative z-10 w-1/6 text-right'>
+                      <Text size='sm' weight='medium'>
+                        {count}
+                      </Text>
+                    </div>
+                    <div className='relative z-10 w-1/6 text-right'>
+                      <Text size='sm' weight='medium'>
+                        {perc}%
+                      </Text>
+                    </div>
                   </div>
-                  <div className='relative z-10 w-1/6 text-right'>
-                    <Text size='sm' weight='medium'>
-                      {count}
-                    </Text>
-                  </div>
-                  <div className='relative z-10 w-1/6 text-right'>
-                    <Text size='sm' weight='medium'>
-                      {perc}%
-                    </Text>
-                  </div>
-                </div>
-              )
-            })}
+                )
+              },
+            )}
           </div>
 
           <Modal
@@ -1186,57 +1357,71 @@ const MetadataKeyPanel = ({
           <Text size='sm' weight='medium' colour='muted' className='w-4/6'>
             {t('project.value')}
           </Text>
-          <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
+          <Text
+            size='sm'
+            weight='medium'
+            colour='muted'
+            className='w-1/6 text-right'
+          >
             {t('project.quantity')}
           </Text>
-          <Text size='sm' weight='medium' colour='muted' className='w-1/6 text-right'>
+          <Text
+            size='sm'
+            weight='medium'
+            colour='muted'
+            className='w-1/6 text-right'
+          >
             {t('project.conversion')}
           </Text>
         </div>
 
         <div className='space-y-0.5'>
-          {_map(valuesToDisplay as Array<{ value: string; count: number }>, ({ value, count }) => {
-            const perc = uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
-            const link = _getFilterLink(null, value)
+          {_map(
+            valuesToDisplay as Array<{ value: string; count: number }>,
+            ({ value, count }) => {
+              const perc =
+                uniques === 0 ? 100 : _round((count / uniques) * 100, 2)
+              const link = _getFilterLink(null, value)
 
-            return (
-              <div
-                key={value}
-                className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800'
-                onClick={() => {
-                  navigate(link)
-                }}
-              >
+              return (
                 <div
-                  className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
-                  style={{
-                    width: `${(count / maxValue) * 100}%`,
+                  key={value}
+                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800'
+                  onClick={() => {
+                    navigate(link)
                   }}
-                />
-
-                <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
-                  <Text size='sm' truncate>
-                    {value}
-                  </Text>
-                  <FilterIcon
-                    className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                    strokeWidth={1.5}
+                >
+                  <div
+                    className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                    style={{
+                      width: `${(count / maxValue) * 100}%`,
+                    }}
                   />
-                  <div className='ml-2 h-4 w-4 group-hover:hidden' />
+
+                  <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
+                    <Text size='sm' truncate>
+                      {value}
+                    </Text>
+                    <FilterIcon
+                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
+                      strokeWidth={1.5}
+                    />
+                    <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                  </div>
+                  <div className='relative z-10 w-1/6 text-right'>
+                    <Text size='sm' weight='medium'>
+                      {count}
+                    </Text>
+                  </div>
+                  <div className='relative z-10 w-1/6 text-right'>
+                    <Text size='sm' weight='medium'>
+                      {perc}%
+                    </Text>
+                  </div>
                 </div>
-                <div className='relative z-10 w-1/6 text-right'>
-                  <Text size='sm' weight='medium'>
-                    {count}
-                  </Text>
-                </div>
-                <div className='relative z-10 w-1/6 text-right'>
-                  <Text size='sm' weight='medium'>
-                    {perc}%
-                  </Text>
-                </div>
-              </div>
-            )
-          })}
+              )
+            },
+          )}
         </div>
 
         <Modal
@@ -1251,7 +1436,9 @@ const MetadataKeyPanel = ({
   }
 
   const hasData =
-    mode === 'customEvent' ? _size(rawMetadata) > ENTRIES_PER_PANEL : _size(valuesData) > ENTRIES_PER_PANEL
+    mode === 'customEvent'
+      ? _size(rawMetadata) > ENTRIES_PER_PANEL
+      : _size(valuesData) > ENTRIES_PER_PANEL
 
   return (
     <PanelContainer
@@ -1261,7 +1448,11 @@ const MetadataKeyPanel = ({
       onTabChange={onKeyChange}
       activeTabId={activeKey}
       onDetailsClick={hasData ? () => setDetailsOpened(true) : undefined}
-      dropdownPlaceholder={mode === 'customEvent' ? t('project.selectEvent') : t('project.selectProperty')}
+      dropdownPlaceholder={
+        mode === 'customEvent'
+          ? t('project.selectEvent')
+          : t('project.selectProperty')
+      }
     >
       {renderContent()}
     </PanelContainer>
@@ -1312,7 +1503,10 @@ interface PanelProps {
   activeTabId?: string
   customRenderer?: () => React.ReactNode
   versionData?: { [key: string]: Entry[] }
-  getVersionFilterLink?: (parent: string | null, version: string | null) => LinkProps['to']
+  getVersionFilterLink?: (
+    parent: string | null,
+    version: string | null,
+  ) => LinkProps['to']
   valuesHeaderName?: string
   highlightColour?: 'blue' | 'red' | 'orange'
   disableRowClick?: boolean
@@ -1398,7 +1592,11 @@ const DetailsTable = ({
       }
       if (activeTabId === 'lc') {
         try {
-          return (getLocaleDisplayName(entry?.name, language) || entry?.name || '').toLowerCase()
+          return (
+            getLocaleDisplayName(entry?.name, language) ||
+            entry?.name ||
+            ''
+          ).toLowerCase()
         } catch {
           return (entry?.name || '').toLowerCase()
         }
@@ -1429,7 +1627,8 @@ const DetailsTable = ({
 
     if (sort.sortByAscend) {
       const newData = [...sortedData].sort((a, b) => {
-        if (label === 'name') return (getValue(a) as string).localeCompare(getValue(b) as string)
+        if (label === 'name')
+          return (getValue(a) as string).localeCompare(getValue(b) as string)
         return (getValue(a) as number) - (getValue(b) as number)
       })
       setSortedData(newData)
@@ -1444,7 +1643,8 @@ const DetailsTable = ({
     }
 
     const newData = [...sortedData].sort((a, b) => {
-      if (label === 'name') return (getValue(a) as string).localeCompare(getValue(b) as string)
+      if (label === 'name')
+        return (getValue(a) as string).localeCompare(getValue(b) as string)
       return (getValue(b) as number) - (getValue(a) as number)
     })
     setSortedData(newData)
@@ -1483,12 +1683,19 @@ const DetailsTable = ({
                 {tnMapping[activeTabId as keyof typeof tnMapping]}
                 <Sort
                   className='ml-1'
-                  sortByAscend={sort.label === 'name' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'name' ? sort.sortByDescend : null}
+                  sortByAscend={
+                    sort.label === 'name' ? sort.sortByAscend : null
+                  }
+                  sortByDescend={
+                    sort.label === 'name' ? sort.sortByDescend : null
+                  }
                 />
               </th>
               {(() => {
-                const numericColsCount = 1 + (detailsExtraColumns?.length || 0) + (!hidePercentageInDetails ? 1 : 0)
+                const numericColsCount =
+                  1 +
+                  (detailsExtraColumns?.length || 0) +
+                  (!hidePercentageInDetails ? 1 : 0)
                 const numericColWidth = `${(60 / numericColsCount).toFixed(3)}%`
                 return (
                   <th style={{ width: numericColWidth }}>
@@ -1499,8 +1706,12 @@ const DetailsTable = ({
                       {valuesHeaderName || t('project.visitors')}
                       <Sort
                         className='ml-1'
-                        sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
-                        sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
+                        sortByAscend={
+                          sort.label === 'quantity' ? sort.sortByAscend : null
+                        }
+                        sortByDescend={
+                          sort.label === 'quantity' ? sort.sortByDescend : null
+                        }
                       />
                       &nbsp;&nbsp;
                     </p>
@@ -1508,12 +1719,19 @@ const DetailsTable = ({
                 )
               })()}
               {(() => {
-                const numericColsCount = 1 + (detailsExtraColumns?.length || 0) + (!hidePercentageInDetails ? 1 : 0)
+                const numericColsCount =
+                  1 +
+                  (detailsExtraColumns?.length || 0) +
+                  (!hidePercentageInDetails ? 1 : 0)
                 const numericColWidth = `${(60 / numericColsCount).toFixed(3)}%`
                 return (
                   <>
                     {detailsExtraColumns?.map((col, idx) => (
-                      <th key={`extra-col-${idx}`} style={{ width: numericColWidth }} className='pr-2'>
+                      <th
+                        key={`extra-col-${idx}`}
+                        style={{ width: numericColWidth }}
+                        className='pr-2'
+                      >
                         <p
                           className='flex cursor-pointer items-center justify-end hover:opacity-90'
                           onClick={() => onSortBy(col.sortLabel)}
@@ -1521,15 +1739,25 @@ const DetailsTable = ({
                           {col.header}
                           <Sort
                             className='ml-1'
-                            sortByAscend={sort.label === col.sortLabel ? sort.sortByAscend : null}
-                            sortByDescend={sort.label === col.sortLabel ? sort.sortByDescend : null}
+                            sortByAscend={
+                              sort.label === col.sortLabel
+                                ? sort.sortByAscend
+                                : null
+                            }
+                            sortByDescend={
+                              sort.label === col.sortLabel
+                                ? sort.sortByDescend
+                                : null
+                            }
                           />
                         </p>
                       </th>
                     ))}
                     {!hidePercentageInDetails ? (
                       <th style={{ width: numericColWidth }} className='pr-2'>
-                        <p className='flex items-center justify-end'>{t('project.percentage')}</p>
+                        <p className='flex items-center justify-end'>
+                          {t('project.percentage')}
+                        </p>
                       </th>
                     ) : null}
                   </>
@@ -1538,7 +1766,12 @@ const DetailsTable = ({
             </tr>
           </thead>
 
-          <tbody style={{ position: 'relative', height: `${rowVirtualizer.getTotalSize()}px` }}>
+          <tbody
+            style={{
+              position: 'relative',
+              height: `${rowVirtualizer.getTotalSize()}px`,
+            }}
+          >
             {rowVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
               const entry = filteredData[virtualRow.index]
               if (!entry) return null
@@ -1573,11 +1806,17 @@ const DetailsTable = ({
                     }
                   }}
                 >
-                  <td className='flex items-center py-1 pl-2 text-left' style={{ width: '40%' }}>
+                  <td
+                    className='flex items-center py-1 pl-2 text-left'
+                    style={{ width: '40%' }}
+                  >
                     <span
-                      className={cx('scrollbar-thin hover-always-overflow flex items-center whitespace-nowrap', {
-                        capitalize,
-                      })}
+                      className={cx(
+                        'scrollbar-thin hover-always-overflow flex items-center whitespace-nowrap',
+                        {
+                          capitalize,
+                        },
+                      )}
                     >
                       {linkContent ? (
                         <a
@@ -1604,17 +1843,28 @@ const DetailsTable = ({
                     ) : null}
                   </td>
                   {(() => {
-                    const numericColsCount = 1 + (detailsExtraColumns?.length || 0) + (!hidePercentageInDetails ? 1 : 0)
+                    const numericColsCount =
+                      1 +
+                      (detailsExtraColumns?.length || 0) +
+                      (!hidePercentageInDetails ? 1 : 0)
                     const numericColWidth = `${(60 / numericColsCount).toFixed(3)}%`
                     return (
-                      <td style={{ width: numericColWidth }} className='py-1 text-right'>
-                        {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
+                      <td
+                        style={{ width: numericColWidth }}
+                        className='py-1 text-right'
+                      >
+                        {activeTab === PROJECT_TABS.traffic
+                          ? nFormatter(valueData, 1)
+                          : valueData}
                         &nbsp;&nbsp;
                       </td>
                     )
                   })()}
                   {(() => {
-                    const numericColsCount = 1 + (detailsExtraColumns?.length || 0) + (!hidePercentageInDetails ? 1 : 0)
+                    const numericColsCount =
+                      1 +
+                      (detailsExtraColumns?.length || 0) +
+                      (!hidePercentageInDetails ? 1 : 0)
                     const numericColWidth = `${(60 / numericColsCount).toFixed(3)}%`
                     return (
                       <>
@@ -1628,7 +1878,10 @@ const DetailsTable = ({
                           </td>
                         ))}
                         {!hidePercentageInDetails ? (
-                          <td style={{ width: numericColWidth }} className='py-1 pr-2 text-right'>
+                          <td
+                            style={{ width: numericColWidth }}
+                            className='py-1 pr-2 text-right'
+                          >
                             {perc}%
                           </td>
                         ) : null}
@@ -1674,9 +1927,14 @@ const Panel = ({
   const dataLoading = dataLoadingProp ?? ctx.dataLoading
   const activeTab = activeTabProp ?? ctx.activeTab
   const { t } = useTranslation('common')
-  const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
+  const total = useMemo(
+    () => _reduce(data, (prev, curr) => prev + curr.count, 0),
+    [data],
+  )
   const [detailsOpened, setDetailsOpened] = useState(false)
-  const [expandedItems, setExpandedItems] = useState<Set<string | null>>(new Set())
+  const [expandedItems, setExpandedItems] = useState<Set<string | null>>(
+    new Set(),
+  )
 
   const tnMapping = typeNameMapping(t)
 
@@ -1699,12 +1957,18 @@ const Panel = ({
 
   const hasVersions = (itemName: string | null) => {
     if (itemName === null) return false
-    return versionData && versionData[itemName] && versionData[itemName].length > 0
+    return (
+      versionData && versionData[itemName] && versionData[itemName].length > 0
+    )
   }
 
   return (
     <PanelContainer
-      onDetailsClick={_size(data) > ENTRIES_PER_PANEL ? () => setDetailsOpened(true) : undefined}
+      onDetailsClick={
+        _size(data) > ENTRIES_PER_PANEL
+          ? () => setDetailsOpened(true)
+          : undefined
+      }
       name={name}
       icon={icon}
       type={id}
@@ -1740,22 +2004,30 @@ const Panel = ({
               const link = getFilterLink(id, entryName)
 
               return (
-                <div key={`${id}-${entryName}-${Object.values(rest).join('-')}`} className='space-y-0.5'>
+                <div
+                  key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
+                  className='space-y-0.5'
+                >
                   <div
                     className={cx(
                       'relative flex h-8 items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                       {
                         'group hover:bg-gray-50 hover:dark:bg-slate-800':
-                          !hideFilters && !dataLoading && (link || hasVersionsForItem),
+                          !hideFilters &&
+                          !dataLoading &&
+                          (link || hasVersionsForItem),
                         'cursor-wait': dataLoading,
                       },
                     )}
                   >
                     <div
                       className={cx('absolute inset-0 rounded-sm', {
-                        'bg-blue-50 dark:bg-blue-900/30': highlightColour === 'blue',
-                        'bg-red-50 dark:bg-red-900/20': highlightColour === 'red',
-                        'bg-orange-50 dark:bg-orange-400/20': highlightColour === 'orange',
+                        'bg-blue-50 dark:bg-blue-900/30':
+                          highlightColour === 'blue',
+                        'bg-red-50 dark:bg-red-900/20':
+                          highlightColour === 'red',
+                        'bg-orange-50 dark:bg-orange-400/20':
+                          highlightColour === 'orange',
                       })}
                       style={{ width: `${perc}%` }}
                     />
@@ -1770,12 +2042,17 @@ const Panel = ({
                             toggleExpanded(entryName)
                           }}
                           className='mr-1 rounded p-0.5 hover:bg-gray-200 dark:hover:bg-slate-600'
-                          aria-label={isExpanded ? 'Collapse versions' : 'Expand versions'}
+                          aria-label={
+                            isExpanded ? 'Collapse versions' : 'Expand versions'
+                          }
                         >
                           <ChevronRightIcon
-                            className={cx('h-4 w-4 text-gray-500 transition-transform dark:text-gray-400', {
-                              'rotate-90': isExpanded,
-                            })}
+                            className={cx(
+                              'h-4 w-4 text-gray-500 transition-transform dark:text-gray-400',
+                              {
+                                'rotate-90': isExpanded,
+                              },
+                            )}
                           />
                         </button>
                       ) : null}
@@ -1784,7 +2061,11 @@ const Panel = ({
                         as={!disableRowClick && link ? 'Link' : 'div'}
                         to={link}
                         className={cx('flex min-w-0 flex-1 items-center', {
-                          'cursor-pointer': !disableRowClick && !hideFilters && !dataLoading && link,
+                          'cursor-pointer':
+                            !disableRowClick &&
+                            !hideFilters &&
+                            !dataLoading &&
+                            link,
                           'cursor-wait': dataLoading,
                         })}
                       >
@@ -1822,7 +2103,9 @@ const Panel = ({
                         ({perc}%)
                       </span>
                       <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>
-                        {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
+                        {activeTab === PROJECT_TABS.traffic
+                          ? nFormatter(valueData, 1)
+                          : valueData}
                       </span>
                     </div>
                   </div>
@@ -1830,7 +2113,10 @@ const Panel = ({
                   {hasVersionsForItem && isExpanded ? (
                     <div className='ml-6 space-y-0.5'>
                       {_map(versions, (versionEntry) => {
-                        const versionPerc = _round((versionEntry.count / total) * 100, 2)
+                        const versionPerc = _round(
+                          (versionEntry.count / total) * 100,
+                          2,
+                        )
                         const versionValueData = valueMapper(versionEntry.count)
                         const versionLink = disableRowClick
                           ? undefined
@@ -1839,13 +2125,18 @@ const Panel = ({
                         return (
                           <FilterWrapper
                             key={`${id}-${entryName}-${versionEntry.name}`}
-                            as={!disableRowClick && versionLink ? 'Link' : 'div'}
+                            as={
+                              !disableRowClick && versionLink ? 'Link' : 'div'
+                            }
                             to={versionLink}
                             className={cx(
                               'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                               {
                                 'group cursor-pointer hover:bg-gray-50 hover:dark:bg-slate-800':
-                                  !disableRowClick && !hideFilters && !dataLoading && versionLink,
+                                  !disableRowClick &&
+                                  !hideFilters &&
+                                  !dataLoading &&
+                                  versionLink,
                                 'cursor-wait': dataLoading,
                               },
                             )}
@@ -1857,12 +2148,19 @@ const Panel = ({
 
                             <div className='relative z-10 flex min-w-0 flex-1 items-center'>
                               <span
-                                className={cx('flex items-center truncate text-sm text-gray-700 dark:text-gray-200', {
-                                  capitalize,
-                                })}
+                                className={cx(
+                                  'flex items-center truncate text-sm text-gray-700 dark:text-gray-200',
+                                  {
+                                    capitalize,
+                                  },
+                                )}
                               >
                                 {rowMapper
-                                  ? rowMapper({ ...entry, name: entryName, version: versionEntry.name })
+                                  ? rowMapper({
+                                      ...entry,
+                                      name: entryName,
+                                      version: versionEntry.name,
+                                    })
                                   : `${entryName} ${versionEntry.name}`}
                               </span>
                             </div>
@@ -1900,7 +2198,11 @@ const Panel = ({
           })
           const found = flatTabs.find((t) => t.id === activeTabId)
           return (
-            found?.label || (tnMapping[activeTabId as keyof typeof tnMapping] as unknown as string) || (name as string)
+            found?.label ||
+            (tnMapping[
+              activeTabId as keyof typeof tnMapping
+            ] as unknown as string) ||
+            (name as string)
           )
         })()}
         message={
@@ -1915,7 +2217,11 @@ const Panel = ({
             valueMapper={valueMapper}
             capitalize={capitalize || false}
             linkContent={linkContent || false}
-            getFilterLink={disableRowClick ? () => '' : (getFilterLink as (id: string, name: string | null) => string)}
+            getFilterLink={
+              disableRowClick
+                ? () => ''
+                : (getFilterLink as (id: string, name: string | null) => string)
+            }
             disableRowClick={disableRowClick}
             hidePercentageInDetails={hidePercentageInDetails}
             detailsExtraColumns={detailsExtraColumns}
@@ -1948,9 +2254,13 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
   })
 
   const currentIndex = page * ENTRIES_PER_PANEL
-  const totalPages = useMemo(() => _ceil(_size(metadata) / ENTRIES_PER_PANEL), [metadata])
+  const totalPages = useMemo(
+    () => _ceil(_size(metadata) / ENTRIES_PER_PANEL),
+    [metadata],
+  )
   const canGoPrev = () => page > 0
-  const canGoNext = () => page < _floor((_size(metadata) - 1) / ENTRIES_PER_PANEL)
+  const canGoNext = () =>
+    page < _floor((_size(metadata) - 1) / ENTRIES_PER_PANEL)
 
   const sortedData = useMemo(() => {
     return [...metadata].sort((a, b) => {
@@ -1959,10 +2269,14 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
       }
 
       if (sort.label === 'value') {
-        return sort.sortByAscend ? a.value.localeCompare(b.value) : b.value.localeCompare(a.value)
+        return sort.sortByAscend
+          ? a.value.localeCompare(b.value)
+          : b.value.localeCompare(a.value)
       }
 
-      return sort.sortByAscend ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)
+      return sort.sortByAscend
+        ? a.key.localeCompare(b.key)
+        : b.key.localeCompare(a.key)
     })
   }, [metadata, sort])
 
@@ -2036,8 +2350,12 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                   {t('project.key')}
                   <Sort
                     className='ml-1'
-                    sortByAscend={sort.label === 'key' ? sort.sortByAscend : null}
-                    sortByDescend={sort.label === 'key' ? sort.sortByDescend : null}
+                    sortByAscend={
+                      sort.label === 'key' ? sort.sortByAscend : null
+                    }
+                    sortByDescend={
+                      sort.label === 'key' ? sort.sortByDescend : null
+                    }
                   />
                 </th>
                 <th className='w-[30%] sm:w-1/6'>
@@ -2048,8 +2366,12 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                     {t('project.value')}
                     <Sort
                       className='ml-1'
-                      sortByAscend={sort.label === 'value' ? sort.sortByAscend : null}
-                      sortByDescend={sort.label === 'value' ? sort.sortByDescend : null}
+                      sortByAscend={
+                        sort.label === 'value' ? sort.sortByAscend : null
+                      }
+                      sortByDescend={
+                        sort.label === 'value' ? sort.sortByDescend : null
+                      }
                     />
                     &nbsp;&nbsp;
                   </p>
@@ -2062,8 +2384,12 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                     {t('project.quantity')}
                     <Sort
                       className='ml-1'
-                      sortByAscend={sort.label === 'count' ? sort.sortByAscend : null}
-                      sortByDescend={sort.label === 'count' ? sort.sortByDescend : null}
+                      sortByAscend={
+                        sort.label === 'count' ? sort.sortByAscend : null
+                      }
+                      sortByDescend={
+                        sort.label === 'count' ? sort.sortByDescend : null
+                      }
                     />
                   </p>
                 </th>
@@ -2080,7 +2406,9 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                     {value}
                     &nbsp;&nbsp;
                   </td>
-                  <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>{count}</td>
+                  <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>
+                    {count}
+                  </td>
                 </tr>
               ))}
             </tbody>

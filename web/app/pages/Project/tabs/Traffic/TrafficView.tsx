@@ -5,7 +5,12 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _some from 'lodash/some'
-import { BanIcon, ChartColumnBigIcon, ChartLineIcon, EyeIcon } from 'lucide-react'
+import {
+  BanIcon,
+  ChartColumnBigIcon,
+  ChartLineIcon,
+  EyeIcon,
+} from 'lucide-react'
 import React, {
   useState,
   useEffect,
@@ -20,7 +25,13 @@ import React, {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, Link, useSearchParams, useLoaderData, useRevalidator } from 'react-router'
+import {
+  useNavigate,
+  Link,
+  useSearchParams,
+  useLoaderData,
+  useRevalidator,
+} from 'react-router'
 import { toast } from 'sonner'
 
 import type {
@@ -40,7 +51,10 @@ import { OverallObject } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
 import CustomEventsSubmenu from '~/pages/Project/tabs/Traffic/CustomEventsSubmenu'
 import CustomMetrics from '~/pages/Project/tabs/Traffic/CustomMetrics'
-import { MetricCard, MetricCards } from '~/pages/Project/tabs/Traffic/MetricCards'
+import {
+  MetricCard,
+  MetricCards,
+} from '~/pages/Project/tabs/Traffic/MetricCards'
 import PageLinkRow from '~/pages/Project/tabs/Traffic/PageLinkRow'
 import RefRow from '~/pages/Project/tabs/Traffic/RefRow'
 import { TrafficChart } from '~/pages/Project/tabs/Traffic/TrafficChart'
@@ -60,9 +74,16 @@ import {
   ProjectViewCustomEvent,
   Properties,
 } from '~/pages/Project/View/interfaces/traffic'
-import { Panel, CustomEvents, MetadataKeyPanel } from '~/pages/Project/View/Panels'
+import {
+  Panel,
+  CustomEvents,
+  MetadataKeyPanel,
+} from '~/pages/Project/View/Panels'
 import { FILTER_CHART_METRICS_MAPPING_FOR_COMPARE } from '~/pages/Project/View/utils/filters'
-import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
+import {
+  useViewProjectContext,
+  useRefreshTriggers,
+} from '~/pages/Project/View/ViewProject'
 import {
   getFormatDate,
   panelIconMapping,
@@ -82,7 +103,9 @@ import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
 import routes from '~/utils/routes'
 
-const InteractiveMap = lazy(() => import('~/pages/Project/View/components/InteractiveMap'))
+const InteractiveMap = lazy(
+  () => import('~/pages/Project/View/components/InteractiveMap'),
+)
 
 interface PanelsData {
   types?: string[]
@@ -92,7 +115,11 @@ interface PanelsData {
   meta?: TrafficMeta[]
 }
 
-type KeywordEntry = Entry & { impressions: number; position: number; ctr: number }
+type KeywordEntry = Entry & {
+  impressions: number
+  position: number
+  ctr: number
+}
 
 interface TrafficViewProps {
   tnMapping: Record<string, string>
@@ -122,7 +149,10 @@ interface TrafficErrorBoundaryState {
   error: Error | null
 }
 
-class TrafficErrorBoundary extends Component<{ children: ReactNode }, TrafficErrorBoundaryState> {
+class TrafficErrorBoundary extends Component<
+  { children: ReactNode },
+  TrafficErrorBoundaryState
+> {
   constructor(props: { children: ReactNode }) {
     super(props)
     this.state = { hasError: false, error: null }
@@ -140,7 +170,8 @@ class TrafficErrorBoundary extends Component<{ children: ReactNode }, TrafficErr
             Failed to load traffic data
           </p>
           <p className='mt-2 text-center text-sm text-red-500 dark:text-red-300'>
-            {this.state.error?.message || 'An unexpected error occurred. Please try again.'}
+            {this.state.error?.message ||
+              'An unexpected error occurred. Please try again.'}
           </p>
           <button
             type='button'
@@ -157,7 +188,11 @@ class TrafficErrorBoundary extends Component<{ children: ReactNode }, TrafficErr
   }
 }
 
-function TrafficDataResolver({ children }: { children: (data: DeferredTrafficData) => React.ReactNode }) {
+function TrafficDataResolver({
+  children,
+}: {
+  children: (data: DeferredTrafficData) => React.ReactNode
+}) {
   const {
     trafficData: trafficDataPromise,
     overallStats: overallStatsPromise,
@@ -168,11 +203,25 @@ function TrafficDataResolver({ children }: { children: (data: DeferredTrafficDat
 
   const trafficData = trafficDataPromise ? use(trafficDataPromise) : null
   const overallStats = overallStatsPromise ? use(overallStatsPromise) : null
-  const trafficCompareData = trafficComparePromise ? use(trafficComparePromise) : null
-  const overallCompareStats = overallComparePromise ? use(overallComparePromise) : null
+  const trafficCompareData = trafficComparePromise
+    ? use(trafficComparePromise)
+    : null
+  const overallCompareStats = overallComparePromise
+    ? use(overallComparePromise)
+    : null
   const customEventsData = customEventsPromise ? use(customEventsPromise) : null
 
-  return <>{children({ trafficData, overallStats, trafficCompareData, overallCompareStats, customEventsData })}</>
+  return (
+    <>
+      {children({
+        trafficData,
+        overallStats,
+        trafficCompareData,
+        overallCompareStats,
+        customEventsData,
+      })}
+    </>
+  )
 }
 
 function TrafficViewWrapper(props: TrafficViewProps) {
@@ -180,7 +229,9 @@ function TrafficViewWrapper(props: TrafficViewProps) {
     <TrafficErrorBoundary>
       <Suspense fallback={<Loader />}>
         <TrafficDataResolver>
-          {(deferredData) => <TrafficViewInner {...props} deferredData={deferredData} />}
+          {(deferredData) => (
+            <TrafficViewInner {...props} deferredData={deferredData} />
+          )}
         </TrafficDataResolver>
       </Suspense>
     </TrafficErrorBoundary>
@@ -207,7 +258,8 @@ const TrafficViewInner = ({
 }: TrafficViewInnerProps) => {
   const { id, project, allowedToManage } = useCurrentProject()
   const revalidator = useRevalidator()
-  const { fetchMetadata: fetchCustomEventsMetadata } = useCustomEventsMetadataProxy()
+  const { fetchMetadata: fetchCustomEventsMetadata } =
+    useCustomEventsMetadataProxy()
   const { fetchMetadata: fetchPropertyMetadata } = usePropertyMetadataProxy()
   const { fetchKeywords: fetchGSCKeywords } = useGSCKeywordsProxy()
   const { fetchRevenueStatus, fetchRevenueData } = useRevenueProxy()
@@ -278,7 +330,10 @@ const TrafficViewInner = ({
     return { data: {} }
   }, [deferredData.trafficData])
 
-  const baseChartData = useMemo(() => deferredData.trafficData?.chart || {}, [deferredData.trafficData])
+  const baseChartData = useMemo(
+    () => deferredData.trafficData?.chart || {},
+    [deferredData.trafficData],
+  )
 
   const overall: Partial<OverallObject> = useMemo(() => {
     if (deferredData.overallStats && id) {
@@ -304,13 +359,20 @@ const TrafficViewInner = ({
 
   // Derive custom events data from loader
   const customEventsChartData = useMemo(
-    () => (deferredData.customEventsData?.chart?.events || {}) as Record<string, string[]>,
+    () =>
+      (deferredData.customEventsData?.chart?.events || {}) as Record<
+        string,
+        string[]
+      >,
     [deferredData.customEventsData],
   )
 
   // Revenue state (still fetched client-side for now)
   const [isRevenueConnected, setIsRevenueConnected] = useState(false)
-  const [revenueOverlay, setRevenueOverlay] = useState<{ revenue: number[]; refundsAmount: number[] } | null>(null)
+  const [revenueOverlay, setRevenueOverlay] = useState<{
+    revenue: number[]
+    refundsAmount: number[]
+  } | null>(null)
 
   // Merge base chart with revenue data
   const chartData = useMemo(() => {
@@ -396,7 +458,10 @@ const TrafficViewInner = ({
           setIsRevenueConnected(status.connected)
         }
       } catch (error) {
-        console.error('[ERROR] (fetchRevenueStatus) Fetching revenue status failed', error)
+        console.error(
+          '[ERROR] (fetchRevenueStatus) Fetching revenue status failed',
+          error,
+        )
       }
     }
 
@@ -452,20 +517,29 @@ const TrafficViewInner = ({
               id: CHART_METRICS_MAPPING.revenue,
               label: t('dashboard.revenue'),
               active: activeChartMetrics[CHART_METRICS_MAPPING.revenue],
-              conflicts: [CHART_METRICS_MAPPING.bounce, CHART_METRICS_MAPPING.sessionDuration],
+              conflicts: [
+                CHART_METRICS_MAPPING.bounce,
+                CHART_METRICS_MAPPING.sessionDuration,
+              ],
             }
           : null,
         {
           id: CHART_METRICS_MAPPING.sessionDuration,
           label: t('dashboard.sessionDuration'),
           active: activeChartMetrics[CHART_METRICS_MAPPING.sessionDuration],
-          conflicts: [CHART_METRICS_MAPPING.bounce, CHART_METRICS_MAPPING.revenue],
+          conflicts: [
+            CHART_METRICS_MAPPING.bounce,
+            CHART_METRICS_MAPPING.revenue,
+          ],
         },
         {
           id: CHART_METRICS_MAPPING.bounce,
           label: t('dashboard.bounceRate'),
           active: activeChartMetrics[CHART_METRICS_MAPPING.bounce],
-          conflicts: [CHART_METRICS_MAPPING.sessionDuration, CHART_METRICS_MAPPING.revenue],
+          conflicts: [
+            CHART_METRICS_MAPPING.sessionDuration,
+            CHART_METRICS_MAPPING.revenue,
+          ],
         },
         {
           id: CHART_METRICS_MAPPING.viewsPerUnique,
@@ -530,14 +604,20 @@ const TrafficViewInner = ({
   )
 
   const checkIfAllMetricsAreDisabled = useMemo(
-    () => !_some({ ...activeChartMetrics, ...activeChartMetricsCustomEvents }, (value) => value),
+    () =>
+      !_some(
+        { ...activeChartMetrics, ...activeChartMetricsCustomEvents },
+        (value) => value,
+      ),
     [activeChartMetrics, activeChartMetricsCustomEvents],
   )
 
   const isConflicted = useCallback(
     (conflicts: string[] | undefined) => {
       if (!conflicts) return false
-      return conflicts.some((id) => activeChartMetrics[id as keyof typeof activeChartMetrics])
+      return conflicts.some(
+        (id) => activeChartMetrics[id as keyof typeof activeChartMetrics],
+      )
     },
     [activeChartMetrics],
   )
@@ -564,7 +644,8 @@ const TrafficViewInner = ({
   const switchCustomEventChart = useCallback(
     (eventId: string) => {
       const newParams = new URLSearchParams(searchParams.toString())
-      const currentEvents = newParams.get('customEvents')?.split(',').filter(Boolean) || []
+      const currentEvents =
+        newParams.get('customEvents')?.split(',').filter(Boolean) || []
 
       let newEvents: string[]
       if (currentEvents.includes(eventId)) {
@@ -592,7 +673,12 @@ const TrafficViewInner = ({
 
   // Load revenue data (the only remaining client-side fetch)
   const loadRevenueData = useCallback(async () => {
-    if (!project || !activeChartMetrics.revenue || isSelfhosted || !isRevenueConnected) {
+    if (
+      !project ||
+      !activeChartMetrics.revenue ||
+      isSelfhosted ||
+      !isRevenueConnected
+    ) {
       setRevenueOverlay(null)
       return
     }
@@ -641,7 +727,9 @@ const TrafficViewInner = ({
             refundsByX.set(revX[i], Number(revRefunds[i] ?? 0))
           }
           revenueData = chart.x.map((x: string) => Number(byX.get(x) ?? 0))
-          refundsData = chart.x.map((x: string) => Number(refundsByX.get(x) ?? 0))
+          refundsData = chart.x.map((x: string) =>
+            Number(refundsByX.get(x) ?? 0),
+          )
         }
       }
 
@@ -673,7 +761,11 @@ const TrafficViewInner = ({
         timezone,
       })
     } else {
-      result = await fetchCustomEventsMetadata(id, event, { timeBucket, period, timezone })
+      result = await fetchCustomEventsMetadata(id, event, {
+        timeBucket,
+        period,
+        timezone,
+      })
     }
 
     return result || { result: [] }
@@ -691,7 +783,12 @@ const TrafficViewInner = ({
         timezone,
       })
     } else {
-      result = await fetchPropertyMetadata(id, property, { timeBucket, period, filters, timezone })
+      result = await fetchPropertyMetadata(id, property, {
+        timeBucket,
+        period,
+        filters,
+        timezone,
+      })
     }
 
     return result || { result: [] }
@@ -766,7 +863,12 @@ const TrafficViewInner = ({
       {
         label: t('project.asCSV'),
         onClick: () =>
-          onCSVExportClick({ data: panelsData.data, types: panelsData.types || [] }, id, tnMapping, language),
+          onCSVExportClick(
+            { data: panelsData.data, types: panelsData.types || [] },
+            id,
+            tnMapping,
+            language,
+          ),
       },
     ],
     [t, panelsData, id, tnMapping, language],
@@ -803,7 +905,13 @@ const TrafficViewInner = ({
     )
   }
 
-  const ChartTypeSwitcher = ({ type, onSwitch }: { type: string; onSwitch: (type: 'line' | 'bar') => void }) => {
+  const ChartTypeSwitcher = ({
+    type,
+    onSwitch,
+  }: {
+    type: string
+    onSwitch: (type: 'line' | 'bar') => void
+  }) => {
     if (type === chartTypes.bar) {
       return (
         <button
@@ -833,7 +941,10 @@ const TrafficViewInner = ({
   if (isMapFullscreen && fullscreenMapRef.current) {
     const countryData = panelsData.data?.cc || []
     const regionData = panelsData.data?.rg || []
-    const total = countryData.reduce((acc: number, curr: any) => acc + curr.count, 0)
+    const total = countryData.reduce(
+      (acc: number, curr: any) => acc + curr.count,
+      0,
+    )
 
     return createPortal(
       <Suspense
@@ -841,7 +952,9 @@ const TrafficViewInner = ({
           <div className='flex h-full flex-1 items-center justify-center'>
             <div className='flex flex-col items-center gap-2'>
               <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent' />
-              <span className='text-sm text-neutral-600 dark:text-neutral-300'>Loading map...</span>
+              <span className='text-sm text-neutral-600 dark:text-neutral-300'>
+                Loading map...
+              </span>
             </div>
           </div>
         }
@@ -867,17 +980,33 @@ const TrafficViewInner = ({
       <DashboardHeader rightContent={headerRightContent} />
       {dataLoading && !isPanelsDataEmpty ? <LoadingBar /> : null}
       <div className={cx({ hidden: isPanelsDataEmpty })}>
-        {!isPanelsDataEmpty ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
+        {!isPanelsDataEmpty ? (
+          <Filters className='mb-3' tnMapping={tnMapping} />
+        ) : null}
         <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
           <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
             <Dropdown
               header={t('project.metricVis')}
               items={
                 isActiveCompare
-                  ? _filter(chartMetrics, (el) => !!el && !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id))
+                  ? _filter(
+                      chartMetrics,
+                      (el) =>
+                        !!el &&
+                        !_includes(
+                          FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
+                          el.id,
+                        ),
+                    )
                   : chartMetrics
               }
-              title={[<EyeIcon key='eye-icon' aria-label={t('project.metricVis')} className='h-5 w-5' />]}
+              title={[
+                <EyeIcon
+                  key='eye-icon'
+                  aria-label={t('project.metricVis')}
+                  className='h-5 w-5'
+                />,
+              ]}
               labelExtractor={(pair) => {
                 if (!pair) return null
 
@@ -935,7 +1064,10 @@ const TrafficViewInner = ({
               chevron='mini'
               headless
             />
-            <ChartTypeSwitcher onSwitch={setChartTypeOnClick} type={chartType} />
+            <ChartTypeSwitcher
+              onSwitch={setChartTypeOnClick}
+              type={chartType}
+            />
           </div>
           {!_isEmpty(overall) ? (
             <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
@@ -971,7 +1103,12 @@ const TrafficViewInner = ({
             </div>
           ) : null}
           {!checkIfAllMetricsAreDisabled && !_isEmpty(chartData) ? (
-            <div onContextMenu={(e) => handleChartContextMenu(e, (chartData as any).x)} className='relative'>
+            <div
+              onContextMenu={(e) =>
+                handleChartContextMenu(e, (chartData as any).x)
+              }
+              className='relative'
+            >
               <TrafficChart
                 chartData={chartData}
                 timeBucket={timeBucket}
@@ -1017,15 +1154,28 @@ const TrafficViewInner = ({
                       }
 
                       const entryNameArray = entryName.split('-')
-                      const displayName = getLocaleDisplayName(entryName, language)
+                      const displayName = getLocaleDisplayName(
+                        entryName,
+                        language,
+                      )
 
                       return (
-                        <CCRow cc={entryNameArray[entryNameArray.length - 1]} name={displayName} language={language} />
+                        <CCRow
+                          cc={entryNameArray[entryNameArray.length - 1]}
+                          name={displayName}
+                          language={language}
+                        />
                       )
                     }
 
                     if (cc !== undefined) {
-                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
+                      return (
+                        <CCRow
+                          cc={cc}
+                          name={entryName || undefined}
+                          language={language}
+                        />
+                      )
                     }
 
                     return <CCRow cc={entryName} language={language} />
@@ -1048,7 +1198,10 @@ const TrafficViewInner = ({
                           ? () => {
                               const countryData = panelsData.data?.cc || []
                               const regionData = panelsData.data?.rg || []
-                              const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
+                              const total = countryData.reduce(
+                                (acc, curr) => acc + curr.count,
+                                0,
+                              )
 
                               return (
                                 <Suspense
@@ -1101,7 +1254,11 @@ const TrafficViewInner = ({
                       onTabChange={(tab) => setPanelTab('device', tab)}
                       activeTabId={panelsActiveTabs.device}
                       data={panelsData.data[panelsActiveTabs.device]}
-                      rowMapper={getDeviceRowMapper(panelsActiveTabs.device, theme, t)}
+                      rowMapper={getDeviceRowMapper(
+                        panelsActiveTabs.device,
+                        theme,
+                        t,
+                      )}
                       capitalize={panelsActiveTabs.device === 'dv'}
                       versionData={
                         panelsActiveTabs.device === 'br'
@@ -1111,7 +1268,11 @@ const TrafficViewInner = ({
                             : undefined
                       }
                       getVersionFilterLink={(parent, version) =>
-                        getVersionFilterLink(parent, version, panelsActiveTabs.device === 'br' ? 'br' : 'os')
+                        getVersionFilterLink(
+                          parent,
+                          version,
+                          panelsActiveTabs.device === 'br' ? 'br' : 'os',
+                        )
                       }
                     />
                   )
@@ -1139,7 +1300,9 @@ const TrafficViewInner = ({
                         if (!entryName) {
                           return (
                             <span className='italic'>
-                              {panelsActiveTabs.page === 'host' ? t('project.unknownHost') : t('common.notSet')}
+                              {panelsActiveTabs.page === 'host'
+                                ? t('project.unknownHost')
+                                : t('common.notSet')}
                             </span>
                           )
                         }
@@ -1153,8 +1316,16 @@ const TrafficViewInner = ({
                         }
 
                         // For page paths (pg tab), show with clickable link
-                        if (panelsActiveTabs.page === 'pg' && project?.websiteUrl) {
-                          return <PageLinkRow pagePath={decodedUri} websiteUrl={project.websiteUrl} />
+                        if (
+                          panelsActiveTabs.page === 'pg' &&
+                          project?.websiteUrl
+                        ) {
+                          return (
+                            <PageLinkRow
+                              pagePath={decodedUri}
+                              websiteUrl={project.websiteUrl}
+                            />
+                          )
                         }
 
                         return decodedUri
@@ -1166,7 +1337,12 @@ const TrafficViewInner = ({
                       data={panelsData.data[panelsActiveTabs.page]}
                       customRenderer={
                         panelsActiveTabs.page === 'userFlow'
-                          ? () => <UserFlow isReversed={false} setReversed={() => {}} />
+                          ? () => (
+                              <UserFlow
+                                isReversed={false}
+                                setReversed={() => {}}
+                              />
+                            )
                           : undefined
                       }
                     />
@@ -1174,10 +1350,15 @@ const TrafficViewInner = ({
                 }
 
                 if (type === 'traffic-sources') {
-                  const hasRefNameFilter = filters.some((f) => f.column === 'refn')
+                  const hasRefNameFilter = filters.some(
+                    (f) => f.column === 'refn',
+                  )
                   const trafficSourcesTabs = [
                     { id: 'ref', label: t('project.mapping.ref') },
-                    !isSelfhosted && { id: 'keywords', label: t('project.mapping.keywords') },
+                    !isSelfhosted && {
+                      id: 'keywords',
+                      label: t('project.mapping.keywords'),
+                    },
                     [
                       { id: 'so', label: t('project.mapping.so') },
                       { id: 'me', label: t('project.mapping.me') },
@@ -1190,9 +1371,12 @@ const TrafficViewInner = ({
                   const getTrafficSourcesRowMapper = (activeTab: string) => {
                     if (activeTab === 'ref') {
                       // eslint-disable-next-line
-                      return ({ name: entryName }: any) => <RefRow rowName={entryName} />
+                      return ({ name: entryName }: any) => (
+                        <RefRow rowName={entryName} />
+                      )
                     }
-                    return ({ name: entryName }: any) => decodeURIComponent(entryName)
+                    return ({ name: entryName }: any) =>
+                      decodeURIComponent(entryName)
                   }
 
                   return (
@@ -1203,7 +1387,10 @@ const TrafficViewInner = ({
                       getFilterLink={(column: string, value: string | null) => {
                         if (panelsActiveTabs.source === 'ref') {
                           // If grouped by name/domain (no refn filter active) -> filter by refn
-                          return getFilterLink(hasRefNameFilter || value === null ? 'ref' : 'refn', value)
+                          return getFilterLink(
+                            hasRefNameFilter || value === null ? 'ref' : 'refn',
+                            value,
+                          )
                         }
                         return getFilterLink(column, value)
                       }}
@@ -1219,14 +1406,26 @@ const TrafficViewInner = ({
                                 const raw = panelsData.data?.ref || []
                                 return hasRefNameFilter
                                   ? (raw as unknown as Entry[])
-                                  : (groupRefEntries(raw as any) as unknown as Entry[])
+                                  : (groupRefEntries(
+                                      raw as any,
+                                    ) as unknown as Entry[])
                               })()
-                            : (panelsData.data[panelsActiveTabs.source] as unknown as Entry[])
+                            : (panelsData.data[
+                                panelsActiveTabs.source
+                              ] as unknown as Entry[])
                       }
-                      valuesHeaderName={panelsActiveTabs.source === 'keywords' ? t('project.clicks') : undefined}
-                      rowMapper={getTrafficSourcesRowMapper(panelsActiveTabs.source)}
+                      valuesHeaderName={
+                        panelsActiveTabs.source === 'keywords'
+                          ? t('project.clicks')
+                          : undefined
+                      }
+                      rowMapper={getTrafficSourcesRowMapper(
+                        panelsActiveTabs.source,
+                      )}
                       disableRowClick={panelsActiveTabs.source === 'keywords'}
-                      hidePercentageInDetails={panelsActiveTabs.source === 'keywords'}
+                      hidePercentageInDetails={
+                        panelsActiveTabs.source === 'keywords'
+                      }
                       detailsExtraColumns={
                         panelsActiveTabs.source === 'keywords'
                           ? [
@@ -1234,19 +1433,22 @@ const TrafficViewInner = ({
                                 header: t('project.impressions'),
                                 render: (entry: any) => entry.impressions,
                                 sortLabel: 'impressions',
-                                getSortValue: (entry: any) => Number(entry.impressions || 0),
+                                getSortValue: (entry: any) =>
+                                  Number(entry.impressions || 0),
                               },
                               {
                                 header: t('project.position'),
                                 render: (entry: any) => entry.position,
                                 sortLabel: 'position',
-                                getSortValue: (entry: any) => Number(entry.position || 0),
+                                getSortValue: (entry: any) =>
+                                  Number(entry.position || 0),
                               },
                               {
                                 header: t('project.ctr'),
                                 render: (entry: any) => `${entry.ctr}%`,
                                 sortLabel: 'ctr',
-                                getSortValue: (entry: any) => Number(entry.ctr || 0),
+                                getSortValue: (entry: any) =>
+                                  Number(entry.ctr || 0),
                               },
                             ]
                           : undefined
@@ -1259,11 +1461,15 @@ const TrafficViewInner = ({
                               ? () => (
                                   <div className='mt-4 text-center'>
                                     <p className='text-sm text-gray-800 dark:text-gray-200'>
-                                      {['owner', 'admin'].includes(project?.role || '')
+                                      {['owner', 'admin'].includes(
+                                        project?.role || '',
+                                      )
                                         ? t('project.connectGsc')
                                         : t('project.gscConnectionRequired')}
                                     </p>
-                                    {['owner', 'admin'].includes(project?.role || '') ? (
+                                    {['owner', 'admin'].includes(
+                                      project?.role || '',
+                                    ) ? (
                                       <Link
                                         to={`${routes.project_settings.replace(':id', id)}?tab=integrations`}
                                         className='mt-2 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
@@ -1344,7 +1550,11 @@ const TrafficViewInner = ({
           }}
           onEditAnnotation={
             contextMenu.annotation
-              ? () => openAnnotationModal(contextMenu.annotation?.date, contextMenu.annotation!)
+              ? () =>
+                  openAnnotationModal(
+                    contextMenu.annotation?.date,
+                    contextMenu.annotation!,
+                  )
               : undefined
           }
           onDeleteAnnotation={

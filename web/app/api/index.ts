@@ -31,7 +31,11 @@ export const askAI = async (
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || errorData.error || `HTTP error! status: ${response.status}`)
+      throw new Error(
+        errorData.message ||
+          errorData.error ||
+          `HTTP error! status: ${response.status}`,
+      )
     }
 
     const reader = response.body?.getReader()

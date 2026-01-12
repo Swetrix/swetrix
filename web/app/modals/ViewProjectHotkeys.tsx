@@ -69,7 +69,9 @@ const HotkeysList = ({ title, hotkeys }: HotkeysListProps) => (
     <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-700'>
       <thead>
         <tr>
-          <th className='pb-2 text-left text-base font-semibold text-gray-900 dark:text-gray-50'>{title}</th>
+          <th className='pb-2 text-left text-base font-semibold text-gray-900 dark:text-gray-50'>
+            {title}
+          </th>
           <th />
         </tr>
       </thead>

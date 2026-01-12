@@ -1,4 +1,9 @@
-import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react'
+import {
+  Popover,
+  PopoverButton,
+  PopoverPanel,
+  Transition,
+} from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import cx from 'clsx'
 import _map from 'lodash/map'
@@ -12,7 +17,11 @@ interface PeriodSelectorProps {
   isLoading: boolean
 }
 
-export const PeriodSelector = ({ activePeriod, setActivePeriod, isLoading }: PeriodSelectorProps) => {
+export const PeriodSelector = ({
+  activePeriod,
+  setActivePeriod,
+  isLoading,
+}: PeriodSelectorProps) => {
   const { t } = useTranslation('common')
 
   const periods = useMemo(() => {

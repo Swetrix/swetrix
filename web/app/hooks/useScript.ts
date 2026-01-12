@@ -31,7 +31,9 @@ const useScript = (src: string) => {
       return
     }
 
-    let script = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null
+    let script = document.querySelector(
+      `script[src="${src}"]`,
+    ) as HTMLScriptElement | null
 
     if (!script) {
       script = document.createElement('script')

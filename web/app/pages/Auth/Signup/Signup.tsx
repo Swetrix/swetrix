@@ -1,14 +1,29 @@
-import { BarChart3Icon, MousePointerClickIcon, ShieldCheckIcon, SparklesIcon } from 'lucide-react'
+import {
+  BarChart3Icon,
+  MousePointerClickIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+} from 'lucide-react'
 import React, { useState, useEffect, memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link, useNavigate, Form, useActionData, useNavigation } from 'react-router'
+import {
+  Link,
+  useNavigate,
+  Form,
+  useActionData,
+  useNavigation,
+} from 'react-router'
 import { toast } from 'sonner'
 
 import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
 import OIDCAuth from '~/components/OIDCAuth'
 import { useAuthProxy } from '~/hooks/useAuthProxy'
-import { HAVE_I_BEEN_PWNED_URL, isSelfhosted, TRIAL_DAYS } from '~/lib/constants'
+import {
+  HAVE_I_BEEN_PWNED_URL,
+  isSelfhosted,
+  TRIAL_DAYS,
+} from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -24,9 +39,19 @@ import { MIN_PASSWORD_CHARS } from '~/utils/validator'
 
 const HASH_CHECK_FREQUENCY = 1000
 
-const featureIcons = [BarChart3Icon, MousePointerClickIcon, ShieldCheckIcon, SparklesIcon]
+const featureIcons = [
+  BarChart3Icon,
+  MousePointerClickIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+]
 
-const featureKeys = ['realTimeAnalytics', 'eventTracking', 'privacyFirst', 'intuitive'] as const
+const featureKeys = [
+  'realTimeAnalytics',
+  'eventTracking',
+  'privacyFirst',
+  'intuitive',
+] as const
 
 const Signup = () => {
   const { t } = useTranslation('common')
@@ -50,13 +75,19 @@ const Signup = () => {
 
   useEffect(() => {
     if (actionData?.error && !actionData?.fieldErrors) {
-      const errorMessage = Array.isArray(actionData.error) ? actionData.error[0] : actionData.error
+      const errorMessage = Array.isArray(actionData.error)
+        ? actionData.error[0]
+        : actionData.error
       toast.error(errorMessage)
     }
   }, [actionData?.error, actionData?.fieldErrors, actionData?.timestamp])
 
   const clearFieldError = (fieldName: string) => {
-    if (actionData?.fieldErrors?.[fieldName as keyof typeof actionData.fieldErrors]) {
+    if (
+      actionData?.fieldErrors?.[
+        fieldName as keyof typeof actionData.fieldErrors
+      ]
+    ) {
       setClearedErrors((prev) => new Set(prev).add(fieldName))
     }
   }
@@ -65,7 +96,9 @@ const Signup = () => {
     if (clearedErrors.has(fieldName)) {
       return undefined
     }
-    return actionData?.fieldErrors?.[fieldName as keyof typeof actionData.fieldErrors]
+    return actionData?.fieldErrors?.[
+      fieldName as keyof typeof actionData.fieldErrors
+    ]
   }
 
   const handleFormSubmit = () => {
@@ -84,7 +117,11 @@ const Signup = () => {
     setIsSsoLoading(true)
 
     try {
-      const { uuid, auth_url: authUrl, expires_in: expiresIn } = await generateSSOAuthURL(provider)
+      const {
+        uuid,
+        auth_url: authUrl,
+        expires_in: expiresIn,
+      } = await generateSSOAuthURL(provider)
 
       const safeAuthUrl = (() => {
         try {
@@ -97,14 +134,21 @@ const Signup = () => {
             !(
               provider === 'openid-connect' &&
               parsed.protocol === 'http:' &&
-              (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1' || parsed.hostname === '::1')
+              (parsed.hostname === 'localhost' ||
+                parsed.hostname === '127.0.0.1' ||
+                parsed.hostname === '::1')
             )
           ) {
             return null
           }
 
-          if (provider === 'google' && parsed.hostname !== 'accounts.google.com') return null
-          if (provider === 'github' && parsed.hostname !== 'github.com') return null
+          if (
+            provider === 'google' &&
+            parsed.hostname !== 'accounts.google.com'
+          )
+            return null
+          if (provider === 'github' && parsed.hostname !== 'github.com')
+            return null
 
           return parsed.toString()
         } catch {
@@ -128,7 +172,11 @@ const Signup = () => {
         await delay(HASH_CHECK_FREQUENCY)
 
         try {
-          const { user, totalMonthlyEvents } = await getJWTBySSOHash(uuid, provider, true)
+          const { user, totalMonthlyEvents } = await getJWTBySSOHash(
+            uuid,
+            provider,
+            true,
+          )
           authWindow.close()
 
           if (user.isTwoFactorAuthenticationEnabled) {
@@ -160,7 +208,10 @@ const Signup = () => {
         }
       }
     } catch (reason) {
-      toast.error((reason as { message?: string })?.message || t('apiNotifications.socialisationGenericError'))
+      toast.error(
+        (reason as { message?: string })?.message ||
+          t('apiNotifications.socialisationGenericError'),
+      )
       setIsSsoLoading(false)
       return
     }
@@ -185,23 +236,46 @@ const Signup = () => {
             )}
           </div>
 
-          <div className={cn('grid gap-3', isSelfhosted ? 'grid-cols-1' : 'grid-cols-2')}>
+          <div
+            className={cn(
+              'grid gap-3',
+              isSelfhosted ? 'grid-cols-1' : 'grid-cols-2',
+            )}
+          >
             {isSelfhosted ? (
-              <OIDCAuth onClick={() => onSsoLogin('openid-connect')} disabled={isLoading} className='w-full' />
+              <OIDCAuth
+                onClick={() => onSsoLogin('openid-connect')}
+                disabled={isLoading}
+                className='w-full'
+              />
             ) : (
               <>
-                <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
-                <GithubAuth onClick={() => onSsoLogin('github')} disabled={isLoading} />
+                <GoogleAuth
+                  onClick={() => onSsoLogin('google')}
+                  disabled={isLoading}
+                />
+                <GithubAuth
+                  onClick={() => onSsoLogin('github')}
+                  disabled={isLoading}
+                />
               </>
             )}
           </div>
 
           <div className='relative my-6'>
-            <div className='absolute inset-0 flex items-center' aria-hidden='true'>
+            <div
+              className='absolute inset-0 flex items-center'
+              aria-hidden='true'
+            >
               <div className='w-full border-t border-gray-200 dark:border-gray-700' />
             </div>
             <div className='relative flex justify-center text-sm'>
-              <Text as='span' colour='muted' size='sm' className='bg-gray-50 px-4 dark:bg-slate-900'>
+              <Text
+                as='span'
+                colour='muted'
+                size='sm'
+                className='bg-gray-50 px-4 dark:bg-slate-900'
+              >
                 {t('auth.common.orContinueWith')} email
               </Text>
             </div>
@@ -237,7 +311,11 @@ const Signup = () => {
 
             {/* Hidden fields for checkbox values since Headless UI Checkbox doesn't submit natively */}
             <input type='hidden' name='tos' value={tos ? 'true' : 'false'} />
-            <input type='hidden' name='checkIfLeaked' value={checkIfLeaked ? 'true' : 'false'} />
+            <input
+              type='hidden'
+              name='checkIfLeaked'
+              value={checkIfLeaked ? 'true' : 'false'}
+            />
 
             {isSelfhosted ? null : (
               <Checkbox
@@ -284,7 +362,9 @@ const Signup = () => {
                 checked={checkIfLeaked}
                 onChange={setCheckIfLeaked}
                 disabled={isLoading}
-                label={<Text size='sm'>{t('auth.common.checkLeakedPassword')}</Text>}
+                label={
+                  <Text size='sm'>{t('auth.common.checkLeakedPassword')}</Text>
+                }
               />
               <Tooltip
                 className='ml-2'
@@ -310,7 +390,13 @@ const Signup = () => {
               />
             </div>
 
-            <Button className='mt-6 w-full justify-center' type='submit' loading={isFormSubmitting} primary giant>
+            <Button
+              className='mt-6 w-full justify-center'
+              type='submit'
+              loading={isFormSubmitting}
+              primary
+              giant
+            >
               {t('auth.signup.button')}
             </Button>
           </Form>
@@ -351,7 +437,12 @@ const Signup = () => {
                       <Icon className='size-4 text-white' />
                     </div>
                     <div>
-                      <Text as='span' size='sm' weight='semibold' className='text-white'>
+                      <Text
+                        as='span'
+                        size='sm'
+                        weight='semibold'
+                        className='text-white'
+                      >
                         {t(`auth.signup.features.${key}`)}
                       </Text>
                       <Text as='span' size='sm' className='ml-1 text-slate-400'>
@@ -367,7 +458,11 @@ const Signup = () => {
           <div className='relative'>
             <div className='overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/10'>
               <img
-                src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
+                src={
+                  theme === 'dark'
+                    ? '/assets/screenshot_dark.png'
+                    : '/assets/screenshot_light.png'
+                }
                 alt='Swetrix Dashboard'
                 className='w-full'
               />

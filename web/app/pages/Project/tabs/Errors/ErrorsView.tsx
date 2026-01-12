@@ -16,7 +16,16 @@ import {
   AlertTriangleIcon,
   UserIcon,
 } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense, use } from 'react'
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  lazy,
+  Suspense,
+  use,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Link,
@@ -31,7 +40,11 @@ import {
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import type { ErrorsResponse, ErrorDetailsResponse, ErrorOverviewResponse } from '~/api/api.server'
+import type {
+  ErrorsResponse,
+  ErrorDetailsResponse,
+  ErrorOverviewResponse,
+} from '~/api/api.server'
 import { useErrorsProxy } from '~/hooks/useAnalyticsProxy'
 import {
   TimeFormat,
@@ -54,16 +67,25 @@ import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { Panel, MetadataPanel } from '~/pages/Project/View/Panels'
 import { ERROR_FILTERS_MAPPING } from '~/pages/Project/View/utils/filters'
-import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
+import {
+  useViewProjectContext,
+  useRefreshTriggers,
+} from '~/pages/Project/View/ViewProject'
 import {
   getFormatDate,
   typeNameMapping,
   panelIconMapping,
   getDeviceRowMapper,
 } from '~/pages/Project/View/ViewProject.helpers'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import {
+  useCurrentProject,
+  useProjectPassword,
+} from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import type { ProjectViewActionData, ProjectLoaderData } from '~/routes/projects.$id'
+import type {
+  ProjectViewActionData,
+  ProjectLoaderData,
+} from '~/routes/projects.$id'
 import { Badge } from '~/ui/Badge'
 import BillboardChart from '~/ui/BillboardChart'
 import Checkbox from '~/ui/Checkbox'
@@ -75,10 +97,17 @@ import Tooltip from '~/ui/Tooltip'
 import { getRelativeDateIfPossible } from '~/utils/date'
 import { getLocaleDisplayName, nFormatter } from '~/utils/generic'
 
-const InteractiveMap = lazy(() => import('~/pages/Project/View/components/InteractiveMap'))
+const InteractiveMap = lazy(
+  () => import('~/pages/Project/View/components/InteractiveMap'),
+)
 
-const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
-  const validData = data.filter((n) => n !== undefined && n !== null && Number.isFinite(n))
+const calculateOptimalTicks = (
+  data: number[],
+  targetCount: number = 6,
+): number[] => {
+  const validData = data.filter(
+    (n) => n !== undefined && n !== null && Number.isFinite(n),
+  )
 
   if (validData.length === 0) {
     return [0, 1]
@@ -137,11 +166,13 @@ const getErrorTrendsChartSettings = (
     ['affectedUsers', ...chartData.affectedUsers],
   ]
 
-  const allYValues: number[] = [...chartData.occurrences, ...chartData.affectedUsers].filter(
-    (n) => n !== undefined && n !== null,
-  )
+  const allYValues: number[] = [
+    ...chartData.occurrences,
+    ...chartData.affectedUsers,
+  ].filter((n) => n !== undefined && n !== null)
 
-  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+  const optimalTicks =
+    allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
   return {
     data: {
@@ -178,8 +209,14 @@ const getErrorTrendsChartSettings = (
           format:
             // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+              ? (x: string) =>
+                  d3.timeFormat(tbsFormatMapper24h[timeBucket])(
+                    x as unknown as Date,
+                  )
+              : (x: string) =>
+                  d3.timeFormat(tbsFormatMapper[timeBucket])(
+                    x as unknown as Date,
+                  ),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -254,7 +291,9 @@ interface StatCardProps {
 
 const StatCard = ({ icon, value, label }: StatCardProps) => (
   <div className='relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
-    <div className='pointer-events-none absolute -bottom-5 -left-5 opacity-10 [&>svg]:size-24'>{icon}</div>
+    <div className='pointer-events-none absolute -bottom-5 -left-5 opacity-10 [&>svg]:size-24'>
+      {icon}
+    </div>
     <div className='relative'>
       <Text as='p' size='3xl' weight='bold' className='leading-tight'>
         {value}
@@ -310,7 +349,10 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
 
   const maxNameLength = 80
   const maxMessageLength = 150
-  const displayName = error.name.length > maxNameLength ? `${error.name.slice(0, maxNameLength)}...` : error.name
+  const displayName =
+    error.name.length > maxNameLength
+      ? `${error.name.slice(0, maxNameLength)}...`
+      : error.name
   const displayMessage =
     error.message && error.message.length > maxMessageLength
       ? `${error.message.slice(0, maxMessageLength)}...`
@@ -332,10 +374,18 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
               />
               {error.filename ? (
                 <>
-                  <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none self-center fill-gray-400'>
+                  <svg
+                    viewBox='0 0 2 2'
+                    className='h-0.5 w-0.5 flex-none self-center fill-gray-400'
+                  >
                     <circle cx={1} cy={1} r={1} />
                   </svg>
-                  <Text size='xs' weight='normal' colour='muted' className='mx-1 max-w-[200px] truncate'>
+                  <Text
+                    size='xs'
+                    weight='normal'
+                    colour='muted'
+                    className='mx-1 max-w-[200px] truncate'
+                  >
                     {error.filename}
                   </Text>
                 </>
@@ -345,16 +395,28 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
               <Tooltip
                 text={error.message}
                 tooltipNode={
-                  <Text as='p' size='sm' colour='muted' className='mt-1 flex text-left leading-5'>
+                  <Text
+                    as='p'
+                    size='sm'
+                    colour='muted'
+                    className='mt-1 flex text-left leading-5'
+                  >
                     {displayMessage}
                   </Text>
                 }
               />
             ) : null}
             <p className='mt-1 flex items-center gap-x-2 text-sm leading-5 text-gray-500 dark:text-gray-300'>
-              <Badge className='mr-2 sm:hidden' label={status.label} colour={status.colour} />
+              <Badge
+                className='mr-2 sm:hidden'
+                label={status.label}
+                colour={status.colour}
+              />
               {lastSeen}
-              <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400 sm:hidden'>
+              <svg
+                viewBox='0 0 2 2'
+                className='h-0.5 w-0.5 flex-none fill-gray-400 sm:hidden'
+              >
                 <circle cx={1} cy={1} r={1} />
               </svg>
               <span className='sm:hidden'>
@@ -364,11 +426,19 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
               </span>
             </p>
             <p className='mt-2 flex text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
-              <span className='mr-3 flex items-center' title={t('project.affectedUsers')}>
-                <UserIcon className='mr-1 size-4' strokeWidth={1.5} /> {error.users}
+              <span
+                className='mr-3 flex items-center'
+                title={t('project.affectedUsers')}
+              >
+                <UserIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                {error.users}
               </span>
-              <span className='flex items-center' title={t('project.affectedSessions')}>
-                <MonitorIcon className='mr-1 size-4' strokeWidth={1.5} /> {error.sessions}
+              <span
+                className='flex items-center'
+                title={t('project.affectedSessions')}
+              >
+                <MonitorIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                {error.sessions}
               </span>
             </p>
           </div>
@@ -376,14 +446,26 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
         <div className='flex shrink-0 items-center gap-x-4'>
           <div className='hidden gap-1 sm:flex sm:flex-col sm:items-end'>
             <div className='flex items-center gap-x-3 text-sm leading-6 text-gray-900 dark:text-gray-50'>
-              <span className='flex items-center' title={t('dashboard.xOccurrences', { x: error.count })}>
-                <AlertTriangleIcon className='mr-1 size-4' strokeWidth={1.5} /> {error.count}
+              <span
+                className='flex items-center'
+                title={t('dashboard.xOccurrences', { x: error.count })}
+              >
+                <AlertTriangleIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                {error.count}
               </span>
-              <span className='flex items-center' title={t('project.xAffectedUsers', { x: error.users })}>
-                <UserIcon className='mr-1 size-4' strokeWidth={1.5} /> {error.users}
+              <span
+                className='flex items-center'
+                title={t('project.xAffectedUsers', { x: error.users })}
+              >
+                <UserIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                {error.users}
               </span>
-              <span className='flex items-center' title={t('project.xAffectedSessions', { x: error.sessions })}>
-                <MonitorIcon className='mr-1 size-4' strokeWidth={1.5} /> {error.sessions}
+              <span
+                className='flex items-center'
+                title={t('project.xAffectedSessions', { x: error.sessions })}
+              >
+                <MonitorIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                {error.sessions}
               </span>
             </div>
             <Badge label={status.label} colour={status.colour} />
@@ -403,7 +485,11 @@ interface DeferredErrorsData {
   errorOverview: ErrorOverviewResponse | null
 }
 
-function ErrorsDataResolver({ children }: { children: (data: DeferredErrorsData) => React.ReactNode }) {
+function ErrorsDataResolver({
+  children,
+}: {
+  children: (data: DeferredErrorsData) => React.ReactNode
+}) {
   const {
     errorsData: errorsDataPromise,
     errorDetails: errorDetailsPromise,
@@ -426,7 +512,9 @@ function ErrorsDataResolver({ children }: { children: (data: DeferredErrorsData)
 function ErrorsViewWrapper() {
   return (
     <Suspense fallback={<Loader />}>
-      <ErrorsDataResolver>{(deferredData) => <ErrorsViewInner deferredData={deferredData} />}</ErrorsDataResolver>
+      <ErrorsDataResolver>
+        {(deferredData) => <ErrorsViewInner deferredData={deferredData} />}
+      </ErrorsDataResolver>
     </Suspense>
   )
 }
@@ -441,7 +529,8 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   const revalidator = useRevalidator()
   const errorsProxy = useErrorsProxy()
   const { errorsRefreshTrigger } = useRefreshTriggers()
-  const { timeBucket, timeFormat, period, dateRange, timezone, filters, size } = useViewProjectContext()
+  const { timeBucket, timeFormat, period, dateRange, timezone, filters, size } =
+    useViewProjectContext()
   const {
     t,
     i18n: { language },
@@ -472,9 +561,15 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
 
   const isMountedRef = useRef(true)
 
-  const [errorsLoading, setErrorsLoading] = useState<boolean | null>(() => (deferredData.errorsData ? false : null))
-  const [errors, setErrors] = useState<SwetrixError[]>(() => deferredData.errorsData?.errors || [])
-  const [errorsSkip, setErrorsSkip] = useState(() => deferredData.errorsData?.errors?.length || 0)
+  const [errorsLoading, setErrorsLoading] = useState<boolean | null>(() =>
+    deferredData.errorsData ? false : null,
+  )
+  const [errors, setErrors] = useState<SwetrixError[]>(
+    () => deferredData.errorsData?.errors || [],
+  )
+  const [errorsSkip, setErrorsSkip] = useState(
+    () => deferredData.errorsData?.errors?.length || 0,
+  )
   const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(
     () => (deferredData.errorsData?.errors?.length || 0) >= ERRORS_TAKE,
   )
@@ -573,7 +668,19 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
       skip: errorsSkip,
       options: errorOptions,
     })
-  }, [id, timeBucket, period, from, to, timezone, filters, errorsSkip, errorOptions, errorsLoading, errorsProxy])
+  }, [
+    id,
+    timeBucket,
+    period,
+    from,
+    to,
+    timezone,
+    filters,
+    errorsSkip,
+    errorOptions,
+    errorsLoading,
+    errorsProxy,
+  ])
 
   // Handle proxy response for pagination
   useEffect(() => {
@@ -588,7 +695,12 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     if (errorsProxy.error) {
       toast.error(errorsProxy.error)
     }
-  }, [errorsProxy.data, errorsProxy.error, errorsProxy.isLoading, revalidator.state])
+  }, [
+    errorsProxy.data,
+    errorsProxy.error,
+    errorsProxy.isLoading,
+    revalidator.state,
+  ])
 
   const updateStatusInErrors = useCallback(
     (status: 'active' | 'resolved') => {
@@ -678,11 +790,18 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   }, [errorsRefreshTrigger])
 
   const chartOptions = useMemo(() => {
-    if (!overview?.chart || !overview.chart.x || overview.chart.x.length === 0) return null
-    return getErrorTrendsChartSettings(overview.chart, timeBucket, timeFormat, chartTypes.line, {
-      occurrences: t('project.totalErrors'),
-      affectedUsers: t('project.affectedUsers'),
-    })
+    if (!overview?.chart || !overview.chart.x || overview.chart.x.length === 0)
+      return null
+    return getErrorTrendsChartSettings(
+      overview.chart,
+      timeBucket,
+      timeFormat,
+      chartTypes.line,
+      {
+        occurrences: t('project.totalErrors'),
+        affectedUsers: t('project.affectedUsers'),
+      },
+    )
   }, [overview?.chart, timeBucket, timeFormat, t])
 
   const hasErrorsRaw = !_isEmpty(errors) || overview?.stats?.totalErrors
@@ -699,7 +818,10 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
 
   const getFilterLink = useCallback(
     (column: string, value: string | null): LinkProps['to'] => {
-      const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
+      const isFilterActive =
+        filters.findIndex(
+          (filter) => filter.column === column && filter.filter === value,
+        ) >= 0
       const newSearchParams = new URLSearchParams(searchParams.toString())
 
       if (isFilterActive) {
@@ -772,13 +894,18 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     [t],
   )
 
-  if (typeof project?.isErrorDataExists === 'boolean' && !project.isErrorDataExists) {
+  if (
+    typeof project?.isErrorDataExists === 'boolean' &&
+    !project.isErrorDataExists
+  ) {
     return <WaitingForAnError />
   }
 
   if (activeEID) {
     const resolveButton =
-      allowedToManage && activeError && activeError?.details?.status !== 'resolved' ? (
+      allowedToManage &&
+      activeError &&
+      activeError?.details?.status !== 'resolved' ? (
         <button
           type='button'
           disabled={errorStatusUpdating}
@@ -786,14 +913,17 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
           className={cx(
             'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
             {
-              'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
+              'cursor-not-allowed opacity-50':
+                errorLoading && !errorStatusUpdating,
               'animate-pulse cursor-not-allowed': errorStatusUpdating,
             },
           )}
         >
           {t('project.resolve')}
         </button>
-      ) : allowedToManage && activeError && activeError?.details?.status === 'resolved' ? (
+      ) : allowedToManage &&
+        activeError &&
+        activeError?.details?.status === 'resolved' ? (
         <button
           type='button'
           disabled={errorStatusUpdating}
@@ -801,7 +931,8 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
           className={cx(
             'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
             {
-              'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
+              'cursor-not-allowed opacity-50':
+                errorLoading && !errorStatusUpdating,
               'animate-pulse cursor-not-allowed': errorStatusUpdating,
             },
           )}
@@ -869,15 +1000,28 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                         return <CCRow cc={null} language={language} />
                       }
                       const entryNameArray = entryName.split('-')
-                      const displayName = getLocaleDisplayName(entryName, language)
+                      const displayName = getLocaleDisplayName(
+                        entryName,
+                        language,
+                      )
 
                       return (
-                        <CCRow cc={entryNameArray[entryNameArray.length - 1]} name={displayName} language={language} />
+                        <CCRow
+                          cc={entryNameArray[entryNameArray.length - 1]}
+                          name={displayName}
+                          language={language}
+                        />
                       )
                     }
 
                     if (cc !== undefined) {
-                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
+                      return (
+                        <CCRow
+                          cc={cc}
+                          name={entryName || undefined}
+                          language={language}
+                        />
+                      )
                     }
 
                     return <CCRow cc={entryName} language={language} />
@@ -898,14 +1042,19 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                         })
                       }
                       activeTabId={errorsActiveTabs.location}
-                      data={activeError?.params?.[errorsActiveTabs.location] || []}
+                      data={
+                        activeError?.params?.[errorsActiveTabs.location] || []
+                      }
                       rowMapper={rowMapper}
                       customRenderer={
                         errorsActiveTabs.location === 'map'
                           ? () => {
                               const countryData = activeError?.params?.cc || []
                               const regionData = activeError?.params?.rg || []
-                              const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
+                              const total = countryData.reduce(
+                                (acc, curr) => acc + curr.count,
+                                0,
+                              )
 
                               return (
                                 <Suspense
@@ -956,11 +1105,20 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                       name={t('project.devices')}
                       tabs={deviceTabs}
                       onTabChange={(tab) =>
-                        setErrorsActiveTabs({ ...errorsActiveTabs, device: tab as 'br' | 'os' | 'dv' })
+                        setErrorsActiveTabs({
+                          ...errorsActiveTabs,
+                          device: tab as 'br' | 'os' | 'dv',
+                        })
                       }
                       activeTabId={errorsActiveTabs.device}
-                      data={activeError?.params?.[errorsActiveTabs.device] || []}
-                      rowMapper={getDeviceRowMapper(errorsActiveTabs.device, theme, t)}
+                      data={
+                        activeError?.params?.[errorsActiveTabs.device] || []
+                      }
+                      rowMapper={getDeviceRowMapper(
+                        errorsActiveTabs.device,
+                        theme,
+                        t,
+                      )}
                       capitalize={errorsActiveTabs.device === 'dv'}
                       versionData={
                         errorsActiveTabs.device === 'br'
@@ -970,7 +1128,11 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                             : undefined
                       }
                       getVersionFilterLink={(parent, version) =>
-                        getVersionFilterLink(parent, version, errorsActiveTabs.device === 'br' ? 'br' : 'os')
+                        getVersionFilterLink(
+                          parent,
+                          version,
+                          errorsActiveTabs.device === 'br' ? 'br' : 'os',
+                        )
                       }
                       valuesHeaderName={t('project.occurrences')}
                       highlightColour='red'
@@ -994,7 +1156,9 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                         if (!entryName) {
                           return (
                             <span className='italic'>
-                              {errorsActiveTabs.page === 'pg' ? t('common.notSet') : t('project.unknownHost')}
+                              {errorsActiveTabs.page === 'pg'
+                                ? t('common.notSet')
+                                : t('project.unknownHost')}
                             </span>
                           )
                         }
@@ -1011,7 +1175,12 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                       }}
                       name={t('project.pages')}
                       tabs={pageTabs}
-                      onTabChange={(tab) => setErrorsActiveTabs({ ...errorsActiveTabs, page: tab as 'pg' | 'host' })}
+                      onTabChange={(tab) =>
+                        setErrorsActiveTabs({
+                          ...errorsActiveTabs,
+                          page: tab as 'pg' | 'host',
+                        })
+                      }
                       activeTabId={errorsActiveTabs.page}
                       data={activeError?.params?.[errorsActiveTabs.page] || []}
                       valuesHeaderName={t('project.occurrences')}
@@ -1023,7 +1192,9 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                 return null
               })
             : null}
-          {activeError?.metadata ? <MetadataPanel metadata={activeError.metadata} /> : null}
+          {activeError?.metadata ? (
+            <MetadataPanel metadata={activeError.metadata} />
+          ) : null}
         </div>
 
         {_isEmpty(activeError) && errorLoading ? <Loader /> : null}
@@ -1034,7 +1205,11 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   }
 
   // List view - Initial loading state
-  if ((overviewLoading === null || overviewLoading) && !overview && _isEmpty(errors)) {
+  if (
+    (overviewLoading === null || overviewLoading) &&
+    !overview &&
+    _isEmpty(errors)
+  ) {
     return (
       <div
         className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
@@ -1078,13 +1253,22 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
 
   return (
     <div>
-      <DashboardHeader showLiveVisitors showSearchButton={false} hideTimeBucket rightContent={filtersDropdown} />
+      <DashboardHeader
+        showLiveVisitors
+        showSearchButton={false}
+        hideTimeBucket
+        rightContent={filtersDropdown}
+      />
 
-      {(overviewLoading || errorsLoading) && (overview || !_isEmpty(errors)) ? <LoadingBar /> : null}
+      {(overviewLoading || errorsLoading) && (overview || !_isEmpty(errors)) ? (
+        <LoadingBar />
+      ) : null}
 
       {hasErrors ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
 
-      {!hasErrors && errorsLoading === false && overviewLoading === false ? <NoEvents filters={filters} /> : null}
+      {!hasErrors && errorsLoading === false && overviewLoading === false ? (
+        <NoEvents filters={filters} />
+      ) : null}
 
       {hasErrors ? (
         <>
@@ -1102,7 +1286,9 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                 label={t('project.totalErrors')}
               />
               <StatCard
-                icon={<PercentIcon className='text-orange-600' strokeWidth={1.5} />}
+                icon={
+                  <PercentIcon className='text-orange-600' strokeWidth={1.5} />
+                }
                 value={`${overview?.stats?.errorRate || 0}%`}
                 label={t('project.errorRate')}
               />
@@ -1112,7 +1298,9 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                 label={t('project.affectedUsers')}
               />
               <StatCard
-                icon={<MonitorIcon className='text-purple-600' strokeWidth={1.5} />}
+                icon={
+                  <MonitorIcon className='text-purple-600' strokeWidth={1.5} />
+                }
                 value={nFormatter(overview?.stats?.affectedSessions || 0, 1)}
                 label={t('project.affectedSessions')}
               />

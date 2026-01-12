@@ -3,7 +3,12 @@ import _find from 'lodash/find'
 import _isNumber from 'lodash/isNumber'
 import _replace from 'lodash/replace'
 import _size from 'lodash/size'
-import { Settings2Icon, PinIcon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react'
+import {
+  Settings2Icon,
+  PinIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+} from 'lucide-react'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useFetcher, useNavigate } from 'react-router'
@@ -150,12 +155,16 @@ export const ProjectCard = ({
     websiteUrl,
   } = project
 
-  const faviconHost = useMemo(() => getFaviconHost(websiteUrl || null), [websiteUrl])
+  const faviconHost = useMemo(
+    () => getFaviconHost(websiteUrl || null),
+    [websiteUrl],
+  )
   const [localIsPinned, setLocalIsPinned] = useState(isPinned)
 
   const isPinning =
     (fetcher.state === 'submitting' || fetcher.state === 'loading') &&
-    (fetcher.formData?.get('intent') === 'pin-project' || fetcher.formData?.get('intent') === 'unpin-project')
+    (fetcher.formData?.get('intent') === 'pin-project' ||
+      fetcher.formData?.get('intent') === 'unpin-project')
 
   const isAccepting =
     (fetcher.state === 'submitting' || fetcher.state === 'loading') &&
@@ -173,7 +182,8 @@ export const ProjectCard = ({
     // Guard: only process responses for this specific project card
     const submittedProjectId = fetcher.formData?.get('projectId')
     const submittedShareId = fetcher.formData?.get('shareId')
-    const isForThisCard = submittedProjectId === id || submittedShareId === shareId
+    const isForThisCard =
+      submittedProjectId === id || submittedShareId === shareId
     if (!isForThisCard) return
 
     if (fetcher.data.success) {
@@ -199,12 +209,25 @@ export const ProjectCard = ({
       }
     } else if (fetcher.data.error) {
       // Revert optimistic update on error
-      if (fetcher.data.intent === 'pin-project' || fetcher.data.intent === 'unpin-project') {
+      if (
+        fetcher.data.intent === 'pin-project' ||
+        fetcher.data.intent === 'unpin-project'
+      ) {
         setLocalIsPinned(isPinned)
       }
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data, fetcher.formData, isPinned, shareId, user, mergeUser, refetchProjects, t, id])
+  }, [
+    fetcher.data,
+    fetcher.formData,
+    isPinned,
+    shareId,
+    user,
+    mergeUser,
+    refetchProjects,
+    t,
+    id,
+  ])
 
   const handlePinToggle = useCallback(
     (e: React.MouseEvent) => {
@@ -255,11 +278,24 @@ export const ProjectCard = ({
     const members = _size(share)
 
     if (members > 0) {
-      list.push({ colour: 'slate', label: t('common.xMembers', { number: members + 1 }) })
+      list.push({
+        colour: 'slate',
+        label: t('common.xMembers', { number: members + 1 }),
+      })
     }
 
     return list
-  }, [t, active, isTransferring, isPublic, organisation, share, project.isAccessConfirmed, project.role, shareId])
+  }, [
+    t,
+    active,
+    isTransferring,
+    isPublic,
+    organisation,
+    share,
+    project.isAccessConfirmed,
+    project.role,
+    shareId,
+  ])
 
   const onAccept = () => {
     if (fetcher.state !== 'idle') {
@@ -307,7 +343,9 @@ export const ProjectCard = ({
       onClick={onElementClick}
       className={cx(
         'group relative cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60',
-        viewMode === 'list' ? 'flex items-center justify-between px-6 py-4' : 'min-h-[153.1px]',
+        viewMode === 'list'
+          ? 'flex items-center justify-between px-6 py-4'
+          : 'min-h-[153.1px]',
       )}
     >
       {/* Background sparkline chart */}
@@ -316,8 +354,18 @@ export const ProjectCard = ({
           <Sparkline chart={overallStats.chart} className='w-full' />
         </div>
       ) : null}
-      <div className={cx('relative z-10 flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
-        <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
+      <div
+        className={cx(
+          'relative z-10 flex flex-col',
+          viewMode === 'list' ? 'flex-1' : 'px-4 py-4',
+        )}
+      >
+        <div
+          className={cx(
+            'flex items-center',
+            viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1',
+          )}
+        >
           <div className='flex min-w-0 items-center gap-1'>
             {faviconHost ? (
               <img
@@ -336,7 +384,9 @@ export const ProjectCard = ({
           <div
             className={cx(
               'flex shrink-0 items-center transition-opacity',
-              alwaysShowActions ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+              alwaysShowActions
+                ? 'opacity-100'
+                : 'opacity-0 group-hover:opacity-100',
             )}
           >
             <button
@@ -344,9 +394,17 @@ export const ProjectCard = ({
               className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               onClick={handlePinToggle}
               disabled={isPinning}
-              aria-label={localIsPinned ? t('dashboard.unpin') : t('dashboard.pin')}
+              aria-label={
+                localIsPinned ? t('dashboard.unpin') : t('dashboard.pin')
+              }
             >
-              <PinIcon className={cx('size-5 transition-transform', localIsPinned && 'rotate-30')} strokeWidth={1.5} />
+              <PinIcon
+                className={cx(
+                  'size-5 transition-transform',
+                  localIsPinned && 'rotate-30',
+                )}
+                strokeWidth={1.5}
+              />
             </button>
             {project.isAccessConfirmed && role !== 'viewer' ? (
               <button
@@ -366,27 +424,45 @@ export const ProjectCard = ({
         </div>
         <div className='mt-1 flex shrink-0 flex-wrap gap-2'>
           {badges.length > 0 ? (
-            badges.map((badge) => <Badge key={badge.label as string} {...badge} />)
+            badges.map((badge) => (
+              <Badge key={badge.label as string} {...badge} />
+            ))
           ) : (
             <Badge label='I' colour='slate' className='invisible' />
           )}
         </div>
       </div>
-      <div className={cx('relative z-10 flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4')}>
+      <div
+        className={cx(
+          'relative z-10 flex shrink-0 gap-5',
+          viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4',
+        )}
+      >
         <MiniCard
           labelTKey='dashboard.pageviews'
           total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
           percChange={
             live === 'N/A'
               ? 0
-              : calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)
+              : calculateRelativePercentage(
+                  overallStats?.previous.all ?? 0,
+                  overallStats?.current.all ?? 0,
+                )
           }
-          hasData={project?.isDataExists || project?.isErrorDataExists || project?.isCaptchaDataExists}
+          hasData={
+            project?.isDataExists ||
+            project?.isErrorDataExists ||
+            project?.isCaptchaDataExists
+          }
         />
         <MiniCard
           labelTKey='dashboard.liveVisitors'
           total={live}
-          hasData={project?.isDataExists || project?.isErrorDataExists || project?.isCaptchaDataExists}
+          hasData={
+            project?.isDataExists ||
+            project?.isErrorDataExists ||
+            project?.isCaptchaDataExists
+          }
         />
       </div>
       {project.role !== 'owner' && !project.isAccessConfirmed ? (

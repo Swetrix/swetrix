@@ -92,7 +92,11 @@ const Socialisations = () => {
     }
 
     try {
-      const { uuid, auth_url: authUrl, expires_in: expiresIn } = await generateSSOAuthURL(provider)
+      const {
+        uuid,
+        auth_url: authUrl,
+        expires_in: expiresIn,
+      } = await generateSSOAuthURL(provider)
 
       const safeAuthUrl = (() => {
         try {
@@ -101,8 +105,16 @@ const Socialisations = () => {
 
           // Only allow expected OAuth endpoints here (no OIDC option in this UI today, but keep it future-proof).
           if (parsed.protocol !== 'https:') return null
-          if (provider === SSO_PROVIDERS.GOOGLE && parsed.hostname !== 'accounts.google.com') return null
-          if (provider === SSO_PROVIDERS.GITHUB && parsed.hostname !== 'github.com') return null
+          if (
+            provider === SSO_PROVIDERS.GOOGLE &&
+            parsed.hostname !== 'accounts.google.com'
+          )
+            return null
+          if (
+            provider === SSO_PROVIDERS.GITHUB &&
+            parsed.hostname !== 'github.com'
+          )
+            return null
 
           return parsed.toString()
         } catch {
@@ -145,7 +157,11 @@ const Socialisations = () => {
         }
       }
     } catch (reason) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.socialisationGenericError'))
+      toast.error(
+        typeof reason === 'string'
+          ? reason
+          : t('apiNotifications.socialisationGenericError'),
+      )
       setIsLoading(false)
       return
     }
@@ -157,7 +173,9 @@ const Socialisations = () => {
 
   return (
     <>
-      <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.socialisationsDesc')}</p>
+      <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+        {t('profileSettings.socialisationsDesc')}
+      </p>
       <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-900'>
         <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
           <thead className='bg-gray-50 dark:bg-slate-800'>
@@ -184,7 +202,10 @@ const Socialisations = () => {
               const status = connected ? 'connected' : 'notConnected'
 
               return (
-                <tr key={key} className='hover:bg-gray-50 dark:hover:bg-slate-800/50'>
+                <tr
+                  key={key}
+                  className='hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                >
                   <td className='px-4 py-3 text-sm text-gray-900 dark:text-gray-100'>
                     <div className='flex items-center gap-3'>
                       <div className='hidden shrink-0 sm:block'>
@@ -200,10 +221,16 @@ const Socialisations = () => {
                   <td className='px-4 py-3 text-sm text-gray-700 dark:text-gray-300'>
                     <div className='flex items-center'>
                       {status === 'notConnected' ? (
-                        <XCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-red-400' aria-hidden='true' />
+                        <XCircleIcon
+                          className='mr-1.5 h-5 w-5 shrink-0 text-red-400'
+                          aria-hidden='true'
+                        />
                       ) : null}
                       {status === 'connected' ? (
-                        <CheckCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-green-400' aria-hidden='true' />
+                        <CheckCircleIcon
+                          className='mr-1.5 h-5 w-5 shrink-0 text-green-400'
+                          aria-hidden='true'
+                        />
                       ) : null}
                       {t(`common.${status}`)}
                     </div>
@@ -211,19 +238,37 @@ const Socialisations = () => {
                   <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
                     <div className='flex items-center justify-end gap-2'>
                       {connected && !unlinkable ? (
-                        <Button onClick={() => toast.error(t('profileSettings.cantUnlinkSocialisation'))} small danger>
+                        <Button
+                          onClick={() =>
+                            toast.error(
+                              t('profileSettings.cantUnlinkSocialisation'),
+                            )
+                          }
+                          small
+                          danger
+                        >
                           {t('common.unlink')}
                         </Button>
                       ) : null}
 
                       {connected && unlinkable ? (
-                        <Button onClick={() => onUnlinkSSO(key)} loading={isUnlinking} small danger>
+                        <Button
+                          onClick={() => onUnlinkSSO(key)}
+                          loading={isUnlinking}
+                          small
+                          danger
+                        >
                           {t('common.unlink')}
                         </Button>
                       ) : null}
 
                       {!connected ? (
-                        <Button onClick={() => linkSSO(key)} loading={isLoading} small primary>
+                        <Button
+                          onClick={() => linkSSO(key)}
+                          loading={isLoading}
+                          small
+                          primary
+                        >
                           {t('common.link')}
                         </Button>
                       ) : null}

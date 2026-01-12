@@ -152,7 +152,7 @@ export class ExperimentService {
         experiment: { id: experiment.id },
       })
 
-      const variants = variantsData.map(v => {
+      const variants = variantsData.map((v) => {
         const variant = new ExperimentVariant()
         variant.name = v.name
         variant.key = v.key

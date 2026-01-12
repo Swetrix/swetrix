@@ -16,14 +16,26 @@ import {
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants'
-import { ProfileDetails as ProfileDetailsType, Session } from '~/lib/models/Project'
+import {
+  BROWSER_LOGO_MAP,
+  OS_LOGO_MAP,
+  OS_LOGO_MAP_DARK,
+} from '~/lib/constants'
+import {
+  ProfileDetails as ProfileDetailsType,
+  Session,
+} from '~/lib/models/Project'
 import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
-import { cn, getLocaleDisplayName, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+import {
+  cn,
+  getLocaleDisplayName,
+  getStringFromTime,
+  getTimeFromSeconds,
+} from '~/utils/generic'
 import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
 
 import CCRow from '../../View/components/CCRow'
@@ -40,7 +52,11 @@ interface ProfileDetailsProps {
   currency?: string
 }
 
-const ActivityCalendar = ({ data }: { data: { date: string; count: number }[] }) => {
+const ActivityCalendar = ({
+  data,
+}: {
+  data: { date: string; count: number }[]
+}) => {
   const { t } = useTranslation('common')
 
   const countMap = useMemo(() => {
@@ -95,7 +111,11 @@ const ActivityCalendar = ({ data }: { data: { date: string; count: number }[] })
 
   const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
-  const TooltipContent = ({ day }: { day: { date: string; count: number } }) => (
+  const TooltipContent = ({
+    day,
+  }: {
+    day: { date: string; count: number }
+  }) => (
     <div className='text-center'>
       <div className='font-medium'>{dayjs(day.date).format('MMM D, YYYY')}</div>
       <div className='text-gray-300'>
@@ -106,9 +126,15 @@ const ActivityCalendar = ({ data }: { data: { date: string; count: number }[] })
 
   return (
     <div className='w-full'>
-      <div className='mb-1 flex w-full gap-[2px]' style={{ paddingLeft: '18px' }}>
+      <div
+        className='mb-1 flex w-full gap-[2px]'
+        style={{ paddingLeft: '18px' }}
+      >
         {weeks.map((_, weekIdx) => (
-          <div key={weekIdx} className='relative flex-1 text-[10px] text-gray-400'>
+          <div
+            key={weekIdx}
+            className='relative flex-1 text-[10px] text-gray-400'
+          >
             {monthLabels.find((m) => m.weekIndex === weekIdx)?.month}
           </div>
         ))}
@@ -128,7 +154,14 @@ const ActivityCalendar = ({ data }: { data: { date: string; count: number }[] })
                 <Tooltip
                   key={dayIdx}
                   text={<TooltipContent day={day} />}
-                  tooltipNode={<div className={cn('h-3 w-full rounded-[2px]', getColor(day.count))} />}
+                  tooltipNode={
+                    <div
+                      className={cn(
+                        'h-3 w-full rounded-[2px]',
+                        getColor(day.count),
+                      )}
+                    />
+                  }
                   delay={0}
                   disableHoverableContent
                 />
@@ -141,9 +174,22 @@ const ActivityCalendar = ({ data }: { data: { date: string; count: number }[] })
   )
 }
 
-const StatItem = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) => (
+const StatItem = ({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: string | number
+}) => (
   <div>
-    <Text size='xxs' weight='medium' colour='muted' className='mb-0.5 flex items-center gap-1.5 uppercase'>
+    <Text
+      size='xxs'
+      weight='medium'
+      colour='muted'
+      className='mb-0.5 flex items-center gap-1.5 uppercase'
+    >
       {icon}
       {label}
     </Text>
@@ -153,12 +199,23 @@ const StatItem = ({ icon, label, value }: { icon: React.ReactNode; label: string
   </div>
 )
 
-const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
+const InfoRow = ({
+  label,
+  value,
+}: {
+  label: string
+  value: React.ReactNode
+}) => (
   <div className='flex items-center justify-between border-b border-gray-100 py-2 last:border-0 dark:border-slate-700/50'>
     <Text size='sm' colour='muted'>
       {label}
     </Text>
-    <Text size='sm' weight='medium' colour='primary' className='flex items-center gap-1'>
+    <Text
+      size='sm'
+      weight='medium'
+      colour='primary'
+      className='flex items-center gap-1'
+    >
       {value}
     </Text>
   </div>
@@ -231,14 +288,20 @@ export const ProfileDetails = ({
 
   if (!details) return <Loader />
 
-  const avgDurationStr = details.avgDuration ? getStringFromTime(getTimeFromSeconds(details.avgDuration)) : 'N/A'
+  const avgDurationStr = details.avgDuration
+    ? getStringFromTime(getTimeFromSeconds(details.avgDuration))
+    : 'N/A'
 
   return (
     <div className='flex flex-col gap-3 lg:flex-row'>
       <div className='space-y-3 lg:w-[380px]'>
         <div className='rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
           <div className='flex items-center gap-4'>
-            <ProfileAvatar className='-mr-0.75 -mb-0.75' profileId={details.profileId} size={42} />
+            <ProfileAvatar
+              className='-mr-0.75 -mb-0.75'
+              profileId={details.profileId}
+              size={42}
+            />
             <div className='flex flex-col gap-0.5'>
               <Text size='base' weight='bold' colour='primary'>
                 {displayName}
@@ -294,18 +357,35 @@ export const ProfileDetails = ({
         </div>
 
         <div className='rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-          <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
+          <Text
+            as='h3'
+            size='xs'
+            weight='semibold'
+            colour='primary'
+            className='mb-2 uppercase'
+            tracking='wide'
+          >
             {t('project.locationAndDevice')}
           </Text>
           <div>
             <InfoRow
               label={t('project.mapping.cc')}
-              value={details.cc ? <CCRow size={16} cc={details.cc} language={language} /> : '-'}
+              value={
+                details.cc ? (
+                  <CCRow size={16} cc={details.cc} language={language} />
+                ) : (
+                  '-'
+                )
+              }
             />
-            {details.rg ? <InfoRow label={t('project.mapping.rg')} value={details.rg} /> : null}
+            {details.rg ? (
+              <InfoRow label={t('project.mapping.rg')} value={details.rg} />
+            ) : null}
             <InfoRow
               label={t('project.mapping.lc')}
-              value={details.lc ? getLocaleDisplayName(details.lc, language) : '-'}
+              value={
+                details.lc ? getLocaleDisplayName(details.lc, language) : '-'
+              }
             />
             <InfoRow
               label={t('project.mapping.dv')}
@@ -352,7 +432,14 @@ export const ProfileDetails = ({
         </div>
 
         <div className='rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-          <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
+          <Text
+            as='h3'
+            size='xs'
+            weight='semibold'
+            colour='primary'
+            className='mb-2 uppercase'
+            tracking='wide'
+          >
             {t('project.activityCalendar')}
           </Text>
           <ActivityCalendar data={details.activityCalendar || []} />
@@ -362,7 +449,14 @@ export const ProfileDetails = ({
       <div className='flex-1 space-y-3'>
         {details.chart && !_isEmpty(details.chart.x) ? (
           <div className='max-h-max rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-            <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
+            <Text
+              as='h3'
+              size='xs'
+              weight='semibold'
+              colour='primary'
+              className='mb-2 uppercase'
+              tracking='wide'
+            >
               {t('dashboard.pageviews')}
             </Text>
             <SessionChart
@@ -377,13 +471,22 @@ export const ProfileDetails = ({
         ) : null}
 
         <div className='rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-          <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
+          <Text
+            as='h3'
+            size='xs'
+            weight='semibold'
+            colour='primary'
+            className='mb-2 uppercase'
+            tracking='wide'
+          >
             {t('project.userSessions')}
           </Text>
           {sessionsLoading && sessions.length === 0 ? (
             <Loader />
           ) : sessions.length === 0 ? (
-            <p className='py-4 text-center text-sm text-gray-400'>{t('project.noSessions')}</p>
+            <p className='py-4 text-center text-sm text-gray-400'>
+              {t('project.noSessions')}
+            </p>
           ) : (
             <>
               <Sessions

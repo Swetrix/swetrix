@@ -36,13 +36,22 @@ interface ModalMessageProps {
   }
 }
 
-const ModalMessage = ({ handleInput, beenSubmitted, errors, form }: ModalMessageProps) => {
+const ModalMessage = ({
+  handleInput,
+  beenSubmitted,
+  errors,
+  form,
+}: ModalMessageProps) => {
   const { t } = useTranslation('common')
 
   return (
     <div>
-      <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>{t('project.settings.addARecipient')}</h2>
-      <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>{t('project.settings.addARecipientDesc')}</p>
+      <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
+        {t('project.settings.addARecipient')}
+      </h2>
+      <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+        {t('project.settings.addARecipientDesc')}
+      </p>
       <Input
         name='email'
         type='email'
@@ -58,9 +67,12 @@ const ModalMessage = ({ handleInput, beenSubmitted, errors, form }: ModalMessage
           {t('project.emails.reportFrequency')}
         </legend>
         <div
-          className={cx('mt-1 -space-y-px rounded-md bg-white dark:bg-slate-900', {
-            'border border-red-300': errors.reportFrequency,
-          })}
+          className={cx(
+            'mt-1 -space-y-px rounded-md bg-white dark:bg-slate-900',
+            {
+              'border border-red-300': errors.reportFrequency,
+            },
+          )}
         >
           {reportFrequencyForEmailsOptions.map((item, index) => (
             <ReportFrequencyOption
@@ -74,7 +86,10 @@ const ModalMessage = ({ handleInput, beenSubmitted, errors, form }: ModalMessage
           ))}
         </div>
         {errors.reportFrequency ? (
-          <p className='mt-2 text-sm text-red-600 dark:text-red-500' id='reportFrequency-error'>
+          <p
+            className='mt-2 text-sm text-red-600 dark:text-red-500'
+            id='reportFrequency-error'
+          >
             {errors.reportFrequency}
           </p>
         ) : null}
@@ -91,18 +106,27 @@ interface ReportFrequencyOptionProps {
   totalOptions: number
 }
 
-const ReportFrequencyOption = ({ item, index, form, handleInput, totalOptions }: ReportFrequencyOptionProps) => {
+const ReportFrequencyOption = ({
+  item,
+  index,
+  form,
+  handleInput,
+  totalOptions,
+}: ReportFrequencyOptionProps) => {
   const { t } = useTranslation('common')
 
   return (
     <label
-      className={cx('relative flex cursor-pointer border border-gray-200 p-4 dark:border-slate-600', {
-        'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-          item.value === form.reportFrequency,
-        'border-gray-200': form.reportFrequency !== item.value,
-        'rounded-t-md': index === 0,
-        'rounded-b-md': index === totalOptions - 1,
-      })}
+      className={cx(
+        'relative flex cursor-pointer border border-gray-200 p-4 dark:border-slate-600',
+        {
+          'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
+            item.value === form.reportFrequency,
+          'border-gray-200': form.reportFrequency !== item.value,
+          'rounded-t-md': index === 0,
+          'rounded-b-md': index === totalOptions - 1,
+        },
+      )}
     >
       <input
         name='reportFrequency'
@@ -114,8 +138,10 @@ const ReportFrequencyOption = ({ item, index, form, handleInput, totalOptions }:
       />
       <span
         className={cx('ml-3 block text-sm font-medium', {
-          'text-indigo-900 dark:text-white': form.reportFrequency === item.value,
-          'text-gray-700 dark:text-gray-200': form.reportFrequency !== item.value,
+          'text-indigo-900 dark:text-white':
+            form.reportFrequency === item.value,
+          'text-gray-700 dark:text-gray-200':
+            form.reportFrequency !== item.value,
         })}
       >
         {t(`profileSettings.${item.value}`)}
@@ -134,7 +160,9 @@ interface EmailListProps {
     reportFrequency: string
   }
   onRemove: () => void
-  setEmails: (value: Subscriber[] | ((prevVar: Subscriber[]) => Subscriber[])) => void
+  setEmails: (
+    value: Subscriber[] | ((prevVar: Subscriber[]) => Subscriber[]),
+  ) => void
 }
 
 const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
@@ -153,7 +181,9 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
     if (fetcher.data?.intent === 'update-subscriber') {
       if (fetcher.data.success && fetcher.data.subscriber) {
         const updated = fetcher.data.subscriber
-        setEmails((prev) => _map(prev, (item) => (item.id === updated.id ? updated : item)))
+        setEmails((prev) =>
+          _map(prev, (item) => (item.id === updated.id ? updated : item)),
+        )
         toast.success(t('apiNotifications.updatedPeriodEmailReports'))
       } else if (fetcher.data.error) {
         toast.error(
@@ -167,7 +197,11 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
 
   const changeRole = (reportType: { value: string; label: string }) => {
     fetcher.submit(
-      { intent: 'update-subscriber', subscriberId: id, reportFrequency: reportType.value },
+      {
+        intent: 'update-subscriber',
+        subscriberId: id,
+        reportFrequency: reportType.value,
+      },
       { method: 'post', action: `/projects/settings/${projectId}` },
     )
     setOpen(false)
@@ -175,7 +209,9 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
 
   return (
     <tr className='bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/50'>
-      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>{email}</td>
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
+        {email}
+      </td>
       <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         {language === 'en'
           ? dayjs(addedAt).locale(language).format('MMMM D, YYYY')
@@ -190,7 +226,10 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
               className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`profileSettings.${_toLower(reportFrequency)}`)}
-              <ChevronDownIcon style={{ transform: open ? 'rotate(180deg)' : '' }} className='ml-0.5 h-4 w-4 pt-px' />
+              <ChevronDownIcon
+                style={{ transform: open ? 'rotate(180deg)' : '' }}
+                className='ml-0.5 h-4 w-4 pt-px'
+              />
             </button>
             {open ? (
               <ul
@@ -222,14 +261,20 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
                   onClick={onRemove}
                   className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
                 >
-                  <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
+                  <p className='font-bold text-red-600 dark:text-red-500'>
+                    {t('project.settings.removeMember')}
+                  </p>
                 </li>
               </ul>
             ) : null}
           </div>
         ) : (
           <div className='flex items-center justify-end'>
-            <Badge colour='yellow' className='mr-3' label={t('common.pending')} />
+            <Badge
+              colour='yellow'
+              className='mr-3'
+              label={t('common.pending')}
+            />
             <Button
               type='button'
               className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
@@ -251,7 +296,9 @@ const NoSubscribers = () => {
   return (
     <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
       <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
+        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>
+          {t('project.settings.noPeople')}
+        </h2>
       </div>
     </div>
   )
@@ -292,7 +339,11 @@ const Emails = ({ projectId }: { projectId: string }) => {
 
   useEffect(() => {
     loadFetcher.submit(
-      { intent: 'get-subscribers', offset: String(pagination.page - 1), limit: String(pagination.limit) },
+      {
+        intent: 'get-subscribers',
+        offset: String(pagination.page - 1),
+        limit: String(pagination.limit),
+      },
       { method: 'post', action: `/projects/settings/${projectId}` },
     )
   }, []) // eslint-disable-line
@@ -302,7 +353,10 @@ const Emails = ({ projectId }: { projectId: string }) => {
       if (loadFetcher.data.success) {
         setTimeout(() => {
           setEmails(loadFetcher.data!.subscribers || [])
-          setPagination((old) => ({ ...old, total: loadFetcher.data!.subscribersCount || 0 }))
+          setPagination((old) => ({
+            ...old,
+            total: loadFetcher.data!.subscribersCount || 0,
+          }))
         }, 0)
       }
       setTimeout(() => setLoading(false), 0)
@@ -312,16 +366,26 @@ const Emails = ({ projectId }: { projectId: string }) => {
   useEffect(() => {
     if (fetcher.data?.intent === 'add-subscriber') {
       if (fetcher.data.success && fetcher.data.subscriber) {
-        setTimeout(() => setEmails((prev) => [...prev, fetcher.data!.subscriber!]), 0)
+        setTimeout(
+          () => setEmails((prev) => [...prev, fetcher.data!.subscriber!]),
+          0,
+        )
         toast.success(t('apiNotifications.userInvited'))
       } else if (fetcher.data.error) {
-        toast.error(typeof fetcher.data.error === 'string' ? fetcher.data.error : t('apiNotifications.userInviteError'))
+        toast.error(
+          typeof fetcher.data.error === 'string'
+            ? fetcher.data.error
+            : t('apiNotifications.userInviteError'),
+        )
       }
     }
   }, [fetcher.data, t])
 
   useEffect(() => {
-    if (removeFetcher.state === 'idle' && removeFetcher.data?.intent === 'remove-subscriber') {
+    if (
+      removeFetcher.state === 'idle' &&
+      removeFetcher.data?.intent === 'remove-subscriber'
+    ) {
       if (removeFetcher.data.success) {
         const capturedId = removingEmailId.current
         setTimeout(() => {
@@ -378,11 +442,22 @@ const Emails = ({ projectId }: { projectId: string }) => {
     setValidated(false)
 
     fetcher.submit(
-      { intent: 'add-subscriber', email: form.email, reportFrequency: form.reportFrequency },
+      {
+        intent: 'add-subscriber',
+        email: form.email,
+        reportFrequency: form.reportFrequency,
+      },
       { method: 'post', action: `/projects/settings/${projectId}` },
     )
 
-    setTimeout(() => setForm({ email: '', reportFrequency: reportFrequencyForEmailsOptions[3].value }), 300)
+    setTimeout(
+      () =>
+        setForm({
+          email: '',
+          reportFrequency: reportFrequencyForEmailsOptions[3].value,
+        }),
+      300,
+    )
   }
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -401,7 +476,14 @@ const Emails = ({ projectId }: { projectId: string }) => {
     setShowModal(false)
     setBeenSubmitted(false)
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', reportFrequency: reportFrequencyForEmailsOptions[3].value }), 300)
+    setTimeout(
+      () =>
+        setForm({
+          email: '',
+          reportFrequency: reportFrequencyForEmailsOptions[3].value,
+        }),
+      300,
+    )
     setErrors({})
   }
 
@@ -421,10 +503,20 @@ const Emails = ({ projectId }: { projectId: string }) => {
     <div>
       <div className='mb-3 flex flex-col items-start justify-between gap-y-2 sm:flex-row sm:items-center'>
         <div>
-          <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.emails.title')}</h3>
-          <p className='text-sm text-gray-500 dark:text-gray-400'>{t('project.emails.description')}</p>
+          <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+            {t('project.emails.title')}
+          </h3>
+          <p className='text-sm text-gray-500 dark:text-gray-400'>
+            {t('project.emails.description')}
+          </p>
         </div>
-        <Button className='h-8 pl-2 whitespace-nowrap' primary regular type='button' onClick={() => setShowModal(true)}>
+        <Button
+          className='h-8 pl-2 whitespace-nowrap'
+          primary
+          regular
+          type='button'
+          onClick={() => setShowModal(true)}
+        >
           <>
             <MailPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             {t('project.emails.add')}
@@ -487,7 +579,14 @@ const Emails = ({ projectId }: { projectId: string }) => {
           </button>
         }
         closeText={t('common.cancel')}
-        message={<ModalMessage form={form} handleInput={handleInput} errors={errors} beenSubmitted={beenSubmitted} />}
+        message={
+          <ModalMessage
+            form={form}
+            handleInput={handleInput}
+            errors={errors}
+            beenSubmitted={beenSubmitted}
+          />
+        }
         isOpened={showModal}
       />
 

@@ -1,4 +1,8 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from 'react-router'
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from 'react-router'
 import { data } from 'react-router'
 import { SitemapFunction } from 'remix-sitemap'
 
@@ -6,7 +10,10 @@ import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
 import { Project } from '~/lib/models/Project'
 import { User } from '~/lib/models/User'
 import Onboarding from '~/pages/Onboarding'
-import { redirectIfNotAuthenticated, createHeadersWithCookies } from '~/utils/session.server'
+import {
+  redirectIfNotAuthenticated,
+  createHeadersWithCookies,
+} from '~/utils/session.server'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,
@@ -15,7 +22,10 @@ export const sitemap: SitemapFunction = () => ({
 export const meta: MetaFunction = () => {
   return [
     { title: 'Onboarding - Swetrix' },
-    { name: 'description', content: 'Get started with Swetrix analytics in just a few steps.' },
+    {
+      name: 'description',
+      content: 'Get started with Swetrix analytics in just a few steps.',
+    },
   ]
 }
 
@@ -30,7 +40,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const user = authResult?.user
   const cookies: string[] = authResult?.cookies || []
 
-  if (user?.user?.onboardingStep === 'setup_tracking' || user?.user?.onboardingStep === 'waiting_for_events') {
+  if (
+    user?.user?.onboardingStep === 'setup_tracking' ||
+    user?.user?.onboardingStep === 'waiting_for_events'
+  ) {
     const projectsResult = await serverFetch<{
       results: Project[]
       total: number
@@ -89,7 +102,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
       if (name.length > 50) {
         return data<OnboardingActionData>(
-          { intent, fieldErrors: { name: 'Project name must be 50 characters or less' } },
+          {
+            intent,
+            fieldErrors: { name: 'Project name must be 50 characters or less' },
+          },
           { status: 400 },
         )
       }
@@ -100,7 +116,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<OnboardingActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<OnboardingActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<OnboardingActionData>(
@@ -118,7 +137,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<OnboardingActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<OnboardingActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<OnboardingActionData>(
@@ -128,12 +150,19 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case 'complete-onboarding': {
-      const result = await serverFetch<User>(request, 'user/onboarding/complete', {
-        method: 'POST',
-      })
+      const result = await serverFetch<User>(
+        request,
+        'user/onboarding/complete',
+        {
+          method: 'POST',
+        },
+      )
 
       if (result.error) {
-        return data<OnboardingActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<OnboardingActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<OnboardingActionData>(
@@ -148,7 +177,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<OnboardingActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<OnboardingActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<OnboardingActionData>(
@@ -158,7 +190,10 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     default:
-      return data<OnboardingActionData>({ error: 'Unknown action' }, { status: 400 })
+      return data<OnboardingActionData>(
+        { error: 'Unknown action' },
+        { status: 400 },
+      )
   }
 }
 

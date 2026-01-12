@@ -33,8 +33,15 @@ const NoCaptchaEvents = ({ filters }: NoCaptchaEventsProps) => {
         <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
           {t('project.noEvTitle')}
         </Text>
-        <Text as='p' size='sm' colour='secondary' className='mx-auto mt-2 max-w-md'>
-          {hasFilters ? t('project.noEventsFiltersDesc') : t('project.noEvContent')}
+        <Text
+          as='p'
+          size='sm'
+          colour='secondary'
+          className='mx-auto mt-2 max-w-md'
+        >
+          {hasFilters
+            ? t('project.noEventsFiltersDesc')
+            : t('project.noEvContent')}
         </Text>
       </div>
     </>

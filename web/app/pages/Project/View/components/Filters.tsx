@@ -61,7 +61,9 @@ export const Filter = ({
   }
 
   // Normalise "null" filter values to human-friendly labels
-  if ((displayFilter as unknown as string)?.toString().toLowerCase() === 'null') {
+  if (
+    (displayFilter as unknown as string)?.toString().toLowerCase() === 'null'
+  ) {
     if (column === 'ref') {
       displayFilter = t('project.directNone')
     } else if (column === 'host') {
@@ -89,7 +91,13 @@ export const Filter = ({
 
   const createRemoveFilterPath = () => {
     const newSearchParams = new URLSearchParams(searchParams.toString())
-    const paramKeyInUrl = isContains ? (isExclusive ? `^${column}` : `~${column}`) : isExclusive ? `!${column}` : column
+    const paramKeyInUrl = isContains
+      ? isExclusive
+        ? `^${column}`
+        : `~${column}`
+      : isExclusive
+        ? `!${column}`
+        : column
     newSearchParams.delete(paramKeyInUrl, filter)
     return { search: newSearchParams.toString() }
   }
@@ -98,7 +106,13 @@ export const Filter = ({
     const newSearchParams = new URLSearchParams(searchParams.toString())
 
     const getKey = (contains: boolean, exclusive: boolean) =>
-      contains ? (exclusive ? `^${column}` : `~${column}`) : exclusive ? `!${column}` : column
+      contains
+        ? exclusive
+          ? `^${column}`
+          : `~${column}`
+        : exclusive
+          ? `!${column}`
+          : column
 
     const c = Boolean(isContains)
     const e = Boolean(isExclusive)
@@ -174,7 +188,10 @@ export const Filter = ({
                   : c && !e
                     ? 'toggleFilterToNotContains'
                     : 'toggleFilterToIs'
-            return t(`project.${nextKey}`, { column: displayColumn, filter: truncatedFilter })
+            return t(`project.${nextKey}`, {
+              column: displayColumn,
+              filter: truncatedFilter,
+            })
           })()}
           aria-label={(() => {
             const c = Boolean(isContains)
@@ -187,7 +204,10 @@ export const Filter = ({
                   : c && !e
                     ? 'toggleFilterToNotContains'
                     : 'toggleFilterToIs'
-            return t(`project.${nextKey}`, { column: displayColumn, filter: truncatedFilter })
+            return t(`project.${nextKey}`, {
+              column: displayColumn,
+              filter: truncatedFilter,
+            })
           })()}
         >
           {isContains
@@ -202,7 +222,9 @@ export const Filter = ({
         </span>
       )}
       &nbsp;
-      <span className='font-semibold text-gray-800 dark:text-gray-50'>{truncatedFilter}</span>
+      <span className='font-semibold text-gray-800 dark:text-gray-50'>
+        {truncatedFilter}
+      </span>
       {removable ? (
         <Link
           to={createRemoveFilterPath()}
@@ -222,8 +244,17 @@ export const Filter = ({
             onRemoveFilter?.(e)
           }}
         >
-          <svg className='h-2 w-2' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
-            <path strokeLinecap='round' strokeWidth='1.5' d='M1 1l6 6m0-6L1 7' />
+          <svg
+            className='h-2 w-2'
+            stroke='currentColor'
+            fill='none'
+            viewBox='0 0 8 8'
+          >
+            <path
+              strokeLinecap='round'
+              strokeWidth='1.5'
+              d='M1 1l6 6m0-6L1 7'
+            />
           </svg>
         </Link>
       ) : null}
@@ -274,13 +305,24 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
       )}
     >
       <div className='flex min-w-0 flex-1 items-center gap-1'>
-        <FilterIcon className='size-5 shrink-0 text-gray-500 dark:text-gray-400' strokeWidth={1.5} />
+        <FilterIcon
+          className='size-5 shrink-0 text-gray-500 dark:text-gray-400'
+          strokeWidth={1.5}
+        />
         <div className='flex flex-wrap'>
           {_map(filters, (props) => {
             const { column, filter } = props
             const key = `${column}${filter}`
 
-            return <Filter key={key} tnMapping={tnMapping} canChangeExclusive removable {...props} />
+            return (
+              <Filter
+                key={key}
+                tnMapping={tnMapping}
+                canChangeExclusive
+                removable
+                {...props}
+              />
+            )
           })}
         </div>
       </div>

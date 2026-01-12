@@ -1,4 +1,8 @@
-import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/solid'
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+} from '@heroicons/react/24/solid'
 import type i18next from 'i18next'
 import _map from 'lodash/map'
 import React, { useState, memo, useEffect } from 'react'
@@ -49,10 +53,14 @@ const TG_BOT_URL = 'https://t.me/swetrixbot'
 const TG_BOT_USERNAME = '@swetrixbot'
 
 const SLACK_WEBHOOKS_HELP = 'https://api.slack.com/messaging/webhooks'
-const DISCORD_WEBHOOKS_HELP = 'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks'
+const DISCORD_WEBHOOKS_HELP =
+  'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks'
 
 interface IntegrationsProps {
-  handleIntegrationSave: (data: Partial<User>, cb: (isSuccess: boolean) => void) => void
+  handleIntegrationSave: (
+    data: Partial<User>,
+    cb: (isSuccess: boolean) => void,
+  ) => void
 }
 
 interface IntegrationStatus {
@@ -66,7 +74,9 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
 
   const { t } = useTranslation('common')
   const available = getAvailableIntegrations(t)
-  const [integrationConfigurating, setIntegrationConfigurating] = useState<string | null>(null)
+  const [integrationConfigurating, setIntegrationConfigurating] = useState<
+    string | null
+  >(null)
   const [integrationInput, setIntegrationInput] = useState<string | null>(null)
   const [isIntegrationLoading, setIsIntegrationLoading] = useState(false)
   const [isRemovalLoading, setIsRemovalLoading] = useState(false)
@@ -194,7 +204,10 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         return
       }
 
-      fetcher.submit({ intent: 'remove-tg-integration', tgID: user.telegramChatId }, { method: 'POST' })
+      fetcher.submit(
+        { intent: 'remove-tg-integration', tgID: user.telegramChatId },
+        { method: 'POST' },
+      )
       return
     }
 
@@ -406,7 +419,9 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
 
   return (
     <>
-      <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.integrationsDesc')}</p>
+      <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+        {t('profileSettings.integrationsDesc')}
+      </p>
       <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-900'>
         <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
           <thead className='bg-gray-50 dark:bg-slate-800'>
@@ -435,10 +450,17 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
           <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
             {_map(available, ({ name, key, description, Icon }) => {
               const { connected, confirmed, id } = getIntegrationStatus(key)
-              const status = connected ? (confirmed ? 'connected' : 'pending') : 'notConnected'
+              const status = connected
+                ? confirmed
+                  ? 'connected'
+                  : 'pending'
+                : 'notConnected'
 
               return (
-                <tr key={key} className='hover:bg-gray-50 dark:hover:bg-slate-800/50'>
+                <tr
+                  key={key}
+                  className='hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                >
                   <td className='px-4 py-3 text-sm text-gray-900 dark:text-gray-100'>
                     <div className='flex items-center gap-2'>
                       <div className='hidden shrink-0 sm:block'>
@@ -467,13 +489,22 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
                   <td className='px-4 py-3 text-sm text-gray-700 dark:text-gray-300'>
                     <div className='flex items-center'>
                       {status === 'notConnected' ? (
-                        <XCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-red-400' aria-hidden='true' />
+                        <XCircleIcon
+                          className='mr-1.5 h-5 w-5 shrink-0 text-red-400'
+                          aria-hidden='true'
+                        />
                       ) : null}
                       {status === 'pending' ? (
-                        <ClockIcon className='mr-1.5 h-5 w-5 shrink-0 text-yellow-400' aria-hidden='true' />
+                        <ClockIcon
+                          className='mr-1.5 h-5 w-5 shrink-0 text-yellow-400'
+                          aria-hidden='true'
+                        />
                       ) : null}
                       {status === 'connected' ? (
-                        <CheckCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-green-400' aria-hidden='true' />
+                        <CheckCircleIcon
+                          className='mr-1.5 h-5 w-5 shrink-0 text-green-400'
+                          aria-hidden='true'
+                        />
                       ) : null}
                       {t(`common.${status}`)}
                     </div>
@@ -481,7 +512,11 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
                   <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
                     <div className='flex items-center justify-end gap-2'>
                       {connected ? (
-                        <Button onClick={() => removeIntegration(key)} small danger>
+                        <Button
+                          onClick={() => removeIntegration(key)}
+                          small
+                          danger
+                        >
                           {t('profileSettings.removeIntegration')}
                         </Button>
                       ) : (

@@ -106,9 +106,7 @@ export class WebhookController {
           uid = JSON.parse(passthrough)?.uid
         } catch {
           this.logger.error(
-            `[${body.alert_name}] Cannot parse the uid: ${JSON.stringify(
-              body,
-            )}`,
+            `[${body.alert_name}] Cannot parse the uid: ${JSON.stringify(body)}`,
           )
         }
 

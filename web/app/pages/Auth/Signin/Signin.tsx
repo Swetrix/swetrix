@@ -1,6 +1,14 @@
 import React, { useState, memo, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link, useNavigate, useSearchParams, Form, useActionData, useNavigation, useFetcher } from 'react-router'
+import {
+  Link,
+  useNavigate,
+  useSearchParams,
+  Form,
+  useActionData,
+  useNavigation,
+  useFetcher,
+} from 'react-router'
 import { toast } from 'sonner'
 
 import GithubAuth from '~/components/GithubAuth'
@@ -51,20 +59,28 @@ const Signin = () => {
 
   // 2FA is required from URL params, action data, or SSO flow
   const isTwoFARequired =
-    searchParams.get('show_2fa_screen') === 'true' || actionData?.requires2FA === true || sso2FARequired
+    searchParams.get('show_2fa_screen') === 'true' ||
+    actionData?.requires2FA === true ||
+    sso2FARequired
 
   // Derive 2FA error from fetcher data
   const twoFACodeError = twoFAFetcher.data?.fieldErrors?.twoFACode || null
 
   useEffect(() => {
     if (actionData?.error && !actionData?.fieldErrors) {
-      const errorMessage = Array.isArray(actionData.error) ? actionData.error[0] : actionData.error
+      const errorMessage = Array.isArray(actionData.error)
+        ? actionData.error[0]
+        : actionData.error
       toast.error(errorMessage)
     }
   }, [actionData?.error, actionData?.fieldErrors, actionData?.timestamp])
 
   const clearFieldError = (fieldName: string) => {
-    if (actionData?.fieldErrors?.[fieldName as keyof typeof actionData.fieldErrors]) {
+    if (
+      actionData?.fieldErrors?.[
+        fieldName as keyof typeof actionData.fieldErrors
+      ]
+    ) {
       setClearedErrors((prev) => new Set(prev).add(fieldName))
     }
   }
@@ -73,7 +89,9 @@ const Signin = () => {
     if (clearedErrors.has(fieldName)) {
       return undefined
     }
-    return actionData?.fieldErrors?.[fieldName as keyof typeof actionData.fieldErrors]
+    return actionData?.fieldErrors?.[
+      fieldName as keyof typeof actionData.fieldErrors
+    ]
   }
 
   const handleFormSubmit = () => {
@@ -103,7 +121,10 @@ const Signin = () => {
         uuid,
         auth_url: authUrl,
         expires_in: expiresIn,
-      } = await generateSSOAuthURL(provider, `${window.location.origin}${routes.socialised}`)
+      } = await generateSSOAuthURL(
+        provider,
+        `${window.location.origin}${routes.socialised}`,
+      )
 
       const safeAuthUrl = (() => {
         try {
@@ -116,14 +137,21 @@ const Signin = () => {
             !(
               provider === 'openid-connect' &&
               parsed.protocol === 'http:' &&
-              (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1' || parsed.hostname === '::1')
+              (parsed.hostname === 'localhost' ||
+                parsed.hostname === '127.0.0.1' ||
+                parsed.hostname === '::1')
             )
           ) {
             return null
           }
 
-          if (provider === 'google' && parsed.hostname !== 'accounts.google.com') return null
-          if (provider === 'github' && parsed.hostname !== 'github.com') return null
+          if (
+            provider === 'google' &&
+            parsed.hostname !== 'accounts.google.com'
+          )
+            return null
+          if (provider === 'github' && parsed.hostname !== 'github.com')
+            return null
 
           return parsed.toString()
         } catch {
@@ -147,7 +175,11 @@ const Signin = () => {
         await delay(HASH_CHECK_FREQUENCY)
 
         try {
-          const { user, totalMonthlyEvents } = await getJWTBySSOHash(uuid, provider, !dontRemember)
+          const { user, totalMonthlyEvents } = await getJWTBySSOHash(
+            uuid,
+            provider,
+            !dontRemember,
+          )
           authWindow.close()
 
           if (user.isTwoFactorAuthenticationEnabled) {
@@ -179,7 +211,11 @@ const Signin = () => {
         }
       }
     } catch (reason) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.socialisationGenericError'))
+      toast.error(
+        typeof reason === 'string'
+          ? reason
+          : t('apiNotifications.socialisationGenericError'),
+      )
       setIsSsoLoading(false)
       return
     }
@@ -208,10 +244,19 @@ const Signin = () => {
           {isTwoFARequired ? (
             <>
               <div className='mb-8'>
-                <Text as='h1' size='3xl' weight='bold' className='tracking-tight'>
+                <Text
+                  as='h1'
+                  size='3xl'
+                  weight='bold'
+                  className='tracking-tight'
+                >
                   {t('auth.signin.2fa')}
                 </Text>
-                <Text as='p' colour='muted' className='mt-2 whitespace-pre-line'>
+                <Text
+                  as='p'
+                  colour='muted'
+                  className='mt-2 whitespace-pre-line'
+                >
                   {t('auth.signin.2faDesc')}
                 </Text>
               </div>
@@ -226,7 +271,12 @@ const Signin = () => {
                   error={twoFACodeError}
                 />
                 <div className='mt-6 flex items-center justify-between'>
-                  <Text as='div' size='sm' colour='muted' className='whitespace-pre-line'>
+                  <Text
+                    as='div'
+                    size='sm'
+                    colour='muted'
+                    className='whitespace-pre-line'
+                  >
                     {!isSelfhosted ? (
                       <Trans
                         t={t}
@@ -251,7 +301,12 @@ const Signin = () => {
           ) : (
             <>
               <div className='mb-8'>
-                <Text as='h1' size='3xl' weight='bold' className='tracking-tight'>
+                <Text
+                  as='h1'
+                  size='3xl'
+                  weight='bold'
+                  className='tracking-tight'
+                >
                   {t('auth.signin.title')}
                 </Text>
                 <Text as='p' colour='muted' className='mt-2'>
@@ -259,29 +314,56 @@ const Signin = () => {
                 </Text>
               </div>
 
-              <div className={cn('grid gap-3', isSelfhosted ? 'grid-cols-1' : 'grid-cols-2')}>
+              <div
+                className={cn(
+                  'grid gap-3',
+                  isSelfhosted ? 'grid-cols-1' : 'grid-cols-2',
+                )}
+              >
                 {isSelfhosted ? (
-                  <OIDCAuth onClick={() => onSsoLogin('openid-connect')} disabled={isLoading} className='w-full' />
+                  <OIDCAuth
+                    onClick={() => onSsoLogin('openid-connect')}
+                    disabled={isLoading}
+                    className='w-full'
+                  />
                 ) : (
                   <>
-                    <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
-                    <GithubAuth onClick={() => onSsoLogin('github')} disabled={isLoading} />
+                    <GoogleAuth
+                      onClick={() => onSsoLogin('google')}
+                      disabled={isLoading}
+                    />
+                    <GithubAuth
+                      onClick={() => onSsoLogin('github')}
+                      disabled={isLoading}
+                    />
                   </>
                 )}
               </div>
 
               <div className='relative my-6'>
-                <div className='absolute inset-0 flex items-center' aria-hidden='true'>
+                <div
+                  className='absolute inset-0 flex items-center'
+                  aria-hidden='true'
+                >
                   <div className='w-full border-t border-gray-200 dark:border-gray-700' />
                 </div>
                 <div className='relative flex justify-center text-sm'>
-                  <Text as='span' colour='muted' size='sm' className='bg-gray-50 px-4 dark:bg-slate-900'>
+                  <Text
+                    as='span'
+                    colour='muted'
+                    size='sm'
+                    className='bg-gray-50 px-4 dark:bg-slate-900'
+                  >
                     {t('auth.common.orContinueWith')} email
                   </Text>
                 </div>
               </div>
 
-              <Form method='post' className='space-y-4' onSubmit={handleFormSubmit}>
+              <Form
+                method='post'
+                className='space-y-4'
+                onSubmit={handleFormSubmit}
+              >
                 <Input
                   name='email'
                   type='email'
@@ -311,7 +393,11 @@ const Signin = () => {
                 />
 
                 {/* Hidden input for form submission since Headless UI Checkbox doesn't submit natively */}
-                <input type='hidden' name='dontRemember' value={dontRemember ? 'true' : 'false'} />
+                <input
+                  type='hidden'
+                  name='dontRemember'
+                  value={dontRemember ? 'true' : 'false'}
+                />
 
                 <div className='flex items-center justify-between'>
                   <Checkbox
@@ -321,20 +407,34 @@ const Signin = () => {
                     label={
                       <span className='flex items-center gap-1'>
                         <Text size='sm'>{t('auth.common.noRemember')}</Text>
-                        <Tooltip text={t('auth.common.noRememberHint')} className='relative' />
+                        <Tooltip
+                          text={t('auth.common.noRememberHint')}
+                          className='relative'
+                        />
                       </span>
                     }
                   />
                 </div>
 
-                <Button className='mt-6 w-full justify-center' type='submit' loading={isFormSubmitting} primary giant>
+                <Button
+                  className='mt-6 w-full justify-center'
+                  type='submit'
+                  loading={isFormSubmitting}
+                  primary
+                  giant
+                >
                   {t('auth.signin.button')}
                 </Button>
               </Form>
 
               {/* Sign up link */}
               {!isSelfhosted ? (
-                <Text as='p' size='sm' colour='muted' className='mt-6 text-center'>
+                <Text
+                  as='p'
+                  size='sm'
+                  colour='muted'
+                  className='mt-6 text-center'
+                >
                   <Trans
                     t={t}
                     i18nKey='auth.signin.notAMember'
@@ -375,7 +475,11 @@ const Signin = () => {
           <div className='relative'>
             <div className='overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/10'>
               <img
-                src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
+                src={
+                  theme === 'dark'
+                    ? '/assets/screenshot_dark.png'
+                    : '/assets/screenshot_light.png'
+                }
                 alt='Swetrix Dashboard'
                 className='w-full'
               />

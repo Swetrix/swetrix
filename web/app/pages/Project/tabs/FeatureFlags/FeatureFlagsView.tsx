@@ -20,17 +20,45 @@ import {
   CheckIcon,
   XIcon,
 } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef, useCallback, Suspense, use } from 'react'
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  Suspense,
+  use,
+} from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation, useFetcher, useLoaderData, useRevalidator } from 'react-router'
+import {
+  Link,
+  useLocation,
+  useFetcher,
+  useLoaderData,
+  useRevalidator,
+} from 'react-router'
 import { toast } from 'sonner'
 
-import type { FeatureFlagsResponse, ProjectFeatureFlag, FeatureFlagStats, FeatureFlagProfile } from '~/api/api.server'
-import { useFeatureFlagStatsProxy, useFeatureFlagProfilesProxy } from '~/hooks/useAnalyticsProxy'
+import type {
+  FeatureFlagsResponse,
+  ProjectFeatureFlag,
+  FeatureFlagStats,
+  FeatureFlagProfile,
+} from '~/api/api.server'
+import {
+  useFeatureFlagStatsProxy,
+  useFeatureFlagProfilesProxy,
+} from '~/hooks/useAnalyticsProxy'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
+import {
+  useViewProjectContext,
+  useRefreshTriggers,
+} from '~/pages/Project/View/ViewProject'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
-import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
+import type {
+  ProjectLoaderData,
+  ProjectViewActionData,
+} from '~/routes/projects.$id'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Spin from '~/ui/icons/Spin'
@@ -57,7 +85,10 @@ interface FeatureFlagProfileRowProps {
   timeFormat: '12-hour' | '24-hour'
 }
 
-const FeatureFlagProfileRow = ({ profile, timeFormat }: FeatureFlagProfileRowProps) => {
+const FeatureFlagProfileRow = ({
+  profile,
+  timeFormat,
+}: FeatureFlagProfileRowProps) => {
   const {
     t,
     i18n: { language },
@@ -89,17 +120,28 @@ const FeatureFlagProfileRow = ({ profile, timeFormat }: FeatureFlagProfileRowPro
       <li className='relative mb-2 flex cursor-pointer items-center justify-between gap-x-4 overflow-hidden rounded-lg border border-gray-200 bg-white px-3 py-2.5 transition-colors hover:bg-gray-100 dark:border-slate-700/50 dark:bg-slate-800/50 dark:hover:bg-slate-700/50'>
         <div className='flex min-w-0 items-center gap-x-3'>
           {/* Avatar */}
-          <ProfileAvatar profileId={profile.profileId} size={32} className='shrink-0' />
+          <ProfileAvatar
+            profileId={profile.profileId}
+            size={32}
+            className='shrink-0'
+          />
 
           <div className='min-w-0 flex-auto'>
             <p className='flex items-center text-xs leading-5 font-semibold text-gray-900 dark:text-gray-50'>
               <span className='truncate'>{displayName}</span>
               {profile.isIdentified ? (
-                <Badge label={t('project.identified')} colour='indigo' className='ml-1.5' />
+                <Badge
+                  label={t('project.identified')}
+                  colour='indigo'
+                  className='ml-1.5'
+                />
               ) : null}
             </p>
             <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
-              {t('featureFlags.xEvaluations', { count: profile.evaluationCount })} · {lastEvaluatedText}
+              {t('featureFlags.xEvaluations', {
+                count: profile.evaluationCount,
+              })}{' '}
+              · {lastEvaluatedText}
             </p>
           </div>
         </div>
@@ -177,8 +219,16 @@ const FeatureFlagRow = ({
           <div className='flex min-w-0 gap-x-4'>
             <div className='min-w-0 flex-auto'>
               <div className='flex items-center gap-x-2'>
-                <Text as='p' weight='semibold' truncate className='flex items-center gap-x-1.5'>
-                  <FlagIcon className='size-4 text-indigo-500' strokeWidth={1.5} />
+                <Text
+                  as='p'
+                  weight='semibold'
+                  truncate
+                  className='flex items-center gap-x-1.5'
+                >
+                  <FlagIcon
+                    className='size-4 text-indigo-500'
+                    strokeWidth={1.5}
+                  />
                   <span>{flag.key}</span>
                 </Text>
                 {/* Status badge */}
@@ -190,7 +240,9 @@ const FeatureFlagRow = ({
                       : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
                   )}
                 >
-                  {flag.enabled ? t('featureFlags.enabled') : t('featureFlags.disabled')}
+                  {flag.enabled
+                    ? t('featureFlags.enabled')
+                    : t('featureFlags.disabled')}
                 </span>
                 {/* Flag type badge */}
                 <span className='inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'>
@@ -214,7 +266,9 @@ const FeatureFlagRow = ({
               ) : null}
               {targetingRulesCount > 0 ? (
                 <Text className='mt-1' as='p' size='xs' colour='muted'>
-                  {t('featureFlags.targetingRulesCount', { count: targetingRulesCount })}
+                  {t('featureFlags.targetingRulesCount', {
+                    count: targetingRulesCount,
+                  })}
                 </Text>
               ) : null}
               {/* Mobile stats */}
@@ -227,7 +281,8 @@ const FeatureFlagRow = ({
                   <>
                     <span className='flex items-center gap-1'>
                       <ActivityIcon className='size-3' />
-                      {nFormatter(stats.evaluations, 1)} {t('featureFlags.evaluations').toLowerCase()}
+                      {nFormatter(stats.evaluations, 1)}{' '}
+                      {t('featureFlags.evaluations').toLowerCase()}
                     </span>
                     <span className='flex items-center gap-1'>
                       <UsersIcon className='size-3' />
@@ -268,7 +323,12 @@ const FeatureFlagRow = ({
                     </Text>
                   </div>
                   <div className='text-right'>
-                    <Text as='p' size='sm' weight='semibold' className='text-green-600 dark:text-green-400'>
+                    <Text
+                      as='p'
+                      size='sm'
+                      weight='semibold'
+                      className='text-green-600 dark:text-green-400'
+                    >
                       {stats.truePercentage}%
                     </Text>
                     <Text as='p' size='xs' colour='muted'>
@@ -291,7 +351,11 @@ const FeatureFlagRow = ({
                   e.stopPropagation()
                   onToggle(flag.id, !flag.enabled)
                 }}
-                aria-label={flag.enabled ? t('featureFlags.disable') : t('featureFlags.enable')}
+                aria-label={
+                  flag.enabled
+                    ? t('featureFlags.disable')
+                    : t('featureFlags.enable')
+                }
                 className={cx(
                   'rounded-md border border-transparent p-1.5 transition-colors',
                   flag.enabled
@@ -330,9 +394,12 @@ const FeatureFlagRow = ({
                 <Trash2Icon className='size-4' strokeWidth={1.5} />
               </button>
               <ChevronDownIcon
-                className={cx('size-5 text-gray-500 transition-transform dark:text-gray-400', {
-                  'rotate-180': isExpanded,
-                })}
+                className={cx(
+                  'size-5 text-gray-500 transition-transform dark:text-gray-400',
+                  {
+                    'rotate-180': isExpanded,
+                  },
+                )}
                 strokeWidth={1.5}
               />
             </div>
@@ -344,7 +411,10 @@ const FeatureFlagRow = ({
           <div className='border-t border-gray-200 px-4 py-4 sm:px-6 dark:border-slate-700'>
             {/* Result filter toggle */}
             <div className='mb-3 flex items-center gap-2'>
-              <Switch checked={resultFilter} onChange={(checked) => onResultFilterChange(flag.id, checked)} />
+              <Switch
+                checked={resultFilter}
+                onChange={(checked) => onResultFilterChange(flag.id, checked)}
+              />
               <Text as='span' size='xs' colour='muted'>
                 {t('featureFlags.served')}
               </Text>
@@ -364,7 +434,11 @@ const FeatureFlagRow = ({
               <>
                 <ul>
                   {_map(profiles, (profile) => (
-                    <FeatureFlagProfileRow key={profile.profileId} profile={profile} timeFormat={timeFormat} />
+                    <FeatureFlagProfileRow
+                      key={profile.profileId}
+                      profile={profile}
+                      timeFormat={timeFormat}
+                    />
                   ))}
                 </ul>
                 {canLoadMoreProfiles ? (
@@ -386,7 +460,10 @@ const FeatureFlagRow = ({
                     {profilesLoading ? (
                       <Spin className='mr-2 size-5' />
                     ) : (
-                      <DownloadIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
+                      <DownloadIcon
+                        className='mr-2 h-5 w-5'
+                        strokeWidth={1.5}
+                      />
                     )}
                     {t('featureFlags.loadMore')}
                   </button>
@@ -425,9 +502,16 @@ interface DeferredFeatureFlagsData {
   featureFlagsData: FeatureFlagsResponse | null
 }
 
-function FeatureFlagsDataResolver({ children }: { children: (data: DeferredFeatureFlagsData) => React.ReactNode }) {
-  const { featureFlagsData: featureFlagsDataPromise } = useLoaderData<ProjectLoaderData>()
-  const featureFlagsData = featureFlagsDataPromise ? use(featureFlagsDataPromise) : null
+function FeatureFlagsDataResolver({
+  children,
+}: {
+  children: (data: DeferredFeatureFlagsData) => React.ReactNode
+}) {
+  const { featureFlagsData: featureFlagsDataPromise } =
+    useLoaderData<ProjectLoaderData>()
+  const featureFlagsData = featureFlagsDataPromise
+    ? use(featureFlagsDataPromise)
+    : null
   return <>{children({ featureFlagsData })}</>
 }
 
@@ -435,7 +519,9 @@ function FeatureFlagsViewWrapper(props: FeatureFlagsViewProps) {
   return (
     <Suspense fallback={<Loader />}>
       <FeatureFlagsDataResolver>
-        {(deferredData) => <FeatureFlagsViewInner {...props} deferredData={deferredData} />}
+        {(deferredData) => (
+          <FeatureFlagsViewInner {...props} deferredData={deferredData} />
+        )}
       </FeatureFlagsDataResolver>
     </Suspense>
   )
@@ -445,7 +531,13 @@ interface FeatureFlagsViewInnerProps extends FeatureFlagsViewProps {
   deferredData: DeferredFeatureFlagsData
 }
 
-const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredData }: FeatureFlagsViewInnerProps) => {
+const FeatureFlagsViewInner = ({
+  period,
+  from = '',
+  to = '',
+  timezone,
+  deferredData,
+}: FeatureFlagsViewInnerProps) => {
   const { id } = useCurrentProject()
   const revalidator = useRevalidator()
   const { featureFlagsRefreshTrigger } = useRefreshTriggers()
@@ -457,9 +549,15 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
 
   // Track if we're in search/pagination mode (not using loader data)
   const [isSearchMode, setIsSearchMode] = useState(false)
-  const [total, setTotal] = useState(() => deferredData.featureFlagsData?.total || 0)
-  const [flags, setFlags] = useState<ProjectFeatureFlag[]>(() => deferredData.featureFlagsData?.results || [])
-  const [flagStats, setFlagStats] = useState<Record<string, FeatureFlagStats | null>>({})
+  const [total, setTotal] = useState(
+    () => deferredData.featureFlagsData?.total || 0,
+  )
+  const [flags, setFlags] = useState<ProjectFeatureFlag[]>(
+    () => deferredData.featureFlagsData?.results || [],
+  )
+  const [flagStats, setFlagStats] = useState<
+    Record<string, FeatureFlagStats | null>
+  >({})
   const [statsLoading, setStatsLoading] = useState<Record<string, boolean>>({})
   const [page, setPage] = useState(1)
   const [error, setError] = useState<string | null>(null)
@@ -470,16 +568,25 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
 
   // Expanded flag state
   const [expandedFlagId, setExpandedFlagId] = useState<string | null>(null)
-  const [flagProfiles, setFlagProfiles] = useState<Record<string, FeatureFlagProfile[]>>({})
-  const [flagProfilesTotal, setFlagProfilesTotal] = useState<Record<string, number>>({})
-  const [profilesLoading, setProfilesLoading] = useState<Record<string, boolean>>({})
-  const [flagResultFilters, setFlagResultFilters] = useState<Record<string, boolean>>({})
+  const [flagProfiles, setFlagProfiles] = useState<
+    Record<string, FeatureFlagProfile[]>
+  >({})
+  const [flagProfilesTotal, setFlagProfilesTotal] = useState<
+    Record<string, number>
+  >({})
+  const [profilesLoading, setProfilesLoading] = useState<
+    Record<string, boolean>
+  >({})
+  const [flagResultFilters, setFlagResultFilters] = useState<
+    Record<string, boolean>
+  >({})
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingFlagId, setEditingFlagId] = useState<string | null>(null)
 
-  const isLoading = revalidator.state === 'loading' || listFetcher.state !== 'idle'
+  const isLoading =
+    revalidator.state === 'loading' || listFetcher.state !== 'idle'
 
   // Cleanup on unmount
   useEffect(() => {
@@ -491,7 +598,11 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
 
   // Sync state when loader provides new data
   useEffect(() => {
-    if (deferredData.featureFlagsData && revalidator.state === 'idle' && !isSearchMode) {
+    if (
+      deferredData.featureFlagsData &&
+      revalidator.state === 'idle' &&
+      !isSearchMode
+    ) {
       setFlags(deferredData.featureFlagsData.results || [])
       setTotal(deferredData.featureFlagsData.total || 0)
     }
@@ -522,10 +633,16 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
 
   // Handle list fetcher response
   useEffect(() => {
-    if (listFetcher.data?.intent === 'get-project-feature-flags' && listFetcher.state === 'idle') {
+    if (
+      listFetcher.data?.intent === 'get-project-feature-flags' &&
+      listFetcher.state === 'idle'
+    ) {
       if (isMountedRef.current) {
         if (listFetcher.data.success && listFetcher.data.data) {
-          const result = listFetcher.data.data as { results: ProjectFeatureFlag[]; total: number }
+          const result = listFetcher.data.data as {
+            results: ProjectFeatureFlag[]
+            total: number
+          }
           setFlags(result.results)
           setTotal(result.total)
         } else if (listFetcher.data.error) {
@@ -550,7 +667,11 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
           setIsSearchMode(false)
           revalidator.revalidate()
         } else {
-          loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+          loadFlags(
+            DEFAULT_FEATURE_FLAGS_TAKE,
+            (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE,
+            filterQuery || undefined,
+          )
         }
       } else if (actionFetcher.data.error) {
         toast.error(actionFetcher.data.error)
@@ -558,13 +679,25 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
     } else if (actionFetcher.data.intent === 'update-feature-flag') {
       if (actionFetcher.data.success && actionFetcher.data.data) {
         const updated = actionFetcher.data.data as ProjectFeatureFlag
-        toast.success(updated.enabled ? t('featureFlags.flagEnabled') : t('featureFlags.flagDisabled'))
+        toast.success(
+          updated.enabled
+            ? t('featureFlags.flagEnabled')
+            : t('featureFlags.flagDisabled'),
+        )
         setFlags((prev) => prev.map((f) => (f.id === updated.id ? updated : f)))
       } else if (actionFetcher.data.error) {
         toast.error(actionFetcher.data.error)
       }
     }
-  }, [actionFetcher.data, actionFetcher.state, t, loadFlags, page, filterQuery, revalidator])
+  }, [
+    actionFetcher.data,
+    actionFetcher.state,
+    t,
+    loadFlags,
+    page,
+    filterQuery,
+    revalidator,
+  ])
 
   // Debounced search to avoid excessive API calls
   const debouncedLoadFlags = useMemo(
@@ -601,7 +734,12 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
     async (flagId: string) => {
       setStatsLoading((prev) => ({ ...prev, [flagId]: true }))
       try {
-        const stats = await statsProxy.fetchStats(flagId, { period, from, to, timezone })
+        const stats = await statsProxy.fetchStats(flagId, {
+          period,
+          from,
+          to,
+          timezone,
+        })
         if (isMountedRef.current) {
           setFlagStats((prev) => ({ ...prev, [flagId]: stats }))
         }
@@ -640,14 +778,19 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
         if (isMountedRef.current && result) {
           setFlagProfiles((prev) => ({
             ...prev,
-            [flagId]: append ? [...currentProfiles, ...result.profiles] : result.profiles,
+            [flagId]: append
+              ? [...currentProfiles, ...result.profiles]
+              : result.profiles,
           }))
           setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: result.total }))
         }
       } catch (err) {
         console.error('Failed to load flag profiles:', err)
         if (isMountedRef.current) {
-          setFlagProfiles((prev) => ({ ...prev, [flagId]: append ? currentProfiles : [] }))
+          setFlagProfiles((prev) => ({
+            ...prev,
+            [flagId]: append ? currentProfiles : [],
+          }))
           setFlagProfilesTotal((prev) => ({ ...prev, [flagId]: 0 }))
         }
       } finally {
@@ -656,7 +799,15 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
         }
       }
     },
-    [period, from, to, timezone, flagProfiles, flagResultFilters, profilesProxy],
+    [
+      period,
+      from,
+      to,
+      timezone,
+      flagProfiles,
+      flagResultFilters,
+      profilesProxy,
+    ],
   )
 
   const handleToggleExpand = useCallback(
@@ -693,7 +844,11 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
   // Handle page changes - use fetcher for pagination
   useEffect(() => {
     if (page > 1 || isSearchMode) {
-      loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+      loadFlags(
+        DEFAULT_FEATURE_FLAGS_TAKE,
+        (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE,
+        filterQuery || undefined,
+      )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
@@ -705,7 +860,11 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
         setIsSearchMode(false)
         revalidator.revalidate()
       } else {
-        loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+        loadFlags(
+          DEFAULT_FEATURE_FLAGS_TAKE,
+          (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE,
+          filterQuery || undefined,
+        )
       }
       setFlagStats({})
       if (expandedFlagId) {
@@ -753,14 +912,21 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
       setIsSearchMode(false)
       revalidator.revalidate()
     } else {
-      loadFlags(DEFAULT_FEATURE_FLAGS_TAKE, (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE, filterQuery || undefined)
+      loadFlags(
+        DEFAULT_FEATURE_FLAGS_TAKE,
+        (page - 1) * DEFAULT_FEATURE_FLAGS_TAKE,
+        filterQuery || undefined,
+      )
     }
   }
 
   const handleDeleteFlag = useCallback(
     (flagId: string) => {
       processedActionRef.current = null
-      actionFetcher.submit({ intent: 'delete-feature-flag', flagId }, { method: 'POST' })
+      actionFetcher.submit(
+        { intent: 'delete-feature-flag', flagId },
+        { method: 'POST' },
+      )
     },
     [actionFetcher],
   )
@@ -768,7 +934,10 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
   const handleToggleFlag = useCallback(
     (flagId: string, enabled: boolean) => {
       processedActionRef.current = null
-      actionFetcher.submit({ intent: 'update-feature-flag', flagId, enabled: String(enabled) }, { method: 'POST' })
+      actionFetcher.submit(
+        { intent: 'update-feature-flag', flagId, enabled: String(enabled) },
+        { method: 'POST' },
+      )
     },
     [actionFetcher],
   )
@@ -780,7 +949,11 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
         title={t('apiNotifications.somethingWentWrong')}
         description={t('apiNotifications.errorCode', { error })}
         actions={[
-          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
+          {
+            label: t('dashboard.reloadPage'),
+            onClick: () => window.location.reload(),
+            primary: true,
+          },
           { label: t('notFoundPage.support'), to: routes.contact },
         ]}
       />
@@ -798,7 +971,9 @@ const FeatureFlagsViewInner = ({ period, from = '', to = '', timezone, deferredD
               <FlagIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
               <p className='text-3xl font-bold'>{t('featureFlags.title')}</p>
             </div>
-            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('featureFlags.description')}</p>
+            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
+              {t('featureFlags.description')}
+            </p>
             <Button
               onClick={handleNewFlag}
               className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'

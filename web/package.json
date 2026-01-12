@@ -13,8 +13,8 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "lint:tsc": "tsc --noEmit",
-    "format": "prettier --check --ignore-unknown ./app ./public",
-    "format:fix": "prettier --write --ignore-unknown ./app ./public",
+    "format": "oxfmt --write ./app",
+    "format:check": "oxfmt --check ./app",
     "knip": "knip"
   },
   "dependencies": {
@@ -50,7 +50,6 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.562.0",
     "marked": "^17.0.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-hotkeys-hook": "^4.6.1",
@@ -94,8 +93,8 @@
     "@types/sanitize-html": "^2.16.0",
     "cross-env": "^10.1.0",
     "knip": "^5.77.2",
+    "oxfmt": "^0.24.0",
     "oxlint": "^0.16.10",
-    "prettier": "^3.7.4",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vite": "^7.3.0",

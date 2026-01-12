@@ -3,12 +3,28 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import { EyeIcon, PercentIcon } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef, lazy, Suspense, use } from 'react'
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  lazy,
+  Suspense,
+  use,
+} from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams, useLoaderData, useRevalidator } from 'react-router'
+import {
+  useNavigate,
+  useSearchParams,
+  useLoaderData,
+  useRevalidator,
+} from 'react-router'
 
-import type { PerformanceDataResponse, PerformanceOverallObject } from '~/api/api.server'
+import type {
+  PerformanceDataResponse,
+  PerformanceOverallObject,
+} from '~/api/api.server'
 import { useAnnotations } from '~/hooks/useAnnotations'
 import { PERFORMANCE_PANELS_ORDER, chartTypes } from '~/lib/constants'
 import { CountryEntry } from '~/lib/models/Entry'
@@ -23,7 +39,10 @@ import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { Panel } from '~/pages/Project/View/Panels'
-import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
+import {
+  useViewProjectContext,
+  useRefreshTriggers,
+} from '~/pages/Project/View/ViewProject'
 import {
   panelIconMapping,
   CHART_METRICS_MAPPING_PERF,
@@ -38,7 +57,9 @@ import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 
-const InteractiveMap = lazy(() => import('~/pages/Project/View/components/InteractiveMap'))
+const InteractiveMap = lazy(
+  () => import('~/pages/Project/View/components/InteractiveMap'),
+)
 
 interface PerformanceViewProps {
   tnMapping: Record<string, string>
@@ -49,11 +70,20 @@ interface DeferredPerfData {
   perfOverallStats: Record<string, PerformanceOverallObject> | null
 }
 
-function PerfDataResolver({ children }: { children: (data: DeferredPerfData) => React.ReactNode }) {
-  const { perfData: perfDataPromise, perfOverallStats: perfOverallStatsPromise } = useLoaderData<ProjectLoaderData>()
+function PerfDataResolver({
+  children,
+}: {
+  children: (data: DeferredPerfData) => React.ReactNode
+}) {
+  const {
+    perfData: perfDataPromise,
+    perfOverallStats: perfOverallStatsPromise,
+  } = useLoaderData<ProjectLoaderData>()
 
   const perfData = perfDataPromise ? use(perfDataPromise) : null
-  const perfOverallStats = perfOverallStatsPromise ? use(perfOverallStatsPromise) : null
+  const perfOverallStats = perfOverallStatsPromise
+    ? use(perfOverallStatsPromise)
+    : null
 
   return <>{children({ perfData, perfOverallStats })}</>
 }
@@ -62,7 +92,9 @@ function PerformanceViewWrapper(props: PerformanceViewProps) {
   return (
     <Suspense fallback={<Loader />}>
       <PerfDataResolver>
-        {(deferredData) => <PerformanceViewInner {...props} deferredData={deferredData} />}
+        {(deferredData) => (
+          <PerformanceViewInner {...props} deferredData={deferredData} />
+        )}
       </PerfDataResolver>
     </Suspense>
   )
@@ -72,7 +104,10 @@ interface PerformanceViewInnerProps extends PerformanceViewProps {
   deferredData: DeferredPerfData
 }
 
-const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerProps) => {
+const PerformanceViewInner = ({
+  tnMapping,
+  deferredData,
+}: PerformanceViewInnerProps) => {
   const { id, project, allowedToManage } = useCurrentProject()
   const revalidator = useRevalidator()
   const { performanceRefreshTrigger } = useRefreshTriggers()
@@ -132,13 +167,17 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
     }
     return { data: {} }
   })
-  const [chartData, setChartData] = useState<any>(() => deferredData.perfData?.chart || {})
-  const [overall, setOverall] = useState<Partial<OverallPerformanceObject>>(() => {
-    if (deferredData.perfOverallStats && id) {
-      return deferredData.perfOverallStats[id] || {}
-    }
-    return {}
-  })
+  const [chartData, setChartData] = useState<any>(
+    () => deferredData.perfData?.chart || {},
+  )
+  const [overall, setOverall] = useState<Partial<OverallPerformanceObject>>(
+    () => {
+      if (deferredData.perfOverallStats && id) {
+        return deferredData.perfOverallStats[id] || {}
+      }
+      return {}
+    },
+  )
 
   // Track if we've ever shown actual content to prevent NoEvents flash during exit animation
   const hasShownContentRef = useRef(false)
@@ -172,8 +211,10 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
   }, [revalidator.state, deferredData, id])
 
   // Get chart metrics and measure from URL params (SSR-friendly)
-  const activeChartMetrics = searchParams.get('perfMetric') || CHART_METRICS_MAPPING_PERF.timing
-  const activeMeasure = searchParams.get('measure') || CHART_MEASURES_MAPPING_PERF.median
+  const activeChartMetrics =
+    searchParams.get('perfMetric') || CHART_METRICS_MAPPING_PERF.timing
+  const activeMeasure =
+    searchParams.get('measure') || CHART_MEASURES_MAPPING_PERF.median
 
   // Update URL when changing chart metrics or measure
   const setActiveChartMetrics = (metric: string) => {
@@ -289,7 +330,9 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
   const createVersionDataMapping = useMemo(() => {
     const browserDataSource = panelsData.data?.brv
 
-    const browserVersions: { [key: string]: { name: string; count: number }[] } = {}
+    const browserVersions: {
+      [key: string]: { name: string; count: number }[]
+    } = {}
 
     if (browserDataSource) {
       browserDataSource.forEach((entry: any) => {
@@ -322,7 +365,13 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
     )
   }
 
-  const ChartTypeSwitcher = ({ type, onSwitch }: { type: string; onSwitch: (type: 'line' | 'bar') => void }) => {
+  const ChartTypeSwitcher = ({
+    type,
+    onSwitch,
+  }: {
+    type: string
+    onSwitch: (type: 'line' | 'bar') => void
+  }) => {
     if (type === chartTypes.bar) {
       return (
         <button
@@ -376,7 +425,10 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
   if (isMapFullscreen && fullscreenMapRef.current) {
     const countryData = panelsData.data?.cc || []
     const regionData = panelsData.data?.rg || []
-    const total = countryData.reduce((acc: number, curr: any) => acc + curr.count, 0)
+    const total = countryData.reduce(
+      (acc: number, curr: any) => acc + curr.count,
+      0,
+    )
 
     return createPortal(
       <Suspense
@@ -384,7 +436,9 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
           <div className='flex h-full flex-1 items-center justify-center'>
             <div className='flex flex-col items-center gap-2'>
               <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent' />
-              <span className='text-sm text-neutral-600 dark:text-neutral-300'>Loading map...</span>
+              <span className='text-sm text-neutral-600 dark:text-neutral-300'>
+                Loading map...
+              </span>
             </div>
           </div>
         }
@@ -410,14 +464,22 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
       <DashboardHeader />
       {dataLoading && !isPanelsDataEmpty ? <LoadingBar /> : null}
       <div className={cx({ hidden: isPanelsDataEmpty })}>
-        {!isPanelsDataEmpty ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
+        {!isPanelsDataEmpty ? (
+          <Filters className='mb-3' tnMapping={tnMapping} />
+        ) : null}
         <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
           <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
             <Dropdown
               items={chartMetrics}
               className='xs:min-w-0'
               header={t('main.metric')}
-              title={[<EyeIcon key='eye-icon' aria-label={t('project.metricVis')} className='h-5 w-5' />]}
+              title={[
+                <EyeIcon
+                  key='eye-icon'
+                  aria-label={t('project.metricVis')}
+                  className='h-5 w-5'
+                />,
+              ]}
               labelExtractor={(pair) => pair.label}
               keyExtractor={(pair) => pair.id}
               onSelect={({ id: pairID }) => {
@@ -428,11 +490,19 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
               headless
             />
             <Dropdown
-              disabled={activeChartMetrics === CHART_METRICS_MAPPING_PERF.quantiles}
+              disabled={
+                activeChartMetrics === CHART_METRICS_MAPPING_PERF.quantiles
+              }
               items={chartMeasures}
               className='xs:min-w-0'
               header={t('project.aggregation')}
-              title={[<PercentIcon key='percent-icon' aria-label={t('project.aggregation')} className='h-5 w-5' />]}
+              title={[
+                <PercentIcon
+                  key='percent-icon'
+                  aria-label={t('project.aggregation')}
+                  className='h-5 w-5'
+                />,
+              ]}
               labelExtractor={(pair) => pair.label}
               keyExtractor={(pair) => pair.id}
               onSelect={({ id: pairID }) => {
@@ -442,7 +512,10 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
               chevron='mini'
               headless
             />
-            <ChartTypeSwitcher onSwitch={setChartTypeOnClick} type={chartType} />
+            <ChartTypeSwitcher
+              onSwitch={setChartTypeOnClick}
+              type={chartType}
+            />
           </div>
 
           {!_isEmpty(overall) ? (
@@ -453,7 +526,10 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
             />
           ) : null}
           {activeChartMetrics && !_isEmpty(chartData) ? (
-            <div onContextMenu={(e) => handleChartContextMenu(e, chartData?.x)} className='relative'>
+            <div
+              onContextMenu={(e) => handleChartContextMenu(e, chartData?.x)}
+              className='relative'
+            >
               <PerformanceChart
                 chart={chartData}
                 timeBucket={timeBucket}
@@ -486,7 +562,13 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
                     const { name: entryName, cc } = entry
 
                     if (cc !== undefined) {
-                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
+                      return (
+                        <CCRow
+                          cc={cc}
+                          name={entryName || undefined}
+                          language={language}
+                        />
+                      )
                     }
 
                     return <CCRow cc={entryName} language={language} />
@@ -510,14 +592,19 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
                       data={panelsData.data[activeTabs.location]}
                       rowMapper={rowMapper}
                       // @ts-expect-error
-                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                      valueMapper={(value) =>
+                        getStringFromTime(getTimeFromSeconds(value), true)
+                      }
                       customRenderer={
                         activeTabs.location === 'map'
                           ? () => {
                               const countryData = panelsData.data?.cc || []
                               const regionData = panelsData.data?.rg || []
                               // @ts-expect-error
-                              const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
+                              const total = countryData.reduce(
+                                (acc, curr) => acc + curr.count,
+                                0,
+                              )
 
                               return (
                                 <Suspense
@@ -576,12 +663,24 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
                       }
                       activeTabId={activeTabs.device}
                       data={panelsData.data[activeTabs.device]}
-                      rowMapper={getDeviceRowMapper(activeTabs.device, theme, t)}
+                      rowMapper={getDeviceRowMapper(
+                        activeTabs.device,
+                        theme,
+                        t,
+                      )}
                       capitalize={activeTabs.device === 'dv'}
-                      versionData={activeTabs.device === 'br' ? createVersionDataMapping.browserVersions : undefined}
-                      getVersionFilterLink={(parent, version) => getVersionFilterLink(parent, version, 'br')}
+                      versionData={
+                        activeTabs.device === 'br'
+                          ? createVersionDataMapping.browserVersions
+                          : undefined
+                      }
+                      getVersionFilterLink={(parent, version) =>
+                        getVersionFilterLink(parent, version, 'br')
+                      }
                       // @ts-expect-error
-                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                      valueMapper={(value) =>
+                        getStringFromTime(getTimeFromSeconds(value), true)
+                      }
                       valuesHeaderName={t('project.loadTime')}
                       highlightColour='orange'
                     />
@@ -607,7 +706,9 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
                         if (!entryName) {
                           return (
                             <span className='italic'>
-                              {activeTabs.page === 'pg' ? t('common.notSet') : t('project.unknownHost')}
+                              {activeTabs.page === 'pg'
+                                ? t('common.notSet')
+                                : t('project.unknownHost')}
                             </span>
                           )
                         }
@@ -622,7 +723,12 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
 
                         // For page paths (pg tab), show with clickable link
                         if (activeTabs.page === 'pg' && project?.websiteUrl) {
-                          return <PageLinkRow pagePath={decodedUri} websiteUrl={project.websiteUrl} />
+                          return (
+                            <PageLinkRow
+                              pagePath={decodedUri}
+                              websiteUrl={project.websiteUrl}
+                            />
+                          )
                         }
 
                         return decodedUri
@@ -638,7 +744,9 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
                       activeTabId={activeTabs.page}
                       data={panelsData.data[activeTabs.page]}
                       // @ts-expect-error
-                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                      valueMapper={(value) =>
+                        getStringFromTime(getTimeFromSeconds(value), true)
+                      }
                       valuesHeaderName={t('project.loadTime')}
                       highlightColour='orange'
                     />
@@ -669,7 +777,11 @@ const PerformanceViewInner = ({ tnMapping, deferredData }: PerformanceViewInnerP
           }}
           onEditAnnotation={
             contextMenu.annotation
-              ? () => openAnnotationModal(contextMenu.annotation?.date, contextMenu.annotation!)
+              ? () =>
+                  openAnnotationModal(
+                    contextMenu.annotation?.date,
+                    contextMenu.annotation!,
+                  )
               : undefined
           }
           onDeleteAnnotation={

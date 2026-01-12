@@ -5,7 +5,12 @@ import { redirect, data } from 'react-router'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
-import { isSelfhosted, getOgImageUrl, isDisableMarketingPages, API_URL } from '~/lib/constants'
+import {
+  isSelfhosted,
+  getOgImageUrl,
+  isDisableMarketingPages,
+  API_URL,
+} from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
 import { getSlugFromFilename, getDateFromFilename } from '~/utils/blog'
 import { getPost } from '~/utils/getPosts.server'

@@ -1,4 +1,9 @@
-import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react'
+import {
+  Popover,
+  PopoverButton,
+  PopoverPanel,
+  Transition,
+} from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import cx from 'clsx'
 import _map from 'lodash/map'
@@ -21,7 +26,11 @@ export const SORT_OPTIONS = {
   DATE_DESC: 'date_desc',
 } as const
 
-export const SortSelector = ({ activeSort, setActiveSort, isLoading }: SortSelectorProps) => {
+export const SortSelector = ({
+  activeSort,
+  setActiveSort,
+  isLoading,
+}: SortSelectorProps) => {
   const { t } = useTranslation('common')
 
   const { isLoading: authLoading } = useAuth()

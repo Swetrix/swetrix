@@ -161,9 +161,10 @@ export const getNextPlan = (planCode: PlanCode): PlanSignature | undefined => {
 
   Object.values(ACCOUNT_PLANS)
     .filter(
-      plan => ![PlanCode.free, PlanCode.trial, PlanCode.none].includes(plan.id),
+      (plan) =>
+        ![PlanCode.free, PlanCode.trial, PlanCode.none].includes(plan.id),
     )
-    .some(plan => {
+    .some((plan) => {
       if (plan.monthlyUsageLimit > currentLimit) {
         nextPlan = plan
         return true
@@ -319,13 +320,13 @@ export class User {
 
   /* Relations */
 
-  @OneToMany(() => Project, project => project.admin)
+  @OneToMany(() => Project, (project) => project.admin)
   projects: Project[]
 
-  @OneToMany(() => ProjectShare, sharedProjects => sharedProjects.user)
+  @OneToMany(() => ProjectShare, (sharedProjects) => sharedProjects.user)
   sharedProjects: ProjectShare[]
 
-  @OneToMany(() => ActionToken, actionToken => actionToken.user)
+  @OneToMany(() => ActionToken, (actionToken) => actionToken.user)
   actionTokens: ActionToken[]
 
   @Column({
@@ -421,10 +422,10 @@ export class User {
   @Column({ default: false })
   registeredWithGithub: boolean
 
-  @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
+  @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
   @JoinTable()
   refreshTokens: RefreshToken[]
 
-  @OneToMany(() => OrganisationMember, membership => membership.user)
+  @OneToMany(() => OrganisationMember, (membership) => membership.user)
   organisationMemberships: OrganisationMember[]
 }

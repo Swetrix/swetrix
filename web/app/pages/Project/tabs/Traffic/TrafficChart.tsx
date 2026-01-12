@@ -100,5 +100,13 @@ export const TrafficChart = ({
     ],
   )
 
-  return <MainChart chartId='traffic-chart' options={options} dataNames={dataNames} className={className} deps={deps} />
+  return (
+    <MainChart
+      chartId='traffic-chart'
+      options={options}
+      dataNames={dataNames}
+      className={className}
+      deps={deps}
+    />
+  )
 }

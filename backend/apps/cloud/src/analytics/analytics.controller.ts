@@ -908,7 +908,7 @@ export class AnalyticsController {
 
     const validPids = []
 
-    const validationPromises = _map(pidsArray, async currentPID => {
+    const validationPromises = _map(pidsArray, async (currentPID) => {
       await this.analyticsService.checkProjectAccess(
         currentPID,
         uid,
@@ -970,7 +970,7 @@ export class AnalyticsController {
       measure = DEFAULT_MEASURE
     }
 
-    const validationPromises = _map(pidsArray, async currentPID => {
+    const validationPromises = _map(pidsArray, async (currentPID) => {
       await this.analyticsService.checkProjectAccess(
         currentPID,
         uid,
@@ -1033,7 +1033,7 @@ export class AnalyticsController {
 
     const validPids = []
 
-    const validationPromises = _map(pidsArray, async currentPID => {
+    const validationPromises = _map(pidsArray, async (currentPID) => {
       await this.analyticsService.checkProjectAccess(
         currentPID,
         uid,
@@ -1060,12 +1060,12 @@ export class AnalyticsController {
 
     const result = {}
 
-    const keyCountPromises = _map(validPids, async currentPID => {
+    const keyCountPromises = _map(validPids, async (currentPID) => {
       result[currentPID] =
         await this.analyticsService.getOnlineUserCount(currentPID)
     })
 
-    await Promise.all(keyCountPromises).catch(reason => {
+    await Promise.all(keyCountPromises).catch((reason) => {
       this.logger.error(`[GET /analytics/hb] ${reason}`)
       throw new InternalServerErrorException(
         'An error occured while calculating heartbeat statistics',
@@ -1143,7 +1143,7 @@ export class AnalyticsController {
           since,
         },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     return data
   }

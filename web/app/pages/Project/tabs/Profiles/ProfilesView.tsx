@@ -6,15 +6,32 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
 import { ApiProfile } from '~/api/api.server'
-import { useProfilesProxy, useProfileProxy, useProfileSessionsProxy } from '~/hooks/useAnalyticsProxy'
-import { Profile, ProfileDetails as ProfileDetailsType, Session } from '~/lib/models/Project'
+import {
+  useProfilesProxy,
+  useProfileProxy,
+  useProfileSessionsProxy,
+} from '~/hooks/useAnalyticsProxy'
+import {
+  Profile,
+  ProfileDetails as ProfileDetailsType,
+  Session,
+} from '~/lib/models/Project'
 import NoProfiles from '~/pages/Project/tabs/Profiles/components/NoProfiles'
 import { ProfileDetails } from '~/pages/Project/tabs/Profiles/ProfileDetails'
-import { Profiles, ProfilesFilter } from '~/pages/Project/tabs/Profiles/Profiles'
+import {
+  Profiles,
+  ProfilesFilter,
+} from '~/pages/Project/tabs/Profiles/Profiles'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
+import {
+  useViewProjectContext,
+  useRefreshTriggers,
+} from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import {
+  useCurrentProject,
+  useProjectPassword,
+} from '~/providers/CurrentProjectProvider'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 
@@ -45,7 +62,8 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
   const { id, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const { profilesRefreshTrigger } = useRefreshTriggers()
-  const { timezone, period, dateRange, filters, timeFormat } = useViewProjectContext()
+  const { timezone, period, dateRange, filters, timeFormat } =
+    useViewProjectContext()
   const { t } = useTranslation('common')
   const [searchParams] = useSearchParams()
   const profilesProxy = useProfilesProxy()
@@ -57,13 +75,20 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
   const [canLoadMoreProfiles, setCanLoadMoreProfiles] = useState(false)
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [profilesLoading, setProfilesLoading] = useState<boolean | null>(null)
-  const [activeProfile, setActiveProfile] = useState<ProfileDetailsType | null>(null)
+  const [activeProfile, setActiveProfile] = useState<ProfileDetailsType | null>(
+    null,
+  )
   const [profileLoading, setProfileLoading] = useState(false)
   const [profileSessions, setProfileSessions] = useState<Session[]>([])
-  const [profileSessionsLoading, setProfileSessionsLoading] = useState<boolean | null>(null)
+  const [profileSessionsLoading, setProfileSessionsLoading] = useState<
+    boolean | null
+  >(null)
   const [profileSessionsSkip, setProfileSessionsSkip] = useState(0)
-  const [canLoadMoreProfileSessions, setCanLoadMoreProfileSessions] = useState(false)
-  const [profileTypeFilter, setProfileTypeFilter] = useState<'all' | 'anonymous' | 'identified'>('all')
+  const [canLoadMoreProfileSessions, setCanLoadMoreProfileSessions] =
+    useState(false)
+  const [profileTypeFilter, setProfileTypeFilter] = useState<
+    'all' | 'anonymous' | 'identified'
+  >('all')
 
   const activeProfileId = useMemo(() => {
     return searchParams.get('profileId')
@@ -114,7 +139,9 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       })
 
       if (requestId === profilesRequestIdRef.current && isMountedRef.current) {
-        const profilesList = (dataProfiles?.profiles || []).map(mapApiProfileToUI)
+        const profilesList = (dataProfiles?.profiles || []).map(
+          mapApiProfileToUI,
+        )
         if (override) {
           setProfiles(profilesList)
         } else {
@@ -127,14 +154,20 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
           return SESSIONS_TAKE + prev
         })
 
-        if (!dataProfiles?.profiles || dataProfiles.profiles.length < SESSIONS_TAKE) {
+        if (
+          !dataProfiles?.profiles ||
+          dataProfiles.profiles.length < SESSIONS_TAKE
+        ) {
           setCanLoadMoreProfiles(false)
         } else {
           setCanLoadMoreProfiles(true)
         }
       }
     } catch (reason) {
-      console.error('[ERROR](loadProfiles) Loading profiles data failed:', reason)
+      console.error(
+        '[ERROR](loadProfiles) Loading profiles data failed:',
+        reason,
+      )
     } finally {
       if (requestId === profilesRequestIdRef.current && isMountedRef.current) {
         setProfilesLoading(false)
@@ -144,7 +177,8 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
 
   const loadProfile = async (profileId: string) => {
     const requestId = ++profileRequestIdRef.current
-    const hasExistingProfileData = !!activeProfile && activeProfile.profileId === profileId
+    const hasExistingProfileData =
+      !!activeProfile && activeProfile.profileId === profileId
 
     setProfileLoading(true)
     // Avoid flicker on refresh: keep currently displayed details/sessions while we refetch.
@@ -171,7 +205,11 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
         timezone,
       })
 
-      if (requestId === profileRequestIdRef.current && isMountedRef.current && data) {
+      if (
+        requestId === profileRequestIdRef.current &&
+        isMountedRef.current &&
+        data
+      ) {
         setActiveProfile(data as unknown as ProfileDetailsType)
         // Load initial sessions for the profile (override existing on refresh)
         loadProfileSessionsData(profileId, 0, true)
@@ -188,7 +226,11 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     }
   }
 
-  const loadProfileSessionsData = async (profileId: string, forcedSkip?: number, override?: boolean) => {
+  const loadProfileSessionsData = async (
+    profileId: string,
+    forcedSkip?: number,
+    override?: boolean,
+  ) => {
     if (profileSessionsLoading) {
       return
     }
@@ -197,7 +239,8 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     setProfileSessionsLoading(true)
 
     try {
-      const skip = typeof forcedSkip === 'number' ? forcedSkip : profileSessionsSkip
+      const skip =
+        typeof forcedSkip === 'number' ? forcedSkip : profileSessionsSkip
       let from = ''
       let to = ''
 
@@ -206,18 +249,26 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
         to = getFormatDate(dateRange[1])
       }
 
-      const dataSessions = await profileSessionsProxy.fetchProfileSessions(id, profileId, {
-        period: period === 'custom' && dateRange ? '' : period,
-        filters,
-        from,
-        to,
-        take: SESSIONS_TAKE,
-        skip,
-        timezone,
-      })
+      const dataSessions = await profileSessionsProxy.fetchProfileSessions(
+        id,
+        profileId,
+        {
+          period: period === 'custom' && dateRange ? '' : period,
+          filters,
+          from,
+          to,
+          take: SESSIONS_TAKE,
+          skip,
+          timezone,
+        },
+      )
 
-      if (requestId === profileSessionsRequestIdRef.current && isMountedRef.current) {
-        const sessionsList = (dataSessions?.sessions || []) as unknown as Session[]
+      if (
+        requestId === profileSessionsRequestIdRef.current &&
+        isMountedRef.current
+      ) {
+        const sessionsList = (dataSessions?.sessions ||
+          []) as unknown as Session[]
         if (override) {
           setProfileSessions(sessionsList)
         } else {
@@ -230,16 +281,25 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
           return SESSIONS_TAKE + prev
         })
 
-        if (!dataSessions?.sessions || dataSessions.sessions.length < SESSIONS_TAKE) {
+        if (
+          !dataSessions?.sessions ||
+          dataSessions.sessions.length < SESSIONS_TAKE
+        ) {
           setCanLoadMoreProfileSessions(false)
         } else {
           setCanLoadMoreProfileSessions(true)
         }
       }
     } catch (reason) {
-      console.error('[ERROR](loadProfileSessions) Loading profile sessions failed:', reason)
+      console.error(
+        '[ERROR](loadProfileSessions) Loading profile sessions failed:',
+        reason,
+      )
     } finally {
-      if (requestId === profileSessionsRequestIdRef.current && isMountedRef.current) {
+      if (
+        requestId === profileSessionsRequestIdRef.current &&
+        isMountedRef.current
+      ) {
         setProfileSessionsLoading(false)
       }
     }
@@ -260,7 +320,17 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     setProfilesSkip(0)
     loadProfiles(0, true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateRange, filters, id, period, projectPassword, timezone, project, activeProfileId, profileTypeFilter])
+  }, [
+    dateRange,
+    filters,
+    id,
+    period,
+    projectPassword,
+    timezone,
+    project,
+    activeProfileId,
+    profileTypeFilter,
+  ])
 
   // Load single profile when profileId is set
   useEffect(() => {
@@ -340,7 +410,9 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     <>
       <DashboardHeader showLiveVisitors />
       {profilesLoading && !_isEmpty(profiles) ? <LoadingBar /> : null}
-      {!_isEmpty(profiles) ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
+      {!_isEmpty(profiles) ? (
+        <Filters className='mb-3' tnMapping={tnMapping} />
+      ) : null}
       <ProfilesFilter
         profileType={profileTypeFilter}
         onProfileTypeChange={(type) => {
@@ -348,8 +420,12 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
           setProfilesSkip(0)
         }}
       />
-      {(profilesLoading === null || profilesLoading) && _isEmpty(profiles) ? <Loader /> : null}
-      {typeof profilesLoading === 'boolean' && !profilesLoading && _isEmpty(profiles) ? (
+      {(profilesLoading === null || profilesLoading) && _isEmpty(profiles) ? (
+        <Loader />
+      ) : null}
+      {typeof profilesLoading === 'boolean' &&
+      !profilesLoading &&
+      _isEmpty(profiles) ? (
         <NoProfiles filters={filters} />
       ) : null}
       <Profiles profiles={profiles} timeFormat={timeFormat} />
@@ -361,7 +437,8 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
           className={cx(
             'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
             {
-              'cursor-not-allowed opacity-50': profilesLoading || profilesLoading === null,
+              'cursor-not-allowed opacity-50':
+                profilesLoading || profilesLoading === null,
               hidden: profilesLoading && _isEmpty(profiles),
             },
           )}

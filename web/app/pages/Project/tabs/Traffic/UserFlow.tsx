@@ -18,7 +18,8 @@ interface UserFlowProps {
 }
 
 const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
-  const { dateRange, period, timeBucket, timezone, filters } = useViewProjectContext()
+  const { dateRange, period, timeBucket, timezone, filters } =
+    useViewProjectContext()
   const { id } = useCurrentProject()
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
@@ -59,7 +60,11 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
         })
       }
     } catch (error: any) {
-      toast.error(typeof error === 'string' ? error : t('apiNotifications.somethingWentWrong'))
+      toast.error(
+        typeof error === 'string'
+          ? error
+          : t('apiNotifications.somethingWentWrong'),
+      )
     } finally {
       setIsLoading(false)
     }
@@ -76,8 +81,12 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
 
   if (
     !isReversed
-      ? _isEmpty(userFlow?.ascending) || _isEmpty(userFlow?.ascending?.nodes) || _isEmpty(userFlow?.ascending?.links)
-      : _isEmpty(userFlow?.descending) || _isEmpty(userFlow?.descending?.links) || _isEmpty(userFlow?.descending?.nodes)
+      ? _isEmpty(userFlow?.ascending) ||
+        _isEmpty(userFlow?.ascending?.nodes) ||
+        _isEmpty(userFlow?.ascending?.links)
+      : _isEmpty(userFlow?.descending) ||
+        _isEmpty(userFlow?.descending?.links) ||
+        _isEmpty(userFlow?.descending?.nodes)
   ) {
     return (
       <>

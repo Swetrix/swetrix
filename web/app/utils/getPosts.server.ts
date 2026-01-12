@@ -5,7 +5,12 @@ import sanitizeHtml from 'sanitize-html'
 import { getBlogPost, getBlogPostWithCategory } from '~/api/api.server'
 
 import { renderTimeToSwitchCta, renderDitchGoogleCta } from './renderCtaHtml'
-import { extractTableOfContents, ensureHeaderIds, generateSlug, renderTocAsHtml } from './toc'
+import {
+  extractTableOfContents,
+  ensureHeaderIds,
+  generateSlug,
+  renderTocAsHtml,
+} from './toc'
 
 const renderer = new marked.Renderer()
 
@@ -133,7 +138,9 @@ const ALERT_CONFIGS = {
 type AlertType = keyof typeof ALERT_CONFIGS
 
 renderer.blockquote = ({ text }: Tokens.Blockquote) => {
-  const alertMatch = text.match(/^\s*(?:<p>)?\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:<br\s*\/?>|\n)?(?:<\/p>)?\s*/i)
+  const alertMatch = text.match(
+    /^\s*(?:<p>)?\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:<br\s*\/?>|\n)?(?:<\/p>)?\s*/i,
+  )
 
   if (alertMatch) {
     const alertType = alertMatch[1].toUpperCase() as AlertType
@@ -158,7 +165,10 @@ renderer.blockquote = ({ text }: Tokens.Blockquote) => {
 }
 
 function replaceEmojiWithIcons(html: string): string {
-  return html.replace(/✅/g, CHECK_ICON_SVG).replace(/❌/g, CROSS_ICON_SVG).replace(/⚠️/g, WARNING_ICON_SVG)
+  return html
+    .replace(/✅/g, CHECK_ICON_SVG)
+    .replace(/❌/g, CROSS_ICON_SVG)
+    .replace(/⚠️/g, WARNING_ICON_SVG)
 }
 
 function replaceSwetrixLogo(html: string): string {

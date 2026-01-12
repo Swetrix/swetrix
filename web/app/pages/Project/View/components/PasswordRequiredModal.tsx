@@ -17,7 +17,10 @@ interface PasswordRequiredModalProps {
   onSubmit: (password: string) => Promise<{ success: boolean; error?: string }>
 }
 
-const PasswordRequiredModal = ({ isOpen, onSubmit }: PasswordRequiredModalProps) => {
+const PasswordRequiredModal = ({
+  isOpen,
+  onSubmit,
+}: PasswordRequiredModalProps) => {
   const { t } = useTranslation('common')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -83,7 +86,9 @@ const PasswordRequiredModal = ({ isOpen, onSubmit }: PasswordRequiredModalProps)
             <h3 className='mt-4 text-lg font-semibold text-gray-900 dark:text-gray-50'>
               {t('titles.passwordProtected')}
             </h3>
-            <p className='mt-2 text-sm text-gray-600 dark:text-gray-400'>{t('project.passwordProtectedHint')}</p>
+            <p className='mt-2 text-sm text-gray-600 dark:text-gray-400'>
+              {t('project.passwordProtectedHint')}
+            </p>
           </div>
 
           <Input

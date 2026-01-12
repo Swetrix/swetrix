@@ -6,7 +6,10 @@ import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import { DOCS_URL } from '~/lib/constants'
-import type { ProjectSettingsActionData, RevenueStatus } from '~/routes/projects.settings.$id'
+import type {
+  ProjectSettingsActionData,
+  RevenueStatus,
+} from '~/routes/projects.settings.$id'
 import Button from '~/ui/Button'
 import PaddleSVG from '~/ui/icons/Paddle'
 import StripeSVG from '~/ui/icons/Stripe'
@@ -85,15 +88,27 @@ const Revenue = ({ projectId }: Props) => {
   const [status, setStatus] = useState<RevenueStatus | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [apiKey, setApiKey] = useState('')
-  const [selectedProvider, setSelectedProvider] = useState<RevenueProvider>('stripe')
-  const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'EUR' | 'GBP'>('USD')
+  const [selectedProvider, setSelectedProvider] =
+    useState<RevenueProvider>('stripe')
+  const [selectedCurrency, setSelectedCurrency] = useState<
+    'USD' | 'EUR' | 'GBP'
+  >('USD')
 
-  const isConnecting = fetcher.state !== 'idle' && fetcher.formData?.get('intent') === 'connect-revenue'
-  const isDisconnecting = fetcher.state !== 'idle' && fetcher.formData?.get('intent') === 'disconnect-revenue'
-  const isSavingCurrency = fetcher.state !== 'idle' && fetcher.formData?.get('intent') === 'update-revenue-currency'
+  const isConnecting =
+    fetcher.state !== 'idle' &&
+    fetcher.formData?.get('intent') === 'connect-revenue'
+  const isDisconnecting =
+    fetcher.state !== 'idle' &&
+    fetcher.formData?.get('intent') === 'disconnect-revenue'
+  const isSavingCurrency =
+    fetcher.state !== 'idle' &&
+    fetcher.formData?.get('intent') === 'update-revenue-currency'
 
   useEffect(() => {
-    fetcher.submit({ intent: 'get-revenue-status' }, { method: 'POST', action: `/projects/settings/${projectId}` })
+    fetcher.submit(
+      { intent: 'get-revenue-status' },
+      { method: 'POST', action: `/projects/settings/${projectId}` },
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
@@ -105,7 +120,10 @@ const Revenue = ({ projectId }: Props) => {
         setIsLoading(false)
         if (success && revenueStatus) {
           setStatus(revenueStatus)
-          if (revenueStatus.provider === 'stripe' || revenueStatus.provider === 'paddle') {
+          if (
+            revenueStatus.provider === 'stripe' ||
+            revenueStatus.provider === 'paddle'
+          ) {
             setSelectedProvider(revenueStatus.provider)
           }
           if (
@@ -139,7 +157,9 @@ const Revenue = ({ projectId }: Props) => {
       } else if (intent === 'update-revenue-currency') {
         if (success) {
           toast.success(t('project.settings.revenue.currencyUpdated'))
-          setStatus((prev) => (prev ? { ...prev, currency: selectedCurrency } : prev))
+          setStatus((prev) =>
+            prev ? { ...prev, currency: selectedCurrency } : prev,
+          )
         } else if (error) {
           toast.error(error)
         }
@@ -154,13 +174,21 @@ const Revenue = ({ projectId }: Props) => {
     }
 
     fetcher.submit(
-      { intent: 'connect-revenue', provider: selectedProvider, apiKey, currency: selectedCurrency },
+      {
+        intent: 'connect-revenue',
+        provider: selectedProvider,
+        apiKey,
+        currency: selectedCurrency,
+      },
       { method: 'POST', action: `/projects/settings/${projectId}` },
     )
   }
 
   const handleDisconnect = () => {
-    fetcher.submit({ intent: 'disconnect-revenue' }, { method: 'POST', action: `/projects/settings/${projectId}` })
+    fetcher.submit(
+      { intent: 'disconnect-revenue' },
+      { method: 'POST', action: `/projects/settings/${projectId}` },
+    )
   }
 
   const handleCurrencyChange = () => {
@@ -183,8 +211,12 @@ const Revenue = ({ projectId }: Props) => {
   const providerConfig = PROVIDER_CONFIG[selectedProvider]
   const isConnected = Boolean(status?.connected)
   const connectedProvider = status?.provider as RevenueProvider | undefined
-  const connectedProviderConfig = connectedProvider ? PROVIDER_CONFIG[connectedProvider] : null
-  const selectedProviderItem = PROVIDER_ITEMS.find((p) => p.id === selectedProvider)
+  const connectedProviderConfig = connectedProvider
+    ? PROVIDER_CONFIG[connectedProvider]
+    : null
+  const selectedProviderItem = PROVIDER_ITEMS.find(
+    (p) => p.id === selectedProvider,
+  )
 
   return (
     <div>
@@ -203,7 +235,11 @@ const Revenue = ({ projectId }: Props) => {
             {t('project.settings.revenue.paymentProvider')}
           </Text>
           {isConnected ? (
-            <Text size='sm' colour='success' className='ml-auto flex items-center gap-1'>
+            <Text
+              size='sm'
+              colour='success'
+              className='ml-auto flex items-center gap-1'
+            >
               <CheckCircleIcon className='h-4 w-4' />
               {t('common.connected')}
             </Text>
@@ -221,7 +257,9 @@ const Revenue = ({ projectId }: Props) => {
 
             {status?.lastSyncAt ? (
               <Text as='p' size='sm' colour='muted'>
-                {t('project.settings.revenue.lastSync', { date: new Date(status.lastSyncAt).toLocaleString() })}{' '}
+                {t('project.settings.revenue.lastSync', {
+                  date: new Date(status.lastSyncAt).toLocaleString(),
+                })}{' '}
               </Text>
             ) : null}
 
@@ -271,7 +309,8 @@ const Revenue = ({ projectId }: Props) => {
                         rel='noreferrer noopener'
                         className='inline-flex items-center font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                       >
-                        {providerConfig.label} {t('project.settings.revenue.dashboard')}
+                        {providerConfig.label}{' '}
+                        {t('project.settings.revenue.dashboard')}
                         <ArrowUpRightIcon className='ml-0.5 h-3 w-3' />
                       </a>
                     </Text>
@@ -285,7 +324,14 @@ const Revenue = ({ projectId }: Props) => {
               />
             </div>
 
-            <Button type='button' className='max-w-max' onClick={handleConnect} loading={isConnecting} primary regular>
+            <Button
+              type='button'
+              className='max-w-max'
+              onClick={handleConnect}
+              loading={isConnecting}
+              primary
+              regular
+            >
               {t('common.connect')}
             </Button>
           </div>
@@ -307,8 +353,12 @@ const Revenue = ({ projectId }: Props) => {
             title={`${selectedCurrency} – ${SUPPORTED_CURRENCIES.find((c) => c.code === selectedCurrency)?.name} (${SUPPORTED_CURRENCIES.find((c) => c.code === selectedCurrency)?.symbol})`}
             items={SUPPORTED_CURRENCIES}
             keyExtractor={(item) => item.code}
-            labelExtractor={(item) => `${item.code} – ${item.name} (${item.symbol})`}
-            selectedItem={SUPPORTED_CURRENCIES.find((c) => c.code === selectedCurrency)}
+            labelExtractor={(item) =>
+              `${item.code} – ${item.name} (${item.symbol})`
+            }
+            selectedItem={SUPPORTED_CURRENCIES.find(
+              (c) => c.code === selectedCurrency,
+            )}
             onSelect={(item: { code: string; name: string; symbol: string }) =>
               setSelectedCurrency(item.code as 'USD' | 'EUR' | 'GBP')
             }

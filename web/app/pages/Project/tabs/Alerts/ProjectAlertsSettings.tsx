@@ -1,4 +1,7 @@
-import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import {
+  ExclamationTriangleIcon,
+  XCircleIcon,
+} from '@heroicons/react/24/outline'
 import _findKey from 'lodash/findKey'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
@@ -77,7 +80,9 @@ const ProjectAlertsSettings = ({
     }
 
     return Boolean(
-      (user.telegramChatId && user.isTelegramChatIdConfirmed) || user.slackWebhookUrl || user.discordWebhookUrl,
+      (user.telegramChatId && user.isTelegramChatIdConfirmed) ||
+      user.slackWebhookUrl ||
+      user.discordWebhookUrl,
     )
   }, [user])
 
@@ -123,7 +128,10 @@ const ProjectAlertsSettings = ({
 
     if (alertId && isSettings) {
       setIsLoading(true)
-      fetcher.submit({ intent: 'get-alert', alertId }, { method: 'POST', action: `/projects/${projectId}` })
+      fetcher.submit(
+        { intent: 'get-alert', alertId },
+        { method: 'POST', action: `/projects/${projectId}` },
+      )
     } else {
       setIsLoading(false)
     }
@@ -205,7 +213,10 @@ const ProjectAlertsSettings = ({
   }, [form.queryMetric])
 
   useEffect(() => {
-    if (form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent) {
+    if (
+      form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
+      form.alertOnEveryCustomEvent
+    ) {
       setForm((prevForm) => ({
         ...prevForm,
         queryCondition: undefined,
@@ -222,15 +233,24 @@ const ProjectAlertsSettings = ({
       allErrors.name = t('alert.noNameError')
     }
 
-    if (form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && _isEmpty(form.queryCustomEvent)) {
+    if (
+      form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
+      _isEmpty(form.queryCustomEvent)
+    ) {
       allErrors.queryCustomEvent = t('alert.noCustomEventError')
     }
 
     if (
       form.queryMetric !== QUERY_METRIC.ERRORS &&
-      !(form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent)
+      !(
+        form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
+        form.alertOnEveryCustomEvent
+      )
     ) {
-      if (form.queryValue === undefined || Number.isNaN(_toNumber(form.queryValue))) {
+      if (
+        form.queryValue === undefined ||
+        Number.isNaN(_toNumber(form.queryValue))
+      ) {
         allErrors.queryValue = t('alert.queryValueError')
       }
     }
@@ -244,12 +264,18 @@ const ProjectAlertsSettings = ({
 
   const shouldIncludeQueryFields =
     form.queryMetric !== QUERY_METRIC.ERRORS &&
-    !(form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent)
+    !(
+      form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
+      form.alertOnEveryCustomEvent
+    )
 
   const onDeleteAlert = () => {
     if (!alertId || fetcher.state !== 'idle') return
 
-    fetcher.submit({ intent: 'delete-alert', alertId }, { method: 'POST', action: `/projects/${projectId}` })
+    fetcher.submit(
+      { intent: 'delete-alert', alertId },
+      { method: 'POST', action: `/projects/${projectId}` },
+    )
   }
 
   useEffect(() => {
@@ -294,7 +320,10 @@ const ProjectAlertsSettings = ({
       <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
         <div className='mx-auto max-w-max'>
           <main className='sm:flex'>
-            <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
+            <XCircleIcon
+              className='h-12 w-12 text-red-400'
+              aria-hidden='true'
+            />
             <div className='sm:ml-6'>
               <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
                 <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
@@ -335,17 +364,41 @@ const ProjectAlertsSettings = ({
         showRefreshButton={false}
         showPeriodSelector={false}
         leftContent={
-          <Text as='h2' size='xl' weight='bold' className='wrap-break-word break-all'>
+          <Text
+            as='h2'
+            size='xl'
+            weight='bold'
+            className='wrap-break-word break-all'
+          >
             {title}
           </Text>
         }
       />
-      <fetcher.Form method='POST' action={`/projects/${projectId}`} className='w-full pb-4' onSubmit={handleSubmit}>
-        <input type='hidden' name='intent' value={isSettings && alertId ? 'update-alert' : 'create-alert'} />
-        {isSettings && alertId ? <input type='hidden' name='alertId' value={alertId} /> : null}
-        <input type='hidden' name='queryMetric' value={form.queryMetric || QUERY_METRIC.PAGE_VIEWS} />
+      <fetcher.Form
+        method='POST'
+        action={`/projects/${projectId}`}
+        className='w-full pb-4'
+        onSubmit={handleSubmit}
+      >
+        <input
+          type='hidden'
+          name='intent'
+          value={isSettings && alertId ? 'update-alert' : 'create-alert'}
+        />
+        {isSettings && alertId ? (
+          <input type='hidden' name='alertId' value={alertId} />
+        ) : null}
+        <input
+          type='hidden'
+          name='queryMetric'
+          value={form.queryMetric || QUERY_METRIC.PAGE_VIEWS}
+        />
         {shouldIncludeQueryFields && form.queryCondition ? (
-          <input type='hidden' name='queryCondition' value={form.queryCondition} />
+          <input
+            type='hidden'
+            name='queryCondition'
+            value={form.queryCondition}
+          />
         ) : null}
         {shouldIncludeQueryFields && form.queryTime ? (
           <input type='hidden' name='queryTime' value={form.queryTime} />
@@ -358,7 +411,12 @@ const ProjectAlertsSettings = ({
               t={t}
               i18nKey='alert.noIntegration'
               components={{
-                url: <Link to={INTEGRATIONS_LINK} className='text-blue-600 hover:underline dark:text-blue-500' />,
+                url: (
+                  <Link
+                    to={INTEGRATIONS_LINK}
+                    className='text-blue-600 hover:underline dark:text-blue-500'
+                  />
+                ),
               }}
             />
           </div>
@@ -392,9 +450,14 @@ const ProjectAlertsSettings = ({
             id='queryMetric'
             label={t('alert.metric')}
             items={_values(queryMetricTMapping)}
-            title={form.queryMetric ? queryMetricTMapping[form.queryMetric] : ''}
+            title={
+              form.queryMetric ? queryMetricTMapping[form.queryMetric] : ''
+            }
             onSelect={(item) => {
-              const key = _findKey(queryMetricTMapping, (predicate) => predicate === item)
+              const key = _findKey(
+                queryMetricTMapping,
+                (predicate) => predicate === item,
+              )
 
               // @ts-expect-error
               setForm((prevForm) => ({
@@ -403,7 +466,11 @@ const ProjectAlertsSettings = ({
               }))
             }}
             capitalise
-            selectedItem={form.queryMetric ? queryMetricTMapping[form.queryMetric] : undefined}
+            selectedItem={
+              form.queryMetric
+                ? queryMetricTMapping[form.queryMetric]
+                : undefined
+            }
           />
         </div>
         {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS ? (
@@ -452,16 +519,26 @@ const ProjectAlertsSettings = ({
           />
         ) : null}
         {form.queryMetric !== QUERY_METRIC.ERRORS &&
-        !(form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent) ? (
+        !(
+          form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
+          form.alertOnEveryCustomEvent
+        ) ? (
           <>
             <div className='mt-4'>
               <Select
                 id='queryCondition'
                 label={t('alert.condition')}
                 items={_values(queryConditionTMapping)}
-                title={form.queryCondition ? queryConditionTMapping[form.queryCondition] : ''}
+                title={
+                  form.queryCondition
+                    ? queryConditionTMapping[form.queryCondition]
+                    : ''
+                }
                 onSelect={(item) => {
-                  const key = _findKey(queryConditionTMapping, (predicate) => predicate === item)
+                  const key = _findKey(
+                    queryConditionTMapping,
+                    (predicate) => predicate === item,
+                  )
 
                   // @ts-expect-error
                   setForm((prevForm) => ({
@@ -470,7 +547,11 @@ const ProjectAlertsSettings = ({
                   }))
                 }}
                 capitalise
-                selectedItem={form.queryCondition ? queryConditionTMapping[form.queryCondition] : undefined}
+                selectedItem={
+                  form.queryCondition
+                    ? queryConditionTMapping[form.queryCondition]
+                    : undefined
+                }
               />
             </div>
             <Input
@@ -489,7 +570,10 @@ const ProjectAlertsSettings = ({
                 items={_values(queryTimeTMapping)}
                 title={form.queryTime ? queryTimeTMapping[form.queryTime] : ''}
                 onSelect={(item) => {
-                  const key = _findKey(queryTimeTMapping, (predicate) => predicate === item)
+                  const key = _findKey(
+                    queryTimeTMapping,
+                    (predicate) => predicate === item,
+                  )
 
                   // @ts-expect-error
                   setForm((prevForm) => ({
@@ -498,7 +582,9 @@ const ProjectAlertsSettings = ({
                   }))
                 }}
                 capitalise
-                selectedItem={form.queryTime ? queryTimeTMapping[form.queryTime] : undefined}
+                selectedItem={
+                  form.queryTime ? queryTimeTMapping[form.queryTime] : undefined
+                }
               />
             </div>
           </>

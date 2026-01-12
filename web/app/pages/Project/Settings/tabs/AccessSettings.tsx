@@ -29,7 +29,9 @@ const AccessSettings = ({
 
   return (
     <>
-      <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.settings.access')}</h3>
+      <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+        {t('project.settings.access')}
+      </h3>
       <Checkbox
         checked={Boolean(form.active)}
         onChange={(checked) =>
@@ -104,8 +106,12 @@ const AccessSettings = ({
               }))
             }}
             label={t('project.settings.organisation')}
-            title={organisations.find((org) => org.id === form.organisationId)?.name}
-            selectedItem={organisations.find((org) => org.id === form.organisationId)}
+            title={
+              organisations.find((org) => org.id === form.organisationId)?.name
+            }
+            selectedItem={organisations.find(
+              (org) => org.id === form.organisationId,
+            )}
           />
         </div>
       ) : null}

@@ -11,7 +11,12 @@ interface GoogleAuthProps {
   disabled?: boolean
 }
 
-const GoogleAuth = ({ onClick, isMiniButton, className, disabled }: GoogleAuthProps) => {
+const GoogleAuth = ({
+  onClick,
+  isMiniButton,
+  className,
+  disabled,
+}: GoogleAuthProps) => {
   const { t } = useTranslation()
 
   if (isMiniButton) {

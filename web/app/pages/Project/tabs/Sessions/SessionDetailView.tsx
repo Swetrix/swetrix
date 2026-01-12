@@ -3,19 +3,36 @@ import _capitalize from 'lodash/capitalize'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
-import { GlobeIcon, MonitorIcon, SmartphoneIcon, TabletIcon, ClockIcon, LinkIcon, UserIcon } from 'lucide-react'
+import {
+  GlobeIcon,
+  MonitorIcon,
+  SmartphoneIcon,
+  TabletIcon,
+  ClockIcon,
+  LinkIcon,
+  UserIcon,
+} from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK, PROJECT_TABS } from '~/lib/constants'
+import {
+  BROWSER_LOGO_MAP,
+  OS_LOGO_MAP,
+  OS_LOGO_MAP_DARK,
+  PROJECT_TABS,
+} from '~/lib/constants'
 import { SessionDetails as SessionDetailsType } from '~/lib/models/Project'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Loader from '~/ui/Loader'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
-import { getLocaleDisplayName, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+import {
+  getLocaleDisplayName,
+  getStringFromTime,
+  getTimeFromSeconds,
+} from '~/utils/generic'
 
 import CCRow from '../../View/components/CCRow'
 
@@ -49,12 +66,23 @@ interface SessionDetailViewProps {
   websiteUrl?: string | null
 }
 
-const InfoRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
+const InfoRow = ({
+  label,
+  value,
+}: {
+  label: string
+  value: React.ReactNode
+}) => (
   <div className='flex items-center justify-between border-b border-gray-100 py-2 last:border-0 dark:border-slate-700/50'>
     <Text size='sm' colour='muted'>
       {label}
     </Text>
-    <Text size='sm' weight='medium' colour='primary' className='flex items-center gap-1'>
+    <Text
+      size='sm'
+      weight='medium'
+      colour='primary'
+      className='flex items-center gap-1'
+    >
       {value}
     </Text>
   </div>
@@ -105,7 +133,9 @@ export const SessionDetailView = ({
   } = useTranslation('common')
   const { id: projectId } = useCurrentProject()
   const { theme } = useTheme()
-  const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(null)
+  const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(
+    null,
+  )
 
   const sessionDuration = useMemo(() => {
     if (!activeSession?.details) return 0
@@ -115,11 +145,16 @@ export const SessionDetailView = ({
     }
 
     if (!_isEmpty(activeSession.pages)) {
-      const pageviews = activeSession.pages!.filter((p) => p.type === 'pageview')
+      const pageviews = activeSession.pages!.filter(
+        (p) => p.type === 'pageview',
+      )
       if (pageviews.length >= 1) {
         const firstPageview = pageviews[0]
         const lastPageview = pageviews[pageviews.length - 1]
-        const diffSeconds = dayjs(lastPageview.created).diff(dayjs(firstPageview.created), 'seconds')
+        const diffSeconds = dayjs(lastPageview.created).diff(
+          dayjs(firstPageview.created),
+          'seconds',
+        )
         if (diffSeconds > 0) {
           return diffSeconds
         }
@@ -137,7 +172,12 @@ export const SessionDetailView = ({
     return <Loader />
   }
 
-  if (activeSession !== null && _isEmpty(activeSession?.chart) && _isEmpty(activeSession?.pages) && !sessionLoading) {
+  if (
+    activeSession !== null &&
+    _isEmpty(activeSession?.chart) &&
+    _isEmpty(activeSession?.pages) &&
+    !sessionLoading
+  ) {
     return <NoSessionDetails />
   }
 
@@ -152,7 +192,14 @@ export const SessionDetailView = ({
       <div className='flex flex-col gap-3 lg:flex-row'>
         <div className='space-y-4 lg:w-[380px]'>
           <div className='rounded-lg border border-gray-200 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
-            <Text as='h3' size='xs' weight='semibold' colour='primary' className='mb-2 uppercase' tracking='wide'>
+            <Text
+              as='h3'
+              size='xs'
+              weight='semibold'
+              colour='primary'
+              className='mb-2 uppercase'
+              tracking='wide'
+            >
               {t('project.sessionInfo')}
             </Text>
             <div>
@@ -183,7 +230,11 @@ export const SessionDetailView = ({
                       tooltipNode={
                         <div className='flex items-center gap-1'>
                           <LinkIcon className='h-4 w-4' />
-                          <span title={_size(details.ref) > 25 ? details.ref : undefined}>
+                          <span
+                            title={
+                              _size(details.ref) > 25 ? details.ref : undefined
+                            }
+                          >
                             {_truncate(details.ref, { length: 25 })}
                           </span>
                         </div>
@@ -196,19 +247,38 @@ export const SessionDetailView = ({
               />
             </div>
 
-            <Text as='h3' size='xs' weight='semibold' colour='primary' className='mt-5 mb-2 uppercase' tracking='wide'>
+            <Text
+              as='h3'
+              size='xs'
+              weight='semibold'
+              colour='primary'
+              className='mt-5 mb-2 uppercase'
+              tracking='wide'
+            >
               {t('project.locationAndDevice')}
             </Text>
             <div>
               <InfoRow
                 label={t('project.mapping.cc')}
-                value={details.cc ? <CCRow size={16} cc={details.cc} language={language} /> : '-'}
+                value={
+                  details.cc ? (
+                    <CCRow size={16} cc={details.cc} language={language} />
+                  ) : (
+                    '-'
+                  )
+                }
               />
-              {details.rg ? <InfoRow label={t('project.mapping.rg')} value={details.rg} /> : null}
-              {details.ct ? <InfoRow label={t('project.mapping.ct')} value={details.ct} /> : null}
+              {details.rg ? (
+                <InfoRow label={t('project.mapping.rg')} value={details.rg} />
+              ) : null}
+              {details.ct ? (
+                <InfoRow label={t('project.mapping.ct')} value={details.ct} />
+              ) : null}
               <InfoRow
                 label={t('project.mapping.lc')}
-                value={details.lc ? getLocaleDisplayName(details.lc, language) : '-'}
+                value={
+                  details.lc ? getLocaleDisplayName(details.lc, language) : '-'
+                }
               />
               <InfoRow
                 label={t('project.mapping.dv')}
@@ -253,7 +323,11 @@ export const SessionDetailView = ({
               />
             </div>
 
-            {details.so || details.me || details.ca || details.te || details.co ? (
+            {details.so ||
+            details.me ||
+            details.ca ||
+            details.te ||
+            details.co ? (
               <>
                 <Text
                   as='h3'
@@ -266,11 +340,36 @@ export const SessionDetailView = ({
                   {t('project.campaigns')}
                 </Text>
                 <div>
-                  {details.so ? <InfoRow label={t('project.mapping.so')} value={details.so} /> : null}
-                  {details.me ? <InfoRow label={t('project.mapping.me')} value={details.me} /> : null}
-                  {details.ca ? <InfoRow label={t('project.mapping.ca')} value={details.ca} /> : null}
-                  {details.te ? <InfoRow label={t('project.mapping.te')} value={details.te} /> : null}
-                  {details.co ? <InfoRow label={t('project.mapping.co')} value={details.co} /> : null}
+                  {details.so ? (
+                    <InfoRow
+                      label={t('project.mapping.so')}
+                      value={details.so}
+                    />
+                  ) : null}
+                  {details.me ? (
+                    <InfoRow
+                      label={t('project.mapping.me')}
+                      value={details.me}
+                    />
+                  ) : null}
+                  {details.ca ? (
+                    <InfoRow
+                      label={t('project.mapping.ca')}
+                      value={details.ca}
+                    />
+                  ) : null}
+                  {details.te ? (
+                    <InfoRow
+                      label={t('project.mapping.te')}
+                      value={details.te}
+                    />
+                  ) : null}
+                  {details.co ? (
+                    <InfoRow
+                      label={t('project.mapping.co')}
+                      value={details.co}
+                    />
+                  ) : null}
                 </div>
               </>
             ) : null}
@@ -291,7 +390,14 @@ export const SessionDetailView = ({
           {!_isEmpty(activeSession?.chart) ? (
             <div className='rounded-lg border border-gray-200 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
               <div className='mb-2 flex items-center justify-between'>
-                <Text as='h3' size='xs' weight='semibold' colour='primary' className='uppercase' tracking='wide'>
+                <Text
+                  as='h3'
+                  size='xs'
+                  weight='semibold'
+                  colour='primary'
+                  className='uppercase'
+                  tracking='wide'
+                >
                   {t('project.sessionActivity')}
                 </Text>
                 {zoomedTimeRange ? (

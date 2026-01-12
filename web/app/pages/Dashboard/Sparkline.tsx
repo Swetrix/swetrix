@@ -81,7 +81,9 @@ const Sparkline = memo(({ chart, className }: SparklineProps) => {
     return null
   }
 
-  return <BillboardChart options={options} className={className} deps={[chart]} />
+  return (
+    <BillboardChart options={options} className={className} deps={[chart]} />
+  )
 })
 
 Sparkline.displayName = 'Sparkline'

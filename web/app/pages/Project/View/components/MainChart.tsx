@@ -13,11 +13,20 @@ interface MainChartProps {
   deps?: any[]
 }
 
-export const MainChart = ({ chartId, options, dataNames, className, deps }: MainChartProps) => {
+export const MainChart = ({
+  chartId,
+  options,
+  dataNames,
+  className,
+  deps,
+}: MainChartProps) => {
   const { registerChart, unregisterChart } = useChartManager()
   const chartRef = useRef<any>(null)
 
-  const mergedDeps = useMemo(() => deps || [options, dataNames], [deps, options, dataNames])
+  const mergedDeps = useMemo(
+    () => deps || [options, dataNames],
+    [deps, options, dataNames],
+  )
 
   const handleChartReady = (chart: any) => {
     chartRef.current = chart

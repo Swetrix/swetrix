@@ -1,6 +1,12 @@
 import React, { useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link, Form, useActionData, useNavigation, useSearchParams } from 'react-router'
+import {
+  Link,
+  Form,
+  useActionData,
+  useNavigation,
+  useSearchParams,
+} from 'react-router'
 import { toast } from 'sonner'
 
 import { isSelfhosted, TRIAL_DAYS } from '~/lib/constants'
@@ -48,7 +54,13 @@ const ForgotPassword = () => {
                 placeholder='name@company.com'
                 disabled={isSubmitting}
               />
-              <Button className='w-full justify-center' type='submit' loading={isSubmitting} primary giant>
+              <Button
+                className='w-full justify-center'
+                type='submit'
+                loading={isSubmitting}
+                primary
+                giant
+              >
                 {t('auth.forgot.reset')}
               </Button>
             </Form>

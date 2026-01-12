@@ -9,10 +9,21 @@ import {
   ListboxOptions,
   Transition,
 } from '@headlessui/react'
-import { XMarkIcon, ClipboardIcon, CheckIcon as HeroCheckIcon } from '@heroicons/react/24/outline'
+import {
+  XMarkIcon,
+  ClipboardIcon,
+  CheckIcon as HeroCheckIcon,
+} from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _map from 'lodash/map'
-import { Trash2Icon, PlusIcon, CodeIcon, ChevronDownIcon, ChevronsUpDownIcon, CheckIcon } from 'lucide-react'
+import {
+  Trash2Icon,
+  PlusIcon,
+  CodeIcon,
+  ChevronDownIcon,
+  ChevronsUpDownIcon,
+  CheckIcon,
+} from 'lucide-react'
 import { useState, useEffect, useCallback, Fragment, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
@@ -53,7 +64,13 @@ interface FeatureFlagSettingsModalProps {
   flagId?: string | null
 }
 
-const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagId }: FeatureFlagSettingsModalProps) => {
+const FeatureFlagSettingsModal = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  projectId,
+  flagId,
+}: FeatureFlagSettingsModalProps) => {
   const {
     t,
     i18n: { language },
@@ -69,7 +86,9 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
   // Filter values cache for targeting rules
-  const [filterValuesCache, setFilterValuesCache] = useState<Record<string, string[]>>({})
+  const [filterValuesCache, setFilterValuesCache] = useState<
+    Record<string, string[]>
+  >({})
   const [loadingColumns, setLoadingColumns] = useState<Set<string>>(new Set())
 
   // Form state
@@ -199,8 +218,12 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
           key,
           description: description || '',
           flagType,
-          rolloutPercentage: String(flagType === 'rollout' ? rolloutPercentage : 100),
-          targetingRules: JSON.stringify(targetingRules.length > 0 ? targetingRules : []),
+          rolloutPercentage: String(
+            flagType === 'rollout' ? rolloutPercentage : 100,
+          ),
+          targetingRules: JSON.stringify(
+            targetingRules.length > 0 ? targetingRules : [],
+          ),
           enabled: String(enabled),
         },
         { method: 'POST' },
@@ -213,8 +236,12 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
           key,
           description: description || '',
           flagType,
-          rolloutPercentage: String(flagType === 'rollout' ? rolloutPercentage : 100),
-          targetingRules: JSON.stringify(targetingRules.length > 0 ? targetingRules : []),
+          rolloutPercentage: String(
+            flagType === 'rollout' ? rolloutPercentage : 100,
+          ),
+          targetingRules: JSON.stringify(
+            targetingRules.length > 0 ? targetingRules : [],
+          ),
           enabled: String(enabled),
         },
         { method: 'POST' },
@@ -223,17 +250,32 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
   }
 
   const addTargetingRule = () => {
-    setTargetingRules([...targetingRules, { column: 'cc', filter: '', isExclusive: false }])
+    setTargetingRules([
+      ...targetingRules,
+      { column: 'cc', filter: '', isExclusive: false },
+    ])
   }
 
-  const updateTargetingRule = (index: number, field: keyof TargetingRule, value: string | boolean) => {
+  const updateTargetingRule = (
+    index: number,
+    field: keyof TargetingRule,
+    value: string | boolean,
+  ) => {
     const updated = [...targetingRules]
     if (field === 'column') {
       // Reset filter value when column changes
-      updated[index] = { ...updated[index], column: value as string, filter: '' }
+      updated[index] = {
+        ...updated[index],
+        column: value as string,
+        filter: '',
+      }
       // Fetch filter values for the new column if not already cached
       const cacheKey = `${projectId}-${value as string}`
-      if (value && !filterValuesCache[cacheKey] && !loadingColumns.has(value as string)) {
+      if (
+        value &&
+        !filterValuesCache[cacheKey] &&
+        !loadingColumns.has(value as string)
+      ) {
         fetchFilterValues(value as string)
       }
     } else {
@@ -322,7 +364,9 @@ const { flags } = await response.json()
                 <div className='max-h-[70vh] overflow-y-auto px-6 pt-5 pb-4'>
                   <div className='flex items-center justify-between'>
                     <DialogTitle className='text-lg font-semibold text-gray-900 dark:text-gray-50'>
-                      {isNew ? t('featureFlags.createTitle') : t('featureFlags.editTitle')}
+                      {isNew
+                        ? t('featureFlags.createTitle')
+                        : t('featureFlags.editTitle')}
                     </DialogTitle>
                     <button
                       type='button'
@@ -362,11 +406,18 @@ const { flags } = await response.json()
                       </label>
                       <Select
                         items={FLAG_TYPES}
-                        onSelect={(item) => setFlagType(item.value as 'boolean' | 'rollout')}
-                        title={FLAG_TYPES.find((t) => t.value === flagType)?.label || ''}
+                        onSelect={(item) =>
+                          setFlagType(item.value as 'boolean' | 'rollout')
+                        }
+                        title={
+                          FLAG_TYPES.find((t) => t.value === flagType)?.label ||
+                          ''
+                        }
                         labelExtractor={(item) => item.label}
                         keyExtractor={(item) => item.value}
-                        selectedItem={FLAG_TYPES.find((t) => t.value === flagType)}
+                        selectedItem={FLAG_TYPES.find(
+                          (t) => t.value === flagType,
+                        )}
                         capitalise
                       />
                     </div>
@@ -374,14 +425,17 @@ const { flags } = await response.json()
                     {flagType === 'rollout' ? (
                       <div>
                         <label className='mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300'>
-                          {t('featureFlags.rolloutPercentage')} ({rolloutPercentage}%)
+                          {t('featureFlags.rolloutPercentage')} (
+                          {rolloutPercentage}%)
                         </label>
                         <input
                           type='range'
                           min='0'
                           max='100'
                           value={rolloutPercentage}
-                          onChange={(e) => setRolloutPercentage(Number(e.target.value))}
+                          onChange={(e) =>
+                            setRolloutPercentage(Number(e.target.value))
+                          }
                           className='w-full'
                         />
                         <div className='mt-1 flex justify-between text-xs text-gray-500'>
@@ -410,19 +464,27 @@ const { flags } = await response.json()
                       {targetingRules.length > 0 ? (
                         <div className='space-y-3'>
                           {_map(targetingRules, (rule, index) => (
-                            <div key={index} className='flex items-center gap-2'>
+                            <div
+                              key={index}
+                              className='flex items-center gap-2'
+                            >
                               {/* Column Select */}
                               <Listbox
                                 value={rule.column}
-                                onChange={(value) => updateTargetingRule(index, 'column', value)}
+                                onChange={(value) =>
+                                  updateTargetingRule(index, 'column', value)
+                                }
                               >
                                 {({ open }) => (
                                   <div className='relative w-36'>
                                     <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'>
                                       <span className='flex items-center gap-2 truncate'>
-                                        {rule.column ? filterCategoryIcons[rule.column] : null}
-                                        {TARGETING_COLUMNS.find((c) => c.value === rule.column)?.label ||
-                                          t('common.select')}
+                                        {rule.column
+                                          ? filterCategoryIcons[rule.column]
+                                          : null}
+                                        {TARGETING_COLUMNS.find(
+                                          (c) => c.value === rule.column,
+                                        )?.label || t('common.select')}
                                       </span>
                                       <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
                                         <ChevronsUpDownIcon className='h-4 w-4 text-gray-400' />
@@ -447,20 +509,34 @@ const { flags } = await response.json()
                                             key={col.value}
                                             value={col.value}
                                             className={({ focus }) =>
-                                              cx('relative cursor-pointer py-2 pr-4 pl-3 select-none', {
-                                                'bg-gray-100 dark:bg-slate-700': focus,
-                                                'text-gray-700 dark:text-gray-50': !focus,
-                                              })
+                                              cx(
+                                                'relative cursor-pointer py-2 pr-4 pl-3 select-none',
+                                                {
+                                                  'bg-gray-100 dark:bg-slate-700':
+                                                    focus,
+                                                  'text-gray-700 dark:text-gray-50':
+                                                    !focus,
+                                                },
+                                              )
                                             }
                                           >
                                             {({ selected }) => (
                                               <span
-                                                className={cx('flex items-center gap-2', { 'font-medium': selected })}
+                                                className={cx(
+                                                  'flex items-center gap-2',
+                                                  { 'font-medium': selected },
+                                                )}
                                               >
                                                 <span className='shrink-0 text-gray-500 dark:text-gray-400'>
-                                                  {filterCategoryIcons[col.value]}
+                                                  {
+                                                    filterCategoryIcons[
+                                                      col.value
+                                                    ]
+                                                  }
                                                 </span>
-                                                <span className='truncate'>{col.label}</span>
+                                                <span className='truncate'>
+                                                  {col.label}
+                                                </span>
                                                 {selected ? (
                                                   <CheckIcon className='ml-auto h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400' />
                                                 ) : null}
@@ -477,13 +553,21 @@ const { flags } = await response.json()
                               {/* Operator Select */}
                               <Listbox
                                 value={rule.isExclusive ? 'exclude' : 'include'}
-                                onChange={(value) => updateTargetingRule(index, 'isExclusive', value === 'exclude')}
+                                onChange={(value) =>
+                                  updateTargetingRule(
+                                    index,
+                                    'isExclusive',
+                                    value === 'exclude',
+                                  )
+                                }
                               >
                                 {({ open }) => (
                                   <div className='relative w-24'>
                                     <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'>
                                       <span className='block truncate'>
-                                        {rule.isExclusive ? t('featureFlags.isNot') : t('featureFlags.is')}
+                                        {rule.isExclusive
+                                          ? t('featureFlags.isNot')
+                                          : t('featureFlags.is')}
                                       </span>
                                       <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
                                         <ChevronsUpDownIcon className='h-4 w-4 text-gray-400' />
@@ -506,15 +590,25 @@ const { flags } = await response.json()
                                         <ListboxOption
                                           value='include'
                                           className={({ focus }) =>
-                                            cx('relative cursor-pointer py-2 pr-4 pl-8 select-none', {
-                                              'bg-gray-100 dark:bg-slate-700': focus,
-                                              'text-gray-700 dark:text-gray-50': !focus,
-                                            })
+                                            cx(
+                                              'relative cursor-pointer py-2 pr-4 pl-8 select-none',
+                                              {
+                                                'bg-gray-100 dark:bg-slate-700':
+                                                  focus,
+                                                'text-gray-700 dark:text-gray-50':
+                                                  !focus,
+                                              },
+                                            )
                                           }
                                         >
                                           {({ selected }) => (
                                             <>
-                                              <span className={cx('block truncate', { 'font-medium': selected })}>
+                                              <span
+                                                className={cx(
+                                                  'block truncate',
+                                                  { 'font-medium': selected },
+                                                )}
+                                              >
                                                 {t('featureFlags.is')}
                                               </span>
                                               {selected ? (
@@ -528,15 +622,25 @@ const { flags } = await response.json()
                                         <ListboxOption
                                           value='exclude'
                                           className={({ focus }) =>
-                                            cx('relative cursor-pointer py-2 pr-4 pl-8 select-none', {
-                                              'bg-gray-100 dark:bg-slate-700': focus,
-                                              'text-gray-700 dark:text-gray-50': !focus,
-                                            })
+                                            cx(
+                                              'relative cursor-pointer py-2 pr-4 pl-8 select-none',
+                                              {
+                                                'bg-gray-100 dark:bg-slate-700':
+                                                  focus,
+                                                'text-gray-700 dark:text-gray-50':
+                                                  !focus,
+                                              },
+                                            )
                                           }
                                         >
                                           {({ selected }) => (
                                             <>
-                                              <span className={cx('block truncate', { 'font-medium': selected })}>
+                                              <span
+                                                className={cx(
+                                                  'block truncate',
+                                                  { 'font-medium': selected },
+                                                )}
+                                              >
                                                 {t('featureFlags.isNot')}
                                               </span>
                                               {selected ? (
@@ -555,9 +659,15 @@ const { flags } = await response.json()
 
                               {/* Value Input with Autocomplete */}
                               <FilterValueInput
-                                items={filterValuesCache[`${projectId}-${rule.column}`] || []}
+                                items={
+                                  filterValuesCache[
+                                    `${projectId}-${rule.column}`
+                                  ] || []
+                                }
                                 value={rule.filter}
-                                onChange={(value) => updateTargetingRule(index, 'filter', value)}
+                                onChange={(value) =>
+                                  updateTargetingRule(index, 'filter', value)
+                                }
                                 placeholder={t('featureFlags.valuePlaceholder')}
                                 column={rule.column}
                                 language={language}
@@ -595,7 +705,9 @@ const { flags } = await response.json()
                     <div className='border-t border-gray-200 pt-4 dark:border-slate-700'>
                       <button
                         type='button'
-                        onClick={() => setShowImplementation(!showImplementation)}
+                        onClick={() =>
+                          setShowImplementation(!showImplementation)
+                        }
                         className='flex w-full items-center justify-between text-left'
                       >
                         <div className='flex items-center gap-2'>
@@ -605,9 +717,12 @@ const { flags } = await response.json()
                           </Text>
                         </div>
                         <ChevronDownIcon
-                          className={cx('size-5 text-gray-500 transition-transform', {
-                            'rotate-180': showImplementation,
-                          })}
+                          className={cx(
+                            'size-5 text-gray-500 transition-transform',
+                            {
+                              'rotate-180': showImplementation,
+                            },
+                          )}
                         />
                       </button>
 
@@ -649,7 +764,12 @@ const { flags } = await response.json()
                               </Text>
                               <button
                                 type='button'
-                                onClick={() => copyToClipboard(jsCodeWithAttributes, 'js-attr')}
+                                onClick={() =>
+                                  copyToClipboard(
+                                    jsCodeWithAttributes,
+                                    'js-attr',
+                                  )
+                                }
                                 className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
                               >
                                 {copiedCode === 'js-attr' ? (
@@ -673,7 +793,9 @@ const { flags } = await response.json()
                               </Text>
                               <button
                                 type='button'
-                                onClick={() => copyToClipboard(fetchCode, 'fetch')}
+                                onClick={() =>
+                                  copyToClipboard(fetchCode, 'fetch')
+                                }
                                 className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
                               >
                                 {copiedCode === 'fetch' ? (

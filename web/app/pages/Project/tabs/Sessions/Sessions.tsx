@@ -4,7 +4,12 @@ import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import _map from 'lodash/map'
-import { FileTextIcon, BugIcon, MousePointerClickIcon, CalendarIcon } from 'lucide-react'
+import {
+  FileTextIcon,
+  BugIcon,
+  MousePointerClickIcon,
+  CalendarIcon,
+} from 'lucide-react'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
@@ -77,7 +82,13 @@ const Separator = () => (
   </svg>
 )
 
-const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, currency }: SessionProps) => {
+const Session = ({
+  session,
+  timeFormat,
+  hideNewReturnBadge,
+  hideUserDetails,
+  currency,
+}: SessionProps) => {
   const currencySymbol = getCurrencySymbol(currency)
   const {
     t,
@@ -90,11 +101,18 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
   let sessionDurationString = ''
   if (!session.isLive) {
     if (session.sdur != null && session.sdur > 0) {
-      sessionDurationString = getStringFromTime(getTimeFromSeconds(session.sdur))
+      sessionDurationString = getStringFromTime(
+        getTimeFromSeconds(session.sdur),
+      )
     } else {
-      const diffSeconds = dayjs(session.lastActivity).diff(sessionStartTime, 'seconds')
+      const diffSeconds = dayjs(session.lastActivity).diff(
+        sessionStartTime,
+        'seconds',
+      )
       if (diffSeconds > 0) {
-        sessionDurationString = getStringFromTime(getTimeFromSeconds(diffSeconds))
+        sessionDurationString = getStringFromTime(
+          getTimeFromSeconds(diffSeconds),
+        )
       }
     }
   }
@@ -103,18 +121,23 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
     if (!session.profileId) {
       return t('project.unknownUser')
     }
-    return getProfileDisplayName(session.profileId, Boolean(session.isIdentified))
+    return getProfileDisplayName(
+      session.profileId,
+      Boolean(session.isIdentified),
+    )
   }, [session.profileId, session.isIdentified, t])
 
   const dateLineString = useMemo(() => {
-    const startDateTimeStr = sessionStartTime.toDate().toLocaleDateString(language, {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
-    })
+    const startDateTimeStr = sessionStartTime
+      .toDate()
+      .toLocaleDateString(language, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+      })
 
     if (session.isLive) {
       return startDateTimeStr
@@ -133,13 +156,21 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
       hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
     })
 
-    const durationDisplay = sessionDurationString ? ` (${sessionDurationString})` : ''
+    const durationDisplay = sessionDurationString
+      ? ` (${sessionDurationString})`
+      : ''
     return `${startDateTimeStr} - ${endTimeStr}${durationDisplay}`
   }, [session, language, timeFormat, sessionDurationString, sessionStartTime])
 
-  const onlineStatus = useMemo(() => getOnlineStatus(session.lastActivity), [session.lastActivity])
+  const onlineStatus = useMemo(
+    () => getOnlineStatus(session.lastActivity),
+    [session.lastActivity],
+  )
 
-  const lastActivityAgo = useMemo(() => dayjs(session.lastActivity).fromNow(), [session.lastActivity])
+  const lastActivityAgo = useMemo(
+    () => dayjs(session.lastActivity).fromNow(),
+    [session.lastActivity],
+  )
 
   const params = new URLSearchParams(location.search)
   params.set('psid', session.psid)
@@ -152,10 +183,16 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
           {hideUserDetails ? null : (
             <div className='relative shrink-0'>
               {session.profileId ? (
-                <ProfileAvatar className='mt-1' profileId={session.profileId} size={40} />
+                <ProfileAvatar
+                  className='mt-1'
+                  profileId={session.profileId}
+                  size={40}
+                />
               ) : (
                 <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 dark:bg-slate-600'>
-                  <span className='text-sm font-medium text-gray-500 dark:text-gray-300'>?</span>
+                  <span className='text-sm font-medium text-gray-500 dark:text-gray-300'>
+                    ?
+                  </span>
                 </div>
               )}
               {onlineStatus === 'offline' ? null : (
@@ -181,11 +218,19 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
               <p className='flex items-center text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>
                 <span className='truncate'>{displayName}</span>
                 {session.isIdentified ? (
-                  <Badge label={t('project.identified')} colour='indigo' className='ml-2' />
+                  <Badge
+                    label={t('project.identified')}
+                    colour='indigo'
+                    className='ml-2'
+                  />
                 ) : null}
                 {hideNewReturnBadge ? null : (
                   <Badge
-                    label={session.isFirstSession ? t('project.sessionNew') : t('project.sessionReturn')}
+                    label={
+                      session.isFirstSession
+                        ? t('project.sessionNew')
+                        : t('project.sessionReturn')
+                    }
                     colour={session.isFirstSession ? 'green' : 'slate'}
                     className='ml-2'
                   />
@@ -194,7 +239,11 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
             )}
             <p className='mt-1 flex flex-wrap items-center gap-x-2 text-xs leading-5 text-gray-500 dark:text-gray-300'>
               <span className='flex items-center'>
-                {session.cc ? <CCRow size={18} cc={session.cc} language={language} /> : t('project.unknownCountry')}
+                {session.cc ? (
+                  <CCRow size={18} cc={session.cc} language={language} />
+                ) : (
+                  t('project.unknownCountry')
+                )}
               </span>
               <Separator />
               {session.os || t('project.unknown')}
@@ -202,8 +251,12 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
               {session.br || t('project.unknown')}
             </p>
             <p className='mt-2 flex text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
-              <span className='mr-2 flex items-center' title={t('dashboard.pageviews')}>
-                <FileTextIcon className='mr-1 size-4' strokeWidth={1.5} /> {session.pageviews}
+              <span
+                className='mr-2 flex items-center'
+                title={t('dashboard.pageviews')}
+              >
+                <FileTextIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                {session.pageviews}
               </span>
               {session.revenue != null && session.revenue !== 0 ? (
                 <span
@@ -219,13 +272,24 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
                 </span>
               ) : null}
               {session.customEvents > 0 ? (
-                <span className='mr-2 flex items-center' title={t('dashboard.events')}>
-                  <MousePointerClickIcon className='mr-1 size-4' strokeWidth={1.5} /> {session.customEvents}
+                <span
+                  className='mr-2 flex items-center'
+                  title={t('dashboard.events')}
+                >
+                  <MousePointerClickIcon
+                    className='mr-1 size-4'
+                    strokeWidth={1.5}
+                  />{' '}
+                  {session.customEvents}
                 </span>
               ) : null}
               {session.errors > 0 ? (
-                <span className='flex items-center text-red-400' title={t('dashboard.errors')}>
-                  <BugIcon className='mr-1 size-4' strokeWidth={1.5} /> {session.errors}
+                <span
+                  className='flex items-center text-red-400'
+                  title={t('dashboard.errors')}
+                >
+                  <BugIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                  {session.errors}
                 </span>
               ) : null}
             </p>
@@ -234,8 +298,12 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
         <div className='flex shrink-0 items-center gap-x-4'>
           <div className='hidden sm:flex sm:flex-col sm:items-end'>
             <div className='flex items-center gap-x-3 text-sm leading-6 text-gray-900 dark:text-gray-50'>
-              <span className='flex items-center' title={t('dashboard.xPageviews', { x: session.pageviews })}>
-                <FileTextIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.pageviews}
+              <span
+                className='flex items-center'
+                title={t('dashboard.xPageviews', { x: session.pageviews })}
+              >
+                <FileTextIcon className='mr-1 size-5' strokeWidth={1.5} />{' '}
+                {session.pageviews}
               </span>
               {session.revenue != null && session.revenue !== 0 ? (
                 <span
@@ -251,13 +319,26 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
                 </span>
               ) : null}
               {session.customEvents > 0 ? (
-                <span className='flex items-center' title={t('dashboard.xCustomEvents', { x: session.customEvents })}>
-                  <MousePointerClickIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.customEvents}
+                <span
+                  className='flex items-center'
+                  title={t('dashboard.xCustomEvents', {
+                    x: session.customEvents,
+                  })}
+                >
+                  <MousePointerClickIcon
+                    className='mr-1 size-5'
+                    strokeWidth={1.5}
+                  />{' '}
+                  {session.customEvents}
                 </span>
               ) : null}
               {session.errors > 0 ? (
-                <span className='flex items-center text-red-500' title={t('dashboard.xErrors', { x: session.errors })}>
-                  <BugIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.errors}
+                <span
+                  className='flex items-center text-red-500'
+                  title={t('dashboard.xErrors', { x: session.errors })}
+                >
+                  <BugIcon className='mr-1 size-5' strokeWidth={1.5} />{' '}
+                  {session.errors}
                 </span>
               ) : null}
             </div>
@@ -266,7 +347,10 @@ const Session = ({ session, timeFormat, hideNewReturnBadge, hideUserDetails, cur
               {dateLineString}
             </p>
           </div>
-          <ChevronRightIcon className='h-5 w-5 flex-none text-gray-400' aria-hidden='true' />
+          <ChevronRightIcon
+            className='h-5 w-5 flex-none text-gray-400'
+            aria-hidden='true'
+          />
         </div>
       </li>
     </Link>

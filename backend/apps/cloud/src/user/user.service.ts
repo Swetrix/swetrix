@@ -337,7 +337,7 @@ export class UserService {
     const stringifiedPlanId = String(planId)
 
     const plan = Object.values(ACCOUNT_PLANS).find(
-      tier =>
+      (tier) =>
         // @ts-ignore
         tier.pid === stringifiedPlanId ||
         // @ts-ignore
@@ -557,7 +557,7 @@ export class UserService {
       .leftJoinAndSelect('user.projects', 'projects')
       .select(['user.id', 'user.email', 'projects.id', 'projects.name'])
       .where('user.id IN (:...userIds)', {
-        userIds: userIds.map(u => u.id),
+        userIds: userIds.map((u) => u.id),
       })
       .getMany()
   }
@@ -595,7 +595,7 @@ export class UserService {
       .leftJoinAndSelect('user.projects', 'projects')
       .select(['user.id', 'user.email', 'user.planCode', 'projects.id'])
       .where('user.id IN (:...userIds)', {
-        userIds: userIds.map(u => u.id),
+        userIds: userIds.map((u) => u.id),
       })
       .getMany()
   }
@@ -628,7 +628,7 @@ export class UserService {
       .leftJoinAndSelect('user.projects', 'projects')
       .select(['user.id', 'user.email', 'user.planCode', 'projects.id'])
       .where('user.id IN (:...userIds)', {
-        userIds: userIds.map(u => u.id),
+        userIds: userIds.map((u) => u.id),
       })
       .getMany()
   }

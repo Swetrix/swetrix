@@ -15,7 +15,10 @@ export interface SubscriberInviteLoaderData {
   error?: string
 }
 
-export async function loader({ request, params }: LoaderFunctionArgs): Promise<SubscriberInviteLoaderData> {
+export async function loader({
+  request,
+  params,
+}: LoaderFunctionArgs): Promise<SubscriberInviteLoaderData> {
   const { id } = params
   const url = new URL(request.url)
   const token = url.searchParams.get('token')
@@ -24,12 +27,19 @@ export async function loader({ request, params }: LoaderFunctionArgs): Promise<S
     return { success: false, error: 'Invalid invitation link' }
   }
 
-  const result = await serverFetch(request, `project/${id}/subscribers/invite?token=${token}`, {
-    skipAuth: true,
-  })
+  const result = await serverFetch(
+    request,
+    `project/${id}/subscribers/invite?token=${token}`,
+    {
+      skipAuth: true,
+    },
+  )
 
   if (result.error) {
-    const errorMessage = typeof result.error === 'string' ? result.error : 'Invalid or expired token'
+    const errorMessage =
+      typeof result.error === 'string'
+        ? result.error
+        : 'Invalid or expired token'
     return { success: false, error: errorMessage }
   }
 

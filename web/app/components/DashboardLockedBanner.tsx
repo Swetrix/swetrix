@@ -39,9 +39,14 @@ const DashboardLockedBanner = () => {
           <div className='flex flex-wrap items-center justify-between'>
             <div className='flex flex-1 items-center'>
               <span className='flex rounded-lg bg-yellow-600 p-2'>
-                <LockClosedIcon className='h-6 w-6 text-white' aria-hidden='true' />
+                <LockClosedIcon
+                  className='h-6 w-6 text-white'
+                  aria-hidden='true'
+                />
               </span>
-              <p className='ml-3 font-medium text-black'>{t('dashboard.accountLocked')}</p>
+              <p className='ml-3 font-medium text-black'>
+                {t('dashboard.accountLocked')}
+              </p>
             </div>
             <div className='order-3 mt-2 w-full shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
               <span

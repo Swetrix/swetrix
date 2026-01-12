@@ -202,7 +202,7 @@ export class ProjectService {
       uid === project.adminId ||
       _findIndex(
         project.share,
-        share =>
+        (share) =>
           share.user?.id === uid &&
           share.role === Role.admin &&
           share.confirmed === true,
@@ -285,7 +285,7 @@ export class ProjectService {
         query,
         query_params: params,
       })
-      .then(resultSet => resultSet.json<{ pid: string }>())
+      .then((resultSet) => resultSet.json<{ pid: string }>())
 
     return _map(data, ({ pid }) => pid)
   }
@@ -334,7 +334,7 @@ export class ProjectService {
         query,
         query_params: params,
       })
-      .then(resultSet => resultSet.json<{ pid: string }>())
+      .then((resultSet) => resultSet.json<{ pid: string }>())
 
     return _map(data, ({ pid }) => pid)
   }
@@ -383,7 +383,7 @@ export class ProjectService {
         query,
         query_params: params,
       })
-      .then(resultSet => resultSet.json<{ pid: string }>())
+      .then((resultSet) => resultSet.json<{ pid: string }>())
 
     return _map(data, ({ pid }) => pid)
   }
@@ -408,7 +408,7 @@ export class ProjectService {
     }
 
     await Promise.all(
-      _map(queries, query =>
+      _map(queries, (query) =>
         clickhouse.command({
           query,
           query_params: params,
@@ -513,7 +513,7 @@ export class ProjectService {
       return []
     }
 
-    return _map(customEvents, customEvent =>
+    return _map(customEvents, (customEvent) =>
       this.formatCustomEventToClickhose(viewId, customEvent),
     )
   }
@@ -563,7 +563,7 @@ export class ProjectService {
       updView.filters = []
     }
 
-    updView.customEvents = _map(view.customEvents, customEvent => ({
+    updView.customEvents = _map(view.customEvents, (customEvent) => ({
       ...customEvent,
       createdAt: '1970-01-01T00:00:00.000Z',
       updatedAt: '1970-01-01T00:00:00.000Z',
@@ -606,7 +606,7 @@ export class ProjectService {
         'The list of allowed origins has to be smaller than 300 symbols',
       )
 
-    _map(projectDTO.origins, host => {
+    _map(projectDTO.origins, (host) => {
       if (!ORIGINS_REGEX.test(_trim(host))) {
         throw new ConflictException(`Host ${host} is not correct`)
       }
@@ -618,7 +618,7 @@ export class ProjectService {
       throw new UnprocessableEntityException(
         'The list of allowed blacklisted IP addresses must be less than 300 characters.',
       )
-    _map(projectDTO.ipBlacklist, ip => {
+    _map(projectDTO.ipBlacklist, (ip) => {
       if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
         throw new ConflictException(`IP address ${ip} is not correct`)
       }
@@ -636,7 +636,7 @@ export class ProjectService {
       )
 
     const countryCodeRegex = /^[A-Z]{2}$/
-    _map(projectDTO.countryBlacklist, code => {
+    _map(projectDTO.countryBlacklist, (code) => {
       const trimmedCode = _trim(code).toUpperCase()
       if (!countryCodeRegex.test(trimmedCode)) {
         throw new ConflictException(

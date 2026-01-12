@@ -1,5 +1,10 @@
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { CodeBracketIcon, PuzzlePieceIcon, CursorArrowRaysIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
+import {
+  CodeBracketIcon,
+  PuzzlePieceIcon,
+  CursorArrowRaysIcon,
+  EyeSlashIcon,
+} from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
 import { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -51,9 +56,13 @@ const Captcha = () => {
   const { t } = useTranslation('common')
   const [demoName, setDemoName] = useState('')
   const [demoMessage, setDemoMessage] = useState('')
-  const [demoStatus, setDemoStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [demoStatus, setDemoStatus] = useState<'idle' | 'success' | 'error'>(
+    'idle',
+  )
   const [demoError, setDemoError] = useState('')
-  const captchaScriptStatus = useScript('https://cdn.swetrixcaptcha.com/captcha-loader.js')
+  const captchaScriptStatus = useScript(
+    'https://cdn.swetrixcaptcha.com/captcha-loader.js',
+  )
   const [captchaInitialised, setCaptchaInitialised] = useState(false)
   const { theme } = useTheme()
 
@@ -78,7 +87,9 @@ const Captcha = () => {
   const handleDemoSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const captchaInput = document.querySelector('input[name="swetrix-captcha-response"]') as HTMLInputElement | null
+    const captchaInput = document.querySelector(
+      'input[name="swetrix-captcha-response"]',
+    ) as HTMLInputElement | null
     const token = captchaInput?.value
 
     if (!token) {
@@ -106,7 +117,10 @@ const Captcha = () => {
       <main className='bg-gray-50 dark:bg-slate-900'>
         <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-800/50'>
           <div className='relative mx-2 overflow-hidden rounded-4xl'>
-            <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
+            <div
+              aria-hidden
+              className='pointer-events-none absolute inset-0 -z-10'
+            >
               <div className='absolute inset-0 rounded-4xl bg-linear-115 from-indigo-200 from-15% via-purple-400 via-70% to-indigo-700 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-600 dark:opacity-60' />
             </div>
             <Header transparent />
@@ -154,7 +168,12 @@ const Captcha = () => {
             <Text as='h2' size='3xl' weight='bold' className='sm:text-4xl'>
               {t('captchaPage.whySwetrix')}
             </Text>
-            <Text as='p' size='lg' colour='muted' className='mx-auto mt-4 max-w-2xl'>
+            <Text
+              as='p'
+              size='lg'
+              colour='muted'
+              className='mx-auto mt-4 max-w-2xl'
+            >
               {t('captchaPage.whySwetrixDesc')}
             </Text>
           </div>
@@ -163,7 +182,10 @@ const Captcha = () => {
             {_map(features, (feature) => (
               <div key={feature.titleKey} className='relative flex gap-4'>
                 <div className='flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/30'>
-                  <feature.icon className='h-7 w-7 text-indigo-600 dark:text-indigo-400' aria-hidden='true' />
+                  <feature.icon
+                    className='h-7 w-7 text-indigo-600 dark:text-indigo-400'
+                    aria-hidden='true'
+                  />
                 </div>
                 <div>
                   <Text as='h3' size='xl' weight='semibold'>
@@ -179,10 +201,20 @@ const Captcha = () => {
         </div>
 
         <div className='mx-auto max-w-7xl px-4 py-20'>
-          <Text as='h2' size='3xl' weight='bold' className='text-center sm:text-4xl'>
+          <Text
+            as='h2'
+            size='3xl'
+            weight='bold'
+            className='text-center sm:text-4xl'
+          >
             {t('captchaPage.howItWorks.title')}
           </Text>
-          <Text as='p' size='lg' colour='muted' className='mx-auto mt-4 max-w-2xl text-center'>
+          <Text
+            as='p'
+            size='lg'
+            colour='muted'
+            className='mx-auto mt-4 max-w-2xl text-center'
+          >
             {t('captchaPage.howItWorks.desc')}
           </Text>
 
@@ -248,7 +280,12 @@ const Captcha = () => {
                 >
                   {t('captchaPage.demo.tagline')}
                 </Text>
-                <Text as='h2' size='3xl' weight='bold' className='mt-2 sm:text-4xl'>
+                <Text
+                  as='h2'
+                  size='3xl'
+                  weight='bold'
+                  className='mt-2 sm:text-4xl'
+                >
                   {t('captchaPage.demo.title')}
                 </Text>
                 <Text as='p' size='lg' colour='muted' className='mt-4'>
@@ -272,7 +309,9 @@ const Captcha = () => {
                     to='/captcha/demo'
                     className='flex h-12 items-center justify-center rounded-md border-2 border-slate-900 bg-transparent px-6 text-slate-900 transition-all hover:bg-slate-900 hover:text-white dark:border-slate-50 dark:text-slate-50 dark:hover:bg-gray-50 dark:hover:text-slate-900'
                   >
-                    <span className='text-center text-base font-semibold'>{t('captchaPage.demo.seeDevDemo')}</span>
+                    <span className='text-center text-base font-semibold'>
+                      {t('captchaPage.demo.seeDevDemo')}
+                    </span>
                   </Link>
                 </div>
               </div>
@@ -305,7 +344,8 @@ const Captcha = () => {
                   <Input
                     label={
                       <>
-                        {t('captchaPage.demo.nameLabel')} <span className='text-red-500'>*</span>
+                        {t('captchaPage.demo.nameLabel')}{' '}
+                        <span className='text-red-500'>*</span>
                       </>
                     }
                     value={demoName}
@@ -322,14 +362,23 @@ const Captcha = () => {
                     rows={3}
                   />
 
-                  <div className='swecaptcha' data-project-id={SWETRIX_PID} data-theme={theme} />
+                  <div
+                    className='swecaptcha'
+                    data-project-id={SWETRIX_PID}
+                    data-theme={theme}
+                  />
                   {captchaScriptStatus === 'error' ? (
                     <Text as='div' size='sm' colour='error'>
                       Failed to load CAPTCHA. Please refresh the page.
                     </Text>
                   ) : null}
 
-                  <Button type='submit' primary giant className='w-full justify-center'>
+                  <Button
+                    type='submit'
+                    primary
+                    giant
+                    className='w-full justify-center'
+                  >
                     {t('captchaPage.demo.submit')}
                   </Button>
                 </form>

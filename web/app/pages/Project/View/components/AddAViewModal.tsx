@@ -36,7 +36,13 @@ interface AddAViewModalProps {
   defaultView?: ProjectView
 }
 
-const InlineButton = ({ text, onClick }: { text: string; onClick: () => void }) => (
+const InlineButton = ({
+  text,
+  onClick,
+}: {
+  text: string
+  onClick: () => void
+}) => (
   <button
     type='button'
     onClick={onClick}
@@ -54,7 +60,13 @@ interface EditMetricProps {
   onDelete: () => void
 }
 
-const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: EditMetricProps) => {
+const EditMetric = ({
+  metric,
+  onChange,
+  onDelete,
+  errors,
+  setErrors,
+}: EditMetricProps) => {
   const { t } = useTranslation('common')
 
   const customEventTypes = useMemo(
@@ -76,7 +88,8 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: EditMetri
   )
 
   const activeCustomEventType = useMemo(
-    () => _find(customEventTypes, ({ key }) => key === metric.metaValueType)?.label,
+    () =>
+      _find(customEventTypes, ({ key }) => key === metric.metaValueType)?.label,
     [customEventTypes, metric.metaValueType],
   )
 
@@ -167,7 +180,9 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: EditMetri
             hint={t('project.metrics.metricType.description')}
             title={activeCustomEventType}
             capitalise
-            selectedItem={customEventTypes.find((item) => item.key === metric.metaValueType)}
+            selectedItem={customEventTypes.find(
+              (item) => item.key === metric.metaValueType,
+            )}
           />
         </div>
       </div>
@@ -189,7 +204,13 @@ interface AddAViewModalErrors {
 
 const MAX_METRICS_IN_VIEW = 3
 
-const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultView }: AddAViewModalProps) => {
+const AddAViewModal = ({
+  onSubmit,
+  showModal,
+  setShowModal,
+  tnMapping,
+  defaultView,
+}: AddAViewModalProps) => {
   const { id } = useCurrentProject()
   const {
     t,
@@ -199,8 +220,12 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
   const [name, setName] = useState(defaultView?.name || '')
   const [filterType, setFilterType] = useState('')
   const [searchList, setSearchList] = useState<any[]>([])
-  const [activeFilters, setActiveFilters] = useState<FilterType[]>(defaultView?.filters || [])
-  const [customEvents, setCustomEvents] = useState<Partial<ProjectViewCustomEvent>[]>(defaultView?.customEvents || [])
+  const [activeFilters, setActiveFilters] = useState<FilterType[]>(
+    defaultView?.filters || [],
+  )
+  const [customEvents, setCustomEvents] = useState<
+    Partial<ProjectViewCustomEvent>[]
+  >(defaultView?.customEvents || [])
   const [errors, setErrors] = useState<AddAViewModalErrors>({})
   const { fetchFilters } = useFiltersProxy()
 
@@ -257,7 +282,10 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
       processedItem = countries.getAlpha2Code(item, language) as string
     }
 
-    const itemExists = _find(activeFilters, ({ column, filter }) => filter === processedItem && column === filterType)
+    const itemExists = _find(
+      activeFilters,
+      ({ column, filter }) => filter === processedItem && column === filterType,
+    )
 
     if (itemExists) {
       return
@@ -290,12 +318,16 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
       const { id, customEventName, metricKey } = customEvents[i]
 
       if (!customEventName) {
-        metricErrors[`${id}_customEventName`] = t('apiNotifications.inputCannotBeEmpty')
+        metricErrors[`${id}_customEventName`] = t(
+          'apiNotifications.inputCannotBeEmpty',
+        )
         valid = false
       }
 
       if (!metricKey) {
-        metricErrors[`${id}_metricKey`] = t('apiNotifications.inputCannotBeEmpty')
+        metricErrors[`${id}_metricKey`] = t(
+          'apiNotifications.inputCannotBeEmpty',
+        )
         valid = false
       }
     }
@@ -322,7 +354,11 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
 
   // Handle fetcher response
   useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data && !hasHandledResponse.current) {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data &&
+      !hasHandledResponse.current
+    ) {
       hasHandledResponse.current = true
       if (fetcher.data.success) {
         onSubmit()
@@ -393,13 +429,17 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
             labelExtractor={(item) => t(`project.mapping.${item}`)}
             onSelect={(item) => setFilterType(item)}
             title={
-              _isEmpty(filterType) ? t('project.settings.reseted.selectFilters') : t(`project.mapping.${filterType}`)
+              _isEmpty(filterType)
+                ? t('project.settings.reseted.selectFilters')
+                : t(`project.mapping.${filterType}`)
             }
             selectedItem={_isEmpty(filterType) ? undefined : filterType}
           />
           {filterType && !_isEmpty(searchList) ? (
             <>
-              <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('project.filters')}</p>
+              <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>
+                {t('project.filters')}
+              </p>
               <Combobox
                 items={searchList}
                 labelExtractor={(item) => {
@@ -415,60 +455,71 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
             </>
           ) : null}
           <div className='mt-2'>
-            {_map(activeFilters, ({ filter, column, isExclusive, isContains }) => (
-              <Filter
-                key={`${column}-${filter}-${isExclusive}-${isContains}`}
-                onRemoveFilter={(e) => {
-                  e.preventDefault()
+            {_map(
+              activeFilters,
+              ({ filter, column, isExclusive, isContains }) => (
+                <Filter
+                  key={`${column}-${filter}-${isExclusive}-${isContains}`}
+                  onRemoveFilter={(e) => {
+                    e.preventDefault()
 
-                  setActiveFilters((prevFilters: any) => {
-                    return _filter(
-                      prevFilters,
-                      ({ column: prevColumn, filter: prevFilter }) => prevFilter !== filter || prevColumn !== column,
-                    )
-                  })
-                }}
-                onChangeExclusive={(e) => {
-                  e.preventDefault()
+                    setActiveFilters((prevFilters: any) => {
+                      return _filter(
+                        prevFilters,
+                        ({ column: prevColumn, filter: prevFilter }) =>
+                          prevFilter !== filter || prevColumn !== column,
+                      )
+                    })
+                  }}
+                  onChangeExclusive={(e) => {
+                    e.preventDefault()
 
-                  setActiveFilters((prevFilters: any) => {
-                    return _map(prevFilters, (item) => {
-                      if (item.column === column && item.filter === filter) {
-                        let nextContains = isContains
-                        let nextExclusive = isExclusive
-                        if (!isContains && !isExclusive) {
-                          nextContains = false
-                          nextExclusive = true
-                        } else if (!isContains && isExclusive) {
-                          nextContains = true
-                          nextExclusive = false
-                        } else if (isContains && !isExclusive) {
-                          nextContains = true
-                          nextExclusive = true
-                        } else {
-                          nextContains = false
-                          nextExclusive = false
+                    setActiveFilters((prevFilters: any) => {
+                      return _map(prevFilters, (item) => {
+                        if (item.column === column && item.filter === filter) {
+                          let nextContains = isContains
+                          let nextExclusive = isExclusive
+                          if (!isContains && !isExclusive) {
+                            nextContains = false
+                            nextExclusive = true
+                          } else if (!isContains && isExclusive) {
+                            nextContains = true
+                            nextExclusive = false
+                          } else if (isContains && !isExclusive) {
+                            nextContains = true
+                            nextExclusive = true
+                          } else {
+                            nextContains = false
+                            nextExclusive = false
+                          }
+
+                          return {
+                            column,
+                            filter,
+                            isExclusive: nextExclusive,
+                            isContains: nextContains,
+                          }
                         }
 
-                        return { column, filter, isExclusive: nextExclusive, isContains: nextContains }
-                      }
-
-                      return item
+                        return item
+                      })
                     })
-                  })
-                }}
-                isExclusive={isExclusive}
-                column={column}
-                filter={filter}
-                tnMapping={tnMapping}
-                isContains={isContains}
-                canChangeExclusive
-                removable
-              />
-            ))}
+                  }}
+                  isExclusive={isExclusive}
+                  column={column}
+                  filter={filter}
+                  tnMapping={tnMapping}
+                  isContains={isContains}
+                  canChangeExclusive
+                  removable
+                />
+              ),
+            )}
           </div>
           <hr className='my-4' />
-          <p className='text-sm font-medium text-gray-700 dark:text-gray-100'>{t('project.customEventsAndMetrics')}</p>
+          <p className='text-sm font-medium text-gray-700 dark:text-gray-100'>
+            {t('project.customEventsAndMetrics')}
+          </p>
           <div className='divide-y divide-gray-300/80 dark:divide-slate-900/60'>
             {_map(customEvents, (ev) => (
               <EditMetric
@@ -491,7 +542,9 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
                   )
                 }}
                 onDelete={() => {
-                  setCustomEvents((prev) => _filter(prev, ({ id }) => id !== ev.id))
+                  setCustomEvents((prev) =>
+                    _filter(prev, ({ id }) => id !== ev.id),
+                  )
                 }}
               />
             ))}
@@ -500,7 +553,10 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
             <InlineButton
               text={t('project.addAMetric')}
               onClick={() => {
-                setCustomEvents((prev) => [...prev, { ...EMPTY_CUSTOM_EVENT, id: Math.random().toString() }])
+                setCustomEvents((prev) => [
+                  ...prev,
+                  { ...EMPTY_CUSTOM_EVENT, id: Math.random().toString() },
+                ])
               }}
             />
           ) : null}

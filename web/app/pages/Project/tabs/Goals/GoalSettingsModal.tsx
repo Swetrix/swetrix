@@ -1,4 +1,9 @@
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+} from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
 import { Trash2Icon, PlusIcon } from 'lucide-react'
@@ -32,7 +37,13 @@ interface GoalSettingsModalProps {
   goalId?: string | null
 }
 
-const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId: _projectId, goalId }: GoalSettingsModalProps) => {
+const GoalSettingsModal = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  projectId: _projectId,
+  goalId,
+}: GoalSettingsModalProps) => {
   const { t } = useTranslation()
   const fetcher = useFetcher<ProjectViewActionData>()
   const processedRef = useRef<string | null>(null)
@@ -46,7 +57,9 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId: _projectId, 
   const [type, setType] = useState<'pageview' | 'custom_event'>('pageview')
   const [matchType, setMatchType] = useState<'exact' | 'contains'>('exact')
   const [value, setValue] = useState('')
-  const [metadataFilters, setMetadataFilters] = useState<{ key: string; value: string }[]>([])
+  const [metadataFilters, setMetadataFilters] = useState<
+    { key: string; value: string }[]
+  >([])
 
   const isSaving = fetcher.state === 'submitting'
 
@@ -142,7 +155,11 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId: _projectId, 
     setMetadataFilters([...metadataFilters, { key: '', value: '' }])
   }
 
-  const updateMetadataFilter = (index: number, field: 'key' | 'value', val: string) => {
+  const updateMetadataFilter = (
+    index: number,
+    field: 'key' | 'value',
+    val: string,
+  ) => {
     const updated = [...metadataFilters]
     updated[index][field] = val
     setMetadataFilters(updated)
@@ -200,15 +217,21 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId: _projectId, 
                       </label>
                       <Select
                         items={GOAL_TYPES}
-                        onSelect={(item) => setType(item.value as 'pageview' | 'custom_event')}
-                        title={GOAL_TYPES.find((t) => t.value === type)?.label || ''}
+                        onSelect={(item) =>
+                          setType(item.value as 'pageview' | 'custom_event')
+                        }
+                        title={
+                          GOAL_TYPES.find((t) => t.value === type)?.label || ''
+                        }
                         labelExtractor={(item) => item.label}
                         keyExtractor={(item) => item.value}
                         selectedItem={GOAL_TYPES.find((t) => t.value === type)}
                         capitalise
                       />
                       <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                        {type === 'pageview' ? t('goals.typePageviewDesc') : t('goals.typeCustomEventDesc')}
+                        {type === 'pageview'
+                          ? t('goals.typePageviewDesc')
+                          : t('goals.typeCustomEventDesc')}
                       </p>
                     </div>
 
@@ -218,17 +241,28 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId: _projectId, 
                       </label>
                       <Select
                         items={GOAL_MATCH_TYPES}
-                        onSelect={(item) => setMatchType(item.value as 'exact' | 'contains')}
-                        title={GOAL_MATCH_TYPES.find((t) => t.value === matchType)?.label || ''}
+                        onSelect={(item) =>
+                          setMatchType(item.value as 'exact' | 'contains')
+                        }
+                        title={
+                          GOAL_MATCH_TYPES.find((t) => t.value === matchType)
+                            ?.label || ''
+                        }
                         labelExtractor={(item) => item.label}
                         keyExtractor={(item) => item.value}
-                        selectedItem={GOAL_MATCH_TYPES.find((t) => t.value === matchType)}
+                        selectedItem={GOAL_MATCH_TYPES.find(
+                          (t) => t.value === matchType,
+                        )}
                         capitalise
                       />
                     </div>
 
                     <Input
-                      label={type === 'pageview' ? t('goals.pagePath') : t('goals.eventName')}
+                      label={
+                        type === 'pageview'
+                          ? t('goals.pagePath')
+                          : t('goals.eventName')
+                      }
                       value={value}
                       onChange={(e) => setValue(e.target.value)}
                       placeholder={
@@ -260,17 +294,32 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId: _projectId, 
                       {metadataFilters.length > 0 ? (
                         <div className='space-y-2'>
                           {_map(metadataFilters, (filter, index) => (
-                            <div key={index} className='flex items-center gap-2'>
+                            <div
+                              key={index}
+                              className='flex items-center gap-2'
+                            >
                               <Input
                                 value={filter.key}
-                                onChange={(e) => updateMetadataFilter(index, 'key', e.target.value)}
+                                onChange={(e) =>
+                                  updateMetadataFilter(
+                                    index,
+                                    'key',
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder={t('goals.filterKey')}
                                 className='flex-1'
                               />
                               <span className='text-gray-500'>=</span>
                               <Input
                                 value={filter.value}
-                                onChange={(e) => updateMetadataFilter(index, 'value', e.target.value)}
+                                onChange={(e) =>
+                                  updateMetadataFilter(
+                                    index,
+                                    'value',
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder={t('goals.filterValue')}
                                 className='flex-1'
                               />
@@ -285,7 +334,9 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId: _projectId, 
                           ))}
                         </div>
                       ) : (
-                        <p className='text-sm text-gray-500 dark:text-gray-400'>{t('goals.noMetadataFilters')}</p>
+                        <p className='text-sm text-gray-500 dark:text-gray-400'>
+                          {t('goals.noMetadataFilters')}
+                        </p>
                       )}
                     </div>
                   </div>

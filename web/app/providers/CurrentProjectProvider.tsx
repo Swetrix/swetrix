@@ -1,16 +1,41 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams, useFetcher, useLoaderData } from 'react-router'
+import {
+  useNavigate,
+  useSearchParams,
+  useFetcher,
+  useLoaderData,
+} from 'react-router'
 import { toast } from 'sonner'
 
 import { useLiveVisitorsProxy } from '~/hooks/useAnalyticsProxy'
-import { LIVE_VISITORS_UPDATE_INTERVAL, LS_PROJECTS_PROTECTED_KEY, Period, TimeBucket } from '~/lib/constants'
+import {
+  LIVE_VISITORS_UPDATE_INTERVAL,
+  LS_PROJECTS_PROTECTED_KEY,
+  Period,
+  TimeBucket,
+} from '~/lib/constants'
 import { type Project } from '~/lib/models/Project'
-import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
+import type {
+  ProjectLoaderData,
+  ProjectViewActionData,
+} from '~/routes/projects.$id'
 import { getItemJSON } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
-import { getProjectPreferences, setProjectPassword, setProjectPreferences } from '../pages/Project/View/utils/cache'
+import {
+  getProjectPreferences,
+  setProjectPassword,
+  setProjectPreferences,
+} from '../pages/Project/View/utils/cache'
 import { CHART_METRICS_MAPPING } from '../pages/Project/View/ViewProject.helpers'
 
 interface CurrentProjectContextType {
@@ -23,10 +48,14 @@ interface CurrentProjectContextType {
   liveVisitors: number
   updateLiveVisitors: () => Promise<void>
   isPasswordRequired: boolean
-  submitPassword: (password: string) => Promise<{ success: boolean; error?: string }>
+  submitPassword: (
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>
 }
 
-const CurrentProjectContext = createContext<CurrentProjectContextType | undefined>(undefined)
+const CurrentProjectContext = createContext<
+  CurrentProjectContextType | undefined
+>(undefined)
 
 interface CurrentProjectProviderProps {
   id: string
@@ -37,7 +66,10 @@ export const useProjectPassword = (id?: string) => {
   const [searchParams] = useSearchParams()
 
   const projectPassword = useMemo(
-    () => searchParams.get('password') || getItemJSON(LS_PROJECTS_PROTECTED_KEY)?.[id || ''] || '',
+    () =>
+      searchParams.get('password') ||
+      getItemJSON(LS_PROJECTS_PROTECTED_KEY)?.[id || ''] ||
+      '',
     [id, searchParams],
   )
 
@@ -51,17 +83,27 @@ const useProject = (id: string) => {
   const storedPassword = useProjectPassword(id)
 
   // Use loader data only for initial state (SSR hydration)
-  const [project, setProject] = useState<Project | null>(() => loaderData?.project || null)
-  const [isPasswordRequired, setIsPasswordRequired] = useState(() => loaderData?.isPasswordRequired || false)
+  const [project, setProject] = useState<Project | null>(
+    () => loaderData?.project || null,
+  )
+  const [isPasswordRequired, setIsPasswordRequired] = useState(
+    () => loaderData?.isPasswordRequired || false,
+  )
 
   const passwordFetcher = useFetcher<ProjectViewActionData>()
   const lastHandledFetcherData = useRef<ProjectViewActionData | null>(null)
   const hasTriedStoredPassword = useRef(false)
-  const passwordResolverRef = useRef<((value: { success: boolean; error?: string }) => void) | null>(null)
+  const passwordResolverRef = useRef<
+    ((value: { success: boolean; error?: string }) => void) | null
+  >(null)
   const lastSubmittedPasswordRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (loaderData?.error && !loaderData.project && !loaderData.isPasswordRequired) {
+    if (
+      loaderData?.error &&
+      !loaderData.project &&
+      !loaderData.isPasswordRequired
+    ) {
       console.error('[ERROR] (getProject)', loaderData.error)
       toast.error(t('project.noExist'))
       navigate(routes.dashboard)
@@ -112,7 +154,10 @@ const useProject = (id: string) => {
 
       lastSubmittedPasswordRef.current = null
       if (passwordResolverRef.current) {
-        passwordResolverRef.current({ success: false, error: passwordFetcher.data.error })
+        passwordResolverRef.current({
+          success: false,
+          error: passwordFetcher.data.error,
+        })
         passwordResolverRef.current = null
       }
     }
@@ -123,7 +168,10 @@ const useProject = (id: string) => {
       return new Promise((resolve) => {
         passwordResolverRef.current = resolve
         lastSubmittedPasswordRef.current = password
-        passwordFetcher.submit({ intent: 'get-project', password }, { method: 'POST', action: `/projects/${id}` })
+        passwordFetcher.submit(
+          { intent: 'get-project', password },
+          { method: 'POST', action: `/projects/${id}` },
+        )
       })
     },
     [id, passwordFetcher],
@@ -151,7 +199,9 @@ export type ProjectPreferences = {
 }
 
 const useProjectPreferences = (id: string) => {
-  const [preferences, setPreferences] = useState<ProjectPreferences>(getProjectPreferences(id) as ProjectPreferences)
+  const [preferences, setPreferences] = useState<ProjectPreferences>(
+    getProjectPreferences(id) as ProjectPreferences,
+  )
 
   const updatePreferences = useCallback(
     (prefs: ProjectPreferences) => {
@@ -207,8 +257,12 @@ const useLiveVisitors = (project: Project | null) => {
   return { liveVisitors, updateLiveVisitors }
 }
 
-export const CurrentProjectProvider = ({ children, id }: CurrentProjectProviderProps) => {
-  const { project, mergeProject, isPasswordRequired, submitPassword } = useProject(id)
+export const CurrentProjectProvider = ({
+  children,
+  id,
+}: CurrentProjectProviderProps) => {
+  const { project, mergeProject, isPasswordRequired, submitPassword } =
+    useProject(id)
   const { preferences, updatePreferences } = useProjectPreferences(id)
   const { liveVisitors, updateLiveVisitors } = useLiveVisitors(project)
 
@@ -236,7 +290,9 @@ export const useCurrentProject = () => {
   const context = useContext(CurrentProjectContext)
 
   if (context === undefined) {
-    throw new Error('useCurrentProject must be used within a CurrentProjectProvider')
+    throw new Error(
+      'useCurrentProject must be used within a CurrentProjectProvider',
+    )
   }
 
   return context

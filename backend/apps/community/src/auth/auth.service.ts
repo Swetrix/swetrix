@@ -48,7 +48,7 @@ export class AuthService {
   ) {}
 
   private async createSha1Hash(text: string): Promise<string> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const sha1sum = createHash('sha1')
         .update(text)
         .digest('hex')

@@ -5,7 +5,10 @@ import type { SitemapFunction } from 'remix-sitemap'
 import { serverFetch } from '~/api/api.server'
 import { Project } from '~/lib/models/Project'
 import Dashboard from '~/pages/Dashboard'
-import { redirectIfNotAuthenticated, createHeadersWithCookies } from '~/utils/session.server'
+import {
+  redirectIfNotAuthenticated,
+  createHeadersWithCookies,
+} from '~/utils/session.server'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,
@@ -43,17 +46,25 @@ export async function action({ request }: ActionFunctionArgs) {
       const organisationId = formData.get('organisationId')?.toString()
 
       if (!name.trim()) {
-        return data<DashboardActionData>({ intent, fieldErrors: { name: 'Project name is required' } }, { status: 400 })
-      }
-
-      if (name.length > 50) {
         return data<DashboardActionData>(
-          { intent, fieldErrors: { name: 'Project name must be 50 characters or less' } },
+          { intent, fieldErrors: { name: 'Project name is required' } },
           { status: 400 },
         )
       }
 
-      const body: { name: string; organisationId?: string } = { name: name.trim() }
+      if (name.length > 50) {
+        return data<DashboardActionData>(
+          {
+            intent,
+            fieldErrors: { name: 'Project name must be 50 characters or less' },
+          },
+          { status: 400 },
+        )
+      }
+
+      const body: { name: string; organisationId?: string } = {
+        name: name.trim(),
+      }
       if (organisationId) body.organisationId = organisationId
 
       const result = await serverFetch<Project>(request, 'project', {
@@ -62,7 +73,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<DashboardActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<DashboardActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<DashboardActionData>(
@@ -75,7 +89,10 @@ export async function action({ request }: ActionFunctionArgs) {
       const projectId = formData.get('projectId')?.toString()
 
       if (!projectId) {
-        return data<DashboardActionData>({ intent, error: 'Project ID is required' }, { status: 400 })
+        return data<DashboardActionData>(
+          { intent, error: 'Project ID is required' },
+          { status: 400 },
+        )
       }
 
       const result = await serverFetch(request, `project/${projectId}/pin`, {
@@ -83,7 +100,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<DashboardActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<DashboardActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<DashboardActionData>(
@@ -96,7 +116,10 @@ export async function action({ request }: ActionFunctionArgs) {
       const projectId = formData.get('projectId')?.toString()
 
       if (!projectId) {
-        return data<DashboardActionData>({ intent, error: 'Project ID is required' }, { status: 400 })
+        return data<DashboardActionData>(
+          { intent, error: 'Project ID is required' },
+          { status: 400 },
+        )
       }
 
       const result = await serverFetch(request, `project/${projectId}/pin`, {
@@ -104,7 +127,10 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<DashboardActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<DashboardActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
       return data<DashboardActionData>(
@@ -117,7 +143,10 @@ export async function action({ request }: ActionFunctionArgs) {
       const shareId = formData.get('shareId')?.toString()
 
       if (!shareId) {
-        return data<DashboardActionData>({ intent, error: 'Share ID is required' }, { status: 400 })
+        return data<DashboardActionData>(
+          { intent, error: 'Share ID is required' },
+          { status: 400 },
+        )
       }
 
       const result = await serverFetch(request, `user/share/${shareId}`, {
@@ -125,14 +154,23 @@ export async function action({ request }: ActionFunctionArgs) {
       })
 
       if (result.error) {
-        return data<DashboardActionData>({ intent, error: result.error as string }, { status: 400 })
+        return data<DashboardActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
       }
 
-      return data<DashboardActionData>({ intent, success: true }, { headers: createHeadersWithCookies(result.cookies) })
+      return data<DashboardActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
     }
 
     default:
-      return data<DashboardActionData>({ error: 'Unknown action' }, { status: 400 })
+      return data<DashboardActionData>(
+        { error: 'Unknown action' },
+        { status: 400 },
+      )
   }
 }
 
@@ -149,13 +187,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const skip = (page - 1) * pageSize
 
   const cookieHeader = request.headers.get('Cookie')
-  const viewMode = (cookieHeader?.match(/(?<=dashboard_view=)[^;]*/)?.[0] as 'grid' | 'list') || 'grid'
+  const viewMode =
+    (cookieHeader?.match(/(?<=dashboard_view=)[^;]*/)?.[0] as
+      | 'grid'
+      | 'list') || 'grid'
 
   const projectsResult = await serverFetch<{
     results: Project[]
     total: number
     page_total: number
-  }>(request, `/project?take=${pageSize}&skip=${skip}&search=${search}&period=${period}&sort=${sort}`)
+  }>(
+    request,
+    `/project?take=${pageSize}&skip=${skip}&search=${search}&period=${period}&sort=${sort}`,
+  )
 
   const loaderData: DashboardLoaderData = {
     viewMode,

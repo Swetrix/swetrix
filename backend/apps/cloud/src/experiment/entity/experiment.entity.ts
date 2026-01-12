@@ -107,7 +107,7 @@ export class Experiment {
   endedAt: Date | null
 
   @ApiProperty({ type: () => Project })
-  @ManyToOne(() => Project, project => project.experiments)
+  @ManyToOne(() => Project, (project) => project.experiments)
   @JoinColumn()
   project: Project
 
@@ -122,7 +122,7 @@ export class Experiment {
   goal: Goal | null
 
   @ApiProperty({ type: () => [ExperimentVariant] })
-  @OneToMany(() => ExperimentVariant, variant => variant.experiment, {
+  @OneToMany(() => ExperimentVariant, (variant) => variant.experiment, {
     cascade: true,
   })
   variants: ExperimentVariant[]

@@ -38,7 +38,10 @@ const AnnotationModal = ({
     () => (isOpened ? annotation?.date || defaultDate || '' : ''),
     [isOpened, annotation?.date, defaultDate],
   )
-  const initialText = useMemo(() => (isOpened ? annotation?.text || '' : ''), [isOpened, annotation?.text])
+  const initialText = useMemo(
+    () => (isOpened ? annotation?.text || '' : ''),
+    [isOpened, annotation?.text],
+  )
 
   const [date, setDate] = useState(initialDate)
   const [text, setText] = useState(initialText)
@@ -134,7 +137,7 @@ const AnnotationModal = ({
               }}
               options={{
                 altInputClass: cn(
-                  'w-full rounded-md border-0 ring-1 ring-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:ring-indigo-500 dark:ring-slate-800/50 dark:bg-slate-800 dark:text-gray-100',
+                  'w-full rounded-md border-0 bg-white px-3 py-2 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-indigo-500 dark:bg-slate-800 dark:text-gray-100 dark:ring-slate-800/50',
                   {
                     'cursor-not-allowed opacity-50': !allowedToManage,
                   },
@@ -161,11 +164,17 @@ const AnnotationModal = ({
           </div>
           <div className='flex items-start gap-2 rounded-md bg-blue-50 p-3 dark:bg-blue-900/20'>
             <InfoIcon className='mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400' />
-            <p className='text-xs text-blue-700 dark:text-blue-300'>{t('modals.annotation.warning')}</p>
+            <p className='text-xs text-blue-700 dark:text-blue-300'>
+              {t('modals.annotation.warning')}
+            </p>
           </div>
         </div>
       }
-      title={isEditMode ? t('modals.annotation.editTitle') : t('modals.annotation.addTitle')}
+      title={
+        isEditMode
+          ? t('modals.annotation.editTitle')
+          : t('modals.annotation.addTitle')
+      }
       isOpened={isOpened}
       overflowVisible
     />

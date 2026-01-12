@@ -45,7 +45,10 @@ import {
 } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Stats } from '~/lib/models/Stats'
-import { MetricCard, MetricCardSelect } from '~/pages/Project/tabs/Traffic/MetricCards'
+import {
+  MetricCard,
+  MetricCardSelect,
+} from '~/pages/Project/tabs/Traffic/MetricCards'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
@@ -99,7 +102,9 @@ interface FeedbackHighlightProps {
 }
 
 const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
-  <span className='bg-yellow-100/80 font-medium dark:bg-yellow-400/40'>&nbsp;{children}&nbsp;</span>
+  <span className='bg-yellow-100/80 font-medium dark:bg-yellow-400/40'>
+    &nbsp;{children}&nbsp;
+  </span>
 )
 
 const FeedbackDual = () => {
@@ -112,15 +117,23 @@ const FeedbackDual = () => {
           <div className='flex flex-col pb-10 sm:pb-16 lg:pr-8 lg:pb-0 xl:pr-20'>
             <img
               alt='Casterlabs'
-              src={theme === 'dark' ? '/assets/users/casterlabs-dark.svg' : '/assets/users/casterlabs-light.svg'}
+              src={
+                theme === 'dark'
+                  ? '/assets/users/casterlabs-dark.svg'
+                  : '/assets/users/casterlabs-light.svg'
+              }
               className='h-12 self-start'
             />
             <figure className='mt-10 flex flex-auto flex-col justify-between'>
               <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
                 <p>
-                  "Swetrix has been a<FeedbackHighlight>game changer for our analytics.</FeedbackHighlight> They've
-                  always been on top of feature requests and bug reports and have been friendly every step of the way. I
-                  can't recommend them enough."
+                  "Swetrix has been a
+                  <FeedbackHighlight>
+                    game changer for our analytics.
+                  </FeedbackHighlight>{' '}
+                  They've always been on top of feature requests and bug reports
+                  and have been friendly every step of the way. I can't
+                  recommend them enough."
                 </p>
               </blockquote>
               <figcaption className='mt-10 flex items-center gap-x-6'>
@@ -130,8 +143,12 @@ const FeedbackDual = () => {
                   className='size-14 rounded-full bg-gray-50 dark:bg-gray-800'
                 />
                 <div className='text-base'>
-                  <div className='font-semibold text-gray-900 dark:text-gray-100'>Alex Bowles</div>
-                  <div className='mt-1 text-gray-500 dark:text-gray-400'>Co-founder of Casterlabs</div>
+                  <div className='font-semibold text-gray-900 dark:text-gray-100'>
+                    Alex Bowles
+                  </div>
+                  <div className='mt-1 text-gray-500 dark:text-gray-400'>
+                    Co-founder of Casterlabs
+                  </div>
                 </div>
               </figcaption>
             </figure>
@@ -139,18 +156,24 @@ const FeedbackDual = () => {
           <div className='flex flex-col border-t border-gray-900/10 pt-10 sm:pt-16 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8 xl:pl-20 dark:border-gray-100/10'>
             <img
               alt='Phalcode'
-              src={theme === 'dark' ? '/assets/users/phalcode-dark.svg' : '/assets/users/phalcode-light.svg'}
+              src={
+                theme === 'dark'
+                  ? '/assets/users/phalcode-dark.svg'
+                  : '/assets/users/phalcode-light.svg'
+              }
               className='h-8 self-start'
             />
             <figure className='mt-10 flex flex-auto flex-col justify-between'>
               <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
                 <p>
-                  "I was confused by Google Analytics so much that I was getting zero actionable insights. Swetrix
-                  changed everything -
+                  "I was confused by Google Analytics so much that I was getting
+                  zero actionable insights. Swetrix changed everything -
                   <FeedbackHighlight>
-                    clean dashboard, instant understanding of user behavior, and features that actually matter.
+                    clean dashboard, instant understanding of user behavior, and
+                    features that actually matter.
                   </FeedbackHighlight>
-                  Finally, analytics that help me make better decisions instead of irritating me."
+                  Finally, analytics that help me make better decisions instead
+                  of irritating me."
                 </p>
               </blockquote>
               <figcaption className='mt-10 flex items-center gap-x-6'>
@@ -160,8 +183,12 @@ const FeedbackDual = () => {
                   className='size-14 rounded-full bg-gray-50 dark:bg-gray-800'
                 />
                 <div className='text-base'>
-                  <div className='font-semibold text-gray-900 dark:text-gray-100'>Alper Alkan</div>
-                  <div className='mt-1 text-gray-500 dark:text-gray-400'>Co-founder of Phalcode</div>
+                  <div className='font-semibold text-gray-900 dark:text-gray-100'>
+                    Alper Alkan
+                  </div>
+                  <div className='mt-1 text-gray-500 dark:text-gray-400'>
+                    Co-founder of Phalcode
+                  </div>
                 </div>
               </figcaption>
             </figure>
@@ -195,18 +222,35 @@ const REVIEWERS = [
   },
 ]
 
-const Testimonials = ({ className, stats }: { className?: string; stats: Stats | null }) => {
+const Testimonials = ({
+  className,
+  stats,
+}: {
+  className?: string
+  stats: Stats | null
+}) => {
   const { t } = useTranslation('common')
 
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-3 md:flex-row', className)}>
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center gap-3 md:flex-row',
+        className,
+      )}
+    >
       <div className='flex -space-x-5 overflow-hidden'>
         {_map(REVIEWERS, ({ name, image }) => (
           <div
             key={`${name}${image}`}
             className='relative inline-flex size-12 overflow-hidden rounded-full border-4 border-gray-50 dark:border-slate-800/90'
           >
-            <img alt={name} width='400' height='400' style={{ color: 'transparent' }} src={image} />
+            <img
+              alt={name}
+              width='400'
+              height='400'
+              style={{ color: 'transparent' }}
+              src={image}
+            />
           </div>
         ))}
       </div>
@@ -247,7 +291,11 @@ const LiveDemoPreview = () => {
     return (
       <div className='relative z-20 mx-auto mt-10 overflow-hidden rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'>
         <img
-          src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
+          src={
+            theme === 'dark'
+              ? '/assets/screenshot_dark.png'
+              : '/assets/screenshot_light.png'
+          }
           className='relative w-full'
           width='100%'
           height='auto'
@@ -314,7 +362,9 @@ const Hero = () => {
             <h1 className='max-w-5xl text-left text-5xl font-semibold tracking-tight text-pretty text-slate-900 sm:leading-none lg:mt-6 lg:text-6xl xl:text-7xl dark:text-white'>
               {t('main.slogan')}
             </h1>
-            <p className='mt-4 max-w-2xl text-left text-lg text-slate-900 dark:text-gray-50'>{t('main.description')}</p>
+            <p className='mt-4 max-w-2xl text-left text-lg text-slate-900 dark:text-gray-50'>
+              {t('main.description')}
+            </p>
             <div className='mt-8 flex flex-col items-stretch sm:flex-row sm:items-center'>
               <Link
                 to={routesPath.signup}
@@ -371,12 +421,24 @@ const Hero = () => {
   )
 }
 
-const FeatureCard = ({ title, description, media }: { title: string; description: string; media: React.ReactNode }) => (
+const FeatureCard = ({
+  title,
+  description,
+  media,
+}: {
+  title: string
+  description: string
+  media: React.ReactNode
+}) => (
   <div className='flex h-full flex-col overflow-hidden rounded-xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
     <div className='relative h-60 overflow-hidden'>{media}</div>
     <div className='p-6'>
-      <h3 className='text-lg font-semibold text-gray-950 dark:text-white'>{title}</h3>
-      <p className='mt-1 text-sm text-gray-700 dark:text-gray-300'>{description}</p>
+      <h3 className='text-lg font-semibold text-gray-950 dark:text-white'>
+        {title}
+      </h3>
+      <p className='mt-1 text-sm text-gray-700 dark:text-gray-300'>
+        {description}
+      </p>
     </div>
   </div>
 )
@@ -393,8 +455,12 @@ const LargeFeatureCard = ({
   <div className='flex h-full flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
     <div className='relative h-60 overflow-hidden'>{media}</div>
     <div className='p-6'>
-      <h3 className='text-xl font-semibold text-gray-950 dark:text-white'>{title}</h3>
-      <div className='mt-1 text-sm text-gray-700 dark:text-gray-300'>{description}</div>
+      <h3 className='text-xl font-semibold text-gray-950 dark:text-white'>
+        {title}
+      </h3>
+      <div className='mt-1 text-sm text-gray-700 dark:text-gray-300'>
+        {description}
+      </div>
     </div>
   </div>
 )
@@ -415,7 +481,8 @@ const SdurMetric = () => {
     <MetricCard
       classes={{
         value: 'max-md:text-xl md:text-3xl',
-        container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+        container:
+          'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
       }}
       label={t('dashboard.sessionDuration')}
       value={duration}
@@ -426,18 +493,26 @@ const SdurMetric = () => {
 
 const AnalyticsLivePreview = () => {
   const { t } = useTranslation('common')
-  const [points, setPoints] = useState<number[]>(() => Array.from({ length: 32 }, () => 2 + Math.random() * 10))
+  const [points, setPoints] = useState<number[]>(() =>
+    Array.from({ length: 32 }, () => 2 + Math.random() * 10),
+  )
   const [live, setLive] = useState(18)
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       setPoints((prev) => {
         const next = prev.slice(1)
-        next.push(Math.max(1, Math.min(14, prev[prev.length - 1] + (Math.random() - 0.5) * 3)))
+        next.push(
+          Math.max(
+            1,
+            Math.min(14, prev[prev.length - 1] + (Math.random() - 0.5) * 3),
+          ),
+        )
         return next
       })
       setLive((v) => {
-        const n = v + (Math.random() > 0.5 ? 1 : -1) * (Math.random() > 0.6 ? 2 : 1)
+        const n =
+          v + (Math.random() > 0.5 ? 1 : -1) * (Math.random() > 0.6 ? 2 : 1)
         return Math.max(8, Math.min(28, n))
       })
     }, 2000)
@@ -577,23 +652,63 @@ const randomEvent = (): EventItem => {
   const metas = [
     {
       text: 'United States • Chrome • iOS',
-      flag: <Flag className='rounded-xs' country='US' size={16} alt='' aria-hidden='true' />,
+      flag: (
+        <Flag
+          className='rounded-xs'
+          country='US'
+          size={16}
+          alt=''
+          aria-hidden='true'
+        />
+      ),
     },
     {
       text: 'France • Edge • Windows',
-      flag: <Flag className='rounded-xs' country='FR' size={16} alt='' aria-hidden='true' />,
+      flag: (
+        <Flag
+          className='rounded-xs'
+          country='FR'
+          size={16}
+          alt=''
+          aria-hidden='true'
+        />
+      ),
     },
     {
       text: 'United Kingdom • Safari • macOS',
-      flag: <Flag className='rounded-xs' country='GB' size={16} alt='' aria-hidden='true' />,
+      flag: (
+        <Flag
+          className='rounded-xs'
+          country='GB'
+          size={16}
+          alt=''
+          aria-hidden='true'
+        />
+      ),
     },
     {
       text: 'Germany • Firefox • Linux',
-      flag: <Flag className='rounded-xs' country='DE' size={16} alt='' aria-hidden='true' />,
+      flag: (
+        <Flag
+          className='rounded-xs'
+          country='DE'
+          size={16}
+          alt=''
+          aria-hidden='true'
+        />
+      ),
     },
     {
       text: 'Ukraine • Chrome • macOS',
-      flag: <Flag className='rounded-xs' country='UA' size={16} alt='' aria-hidden='true' />,
+      flag: (
+        <Flag
+          className='rounded-xs'
+          country='UA'
+          size={16}
+          alt=''
+          aria-hidden='true'
+        />
+      ),
     },
   ]
   const pick = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)]
@@ -612,8 +727,17 @@ const randomEvent = (): EventItem => {
 }
 
 const CustomEventsPreview = () => {
-  const [items, setItems] = useState<EventItem[]>(() => Array.from({ length: 5 }, randomEvent))
-  const agos = ['just now', '5 sec ago', '12 sec ago', '18 sec ago', '25 sec ago', '32 sec ago']
+  const [items, setItems] = useState<EventItem[]>(() =>
+    Array.from({ length: 5 }, randomEvent),
+  )
+  const agos = [
+    'just now',
+    '5 sec ago',
+    '12 sec ago',
+    '18 sec ago',
+    '25 sec ago',
+    '32 sec ago',
+  ]
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -653,11 +777,17 @@ const CustomEventsPreview = () => {
                   )}
                 </span>
                 <div>
-                  <div className='font-medium text-slate-900 dark:text-gray-50'>{ev.name}</div>
-                  <div className='text-xs text-slate-600 dark:text-gray-400'>{ev.meta}</div>
+                  <div className='font-medium text-slate-900 dark:text-gray-50'>
+                    {ev.name}
+                  </div>
+                  <div className='text-xs text-slate-600 dark:text-gray-400'>
+                    {ev.meta}
+                  </div>
                 </div>
               </div>
-              <div className='text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
+              <div className='text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>
+                {agos[index]}
+              </div>
             </motion.li>
           ))}
         </AnimatePresence>
@@ -684,12 +814,32 @@ const PerformancePreview = () => {
   const height = 120
 
   const init = (base: number, amp: number) =>
-    Array.from({ length: POINTS }, (_, i) => Math.max(0, base + (Math.sin(i / 3) + (Math.random() - 0.5)) * amp))
+    Array.from({ length: POINTS }, (_, i) =>
+      Math.max(0, base + (Math.sin(i / 3) + (Math.random() - 0.5)) * amp),
+    )
 
   const [series, setSeries] = useState<Series[]>([
-    { id: 'frontend', color: '#709775', base: 0.5, amp: 0.15, values: init(0.5, 0.15) },
-    { id: 'backend', color: '#00A8E8', base: 0.14, amp: 0.06, values: init(0.14, 0.06) },
-    { id: 'network', color: '#F7A265', base: 0.06, amp: 0.03, values: init(0.06, 0.03) },
+    {
+      id: 'frontend',
+      color: '#709775',
+      base: 0.5,
+      amp: 0.15,
+      values: init(0.5, 0.15),
+    },
+    {
+      id: 'backend',
+      color: '#00A8E8',
+      base: 0.14,
+      amp: 0.06,
+      values: init(0.14, 0.06),
+    },
+    {
+      id: 'network',
+      color: '#F7A265',
+      base: 0.06,
+      amp: 0.03,
+      values: init(0.06, 0.03),
+    },
   ])
 
   useEffect(() => {
@@ -722,8 +872,10 @@ const PerformancePreview = () => {
   }
 
   const label = (id: SeriesId) => t(`dashboard.${id}`)
-  const last = (id: SeriesId) => series.find((s) => s.id === id)!.values[POINTS - 1]
-  const prev = (id: SeriesId) => series.find((s) => s.id === id)!.values[POINTS - 2]
+  const last = (id: SeriesId) =>
+    series.find((s) => s.id === id)!.values[POINTS - 1]
+  const prev = (id: SeriesId) =>
+    series.find((s) => s.id === id)!.values[POINTS - 2]
 
   const fmt = (v: number) => `${v.toFixed(2)}s`
 
@@ -738,7 +890,10 @@ const PerformancePreview = () => {
     <ul className='flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[10px] text-slate-600 dark:text-gray-300'>
       {series.map((s) => (
         <li key={s.id} className='inline-flex items-center gap-1'>
-          <span className='inline-block size-2 rounded-[2px]' style={{ backgroundColor: s.color }} />
+          <span
+            className='inline-block size-2 rounded-[2px]'
+            style={{ backgroundColor: s.color }}
+          />
           {label(s.id)}
         </li>
       ))}
@@ -747,12 +902,17 @@ const PerformancePreview = () => {
 
   const metric = (label: string, value: number, prevValue: number) => {
     const isUp = value >= prevValue
-    const pct = prevValue > 0 ? Math.abs(Math.round(((value - prevValue) / prevValue) * 100)) : 0
+    const pct =
+      prevValue > 0
+        ? Math.abs(Math.round(((value - prevValue) / prevValue) * 100))
+        : 0
     return (
       <div className='min-w-0 flex-1 rounded-md bg-white px-2.5 py-1.5 text-[11px] text-slate-900 ring-1 ring-black/5 dark:bg-slate-900 dark:text-gray-50 dark:ring-white/10'>
         <div className='text-lg font-bold'>{fmt(value)}</div>
         <div className='mt-0.5 flex items-center justify-between'>
-          <div className='text-[10px] text-slate-600 dark:text-gray-300'>{label}</div>
+          <div className='text-[10px] text-slate-600 dark:text-gray-300'>
+            {label}
+          </div>
           <div
             className={cn('flex items-center gap-1 text-[10px]', {
               'text-emerald-600 dark:text-emerald-400': isUp,
@@ -795,7 +955,15 @@ const PerformancePreview = () => {
             </linearGradient>
           </defs>
           {[0.5].map((r) => (
-            <line key={r} x1={0} x2={width} y1={height * r} y2={height * r} stroke='url(#gridfade)' strokeWidth={1} />
+            <line
+              key={r}
+              x1={0}
+              x2={width}
+              y1={height * r}
+              y2={height * r}
+              stroke='url(#gridfade)'
+              strokeWidth={1}
+            />
           ))}
           {series.map((s) => (
             <g key={s.id}>
@@ -830,11 +998,23 @@ const randomLog = (): LogItem => {
 }
 
 const ErrorsPreview = () => {
-  const [logs, setLogs] = useState<LogItem[]>(() => Array.from({ length: 5 }, () => randomLog()))
-  const agos = ['just now', '5 sec ago', '12 sec ago', '18 sec ago', '25 sec ago', '32 sec ago']
+  const [logs, setLogs] = useState<LogItem[]>(() =>
+    Array.from({ length: 5 }, () => randomLog()),
+  )
+  const agos = [
+    'just now',
+    '5 sec ago',
+    '12 sec ago',
+    '18 sec ago',
+    '25 sec ago',
+    '32 sec ago',
+  ]
 
   useEffect(() => {
-    const id = setInterval(() => setLogs((prev) => [randomLog(), ...prev].slice(0, 6)), 4800)
+    const id = setInterval(
+      () => setLogs((prev) => [randomLog(), ...prev].slice(0, 6)),
+      4800,
+    )
     return () => clearInterval(id)
   }, [])
 
@@ -853,9 +1033,13 @@ const ErrorsPreview = () => {
             >
               <div className='flex items-start gap-2'>
                 <span className='mt-0.5 inline-block size-2.5 flex-shrink-0 rounded-full bg-rose-500' />
-                <div className='text-rose-700 dark:text-rose-200'>{log.message}</div>
+                <div className='text-rose-700 dark:text-rose-200'>
+                  {log.message}
+                </div>
               </div>
-              <div className='text-xs whitespace-nowrap text-rose-600 dark:text-rose-300'>{agos[index]}</div>
+              <div className='text-xs whitespace-nowrap text-rose-600 dark:text-rose-300'>
+                {agos[index]}
+              </div>
             </motion.li>
           ))}
         </AnimatePresence>
@@ -930,8 +1114,12 @@ const FunnelsPreview = () => {
   return (
     <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 dark:from-slate-800 dark:to-slate-900'>
       <div className='mb-2 flex items-center justify-between'>
-        <div className='text-xs font-medium text-slate-700 dark:text-gray-300'>Sample funnel</div>
-        <div className='text-[11px] text-slate-700 dark:text-gray-300'>% of previous step</div>
+        <div className='text-xs font-medium text-slate-700 dark:text-gray-300'>
+          Sample funnel
+        </div>
+        <div className='text-[11px] text-slate-700 dark:text-gray-300'>
+          % of previous step
+        </div>
       </div>
       <div className='relative'>
         <svg viewBox={`0 0 ${width} ${height}`} className='h-36 w-full'>
@@ -970,7 +1158,10 @@ const FunnelsPreview = () => {
 
         <div className='pointer-events-none absolute inset-0 flex items-center justify-between px-3'>
           {midLabels.slice(0, -1).map((p, idx) => (
-            <div key={idx} className='rounded-md bg-gray-200 p-1 text-xs font-semibold text-slate-900'>
+            <div
+              key={idx}
+              className='rounded-md bg-gray-200 p-1 text-xs font-semibold text-slate-900'
+            >
               {p.v.toFixed(0)}%
             </div>
           ))}
@@ -1000,12 +1191,17 @@ const randomChatItem = (): ChatItem => {
 }
 
 const AlertsPreview = () => {
-  const [items, setItems] = useState<ChatItem[]>(() => Array.from({ length: 3 }, () => randomChatItem()))
+  const [items, setItems] = useState<ChatItem[]>(() =>
+    Array.from({ length: 3 }, () => randomChatItem()),
+  )
 
   const agos = ['just now', '7 sec ago', '52 sec ago', '2 min ago', '6 min ago']
 
   useEffect(() => {
-    const id = setInterval(() => setItems((prev) => [randomChatItem(), ...prev].slice(0, 5)), 5140)
+    const id = setInterval(
+      () => setItems((prev) => [randomChatItem(), ...prev].slice(0, 5)),
+      5140,
+    )
     return () => clearInterval(id)
   }, [])
 
@@ -1016,15 +1212,21 @@ const AlertsPreview = () => {
           <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
             <BugIcon className='size-4 text-rose-600 dark:text-rose-400' />
             <span className='text-sm'>
-              Error alert <span className='font-semibold'>Unique error</span> triggered!
+              Error alert <span className='font-semibold'>Unique error</span>{' '}
+              triggered!
             </span>
           </div>
           <div className='text-sm leading-5 wrap-break-word whitespace-pre-wrap text-slate-800 dark:text-gray-200'>
             Project: <span className='font-mono'>Demo</span>
             <br />
-            Error: <span className='font-mono'>NetworkError: Failed to fetch /api/data</span>
+            Error:{' '}
+            <span className='font-mono'>
+              NetworkError: Failed to fetch /api/data
+            </span>
           </div>
-          <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
+          <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>
+            {agos[index]}
+          </div>
         </div>
       )
     }
@@ -1037,13 +1239,17 @@ const AlertsPreview = () => {
           <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
             <BellRingIcon className='size-4 text-amber-600 dark:text-amber-400' />
             <span className='text-sm'>
-              Alert <span className='font-semibold'>Online &gt;= 10</span> got triggered!
+              Alert <span className='font-semibold'>Online &gt;= 10</span> got
+              triggered!
             </span>
           </div>
           <div className='text-sm leading-5 text-slate-800 dark:text-gray-200'>
-            Your project <span className='font-semibold'>Example</span> has {online} online users right now!
+            Your project <span className='font-semibold'>Example</span> has{' '}
+            {online} online users right now!
           </div>
-          <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
+          <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>
+            {agos[index]}
+          </div>
         </div>
       )
     }
@@ -1053,13 +1259,17 @@ const AlertsPreview = () => {
         <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
           <BellRingIcon className='size-4 text-amber-600 dark:text-amber-400' />
           <span className='text-sm'>
-            Alert <span className='font-semibold'>No traffic</span> got triggered!
+            Alert <span className='font-semibold'>No traffic</span> got
+            triggered!
           </span>
         </div>
         <div className='text-sm leading-5 text-slate-800 dark:text-gray-200'>
-          Your project <span className='font-semibold'>Demo</span> has had no traffic for the last 24 hours!
+          Your project <span className='font-semibold'>Demo</span> has had no
+          traffic for the last 24 hours!
         </div>
-        <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>{agos[index]}</div>
+        <div className='mt-2 text-xs whitespace-nowrap text-slate-500 dark:text-gray-400'>
+          {agos[index]}
+        </div>
       </div>
     )
   }
@@ -1139,11 +1349,19 @@ const RevenuePreview = () => {
           <div key={source.name} className='space-y-2'>
             <div className='flex items-center justify-between text-[11px]'>
               <div className='flex items-center gap-2'>
-                <div className='size-2 rounded-full' style={{ backgroundColor: source.color }} />
-                <span className='font-medium text-slate-700 dark:text-gray-300'>{source.name}</span>
+                <div
+                  className='size-2 rounded-full'
+                  style={{ backgroundColor: source.color }}
+                />
+                <span className='font-medium text-slate-700 dark:text-gray-300'>
+                  {source.name}
+                </span>
               </div>
               <span className='font-semibold text-slate-900 tabular-nums dark:text-white'>
-                ${source.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                $
+                {source.amount.toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
               </span>
             </div>
             <div className='relative h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800'>
@@ -1173,9 +1391,30 @@ type FlagItem = {
 
 const FeatureFlagsPreview = () => {
   const [flags, setFlags] = useState<FlagItem[]>([
-    { id: '1', name: 'dark-mode', enabled: true, type: 'boolean', value: 100, evaluations: 1247 },
-    { id: '2', name: 'new-checkout', enabled: true, type: 'percentage', value: 75, evaluations: 892 },
-    { id: '3', name: 'beta-features', enabled: false, type: 'boolean', value: 0, evaluations: 156 },
+    {
+      id: '1',
+      name: 'dark-mode',
+      enabled: true,
+      type: 'boolean',
+      value: 100,
+      evaluations: 1247,
+    },
+    {
+      id: '2',
+      name: 'new-checkout',
+      enabled: true,
+      type: 'percentage',
+      value: 75,
+      evaluations: 892,
+    },
+    {
+      id: '3',
+      name: 'beta-features',
+      enabled: false,
+      type: 'boolean',
+      value: 0,
+      evaluations: 156,
+    },
   ])
 
   useEffect(() => {
@@ -1214,7 +1453,9 @@ const FeatureFlagsPreview = () => {
               </div>
               <div>
                 <div className='flex items-center gap-2'>
-                  <span className='font-medium text-slate-900 dark:text-gray-50'>{flag.name}</span>
+                  <span className='font-medium text-slate-900 dark:text-gray-50'>
+                    {flag.name}
+                  </span>
                   <span
                     className={cn(
                       'rounded px-1.5 py-0.5 text-[10px] font-medium',
@@ -1272,7 +1513,9 @@ const ExperimentsPreview = () => {
       <div className='mb-3 flex items-center justify-between'>
         <div className='flex items-center gap-2'>
           <FlaskConicalIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
-          <span className='text-sm font-medium text-slate-900 dark:text-white'>Checkout Flow Test</span>
+          <span className='text-sm font-medium text-slate-900 dark:text-white'>
+            Checkout Flow Test
+          </span>
           <span className='rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'>
             Running
           </span>
@@ -1283,7 +1526,9 @@ const ExperimentsPreview = () => {
       </div>
 
       <div className='rounded-lg bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
-        <div className='mb-2 text-[10px] font-medium text-slate-600 dark:text-gray-300'>Probability of winning</div>
+        <div className='mb-2 text-[10px] font-medium text-slate-600 dark:text-gray-300'>
+          Probability of winning
+        </div>
         <div className='relative h-6 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800'>
           <motion.div
             className='absolute top-0 left-0 h-full bg-blue-500'
@@ -1315,8 +1560,12 @@ const ExperimentsPreview = () => {
               )}
             >
               <div className='flex items-center justify-between'>
-                <span className='font-medium text-slate-900 dark:text-white'>{v.name}</span>
-                {i === winnerIdx ? <TrendingUpIcon className='size-3 text-emerald-600 dark:text-emerald-400' /> : null}
+                <span className='font-medium text-slate-900 dark:text-white'>
+                  {v.name}
+                </span>
+                {i === winnerIdx ? (
+                  <TrendingUpIcon className='size-3 text-emerald-600 dark:text-emerald-400' />
+                ) : null}
               </div>
               <div className='mt-1 text-slate-600 dark:text-gray-300'>
                 <span className='font-semibold text-slate-900 dark:text-white'>
@@ -1383,12 +1632,18 @@ const FeaturesShowcase = () => {
             <>
               {t('main.web.description')}
               <ul className='mt-2 grid grid-cols-1 gap-2 text-gray-900 sm:grid-cols-2 dark:text-gray-50'>
-                {_map(t('main.web.features', { returnObjects: true }), (feature: string) => (
-                  <li className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50' key={feature}>
-                    <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
-                    <span>{feature}</span>
-                  </li>
-                ))}
+                {_map(
+                  t('main.web.features', { returnObjects: true }),
+                  (feature: string) => (
+                    <li
+                      className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50'
+                      key={feature}
+                    >
+                      <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
+                      <span>{feature}</span>
+                    </li>
+                  ),
+                )}
               </ul>
             </>
           }
@@ -1408,12 +1663,18 @@ const FeaturesShowcase = () => {
             <>
               {t('main.sessions.description')}
               <ul className='mt-2 grid grid-cols-1 gap-2 text-gray-900 sm:grid-cols-2 dark:text-gray-50'>
-                {_map(t('main.sessions.features', { returnObjects: true }), (feature: string) => (
-                  <li className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50' key={feature}>
-                    <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
-                    <span>{feature}</span>
-                  </li>
-                ))}
+                {_map(
+                  t('main.sessions.features', { returnObjects: true }),
+                  (feature: string) => (
+                    <li
+                      className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50'
+                      key={feature}
+                    >
+                      <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
+                      <span>{feature}</span>
+                    </li>
+                  ),
+                )}
               </ul>
             </>
           }
@@ -1424,7 +1685,8 @@ const FeaturesShowcase = () => {
                   <MetricCardSelect
                     classes={{
                       value: 'max-md:text-xl md:text-2xl',
-                      container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+                      container:
+                        'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
                     }}
                     values={geoOptions}
                     selectLabel={t('project.geo')}
@@ -1450,13 +1712,15 @@ const FeaturesShowcase = () => {
               <MetricCard
                 classes={{
                   value: 'max-md:text-xl md:text-3xl',
-                  container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+                  container:
+                    'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
                 }}
                 label={t('project.mapping.os')}
                 value={deviceInfo.os}
                 valueMapper={(value: keyof typeof OS_LOGO_MAP) => {
                   const logoUrlLight = OS_LOGO_MAP[value]
-                  const logoUrlDark = OS_LOGO_MAP_DARK[value as keyof typeof OS_LOGO_MAP_DARK]
+                  const logoUrlDark =
+                    OS_LOGO_MAP_DARK[value as keyof typeof OS_LOGO_MAP_DARK]
 
                   let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
                   logoUrl ||= logoUrlLight
@@ -1473,7 +1737,11 @@ const FeaturesShowcase = () => {
 
                   return (
                     <div className='flex items-center'>
-                      <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
+                      <img
+                        src={logoUrl}
+                        className='size-6 dark:fill-gray-50'
+                        alt=''
+                      />
                       &nbsp;
                       {value}
                     </div>
@@ -1484,7 +1752,8 @@ const FeaturesShowcase = () => {
               <MetricCard
                 classes={{
                   value: 'max-md:text-xl md:text-3xl',
-                  container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+                  container:
+                    'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
                 }}
                 label={t('project.mapping.br')}
                 value={deviceInfo.browser}
@@ -1503,7 +1772,11 @@ const FeaturesShowcase = () => {
 
                   return (
                     <div className='flex items-center'>
-                      <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
+                      <img
+                        src={logoUrl}
+                        className='size-6 dark:fill-gray-50'
+                        alt=''
+                      />
                       &nbsp;
                       {value}
                     </div>
@@ -1526,7 +1799,11 @@ const FeaturesShowcase = () => {
                       <div>
                         <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
                           {path.startsWith('/') ? (
-                            <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+                            <FileTextIcon
+                              className='h-5 w-5 text-white'
+                              aria-hidden='true'
+                              strokeWidth={1.5}
+                            />
                           ) : (
                             <MousePointerClickIcon
                               className='h-5 w-5 text-white'
@@ -1539,9 +1816,15 @@ const FeaturesShowcase = () => {
                       <p className='pt-1.5 text-sm text-gray-700 dark:text-gray-300'>
                         <Trans
                           t={t}
-                          i18nKey={path.startsWith('/') ? 'project.pageviewX' : 'project.eventX'}
+                          i18nKey={
+                            path.startsWith('/')
+                              ? 'project.pageviewX'
+                              : 'project.eventX'
+                          }
                           components={{
-                            value: <span className='font-medium text-gray-900 dark:text-gray-50' />,
+                            value: (
+                              <span className='font-medium text-gray-900 dark:text-gray-50' />
+                            ),
                             span: <span />,
                           }}
                           values={{
@@ -1626,7 +1909,13 @@ const FeaturesShowcase = () => {
         <FeatureCard
           title={t('main.cookies.title')}
           description={t('main.cookies.description')}
-          media={<img src='/assets/say-no-to-cookies.png' alt='' className='h-full w-full object-cover' />}
+          media={
+            <img
+              src='/assets/say-no-to-cookies.png'
+              alt=''
+              className='h-full w-full object-cover'
+            />
+          }
         />
       </div>
 

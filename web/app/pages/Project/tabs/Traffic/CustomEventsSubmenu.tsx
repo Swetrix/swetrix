@@ -13,7 +13,11 @@ const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 
 interface CustomEventsSubmenuProps {
   label: string
-  chartMetricsCustomEvents: Array<{ id: string; label: string; active: boolean }>
+  chartMetricsCustomEvents: Array<{
+    id: string
+    label: string
+    active: boolean
+  }>
   switchCustomEventChart: (id: string) => void
 }
 
@@ -27,7 +31,10 @@ const CustomEventsSubmenu: React.FC<CustomEventsSubmenuProps> = ({
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const submenuRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLDivElement>(null)
-  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 })
+  const [coords, setCoords] = useState<{ top: number; left: number }>({
+    top: 0,
+    left: 0,
+  })
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) {
@@ -62,10 +69,13 @@ const CustomEventsSubmenu: React.FC<CustomEventsSubmenuProps> = ({
     const spaceOnRight = viewportW - rect.right
     const spaceOnLeft = rect.left
 
-    const placeOnRight = spaceOnRight >= submenuWidth || spaceOnLeft < spaceOnRight
+    const placeOnRight =
+      spaceOnRight >= submenuWidth || spaceOnLeft < spaceOnRight
     setIsOnRight(placeOnRight)
 
-    let left = placeOnRight ? rect.right + padding : Math.max(padding, rect.left - submenuWidth - padding)
+    let left = placeOnRight
+      ? rect.right + padding
+      : Math.max(padding, rect.left - submenuWidth - padding)
 
     // Try to keep submenu within viewport vertically
     const estimatedHeight = submenuRef.current?.offsetHeight || 240
@@ -115,7 +125,12 @@ const CustomEventsSubmenu: React.FC<CustomEventsSubmenuProps> = ({
   }, [isOpen])
 
   return (
-    <div ref={triggerRef} className='relative w-full' onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <div
+      ref={triggerRef}
+      className='relative w-full'
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <div
         className='w-full cursor-pointer rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
         onClick={handleClick}
@@ -145,7 +160,10 @@ const CustomEventsSubmenu: React.FC<CustomEventsSubmenuProps> = ({
                 className={cn(
                   'fixed z-50 w-80 max-w-sm rounded-md bg-gray-50 p-1 ring-1 ring-black/10 dark:bg-slate-800',
                 )}
-                style={{ top: coords.top, left: isOnRight ? coords.left : Math.max(8, coords.left) }}
+                style={{
+                  top: coords.top,
+                  left: isOnRight ? coords.left : Math.max(8, coords.left),
+                }}
               >
                 <div className='max-h-60 overflow-auto'>
                   {_map(chartMetricsCustomEvents, (event) => (
@@ -168,7 +186,8 @@ const CustomEventsSubmenu: React.FC<CustomEventsSubmenuProps> = ({
                             label: 'max-w-max',
                           }}
                           label={
-                            _size(event.label) > CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH ? (
+                            _size(event.label) >
+                            CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH ? (
                               <span title={event.label}>
                                 {_truncate(event.label, {
                                   length: CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH,

@@ -10,7 +10,10 @@ import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = (loaderData: any) => {
   if (!loaderData?.data) {
-    return [...getTitle('Page Not Found'), ...getDescription('The page you are looking for does not exist.')]
+    return [
+      ...getTitle('Page Not Found'),
+      ...getDescription('The page you are looking for does not exist.'),
+    ]
   }
 
   const ogImageUrl = getOgImageUrl(loaderData?.data?.title)

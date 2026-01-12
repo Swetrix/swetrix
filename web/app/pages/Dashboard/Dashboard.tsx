@@ -3,21 +3,40 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { StretchHorizontalIcon, LayoutGridIcon, SearchIcon, XIcon, FolderPlusIcon } from 'lucide-react'
+import {
+  StretchHorizontalIcon,
+  LayoutGridIcon,
+  SearchIcon,
+  XIcon,
+  FolderPlusIcon,
+} from 'lucide-react'
 import React, { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLoaderData, useNavigate, useSearchParams, useFetcher, useNavigation, useRevalidator } from 'react-router'
+import {
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+  useFetcher,
+  useNavigation,
+  useRevalidator,
+} from 'react-router'
 import { toast } from 'sonner'
 
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
-import { useLiveVisitorsProxy, useOverallStatsProxy } from '~/hooks/useAnalyticsProxy'
+import {
+  useLiveVisitorsProxy,
+  useOverallStatsProxy,
+} from '~/hooks/useAnalyticsProxy'
 import useBreakpoint from '~/hooks/useBreakpoint'
 import useDebounce from '~/hooks/useDebounce'
 import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL } from '~/lib/constants'
 import { Overall } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
-import type { DashboardLoaderData, DashboardActionData } from '~/routes/dashboard'
+import type {
+  DashboardLoaderData,
+  DashboardActionData,
+} from '~/routes/dashboard'
 import Input from '~/ui/Input'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
@@ -60,7 +79,10 @@ const Dashboard = () => {
   const [viewMode, setViewMode] = useState(loaderData.viewMode)
   const isAboveLgBreakpoint = useBreakpoint('lg')
 
-  const projects = useMemo(() => loaderData.projects?.results || [], [loaderData.projects?.results])
+  const projects = useMemo(
+    () => loaderData.projects?.results || [],
+    [loaderData.projects?.results],
+  )
   const paginationTotal = loaderData.projects?.total || 0
 
   const page = useMemo(() => {
@@ -81,12 +103,14 @@ const Dashboard = () => {
 
   const pageSize = useMemo(() => {
     const pageSizeParam = searchParams.get('pageSize')
-    return pageSizeParam && PAGE_SIZE_OPTIONS.includes(parseInt(pageSizeParam, 10))
+    return pageSizeParam &&
+      PAGE_SIZE_OPTIONS.includes(parseInt(pageSizeParam, 10))
       ? parseInt(pageSizeParam, 10)
       : PAGE_SIZE_OPTIONS[0]
   }, [searchParams])
 
-  const isLoading = navigation.state === 'loading' || revalidator.state === 'loading'
+  const isLoading =
+    navigation.state === 'loading' || revalidator.state === 'loading'
   const [liveStats, setLiveStats] = useState<Record<string, number>>({})
   const [overallStats, setOverallStats] = useState<Overall>({})
   const { fetchLiveVisitors } = useLiveVisitorsProxy()
@@ -98,13 +122,17 @@ const Dashboard = () => {
 
   const sortBy = useMemo(() => {
     const sortParam = searchParams.get('sort')
-    return sortParam && Object.values(SORT_OPTIONS).includes(sortParam as any) ? sortParam : SORT_OPTIONS.ALPHA_ASC
+    return sortParam && Object.values(SORT_OPTIONS).includes(sortParam as any)
+      ? sortParam
+      : SORT_OPTIONS.ALPHA_ASC
   }, [searchParams])
 
   // New project modal state
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
-  const [newProjectOrganisationId, setNewProjectOrganisationId] = useState<string | undefined>(undefined)
+  const [newProjectOrganisationId, setNewProjectOrganisationId] = useState<
+    string | undefined
+  >(undefined)
   const [newProjectError, setNewProjectError] = useState<string | null>(null)
   const [newProjectBeenSubmitted, setNewProjectBeenSubmitted] = useState(false)
 
@@ -115,7 +143,9 @@ const Dashboard = () => {
         name: t('common.notSet'),
       },
       ...(user?.organisationMemberships || [])
-        .filter((om) => om.confirmed && (om.role === 'admin' || om.role === 'owner'))
+        .filter(
+          (om) => om.confirmed && (om.role === 'admin' || om.role === 'owner'),
+        )
         .map((om) => om.organisation),
     ],
     [user?.organisationMemberships, t],
@@ -179,7 +209,9 @@ const Dashboard = () => {
     }
 
     if (_size(newProjectName) > MAX_PROJECT_NAME_LENGTH) {
-      errors.name = t('project.settings.pxCharsError', { amount: MAX_PROJECT_NAME_LENGTH })
+      errors.name = t('project.settings.pxCharsError', {
+        amount: MAX_PROJECT_NAME_LENGTH,
+      })
     }
 
     return { errors, valid: _isEmpty(_keys(errors)) }
@@ -191,10 +223,16 @@ const Dashboard = () => {
       refetchProjects()
       toast.success(t('project.settings.created'))
       closeNewProjectModal()
-    } else if (fetcher.data?.error && fetcher.data?.intent === 'create-project') {
+    } else if (
+      fetcher.data?.error &&
+      fetcher.data?.intent === 'create-project'
+    ) {
       setNewProjectError(fetcher.data.error)
       toast.error(fetcher.data.error)
-    } else if (fetcher.data?.fieldErrors?.name && fetcher.data?.intent === 'create-project') {
+    } else if (
+      fetcher.data?.fieldErrors?.name &&
+      fetcher.data?.intent === 'create-project'
+    ) {
       setNewProjectError(fetcher.data.fieldErrors.name)
     }
   }, [fetcher.data, t]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -270,7 +308,10 @@ const Dashboard = () => {
 
     updateLiveVisitors()
 
-    const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
+    const interval = setInterval(
+      updateLiveVisitors,
+      LIVE_VISITORS_UPDATE_INTERVAL,
+    )
 
     return () => clearInterval(interval)
   }, [projects, fetchLiveVisitors]) // Reset interval when projects change
@@ -310,7 +351,12 @@ const Dashboard = () => {
           <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
             <div className='mb-4 flex flex-wrap justify-between gap-2'>
               <div className='flex items-end justify-between'>
-                <Text as='h2' size='3xl' weight='bold' className='mt-2 flex items-baseline gap-2'>
+                <Text
+                  as='h2'
+                  size='3xl'
+                  weight='bold'
+                  className='mt-2 flex items-baseline gap-2'
+                >
                   <span>{t('titles.dashboard')}</span>
                   {isSearchActive ? (
                     <button
@@ -377,7 +423,11 @@ const Dashboard = () => {
                   setActivePeriod={handlePeriodChange}
                   isLoading={isLoading}
                 />
-                <SortSelector activeSort={sortBy} setActiveSort={handleSortChange} isLoading={isLoading} />
+                <SortSelector
+                  activeSort={sortBy}
+                  setActiveSort={handleSortChange}
+                  isLoading={isLoading}
+                />
                 <div className='hidden lg:block'>
                   {viewMode === DASHBOARD_VIEW.GRID ? (
                     <button
@@ -442,14 +492,19 @@ const Dashboard = () => {
               <div
                 className={cx(
                   'grid gap-3',
-                  _viewMode === DASHBOARD_VIEW.GRID ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1',
+                  _viewMode === DASHBOARD_VIEW.GRID
+                    ? 'grid-cols-1 lg:grid-cols-3'
+                    : 'grid-cols-1',
                 )}
               >
                 {_map(projects, (project) => (
                   <ProjectCard
                     key={`${project.id}-${project.name}`}
                     project={project}
-                    live={liveStats[project.id] ?? (_isEmpty(liveStats) ? null : 'N/A')}
+                    live={
+                      liveStats[project.id] ??
+                      (_isEmpty(liveStats) ? null : 'N/A')
+                    }
                     overallStats={overallStats[project.id]}
                     activePeriod={activePeriod}
                     viewMode={_viewMode}
@@ -457,7 +512,11 @@ const Dashboard = () => {
                   />
                 ))}
                 {_size(projects) % 12 !== 0 ? (
-                  <AddProject sitesCount={_size(projects)} onClick={onNewProject} viewMode={_viewMode} />
+                  <AddProject
+                    sitesCount={_size(projects)}
+                    onClick={onNewProject}
+                    viewMode={_viewMode}
+                  />
                 ) : null}
               </div>
             )}
@@ -508,7 +567,9 @@ const Dashboard = () => {
                   keyExtractor={(item) => item.id || 'not-set'}
                   labelExtractor={(item) => {
                     if (item.id === undefined) {
-                      return <span className='italic'>{t('common.notSet')}</span>
+                      return (
+                        <span className='italic'>{t('common.notSet')}</span>
+                      )
                     }
 
                     return item.name
@@ -517,8 +578,14 @@ const Dashboard = () => {
                     setNewProjectOrganisationId(item.id)
                   }}
                   label={t('project.settings.organisation')}
-                  title={organisations.find((org) => org.id === newProjectOrganisationId)?.name}
-                  selectedItem={organisations.find((org) => org.id === newProjectOrganisationId)}
+                  title={
+                    organisations.find(
+                      (org) => org.id === newProjectOrganisationId,
+                    )?.name
+                  }
+                  selectedItem={organisations.find(
+                    (org) => org.id === newProjectOrganisationId,
+                  )}
                 />
               </div>
             ) : null}

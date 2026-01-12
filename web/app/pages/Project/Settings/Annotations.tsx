@@ -33,13 +33,19 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingAnnotation, setEditingAnnotation] = useState<Annotation | undefined>()
-  const [deleteAnnotationItem, setDeleteAnnotationItem] = useState<Annotation | null>(null)
+  const [editingAnnotation, setEditingAnnotation] = useState<
+    Annotation | undefined
+  >()
+  const [deleteAnnotationItem, setDeleteAnnotationItem] =
+    useState<Annotation | null>(null)
 
   const actionLoading = fetcher.state !== 'idle'
 
   const loadAnnotations = useCallback(() => {
-    fetcher.submit({ intent: 'get-annotations', password: '' }, { method: 'POST', action: `/projects/${projectId}` })
+    fetcher.submit(
+      { intent: 'get-annotations', password: '' },
+      { method: 'POST', action: `/projects/${projectId}` },
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
@@ -54,9 +60,14 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
     if (success) {
       if (intent === 'get-annotations' && data) {
         const result = data as Annotation[]
-        const sorted = result.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        const sorted = result.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+        )
         setAnnotations(sorted)
-        const totalPages = Math.max(1, Math.ceil(sorted.length / ANNOTATIONS_PER_PAGE))
+        const totalPages = Math.max(
+          1,
+          Math.ceil(sorted.length / ANNOTATIONS_PER_PAGE),
+        )
         setPage((prev) => Math.min(prev, totalPages))
         setIsLoading(false)
       } else if (intent === 'create-annotation') {
@@ -87,7 +98,10 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
   }, [loadAnnotations])
 
   const totalPages = Math.ceil(_size(annotations) / ANNOTATIONS_PER_PAGE)
-  const paginatedAnnotations = annotations.slice((page - 1) * ANNOTATIONS_PER_PAGE, page * ANNOTATIONS_PER_PAGE)
+  const paginatedAnnotations = annotations.slice(
+    (page - 1) * ANNOTATIONS_PER_PAGE,
+    page * ANNOTATIONS_PER_PAGE,
+  )
 
   const openCreateModal = () => {
     setEditingAnnotation(undefined)
@@ -109,11 +123,19 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
 
     if (editingAnnotation) {
       fetcher.submit(
-        { intent: 'update-annotation', annotationId: editingAnnotation.id, date, text },
+        {
+          intent: 'update-annotation',
+          annotationId: editingAnnotation.id,
+          date,
+          text,
+        },
         { method: 'POST', action: `/projects/${projectId}` },
       )
     } else {
-      fetcher.submit({ intent: 'create-annotation', date, text }, { method: 'POST', action: `/projects/${projectId}` })
+      fetcher.submit(
+        { intent: 'create-annotation', date, text },
+        { method: 'POST', action: `/projects/${projectId}` },
+      )
     }
   }
 
@@ -164,9 +186,17 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
 
       {_isEmpty(annotations) ? (
         <div className='rounded-lg border border-dashed border-gray-300 p-8 text-center dark:border-slate-700'>
-          <p className='text-gray-500 dark:text-gray-400'>{t('project.settings.annotations.empty')}</p>
+          <p className='text-gray-500 dark:text-gray-400'>
+            {t('project.settings.annotations.empty')}
+          </p>
           {allowedToManage ? (
-            <Button type='button' onClick={openCreateModal} className='mt-4' primary regular>
+            <Button
+              type='button'
+              onClick={openCreateModal}
+              className='mt-4'
+              primary
+              regular
+            >
               <PlusIcon className='mr-1 h-4 w-4' />
               {t('project.settings.annotations.addFirst')}
             </Button>
@@ -195,7 +225,10 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
               </thead>
               <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
                 {_map(paginatedAnnotations, (annotation) => (
-                  <tr key={annotation.id} className='hover:bg-gray-50 dark:hover:bg-slate-800/50'>
+                  <tr
+                    key={annotation.id}
+                    className='hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                  >
                     <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
                       {new Date(annotation.date).toLocaleDateString()}
                     </td>
@@ -232,7 +265,12 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
 
           {totalPages > 1 ? (
             <div className='mt-4 flex justify-center'>
-              <Pagination page={page} setPage={setPage} pageAmount={totalPages} total={_size(annotations)} />
+              <Pagination
+                page={page}
+                setPage={setPage}
+                pageAmount={totalPages}
+                total={_size(annotations)}
+              />
             </div>
           ) : null}
         </>

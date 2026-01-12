@@ -1,4 +1,8 @@
-import { CheckCircleIcon, XCircleIcon, InformationCircleIcon } from '@heroicons/react/24/solid'
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  InformationCircleIcon,
+} from '@heroicons/react/24/solid'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -36,9 +40,24 @@ interface StatusPageProps {
 }
 
 const iconMap: Record<StatusType, ReactNode> = {
-  success: <CheckCircleIcon className='size-8 text-green-500 dark:text-green-400' aria-hidden='true' />,
-  error: <XCircleIcon className='size-8 text-red-500 dark:text-red-400' aria-hidden='true' />,
-  info: <InformationCircleIcon className='size-8 text-amber-500 dark:text-amber-400' aria-hidden='true' />,
+  success: (
+    <CheckCircleIcon
+      className='size-8 text-green-500 dark:text-green-400'
+      aria-hidden='true'
+    />
+  ),
+  error: (
+    <XCircleIcon
+      className='size-8 text-red-500 dark:text-red-400'
+      aria-hidden='true'
+    />
+  ),
+  info: (
+    <InformationCircleIcon
+      className='size-8 text-amber-500 dark:text-amber-400'
+      aria-hidden='true'
+    />
+  ),
 }
 
 const iconBgMap: Record<StatusType, string> = {
@@ -47,7 +66,14 @@ const iconBgMap: Record<StatusType, string> = {
   info: 'bg-amber-100 dark:bg-amber-500/10',
 }
 
-const StatusPage = ({ loading, type = 'success', title, description, icon, actions }: StatusPageProps) => {
+const StatusPage = ({
+  loading,
+  type = 'success',
+  title,
+  description,
+  icon,
+  actions,
+}: StatusPageProps) => {
   const { t } = useTranslation('common')
 
   if (loading) {
@@ -66,7 +92,12 @@ const StatusPage = ({ loading, type = 'success', title, description, icon, actio
   return (
     <div className='flex min-h-page items-center justify-center bg-gray-50 px-4 dark:bg-slate-900'>
       <div className='mx-auto w-full max-w-md text-center'>
-        <div className={cn('mx-auto mb-6 flex size-14 items-center justify-center rounded-xl', iconBgMap[type])}>
+        <div
+          className={cn(
+            'mx-auto mb-6 flex size-14 items-center justify-center rounded-xl',
+            iconBgMap[type],
+          )}
+        >
           {displayIcon}
         </div>
 

@@ -28,7 +28,9 @@ export const OrganisationCard = ({ organisation }: OrganisationCardProps) => {
 
   const { name, members } = organisation
 
-  const isAccepting = fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'accept-invitation'
+  const isAccepting =
+    fetcher.state === 'submitting' &&
+    fetcher.formData?.get('intent') === 'accept-invitation'
 
   const membership = useMemo(
     () => _find(members, (member) => member.user.email === user?.email),
@@ -66,7 +68,10 @@ export const OrganisationCard = ({ organisation }: OrganisationCardProps) => {
 
     list.push({
       colour: 'slate',
-      label: membersCount === 1 ? t('common.oneMember') : t('common.xMembers', { number: membersCount }),
+      label:
+        membersCount === 1
+          ? t('common.oneMember')
+          : t('common.xMembers', { number: membersCount }),
     })
 
     return list
@@ -83,7 +88,9 @@ export const OrganisationCard = ({ organisation }: OrganisationCardProps) => {
     fetcher.submit(formData, { method: 'post' })
   }
 
-  const onElementClick = (e: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>) => {
+  const onElementClick = (
+    e: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
+  ) => {
     if (membership?.confirmed) {
       return
     }
@@ -96,7 +103,8 @@ export const OrganisationCard = ({ organisation }: OrganisationCardProps) => {
   const cardClassName = cx(
     'min-h-[153.1px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/25 dark:bg-slate-800/70',
     {
-      'cursor-pointer hover:bg-gray-200/70 dark:hover:bg-slate-700/60': !isViewer,
+      'cursor-pointer hover:bg-gray-200/70 dark:hover:bg-slate-700/60':
+        !isViewer,
     },
   )
 
@@ -153,7 +161,11 @@ export const OrganisationCard = ({ organisation }: OrganisationCardProps) => {
   }
 
   return (
-    <Link to={_replace(routes.organisation, ':id', organisation.id)} onClick={onElementClick} className={cardClassName}>
+    <Link
+      to={_replace(routes.organisation, ':id', organisation.id)}
+      onClick={onElementClick}
+      className={cardClassName}
+    >
       {cardContent}
     </Link>
   )

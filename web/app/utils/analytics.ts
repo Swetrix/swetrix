@@ -1,7 +1,12 @@
 import _includes from 'lodash/includes'
 import * as Swetrix from 'swetrix'
 
-import { isBrowser, isDevelopment, isIframe, isSelfhosted } from '~/lib/constants'
+import {
+  isBrowser,
+  isDevelopment,
+  isIframe,
+  isSelfhosted,
+} from '~/lib/constants'
 
 export const SWETRIX_PID = 'STEzHcB1rALV'
 
@@ -170,7 +175,10 @@ export const trackError = (payload: Swetrix.IErrorEventPayload) => {
   Swetrix.trackError(payload)
 }
 
-export const trackCustom = (ev: string, meta?: Swetrix.TrackEventOptions['meta']) => {
+export const trackCustom = (
+  ev: string,
+  meta?: Swetrix.TrackEventOptions['meta'],
+) => {
   if (isSelfhosted || !isBrowser) {
     return
   }

@@ -4,7 +4,11 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
 import CreateNewPassword from '~/pages/Auth/CreateNewPassword'
-import { isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from '~/utils/validator'
+import {
+  isValidPassword,
+  MIN_PASSWORD_CHARS,
+  MAX_PASSWORD_CHARS,
+} from '~/utils/validator'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')
@@ -46,17 +50,27 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   if (fieldErrors.password || fieldErrors.repeat) {
-    return data<CreateNewPasswordActionData>({ fieldErrors, timestamp: Date.now() }, { status: 400 })
+    return data<CreateNewPasswordActionData>(
+      { fieldErrors, timestamp: Date.now() },
+      { status: 400 },
+    )
   }
 
-  const result = await serverFetch(request, `v1/auth/reset-password/confirm/${id}`, {
-    method: 'POST',
-    body: { newPassword: password },
-    skipAuth: true,
-  })
+  const result = await serverFetch(
+    request,
+    `v1/auth/reset-password/confirm/${id}`,
+    {
+      method: 'POST',
+      body: { newPassword: password },
+      skipAuth: true,
+    },
+  )
 
   if (result.error) {
-    return data<CreateNewPasswordActionData>({ error: result.error as string, timestamp: Date.now() }, { status: 400 })
+    return data<CreateNewPasswordActionData>(
+      { error: result.error as string, timestamp: Date.now() },
+      { status: 400 },
+    )
   }
 
   return redirect('/login?password_updated=true')

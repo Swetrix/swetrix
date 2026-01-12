@@ -7,7 +7,10 @@ interface AddOrganisationProps {
   sitesCount: number
 }
 
-export const AddOrganisation = ({ onClick, sitesCount }: AddOrganisationProps) => {
+export const AddOrganisation = ({
+  onClick,
+  sitesCount,
+}: AddOrganisationProps) => {
   const { t } = useTranslation('common')
 
   return (

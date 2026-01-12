@@ -47,7 +47,7 @@ export class ProjectsScene {
     await context.reply(
       'Projects',
       Markup.keyboard([
-        ...projects.map(project => [project.name]),
+        ...projects.map((project) => [project.name]),
         ['🔙 Back'],
       ]).resize(),
     )
@@ -106,10 +106,7 @@ export class ProjectsScene {
       `\n` +
       `Public: \`${project.public ? 'yes' : 'no'}\`` +
       `\n` +
-      `Created: \`${dayjs
-        .utc(project.created)
-        .tz(user.timezone)
-        .format('YYYY-MM-DD HH:mm:ss')}\`` +
+      `Created: \`${dayjs.utc(project.created).tz(user.timezone).format('YYYY-MM-DD HH:mm:ss')}\`` +
       `\n\n` +
       `*Analytics (last 7 days)*` +
       `\n` +

@@ -85,7 +85,9 @@ export default function PostSlug() {
                       ) : null}
                       <div className='flex flex-col gap-0.5 text-sm leading-4'>
                         {post?.author ? (
-                          <div className='font-semibold text-slate-900 dark:text-slate-200'>{post.author}</div>
+                          <div className='font-semibold text-slate-900 dark:text-slate-200'>
+                            {post.author}
+                          </div>
                         ) : null}
                         {post?.twitter_handle ? (
                           <div className='mt-1'>

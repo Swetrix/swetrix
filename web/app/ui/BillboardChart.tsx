@@ -9,11 +9,20 @@ interface BillboardChartProps {
   deps?: any[]
 }
 
-const BillboardChart = ({ options, dataNames, className, onReady, deps }: BillboardChartProps) => {
+const BillboardChart = ({
+  options,
+  dataNames,
+  className,
+  onReady,
+  deps,
+}: BillboardChartProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<Chart | null>(null)
 
-  const mergedDeps = useMemo(() => deps || [options, dataNames], [deps, options, dataNames])
+  const mergedDeps = useMemo(
+    () => deps || [options, dataNames],
+    [deps, options, dataNames],
+  )
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -30,7 +39,10 @@ const BillboardChart = ({ options, dataNames, className, onReady, deps }: Billbo
       if (onReady) onReady(null)
     }
 
-    const opts: ChartOptions = { ...options, bindto: containerRef.current as unknown as HTMLElement }
+    const opts: ChartOptions = {
+      ...options,
+      bindto: containerRef.current as unknown as HTMLElement,
+    }
     const chart = billboard.generate(opts)
     chartRef.current = chart
 

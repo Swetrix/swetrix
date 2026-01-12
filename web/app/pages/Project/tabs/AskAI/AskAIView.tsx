@@ -142,19 +142,43 @@ const getToolInfo = (
   toolName: string,
   t: any,
 ): { label: string; icon: React.ComponentType<{ className?: string }> } => {
-  const toolMap: Record<string, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
-    getProjectInfo: { label: t('project.askAi.tools.getProjectInfo'), icon: InfoIcon },
+  const toolMap: Record<
+    string,
+    { label: string; icon: React.ComponentType<{ className?: string }> }
+  > = {
+    getProjectInfo: {
+      label: t('project.askAi.tools.getProjectInfo'),
+      icon: InfoIcon,
+    },
     getData: { label: t('project.askAi.tools.getData'), icon: BarChart3Icon },
-    getGoalStats: { label: t('project.askAi.tools.getGoalStats'), icon: TargetIcon },
-    getFunnelData: { label: t('project.askAi.tools.getFunnelData'), icon: GitBranchIcon },
+    getGoalStats: {
+      label: t('project.askAi.tools.getGoalStats'),
+      icon: TargetIcon,
+    },
+    getFunnelData: {
+      label: t('project.askAi.tools.getFunnelData'),
+      icon: GitBranchIcon,
+    },
   }
   return toolMap[toolName] || { label: toolName, icon: InfoIcon }
 }
 
 const getAvailableTools = (t: any) => [
-  { id: 'getData', label: t('project.askAi.tools.queryData'), icon: BarChart3Icon },
-  { id: 'getGoalStats', label: t('project.askAi.tools.goalStats'), icon: TargetIcon },
-  { id: 'getFunnelData', label: t('project.askAi.tools.funnelData'), icon: GitBranchIcon },
+  {
+    id: 'getData',
+    label: t('project.askAi.tools.queryData'),
+    icon: BarChart3Icon,
+  },
+  {
+    id: 'getGoalStats',
+    label: t('project.askAi.tools.goalStats'),
+    icon: TargetIcon,
+  },
+  {
+    id: 'getFunnelData',
+    label: t('project.askAi.tools.funnelData'),
+    icon: GitBranchIcon,
+  },
 ]
 
 const ToolsTooltip = () => {
@@ -193,36 +217,48 @@ const AICapabilitiesTooltip = () => {
   return (
     <div className='max-w-sm space-y-3 py-1 text-left'>
       <div>
-        <p className='mb-1.5 font-semibold text-white'>{t('project.askAi.capabilities.title')}</p>
+        <p className='mb-1.5 font-semibold text-white'>
+          {t('project.askAi.capabilities.title')}
+        </p>
         <ul className='space-y-1 text-gray-300'>
           <li className='flex items-start gap-1.5'>
             <BarChart3Icon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
             <span>
-              <strong className='text-white'>{t('project.askAi.capabilities.queryAnalytics')}</strong>
+              <strong className='text-white'>
+                {t('project.askAi.capabilities.queryAnalytics')}
+              </strong>
             </span>
           </li>
           <li className='flex items-start gap-1.5'>
             <TargetIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
             <span>
-              <strong className='text-white'>{t('project.askAi.capabilities.goalStatistics')}</strong>
+              <strong className='text-white'>
+                {t('project.askAi.capabilities.goalStatistics')}
+              </strong>
             </span>
           </li>
           <li className='flex items-start gap-1.5'>
             <GitBranchIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
             <span>
-              <strong className='text-white'>{t('project.askAi.capabilities.funnelAnalysis')}</strong>
+              <strong className='text-white'>
+                {t('project.askAi.capabilities.funnelAnalysis')}
+              </strong>
             </span>
           </li>
           <li className='flex items-start gap-1.5'>
             <BarChart3Icon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
             <span>
-              <strong className='text-white'>{t('project.askAi.capabilities.performanceMetrics')}</strong>
+              <strong className='text-white'>
+                {t('project.askAi.capabilities.performanceMetrics')}
+              </strong>
             </span>
           </li>
           <li className='flex items-start gap-1.5'>
             <AlertCircleIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
             <span>
-              <strong className='text-white'>{t('project.askAi.capabilities.errorTracking')}</strong>
+              <strong className='text-white'>
+                {t('project.askAi.capabilities.errorTracking')}
+              </strong>
             </span>
           </li>
           <li className='flex items-start gap-1.5'>
@@ -232,7 +268,9 @@ const AICapabilitiesTooltip = () => {
         </ul>
       </div>
       <div>
-        <p className='mb-1.5 font-semibold text-white'>{t('project.askAi.capabilities.cannotTitle')}</p>
+        <p className='mb-1.5 font-semibold text-white'>
+          {t('project.askAi.capabilities.cannotTitle')}
+        </p>
         <ul className='space-y-1 text-gray-300'>
           <li className='flex items-start gap-1.5'>
             <XIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-red-400' />
@@ -295,14 +333,22 @@ const ThoughtProcess = ({
           {isActivelyThinking ? (
             <Loader2Icon className='h-3 w-3 animate-spin' />
           ) : (
-            <svg className='h-3 w-3' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5'>
+            <svg
+              className='h-3 w-3'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2.5'
+            >
               <circle cx='12' cy='12' r='10' />
               <path d='M12 16v-4M12 8h.01' />
             </svg>
           )}
         </span>
         <span className='font-medium'>
-          {isActivelyThinking ? t('project.askAi.thinking') : t('project.askAi.thought')}
+          {isActivelyThinking
+            ? t('project.askAi.thinking')
+            : t('project.askAi.thought')}
         </span>
         {!isActivelyThinking ? (
           isExpanded ? (
@@ -321,7 +367,13 @@ const ThoughtProcess = ({
   )
 }
 
-const ToolCallBadge = ({ toolName, isLoading = false }: { toolName: string; isLoading?: boolean }) => {
+const ToolCallBadge = ({
+  toolName,
+  isLoading = false,
+}: {
+  toolName: string
+  isLoading?: boolean
+}) => {
   const { t } = useTranslation('common')
 
   const { label, icon: Icon } = getToolInfo(toolName, t)
@@ -339,7 +391,13 @@ const ToolCallBadge = ({ toolName, isLoading = false }: { toolName: string; isLo
   )
 }
 
-const MessageContent = ({ content, isStreaming }: { content: string; isStreaming?: boolean }) => {
+const MessageContent = ({
+  content,
+  isStreaming,
+}: {
+  content: string
+  isStreaming?: boolean
+}) => {
   const { text, charts } = useMemo(() => parseCharts(content), [content])
 
   return (
@@ -350,7 +408,9 @@ const MessageContent = ({ content, isStreaming }: { content: string; isStreaming
           dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }}
         />
       ) : null}
-      {isStreaming && !text ? <span className='ml-1 inline-block h-4 w-0.5 animate-pulse bg-gray-400' /> : null}
+      {isStreaming && !text ? (
+        <span className='ml-1 inline-block h-4 w-0.5 animate-pulse bg-gray-400' />
+      ) : null}
       {!_isEmpty(charts) ? (
         <div className='mt-4 space-y-4'>
           {_map(charts, (chart, idx) => (
@@ -362,12 +422,20 @@ const MessageContent = ({ content, isStreaming }: { content: string; isStreaming
   )
 }
 
-const AssistantMessage = ({ message, isStreaming }: { message: Message; isStreaming?: boolean }) => {
+const AssistantMessage = ({
+  message,
+  isStreaming,
+}: {
+  message: Message
+  isStreaming?: boolean
+}) => {
   const [userToggled, setUserToggled] = useState(false)
   const [userExpandedState, setUserExpandedState] = useState(false)
   const hasContent = Boolean(message.content && message.content.trim())
 
-  const isActivelyThinking = Boolean(isStreaming && message.reasoning && !hasContent)
+  const isActivelyThinking = Boolean(
+    isStreaming && message.reasoning && !hasContent,
+  )
   const isThoughtExpanded = userToggled ? userExpandedState : isActivelyThinking
 
   const handleToggle = () => {
@@ -385,7 +453,9 @@ const AssistantMessage = ({ message, isStreaming }: { message: Message; isStream
     const part = message.parts[partIndex]
     if (part.type !== 'toolCall') return false
     // Check if there's any text content after this tool call
-    const hasTextAfter = message.parts.slice(partIndex + 1).some((p) => p.type === 'text' && p.text?.trim())
+    const hasTextAfter = message.parts
+      .slice(partIndex + 1)
+      .some((p) => p.type === 'text' && p.text?.trim())
     return isLastPart || !hasTextAfter
   }
 
@@ -405,17 +475,25 @@ const AssistantMessage = ({ message, isStreaming }: { message: Message; isStream
             if (part.type === 'text' && part.text) {
               const isLastTextPart =
                 idx === message.parts!.length - 1 ||
-                !message.parts!.slice(idx + 1).some((p) => p.type === 'text' && p.text?.trim())
+                !message
+                  .parts!.slice(idx + 1)
+                  .some((p) => p.type === 'text' && p.text?.trim())
               return (
                 <div key={idx} className='mb-3'>
-                  <MessageContent content={part.text} isStreaming={isStreaming ? isLastTextPart : undefined} />
+                  <MessageContent
+                    content={part.text}
+                    isStreaming={isStreaming ? isLastTextPart : undefined}
+                  />
                 </div>
               )
             }
             if (part.type === 'toolCall' && part.toolName) {
               return (
                 <div key={idx} className='mb-3'>
-                  <ToolCallBadge toolName={part.toolName} isLoading={isToolCallLoading(idx)} />
+                  <ToolCallBadge
+                    toolName={part.toolName}
+                    isLoading={isToolCallLoading(idx)}
+                  />
                 </div>
               )
             }
@@ -428,7 +506,11 @@ const AssistantMessage = ({ message, isStreaming }: { message: Message; isStream
           {message.toolCalls && message.toolCalls.length > 0 ? (
             <div className='mb-3 flex flex-wrap gap-2'>
               {_map(message.toolCalls, (call, idx) => (
-                <ToolCallBadge key={idx} toolName={call.toolName} isLoading={Boolean(isStreaming && !hasContent)} />
+                <ToolCallBadge
+                  key={idx}
+                  toolName={call.toolName}
+                  isLoading={Boolean(isStreaming && !hasContent)}
+                />
               ))}
             </div>
           ) : null}
@@ -449,7 +531,13 @@ const UserMessage = ({ content }: { content: string }) => {
   )
 }
 
-const ScrollToBottomButton = ({ isAtBottom, scrollToBottom }: { isAtBottom: boolean; scrollToBottom: () => void }) => {
+const ScrollToBottomButton = ({
+  isAtBottom,
+  scrollToBottom,
+}: {
+  isAtBottom: boolean
+  scrollToBottom: () => void
+}) => {
   const { t } = useTranslation('common')
 
   if (isAtBottom) return null
@@ -513,18 +601,22 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
   const isLoadingChats = allChatsFetcher.state !== 'idle'
 
-  const { scrollRef, contentRef, isAtBottom, scrollToBottom } = useStickToBottom({
-    resize: 'smooth',
-    initial: 'smooth',
-  })
+  const { scrollRef, contentRef, isAtBottom, scrollToBottom } =
+    useStickToBottom({
+      resize: 'smooth',
+      initial: 'smooth',
+    })
 
   const streamingContentRef = useRef('')
   const streamingReasoningRef = useRef('')
-  const streamingToolCallsRef = useRef<Array<{ toolName: string; args: unknown }>>([])
+  const streamingToolCallsRef = useRef<
+    Array<{ toolName: string; args: unknown }>
+  >([])
   const streamingPartsRef = useRef<MessagePart[]>([])
   const currentTextPartRef = useRef('')
 
-  const generateMessageId = () => `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  const generateMessageId = () =>
+    `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
   const loadRecentChats = useCallback(() => {
     if (recentChatsFetcher.state !== 'idle') return
@@ -562,12 +654,17 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   )
 
   // Handle all chats fetcher response
-  const [pendingAllChatsSkip, setPendingAllChatsSkip] = useState<number | null>(null)
+  const [pendingAllChatsSkip, setPendingAllChatsSkip] = useState<number | null>(
+    null,
+  )
 
   useEffect(() => {
     if (allChatsFetcher.state === 'idle' && allChatsFetcher.data) {
       if (allChatsFetcher.data.success && allChatsFetcher.data.data) {
-        const result = allChatsFetcher.data.data as { chats: AIChatSummary[]; total: number }
+        const result = allChatsFetcher.data.data as {
+          chats: AIChatSummary[]
+          total: number
+        }
         if (pendingAllChatsSkip === 0) {
           setAllChats(result.chats)
         } else {
@@ -627,7 +724,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         setSearchParams(newParams)
       }
     }
-  }, [loadChatFetcher.state, loadChatFetcher.data, searchParams, setSearchParams])
+  }, [
+    loadChatFetcher.state,
+    loadChatFetcher.data,
+    searchParams,
+    setSearchParams,
+  ])
 
   const loadChatById = useCallback(
     (chatId: string) => {
@@ -656,7 +758,14 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         console.error('Failed to save chat:', saveChatFetcher.data.error)
       }
     }
-  }, [saveChatFetcher.state, saveChatFetcher.data, currentChatId, searchParams, setSearchParams, loadRecentChats])
+  }, [
+    saveChatFetcher.state,
+    saveChatFetcher.data,
+    currentChatId,
+    searchParams,
+    setSearchParams,
+    loadRecentChats,
+  ])
 
   const saveChat = useCallback(
     (messagesToSave: Message[]) => {
@@ -765,7 +874,11 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     if (!input.trim() || isLoading) return
 
     setError(null)
-    const userMessage: Message = { id: generateMessageId(), role: 'user', content: input.trim() }
+    const userMessage: Message = {
+      id: generateMessageId(),
+      role: 'user',
+      content: input.trim(),
+    }
     const newMessages = [...messages, userMessage]
     setMessages(newMessages)
     setInput('')
@@ -783,7 +896,10 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-      const messagesToSend = _filter(newMessages, (msg) => msg.content.trim().length > 0).map((msg) => ({
+      const messagesToSend = _filter(
+        newMessages,
+        (msg) => msg.content.trim().length > 0,
+      ).map((msg) => ({
         role: msg.role,
         content: msg.content,
       }))
@@ -801,7 +917,10 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             // Build current parts for display: completed parts + current text being streamed
             const displayParts = [...streamingPartsRef.current]
             if (currentTextPartRef.current) {
-              displayParts.push({ type: 'text', text: currentTextPartRef.current })
+              displayParts.push({
+                type: 'text',
+                text: currentTextPartRef.current,
+              })
             }
 
             setStreamingMessage({
@@ -819,7 +938,10 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
             // Save current accumulated text as a part before adding tool call
             if (currentTextPartRef.current.trim()) {
-              streamingPartsRef.current.push({ type: 'text', text: currentTextPartRef.current })
+              streamingPartsRef.current.push({
+                type: 'text',
+                text: currentTextPartRef.current,
+              })
               currentTextPartRef.current = ''
             }
             // Add tool call as a part
@@ -827,7 +949,11 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
             setStreamingMessage((prev) =>
               prev
-                ? { ...prev, toolCalls: [...streamingToolCallsRef.current], parts: [...streamingPartsRef.current] }
+                ? {
+                    ...prev,
+                    toolCalls: [...streamingToolCallsRef.current],
+                    parts: [...streamingPartsRef.current],
+                  }
                 : {
                     id: generateMessageId(),
                     role: 'assistant',
@@ -856,10 +982,16 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
             // Finalize parts: add any remaining text
             if (currentTextPartRef.current.trim()) {
-              streamingPartsRef.current.push({ type: 'text', text: currentTextPartRef.current })
+              streamingPartsRef.current.push({
+                type: 'text',
+                text: currentTextPartRef.current,
+              })
             }
 
-            if (finalContent.trim() || streamingToolCallsRef.current.length > 0) {
+            if (
+              finalContent.trim() ||
+              streamingToolCallsRef.current.length > 0
+            ) {
               const assistantMessage: Message = {
                 id: generateMessageId(),
                 role: 'assistant',
@@ -905,7 +1037,10 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
 
       // Finalize parts: add any remaining text
       if (currentTextPartRef.current.trim()) {
-        streamingPartsRef.current.push({ type: 'text', text: currentTextPartRef.current })
+        streamingPartsRef.current.push({
+          type: 'text',
+          text: currentTextPartRef.current,
+        })
       }
 
       if (finalContent.trim() || streamingToolCallsRef.current.length > 0) {
@@ -966,9 +1101,12 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
     const diffDays = Math.floor(diffMs / 86400000)
 
     if (diffMins < 1) return t('project.askAi.timeFormat.justNow')
-    if (diffMins < 60) return t('project.askAi.timeFormat.minutes', { count: diffMins })
-    if (diffHours < 24) return t('project.askAi.timeFormat.hours', { count: diffHours })
-    if (diffDays < 7) return t('project.askAi.timeFormat.days', { count: diffDays })
+    if (diffMins < 60)
+      return t('project.askAi.timeFormat.minutes', { count: diffMins })
+    if (diffHours < 24)
+      return t('project.askAi.timeFormat.hours', { count: diffHours })
+    if (diffDays < 7)
+      return t('project.askAi.timeFormat.days', { count: diffDays })
     return date.toLocaleDateString()
   }
 
@@ -1002,7 +1140,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         <div className='mx-auto w-full max-w-3xl px-4 pt-4'>
           <div className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/20'>
             <AlertCircleIcon className='h-5 w-5 shrink-0 text-red-500' />
-            <p className='flex-1 text-sm text-red-700 dark:text-red-400'>{error}</p>
+            <p className='flex-1 text-sm text-red-700 dark:text-red-400'>
+              {error}
+            </p>
             <button
               type='button'
               onClick={() => setError(null)}
@@ -1029,7 +1169,13 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     <SwetrixLogo />
                   </div>
 
-                  <Text as='h1' size='2xl' weight='semibold' colour='primary' className='mb-2'>
+                  <Text
+                    as='h1'
+                    size='2xl'
+                    weight='semibold'
+                    colour='primary'
+                    className='mb-2'
+                  >
                     {t('project.askAi.welcomeTitle')}
                   </Text>
                   <Text as='p' size='base' colour='muted' className='mb-10'>
@@ -1104,12 +1250,17 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     <ThinkingIndicator />
                   </div>
                 ) : null}
-                {streamingMessage ? <AssistantMessage message={streamingMessage} isStreaming /> : null}
+                {streamingMessage ? (
+                  <AssistantMessage message={streamingMessage} isStreaming />
+                ) : null}
               </div>
             )}
           </div>
         </div>
-        <ScrollToBottomButton isAtBottom={isAtBottom} scrollToBottom={scrollToBottom} />
+        <ScrollToBottomButton
+          isAtBottom={isAtBottom}
+          scrollToBottom={scrollToBottom}
+        />
       </div>
 
       {!isEmpty ? (
@@ -1160,7 +1311,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 </div>
               </form>
             </div>
-            <p className='mt-2 text-center text-xs text-gray-400 dark:text-gray-500'>{t('project.askAi.disclaimer')}</p>
+            <p className='mt-2 text-center text-xs text-gray-400 dark:text-gray-500'>
+              {t('project.askAi.disclaimer')}
+            </p>
           </div>
         </div>
       ) : null}
@@ -1190,10 +1343,22 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 onClick={() => handleOpenChat(chat.id)}
                 className='group flex w-full items-center justify-between text-left transition-colors'
               >
-                <Text as='span' size='sm' weight='medium' truncate className='group-hover:underline'>
+                <Text
+                  as='span'
+                  size='sm'
+                  weight='medium'
+                  truncate
+                  className='group-hover:underline'
+                >
                   {chat.name || t('project.askAi.newChat')}
                 </Text>
-                <Text as='span' size='sm' weight='medium' colour='muted' className='ml-4 shrink-0'>
+                <Text
+                  as='span'
+                  size='sm'
+                  weight='medium'
+                  colour='muted'
+                  className='ml-4 shrink-0'
+                >
                   {formatRelativeTime(chat.updated)}
                 </Text>
               </button>
@@ -1210,7 +1375,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
         message={
           <div className='mt-2 max-h-96 overflow-y-auto'>
             {_isEmpty(allChats) && !isLoadingChats ? (
-              <p className='py-8 text-center text-gray-500 dark:text-gray-400'>{t('project.askAi.noChats')}</p>
+              <p className='py-8 text-center text-gray-500 dark:text-gray-400'>
+                {t('project.askAi.noChats')}
+              </p>
             ) : (
               <div className='space-y-2'>
                 {_map(allChats, (chat) => (
@@ -1253,7 +1420,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     disabled={isLoadingChats}
                     className='flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
                   >
-                    {isLoadingChats ? <Loader2Icon className='h-4 w-4 animate-spin' /> : null}
+                    {isLoadingChats ? (
+                      <Loader2Icon className='h-4 w-4 animate-spin' />
+                    ) : null}
                     {t('project.askAi.loadMore')}
                   </button>
                 ) : null}

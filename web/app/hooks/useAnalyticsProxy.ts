@@ -31,7 +31,9 @@ import type {
   AnalyticsParams as ServerAnalyticsParams,
 } from '~/api/api.server'
 
-type ClientAnalyticsParams = Partial<Omit<ServerAnalyticsParams, 'password'>> & {
+type ClientAnalyticsParams = Partial<
+  Omit<ServerAnalyticsParams, 'password'>
+> & {
   take?: number
   skip?: number
   options?: Record<string, unknown>
@@ -55,11 +57,15 @@ async function postAnalytics<T>(payload: unknown): Promise<ProxyResponse<T>> {
   try {
     result = (await response.json()) as ProxyResponse<T>
   } catch {
-    throw new Error(`Invalid JSON from /api/analytics (status ${response.status})`)
+    throw new Error(
+      `Invalid JSON from /api/analytics (status ${response.status})`,
+    )
   }
 
   if (!response.ok) {
-    throw new Error(result.error || `Request failed (status ${response.status})`)
+    throw new Error(
+      result.error || `Request failed (status ${response.status})`,
+    )
   }
   return result
 }
@@ -69,20 +75,27 @@ export function useSessionsProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchSessions = useCallback(async (projectId: string, params: ClientAnalyticsParams) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchSessions = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<SessionsResponse>({ action: 'getSessions', projectId, params })
-      setData(result.data)
-      setError(result.error)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<SessionsResponse>({
+          action: 'getSessions',
+          projectId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchSessions, data, error, isLoading }
 }
@@ -92,20 +105,27 @@ export function useErrorsProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchErrors = useCallback(async (projectId: string, params: ClientAnalyticsParams) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchErrors = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<ErrorsResponse>({ action: 'getErrors', projectId, params })
-      setData(result.data)
-      setError(result.error)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<ErrorsResponse>({
+          action: 'getErrors',
+          projectId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchErrors, data, error, isLoading }
 }
@@ -115,22 +135,29 @@ export function useFeatureFlagStatsProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchStats = useCallback(async (flagId: string, params: ClientAnalyticsParams) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchStats = useCallback(
+    async (flagId: string, params: ClientAnalyticsParams) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<FeatureFlagStats>({ action: 'getFeatureFlagStats', flagId, params })
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<FeatureFlagStats>({
+          action: 'getFeatureFlagStats',
+          flagId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchStats, data, error, isLoading }
 }
@@ -140,26 +167,29 @@ export function useFeatureFlagProfilesProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchProfiles = useCallback(async (flagId: string, params: ClientAnalyticsParams) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchProfiles = useCallback(
+    async (flagId: string, params: ClientAnalyticsParams) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<FeatureFlagProfilesResponse>({
-        action: 'getFeatureFlagProfiles',
-        flagId,
-        params,
-      })
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<FeatureFlagProfilesResponse>({
+          action: 'getFeatureFlagProfiles',
+          flagId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchProfiles, data, error, isLoading }
 }
@@ -169,22 +199,29 @@ export function useGoalStatsProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchStats = useCallback(async (goalId: string, params: ClientAnalyticsParams) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchStats = useCallback(
+    async (goalId: string, params: ClientAnalyticsParams) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<GoalStats>({ action: 'getGoalStats', goalId, params })
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<GoalStats>({
+          action: 'getGoalStats',
+          goalId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchStats, data, error, isLoading }
 }
@@ -194,22 +231,29 @@ export function useGoalChartProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchChart = useCallback(async (goalId: string, params: ClientAnalyticsParams) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchChart = useCallback(
+    async (goalId: string, params: ClientAnalyticsParams) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<{ chart: GoalChartData }>({ action: 'getGoalChart', goalId, params })
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<{ chart: GoalChartData }>({
+          action: 'getGoalChart',
+          goalId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchChart, data, error, isLoading }
 }
@@ -219,22 +263,29 @@ export function useCaptchaProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchCaptcha = useCallback(async (projectId: string, params: ClientAnalyticsParams) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchCaptcha = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<CaptchaDataResponse>({ action: 'getCaptchaData', projectId, params })
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<CaptchaDataResponse>({
+          action: 'getCaptchaData',
+          projectId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchCaptcha, data, error, isLoading }
 }
@@ -244,22 +295,29 @@ export function useExperimentResultsProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchResults = useCallback(async (experimentId: string, params: ClientAnalyticsParams) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchResults = useCallback(
+    async (experimentId: string, params: ClientAnalyticsParams) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<ExperimentResults>({ action: 'getExperimentResults', experimentId, params })
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<ExperimentResults>({
+          action: 'getExperimentResults',
+          experimentId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchResults, data, error, isLoading }
 }
@@ -274,7 +332,11 @@ export function useExperimentProxy() {
     setError(null)
 
     try {
-      const result = await postAnalytics<Experiment>({ action: 'getExperiment', experimentId, params: {} })
+      const result = await postAnalytics<Experiment>({
+        action: 'getExperiment',
+        experimentId,
+        params: {},
+      })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -299,7 +361,11 @@ export function useGoalProxy() {
     setError(null)
 
     try {
-      const result = await postAnalytics<Goal>({ action: 'getGoal', goalId, params: {} })
+      const result = await postAnalytics<Goal>({
+        action: 'getGoal',
+        goalId,
+        params: {},
+      })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -319,22 +385,29 @@ export function useProjectGoalsProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchGoals = useCallback(async (projectId: string, params: ClientAnalyticsParams = {}) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchGoals = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams = {}) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<GoalsResponse>({ action: 'getProjectGoals', projectId, params })
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<GoalsResponse>({
+          action: 'getProjectGoals',
+          projectId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchGoals, data, error, isLoading }
 }
@@ -344,22 +417,29 @@ export function useProjectFeatureFlagsProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchFeatureFlags = useCallback(async (projectId: string, params: ClientAnalyticsParams = {}) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchFeatureFlags = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams = {}) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<FeatureFlagsResponse>({ action: 'getProjectFeatureFlags', projectId, params })
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<FeatureFlagsResponse>({
+          action: 'getProjectFeatureFlags',
+          projectId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchFeatureFlags, data, error, isLoading }
 }
@@ -372,13 +452,19 @@ export function useProfilesProxy() {
   const fetchProfiles = useCallback(
     async (
       projectId: string,
-      params: ClientAnalyticsParams & { profileType?: 'all' | 'anonymous' | 'identified' } = {},
+      params: ClientAnalyticsParams & {
+        profileType?: 'all' | 'anonymous' | 'identified'
+      } = {},
     ) => {
       setIsLoading(true)
       setError(null)
 
       try {
-        const result = await postAnalytics<ProfilesResponse>({ action: 'getProfiles', projectId, params })
+        const result = await postAnalytics<ProfilesResponse>({
+          action: 'getProfiles',
+          projectId,
+          params,
+        })
         setData(result.data)
         setError(result.error)
         return result.data
@@ -400,22 +486,34 @@ export function useProfileProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchProfile = useCallback(async (projectId: string, profileId: string, params: ClientAnalyticsParams = {}) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchProfile = useCallback(
+    async (
+      projectId: string,
+      profileId: string,
+      params: ClientAnalyticsParams = {},
+    ) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<ProfileDetailsResponse>({ action: 'getProfile', projectId, profileId, params })
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<ProfileDetailsResponse>({
+          action: 'getProfile',
+          projectId,
+          profileId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchProfile, data, error, isLoading }
 }
@@ -426,7 +524,11 @@ export function useProfileSessionsProxy() {
   const [isLoading, setIsLoading] = useState(false)
 
   const fetchProfileSessions = useCallback(
-    async (projectId: string, profileId: string, params: ClientAnalyticsParams = {}) => {
+    async (
+      projectId: string,
+      profileId: string,
+      params: ClientAnalyticsParams = {},
+    ) => {
       setIsLoading(true)
       setError(null)
 
@@ -454,25 +556,41 @@ export function useProfileSessionsProxy() {
 }
 
 export function useFiltersProxy() {
-  const fetchFilters = useCallback(async (projectId: string, filterType: string): Promise<string[] | null> => {
-    try {
-      const result = await postAnalytics<string[]>({ action: 'getFilters', projectId, filterType, params: {} })
-      return result.data
-    } catch (err) {
-      console.error('[useFiltersProxy] Error:', err)
-      throw err
-    }
-  }, [])
+  const fetchFilters = useCallback(
+    async (projectId: string, filterType: string): Promise<string[] | null> => {
+      try {
+        const result = await postAnalytics<string[]>({
+          action: 'getFilters',
+          projectId,
+          filterType,
+          params: {},
+        })
+        return result.data
+      } catch (err) {
+        console.error('[useFiltersProxy] Error:', err)
+        throw err
+      }
+    },
+    [],
+  )
 
-  const fetchErrorsFilters = useCallback(async (projectId: string, filterType: string): Promise<string[] | null> => {
-    try {
-      const result = await postAnalytics<string[]>({ action: 'getErrorsFilters', projectId, filterType, params: {} })
-      return result.data
-    } catch (err) {
-      console.error('[useFiltersProxy] Error:', err)
-      throw err
-    }
-  }, [])
+  const fetchErrorsFilters = useCallback(
+    async (projectId: string, filterType: string): Promise<string[] | null> => {
+      try {
+        const result = await postAnalytics<string[]>({
+          action: 'getErrorsFilters',
+          projectId,
+          filterType,
+          params: {},
+        })
+        return result.data
+      } catch (err) {
+        console.error('[useFiltersProxy] Error:', err)
+        throw err
+      }
+    },
+    [],
+  )
 
   const fetchVersionFilters = useCallback(
     async (
@@ -558,7 +676,11 @@ export function useErrorSessionsProxy() {
   const [isLoading, setIsLoading] = useState(false)
 
   const fetchErrorSessions = useCallback(
-    async (projectId: string, errorId: string, params: ClientAnalyticsParams = {}) => {
+    async (
+      projectId: string,
+      errorId: string,
+      params: ClientAnalyticsParams = {},
+    ) => {
       setIsLoading(true)
       setError(null)
 
@@ -586,29 +708,43 @@ export function useErrorSessionsProxy() {
 }
 
 export function useLiveVisitorsProxy() {
-  const fetchLiveVisitors = useCallback(async (pids: string[]): Promise<LiveStats | null> => {
-    if (!pids || pids.length === 0) {
-      return null
-    }
+  const fetchLiveVisitors = useCallback(
+    async (pids: string[]): Promise<LiveStats | null> => {
+      if (!pids || pids.length === 0) {
+        return null
+      }
 
-    try {
-      const result = await postAnalytics<LiveStats>({ action: 'getLiveVisitors', pids, params: {} })
-      return result.data
-    } catch (err) {
-      console.error('[useLiveVisitorsProxy] Error:', err)
-      throw err
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<LiveStats>({
+          action: 'getLiveVisitors',
+          pids,
+          params: {},
+        })
+        return result.data
+      } catch (err) {
+        console.error('[useLiveVisitorsProxy] Error:', err)
+        throw err
+      }
+    },
+    [],
+  )
 
-  const fetchLiveVisitorsInfo = useCallback(async (projectId: string): Promise<LiveVisitorInfo[] | null> => {
-    try {
-      const result = await postAnalytics<LiveVisitorInfo[]>({ action: 'getLiveVisitorsInfo', projectId, params: {} })
-      return result.data
-    } catch (err) {
-      console.error('[useLiveVisitorsProxy] Error:', err)
-      throw err
-    }
-  }, [])
+  const fetchLiveVisitorsInfo = useCallback(
+    async (projectId: string): Promise<LiveVisitorInfo[] | null> => {
+      try {
+        const result = await postAnalytics<LiveVisitorInfo[]>({
+          action: 'getLiveVisitorsInfo',
+          projectId,
+          params: {},
+        })
+        return result.data
+      } catch (err) {
+        console.error('[useLiveVisitorsProxy] Error:', err)
+        throw err
+      }
+    },
+    [],
+  )
 
   return { fetchLiveVisitors, fetchLiveVisitorsInfo }
 }
@@ -644,22 +780,29 @@ export function useUserFlowProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchUserFlow = useCallback(async (projectId: string, params: ClientAnalyticsParams = {}) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchUserFlow = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams = {}) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<UserFlowResponse>({ action: 'getUserFlow', projectId, params })
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<UserFlowResponse>({
+          action: 'getUserFlow',
+          projectId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchUserFlow, data, error, isLoading }
 }
@@ -669,66 +812,99 @@ export function useGSCKeywordsProxy() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchKeywords = useCallback(async (projectId: string, params: ClientAnalyticsParams = {}) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchKeywords = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams = {}) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<GSCKeywordsResponse>({ action: 'getGSCKeywords', projectId, params })
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<GSCKeywordsResponse>({
+          action: 'getGSCKeywords',
+          projectId,
+          params,
+        })
+        setData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
   return { fetchKeywords, data, error, isLoading }
 }
 
 export function useRevenueProxy() {
   const [statusData, setStatusData] = useState<RevenueStatus | null>(null)
-  const [revenueData, setRevenueData] = useState<RevenueDataResponse | null>(null)
+  const [revenueData, setRevenueData] = useState<RevenueDataResponse | null>(
+    null,
+  )
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchRevenueStatus = useCallback(async (projectId: string): Promise<RevenueStatus | null> => {
-    try {
-      const result = await postAnalytics<RevenueStatus>({ action: 'getRevenueStatus', projectId, params: {} })
-      setStatusData(result.data)
-      return result.data
-    } catch (err) {
-      console.error('[useRevenueProxy] Error:', err)
-      throw err
-    }
-  }, [])
+  const fetchRevenueStatus = useCallback(
+    async (projectId: string): Promise<RevenueStatus | null> => {
+      try {
+        const result = await postAnalytics<RevenueStatus>({
+          action: 'getRevenueStatus',
+          projectId,
+          params: {},
+        })
+        setStatusData(result.data)
+        return result.data
+      } catch (err) {
+        console.error('[useRevenueProxy] Error:', err)
+        throw err
+      }
+    },
+    [],
+  )
 
-  const fetchRevenueData = useCallback(async (projectId: string, params: ClientAnalyticsParams = {}) => {
-    setIsLoading(true)
-    setError(null)
+  const fetchRevenueData = useCallback(
+    async (projectId: string, params: ClientAnalyticsParams = {}) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const result = await postAnalytics<RevenueDataResponse>({ action: 'getRevenueData', projectId, params })
-      setRevenueData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+      try {
+        const result = await postAnalytics<RevenueDataResponse>({
+          action: 'getRevenueData',
+          projectId,
+          params,
+        })
+        setRevenueData(result.data)
+        setError(result.error)
+        return result.data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+        return null
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
 
-  return { fetchRevenueStatus, fetchRevenueData, statusData, revenueData, error, isLoading }
+  return {
+    fetchRevenueStatus,
+    fetchRevenueData,
+    statusData,
+    revenueData,
+    error,
+    isLoading,
+  }
 }
 
 export function useOverallStatsProxy() {
   const fetchOverallStats = useCallback(
-    async (pids: string[], params: ClientAnalyticsParams = {}): Promise<Record<string, OverallObject> | null> => {
+    async (
+      pids: string[],
+      params: ClientAnalyticsParams = {},
+    ): Promise<Record<string, OverallObject> | null> => {
       try {
         const result = await postAnalytics<Record<string, OverallObject>>({
           action: 'getOverallStats',

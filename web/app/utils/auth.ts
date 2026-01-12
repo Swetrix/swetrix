@@ -9,7 +9,10 @@ import {
 import { getCookie } from './cookie'
 import { removeItem } from './localstorage'
 
-export const shouldShowLowEventsBanner = (totalMonthlyEvents: number, maxEventsCount: number) => {
+export const shouldShowLowEventsBanner = (
+  totalMonthlyEvents: number,
+  maxEventsCount: number,
+) => {
   if (isSelfhosted) {
     return false
   }

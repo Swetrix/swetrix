@@ -1,4 +1,8 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs, data } from 'react-router'
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  data,
+} from 'react-router'
 
 import { streamingServerFetch } from '~/api/api.server'
 
@@ -18,7 +22,12 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      return data({ error: errorData.message || `HTTP error! status: ${response.status}` }, { status: response.status })
+      return data(
+        {
+          error: errorData.message || `HTTP error! status: ${response.status}`,
+        },
+        { status: response.status },
+      )
     }
 
     // Stream the response back to the client
@@ -31,7 +40,10 @@ export async function action({ request }: ActionFunctionArgs) {
     })
   } catch (error) {
     console.error('[api.ai] Proxy request failed:', error)
-    return data({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 })
+    return data(
+      { error: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 },
+    )
   }
 }
 

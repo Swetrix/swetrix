@@ -14,13 +14,13 @@ import { ValidateProjectIds } from '../decorators/validate-project-ids.decorator
 
 export class GetOverallStatsDto {
   @ApiProperty({ description: 'Array of project IDs', required: false })
-  @ValidateIf(o => o.pids || !o.pid)
+  @ValidateIf((o) => o.pids || !o.pid)
   @IsOptional()
   @ValidateProjectIds()
   pids?: string[]
 
   @ApiProperty({ description: 'Single project ID', required: false })
-  @ValidateIf(o => !o.pids || o.pid)
+  @ValidateIf((o) => !o.pids || o.pid)
   @IsOptional()
   @Matches(PID_REGEX, { message: 'The provided Project ID (pid) is incorrect' })
   pid?: string

@@ -6,7 +6,9 @@ import { Badge } from '~/ui/Badge'
 import Modal from '~/ui/Modal'
 import Textarea from '~/ui/Textarea'
 
-const API_URL_WITHOUT_TRAILING_SLASH = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL
+const API_URL_WITHOUT_TRAILING_SLASH = API_URL.endsWith('/')
+  ? API_URL.slice(0, -1)
+  : API_URL
 
 interface TrackingSnippetProps {
   onClose: () => void

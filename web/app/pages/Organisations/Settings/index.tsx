@@ -4,13 +4,22 @@ import _size from 'lodash/size'
 import { Trash2Icon } from 'lucide-react'
 import React, { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate, useFetcher, useLoaderData, useRevalidator } from 'react-router'
+import {
+  Link,
+  useNavigate,
+  useFetcher,
+  useLoaderData,
+  useRevalidator,
+} from 'react-router'
 import { toast } from 'sonner'
 
 import { TITLE_SUFFIX } from '~/lib/constants'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
-import type { OrganisationSettingsActionData, OrganisationLoaderData } from '~/routes/organisations.$id'
+import type {
+  OrganisationSettingsActionData,
+  OrganisationLoaderData,
+} from '~/routes/organisations.$id'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
@@ -54,8 +63,12 @@ const OrganisationSettings = () => {
     }
   }, [organisation, isFormDirty])
 
-  const isSaving = fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'update-organisation'
-  const isDeleting = fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'delete-organisation'
+  const isSaving =
+    fetcher.state === 'submitting' &&
+    fetcher.formData?.get('intent') === 'update-organisation'
+  const isDeleting =
+    fetcher.state === 'submitting' &&
+    fetcher.formData?.get('intent') === 'delete-organisation'
 
   useEffect(() => {
     if (fetcher.data?.success) {
@@ -125,7 +138,9 @@ const OrganisationSettings = () => {
     }
 
     if (_size(form.name) > MAX_NAME_LENGTH) {
-      allErrors.name = t('project.settings.pxCharsError', { amount: MAX_NAME_LENGTH })
+      allErrors.name = t('project.settings.pxCharsError', {
+        amount: MAX_NAME_LENGTH,
+      })
     }
 
     const valid = _isEmpty(_keys(allErrors))
@@ -174,7 +189,11 @@ const OrganisationSettings = () => {
         title={t('apiNotifications.somethingWentWrong')}
         description={t('apiNotifications.errorCode', { error })}
         actions={[
-          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
+          {
+            label: t('dashboard.reloadPage'),
+            onClick: () => window.location.reload(),
+            primary: true,
+          },
           { label: t('notFoundPage.support'), to: routes.contact },
         ]}
       />
@@ -191,9 +210,16 @@ const OrganisationSettings = () => {
 
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 pb-40 dark:bg-slate-900'>
-      <form className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
-        <h3 className='mt-4 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
+      <form
+        className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'
+        onSubmit={handleSubmit}
+      >
+        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+          {title}
+        </h2>
+        <h3 className='mt-4 text-lg font-bold text-gray-900 dark:text-gray-50'>
+          {t('profileSettings.general')}
+        </h3>
         <Input
           name='name'
           label={t('common.name')}
@@ -224,7 +250,12 @@ const OrganisationSettings = () => {
                 <ArrowLeftRight className='mr-1 h-5 w-5' />
                 {t('project.settings.transfer')}
               </Button> */}
-              <Button onClick={() => setShowDelete(true)} disabled={isDeleting} danger semiSmall>
+              <Button
+                onClick={() => setShowDelete(true)}
+                disabled={isDeleting}
+                danger
+                semiSmall
+              >
                 <Trash2Icon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                 {t('organisations.delete')}
               </Button>

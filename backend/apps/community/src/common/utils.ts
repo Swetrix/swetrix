@@ -181,7 +181,7 @@ const getFunnelClickhouse = async (
       query,
       query_params: queryParams,
     })
-    .then(resultSet => resultSet.json<ClickhouseFunnel>())
+    .then((resultSet) => resultSet.json<ClickhouseFunnel>())
 
   if (_isEmpty(data)) {
     throw new NotFoundException(
@@ -207,7 +207,7 @@ const getFunnelsClickhouse = async (
       query,
       query_params: queryParams,
     })
-    .then(resultSet => resultSet.json<ClickhouseFunnel>())
+    .then((resultSet) => resultSet.json<ClickhouseFunnel>())
 
   return data
 }
@@ -225,7 +225,7 @@ const deleteAllRefreshTokensClickhouse = async (userId: string) => {
 
 const updateFunnelClickhouse = async (funnel: any) => {
   const filtered = _reduce(
-    _filter(_keys(funnel), key => ALLOWED_FUNNEL_KEYS.includes(key)),
+    _filter(_keys(funnel), (key) => ALLOWED_FUNNEL_KEYS.includes(key)),
     (obj, key) => {
       obj[key] = funnel[key]
       return obj
@@ -240,7 +240,7 @@ const updateFunnelClickhouse = async (funnel: any) => {
 
   const params: Record<string, string> = { id: funnel.id }
 
-  const assignments = _map(columns, col => {
+  const assignments = _map(columns, (col) => {
     params[col] = filtered[col]
     return `${col}={${col}:String}`
   }).join(', ')
@@ -292,7 +292,7 @@ const getProjectClickhouse = async (id: string): Promise<Project> => {
         id,
       },
     })
-    .then(resultSet => resultSet.json<Project>())
+    .then((resultSet) => resultSet.json<Project>())
 
   if (_isEmpty(data)) {
     throw new NotFoundException(`Project ${id} was not found in the database`)
@@ -343,7 +343,7 @@ const getProjectsClickhouse = async (
           adminId,
         },
       })
-      .then(resultSet => resultSet.json<Project>())
+      .then((resultSet) => resultSet.json<Project>())
 
     return data
   }
@@ -365,7 +365,7 @@ const getProjectsClickhouse = async (
         adminId,
       },
     })
-    .then(resultSet => resultSet.json<Project>())
+    .then((resultSet) => resultSet.json<Project>())
 
   return data
 }
@@ -379,7 +379,7 @@ const updateProjectClickhouse = async (
     : ALLOWED_KEYS
 
   const filtered = _reduce(
-    _filter(_keys(project), key => updatableKeys.includes(key)),
+    _filter(_keys(project), (key) => updatableKeys.includes(key)),
     (obj, key) => {
       obj[key] = project[key]
       return obj
@@ -396,7 +396,7 @@ const updateProjectClickhouse = async (
   const UINT8_COLUMNS = ['captchaDifficulty']
   const params: Record<string, any> = { id: project.id }
 
-  const assignments = _map(columns, col => {
+  const assignments = _map(columns, (col) => {
     params[col] = filtered[col]
     let type = 'String'
     if (INT8_COLUMNS.includes(col)) {
@@ -494,7 +494,7 @@ const findProjectShareClickhouse = async (
         query: `SELECT * FROM project_share WHERE id = {id:FixedString(36)}`,
         query_params: { id },
       })
-      .then(resultSet => resultSet.json<ClickhouseProjectShare>())
+      .then((resultSet) => resultSet.json<ClickhouseProjectShare>())
 
     if (_isEmpty(data)) {
       return null
@@ -527,7 +527,7 @@ const findProjectSharesByProjectClickhouse = async (
         `,
         query_params: { projectId },
       })
-      .then(resultSet => resultSet.json<ClickhouseProjectShareWithUser>())
+      .then((resultSet) => resultSet.json<ClickhouseProjectShareWithUser>())
 
     return data
   } catch {
@@ -568,7 +568,7 @@ const findProjectSharesByUserClickhouse = async (
         `,
         query_params: { userId, search: `%${search}%` },
       })
-      .then(resultSet => resultSet.json<ClickhouseProjectShareWithProject>())
+      .then((resultSet) => resultSet.json<ClickhouseProjectShareWithProject>())
 
     return data
   } catch {
@@ -590,7 +590,7 @@ const findProjectShareByUserAndProjectClickhouse = async (
         `,
         query_params: { userId, projectId },
       })
-      .then(resultSet => resultSet.json<ClickhouseProjectShare>())
+      .then((resultSet) => resultSet.json<ClickhouseProjectShare>())
 
     if (_isEmpty(data)) {
       return null
@@ -635,7 +635,7 @@ const updateProjectShareClickhouse = async (
   update: Partial<{ role: string; confirmed: number }>,
 ) => {
   const filtered = _reduce(
-    _filter(_keys(update), key => ALLOWED_SHARE_KEYS.includes(key)),
+    _filter(_keys(update), (key) => ALLOWED_SHARE_KEYS.includes(key)),
     (obj, key) => {
       obj[key] = update[key]
       return obj
@@ -713,7 +713,7 @@ const findRefreshTokenClickhouse = async (
         refreshToken,
       },
     })
-    .then(resultSet => resultSet.json())
+    .then((resultSet) => resultSet.json())
 
   return data
 }
@@ -743,7 +743,7 @@ const findProjectViewCustomEventsClickhouse = async (viewId: string) => {
           viewId,
         },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     return data
   } catch {
@@ -772,7 +772,7 @@ const doesProjectViewExistClickhouse = async (
           projectId,
         },
       })
-      .then(resultSet => resultSet.json<{ count: number }>())
+      .then((resultSet) => resultSet.json<{ count: number }>())
 
     if (_isEmpty(data)) {
       return false
@@ -802,7 +802,7 @@ const findProjectViewClickhouse = async (id: string, projectId: string) => {
           projectId,
         },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     if (_isEmpty(data)) {
       return null
@@ -836,7 +836,7 @@ const findProjectViewsClickhouse = async (projectId: string) => {
           projectId,
         },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     if (_isEmpty(data)) {
       return []
@@ -964,7 +964,7 @@ const getAnnotationsClickhouse = async (
       query,
       query_params: queryParams,
     })
-    .then(resultSet => resultSet.json<ClickhouseAnnotation>())
+    .then((resultSet) => resultSet.json<ClickhouseAnnotation>())
 
   return data
 }
@@ -991,7 +991,7 @@ const getAnnotationClickhouse = async (
       query,
       query_params: queryParams,
     })
-    .then(resultSet => resultSet.json<ClickhouseAnnotation>())
+    .then((resultSet) => resultSet.json<ClickhouseAnnotation>())
 
   if (_isEmpty(data)) {
     return null
@@ -1028,7 +1028,7 @@ const updateAnnotationClickhouse = async (annotation: {
   const filtered = _reduce(
     _filter(
       _keys(annotation),
-      key => ALLOWED_ANNOTATION_KEYS.includes(key) && annotation[key] != null,
+      (key) => ALLOWED_ANNOTATION_KEYS.includes(key) && annotation[key] != null,
     ),
     (obj, key) => {
       obj[key] = annotation[key]
@@ -1044,7 +1044,7 @@ const updateAnnotationClickhouse = async (annotation: {
 
   const params: Record<string, string> = { id: annotation.id }
 
-  const assignments = _map(columns, col => {
+  const assignments = _map(columns, (col) => {
     params[col] = filtered[col]
     const type = col === 'date' ? 'Date' : 'String'
     return `${col}={${col}:${type}}`
@@ -1200,9 +1200,9 @@ const getPinnedProjectsClickhouse = async (
       query,
       query_params: { visitorId },
     })
-    .then(resultSet => resultSet.json<{ projectId: string }>())
+    .then((resultSet) => resultSet.json<{ projectId: string }>())
 
-  return _map(data, row => row.projectId)
+  return _map(data, (row) => row.projectId)
 }
 
 const pinProjectClickhouse = async (
@@ -1250,7 +1250,7 @@ const getSaltClickhouse = async (
         query,
         query_params: { rotation },
       })
-      .then(resultSet => resultSet.json<ClickhouseSalt>())
+      .then((resultSet) => resultSet.json<ClickhouseSalt>())
 
     return _head(data) || null
   } catch {

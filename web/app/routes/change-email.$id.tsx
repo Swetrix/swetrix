@@ -21,7 +21,10 @@ export interface ChangeEmailLoaderData {
   error?: string
 }
 
-export async function loader({ request, params }: LoaderFunctionArgs): Promise<ChangeEmailLoaderData | Response> {
+export async function loader({
+  request,
+  params,
+}: LoaderFunctionArgs): Promise<ChangeEmailLoaderData | Response> {
   if (isSelfhosted) {
     return redirect('/login', 302)
   }
@@ -32,12 +35,17 @@ export async function loader({ request, params }: LoaderFunctionArgs): Promise<C
     return { success: false, error: 'Invalid verification link' }
   }
 
-  const result = await serverFetch(request, `v1/auth/change-email/confirm/${id}`, {
-    skipAuth: true,
-  })
+  const result = await serverFetch(
+    request,
+    `v1/auth/change-email/confirm/${id}`,
+    {
+      skipAuth: true,
+    },
+  )
 
   if (result.error) {
-    const errorMessage = typeof result.error === 'string' ? result.error : 'Verification failed'
+    const errorMessage =
+      typeof result.error === 'string' ? result.error : 'Verification failed'
     return { success: false, error: errorMessage }
   }
 

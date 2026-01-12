@@ -39,7 +39,7 @@ export class GoalService {
     if (search && search.trim()) {
       const searchPattern = `%${search.trim()}%`
       // Use array of where conditions for OR with the base where conditions
-      finalWhere = normalizedWhere.flatMap(condition => [
+      finalWhere = normalizedWhere.flatMap((condition) => [
         { ...condition, name: ILike(searchPattern) },
         { ...condition, value: ILike(searchPattern) },
       ])

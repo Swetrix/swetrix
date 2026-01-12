@@ -9,7 +9,11 @@ const displayDateOptions: Intl.DateTimeFormatOptions = {
   day: 'numeric',
 }
 
-const getCustomLabel = (dates: Date[], t: typeof i18nextT, language?: string): string => {
+const getCustomLabel = (
+  dates: Date[],
+  t: typeof i18nextT,
+  language?: string,
+): string => {
   if (dates) {
     let from: string
     let to: string
@@ -58,7 +62,13 @@ export const VALID_PERIODS = [
   'compare',
 ] as const
 
-export const VALID_TIME_BUCKETS = ['minute', 'hour', 'day', 'month', 'year'] as const
+export const VALID_TIME_BUCKETS = [
+  'minute',
+  'hour',
+  'day',
+  'month',
+  'year',
+] as const
 
 export type Period = (typeof VALID_PERIODS)[number]
 
@@ -169,7 +179,12 @@ export const PERIOD_PAIRS_COMPARE = {
 } as const
 
 // the order of panels in the project view
-export const TRAFFIC_PANELS_ORDER = ['location', 'pg', 'devices', 'traffic-sources']
+export const TRAFFIC_PANELS_ORDER = [
+  'location',
+  'pg',
+  'devices',
+  'traffic-sources',
+]
 export const PERFORMANCE_PANELS_ORDER = ['location', 'pg', 'devices']
 export const ERROR_PANELS_ORDER = ['location', 'pg', 'devices']
 export const FILTERS_PANELS_ORDER = [
@@ -193,7 +208,18 @@ export const FILTERS_PANELS_ORDER = [
   'te',
   'co',
 ]
-export const ERRORS_FILTERS_PANELS_ORDER = ['cc', 'rg', 'ct', 'pg', 'br', 'brv', 'os', 'osv', 'lc', 'dv']
+export const ERRORS_FILTERS_PANELS_ORDER = [
+  'cc',
+  'rg',
+  'ct',
+  'pg',
+  'br',
+  'brv',
+  'os',
+  'osv',
+  'lc',
+  'dv',
+]
 
 // the maximum amount of months user can go back when picking a date in flat picker (project view)
 export const MAX_MONTHS_IN_PAST = 24
@@ -281,13 +307,15 @@ export const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
 export const MAIN_URL = 'https://swetrix.com'
 export const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
 export const BOOK_A_CALL_URL = 'https://cal.com/swetrix'
-export const PERFORMANCE_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=performance'
+export const PERFORMANCE_LIVE_DEMO_URL =
+  '/projects/STEzHcB1rALV?tab=performance'
 export const ERROR_TRACKING_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=errors'
 export const DOCS_URL = 'https://docs.swetrix.com'
 export const INTEGRATIONS_URL = 'https://docs.swetrix.com/integrations'
 export const ERROR_TRACKING_DOCS_URL = 'https://docs.swetrix.com/error-tracking'
 
-export const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
+export const isBrowser =
+  typeof window !== 'undefined' && typeof document !== 'undefined'
 
 export const isIframe = isBrowser && window.self !== window.top
 
@@ -301,21 +329,36 @@ export const LIVE_VISITORS_UPDATE_INTERVAL = 40000
 // Environment variables
 // Using optional chaining for REMIX_ENV?. to avoid errors when running some unit tests
 const isStaging = isBrowser ? window.REMIX_ENV?.STAGING : process.env.STAGING
-const STAGING_API_URL = isBrowser ? window.REMIX_ENV?.API_STAGING_URL : process.env.API_STAGING_URL
-const PRODUCTION_API_URL = isBrowser ? window.REMIX_ENV?.API_URL : process.env.API_URL
+const STAGING_API_URL = isBrowser
+  ? window.REMIX_ENV?.API_STAGING_URL
+  : process.env.API_STAGING_URL
+const PRODUCTION_API_URL = isBrowser
+  ? window.REMIX_ENV?.API_URL
+  : process.env.API_URL
 
-export const COOKIE_DOMAIN = (isBrowser ? window.REMIX_ENV?.COOKIE_DOMAIN : process.env.COOKIE_DOMAIN) || 'swetrix.com'
+export const COOKIE_DOMAIN =
+  (isBrowser ? window.REMIX_ENV?.COOKIE_DOMAIN : process.env.COOKIE_DOMAIN) ||
+  'swetrix.com'
 
-export const isSelfhosted = Boolean(isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.__SELFHOSTED)
+export const isSelfhosted = Boolean(
+  isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.__SELFHOSTED,
+)
 
 export const isDisableMarketingPages =
-  (isBrowser ? window.REMIX_ENV?.DISABLE_MARKETING_PAGES : process.env.DISABLE_MARKETING_PAGES) === 'true'
+  (isBrowser
+    ? window.REMIX_ENV?.DISABLE_MARKETING_PAGES
+    : process.env.DISABLE_MARKETING_PAGES) === 'true'
 
-export const apiUrlUnprocessed = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
+export const apiUrlUnprocessed =
+  isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
 
-export const TITLE_SUFFIX = isSelfhosted ? '| Swetrix Community Edition' : '| Swetrix'
+export const TITLE_SUFFIX = isSelfhosted
+  ? '| Swetrix Community Edition'
+  : '| Swetrix'
 
-export const API_URL = _endsWith(apiUrlUnprocessed, '/') ? apiUrlUnprocessed : `${apiUrlUnprocessed}/`
+export const API_URL = _endsWith(apiUrlUnprocessed, '/')
+  ? apiUrlUnprocessed
+  : `${apiUrlUnprocessed}/`
 const NODE_ENV = isBrowser ? window.REMIX_ENV?.NODE_ENV : process.env.NODE_ENV
 
 export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
@@ -374,7 +417,16 @@ export const I18N_CACHE_BREAKER = 28
 
 export const roles: Role[] = ['admin', 'viewer']
 
-export const FUNNELS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'all', 'custom']
+export const FUNNELS_PERIOD_PAIRS = [
+  '1h',
+  '1d',
+  '7d',
+  '4w',
+  '3M',
+  '12M',
+  'all',
+  'custom',
+]
 
 const SELFHOSTED_PROJECT_TABS = {
   traffic: 'traffic',
@@ -813,7 +865,17 @@ export const PLAN_LIMITS = {
   },
 }
 
-export const STANDARD_PLANS = ['100k', '200k', '500k', 'startup', '2m', 'enterprise', '10m', '15m', '20m']
+export const STANDARD_PLANS = [
+  '100k',
+  '200k',
+  '500k',
+  'startup',
+  '2m',
+  'enterprise',
+  '10m',
+  '15m',
+  '20m',
+]
 
 export const PURCHASABLE_LEGACY_PLANS = ['hobby', '50k']
 

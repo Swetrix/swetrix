@@ -1,7 +1,12 @@
 import cx from 'clsx'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
-import { BookmarkIcon, DownloadIcon, PencilIcon, Trash2Icon } from 'lucide-react'
+import {
+  BookmarkIcon,
+  DownloadIcon,
+  PencilIcon,
+  Trash2Icon,
+} from 'lucide-react'
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams, useFetcher } from 'react-router'
@@ -13,7 +18,11 @@ import { Text } from '~/ui/Text'
 import { trackCustom } from '~/utils/analytics'
 
 import { getFiltersUrlParams } from '../../View/components/SearchFilters'
-import { Filter, ProjectView, ProjectViewCustomEvent } from '../../View/interfaces/traffic'
+import {
+  Filter,
+  ProjectView,
+  ProjectViewCustomEvent,
+} from '../../View/interfaces/traffic'
 
 interface ExportType {
   label: string
@@ -134,7 +143,11 @@ const TrafficHeaderActions = ({
                     <PencilIcon className='size-3' />
                   </button>
                   <deleteFetcher.Form method='post' className='inline'>
-                    <input type='hidden' name='intent' value='delete-project-view' />
+                    <input
+                      type='hidden'
+                      name='intent'
+                      value='delete-project-view'
+                    />
                     <input type='hidden' name='viewId' value={item.id} />
                     <button
                       type='submit'
@@ -170,7 +183,12 @@ const TrafficHeaderActions = ({
           }
 
           if (item.filters && !_isEmpty(item.filters)) {
-            const newUrlParams = getFiltersUrlParams(filters, item.filters, true, searchParams)
+            const newUrlParams = getFiltersUrlParams(
+              filters,
+              item.filters,
+              true,
+              searchParams,
+            )
             setSearchParams(newUrlParams)
           }
 

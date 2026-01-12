@@ -26,13 +26,13 @@ export class ProjectShare {
    * User whom with the project was shared
    */
   @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, user => user.sharedProjects)
+  @ManyToOne(() => User, (user) => user.sharedProjects)
   user: User
 
   /**
    * Project in question
    */
-  @ManyToOne(() => Project, project => project.share)
+  @ManyToOne(() => Project, (project) => project.share)
   project: Project
 
   /**

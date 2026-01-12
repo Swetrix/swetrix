@@ -1,20 +1,34 @@
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import { DownloadIcon } from 'lucide-react'
-import { Component, useState, useEffect, useMemo, useRef, Suspense, use } from 'react'
+import {
+  Component,
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  Suspense,
+  use,
+} from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams, useLoaderData, useRevalidator } from 'react-router'
 
 import type { SessionsResponse, SessionDetailsResponse } from '~/api/api.server'
 import { useSessionsProxy } from '~/hooks/useAnalyticsProxy'
-import { Session, SessionDetails as SessionDetailsType } from '~/lib/models/Project'
+import {
+  Session,
+  SessionDetails as SessionDetailsType,
+} from '~/lib/models/Project'
 import NoSessions from '~/pages/Project/tabs/Sessions/components/NoSessions'
 import { SessionDetailView } from '~/pages/Project/tabs/Sessions/SessionDetailView'
 import { Sessions } from '~/pages/Project/tabs/Sessions/Sessions'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
-import { useViewProjectContext, useRefreshTriggers } from '~/pages/Project/View/ViewProject'
+import {
+  useViewProjectContext,
+  useRefreshTriggers,
+} from '~/pages/Project/View/ViewProject'
 import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type { ProjectLoaderData } from '~/routes/projects.$id'
@@ -29,7 +43,10 @@ interface SessionsErrorBoundaryState {
   error: Error | null
 }
 
-class SessionsErrorBoundary extends Component<{ children: ReactNode }, SessionsErrorBoundaryState> {
+class SessionsErrorBoundary extends Component<
+  { children: ReactNode },
+  SessionsErrorBoundaryState
+> {
   constructor(props: { children: ReactNode }) {
     super(props)
     this.state = { hasError: false, error: null }
@@ -45,9 +62,15 @@ class SessionsErrorBoundary extends Component<{ children: ReactNode }, SessionsE
         <StatusPage
           type='error'
           title='Failed to load sessions'
-          description={this.state.error?.message || 'An unexpected error occurred'}
+          description={
+            this.state.error?.message || 'An unexpected error occurred'
+          }
           actions={[
-            { label: 'Reload page', onClick: () => window.location.reload(), primary: true },
+            {
+              label: 'Reload page',
+              onClick: () => window.location.reload(),
+              primary: true,
+            },
             { label: 'Support', to: routes.contact },
           ]}
         />
@@ -89,12 +112,20 @@ interface DeferredSessionsData {
   sessionDetails: SessionDetailsResponse | null
 }
 
-function SessionsDataResolver({ children }: { children: (data: DeferredSessionsData) => React.ReactNode }) {
-  const { sessionsData: sessionsDataPromise, sessionDetails: sessionDetailsPromise } =
-    useLoaderData<ProjectLoaderData>()
+function SessionsDataResolver({
+  children,
+}: {
+  children: (data: DeferredSessionsData) => React.ReactNode
+}) {
+  const {
+    sessionsData: sessionsDataPromise,
+    sessionDetails: sessionDetailsPromise,
+  } = useLoaderData<ProjectLoaderData>()
 
   const sessionsData = sessionsDataPromise ? use(sessionsDataPromise) : null
-  const sessionDetails = sessionDetailsPromise ? use(sessionDetailsPromise) : null
+  const sessionDetails = sessionDetailsPromise
+    ? use(sessionDetailsPromise)
+    : null
 
   return <>{children({ sessionsData, sessionDetails })}</>
 }
@@ -104,7 +135,9 @@ function SessionsViewWrapper(props: SessionsViewProps) {
     <SessionsErrorBoundary>
       <Suspense fallback={<Loader />}>
         <SessionsDataResolver>
-          {(deferredData) => <SessionsViewInner {...props} deferredData={deferredData} />}
+          {(deferredData) => (
+            <SessionsViewInner {...props} deferredData={deferredData} />
+          )}
         </SessionsDataResolver>
       </Suspense>
     </SessionsErrorBoundary>
@@ -115,11 +148,16 @@ interface SessionsViewInnerProps extends SessionsViewProps {
   deferredData: DeferredSessionsData
 }
 
-const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsViewInnerProps) => {
+const SessionsViewInner = ({
+  tnMapping,
+  rotateXAxis,
+  deferredData,
+}: SessionsViewInnerProps) => {
   const { id, project } = useCurrentProject()
   const revalidator = useRevalidator()
   const { sessionsRefreshTrigger } = useRefreshTriggers()
-  const { timezone, period, dateRange, filters, timeFormat } = useViewProjectContext()
+  const { timezone, period, dateRange, filters, timeFormat } =
+    useViewProjectContext()
   const { t } = useTranslation('common')
   const [searchParams] = useSearchParams()
 
@@ -127,7 +165,9 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
   const sessionsProxy = useSessionsProxy()
 
   // Session list state - derived from loader
-  const [sessions, setSessions] = useState<Session[]>(() => deferredData.sessionsData?.sessions || [])
+  const [sessions, setSessions] = useState<Session[]>(
+    () => deferredData.sessionsData?.sessions || [],
+  )
   const [sessionsSkip, setSessionsSkip] = useState(SESSIONS_TAKE)
   const [canLoadMoreSessions, setCanLoadMoreSessions] = useState(
     () => (deferredData.sessionsData?.sessions?.length || 0) >= SESSIONS_TAKE,
@@ -167,7 +207,8 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
     return null
   }, [deferredData.sessionDetails])
 
-  const sessionsLoading = revalidator.state === 'loading' || sessionsProxy.isLoading
+  const sessionsLoading =
+    revalidator.state === 'loading' || sessionsProxy.isLoading
 
   const [error, setError] = useState<string | null>(null)
 
@@ -240,7 +281,9 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
       setSessions((prev) => {
         // Deduplicate: only add sessions whose psid is not already present
         const existingIds = new Set(prev.map((s) => s.psid))
-        const uniqueNewSessions = newSessions.filter((s) => !existingIds.has(s.psid))
+        const uniqueNewSessions = newSessions.filter(
+          (s) => !existingIds.has(s.psid),
+        )
         return [...prev, ...uniqueNewSessions]
       })
       setSessionsSkip((prev) => prev + SESSIONS_TAKE)
@@ -249,7 +292,12 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
     if (sessionsProxy.error) {
       setError(sessionsProxy.error)
     }
-  }, [sessionsProxy.data, sessionsProxy.error, sessionsProxy.isLoading, revalidator.state])
+  }, [
+    sessionsProxy.data,
+    sessionsProxy.error,
+    sessionsProxy.isLoading,
+    revalidator.state,
+  ])
 
   // Load more sessions via proxy
   const loadMoreSessions = () => {
@@ -296,7 +344,11 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
         title={t('apiNotifications.somethingWentWrong')}
         description={t('apiNotifications.errorCode', { error })}
         actions={[
-          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
+          {
+            label: t('dashboard.reloadPage'),
+            onClick: () => window.location.reload(),
+            primary: true,
+          },
           { label: t('notFoundPage.support'), to: routes.contact },
         ]}
       />
@@ -330,12 +382,20 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
       <DashboardHeader showLiveVisitors />
       {sessionsLoading && !_isEmpty(sessions) ? <LoadingBar /> : null}
       <div>
-        {!_isEmpty(sessions) ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
+        {!_isEmpty(sessions) ? (
+          <Filters className='mb-3' tnMapping={tnMapping} />
+        ) : null}
         {sessionsLoading && _isEmpty(sessions) ? <Loader /> : null}
-        {!sessionsLoading && _isEmpty(sessions) && !hasShownContentRef.current ? (
+        {!sessionsLoading &&
+        _isEmpty(sessions) &&
+        !hasShownContentRef.current ? (
           <NoSessions filters={filters} />
         ) : null}
-        <Sessions sessions={sessions} timeFormat={timeFormat} currency={project?.revenueCurrency} />
+        <Sessions
+          sessions={sessions}
+          timeFormat={timeFormat}
+          currency={project?.revenueCurrency}
+        />
         {canLoadMoreSessions ? (
           <button
             type='button'

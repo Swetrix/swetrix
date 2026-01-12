@@ -58,7 +58,12 @@ const CustomMetric = ({ metric, onRemove }: CustomMetricProps) => {
         title={t('project.removeFilter')}
         aria-label={t('project.removeFilter')}
       >
-        <svg className='h-2 w-2' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
+        <svg
+          className='h-2 w-2'
+          stroke='currentColor'
+          fill='none'
+          viewBox='0 0 8 8'
+        >
           <path strokeLinecap='round' strokeWidth='1.5' d='M1 1l6 6m0-6L1 7' />
         </svg>
       </button>
@@ -72,7 +77,11 @@ interface FiltersProps {
   resetMetrics: () => void
 }
 
-const CustomMetrics = ({ metrics, onRemoveMetric, resetMetrics }: FiltersProps) => {
+const CustomMetrics = ({
+  metrics,
+  onRemoveMetric,
+  resetMetrics,
+}: FiltersProps) => {
   if (_isEmpty(metrics)) {
     return null
   }

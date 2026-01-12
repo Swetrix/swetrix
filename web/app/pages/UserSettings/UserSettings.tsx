@@ -1,4 +1,8 @@
-import { EnvelopeIcon, ExclamationTriangleIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import {
+  EnvelopeIcon,
+  ExclamationTriangleIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -15,7 +19,13 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { reportFrequencies, DEFAULT_TIMEZONE, CONFIRMATION_TIMEOUT, TimeFormat, isSelfhosted } from '~/lib/constants'
+import {
+  reportFrequencies,
+  DEFAULT_TIMEZONE,
+  CONFIRMATION_TIMEOUT,
+  TimeFormat,
+  isSelfhosted,
+} from '~/lib/constants'
 import { User } from '~/lib/models/User'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
@@ -30,7 +40,11 @@ import Textarea from '~/ui/Textarea'
 import TimezonePicker from '~/ui/TimezonePicker'
 import { getCookie, setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
-import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
+import {
+  isValidEmail,
+  isValidPassword,
+  MIN_PASSWORD_CHARS,
+} from '~/utils/validator'
 
 import Integrations from './components/Integrations'
 import NoOrganisations from './components/NoOrganisations'
@@ -106,15 +120,26 @@ const UserSettings = () => {
     timeFormat: user?.timeFormat || TimeFormat['12-hour'],
   }))
   const [showPasswordFields, setShowPasswordFields] = useState(false)
-  const [timezone, setTimezone] = useState(() => user?.timezone || DEFAULT_TIMEZONE)
+  const [timezone, setTimezone] = useState(
+    () => user?.timezone || DEFAULT_TIMEZONE,
+  )
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
-  const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState(false)
-  const [reportFrequency, setReportFrequency] = useState(() => user?.reportFrequency)
+  const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] =
+    useState(false)
+  const [reportFrequency, setReportFrequency] = useState(
+    () => user?.reportFrequency,
+  )
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
-  const translatedFrequencies = useMemo(() => _map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
-  const translatedTimeFormat = useMemo(() => _map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
+  const translatedFrequencies = useMemo(
+    () => _map(reportFrequencies, (key) => t(`profileSettings.${key}`)),
+    [t],
+  )
+  const translatedTimeFormat = useMemo(
+    () => _map(TimeFormat, (key) => t(`profileSettings.${key}`)),
+    [t],
+  )
   const [deletionFeedback, setDeletionFeedback] = useState('')
 
   const lastHandledData = useRef<UserSettingsActionData | null>(null)
@@ -124,7 +149,10 @@ const UserSettings = () => {
   const isSubmitting = fetcher.state === 'submitting'
 
   const tabs = getTabs(t)
-  const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
+  const activeTabLabel = useMemo(
+    () => _find(tabs, (tab) => tab.id === activeTab)?.label,
+    [tabs, activeTab],
+  )
 
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
@@ -166,11 +194,17 @@ const UserSettings = () => {
       }
     } else if (fetcher.data?.error) {
       if (pendingToggles.current.has('live-visitors')) {
-        mergeUser({ showLiveVisitorsInTitle: pendingToggles.current.get('live-visitors') })
+        mergeUser({
+          showLiveVisitorsInTitle: pendingToggles.current.get('live-visitors'),
+        })
         pendingToggles.current.delete('live-visitors')
       }
       if (pendingToggles.current.has('login-notifications')) {
-        mergeUser({ receiveLoginNotifications: pendingToggles.current.get('login-notifications') })
+        mergeUser({
+          receiveLoginNotifications: pendingToggles.current.get(
+            'login-notifications',
+          ),
+        })
         pendingToggles.current.delete('login-notifications')
       }
       toast.error(fetcher.data.error)
@@ -219,17 +253,25 @@ const UserSettings = () => {
     if (form.email) formData.set('email', form.email)
     if (form.password) formData.set('password', form.password)
     if (form.repeat) formData.set('repeat', form.repeat)
-    if (additionalData?.timezone) formData.set('timezone', additionalData.timezone as string)
+    if (additionalData?.timezone)
+      formData.set('timezone', additionalData.timezone as string)
     if (additionalData?.timeFormat || form.timeFormat) {
-      formData.set('timeFormat', (additionalData?.timeFormat || form.timeFormat) as string)
+      formData.set(
+        'timeFormat',
+        (additionalData?.timeFormat || form.timeFormat) as string,
+      )
     }
-    if (additionalData?.reportFrequency) formData.set('reportFrequency', additionalData.reportFrequency as string)
+    if (additionalData?.reportFrequency)
+      formData.set('reportFrequency', additionalData.reportFrequency as string)
 
     passwordChangedRef.current = !!form.password
     fetcher.submit(formData, { method: 'post' })
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement> | null, force?: boolean) => {
+  const handleSubmit = (
+    e: React.FormEvent<HTMLFormElement> | null,
+    force?: boolean,
+  ) => {
     if (e) {
       e.preventDefault()
       e.stopPropagation()
@@ -254,7 +296,10 @@ const UserSettings = () => {
   const handleShowLiveVisitorsSave = (checked: boolean) => {
     if (pendingToggles.current.has('live-visitors')) return
 
-    pendingToggles.current.set('live-visitors', user?.showLiveVisitorsInTitle ?? false)
+    pendingToggles.current.set(
+      'live-visitors',
+      user?.showLiveVisitorsInTitle ?? false,
+    )
     const formData = new FormData()
     formData.set('intent', 'toggle-live-visitors')
     formData.set('show', checked.toString())
@@ -266,7 +311,10 @@ const UserSettings = () => {
   const handleReceiveLoginNotifications = (checked: boolean) => {
     if (pendingToggles.current.has('login-notifications')) return
 
-    pendingToggles.current.set('login-notifications', user?.receiveLoginNotifications ?? false)
+    pendingToggles.current.set(
+      'login-notifications',
+      user?.receiveLoginNotifications ?? false,
+    )
     const formData = new FormData()
     formData.set('intent', 'toggle-login-notifications')
     formData.set('receiveLoginNotifications', checked.toString())
@@ -275,7 +323,10 @@ const UserSettings = () => {
     mergeUser({ receiveLoginNotifications: checked })
   }
 
-  const handleIntegrationSave = (data: Record<string, unknown>, callback: (isSuccess: boolean) => void = () => {}) => {
+  const handleIntegrationSave = (
+    data: Record<string, unknown>,
+    callback: (isSuccess: boolean) => void = () => {},
+  ) => {
     setBeenSubmitted(true)
 
     if (validated) {
@@ -384,7 +435,10 @@ const UserSettings = () => {
 
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 dark:bg-slate-900'>
-      <form className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' onSubmit={handleSubmit}>
+      <form
+        className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'
+        onSubmit={handleSubmit}
+      >
         <Text as='h2' size='3xl' weight='bold' className='mt-2'>
           {t('titles.profileSettings')}
         </Text>
@@ -422,7 +476,8 @@ const UserSettings = () => {
                     className={cx(
                       'group flex items-center rounded-md px-3 py-2 text-left text-sm text-gray-900 transition-colors',
                       {
-                        'bg-gray-200 font-semibold dark:bg-slate-800 dark:text-gray-50': isCurrent,
+                        'bg-gray-200 font-semibold dark:bg-slate-800 dark:text-gray-50':
+                          isCurrent,
                         'hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-slate-800 dark:hover:text-gray-50':
                           !isCurrent,
                       },
@@ -473,7 +528,9 @@ const UserSettings = () => {
                       name='password'
                       type='password'
                       label={t('auth.common.password')}
-                      hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
+                      hint={t('auth.common.hint', {
+                        amount: MIN_PASSWORD_CHARS,
+                      })}
                       value={form.password}
                       placeholder={t('auth.common.password')}
                       className='sm:col-span-3'
@@ -522,11 +579,21 @@ const UserSettings = () => {
                   </p>
                 )}
                 {user?.apiKey ? (
-                  <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
+                  <Button
+                    className='mt-4'
+                    onClick={() => setShowAPIDeleteModal(true)}
+                    danger
+                    large
+                  >
                     {t('profileSettings.deleteApiKeyBtn')}
                   </Button>
                 ) : (
-                  <Button className='mt-4' onClick={onApiKeyGenerate} primary large>
+                  <Button
+                    className='mt-4'
+                    onClick={onApiKeyGenerate}
+                    primary
+                    large
+                  >
                     {t('profileSettings.addApiKeyBtn')}
                   </Button>
                 )}
@@ -573,7 +640,9 @@ const UserSettings = () => {
                                   scope='col'
                                   className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
                                 >
-                                  {t('profileSettings.organisationsTable.organisation')}
+                                  {t(
+                                    'profileSettings.organisationsTable.organisation',
+                                  )}
                                 </th>
                                 <th
                                   scope='col'
@@ -585,15 +654,23 @@ const UserSettings = () => {
                                   scope='col'
                                   className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
                                 >
-                                  {t('profileSettings.organisationsTable.joinedOn')}
+                                  {t(
+                                    'profileSettings.organisationsTable.joinedOn',
+                                  )}
                                 </th>
                                 <th scope='col' />
                               </tr>
                             </thead>
                             <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
-                              {_map(user?.organisationMemberships, (membership) => (
-                                <Organisations key={membership.id} membership={membership} />
-                              ))}
+                              {_map(
+                                user?.organisationMemberships,
+                                (membership) => (
+                                  <Organisations
+                                    key={membership.id}
+                                    membership={membership}
+                                  />
+                                ),
+                              )}
                             </tbody>
                           </table>
                         </div>
@@ -628,7 +705,11 @@ const UserSettings = () => {
                       {t('profileSettings.logoutAll')}
                     </>
                   </Button>
-                  <Button onClick={() => setShowModal(true)} semiSmall semiDanger>
+                  <Button
+                    onClick={() => setShowModal(true)}
+                    semiSmall
+                    semiDanger
+                  >
                     <>
                       <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
                       {t('profileSettings.delete')}
@@ -648,7 +729,12 @@ const UserSettings = () => {
                     <TimezonePicker value={timezone} onChange={setTimezone} />
                   </div>
                 </div>
-                <Button className='mt-4' onClick={handleTimezoneSave} primary large>
+                <Button
+                  className='mt-4'
+                  onClick={handleTimezoneSave}
+                  primary
+                  large
+                >
                   {t('common.save')}
                 </Button>
                 {/* Timeformat selector (12 / 24 hour format) */}
@@ -666,17 +752,33 @@ const UserSettings = () => {
                       onSelect={(f) =>
                         setForm((prev) => ({
                           ...prev,
-                          timeFormat: timeFormatArray[_findIndex(translatedTimeFormat, (freq) => freq === f)],
+                          timeFormat:
+                            timeFormatArray[
+                              _findIndex(
+                                translatedTimeFormat,
+                                (freq) => freq === f,
+                              )
+                            ],
                         }))
                       }
                       capitalise
                       selectedItem={
-                        translatedTimeFormat[_findIndex(timeFormatArray, (freq) => freq === form.timeFormat)]
+                        translatedTimeFormat[
+                          _findIndex(
+                            timeFormatArray,
+                            (freq) => freq === form.timeFormat,
+                          )
+                        ]
                       }
                     />
                   </div>
                 </div>
-                <Button className='mt-4' onClick={setAsyncTimeFormat} primary large>
+                <Button
+                  className='mt-4'
+                  onClick={setAsyncTimeFormat}
+                  primary
+                  large
+                >
                   {t('common.save')}
                 </Button>
 
@@ -688,7 +790,9 @@ const UserSettings = () => {
                 <Checkbox
                   checked={user?.showLiveVisitorsInTitle}
                   onChange={handleShowLiveVisitorsSave}
-                  disabled={fetcher.formData?.get('intent') === 'toggle-live-visitors'}
+                  disabled={
+                    fetcher.formData?.get('intent') === 'toggle-live-visitors'
+                  }
                   name='active'
                   classes={{
                     label: 'mt-4',
@@ -701,7 +805,9 @@ const UserSettings = () => {
             {activeTab === TAB_MAPPING.COMMUNICATIONS && !isSelfhosted ? (
               <>
                 {/* Email reports frequency selector (e.g. monthly, weekly, etc.) */}
-                <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.email')}</h3>
+                <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+                  {t('profileSettings.email')}
+                </h3>
                 <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
                   <div>
                     <Select
@@ -710,16 +816,33 @@ const UserSettings = () => {
                       className='w-full'
                       items={translatedFrequencies}
                       onSelect={(f) =>
-                        setReportFrequency(reportFrequencies[_findIndex(translatedFrequencies, (freq) => freq === f)])
+                        setReportFrequency(
+                          reportFrequencies[
+                            _findIndex(
+                              translatedFrequencies,
+                              (freq) => freq === f,
+                            )
+                          ],
+                        )
                       }
                       capitalise
                       selectedItem={
-                        translatedFrequencies[_findIndex(reportFrequencies, (freq) => freq === reportFrequency)]
+                        translatedFrequencies[
+                          _findIndex(
+                            reportFrequencies,
+                            (freq) => freq === reportFrequency,
+                          )
+                        ]
                       }
                     />
                   </div>
                 </div>
-                <Button className='mt-4' onClick={handleReportSave} primary large>
+                <Button
+                  className='mt-4'
+                  onClick={handleReportSave}
+                  primary
+                  large
+                >
                   {t('common.save')}
                 </Button>
 
@@ -736,7 +859,10 @@ const UserSettings = () => {
                   <Checkbox
                     checked={user?.receiveLoginNotifications}
                     onChange={handleReceiveLoginNotifications}
-                    disabled={fetcher.formData?.get('intent') === 'toggle-login-notifications'}
+                    disabled={
+                      fetcher.formData?.get('intent') ===
+                      'toggle-login-notifications'
+                    }
                     name='receiveLoginNotifications'
                     classes={{
                       label: 'mt-4',
@@ -750,7 +876,10 @@ const UserSettings = () => {
         </div>
       </form>
 
-      <PaidFeature isOpened={isPaidFeatureOpened} onClose={() => setIsPaidFeatureOpened(false)} />
+      <PaidFeature
+        isOpened={isPaidFeatureOpened}
+        onClose={() => setIsPaidFeatureOpened(false)}
+      />
       <Modal
         onClose={() => {
           setDeletionFeedback('')

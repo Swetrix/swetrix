@@ -40,13 +40,19 @@ export function generateSlug(text: string): string {
 export function renderTocAsHtml(items: TocItem[]): string {
   if (items.length === 0) return ''
 
-  const renderTocList = (tocItems: TocItem[], level = 0, parentNum = ''): string => {
+  const renderTocList = (
+    tocItems: TocItem[],
+    level = 0,
+    parentNum = '',
+  ): string => {
     if (tocItems.length === 0) return ''
 
     let html = `<ol class="${level > 0 ? '!my-0' : ''}">`
 
     tocItems.forEach((item, index) => {
-      const currentNumber = parentNum ? `${parentNum}.${index + 1}` : `${index + 1}`
+      const currentNumber = parentNum
+        ? `${parentNum}.${index + 1}`
+        : `${index + 1}`
 
       html += `<li class="flex flex-col">`
       html += `<div class="flex items-start gap-0.5">`

@@ -60,12 +60,17 @@ const Combobox = ({
               buttonClassName,
             )}
             // @ts-expect-error
-            displayValue={(item) => (labelExtractor ? labelExtractor(item, 0) : item)}
+            displayValue={(item) =>
+              labelExtractor ? labelExtractor(item, 0) : item
+            }
             onChange={(event) => setQuery(event.target.value)}
             placeholder={placeholder}
           />
           <ComboboxButton className='absolute inset-y-0 right-0 flex items-center pr-2'>
-            <ChevronUpDownIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
+            <ChevronUpDownIcon
+              className='h-5 w-5 text-gray-400'
+              aria-hidden='true'
+            />
           </ComboboxButton>
         </div>
         <Transition
@@ -85,24 +90,32 @@ const Combobox = ({
                 <ComboboxOption
                   key={keyExtractor ? keyExtractor(item, index) : item}
                   className={({ active }) =>
-                    cx('relative cursor-default py-2 pr-4 pl-8 select-none dark:text-white', {
-                      'bg-indigo-600 text-white': active,
-                      'text-gray-900': !active,
-                    })
+                    cx(
+                      'relative cursor-default py-2 pr-4 pl-8 select-none dark:text-white',
+                      {
+                        'bg-indigo-600 text-white': active,
+                        'text-gray-900': !active,
+                      },
+                    )
                   }
                   value={labelExtractor ? labelExtractor(item, index) : item}
                 >
                   {({ selected, active }) => (
                     <>
-                      <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                      <span
+                        className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}
+                      >
                         {labelExtractor ? labelExtractor(item, index) : item}
                       </span>
                       {selected ? (
                         <span
-                          className={cx('absolute inset-y-0 left-0 flex items-center pl-1.5', {
-                            'text-white': active,
-                            'text-indigo-600': !active,
-                          })}
+                          className={cx(
+                            'absolute inset-y-0 left-0 flex items-center pl-1.5',
+                            {
+                              'text-white': active,
+                              'text-indigo-600': !active,
+                            },
+                          )}
                         >
                           <CheckIcon className='h-5 w-5' aria-hidden='true' />
                         </span>

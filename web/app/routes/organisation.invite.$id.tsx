@@ -15,7 +15,10 @@ export interface OrganisationInviteLoaderData {
   error?: string
 }
 
-export async function loader({ request, params }: LoaderFunctionArgs): Promise<OrganisationInviteLoaderData> {
+export async function loader({
+  request,
+  params,
+}: LoaderFunctionArgs): Promise<OrganisationInviteLoaderData> {
   const { id } = params
 
   if (!id) {
@@ -27,7 +30,10 @@ export async function loader({ request, params }: LoaderFunctionArgs): Promise<O
   })
 
   if (result.error) {
-    const errorMessage = typeof result.error === 'string' ? result.error : 'Failed to accept invitation'
+    const errorMessage =
+      typeof result.error === 'string'
+        ? result.error
+        : 'Failed to accept invitation'
     return { success: false, error: errorMessage }
   }
 

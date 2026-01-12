@@ -83,7 +83,7 @@ export class ProjectDTO {
       'Optional website URL. Used to display favicon and construct clickable page links.',
   })
   @IsOptional()
-  @ValidateIf(o => o.websiteUrl !== null && o.websiteUrl !== undefined)
+  @ValidateIf((o) => o.websiteUrl !== null && o.websiteUrl !== undefined)
   @IsUrl({}, { message: 'websiteUrl must be a valid URL' })
   @MaxLength(512)
   websiteUrl?: string | null

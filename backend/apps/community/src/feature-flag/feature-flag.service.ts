@@ -96,7 +96,7 @@ export class FeatureFlagService {
         query,
         query_params: { id },
       })
-      .then(resultSet => resultSet.json<ClickhouseFeatureFlag>())
+      .then((resultSet) => resultSet.json<ClickhouseFeatureFlag>())
 
     if (_isEmpty(data)) {
       return null
@@ -119,7 +119,7 @@ export class FeatureFlagService {
         query,
         query_params: { projectId, key },
       })
-      .then(resultSet => resultSet.json<ClickhouseFeatureFlag>())
+      .then((resultSet) => resultSet.json<ClickhouseFeatureFlag>())
 
     if (_isEmpty(data)) {
       return null
@@ -140,9 +140,9 @@ export class FeatureFlagService {
         query,
         query_params: { projectId },
       })
-      .then(resultSet => resultSet.json<ClickhouseFeatureFlag>())
+      .then((resultSet) => resultSet.json<ClickhouseFeatureFlag>())
 
-    return _map(data, flag => this.formatFlagFromClickhouse(flag)).filter(
+    return _map(data, (flag) => this.formatFlagFromClickhouse(flag)).filter(
       (flag): flag is FeatureFlag => flag !== null,
     )
   }
@@ -160,9 +160,9 @@ export class FeatureFlagService {
         query,
         query_params: { projectId },
       })
-      .then(resultSet => resultSet.json<ClickhouseFeatureFlag>())
+      .then((resultSet) => resultSet.json<ClickhouseFeatureFlag>())
 
-    return _map(data, flag => this.formatFlagFromClickhouse(flag)).filter(
+    return _map(data, (flag) => this.formatFlagFromClickhouse(flag)).filter(
       (flag): flag is FeatureFlag => flag !== null,
     )
   }
@@ -213,17 +213,17 @@ export class FeatureFlagService {
           query: countQuery,
           query_params: queryParams,
         })
-        .then(resultSet => resultSet.json<{ total: number }>()),
+        .then((resultSet) => resultSet.json<{ total: number }>()),
       clickhouse
         .query({
           query: dataQuery,
           query_params: queryParams,
         })
-        .then(resultSet => resultSet.json<ClickhouseFeatureFlag>()),
+        .then((resultSet) => resultSet.json<ClickhouseFeatureFlag>()),
     ])
 
     const total = countResult.data[0]?.total || 0
-    const results = _map(dataResult.data, flag =>
+    const results = _map(dataResult.data, (flag) =>
       this.formatFlagFromClickhouse(flag),
     ).filter((flag): flag is FeatureFlag => flag !== null)
 
@@ -245,7 +245,7 @@ export class FeatureFlagService {
         query,
         query_params: { projectId },
       })
-      .then(resultSet => resultSet.json<{ total: number }>())
+      .then((resultSet) => resultSet.json<{ total: number }>())
 
     return data[0]?.total || 0
   }
@@ -314,7 +314,7 @@ export class FeatureFlagService {
     const filtered = _reduce(
       _filter(
         _keys(flagData),
-        key =>
+        (key) =>
           ALLOWED_FLAG_KEYS.includes(key) &&
           flagData[key as keyof FeatureFlag] !== undefined,
       ),
@@ -337,7 +337,7 @@ export class FeatureFlagService {
 
     const params: Record<string, any> = { id }
 
-    const assignments = _map(columns, col => {
+    const assignments = _map(columns, (col) => {
       const value = formattedData[col as keyof ClickhouseFeatureFlag]
       params[col] = value
 

@@ -144,7 +144,7 @@ const executeChunkedQueries = async (
   getFromDate: (user?: User) => string,
   getToDate: (user?: User) => string,
 ): Promise<CHPlanUsage[]> => {
-  return mapLimit(users, 5, async user => {
+  return mapLimit(users, 5, async (user) => {
     if (_isEmpty(user.projects)) {
       return {
         id: user.id,
@@ -152,7 +152,7 @@ const executeChunkedQueries = async (
       }
     }
 
-    const pids = _map(user.projects, p => p.id)
+    const pids = _map(user.projects, (p) => p.id)
     let totalCount = 0
     const from = getFromDate(user)
     const to = getToDate(user)
@@ -167,7 +167,7 @@ const executeChunkedQueries = async (
           query,
           query_params: { pids: pidChunk, uid: user.id, from, to },
         })
-        .then(resultSet => resultSet.json<CHPlanUsage>())
+        .then((resultSet) => resultSet.json<CHPlanUsage>())
 
       totalCount += data[0]?.count || 0
     }
@@ -421,11 +421,11 @@ export class TaskManagerService {
 
     const analyticsGoals = _filter(
       projectGoals,
-      g => g.type === GoalType.PAGEVIEW,
+      (g) => g.type === GoalType.PAGEVIEW,
     )
     const customEventGoals = _filter(
       projectGoals,
-      g => g.type === GoalType.CUSTOM_EVENT,
+      (g) => g.type === GoalType.CUSTOM_EVENT,
     )
 
     const analyticsQuery = buildUnionQuery('analytics', analyticsGoals)
@@ -438,7 +438,7 @@ export class TaskManagerService {
               query: analyticsQuery.query,
               query_params: analyticsQuery.params,
             })
-            .then(resultSet =>
+            .then((resultSet) =>
               resultSet.json<{
                 goalId: string
                 conversions: any
@@ -452,7 +452,7 @@ export class TaskManagerService {
               query: customEventQuery.query,
               query_params: customEventQuery.params,
             })
-            .then(resultSet =>
+            .then((resultSet) =>
               resultSet.json<{
                 goalId: string
                 conversions: any
@@ -494,15 +494,11 @@ export class TaskManagerService {
   ): string {
     if (type === '3rdparty') {
       const token = this.projectService.createUnsubscribeKey(id)
-      return `${this.configService.get(
-        'CLIENT_URL',
-      )}/3rd-party-unsubscribe/${token}`
+      return `${this.configService.get('CLIENT_URL')}/3rd-party-unsubscribe/${token}`
     }
 
     const token = this.userService.createUnsubscribeKey(id)
-    return `${this.configService.get(
-      'CLIENT_URL',
-    )}/reports-unsubscribe/${token}`
+    return `${this.configService.get('CLIENT_URL')}/reports-unsubscribe/${token}`
   }
 
   async handleUserReports(
@@ -538,12 +534,12 @@ export class TaskManagerService {
       now,
     )
 
-    await mapLimit(users, REPORTS_USERS_CONCURRENCY, async user => {
+    await mapLimit(users, REPORTS_USERS_CONCURRENCY, async (user) => {
       const { id, email, projects } = user
 
       try {
         const unsubscribeUrl = this.generateUnsubscribeUrl(id, 'user-reports')
-        const ids = _map(projects, p => p.id)
+        const ids = _map(projects, (p) => p.id)
 
         const [summary, topCountries, errorCounts, totalSessions] =
           await Promise.all([
@@ -604,7 +600,7 @@ export class TaskManagerService {
               { goalId: string; conversions: number; conversionRate: number }
             >
 
-            const goalsWithConversions = _map(projectGoals, goal => {
+            const goalsWithConversions = _map(projectGoals, (goal) => {
               const stats = conversionsById[goal.id]
               return {
                 name: goal.name,
@@ -615,7 +611,7 @@ export class TaskManagerService {
 
             const activeGoals = _filter(
               goalsWithConversions,
-              g => g.conversions > 0,
+              (g) => g.conversions > 0,
             )
 
             return {
@@ -688,122 +684,130 @@ export class TaskManagerService {
       now,
     )
 
-    await mapLimit(subscribers, REPORTS_USERS_CONCURRENCY, async subscriber => {
-      const { id, email } = subscriber
+    await mapLimit(
+      subscribers,
+      REPORTS_USERS_CONCURRENCY,
+      async (subscriber) => {
+        const { id, email } = subscriber
 
-      try {
-        const projects = await this.projectService.getSubscriberProjects(id)
-        const unsubscribeUrl = this.generateUnsubscribeUrl(id, '3rdparty')
-        const ids = projects.map(project => project.id)
+        try {
+          const projects = await this.projectService.getSubscriberProjects(id)
+          const unsubscribeUrl = this.generateUnsubscribeUrl(id, '3rdparty')
+          const ids = projects.map((project) => project.id)
 
-        const [summary, topCountries, errorCounts, totalSessions] =
-          await Promise.all([
-            this.analyticsService.getAnalyticsSummary(
-              ids,
-              undefined,
-              params.analyticsParam,
-              undefined,
-              undefined,
-              undefined,
-              undefined,
-              undefined,
-              now,
-            ),
-            this.analyticsService.getTopCountriesForReport(
-              ids,
-              groupFrom,
-              groupTo,
-            ),
-            this.analyticsService.getErrorCountsForReport(
-              ids,
-              groupFrom,
-              groupTo,
-            ),
-            this.analyticsService.getTotalSessionsForReport(
-              ids,
-              groupFrom,
-              groupTo,
-            ),
-          ])
+          const [summary, topCountries, errorCounts, totalSessions] =
+            await Promise.all([
+              this.analyticsService.getAnalyticsSummary(
+                ids,
+                undefined,
+                params.analyticsParam,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                now,
+              ),
+              this.analyticsService.getTopCountriesForReport(
+                ids,
+                groupFrom,
+                groupTo,
+              ),
+              this.analyticsService.getErrorCountsForReport(
+                ids,
+                groupFrom,
+                groupTo,
+              ),
+              this.analyticsService.getTotalSessionsForReport(
+                ids,
+                groupFrom,
+                groupTo,
+              ),
+            ])
 
-        const data = this.analyticsService.convertSummaryToReportFormat(summary)
+          const data =
+            this.analyticsService.convertSummaryToReportFormat(summary)
 
-        const projectsWithExtraData = await mapLimit(
-          ids,
-          REPORTS_PROJECTS_CONCURRENCY,
-          async (pid, index) => {
-            const projectData = data[pid] || {}
-            const topCountry = topCountries[pid]?.cc || null
-            const errorStats = errorCounts[pid] || { count: 0, uniqueErrors: 0 }
-            const pidTotalSessions = totalSessions[pid] || 0
-
-            const projectGoals = await this.goalService.findByProject(pid)
-            const conversions = await this.getGoalsWithConversionsForReport(
-              pid,
-              projectGoals,
-              groupFrom,
-              groupTo,
-              pidTotalSessions,
-            )
-
-            const conversionsById = _reduce(
-              conversions,
-              (acc, row) => ({ ...acc, [row.goalId]: row }),
-              {},
-            ) as Record<
-              string,
-              { goalId: string; conversions: number; conversionRate: number }
-            >
-
-            const goalsWithConversions = _map(projectGoals, goal => {
-              const stats = conversionsById[goal.id]
-              return {
-                name: goal.name,
-                conversions: stats?.conversions || 0,
-                conversionRate: stats?.conversionRate || 0,
+          const projectsWithExtraData = await mapLimit(
+            ids,
+            REPORTS_PROJECTS_CONCURRENCY,
+            async (pid, index) => {
+              const projectData = data[pid] || {}
+              const topCountry = topCountries[pid]?.cc || null
+              const errorStats = errorCounts[pid] || {
+                count: 0,
+                uniqueErrors: 0,
               }
-            })
+              const pidTotalSessions = totalSessions[pid] || 0
 
-            const activeGoals = _filter(
-              goalsWithConversions,
-              g => g.conversions > 0,
-            )
+              const projectGoals = await this.goalService.findByProject(pid)
+              const conversions = await this.getGoalsWithConversionsForReport(
+                pid,
+                projectGoals,
+                groupFrom,
+                groupTo,
+                pidTotalSessions,
+              )
 
-            return {
-              data: projectData,
-              name: projects[index].name,
-              topCountry,
-              errors:
-                errorStats.count > 0
-                  ? {
-                      count: errorStats.count,
-                      uniqueErrors: errorStats.uniqueErrors,
-                    }
-                  : null,
-              goals: activeGoals.length > 0 ? activeGoals : null,
-            }
-          },
-        )
+              const conversionsById = _reduce(
+                conversions,
+                (acc, row) => ({ ...acc, [row.goalId]: row }),
+                {},
+              ) as Record<
+                string,
+                { goalId: string; conversions: number; conversionRate: number }
+              >
 
-        const result = {
-          type: params.type,
-          date,
-          projects: projectsWithExtraData,
-          tip,
-          unsubscribeUrl,
+              const goalsWithConversions = _map(projectGoals, (goal) => {
+                const stats = conversionsById[goal.id]
+                return {
+                  name: goal.name,
+                  conversions: stats?.conversions || 0,
+                  conversionRate: stats?.conversionRate || 0,
+                }
+              })
+
+              const activeGoals = _filter(
+                goalsWithConversions,
+                (g) => g.conversions > 0,
+              )
+
+              return {
+                data: projectData,
+                name: projects[index].name,
+                topCountry,
+                errors:
+                  errorStats.count > 0
+                    ? {
+                        count: errorStats.count,
+                        uniqueErrors: errorStats.uniqueErrors,
+                      }
+                    : null,
+                goals: activeGoals.length > 0 ? activeGoals : null,
+              }
+            },
+          )
+
+          const result = {
+            type: params.type,
+            date,
+            projects: projectsWithExtraData,
+            tip,
+            unsubscribeUrl,
+          }
+
+          await this.mailerService.sendEmail(
+            email,
+            LetterTemplate.ProjectReport,
+            result,
+          )
+        } catch (reason) {
+          this.logger.error(
+            `[CRON WORKER](handleSubscriberReports) Frequency: ${reportFrequency}; Error: ${reason}`,
+          )
         }
-
-        await this.mailerService.sendEmail(
-          email,
-          LetterTemplate.ProjectReport,
-          result,
-        )
-      } catch (reason) {
-        this.logger.error(
-          `[CRON WORKER](handleSubscriberReports) Frequency: ${reportFrequency}; Error: ${reason}`,
-        )
-      }
-    })
+      },
+    )
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_5PM)
@@ -817,9 +821,9 @@ export class TaskManagerService {
     // This stuff is used solely to calculate whether the user has exceeded their limit > 30% or continuously for 2 months
     const monthlyUsage = await executeChunkedQueries(
       users,
-      user =>
+      (user) =>
         dayjs.utc(user.planExceedContactedAt).format('YYYY-MM-01 00:00:00'),
-      user =>
+      (user) =>
         dayjs
           .utc(user.planExceedContactedAt)
           .endOf('month')
@@ -851,7 +855,7 @@ export class TaskManagerService {
           dashboardBlockReason: DashboardBlockReason.exceeding_plan_limits,
         })
       }),
-    ).catch(reason => {
+    ).catch((reason) => {
       this.logger.error(
         `[CRON WORKER](lockDashboards) Error occured: ${reason}`,
       )
@@ -884,7 +888,7 @@ export class TaskManagerService {
 
     // if there are exceeding users, contact them and let them know that their usage is > than 30% their tier allows
     if (!_isEmpty(exceedingUsers)) {
-      const percExceedingUsagePromises = _map(exceedingUsers, async user => {
+      const percExceedingUsagePromises = _map(exceedingUsers, async (user) => {
         const { id, email, usage, planCode } = user
 
         const suggestedPlanLimit = getNextPlan(planCode)
@@ -909,7 +913,7 @@ export class TaskManagerService {
         })
       })
 
-      await Promise.allSettled(percExceedingUsagePromises).catch(reason => {
+      await Promise.allSettled(percExceedingUsagePromises).catch((reason) => {
         this.logger.error(
           `[CRON WORKER](checkPlanUsage - percExceedingUsagePromises) Error occured: ${reason}`,
         )
@@ -918,8 +922,8 @@ export class TaskManagerService {
 
     const filteredUsers = _filter(
       users,
-      user =>
-        !_find(exceedingUsers, exceedingUser => exceedingUser.id === user.id),
+      (user) =>
+        !_find(exceedingUsers, (exceedingUser) => exceedingUser.id === user.id),
     )
 
     if (_isEmpty(filteredUsers)) {
@@ -952,7 +956,7 @@ export class TaskManagerService {
     if (!_isEmpty(continuousExceedingUsers)) {
       const continuousExceedingUsagePromises = _map(
         continuousExceedingUsers,
-        async user => {
+        async (user) => {
           const { id, email, usage, planCode } = user
 
           const [userThisMonthUsage, userLastMonthUsage] = usage || []
@@ -982,7 +986,7 @@ export class TaskManagerService {
       )
 
       await Promise.allSettled(continuousExceedingUsagePromises).catch(
-        reason => {
+        (reason) => {
           this.logger.error(
             `[CRON WORKER](checkPlanUsage - continuousExceedingUsagePromises) Error occured: ${reason}`,
           )
@@ -1017,7 +1021,7 @@ export class TaskManagerService {
       url: 'https://swetrix.com/billing',
     }
 
-    const promises = _map(users, async user => {
+    const promises = _map(users, async (user) => {
       const { id, email, planCode, projects } = user
 
       if (_isEmpty(projects) || _isNull(projects)) {
@@ -1041,7 +1045,7 @@ export class TaskManagerService {
       }
     })
 
-    await Promise.allSettled(promises).catch(reason => {
+    await Promise.allSettled(promises).catch((reason) => {
       this.logger.error(
         `[CRON WORKER](checkLeftEvents) Error occured: ${reason}`,
       )
@@ -1094,7 +1098,7 @@ export class TaskManagerService {
       return
     }
 
-    const promises = _map(projects, async project => {
+    const promises = _map(projects, async (project) => {
       try {
         if (project.paddleApiKeyEnc) {
           const apiKey = this.revenueService.getPaddleApiKey(project)
@@ -1136,7 +1140,7 @@ export class TaskManagerService {
       }
     })
 
-    await Promise.allSettled(promises).catch(reason => {
+    await Promise.allSettled(promises).catch((reason) => {
       this.logger.error(
         `[CRON WORKER](syncRevenueData) Error occured: ${reason}`,
       )
@@ -1188,7 +1192,7 @@ export class TaskManagerService {
       select: ['id', 'telegramChatId'],
     })
 
-    const promises = _map(users, async user => {
+    const promises = _map(users, async (user) => {
       const { id } = user
 
       await this.userService.update(id, {
@@ -1196,7 +1200,7 @@ export class TaskManagerService {
       })
     })
 
-    await Promise.allSettled(promises).catch(reason => {
+    await Promise.allSettled(promises).catch((reason) => {
       this.logger.error(
         `[CRON WORKER](checkIsTelegramChatIdConfirmed) Error occured: ${reason}`,
       )
@@ -1211,7 +1215,7 @@ export class TaskManagerService {
       },
     })
 
-    const promises = _map(users, async user => {
+    const promises = _map(users, async (user) => {
       const cancellationEffectiveDate = new Date(user.cancellationEffectiveDate)
       const now = new Date()
 
@@ -1231,7 +1235,7 @@ export class TaskManagerService {
       }
     })
 
-    await Promise.allSettled(promises).catch(reason => {
+    await Promise.allSettled(promises).catch((reason) => {
       this.logger.error(
         `[CRON WORKER](cleanUpUnpaidSubUsers) Error occured: ${reason}`,
       )
@@ -1252,7 +1256,7 @@ export class TaskManagerService {
       },
     })
 
-    const promises = _map(users, async user => {
+    const promises = _map(users, async (user) => {
       const { id, email } = user
 
       await this.userService.update(id, {
@@ -1267,7 +1271,7 @@ export class TaskManagerService {
       )
     })
 
-    await Promise.allSettled(promises).catch(reason => {
+    await Promise.allSettled(promises).catch((reason) => {
       this.logger.error(`[CRON WORKER](trialReminder) Error occured: ${reason}`)
     })
   }
@@ -1282,7 +1286,7 @@ export class TaskManagerService {
       },
     })
 
-    const promises = _map(users, async user => {
+    const promises = _map(users, async (user) => {
       const { id, created } = user
 
       await this.userService.update(id, {
@@ -1292,7 +1296,7 @@ export class TaskManagerService {
       })
     })
 
-    await Promise.allSettled(promises).catch(reason => {
+    await Promise.allSettled(promises).catch((reason) => {
       this.logger.error(
         `[CRON WORKER](fixAFuckingTrialEndDateNullBug) Error occured: ${reason}`,
       )
@@ -1314,7 +1318,7 @@ export class TaskManagerService {
       ],
     })
 
-    const promises = _map(users, async user => {
+    const promises = _map(users, async (user) => {
       const { id, email } = user
 
       await this.userService.update(id, {
@@ -1328,7 +1332,7 @@ export class TaskManagerService {
       await this.projectService.clearProjectsRedisCache(id)
     })
 
-    await Promise.allSettled(promises).catch(reason => {
+    await Promise.allSettled(promises).catch((reason) => {
       this.logger.error(`[CRON WORKER](trialEnd) Error occured: ${reason}`)
     })
   }
@@ -1371,7 +1375,7 @@ export class TaskManagerService {
       relations: ['project'],
     })
 
-    const promises = _map(alerts, async alert => {
+    const promises = _map(alerts, async (alert) => {
       try {
         const project = _find(projects, { id: alert.project.id })
 
@@ -1472,7 +1476,7 @@ export class TaskManagerService {
       relations: ['project'],
     })
 
-    const promises = _map(alerts, async alert => {
+    const promises = _map(alerts, async (alert) => {
       try {
         const project = _find(projects, { id: alert.project.id })
 
@@ -1577,7 +1581,7 @@ export class TaskManagerService {
             query,
             query_params: queryParams,
           })
-          .then(resultSet => resultSet.json())
+          .then((resultSet) => resultSet.json())
 
         const count = Number(queryResult[0]['count()']) || 0
 
@@ -1643,7 +1647,7 @@ export class TaskManagerService {
           try {
             const { data: errorDetailResult } = await clickhouse
               .query({ query: detailQuery, query_params: detailQueryParams })
-              .then(resultSet => resultSet.json())
+              .then((resultSet) => resultSet.json())
             if (errorDetailResult && errorDetailResult.length > 0) {
               errorDetails = errorDetailResult[0] as typeof errorDetails
             }
@@ -1826,7 +1830,7 @@ export class TaskManagerService {
 
       const messages = await this.telegramService.getMessages()
 
-      const promises = messages.map(async message => {
+      const promises = messages.map(async (message) => {
         try {
           await this.telegramService.sendMessage(
             message.id,
@@ -1867,7 +1871,7 @@ export class TaskManagerService {
     // a bit more than 2 months ago
     const nineWeeksAgo = dayjs.utc().subtract(9, 'w').format('YYYY-MM-DD')
 
-    await mapLimit(users, REPORTS_USERS_CONCURRENCY, async user => {
+    await mapLimit(users, REPORTS_USERS_CONCURRENCY, async (user) => {
       const { id, projects } = user
 
       try {
@@ -1875,7 +1879,7 @@ export class TaskManagerService {
           return
         }
 
-        const pids = _map(projects, p => p.id)
+        const pids = _map(projects, (p) => p.id)
 
         // No need to check for performance activity because it's not tracked without tracking analytics
         const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN ({pids:Array(FixedString(12))}) AND created BETWEEN {nineWeeksAgo:String} AND {now:String}`
@@ -1900,7 +1904,7 @@ export class TaskManagerService {
               query: queryAnalytics,
               query_params: queryParams,
             })
-            .then(resultSet => resultSet.json<{ 'count()': number }>())
+            .then((resultSet) => resultSet.json<{ 'count()': number }>())
 
           totalAnalytics += analyticsResult[0]['count()']
 
@@ -1923,7 +1927,7 @@ export class TaskManagerService {
               query: queryCaptcha,
               query_params: queryParams,
             })
-            .then(resultSet => resultSet.json<{ 'count()': number }>())
+            .then((resultSet) => resultSet.json<{ 'count()': number }>())
 
           totalCaptcha += captchaResult[0]['count()']
 
@@ -1946,7 +1950,7 @@ export class TaskManagerService {
               query: queryCustomEvents,
               query_params: queryParams,
             })
-            .then(resultSet => resultSet.json<{ 'count()': number }>())
+            .then((resultSet) => resultSet.json<{ 'count()': number }>())
 
           totalCustomEvents += customEventsResult[0]['count()']
 

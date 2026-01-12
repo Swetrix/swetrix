@@ -11,7 +11,11 @@ import { OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
 import { Badge } from '~/ui/Badge'
 import OutsideClickHandler from '~/ui/OutsideClickHandler'
 import { Text } from '~/ui/Text'
-import { nFormatter, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+import {
+  nFormatter,
+  getStringFromTime,
+  getTimeFromSeconds,
+} from '~/utils/generic'
 
 interface MetricCardProps {
   label: string
@@ -27,37 +31,52 @@ interface MetricCardProps {
   }
 }
 
-const ChangeBadge = ({ change, type, goodChangeDirection, valueMapper }: Partial<MetricCardProps>) => {
+const ChangeBadge = ({
+  change,
+  type,
+  goodChangeDirection,
+  valueMapper,
+}: Partial<MetricCardProps>) => {
   if (!_isNumber(change)) {
     return null
   }
 
   if (change === 0) {
-    const label = valueMapper ? valueMapper(change, 'badge') : `0${type === 'percent' ? '%' : ''}`
+    const label = valueMapper
+      ? valueMapper(change, 'badge')
+      : `0${type === 'percent' ? '%' : ''}`
 
     return <Badge colour='slate' label={label} />
   }
 
   if (change < 0 && goodChangeDirection === 'up') {
-    const label = valueMapper ? valueMapper(change, 'badge') : `${change}${type === 'percent' ? '%' : ''}`
+    const label = valueMapper
+      ? valueMapper(change, 'badge')
+      : `${change}${type === 'percent' ? '%' : ''}`
 
     return <Badge colour='green' label={label} />
   }
 
   if (change < 0 && goodChangeDirection === 'down') {
-    const label = valueMapper ? valueMapper(change, 'badge') : `${change}${type === 'percent' ? '%' : ''}`
+    const label = valueMapper
+      ? valueMapper(change, 'badge')
+      : `${change}${type === 'percent' ? '%' : ''}`
 
     return <Badge colour='slate' label={label} />
   }
 
   if (change > 0 && goodChangeDirection === 'up') {
-    const label = valueMapper ? valueMapper(change, 'badge') : `${change}${type === 'percent' ? '%' : ''}`
+    const label = valueMapper
+      ? valueMapper(change, 'badge')
+      : `${change}${type === 'percent' ? '%' : ''}`
 
     return <Badge colour='slate' label={label} />
   }
 
   if (change > 0 && goodChangeDirection === 'down') {
-    const label = valueMapper ? valueMapper(change, 'badge') : `${change}${type === 'percent' ? '%' : ''}`
+    const label = valueMapper
+      ? valueMapper(change, 'badge')
+      : `${change}${type === 'percent' ? '%' : ''}`
 
     return <Badge colour='green' label={label} />
   }
@@ -73,7 +92,11 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   classes,
 }) => (
   <div className={cx('flex flex-col', classes?.container)}>
-    <Text size='4xl' weight='bold' className={cx('whitespace-nowrap', classes?.value)}>
+    <Text
+      size='4xl'
+      weight='bold'
+      className={cx('whitespace-nowrap', classes?.value)}
+    >
       {valueMapper ? valueMapper(value, 'main') : value}
     </Text>
     <div
@@ -88,7 +111,12 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       <Text size='sm' weight='bold'>
         {label}
       </Text>
-      <ChangeBadge change={change} type={type} goodChangeDirection={goodChangeDirection} valueMapper={valueMapper} />
+      <ChangeBadge
+        change={change}
+        type={type}
+        goodChangeDirection={goodChangeDirection}
+        valueMapper={valueMapper}
+      />
     </div>
   </div>
 )
@@ -107,7 +135,12 @@ interface MetricCardSelectProps {
   }
 }
 
-export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: MetricCardSelectProps) => {
+export const MetricCardSelect = ({
+  values,
+  valueMapper,
+  selectLabel,
+  classes,
+}: MetricCardSelectProps) => {
   const [selected, setSelected] = useState(0)
   const [show, setShow] = useState(false)
 
@@ -118,12 +151,21 @@ export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: 
 
   return (
     <div className={cx('flex flex-col', classes?.container)}>
-      <Text size='4xl' weight='bold' className={cx('whitespace-nowrap', classes?.value)}>
-        {valueMapper ? valueMapper(values[selected], selected) : values[selected].value}
+      <Text
+        size='4xl'
+        weight='bold'
+        className={cx('whitespace-nowrap', classes?.value)}
+      >
+        {valueMapper
+          ? valueMapper(values[selected], selected)
+          : values[selected].value}
       </Text>
       <div className='relative flex items-center whitespace-nowrap'>
         <OutsideClickHandler onOutsideClick={() => setShow(false)}>
-          <span className={cx('cursor-pointer', classes?.label)} onClick={() => setShow(!show)}>
+          <span
+            className={cx('cursor-pointer', classes?.label)}
+            onClick={() => setShow(!show)}
+          >
             <Text size='sm' weight='bold'>
               {values[selected].label}{' '}
               <ChevronDownIcon
@@ -183,82 +225,105 @@ interface MetricCardsProps {
   activePeriodCompare?: string
 }
 
-export const MetricCards = memo(({ overall, overallCompare, activePeriodCompare }: MetricCardsProps) => {
-  const { t } = useTranslation('common')
+export const MetricCards = memo(
+  ({ overall, overallCompare, activePeriodCompare }: MetricCardsProps) => {
+    const { t } = useTranslation('common')
 
-  let uniqueChange = overall.uniqueChange
-  let usersChange = overall.usersChange
-  let allChange = overall.change
-  let bounceRateChange = overall.bounceRateChange
-  let sdurChange = overall.sdurChange
+    let uniqueChange = overall.uniqueChange
+    let usersChange = overall.usersChange
+    let allChange = overall.change
+    let bounceRateChange = overall.bounceRateChange
+    let sdurChange = overall.sdurChange
 
-  if (!_isEmpty(overallCompare) && activePeriodCompare !== 'previous') {
-    uniqueChange = (overall.current?.unique as number) - (overallCompare?.current?.unique as number)
-    usersChange = (overall.current?.users as number) - (overallCompare?.current?.users as number)
-    allChange = (overall.current?.all as number) - (overallCompare?.current?.all as number)
-    bounceRateChange = ((overall.current?.bounceRate as number) - (overallCompare.current?.bounceRate as number)) * -1
-    sdurChange = (overall.current?.sdur as number) - (overallCompare?.current?.sdur as number)
-  }
+    if (!_isEmpty(overallCompare) && activePeriodCompare !== 'previous') {
+      uniqueChange =
+        (overall.current?.unique as number) -
+        (overallCompare?.current?.unique as number)
+      usersChange =
+        (overall.current?.users as number) -
+        (overallCompare?.current?.users as number)
+      allChange =
+        (overall.current?.all as number) -
+        (overallCompare?.current?.all as number)
+      bounceRateChange =
+        ((overall.current?.bounceRate as number) -
+          (overallCompare.current?.bounceRate as number)) *
+        -1
+      sdurChange =
+        (overall.current?.sdur as number) -
+        (overallCompare?.current?.sdur as number)
+    }
 
-  if (overall.customEVFilterApplied) {
+    if (overall.customEVFilterApplied) {
+      return (
+        <MetricCard
+          label={t('project.events')}
+          value={overall.current?.all}
+          change={allChange}
+          type='percent'
+          goodChangeDirection='down'
+          valueMapper={(value, type) =>
+            `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+          }
+        />
+      )
+    }
+
     return (
-      <MetricCard
-        label={t('project.events')}
-        value={overall.current?.all}
-        change={allChange}
-        type='percent'
-        goodChangeDirection='down'
-        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`}
-      />
+      <>
+        <MetricCard
+          label={t('dashboard.users')}
+          value={overall.current?.users}
+          change={usersChange}
+          type='percent'
+          goodChangeDirection='down'
+          valueMapper={(value, type) =>
+            `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+          }
+        />
+        <MetricCard
+          label={t('dashboard.sessions')}
+          value={overall.current?.unique}
+          change={uniqueChange}
+          type='percent'
+          goodChangeDirection='down'
+          valueMapper={(value, type) =>
+            `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+          }
+        />
+        <MetricCard
+          label={t('dashboard.pageviews')}
+          value={overall.current?.all}
+          change={allChange}
+          type='percent'
+          goodChangeDirection='down'
+          valueMapper={(value, type) =>
+            `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`
+          }
+        />
+        <MetricCard
+          label={t('dashboard.bounceRate')}
+          value={_round(overall.current?.bounceRate as number, 1)}
+          change={_round(bounceRateChange as number, 1)}
+          type='percent'
+          goodChangeDirection='up'
+          valueMapper={(value, type) =>
+            `${type === 'badge' && value > 0 ? '+' : ''}${value}%`
+          }
+        />
+        <MetricCard
+          label={t('dashboard.sessionDuration')}
+          value={overall.current?.sdur}
+          change={sdurChange}
+          goodChangeDirection='down'
+          valueMapper={(value, type) =>
+            `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value))}`
+          }
+        />
+      </>
     )
-  }
-
-  return (
-    <>
-      <MetricCard
-        label={t('dashboard.users')}
-        value={overall.current?.users}
-        change={usersChange}
-        type='percent'
-        goodChangeDirection='down'
-        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`}
-      />
-      <MetricCard
-        label={t('dashboard.sessions')}
-        value={overall.current?.unique}
-        change={uniqueChange}
-        type='percent'
-        goodChangeDirection='down'
-        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`}
-      />
-      <MetricCard
-        label={t('dashboard.pageviews')}
-        value={overall.current?.all}
-        change={allChange}
-        type='percent'
-        goodChangeDirection='down'
-        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`}
-      />
-      <MetricCard
-        label={t('dashboard.bounceRate')}
-        value={_round(overall.current?.bounceRate as number, 1)}
-        change={_round(bounceRateChange as number, 1)}
-        type='percent'
-        goodChangeDirection='up'
-        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${value}%`}
-      />
-      <MetricCard
-        label={t('dashboard.sessionDuration')}
-        value={overall.current?.sdur}
-        change={sdurChange}
-        goodChangeDirection='down'
-        valueMapper={(value, type) =>
-          `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value))}`
-        }
-      />
-    </>
-  )
-})
+  },
+)
 
 interface PerformanceMetricCardsProps {
   overall: Partial<OverallPerformanceObject>
@@ -267,7 +332,11 @@ interface PerformanceMetricCardsProps {
 }
 
 export const PerformanceMetricCards = memo(
-  ({ overall, overallCompare, activePeriodCompare }: PerformanceMetricCardsProps) => {
+  ({
+    overall,
+    overallCompare,
+    activePeriodCompare,
+  }: PerformanceMetricCardsProps) => {
     const { t } = useTranslation('common')
 
     let frontendChange = overall.frontendChange
@@ -276,11 +345,14 @@ export const PerformanceMetricCards = memo(
 
     if (!_isEmpty(overallCompare) && activePeriodCompare !== 'previous') {
       // @ts-expect-error
-      frontendChange = overall.current?.frontend - overallCompare?.current?.frontend
+      frontendChange =
+        overall.current?.frontend - overallCompare?.current?.frontend
       // @ts-expect-error
-      backendChange = overall.current?.backend - overallCompare?.current?.backend
+      backendChange =
+        overall.current?.backend - overallCompare?.current?.backend
       // @ts-expect-error
-      networkChange = overall.current?.network - overallCompare?.current?.network
+      networkChange =
+        overall.current?.network - overallCompare?.current?.network
     }
 
     return (

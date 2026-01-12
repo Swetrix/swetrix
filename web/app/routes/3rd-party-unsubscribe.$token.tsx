@@ -16,7 +16,10 @@ export interface UnsubscribeLoaderData {
   error?: string
 }
 
-export async function loader({ request, params }: LoaderFunctionArgs): Promise<UnsubscribeLoaderData | Response> {
+export async function loader({
+  request,
+  params,
+}: LoaderFunctionArgs): Promise<UnsubscribeLoaderData | Response> {
   if (isSelfhosted) {
     return redirect('/login', 302)
   }
@@ -32,7 +35,8 @@ export async function loader({ request, params }: LoaderFunctionArgs): Promise<U
   })
 
   if (result.error) {
-    const errorMessage = typeof result.error === 'string' ? result.error : 'Failed to unsubscribe'
+    const errorMessage =
+      typeof result.error === 'string' ? result.error : 'Failed to unsubscribe'
     return { success: false, error: errorMessage }
   }
 

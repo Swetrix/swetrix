@@ -5,7 +5,10 @@ import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import { Annotation } from '~/lib/models/Project'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import {
+  useCurrentProject,
+  useProjectPassword,
+} from '~/providers/CurrentProjectProvider'
 import { ProjectViewActionData } from '~/routes/projects.$id'
 
 const ANNOTATION_CLICK_THRESHOLD_PX = 30
@@ -15,7 +18,10 @@ interface ChartMetrics {
   chartAreaWidth: number
 }
 
-const findAnnotationLineElement = (target: Element, boundary: Element): Element | null => {
+const findAnnotationLineElement = (
+  target: Element,
+  boundary: Element,
+): Element | null => {
   let element: Element | null = target
 
   while (element && element !== boundary) {
@@ -38,13 +44,18 @@ const getAnnotationIdFromElement = (element: Element): string | null => {
   return null
 }
 
-const calculateChartMetrics = (svg: SVGSVGElement, chartContainer: HTMLElement): ChartMetrics => {
+const calculateChartMetrics = (
+  svg: SVGSVGElement,
+  chartContainer: HTMLElement,
+): ChartMetrics => {
   const svgRect = svg.getBoundingClientRect()
 
   let chartAreaStart = 50
   let chartAreaWidth = svgRect.width - 70
 
-  const xAxisPath = chartContainer.querySelector('.bb-axis-x path.domain') as SVGPathElement | null
+  const xAxisPath = chartContainer.querySelector(
+    '.bb-axis-x path.domain',
+  ) as SVGPathElement | null
   if (xAxisPath) {
     const pathBBox = xAxisPath.getBBox()
     chartAreaStart = pathBBox.x
@@ -87,7 +98,9 @@ const findClosestAnnotation = (
   for (const annotation of annotations) {
     const annotationDate = dayjs(annotation.date).format('YYYY-MM-DD')
 
-    const annotationIndex = xAxisData.findIndex((xDate) => dayjs(xDate).format('YYYY-MM-DD') === annotationDate)
+    const annotationIndex = xAxisData.findIndex(
+      (xDate) => dayjs(xDate).format('YYYY-MM-DD') === annotationDate,
+    )
 
     if (annotationIndex !== -1) {
       const annotationPercentage = annotationIndex / (xAxisData.length - 1)
@@ -125,7 +138,10 @@ interface UseAnnotationsReturn {
   onAnnotationDelete: (annotation?: Annotation) => void
   openAnnotationModal: (date?: string, annotation?: Annotation) => void
   closeAnnotationModal: () => void
-  handleChartContextMenu: (event: React.MouseEvent, xAxisData: string[] | undefined) => void
+  handleChartContextMenu: (
+    event: React.MouseEvent,
+    xAxisData: string[] | undefined,
+  ) => void
   closeContextMenu: () => void
 }
 
@@ -140,9 +156,15 @@ export const useAnnotations = (): UseAnnotationsReturn => {
   const [annotations, setAnnotations] = useState<Annotation[]>([])
   const [annotationsLoading, setAnnotationsLoading] = useState(false)
   const [isAnnotationModalOpen, setIsAnnotationModalOpen] = useState(false)
-  const [annotationToEdit, setAnnotationToEdit] = useState<Annotation | undefined>()
-  const [annotationModalDate, setAnnotationModalDate] = useState<string | undefined>()
-  const [pendingAction, setPendingAction] = useState<'create' | 'update' | 'delete' | null>(null)
+  const [annotationToEdit, setAnnotationToEdit] = useState<
+    Annotation | undefined
+  >()
+  const [annotationModalDate, setAnnotationModalDate] = useState<
+    string | undefined
+  >()
+  const [pendingAction, setPendingAction] = useState<
+    'create' | 'update' | 'delete' | null
+  >(null)
 
   const [contextMenu, setContextMenu] = useState<{
     isOpen: boolean
@@ -212,7 +234,14 @@ export const useAnnotations = (): UseAnnotationsReturn => {
       setPendingAction(null)
       setAnnotationToEdit(undefined)
     }
-  }, [fetcher.state, fetcher.data, pendingAction, loadAnnotations, t, closeAnnotationModal])
+  }, [
+    fetcher.state,
+    fetcher.data,
+    pendingAction,
+    loadAnnotations,
+    t,
+    closeAnnotationModal,
+  ])
 
   const onAnnotationCreate = useCallback(
     (date: string, text: string) => {
@@ -267,11 +296,14 @@ export const useAnnotations = (): UseAnnotationsReturn => {
     [fetcher, annotationToEdit],
   )
 
-  const openAnnotationModal = useCallback((date?: string, annotation?: Annotation) => {
-    setAnnotationModalDate(date)
-    setAnnotationToEdit(annotation)
-    setIsAnnotationModalOpen(true)
-  }, [])
+  const openAnnotationModal = useCallback(
+    (date?: string, annotation?: Annotation) => {
+      setAnnotationModalDate(date)
+      setAnnotationToEdit(annotation)
+      setIsAnnotationModalOpen(true)
+    },
+    [],
+  )
 
   const handleChartContextMenu = useCallback(
     (event: React.MouseEvent, xAxisData: string[] | undefined) => {
@@ -280,12 +312,16 @@ export const useAnnotations = (): UseAnnotationsReturn => {
       let existingAnnotation: Annotation | null = null
       let date: string | null = null
 
-      const annotationLineElement = findAnnotationLineElement(event.target as Element, event.currentTarget as Element)
+      const annotationLineElement = findAnnotationLineElement(
+        event.target as Element,
+        event.currentTarget as Element,
+      )
 
       if (annotationLineElement) {
         const annotationId = getAnnotationIdFromElement(annotationLineElement)
         if (annotationId) {
-          existingAnnotation = annotations.find((a) => a.id === annotationId) || null
+          existingAnnotation =
+            annotations.find((a) => a.id === annotationId) || null
           if (existingAnnotation) {
             date = dayjs(existingAnnotation.date).format('YYYY-MM-DD')
           }
@@ -293,7 +329,9 @@ export const useAnnotations = (): UseAnnotationsReturn => {
       }
 
       if (!existingAnnotation && xAxisData && xAxisData.length > 0) {
-        const chartContainer = (event.currentTarget as HTMLElement).querySelector('.bb') as HTMLElement
+        const chartContainer = (
+          event.currentTarget as HTMLElement
+        ).querySelector('.bb') as HTMLElement
         const svg = chartContainer?.querySelector('svg') as SVGSVGElement | null
 
         if (svg) {
@@ -301,9 +339,17 @@ export const useAnnotations = (): UseAnnotationsReturn => {
           const chartMetrics = calculateChartMetrics(svg, chartContainer)
           const clickX = event.clientX - svgRect.left
 
-          date = calculateDateFromPosition(event.clientX, svgRect, xAxisData, chartMetrics)
+          date = calculateDateFromPosition(
+            event.clientX,
+            svgRect,
+            xAxisData,
+            chartMetrics,
+          )
 
-          existingAnnotation = annotations.find((a) => dayjs(a.date).format('YYYY-MM-DD') === date) || null
+          existingAnnotation =
+            annotations.find(
+              (a) => dayjs(a.date).format('YYYY-MM-DD') === date,
+            ) || null
 
           if (!existingAnnotation && annotations.length > 0) {
             const closestAnnotation = findClosestAnnotation(

@@ -75,7 +75,7 @@ export class MetadataValueType implements ValidatorConstraintInterface {
   validate(metadata: Record<string, string>) {
     const values = _values(metadata)
 
-    return !_some(values, value => typeof value !== 'string')
+    return !_some(values, (value) => typeof value !== 'string')
   }
 }
 

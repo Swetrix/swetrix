@@ -1,4 +1,9 @@
-import { Description, Field, Input as HeadlessInput, Label } from '@headlessui/react'
+import {
+  Description,
+  Field,
+  Input as HeadlessInput,
+  Label,
+} from '@headlessui/react'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import { Eye, EyeOff } from 'lucide-react'
@@ -44,7 +49,8 @@ const Input = ({
         {
           'text-red-900 placeholder-red-300 ring-red-600': isError,
           'ring-gray-300 dark:ring-slate-800/50': !isError,
-          'cursor-text bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400': disabled,
+          'cursor-text bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400':
+            disabled,
           'pr-10': isPassword,
         },
         classes?.input,
@@ -61,7 +67,9 @@ const Input = ({
       {label || labelCorner ? (
         <div className='mb-1 flex items-center justify-between gap-x-2'>
           {label ? (
-            <Label className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label>
+            <Label className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>
+              {label}
+            </Label>
           ) : (
             <span />
           )}
@@ -69,7 +77,9 @@ const Input = ({
         </div>
       ) : null}
       {hint && hintPosition === 'top' ? (
-        <Description className='mt-1 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</Description>
+        <Description className='mt-1 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>
+          {hint}
+        </Description>
       ) : null}
       {isPassword ? (
         <div className='relative'>
@@ -79,15 +89,23 @@ const Input = ({
             onClick={() => setShowPassword(!showPassword)}
             className='absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
           >
-            {showPassword ? <EyeOff className='size-5' /> : <Eye className='size-5' />}
+            {showPassword ? (
+              <EyeOff className='size-5' />
+            ) : (
+              <Eye className='size-5' />
+            )}
           </button>
         </div>
       ) : (
         inputElement
       )}
-      {isError ? <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p> : null}
+      {isError ? (
+        <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p>
+      ) : null}
       {hint && hintPosition === 'bottom' ? (
-        <Description className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</Description>
+        <Description className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>
+          {hint}
+        </Description>
       ) : null}
     </Field>
   )

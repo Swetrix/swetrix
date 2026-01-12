@@ -56,7 +56,12 @@ import {
 } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import { AnalyticsFunnel, Annotation } from '~/lib/models/Project'
-import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from '~/utils/generic'
+import {
+  getTimeFromSeconds,
+  getStringFromTime,
+  sumArrays,
+  nFormatter,
+} from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
 import { TrafficLogResponse } from './interfaces/traffic'
@@ -75,7 +80,10 @@ const getSum = (arr: any) => {
   return _reduce(arr, (acc, c) => acc + c, 0)
 }
 
-const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
+const calculateOptimalTicks = (
+  data: number[],
+  targetCount: number = 6,
+): number[] => {
   const min = Math.min(...data.filter((n) => n !== undefined && n !== null))
   const max = Math.max(...data.filter((n) => n !== undefined && n !== null))
 
@@ -165,7 +173,10 @@ const trendline = (data: any[]): string[] => {
 
 const getExportFilename = (prefix: string) => {
   // turn something like 2022-03-02T19:31:00.100Z into 2022-03-02
-  const date = _split(_replace(_split(new Date().toISOString(), '.')[0], /:/g, '-'), 'T')[0]
+  const date = _split(
+    _replace(_split(new Date().toISOString(), '.')[0], /:/g, '-'),
+    'T',
+  )[0]
   return `${prefix}-${date}.zip`
 }
 
@@ -262,8 +273,16 @@ const getColumns = (
   activeChartMetrics: Record<string, boolean>,
   compareChart?: TrafficLogResponse['chart'] & { [key: string]: number[] },
 ) => {
-  const { views, bounce, viewsPerUnique, unique, trendlines, sessionDuration, occurrences, avgResponseTime } =
-    activeChartMetrics
+  const {
+    views,
+    bounce,
+    viewsPerUnique,
+    unique,
+    trendlines,
+    sessionDuration,
+    occurrences,
+    avgResponseTime,
+  } = activeChartMetrics
 
   const columns: any[] = [['x', ..._map(chart.x, (el) => dayjs(el).toDate())]]
 
@@ -331,7 +350,10 @@ const getColumns = (
     columns.push(['revenue', ...chart.revenue])
     // Add refundsAmount if available for stacked bar display
     if (chart.refundsAmount) {
-      const hasAnyRefunds = _some(chart.refundsAmount, (v) => Number(v || 0) > 0)
+      const hasAnyRefunds = _some(
+        chart.refundsAmount,
+        (v) => Number(v || 0) > 0,
+      )
       if (hasAnyRefunds) {
         columns.push(['refundsAmount', ...chart.refundsAmount])
       }
@@ -348,7 +370,12 @@ const getColumnsPerf = (
 ) => {
   const columns: any[] = [['x', ..._map(chart.x, (el) => dayjs(el).toDate())]]
 
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.quantiles && chart?.p50 && chart?.p75 && chart?.p95) {
+  if (
+    activeChartMetrics === CHART_METRICS_MAPPING_PERF.quantiles &&
+    chart?.p50 &&
+    chart?.p75 &&
+    chart?.p95
+  ) {
     columns.push(['p50', ...chart.p50])
     columns.push(['p75', ...chart.p75])
     columns.push(['p95', ...chart.p95])
@@ -390,7 +417,10 @@ const getColumnsPerf = (
 
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.timing && chart.ttfb) {
     columns.push(['frontend', ...sumArrays(chart.render, chart.domLoad)])
-    columns.push(['network', ...sumArrays(chart.dns, chart.tls, chart.conn, chart.response)])
+    columns.push([
+      'network',
+      ...sumArrays(chart.dns, chart.tls, chart.conn, chart.response),
+    ])
     columns.push(['backend', ...chart.ttfb])
 
     if (
@@ -402,10 +432,18 @@ const getColumnsPerf = (
       compareChart?.domLoad &&
       compareChart?.ttfb
     ) {
-      columns.push(['frontendCompare', ...sumArrays(compareChart.render, compareChart.domLoad)])
+      columns.push([
+        'frontendCompare',
+        ...sumArrays(compareChart.render, compareChart.domLoad),
+      ])
       columns.push([
         'networkCompare',
-        ...sumArrays(compareChart.dns, compareChart.tls, compareChart.conn, compareChart.response),
+        ...sumArrays(
+          compareChart.dns,
+          compareChart.tls,
+          compareChart.conn,
+          compareChart.response,
+        ),
       ])
       columns.push(['backendCompare', ...compareChart.ttfb])
     }
@@ -417,7 +455,12 @@ const getColumnsPerf = (
     columns.push(['conn', ...chart.conn])
     columns.push(['response', ...chart.response])
 
-    if (compareChart?.dns && compareChart?.tls && compareChart?.conn && compareChart?.response) {
+    if (
+      compareChart?.dns &&
+      compareChart?.tls &&
+      compareChart?.conn &&
+      compareChart?.response
+    ) {
       columns.push(['dnsCompare', ...compareChart.dns])
       columns.push(['tlsCompare', ...compareChart.tls])
       columns.push(['connCompare', ...compareChart.conn])
@@ -425,7 +468,10 @@ const getColumnsPerf = (
     }
   }
 
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.frontend && chart.render) {
+  if (
+    activeChartMetrics === CHART_METRICS_MAPPING_PERF.frontend &&
+    chart.render
+  ) {
     columns.push(['render', ...chart.render])
     columns.push(['dom_load', ...chart.domLoad])
 
@@ -446,12 +492,23 @@ const getColumnsPerf = (
   return columns
 }
 
-const getValueForTooltipPerfomance = (chart: Record<string, string[]>, id: string, index: number) => {
+const getValueForTooltipPerfomance = (
+  chart: Record<string, string[]>,
+  id: string,
+  index: number,
+) => {
   if (id === 'p50' || id === 'p75' || id === 'p95') {
     return chart[id] ? chart[id][index] : 0
   }
 
-  if (id === 'dns' || id === 'tls' || id === 'conn' || id === 'response' || id === 'render' || id === 'ttfb') {
+  if (
+    id === 'dns' ||
+    id === 'tls' ||
+    id === 'conn' ||
+    id === 'response' ||
+    id === 'render' ||
+    id === 'ttfb'
+  ) {
     return chart[id] ? chart[id][index] : 0
   }
 
@@ -559,16 +616,23 @@ const getSettings = (
   // Calculate optimal Y axis ticks based on the data
   const allYValues: number[] = []
   if (activeChartMetrics.unique && chart.uniques) {
-    allYValues.push(...chart.uniques.filter((n) => n !== undefined && n !== null))
+    allYValues.push(
+      ...chart.uniques.filter((n) => n !== undefined && n !== null),
+    )
   }
   if (activeChartMetrics.views && chart.visits) {
-    allYValues.push(...chart.visits.filter((n) => n !== undefined && n !== null))
+    allYValues.push(
+      ...chart.visits.filter((n) => n !== undefined && n !== null),
+    )
   }
   if (activeChartMetrics.occurrences && chart.occurrences) {
-    allYValues.push(...chart.occurrences.filter((n) => n !== undefined && n !== null))
+    allYValues.push(
+      ...chart.occurrences.filter((n) => n !== undefined && n !== null),
+    )
   }
 
-  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+  const optimalTicks =
+    allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
   if (applyRegions) {
     let regionStart
@@ -630,7 +694,8 @@ const getSettings = (
         trendlineUnique: spline(),
         trendlineTotal: spline(),
         sessionDuration: chartType === chartTypes.line ? spline() : bar(),
-        sessionDurationCompare: chartType === chartTypes.line ? spline() : bar(),
+        sessionDurationCompare:
+          chartType === chartTypes.line ? spline() : bar(),
         // Revenue is always bars (stacked with refunds)
         revenue: bar(),
         refundsAmount: bar(),
@@ -652,7 +717,9 @@ const getSettings = (
         ...customEventsColors,
       },
       // Stack revenue and refundsAmount together
-      groups: activeChartMetrics.revenue ? [['revenue', 'refundsAmount']] : undefined,
+      groups: activeChartMetrics.revenue
+        ? [['revenue', 'refundsAmount']]
+        : undefined,
       // Prevent billboard/c3 from auto-reordering stacked series
       // (we need refunds stacked on top of revenue consistently)
       order: activeChartMetrics.revenue ? null : undefined,
@@ -690,8 +757,14 @@ const getSettings = (
           format:
             // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+              ? (x: string) =>
+                  d3.timeFormat(tbsFormatMapper24h[timeBucket])(
+                    x as unknown as Date,
+                  )
+              : (x: string) =>
+                  d3.timeFormat(tbsFormatMapper[timeBucket])(
+                    x as unknown as Date,
+                  ),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -705,7 +778,10 @@ const getSettings = (
         inner: true,
       },
       y2: {
-        show: activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.revenue,
+        show:
+          activeChartMetrics.bounce ||
+          activeChartMetrics.sessionDuration ||
+          activeChartMetrics.revenue,
         tick: {
           // @ts-expect-error
           format: activeChartMetrics.bounce
@@ -734,9 +810,17 @@ const getSettings = (
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
           }</li>
-          ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
-            if (el.id === 'sessionDuration') {
-              return `
+          ${_map(
+            item,
+            (el: {
+              id: string
+              index: number
+              name: string
+              value: string
+              x: Date
+            }) => {
+              if (el.id === 'sessionDuration') {
+                return `
               <li class='flex justify-between items-center py-px leading-snug'>
                 <div class='flex items-center min-w-0 mr-4'>
                   <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
@@ -745,15 +829,15 @@ const getSettings = (
                 <span class='font-mono whitespace-nowrap'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
               </li>
               `
-            }
+              }
 
-            if (el.id === 'trendlineUnique' || el.id === 'trendlineTotal') {
-              return ''
-            }
+              if (el.id === 'trendlineUnique' || el.id === 'trendlineTotal') {
+                return ''
+              }
 
-            // Format revenue and refunds as currency
-            if (el.id === 'revenue') {
-              return `
+              // Format revenue and refunds as currency
+              if (el.id === 'revenue') {
+                return `
               <li class='flex justify-between items-center py-px leading-snug'>
                 <div class='flex items-center min-w-0 mr-4'>
                   <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style='background-color:${color(el.id)}'></div>
@@ -762,10 +846,10 @@ const getSettings = (
                 <span class='font-mono whitespace-nowrap'>$${nFormatter(Number(el.value) || 0, 2)}</span>
               </li>
               `
-            }
+              }
 
-            if (el.id === 'refundsAmount') {
-              return `
+              if (el.id === 'refundsAmount') {
+                return `
               <li class='flex justify-between items-center py-px leading-snug'>
                 <div class='flex items-center min-w-0 mr-4'>
                   <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style='background-color:rgba(234,88,12,0.25);border:1.5px dashed #ea580c'></div>
@@ -774,9 +858,9 @@ const getSettings = (
                 <span class='font-mono whitespace-nowrap'>$${nFormatter(Number(el.value) || 0, 2)}</span>
               </li>
               `
-            }
+              }
 
-            return `
+              return `
             <li class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
@@ -785,38 +869,61 @@ const getSettings = (
               <span class='font-mono whitespace-nowrap'>${el.value}</span>
             </li>
             `
-          }).join('')}</ul>`
+            },
+          ).join('')}</ul>`
         }
 
         return `
         <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
-          ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
-            const { id, index, name, value, x } = el
+          ${_map(
+            item,
+            (el: {
+              id: string
+              index: number
+              name: string
+              value: string
+              x: Date
+            }) => {
+              const { id, index, name, value, x } = el
 
-            const xDataValueCompare =
-              timeFormat === TimeFormat['24-hour']
-                ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate())
-                : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
-            const xDataValue =
-              timeFormat === TimeFormat['24-hour']
-                ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x as unknown as Date)
-                : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x as unknown as Date)
-            const valueCompare =
-              id === 'sessionDuration'
-                ? getStringFromTime(getTimeFromSeconds(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index]))
-                : compareChart?.[typesOptionsToTypesCompare[id]]?.[index]
+              const xDataValueCompare =
+                timeFormat === TimeFormat['24-hour']
+                  ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
+                      dayjs(compareChart?.x[index]).toDate(),
+                    )
+                  : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
+                      dayjs(compareChart?.x[index]).toDate(),
+                    )
+              const xDataValue =
+                timeFormat === TimeFormat['24-hour']
+                  ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
+                      x as unknown as Date,
+                    )
+                  : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
+                      x as unknown as Date,
+                    )
+              const valueCompare =
+                id === 'sessionDuration'
+                  ? getStringFromTime(
+                      getTimeFromSeconds(
+                        compareChart?.[typesOptionsToTypesCompare?.[id]]?.[
+                          index
+                        ],
+                      ),
+                    )
+                  : compareChart?.[typesOptionsToTypesCompare[id]]?.[index]
 
-            if (
-              id === 'uniqueCompare' ||
-              id === 'totalCompare' ||
-              id === 'bounceCompare' ||
-              id === 'sessionDurationCompare'
-            ) {
-              return ''
-            }
+              if (
+                id === 'uniqueCompare' ||
+                id === 'totalCompare' ||
+                id === 'bounceCompare' ||
+                id === 'sessionDurationCompare'
+              ) {
+                return ''
+              }
 
-            if (id === 'sessionDuration') {
-              return `
+              if (id === 'sessionDuration') {
+                return `
               <div class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(id)}></div>
@@ -830,7 +937,10 @@ const getSettings = (
                 <span class='font-mono whitespace-nowrap'>${getStringFromTime(getTimeFromSeconds(value))}</span>
               </p>
               ${
-                valueCompare && Number(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index]) > 0
+                valueCompare &&
+                Number(
+                  compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index],
+                ) > 0
                   ? `<p class='flex justify-between'>
                 <span class="mr-2">${xDataValueCompare}</span> -
                 <span class='font-mono whitespace-nowrap'>${valueCompare}</span>
@@ -839,9 +949,9 @@ const getSettings = (
               }
             </li>
           `
-            }
+              }
 
-            return `
+              return `
             <div class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(id)}></div>
@@ -863,7 +973,8 @@ const getSettings = (
             }
             </li>
           `
-          }).join('')}
+            },
+          ).join('')}
         </ul>`
       },
     },
@@ -885,7 +996,13 @@ const getSettings = (
           r: 3,
         },
       },
-      hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare', 'refundsAmount'],
+      hide: [
+        'uniqueCompare',
+        'totalCompare',
+        'bounceCompare',
+        'sessionDurationCompare',
+        'refundsAmount',
+      ],
     },
     area: {
       linearGradient: true,
@@ -950,7 +1067,9 @@ const getSettings = (
 
 // Stacked bar chart for custom events
 const getSettingsCustomEventsStacked = (
-  chart: { x: string[]; events: Record<string, Array<number | string>> } | undefined,
+  chart:
+    | { x: string[]; events: Record<string, Array<number | string>> }
+    | undefined,
   timeBucket: string,
   rotateXAxis: boolean,
   timeFormat: string,
@@ -963,7 +1082,10 @@ const getSettingsCustomEventsStacked = (
     id,
     total: _sum(_map(chart.events[id] || [], (v) => Number(v) || 0)),
   }))
-  const eventIds = _map(_orderBy(eventTotals, 'total', 'desc'), 'id') as string[]
+  const eventIds = _map(
+    _orderBy(eventTotals, 'total', 'desc'),
+    'id',
+  ) as string[]
 
   const columns: any[] = [['x', ..._map(chart.x, (el) => dayjs(el).toDate())]]
   eventIds.forEach((id) => {
@@ -993,7 +1115,8 @@ const getSettingsCustomEventsStacked = (
   eventIds.forEach((id) => {
     allYValues.push(..._map(chart.events[id] || [], (v) => Number(v) || 0))
   })
-  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+  const optimalTicks =
+    allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
   return {
     data: {
@@ -1019,8 +1142,14 @@ const getSettingsCustomEventsStacked = (
           format:
             // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+              ? (x: string) =>
+                  d3.timeFormat(tbsFormatMapper24h[timeBucket])(
+                    x as unknown as Date,
+                  )
+              : (x: string) =>
+                  d3.timeFormat(tbsFormatMapper[timeBucket])(
+                    x as unknown as Date,
+                  ),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -1048,7 +1177,13 @@ const getSettingsCustomEventsStacked = (
           }</li>
           ${_map(
             item,
-            (el: { id: string; index: number; name: string; value: string; x: Date }) => `
+            (el: {
+              id: string
+              index: number
+              name: string
+              value: string
+              x: Date
+            }) => `
             <li class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
@@ -1105,7 +1240,9 @@ const getSettingsSession = (
   const chartData = chartInput || { x: [] } // Default to an empty chart structure if undefined
   const xAxisSize = _size(chartData.x)
 
-  const columns: any[] = [['x', ..._map(chartData.x, (el) => dayjs(el).toDate())]]
+  const columns: any[] = [
+    ['x', ..._map(chartData.x, (el) => dayjs(el).toDate())],
+  ]
   const dataTypes: Record<string, any> = {}
   const dataColors: Record<string, string> = {}
 
@@ -1130,16 +1267,23 @@ const getSettingsSession = (
   // Calculate optimal Y axis ticks based on the data
   const allYValues: number[] = []
   if (chartData.pageviews && !_isEmpty(chartData.pageviews)) {
-    allYValues.push(...chartData.pageviews.filter((n) => n !== undefined && n !== null))
+    allYValues.push(
+      ...chartData.pageviews.filter((n) => n !== undefined && n !== null),
+    )
   }
   if (chartData.customEvents && !_isEmpty(chartData.customEvents)) {
-    allYValues.push(...chartData.customEvents.filter((n) => n !== undefined && n !== null))
+    allYValues.push(
+      ...chartData.customEvents.filter((n) => n !== undefined && n !== null),
+    )
   }
   if (chartData.errors && !_isEmpty(chartData.errors)) {
-    allYValues.push(...chartData.errors.filter((n) => n !== undefined && n !== null))
+    allYValues.push(
+      ...chartData.errors.filter((n) => n !== undefined && n !== null),
+    )
   }
 
-  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+  const optimalTicks =
+    allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
   return {
     data: {
@@ -1177,8 +1321,14 @@ const getSettingsSession = (
           format:
             // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+              ? (x: string) =>
+                  d3.timeFormat(tbsFormatMapper24h[timeBucket])(
+                    x as unknown as Date,
+                  )
+              : (x: string) =>
+                  d3.timeFormat(tbsFormatMapper[timeBucket])(
+                    x as unknown as Date,
+                  ),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -1203,8 +1353,16 @@ const getSettingsSession = (
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
           }</li>
-          ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
-            return `
+          ${_map(
+            item,
+            (el: {
+              id: string
+              index: number
+              name: string
+              value: string
+              x: Date
+            }) => {
+              return `
             <li class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
@@ -1213,7 +1371,8 @@ const getSettingsSession = (
               <span class='font-mono whitespace-nowrap'>${el.value}</span>
             </li>
             `
-          }).join('')}</ul>`
+            },
+          ).join('')}</ul>`
       },
     },
     point:
@@ -1262,18 +1421,23 @@ const getSettingsError = (
 
   // Convert annotations to grid lines
   // Each annotation gets a unique class identifier for DOM-based lookup
-  const annotationLines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
-    value: dayjs(annotation.date).toDate(),
-    text:
-      annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
-        ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
-        : annotation.text,
-    class: `annotation-line annotation-id-${annotation.id}`,
-    position: 'start',
-  }))
+  const annotationLines: GridLineOptions[] = _map(
+    annotations || [],
+    (annotation) => ({
+      value: dayjs(annotation.date).toDate(),
+      text:
+        annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
+          ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
+          : annotation.text,
+      class: `annotation-line annotation-id-${annotation.id}`,
+      position: 'start',
+    }),
+  )
 
   // Build columns with both occurrences and affectedUsers if available
-  const columns: any[] = [['x', ..._map(chart.x, (el: string) => dayjs(el).toDate())]]
+  const columns: any[] = [
+    ['x', ..._map(chart.x, (el: string) => dayjs(el).toDate())],
+  ]
 
   if (chart.occurrences) {
     columns.push(['occurrences', ...chart.occurrences])
@@ -1284,13 +1448,18 @@ const getSettingsError = (
 
   const allYValues: number[] = []
   if (chart.occurrences) {
-    allYValues.push(...chart.occurrences.filter((n: any) => n !== undefined && n !== null))
+    allYValues.push(
+      ...chart.occurrences.filter((n: any) => n !== undefined && n !== null),
+    )
   }
   if (chart.affectedUsers) {
-    allYValues.push(...chart.affectedUsers.filter((n: any) => n !== undefined && n !== null))
+    allYValues.push(
+      ...chart.affectedUsers.filter((n: any) => n !== undefined && n !== null),
+    )
   }
 
-  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+  const optimalTicks =
+    allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
   let regionStart
 
@@ -1355,8 +1524,14 @@ const getSettingsError = (
           format:
             // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+              ? (x: string) =>
+                  d3.timeFormat(tbsFormatMapper24h[timeBucket])(
+                    x as unknown as Date,
+                  )
+              : (x: string) =>
+                  d3.timeFormat(tbsFormatMapper[timeBucket])(
+                    x as unknown as Date,
+                  ),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -1380,7 +1555,13 @@ const getSettingsError = (
           }</li>
           ${_map(
             item,
-            (el: { id: string; index: number; name: string; value: string; x: Date }) => `
+            (el: {
+              id: string
+              index: number
+              name: string
+              value: string
+              x: Date
+            }) => `
             <li class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
@@ -1423,7 +1604,11 @@ const getSettingsError = (
   }
 }
 
-const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t: typeof i18next.t): ChartOptions => {
+const getSettingsFunnels = (
+  funnel: AnalyticsFunnel[],
+  totalPageviews: number,
+  t: typeof i18next.t,
+): ChartOptions => {
   const values = _map(funnel, (step) => {
     if (_startsWith(step.value, '/')) {
       return t('project.visitPage', { page: step.value })
@@ -1442,7 +1627,8 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
   if (dropoff && !_isEmpty(dropoff)) {
     allYValues.push(...dropoff.filter((n) => n !== undefined && n !== null))
   }
-  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+  const optimalTicks =
+    allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
   return {
     data: {
@@ -1546,7 +1732,12 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
             </td>
             <td class='text-right font-mono'>
               ${
-                index === 0 ? _round(((totalPageviews - step.events) / totalPageviews) * 100, 2) : step.dropoffPercStep
+                index === 0
+                  ? _round(
+                      ((totalPageviews - step.events) / totalPageviews) * 100,
+                      2,
+                    )
+                  : step.dropoffPercStep
               }%
             </td>
           </tr>
@@ -1619,15 +1810,18 @@ const getSettingsPerf = (
 
   // Convert annotations to grid lines
   // Each annotation gets a unique class identifier for DOM-based lookup
-  const annotationLines: GridLineOptions[] = _map(annotations || [], (annotation) => ({
-    value: dayjs(annotation.date).toDate(),
-    text:
-      annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
-        ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
-        : annotation.text,
-    class: `annotation-line annotation-id-${annotation.id}`,
-    position: 'start',
-  }))
+  const annotationLines: GridLineOptions[] = _map(
+    annotations || [],
+    (annotation) => ({
+      value: dayjs(annotation.date).toDate(),
+      text:
+        annotation.text.length > ANNOTATION_CHART_TEXT_MAX_LENGTH
+          ? `${annotation.text.substring(0, ANNOTATION_CHART_TEXT_MAX_LENGTH)}...`
+          : annotation.text,
+      class: `annotation-line annotation-id-${annotation.id}`,
+      position: 'start',
+    }),
+  )
 
   return {
     data: {
@@ -1691,7 +1885,18 @@ const getSettingsPerf = (
         backendCompare: 'rgba(0, 168, 232, 0.4)',
       },
       groups: [
-        ['dns', 'tls', 'conn', 'response', 'render', 'dom_load', 'ttfb', 'frontend', 'network', 'backend'],
+        [
+          'dns',
+          'tls',
+          'conn',
+          'response',
+          'render',
+          'dom_load',
+          'ttfb',
+          'frontend',
+          'network',
+          'backend',
+        ],
         [
           'dnsCompare',
           'tlsCompare',
@@ -1724,8 +1929,14 @@ const getSettingsPerf = (
           format:
             // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+              ? (x: string) =>
+                  d3.timeFormat(tbsFormatMapper24h[timeBucket])(
+                    x as unknown as Date,
+                  )
+              : (x: string) =>
+                  d3.timeFormat(tbsFormatMapper[timeBucket])(
+                    x as unknown as Date,
+                  ),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -1755,8 +1966,16 @@ const getSettingsPerf = (
             ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
             : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
         }</li>
-        ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
-          return `
+        ${_map(
+          item,
+          (el: {
+            id: string
+            index: number
+            name: string
+            value: string
+            x: Date
+          }) => {
+            return `
           <li class='flex justify-between items-center py-px leading-snug'>
             <div class='flex items-center min-w-0 mr-4'>
               <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>
@@ -1765,29 +1984,50 @@ const getSettingsPerf = (
             <span class='font-mono whitespace-nowrap'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
           </li>
           `
-        }).join('')}</ul>`
+          },
+        ).join('')}</ul>`
         }
 
         return `
       <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
-        ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
-          const { id, index, name, value, x } = el
+        ${_map(
+          item,
+          (el: {
+            id: string
+            index: number
+            name: string
+            value: string
+            x: Date
+          }) => {
+            const { id, index, name, value, x } = el
 
-          const xDataValueCompare =
-            timeFormat === TimeFormat['24-hour']
-              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate())
-              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
-          const xDataValue =
-            timeFormat === TimeFormat['24-hour']
-              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x as unknown as Date)
-              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x as unknown as Date)
-          const valueCompare = getValueForTooltipPerfomance(compareChart, id, index)
+            const xDataValueCompare =
+              timeFormat === TimeFormat['24-hour']
+                ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
+                    dayjs(compareChart?.x[index]).toDate(),
+                  )
+                : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
+                    dayjs(compareChart?.x[index]).toDate(),
+                  )
+            const xDataValue =
+              timeFormat === TimeFormat['24-hour']
+                ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
+                    x as unknown as Date,
+                  )
+                : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
+                    x as unknown as Date,
+                  )
+            const valueCompare = getValueForTooltipPerfomance(
+              compareChart,
+              id,
+              index,
+            )
 
-          if (_includes(perfomanceChartCompare, id)) {
-            return ''
-          }
+            if (_includes(perfomanceChartCompare, id)) {
+              return ''
+            }
 
-          return `
+            return `
           <div class='flex justify-between items-center py-px leading-snug'>
             <div class='flex items-center min-w-0 mr-4'>
               <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(id)}></div>
@@ -1809,7 +2049,8 @@ const getSettingsPerf = (
           }
           </li>
         `
-        }).join('')}
+          },
+        ).join('')}
       </ul>`
       },
     },
@@ -1932,8 +2173,11 @@ const SHORTCUTS_TABS_MAP = {
   R: PROJECT_TABS.errors,
 }
 
-const _SHORTCUTS_TABS_LISTENERS = 'shift+t, shift+p, shift+u, shift+s, shift+f, shift+e, shift+r'
-const SHORTCUTS_TABS_LISTENERS = isSelfhosted ? _SHORTCUTS_TABS_LISTENERS : _SHORTCUTS_TABS_LISTENERS + ', shift+a'
+const _SHORTCUTS_TABS_LISTENERS =
+  'shift+t, shift+p, shift+u, shift+s, shift+f, shift+e, shift+r'
+const SHORTCUTS_TABS_LISTENERS = isSelfhosted
+  ? _SHORTCUTS_TABS_LISTENERS
+  : _SHORTCUTS_TABS_LISTENERS + ', shift+a'
 
 const _SHORTCUTS_GENERAL_LISTENERS = 'alt+s,alt+ß, alt+b,alt+∫, alt+l,alt+¬, r'
 const SHORTCUTS_GENERAL_LISTENERS = isSelfhosted
@@ -1942,7 +2186,11 @@ const SHORTCUTS_GENERAL_LISTENERS = isSelfhosted
 
 const SHORTCUTS_TIMEBUCKETS_LISTENERS = 'h, t, y, d, w, m, q, l, z, a, u, c'
 
-export const getDeviceRowMapper = (activeTab: string, theme: string, t: typeof i18next.t) => {
+export const getDeviceRowMapper = (
+  activeTab: string,
+  theme: string,
+  t: typeof i18next.t,
+) => {
   if (activeTab === 'br') {
     // eslint-disable-next-line
     return (entry: any) => {
@@ -2076,10 +2324,13 @@ const getSettingsCaptcha = (
 
   const allYValues: number[] = []
   if (chart.results) {
-    allYValues.push(...chart.results.filter((n: any) => n !== undefined && n !== null))
+    allYValues.push(
+      ...chart.results.filter((n: any) => n !== undefined && n !== null),
+    )
   }
 
-  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+  const optimalTicks =
+    allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
   let regionStart
 
@@ -2132,8 +2383,14 @@ const getSettingsCaptcha = (
           format:
             // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+              ? (x: string) =>
+                  d3.timeFormat(tbsFormatMapper24h[timeBucket])(
+                    x as unknown as Date,
+                  )
+              : (x: string) =>
+                  d3.timeFormat(tbsFormatMapper[timeBucket])(
+                    x as unknown as Date,
+                  ),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -2157,7 +2414,13 @@ const getSettingsCaptcha = (
           }</li>
           ${_map(
             item,
-            (el: { id: string; index: number; name: string; value: string; x: Date }) => `
+            (el: {
+              id: string
+              index: number
+              name: string
+              value: string
+              x: Date
+            }) => `
             <li class='flex justify-between items-center py-px leading-snug'>
               <div class='flex items-center min-w-0 mr-4'>
                 <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(el.id)}></div>

@@ -1,4 +1,9 @@
-import { TrendingUpIcon, DollarSignIcon, ShoppingCartIcon, ChevronDownIcon } from 'lucide-react'
+import {
+  TrendingUpIcon,
+  DollarSignIcon,
+  ShoppingCartIcon,
+  ChevronDownIcon,
+} from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
@@ -155,7 +160,8 @@ export default function ROICalculator() {
     const cac = conversions > 0 ? adSpend / conversions : 0
     const profit = revenue - adSpend
     const breakEvenRoas = profitMargin > 0 ? 100 / profitMargin : 0
-    const marginOfSafety = breakEvenRoas > 0 && roas > 0 ? ((roas - breakEvenRoas) / roas) * 100 : 0
+    const marginOfSafety =
+      breakEvenRoas > 0 && roas > 0 ? ((roas - breakEvenRoas) / roas) * 100 : 0
 
     setCalculated({
       roi,
@@ -202,7 +208,8 @@ export default function ROICalculator() {
               Marketing ROI Calculator
             </h1>
             <p className='mt-4 text-lg text-gray-600 dark:text-gray-400'>
-              Calculate ROAS, ROI, CAC, and other key metrics to measure your marketing campaign performance
+              Calculate ROAS, ROI, CAC, and other key metrics to measure your
+              marketing campaign performance
             </p>
           </div>
 
@@ -210,7 +217,9 @@ export default function ROICalculator() {
             {/* Input Section */}
             <div className='lg:col-span-2'>
               <div className='rounded-xl bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-                <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>Campaign Metrics</h2>
+                <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                  Campaign Metrics
+                </h2>
 
                 <div className='space-y-6'>
                   <Input
@@ -218,7 +227,9 @@ export default function ROICalculator() {
                     placeholder='Q4 Facebook Campaign'
                     label='Campaign Name (optional)'
                     value={metrics.campaignName}
-                    onChange={(e) => handleMetricChange('campaignName', e.target.value)}
+                    onChange={(e) =>
+                      handleMetricChange('campaignName', e.target.value)
+                    }
                     className='w-full'
                   />
 
@@ -230,11 +241,16 @@ export default function ROICalculator() {
                         label={
                           <>
                             Ad Spend ($)
-                            <Tooltip className='ml-1' text='Total amount spent on advertising for this campaign' />
+                            <Tooltip
+                              className='ml-1'
+                              text='Total amount spent on advertising for this campaign'
+                            />
                           </>
                         }
                         value={metrics.adSpend || ''}
-                        onChange={(e) => handleMetricChange('adSpend', e.target.value)}
+                        onChange={(e) =>
+                          handleMetricChange('adSpend', e.target.value)
+                        }
                         className='w-full'
                       />
                     </div>
@@ -246,11 +262,16 @@ export default function ROICalculator() {
                         label={
                           <>
                             Revenue Generated ($)
-                            <Tooltip className='ml-1' text='Total revenue attributed to this campaign' />
+                            <Tooltip
+                              className='ml-1'
+                              text='Total revenue attributed to this campaign'
+                            />
                           </>
                         }
                         value={metrics.revenue || ''}
-                        onChange={(e) => handleMetricChange('revenue', e.target.value)}
+                        onChange={(e) =>
+                          handleMetricChange('revenue', e.target.value)
+                        }
                         className='w-full'
                       />
                     </div>
@@ -262,11 +283,16 @@ export default function ROICalculator() {
                         label={
                           <>
                             Conversions
-                            <Tooltip className='ml-1' text='Number of conversions (sales, sign-ups, etc.)' />
+                            <Tooltip
+                              className='ml-1'
+                              text='Number of conversions (sales, sign-ups, etc.)'
+                            />
                           </>
                         }
                         value={metrics.conversions || ''}
-                        onChange={(e) => handleMetricChange('conversions', e.target.value)}
+                        onChange={(e) =>
+                          handleMetricChange('conversions', e.target.value)
+                        }
                         className='w-full'
                       />
                     </div>
@@ -278,11 +304,16 @@ export default function ROICalculator() {
                         label={
                           <>
                             Clicks
-                            <Tooltip className='ml-1' text='Total number of clicks on your ads' />
+                            <Tooltip
+                              className='ml-1'
+                              text='Total number of clicks on your ads'
+                            />
                           </>
                         }
                         value={metrics.clicks || ''}
-                        onChange={(e) => handleMetricChange('clicks', e.target.value)}
+                        onChange={(e) =>
+                          handleMetricChange('clicks', e.target.value)
+                        }
                         className='w-full'
                       />
                     </div>
@@ -294,11 +325,16 @@ export default function ROICalculator() {
                         label={
                           <>
                             Impressions
-                            <Tooltip className='ml-1' text='Total number of times your ads were shown' />
+                            <Tooltip
+                              className='ml-1'
+                              text='Total number of times your ads were shown'
+                            />
                           </>
                         }
                         value={metrics.impressions || ''}
-                        onChange={(e) => handleMetricChange('impressions', e.target.value)}
+                        onChange={(e) =>
+                          handleMetricChange('impressions', e.target.value)
+                        }
                         className='w-full'
                       />
                     </div>
@@ -310,11 +346,16 @@ export default function ROICalculator() {
                         label={
                           <>
                             Profit Margin (%)
-                            <Tooltip className='ml-1' text='Your average profit margin on products/services' />
+                            <Tooltip
+                              className='ml-1'
+                              text='Your average profit margin on products/services'
+                            />
                           </>
                         }
                         value={profitMargin || ''}
-                        onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                          setProfitMargin(parseFloat(e.target.value) || 0)
+                        }
                         className='w-full'
                       />
                     </div>
@@ -328,15 +369,21 @@ export default function ROICalculator() {
               <div className='sticky top-8 space-y-6'>
                 {/* Primary Metrics */}
                 <div className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-                  <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>Key Performance Metrics</h3>
+                  <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
+                    Key Performance Metrics
+                  </h3>
 
                   <div className='space-y-4'>
                     <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
                       <div className='flex items-center'>
                         <TrendingUpIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
-                        <span className='font-medium text-gray-700 dark:text-gray-300'>ROI</span>
+                        <span className='font-medium text-gray-700 dark:text-gray-300'>
+                          ROI
+                        </span>
                       </div>
-                      <span className={`text-2xl font-bold ${getROIColor(calculated.roi)}`}>
+                      <span
+                        className={`text-2xl font-bold ${getROIColor(calculated.roi)}`}
+                      >
                         {formatPercentage(calculated.roi)}
                       </span>
                     </div>
@@ -344,9 +391,13 @@ export default function ROICalculator() {
                     <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
                       <div className='flex items-center'>
                         <DollarSignIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
-                        <span className='font-medium text-gray-700 dark:text-gray-300'>ROAS</span>
+                        <span className='font-medium text-gray-700 dark:text-gray-300'>
+                          ROAS
+                        </span>
                       </div>
-                      <span className={`text-2xl font-bold ${getROASColor(calculated.roas)}`}>
+                      <span
+                        className={`text-2xl font-bold ${getROASColor(calculated.roas)}`}
+                      >
                         {formatRatio(calculated.roas)}
                       </span>
                     </div>
@@ -354,7 +405,9 @@ export default function ROICalculator() {
                     <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
                       <div className='flex items-center'>
                         <ShoppingCartIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
-                        <span className='font-medium text-gray-700 dark:text-gray-300'>Profit</span>
+                        <span className='font-medium text-gray-700 dark:text-gray-300'>
+                          Profit
+                        </span>
                       </div>
                       <span
                         className={`text-xl font-bold ${calculated.profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
@@ -367,39 +420,51 @@ export default function ROICalculator() {
 
                 {/* Secondary Metrics */}
                 <div className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-                  <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>Detailed Metrics</h3>
+                  <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
+                    Detailed Metrics
+                  </h3>
 
                   <div className='space-y-3'>
                     <div className='flex justify-between'>
-                      <span className='text-sm text-gray-600 dark:text-gray-400'>CAC</span>
+                      <span className='text-sm text-gray-600 dark:text-gray-400'>
+                        CAC
+                      </span>
                       <span className='font-semibold text-gray-900 dark:text-white'>
                         {formatCurrency(calculated.cac)}
                       </span>
                     </div>
 
                     <div className='flex justify-between'>
-                      <span className='text-sm text-gray-600 dark:text-gray-400'>CPC</span>
+                      <span className='text-sm text-gray-600 dark:text-gray-400'>
+                        CPC
+                      </span>
                       <span className='font-semibold text-gray-900 dark:text-white'>
                         {formatCurrency(calculated.cpc)}
                       </span>
                     </div>
 
                     <div className='flex justify-between'>
-                      <span className='text-sm text-gray-600 dark:text-gray-400'>CPM</span>
+                      <span className='text-sm text-gray-600 dark:text-gray-400'>
+                        CPM
+                      </span>
                       <span className='font-semibold text-gray-900 dark:text-white'>
                         {formatCurrency(calculated.cpm)}
                       </span>
                     </div>
 
                     <div className='flex justify-between'>
-                      <span className='text-sm text-gray-600 dark:text-gray-400'>CTR</span>
+                      <span className='text-sm text-gray-600 dark:text-gray-400'>
+                        CTR
+                      </span>
                       <span className='font-semibold text-gray-900 dark:text-white'>
                         {formatPercentage(calculated.ctr)}
                       </span>
                     </div>
 
                     <div className='flex justify-between'>
-                      <span className='text-sm text-gray-600 dark:text-gray-400'>Conversion Rate</span>
+                      <span className='text-sm text-gray-600 dark:text-gray-400'>
+                        Conversion Rate
+                      </span>
                       <span className='font-semibold text-gray-900 dark:text-white'>
                         {formatPercentage(calculated.conversionRate)}
                       </span>
@@ -407,14 +472,18 @@ export default function ROICalculator() {
 
                     <div className='border-t pt-3 dark:border-gray-700'>
                       <div className='flex justify-between'>
-                        <span className='text-sm text-gray-600 dark:text-gray-400'>Break-Even ROAS</span>
+                        <span className='text-sm text-gray-600 dark:text-gray-400'>
+                          Break-Even ROAS
+                        </span>
                         <span className='font-semibold text-gray-900 dark:text-white'>
                           {formatRatio(calculated.breakEvenRoas)}
                         </span>
                       </div>
 
                       <div className='mt-2 flex justify-between'>
-                        <span className='text-sm text-gray-600 dark:text-gray-400'>Margin of Safety</span>
+                        <span className='text-sm text-gray-600 dark:text-gray-400'>
+                          Margin of Safety
+                        </span>
                         <span
                           className={`font-semibold ${calculated.marginOfSafety >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
                         >
@@ -428,7 +497,9 @@ export default function ROICalculator() {
                 {/* Performance Indicator */}
                 {metrics.adSpend > 0 ? (
                   <div className='rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white'>
-                    <h3 className='mb-2 text-lg font-semibold'>Campaign Performance</h3>
+                    <h3 className='mb-2 text-lg font-semibold'>
+                      Campaign Performance
+                    </h3>
                     <p className='text-sm opacity-90'>
                       {calculated.roas >= 4
                         ? 'Excellent! Your campaign is highly profitable.'
@@ -457,11 +528,15 @@ export default function ROICalculator() {
                   className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
                 >
                   <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
-                    <h3 className='text-lg font-medium text-gray-900 dark:text-white'>{item.question}</h3>
+                    <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
+                      {item.question}
+                    </h3>
                     <ChevronDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
                   </summary>
                   <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
-                    <p className='text-gray-600 dark:text-gray-400'>{item.answer}</p>
+                    <p className='text-gray-600 dark:text-gray-400'>
+                      {item.answer}
+                    </p>
                   </div>
                 </details>
               ))}

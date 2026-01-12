@@ -27,19 +27,37 @@ interface FunnelStep {
   value: string
 }
 
-const createEmptyStep = (type: FunnelStepType = 'page'): FunnelStep => ({ type, value: '' })
-const INITIAL_FUNNEL_STEPS: FunnelStep[] = [createEmptyStep(), createEmptyStep()]
+const createEmptyStep = (type: FunnelStepType = 'page'): FunnelStep => ({
+  type,
+  value: '',
+})
+const INITIAL_FUNNEL_STEPS: FunnelStep[] = [
+  createEmptyStep(),
+  createEmptyStep(),
+]
 
-const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelProps) => {
+const NewFunnel = ({
+  onClose,
+  onSubmit,
+  isOpened,
+  funnel,
+  loading,
+}: NewFunnelProps) => {
   const { allowedToManage } = useCurrentProject()
   const { t } = useTranslation('common')
   const [name, setName] = useState(funnel?.name || '')
   const [steps, setSteps] = useState<FunnelStep[]>(
     funnel?.steps
-      ? funnel.steps.map((s) => ({ type: s?.startsWith('/') ? 'page' : 'event', value: s }))
+      ? funnel.steps.map((s) => ({
+          type: s?.startsWith('/') ? 'page' : 'event',
+          value: s,
+        }))
       : INITIAL_FUNNEL_STEPS,
   )
-  const allStepsFulfilled = useMemo(() => _every(steps, (step) => step.value && step.value.trim()), [steps])
+  const allStepsFulfilled = useMemo(
+    () => _every(steps, (step) => step.value && step.value.trim()),
+    [steps],
+  )
 
   useEffect(() => {
     if (!isOpened) {
@@ -49,7 +67,10 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
     setName(funnel?.name || '') // eslint-disable-line react-hooks/set-state-in-effect -- Resetting form state when modal opens
     setSteps(
       funnel?.steps
-        ? funnel.steps.map((s) => ({ type: s?.startsWith('/') ? 'page' : 'event', value: s }))
+        ? funnel.steps.map((s) => ({
+            type: s?.startsWith('/') ? 'page' : 'event',
+            value: s,
+          }))
         : INITIAL_FUNNEL_STEPS,
     )
   }, [isOpened, funnel])
@@ -89,7 +110,13 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
             onChange={(e) => setName(e.target.value)}
             disabled={!allowedToManage}
           />
-          <Text as='p' size='sm' weight='medium' colour='secondary' className='mt-5'>
+          <Text
+            as='p'
+            size='sm'
+            weight='medium'
+            colour='secondary'
+            className='mt-5'
+          >
             {t('modals.funnels.steps')}
           </Text>
           {_map(steps, (step, index) => (
@@ -104,10 +131,17 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
                 labelExtractor={(item) => item.label}
                 onSelect={(item) => {
                   const newSteps = [...steps]
-                  newSteps[index] = { ...newSteps[index], type: item.key as FunnelStepType }
+                  newSteps[index] = {
+                    ...newSteps[index],
+                    type: item.key as FunnelStepType,
+                  }
                   setSteps(newSteps)
                 }}
-                title={step.type === 'page' ? t('dashboard.page') : t('dashboard.event')}
+                title={
+                  step.type === 'page'
+                    ? t('dashboard.page')
+                    : t('dashboard.event')
+                }
                 selectedItem={
                   step.type === 'page'
                     ? { key: 'page', label: t('dashboard.page') }
@@ -120,7 +154,10 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
                 placeholder={step.type === 'page' ? '/pricing' : 'Registration'}
                 onChange={(e) => {
                   const newSteps = [...steps]
-                  newSteps[index] = { ...newSteps[index], value: e.target.value }
+                  newSteps[index] = {
+                    ...newSteps[index],
+                    value: e.target.value,
+                  }
                   setSteps(newSteps)
                 }}
                 disabled={!allowedToManage}
@@ -154,7 +191,9 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
           ) : null}
         </div>
       }
-      title={funnel ? t('modals.funnels.editTitle') : t('modals.funnels.addTitle')}
+      title={
+        funnel ? t('modals.funnels.editTitle') : t('modals.funnels.addTitle')
+      }
       isOpened={isOpened}
       submitDisabled={!name || !allStepsFulfilled || !allowedToManage}
       overflowVisible

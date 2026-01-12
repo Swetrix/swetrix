@@ -15,7 +15,11 @@ function getCookieDomain(): string | undefined {
 
   // In development or selfhosted without explicit domain, don't set domain
   // TODO: Eventually we should support this variable for selfhosted Swetrix as well
-  if (!domain || process.env.NODE_ENV === 'development' || process.env.__SELFHOSTED) {
+  if (
+    !domain ||
+    process.env.NODE_ENV === 'development' ||
+    process.env.__SELFHOSTED
+  ) {
     return undefined
   }
 
@@ -65,7 +69,10 @@ export function hasAuthTokens(request: Request): boolean {
   return !!getAccessToken(request) || !!getRefreshToken(request)
 }
 
-export function redirectIfNotAuthenticated(request: Request, redirectTo = '/login'): Response | null {
+export function redirectIfNotAuthenticated(
+  request: Request,
+  redirectTo = '/login',
+): Response | null {
   if (hasAuthTokens(request)) {
     return null
   }
@@ -119,7 +126,10 @@ function buildCookieHeader(
   return cookie
 }
 
-export function createAuthCookies(tokens: AuthTokens, remember: boolean): string[] {
+export function createAuthCookies(
+  tokens: AuthTokens,
+  remember: boolean,
+): string[] {
   const maxAge = remember ? PERSISTENT_COOKIE_MAX_AGE : undefined
 
   const cookies = [
@@ -128,7 +138,11 @@ export function createAuthCookies(tokens: AuthTokens, remember: boolean): string
   ]
 
   if (remember) {
-    cookies.push(buildCookieHeader('is_persistent', 'true', { maxAge: PERSISTENT_COOKIE_MAX_AGE }))
+    cookies.push(
+      buildCookieHeader('is_persistent', 'true', {
+        maxAge: PERSISTENT_COOKIE_MAX_AGE,
+      }),
+    )
   }
 
   return cookies
@@ -147,8 +161,12 @@ export function clearAuthCookies(): string[] {
   ]
 
   if (domain) {
-    cookies.push(`${ACCESS_TOKEN_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax; Domain=${domain}`)
-    cookies.push(`${REFRESH_TOKEN_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax; Domain=${domain}`)
+    cookies.push(
+      `${ACCESS_TOKEN_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax; Domain=${domain}`,
+    )
+    cookies.push(
+      `${REFRESH_TOKEN_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax; Domain=${domain}`,
+    )
   }
 
   return cookies
@@ -169,14 +187,24 @@ export function createHeadersWithCookies(cookies: string[]): Headers {
 const PROJECT_PASSWORD_COOKIE_PREFIX = 'swx_pp_'
 const PROJECT_PASSWORD_MAX_AGE = 604800 // 1 week in seconds
 
-export function getProjectPasswordCookie(request: Request, projectId: string): string | null {
+export function getProjectPasswordCookie(
+  request: Request,
+  projectId: string,
+): string | null {
   const cookies = parseCookies(request)
   return cookies[`${PROJECT_PASSWORD_COOKIE_PREFIX}${projectId}`] || null
 }
 
-export function createProjectPasswordCookie(projectId: string, password: string): string {
-  return buildCookieHeader(`${PROJECT_PASSWORD_COOKIE_PREFIX}${projectId}`, password, {
-    maxAge: PROJECT_PASSWORD_MAX_AGE,
-    sameSite: 'Lax',
-  })
+export function createProjectPasswordCookie(
+  projectId: string,
+  password: string,
+): string {
+  return buildCookieHeader(
+    `${PROJECT_PASSWORD_COOKIE_PREFIX}${projectId}`,
+    password,
+    {
+      maxAge: PROJECT_PASSWORD_MAX_AGE,
+      sameSite: 'Lax',
+    },
+  )
 }

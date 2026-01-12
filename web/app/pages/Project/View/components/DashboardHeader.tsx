@@ -6,7 +6,11 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
-import { MAX_MONTHS_IN_PAST, PERIOD_PAIRS_COMPARE, TBPeriodPairsProps } from '~/lib/constants'
+import {
+  MAX_MONTHS_IN_PAST,
+  PERIOD_PAIRS_COMPARE,
+  TBPeriodPairsProps,
+} from '~/lib/constants'
 import { useAuth } from '~/providers/AuthProvider'
 import DatePicker from '~/ui/Datepicker'
 import Dropdown from '~/ui/Dropdown'
@@ -83,9 +87,16 @@ const DashboardHeader = ({
   const [searchParams, setSearchParams] = useSearchParams()
 
   const timeBucketSelectorItems = customTimeBucketSelectorItems || periodPairs
-  const activeDropdownLabelCompare = _find(periodPairsCompare, (p) => p.period === activePeriodCompare)?.label
+  const activeDropdownLabelCompare = _find(
+    periodPairsCompare,
+    (p) => p.period === activePeriodCompare,
+  )?.label
 
-  const tbPeriodPairsCompare = (tFn: typeof t, customDateRange?: Date[], lng?: string) => {
+  const tbPeriodPairsCompare = (
+    tFn: typeof t,
+    customDateRange?: Date[],
+    lng?: string,
+  ) => {
     const result = [
       {
         label: tFn('project.previousPeriod'),
@@ -126,12 +137,16 @@ const DashboardHeader = ({
     <div className='relative top-0 z-20 -mt-2 flex flex-col items-center justify-between bg-gray-50/50 py-2 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
       <div className='flex flex-wrap items-center justify-center gap-2'>
         {backLink ? <BackButton to={backLink} label={backButtonLabel} /> : null}
-        {onBack ? <BackButton onClick={onBack} label={backButtonLabel} /> : null}
+        {onBack ? (
+          <BackButton onClick={onBack} label={backButtonLabel} />
+        ) : null}
         {leftContent}
         {showLiveVisitors ? <LiveVisitorsDropdown /> : null}
       </div>
       <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
-        {showRefreshButton ? <RefreshStatsButton onRefresh={refreshStats} /> : null}
+        {showRefreshButton ? (
+          <RefreshStatsButton onRefresh={refreshStats} />
+        ) : null}
         {showSearchButton ? (
           <div className='border-gray-200 dark:border-gray-600'>
             <button
@@ -193,7 +208,9 @@ const DashboardHeader = ({
             <DatePicker
               ref={refCalendar}
               onChange={([from, to]) => {
-                const newSearchParams = new URLSearchParams(searchParams.toString())
+                const newSearchParams = new URLSearchParams(
+                  searchParams.toString(),
+                )
                 newSearchParams.set('from', from.toISOString())
                 newSearchParams.set('to', to.toISOString())
                 newSearchParams.set('period', 'custom')
@@ -218,7 +235,9 @@ const DashboardHeader = ({
         ) : null}
         {isActiveCompare ? (
           <>
-            <div className='text-md mx-2 font-medium whitespace-pre-line text-gray-600 dark:text-gray-200'>vs</div>
+            <div className='text-md mx-2 font-medium whitespace-pre-line text-gray-600 dark:text-gray-200'>
+              vs
+            </div>
             <Dropdown
               items={periodPairsCompare}
               title={activeDropdownLabelCompare}
@@ -235,7 +254,9 @@ const DashboardHeader = ({
                     refCalendarCompare.current?.openCalendar()
                   }, 100)
                 } else {
-                  setPeriodPairsCompare(tbPeriodPairsCompare(t, undefined, language))
+                  setPeriodPairsCompare(
+                    tbPeriodPairsCompare(t, undefined, language),
+                  )
                   setDateRangeCompare(null)
                   setActivePeriodCompare(pair.period)
                 }

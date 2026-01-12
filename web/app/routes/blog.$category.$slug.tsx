@@ -1,7 +1,11 @@
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { redirect, data } from 'react-router'
 
-import { isSelfhosted, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
+import {
+  isSelfhosted,
+  getOgImageUrl,
+  isDisableMarketingPages,
+} from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
 import { getPost } from '~/utils/getPosts.server'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'

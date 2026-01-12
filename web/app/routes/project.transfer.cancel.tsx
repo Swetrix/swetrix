@@ -15,7 +15,9 @@ export interface TransferCancelLoaderData {
   error?: string
 }
 
-export async function loader({ request }: LoaderFunctionArgs): Promise<TransferCancelLoaderData> {
+export async function loader({
+  request,
+}: LoaderFunctionArgs): Promise<TransferCancelLoaderData> {
   const url = new URL(request.url)
   const token = url.searchParams.get('token')
 
@@ -28,7 +30,10 @@ export async function loader({ request }: LoaderFunctionArgs): Promise<TransferC
   })
 
   if (result.error) {
-    const errorMessage = typeof result.error === 'string' ? result.error : 'Invalid or expired token'
+    const errorMessage =
+      typeof result.error === 'string'
+        ? result.error
+        : 'Invalid or expired token'
     return { success: false, error: errorMessage }
   }
 

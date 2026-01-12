@@ -18,12 +18,20 @@ interface GeneralProps {
   sharableLink: string
 }
 
-const General = ({ form, errors, beenSubmitted, handleInput, sharableLink }: GeneralProps) => {
+const General = ({
+  form,
+  errors,
+  beenSubmitted,
+  handleInput,
+  sharableLink,
+}: GeneralProps) => {
   const { t } = useTranslation('common')
 
   return (
     <>
-      <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
+      <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
+        {t('profileSettings.general')}
+      </h3>
       <Input
         name='name'
         label={t('project.settings.name')}

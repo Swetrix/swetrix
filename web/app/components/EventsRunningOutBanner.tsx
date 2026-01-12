@@ -48,10 +48,15 @@ const EventsRunningOutBanner = () => {
           <div className='flex flex-wrap items-center justify-between'>
             <div className='flex flex-1 items-center'>
               <span className='flex rounded-lg bg-yellow-600 p-2'>
-                <ExclamationTriangleIcon className='h-6 w-6 text-white' aria-hidden='true' />
+                <ExclamationTriangleIcon
+                  className='h-6 w-6 text-white'
+                  aria-hidden='true'
+                />
               </span>
               <p className='ml-3 truncate font-medium text-black'>
-                <span className='md:hidden'>{t('dashboard.lowEventsTitle')}</span>
+                <span className='md:hidden'>
+                  {t('dashboard.lowEventsTitle')}
+                </span>
                 <span className='hidden md:inline'>
                   {t('dashboard.eventsXPercUsed', {
                     amount: SHOW_BANNER_AT_PERC,

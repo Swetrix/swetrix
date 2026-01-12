@@ -26,7 +26,7 @@ const getSlugFromFilename = (filename: string) => filename.substring(11)
 const getDateFromFilename = (filename: string) => filename.substring(0, 10)
 
 const findFilenameBySlug = (list: string[], handle: string) => {
-  return _find(list, item => _endsWith(item, `-${handle}.md`))
+  return _find(list, (item) => _endsWith(item, `-${handle}.md`))
 }
 
 interface IParseFontMatter {
@@ -76,8 +76,8 @@ const getFileNames = async (category?: string): Promise<string[]> => {
 
     const dirents = await fs.readdir(pathToRead, { withFileTypes: true })
     return _map(
-      _filter(dirents, d => d.isFile() && _endsWith(d.name, '.md')),
-      d => d.name,
+      _filter(dirents, (d) => d.isFile() && _endsWith(d.name, '.md')),
+      (d) => d.name,
     )
   } catch {
     return []
@@ -127,12 +127,12 @@ const getArticlesMetaData = async () => {
       withFileTypes: true,
     })
     const filtered = _map(
-      _filter(dirents, d => d.isFile() && _endsWith(d.name, '.md')),
-      d => d.name,
+      _filter(dirents, (d) => d.isFile() && _endsWith(d.name, '.md')),
+      (d) => d.name,
     )
 
     const articles = await Promise.all(
-      _map(filtered, async filename => {
+      _map(filtered, async (filename) => {
         try {
           const file = await fs.readFile(resolveBlogPostsPath(filename))
           const { attributes }: IParseFontMatter = parseFrontMatter(
@@ -155,7 +155,7 @@ const getArticlesMetaData = async () => {
     )
 
     return _sortBy(
-      _filter(articles, a => !!a),
+      _filter(articles, (a) => !!a),
       ['_date'],
     ).reverse()
   } catch {
@@ -224,14 +224,14 @@ export class BlogService {
       return []
     }
 
-    const directories = _filter(dirents, d => d.isDirectory())
+    const directories = _filter(dirents, (d) => d.isDirectory())
     const markdownFiles = _filter(
       dirents,
-      d => d.isFile() && _endsWith(d.name, '.md'),
+      (d) => d.isFile() && _endsWith(d.name, '.md'),
     )
 
     const processedFiles = await Promise.all(
-      _map(markdownFiles, async filename => {
+      _map(markdownFiles, async (filename) => {
         const actualFilename = filename.name ?? filename
         const slug = _replace(actualFilename, /\.md$/, '')
 

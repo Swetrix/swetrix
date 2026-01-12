@@ -36,9 +36,13 @@ interface BillingPricingProps {
   metainfo?: Metainfo
 }
 
-const formatEventsLong = (value: number): string => value.toLocaleString('en-US')
+const formatEventsLong = (value: number): string =>
+  value.toLocaleString('en-US')
 
-const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPricingProps) => {
+const BillingPricing = ({
+  lastEvent,
+  metainfo = DEFAULT_METAINFO,
+}: BillingPricingProps) => {
   const {
     t,
     i18n: { language },
@@ -50,7 +54,10 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
   const changePlanFetcher = useFetcher<BillingActionData>()
 
   const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
-  const [isNewPlanConfirmationModalOpened, setIsNewPlanConfirmationModalOpened] = useState(false)
+  const [
+    isNewPlanConfirmationModalOpened,
+    setIsNewPlanConfirmationModalOpened,
+  ] = useState(false)
   const [newPlanId, setNewPlanId] = useState<number | null>(null)
   const [downgradeTo, setDowngradeTo] = useState<{
     planCode: string
@@ -59,11 +66,16 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
     ypid: string
   } | null>(null)
   const [showDowngradeModal, setShowDowngradeModal] = useState(false)
-  const [billingFrequency, setBillingFrequency] = useState(user?.billingFrequency || BillingFrequency.monthly)
+  const [billingFrequency, setBillingFrequency] = useState(
+    user?.billingFrequency || BillingFrequency.monthly,
+  )
   const [enableLegacyPlans, setEnableLegacyPlans] = useState(false)
 
   const subUpdatePreview = useMemo(() => {
-    if (previewFetcher.state === 'loading' || previewFetcher.state === 'submitting') {
+    if (
+      previewFetcher.state === 'loading' ||
+      previewFetcher.state === 'submitting'
+    ) {
       return null
     }
     if (previewFetcher.data?.success && previewFetcher.data.data) {
@@ -75,7 +87,9 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
     return null
   }, [previewFetcher.data, previewFetcher.state])
 
-  const isSubUpdating = changePlanFetcher.state === 'submitting' || changePlanFetcher.state === 'loading'
+  const isSubUpdating =
+    changePlanFetcher.state === 'submitting' ||
+    changePlanFetcher.state === 'loading'
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -92,7 +106,10 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
       toast.success(t('apiNotifications.subscriptionUpdated'))
       closeUpdateModal(true)
     } else if (changePlanFetcher.data?.error) {
-      console.error('[ERROR] An error occured while updating subscription:', changePlanFetcher.data.error)
+      console.error(
+        '[ERROR] An error occured while updating subscription:',
+        changePlanFetcher.data.error,
+      )
       toast.error('An error occured while updating subscription')
       closeUpdateModal(true)
     }
@@ -106,7 +123,9 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
         '[ERROR] An error occured while loading subscription update pricing preview:',
         previewFetcher.data.error,
       )
-      toast.error('An error occured while loading subscription update pricing preview')
+      toast.error(
+        'An error occured while loading subscription update pricing preview',
+      )
     }
   }, [previewFetcher.data?.error])
 
@@ -169,8 +188,14 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
 
     if (planCodeLoading || !isSelectingDifferentPlan) return
 
-    if (user.subID && !user.cancellationEffectiveDate && user.planCode !== 'none') {
-      const planId = Number(billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid)
+    if (
+      user.subID &&
+      !user.cancellationEffectiveDate &&
+      user.planCode !== 'none'
+    ) {
+      const planId = Number(
+        billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
+      )
       setNewPlanId(planId)
       loadSubUpdatePreview(planId)
       return
@@ -185,7 +210,8 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
     }
 
     window.Paddle.Checkout.open({
-      product: billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
+      product:
+        billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
       email: user.email,
       passthrough: JSON.stringify({ uid: user.id }),
       locale: paddleLanguageMapping[language] || language,
@@ -224,8 +250,12 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
 
   const getActionLabel = (tier: any): string => {
     const planCodeID = tier.index
-    const downgrade = !user?.cancellationEffectiveDate && planCodeID < userPlancodeID
-    if (user?.cancellationEffectiveDate || isUnselectablePlanCode(user?.planCode)) {
+    const downgrade =
+      !user?.cancellationEffectiveDate && planCodeID < userPlancodeID
+    if (
+      user?.cancellationEffectiveDate ||
+      isUnselectablePlanCode(user?.planCode)
+    ) {
       return t('pricing.subscribe')
     }
     if (planCodeID > userPlancodeID) {
@@ -234,23 +264,30 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
     if (downgrade) {
       return t('pricing.downgrade')
     }
-    if (user?.billingFrequency === billingFrequency && user?.planCode === tier.planCode) {
+    if (
+      user?.billingFrequency === billingFrequency &&
+      user?.planCode === tier.planCode
+    ) {
       return t('pricing.yourPlan')
     }
-    return billingFrequency === BillingFrequency.monthly ? t('pricing.switchToMonthly') : t('pricing.switchToYearly')
+    return billingFrequency === BillingFrequency.monthly
+      ? t('pricing.switchToMonthly')
+      : t('pricing.switchToYearly')
   }
 
   const isDisabledForTier = (tier: any): boolean => {
     return (
       planCodeLoading !== null ||
       (tier.planCode === user?.planCode &&
-        (user?.billingFrequency === billingFrequency || isUnselectablePlanCode(user?.planCode)))
+        (user?.billingFrequency === billingFrequency ||
+          isUnselectablePlanCode(user?.planCode)))
     )
   }
 
   const tiers = useMemo(() => {
     const validCodes = PLAN_CODES_ARRAY.filter(
-      (code): code is keyof typeof PLAN_LIMITS => typeof code === 'string' && code in PLAN_LIMITS,
+      (code): code is keyof typeof PLAN_LIMITS =>
+        typeof code === 'string' && code in PLAN_LIMITS,
     )
     return validCodes.map((code) => PLAN_LIMITS[code])
   }, [PLAN_CODES_ARRAY])
@@ -259,7 +296,9 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
     <>
       <div className='rounded-xl border border-gray-200 p-4 sm:p-6 dark:border-white/10'>
         <div className='mb-3 flex justify-between'>
-          <h2 className='text-2xl font-bold text-black dark:text-gray-50'>{t('common.billing')}</h2>
+          <h2 className='text-2xl font-bold text-black dark:text-gray-50'>
+            {t('common.billing')}
+          </h2>
           <RadioGroup
             value={billingFrequency}
             onChange={setBillingFrequency}
@@ -305,15 +344,22 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
                 'flex items-center justify-between rounded-xl border px-4 py-3 text-black backdrop-blur-sm dark:bg-white/2 dark:text-white',
                 {
                   'border-gray-200 dark:border-white/10':
-                    user?.planCode !== tier.planCode || isUnselectablePlanCode(tier.planCode),
-                  'border-indigo-500': user?.planCode === tier.planCode && !isUnselectablePlanCode(tier.planCode),
+                    user?.planCode !== tier.planCode ||
+                    isUnselectablePlanCode(tier.planCode),
+                  'border-indigo-500':
+                    user?.planCode === tier.planCode &&
+                    !isUnselectablePlanCode(tier.planCode),
                 },
               )}
             >
               <div>
-                <span className='text-base font-medium'>{formatEventsLong(tier.monthlyUsageLimit)}</span>
+                <span className='text-base font-medium'>
+                  {formatEventsLong(tier.monthlyUsageLimit)}
+                </span>
                 &nbsp;
-                <span className='text-sm text-gray-500 dark:text-gray-400'>{t('pricing.eventsPerMonth')}</span>
+                <span className='text-sm text-gray-500 dark:text-gray-400'>
+                  {t('pricing.eventsPerMonth')}
+                </span>
               </div>
               <div className='flex items-center gap-3 text-sm'>
                 {tier.legacy ? (
@@ -346,7 +392,12 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
                   </span>
                   &nbsp;
                   <span className='text-sm'>
-                    /{t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
+                    /
+                    {t(
+                      billingFrequency === BillingFrequency.monthly
+                        ? 'pricing.perMonth'
+                        : 'pricing.perYear',
+                    )}
                   </span>
                 </div>
                 <Button
@@ -380,7 +431,9 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
             <span className='text-base font-medium'>
               {t('pricing.overXEvents', { amount: formatEventsLong(20000000) })}
             </span>
-            <p className='text-sm group-hover:underline'>{t('pricing.contactUs')}</p>
+            <p className='text-sm group-hover:underline'>
+              {t('pricing.contactUs')}
+            </p>
           </a>
         </div>
       </div>
@@ -400,7 +453,13 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
         closeText={t('common.no')}
         title={t('pricing.downgradeTitle')}
         type='warning'
-        message={<Trans t={t} i18nKey='pricing.downgradeDesc' values={{ email: CONTACT_EMAIL }} />}
+        message={
+          <Trans
+            t={t}
+            i18nKey='pricing.downgradeDesc'
+            values={{ email: CONTACT_EMAIL }}
+          />
+        }
         isOpened={showDowngradeModal}
       />
 
@@ -463,10 +522,14 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
                         </td>
                         <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-50'>
                           {language === 'en'
-                            ? dayjs((subUpdatePreview as any).immediatePayment.date)
+                            ? dayjs(
+                                (subUpdatePreview as any).immediatePayment.date,
+                              )
                                 .locale(language)
                                 .format('MMMM D, YYYY')
-                            : dayjs((subUpdatePreview as any).immediatePayment.date)
+                            : dayjs(
+                                (subUpdatePreview as any).immediatePayment.date,
+                              )
                                 .locale(language)
                                 .format('D MMMM, YYYY')}
                         </td>
@@ -477,21 +540,30 @@ const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPrici
                 {(subUpdatePreview as any).immediatePayment.amount < 0 ? (
                   <p className='mt-2 italic'>
                     {t('billing.negativePayment', {
-                      currency: (subUpdatePreview as any).immediatePayment.symbol,
-                      dueNowAmount: -(subUpdatePreview as any).immediatePayment.amount,
+                      currency: (subUpdatePreview as any).immediatePayment
+                        .symbol,
+                      dueNowAmount: -(subUpdatePreview as any).immediatePayment
+                        .amount,
                       dueNowDate:
                         language === 'en'
-                          ? dayjs((subUpdatePreview as any).immediatePayment.date)
+                          ? dayjs(
+                              (subUpdatePreview as any).immediatePayment.date,
+                            )
                               .locale(language)
                               .format('MMMM D, YYYY')
-                          : dayjs((subUpdatePreview as any).immediatePayment.date)
+                          : dayjs(
+                              (subUpdatePreview as any).immediatePayment.date,
+                            )
                               .locale(language)
                               .format('D MMMM, YYYY'),
-                      nextPaymentAmount: (subUpdatePreview as any).nextPayment.amount,
+                      nextPaymentAmount: (subUpdatePreview as any).nextPayment
+                        .amount,
                     })}
                   </p>
                 ) : null}
-                <h2 className='mt-5 text-base font-bold'>{t('billing.nextPayment')}</h2>
+                <h2 className='mt-5 text-base font-bold'>
+                  {t('billing.nextPayment')}
+                </h2>
                 <div className='mt-2 overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>

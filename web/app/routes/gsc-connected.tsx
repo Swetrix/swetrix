@@ -19,7 +19,9 @@ export interface GscConnectedLoaderData {
   useClientFallback?: boolean
 }
 
-export async function loader({ request }: LoaderFunctionArgs): Promise<GscConnectedLoaderData | Response> {
+export async function loader({
+  request,
+}: LoaderFunctionArgs): Promise<GscConnectedLoaderData | Response> {
   if (isSelfhosted) {
     return redirect('/login', 302)
   }
@@ -36,10 +38,14 @@ export async function loader({ request }: LoaderFunctionArgs): Promise<GscConnec
     return { useClientFallback: true }
   }
 
-  const result = await serverFetch<{ pid: string }>(request, 'v1/project/gsc/process-token', {
-    method: 'POST',
-    body: { code, state },
-  })
+  const result = await serverFetch<{ pid: string }>(
+    request,
+    'v1/project/gsc/process-token',
+    {
+      method: 'POST',
+      body: { code, state },
+    },
+  )
 
   // If auth fails (401/403), fall back to client-side which has localStorage tokens
   if (result.status === 401 || result.status === 403) {
@@ -84,7 +90,11 @@ function GscHashHandler() {
   const [{ state, code }] = useState(() => {
     if (typeof window === 'undefined') return { state: null, code: null }
     // Fix Google's hash URL redirect (sometimes Google uses # instead of ?)
-    const _location = _replace(window.location.href, `${routes.gsc_connected}#`, `${routes.gsc_connected}?`)
+    const _location = _replace(
+      window.location.href,
+      `${routes.gsc_connected}#`,
+      `${routes.gsc_connected}?`,
+    )
     const { searchParams } = new URL(_location)
     return {
       state: searchParams.get('state'),
@@ -112,7 +122,9 @@ function GscHashHandler() {
       .catch((reason) => {
         sessionStorage.removeItem(processedKey)
         setError(String(reason))
-        console.error(`[ERROR] Error while processing GSC integration: ${reason}`)
+        console.error(
+          `[ERROR] Error while processing GSC integration: ${reason}`,
+        )
       })
   }, [navigate, state, code, processGSCToken])
 
