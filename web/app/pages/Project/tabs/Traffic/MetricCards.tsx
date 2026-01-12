@@ -345,11 +345,14 @@ export const PerformanceMetricCards = memo(
 
     if (!_isEmpty(overallCompare) && activePeriodCompare !== 'previous') {
       frontendChange =
-        (overall.current?.frontend ?? 0) - (overallCompare?.current?.frontend ?? 0)
+        (overall.current?.frontend ?? 0) -
+        (overallCompare?.current?.frontend ?? 0)
       backendChange =
-        (overall.current?.backend ?? 0) - (overallCompare?.current?.backend ?? 0)
+        (overall.current?.backend ?? 0) -
+        (overallCompare?.current?.backend ?? 0)
       networkChange =
-        (overall.current?.network ?? 0) - (overallCompare?.current?.network ?? 0)
+        (overall.current?.network ?? 0) -
+        (overallCompare?.current?.network ?? 0)
     }
 
     return (

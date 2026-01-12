@@ -986,7 +986,9 @@ const ViewProjectContent = () => {
     const pairs = tbPeriodPairs(t, undefined, undefined, language)
     const pair = _find(
       pairs,
-      ({ period }) => period === timebucketShortcutsMap[key as keyof typeof timebucketShortcutsMap],
+      ({ period }) =>
+        period ===
+        timebucketShortcutsMap[key as keyof typeof timebucketShortcutsMap],
     )
 
     if (!pair) {

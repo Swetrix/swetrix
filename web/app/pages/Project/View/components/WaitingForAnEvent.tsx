@@ -46,9 +46,8 @@ const WaitingForAnEvent = () => {
               />
             ),
             snippet: (
-              <span
-                tabIndex={0}
-                role='button'
+              <button
+                type='button'
                 className='cursor-pointer font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                 onClick={() => setIsModalOpened(true)}
               />
