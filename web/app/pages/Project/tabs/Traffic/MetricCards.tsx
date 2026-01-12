@@ -344,15 +344,12 @@ export const PerformanceMetricCards = memo(
     let networkChange = overall.networkChange
 
     if (!_isEmpty(overallCompare) && activePeriodCompare !== 'previous') {
-      // @ts-expect-error
       frontendChange =
-        overall.current?.frontend - overallCompare?.current?.frontend
-      // @ts-expect-error
+        (overall.current?.frontend ?? 0) - (overallCompare?.current?.frontend ?? 0)
       backendChange =
-        overall.current?.backend - overallCompare?.current?.backend
-      // @ts-expect-error
+        (overall.current?.backend ?? 0) - (overallCompare?.current?.backend ?? 0)
       networkChange =
-        overall.current?.network - overallCompare?.current?.network
+        (overall.current?.network ?? 0) - (overallCompare?.current?.network ?? 0)
     }
 
     return (

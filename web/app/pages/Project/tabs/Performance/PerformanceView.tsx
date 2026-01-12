@@ -600,9 +600,8 @@ const PerformanceViewInner = ({
                           ? () => {
                               const countryData = panelsData.data?.cc || []
                               const regionData = panelsData.data?.rg || []
-                              // @ts-expect-error
                               const total = countryData.reduce(
-                                (acc, curr) => acc + curr.count,
+                                (acc: number, curr: any) => acc + curr.count,
                                 0,
                               )
 

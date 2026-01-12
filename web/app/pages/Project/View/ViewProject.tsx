@@ -984,10 +984,9 @@ const ViewProjectContent = () => {
   // 'Timebuckets selection' shortcuts
   useHotkeys(SHORTCUTS_TIMEBUCKETS_LISTENERS, ({ key }) => {
     const pairs = tbPeriodPairs(t, undefined, undefined, language)
-    // @ts-expect-error
     const pair = _find(
       pairs,
-      ({ period }) => period === timebucketShortcutsMap[key],
+      ({ period }) => period === timebucketShortcutsMap[key as keyof typeof timebucketShortcutsMap],
     )
 
     if (!pair) {
