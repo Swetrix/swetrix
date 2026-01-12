@@ -1266,6 +1266,8 @@ export class AnalyticsController {
     const { 'user-agent': userAgent, origin } = headers
     const { pid } = data
 
+    const logDTO: PageviewsDto = { pid }
+
     const isBot = await this.analyticsService.isBot(pid, userAgent)
 
     if (isBot) {
