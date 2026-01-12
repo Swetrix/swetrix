@@ -83,13 +83,6 @@ export interface SwetrixError {
   sessions: number
 }
 
-export interface SwetrixErrorDetails extends SwetrixError {
-  colno: number
-  lineno: number
-  first_seen: string
-  stackTrace?: string
-}
-
 export interface Session {
   psid: string
   cc: string | null

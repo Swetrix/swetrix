@@ -17,7 +17,6 @@ import type {
   ProfilesResponse,
   ProfileDetailsResponse,
   ProfileSessionsResponse,
-  Project,
   VersionFilter,
   CustomEventsMetadataResponse,
   PropertyMetadataResponse,
@@ -501,36 +500,6 @@ export function useProfileSessionsProxy() {
   )
 
   return { fetchProfileSessions, data, error, isLoading }
-}
-
-export function useProjectProxy() {
-  const [data, setData] = useState<Project | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-
-  const fetchProject = useCallback(async (projectId: string) => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getProject', projectId, params: {} }),
-      })
-      const result = (await response.json()) as ProxyResponse<Project>
-      setData(result.data)
-      setError(result.error)
-      return result.data
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-      return null
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  return { fetchProject, data, error, isLoading }
 }
 
 export function useFiltersProxy() {

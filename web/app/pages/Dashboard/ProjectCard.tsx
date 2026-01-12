@@ -1,7 +1,6 @@
 import cx from 'clsx'
 import _find from 'lodash/find'
 import _isNumber from 'lodash/isNumber'
-import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _size from 'lodash/size'
 import { Settings2Icon, PinIcon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react'
@@ -400,46 +399,5 @@ export const ProjectCard = ({
         />
       ) : null}
     </Link>
-  )
-}
-
-interface ProjectCardSkeletonProps {
-  viewMode: 'grid' | 'list'
-}
-
-export const ProjectCardSkeleton = ({ viewMode }: ProjectCardSkeletonProps) => {
-  return (
-    <div
-      className={cx(
-        'grid gap-x-6 gap-y-3',
-        viewMode === 'grid' ? 'grid-cols-1 lg:grid-cols-3 lg:gap-y-6' : 'grid-cols-1 gap-y-3',
-      )}
-    >
-      {_map(Array(viewMode === 'grid' ? 12 : 8), (_, index) => (
-        <div
-          key={index}
-          className={cx(
-            'animate-pulse cursor-wait overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-slate-800/25 dark:bg-slate-800',
-            viewMode === 'list' ? 'flex items-center justify-between px-6 py-4' : 'min-h-[153.1px]',
-          )}
-        >
-          <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
-            <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
-              <div className='h-6 w-3/4 max-w-80 rounded-sm bg-gray-200 dark:bg-slate-700' />
-              <div className='size-6 rounded-[3px] bg-gray-200 dark:bg-slate-700' />
-            </div>
-            <div className='mt-1 flex shrink-0 flex-wrap gap-2'>
-              <div className='h-6 w-16 rounded-sm bg-gray-200 dark:bg-slate-700' />
-              <div className='h-6 w-16 rounded-sm bg-gray-200 dark:bg-slate-700' />
-              <div className='h-6 w-16 rounded-sm bg-gray-200 dark:bg-slate-700' />
-            </div>
-          </div>
-          <div className={cx('flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-5.5 px-4 pb-4')}>
-            <div className='h-10 w-24 rounded-sm bg-gray-200 dark:bg-slate-700' />
-            <div className='h-10 w-24 rounded-sm bg-gray-200 dark:bg-slate-700' />
-          </div>
-        </div>
-      ))}
-    </div>
   )
 }
