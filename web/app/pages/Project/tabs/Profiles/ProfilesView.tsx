@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
+import { ApiProfile } from '~/api/api.server'
 import { useProfilesProxy, useProfileProxy, useProfileSessionsProxy } from '~/hooks/useAnalyticsProxy'
 import { Profile, ProfileDetails as ProfileDetailsType, Session } from '~/lib/models/Project'
 import NoProfiles from '~/pages/Project/tabs/Profiles/components/NoProfiles'
@@ -18,6 +19,21 @@ import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 
 import Filters from '../../View/components/Filters'
+
+const mapApiProfileToUI = (apiProfile: ApiProfile): Profile => ({
+  profileId: apiProfile.profileId,
+  isIdentified: apiProfile.isIdentified,
+  sessionsCount: apiProfile.sessionsCount,
+  pageviewsCount: apiProfile.pageviewsCount,
+  eventsCount: apiProfile.eventsCount,
+  errorsCount: apiProfile.errorsCount,
+  firstSeen: apiProfile.firstSeen,
+  lastSeen: apiProfile.lastSeen,
+  cc: apiProfile.cc,
+  os: apiProfile.os,
+  br: apiProfile.br,
+  dv: apiProfile.dv,
+})
 
 const SESSIONS_TAKE = 30
 
@@ -98,7 +114,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       })
 
       if (requestId === profilesRequestIdRef.current && isMountedRef.current) {
-        const profilesList = (dataProfiles?.profiles || []) as unknown as Profile[]
+        const profilesList = (dataProfiles?.profiles || []).map(mapApiProfileToUI)
         if (override) {
           setProfiles(profilesList)
         } else {

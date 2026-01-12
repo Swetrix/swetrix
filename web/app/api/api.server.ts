@@ -1436,26 +1436,23 @@ export async function getGoalServer(request: Request, goalId: string): Promise<S
 // MARK: Profiles API (Deferred Loading)
 // ============================================================================
 
-interface Profile {
-  id: string
-  isAnonymous: boolean
-  created: string
-  pageviews: number
-  sessions: number
-  customEvents: number
-  errors: number
-  revenue?: number
-  refunds?: number
-  revenueCurrency?: string
+export interface ApiProfile {
+  profileId: string
+  isIdentified: boolean
+  sessionsCount: number
+  pageviewsCount: number
+  eventsCount: number
+  errorsCount: number
+  firstSeen: string
   lastSeen: string
-  country?: string
-  city?: string
-  region?: string
-  properties?: Record<string, unknown>
+  cc: string | null
+  os: string | null
+  br: string | null
+  dv: string | null
 }
 
 export interface ProfilesResponse {
-  profiles: Profile[]
+  profiles: ApiProfile[]
 }
 
 export async function getProfilesServer(

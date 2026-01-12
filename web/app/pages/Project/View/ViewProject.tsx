@@ -445,17 +445,14 @@ const ViewProjectContent = () => {
 
   // Handle views load fetcher response
   useEffect(() => {
-    if (viewsLoadFetcher.state === 'idle') {
-      setProjectViewsLoading(false)
-
-      if (viewsLoadFetcher.data) {
-        if (viewsLoadFetcher.data.success && viewsLoadFetcher.data.data) {
-          setProjectViews((viewsLoadFetcher.data.data as ProjectView[]) || [])
-        } else if (viewsLoadFetcher.data.error) {
-          console.error('[ERROR] (loadProjectViews)', viewsLoadFetcher.data.error)
-          toast.error(viewsLoadFetcher.data.error)
-        }
+    if (viewsLoadFetcher.state === 'idle' && viewsLoadFetcher.data) {
+      if (viewsLoadFetcher.data.success && viewsLoadFetcher.data.data) {
+        setProjectViews((viewsLoadFetcher.data.data as ProjectView[]) || [])
+      } else if (viewsLoadFetcher.data.error) {
+        console.error('[ERROR] (loadProjectViews)', viewsLoadFetcher.data.error)
+        toast.error(viewsLoadFetcher.data.error)
       }
+      setProjectViewsLoading(false)
     }
   }, [viewsLoadFetcher.state, viewsLoadFetcher.data])
 

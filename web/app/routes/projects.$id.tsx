@@ -179,8 +179,6 @@ export interface ProjectLoaderData {
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  redirectIfNotAuthenticated(request)
-
   const { id: projectId } = params
   const url = new URL(request.url)
 

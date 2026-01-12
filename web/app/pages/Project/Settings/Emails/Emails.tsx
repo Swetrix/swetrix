@@ -382,7 +382,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
       { method: 'post', action: `/projects/settings/${projectId}` },
     )
 
-    setTimeout(() => setForm({ email: '', reportFrequency: '' }), 300)
+    setTimeout(() => setForm({ email: '', reportFrequency: reportFrequencyForEmailsOptions[3].value }), 300)
   }
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -401,7 +401,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
     setShowModal(false)
     setBeenSubmitted(false)
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', reportFrequency: '' }), 300)
+    setTimeout(() => setForm({ email: '', reportFrequency: reportFrequencyForEmailsOptions[3].value }), 300)
     setErrors({})
   }
 

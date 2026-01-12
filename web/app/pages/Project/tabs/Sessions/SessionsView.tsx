@@ -177,12 +177,8 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
   const loaderUpdateCounterRef = useRef(0)
   const proxyRequestCounterRef = useRef(0)
 
-  // Track if we've ever shown actual content to prevent NoSessions flash during exit animation
+  // Track if we've shown content in the current data set to prevent NoSessions flash during exit animation
   const hasShownContentRef = useRef(false)
-
-  if (!_isEmpty(sessions)) {
-    hasShownContentRef.current = true
-  }
 
   const activePSID = useMemo(() => {
     return searchParams.get('psid')
@@ -221,6 +217,12 @@ const SessionsViewInner = ({ tnMapping, rotateXAxis, deferredData }: SessionsVie
       setCanLoadMoreSessions(sessionsList.length >= SESSIONS_TAKE)
       // Increment counter to invalidate any in-flight proxy responses
       loaderUpdateCounterRef.current += 1
+      // Reset content tracking when loader provides empty results (e.g., after filter change)
+      if (_isEmpty(sessionsList)) {
+        hasShownContentRef.current = false
+      } else {
+        hasShownContentRef.current = true
+      }
     }
   }, [revalidator.state, deferredData.sessionsData])
 
