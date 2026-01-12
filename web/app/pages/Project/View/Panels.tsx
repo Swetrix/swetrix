@@ -24,10 +24,10 @@ import React, { memo, useState, useEffect, useMemo, Fragment, useRef } from 'rea
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps, useNavigate } from 'react-router'
 
-import { getProjectDataCustomEvents } from '~/api'
+import { useProjectDataCustomEventsProxy } from '~/hooks/useAnalyticsProxy'
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import Button from '~/ui/Button'
 import Dropdown from '~/ui/Dropdown'
 import Sort from '~/ui/icons/Sort'
@@ -397,8 +397,8 @@ function sortDesc<T>(obj: T, sortByKeys?: boolean): T {
 const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, getFilterLink }: CustomEventsProps) => {
   const { t } = useTranslation('common')
   const { id } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const { timeBucket, timezone, period, dateRange, timeFormat, rotateXAxis } = useViewProjectContext()
+  const { fetchCustomEvents } = useProjectDataCustomEventsProxy()
 
   const [detailsOpened, setDetailsOpened] = useState(false)
   const [activeEvents, setActiveEvents] = useState<any>({})
@@ -467,23 +467,20 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
         const to = isCustomPeriod ? getFormatDate(dateRange![1]) : ''
         const periodValue = isCustomPeriod ? '' : period
 
-        const data = await getProjectDataCustomEvents(
-          id,
+        const data = await fetchCustomEvents(id, topEventsForChart, {
           timeBucket,
-          periodValue,
+          period: periodValue,
           filters,
           from,
           to,
           timezone,
-          topEventsForChart,
-          projectPassword,
-        )
+        })
 
         if (cancelled) {
           return
         }
 
-        setStackedChart(data?.chart || null)
+        setStackedChart((data?.chart as unknown as typeof stackedChart) || null)
       } catch (reason) {
         console.error('[ERROR](CustomEvents) Failed to load stacked custom events chart', reason)
         if (!cancelled) {
@@ -501,7 +498,7 @@ const CustomEvents = ({ customs, chartData, filters, getCustomEventMetadata, get
     return () => {
       cancelled = true
     }
-  }, [id, timeBucket, period, dateRange, timezone, projectPassword, filters, topEventsForChart])
+  }, [id, timeBucket, period, dateRange, timezone, filters, topEventsForChart, fetchCustomEvents])
 
   useEffect(() => {
     setEventsMetadata({})
@@ -1318,9 +1315,7 @@ interface PanelProps {
   getVersionFilterLink?: (parent: string | null, version: string | null) => LinkProps['to']
   valuesHeaderName?: string
   highlightColour?: 'blue' | 'red' | 'orange'
-  // When true, rows are non-interactive (no filter link/navigation)
   disableRowClick?: boolean
-  // Details modal specific overrides
   hidePercentageInDetails?: boolean
   detailsExtraColumns?: Array<{
     header: string
@@ -1328,6 +1323,8 @@ interface PanelProps {
     sortLabel: string
     getSortValue: (entry: Entry) => number
   }>
+  dataLoading?: boolean
+  activeTab?: keyof typeof PROJECT_TABS
 }
 
 interface DetailsTableProps extends Pick<
@@ -1341,6 +1338,7 @@ interface DetailsTableProps extends Pick<
   | 'rowMapper'
   | 'valueMapper'
   | 'getFilterLink'
+  | 'activeTab'
 > {
   total: number
   closeDetails: () => void
@@ -1369,12 +1367,12 @@ const DetailsTable = ({
   disableRowClick,
   hidePercentageInDetails,
   detailsExtraColumns,
+  activeTab = PROJECT_TABS.traffic,
 }: DetailsTableProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const { activeTab } = useViewProjectContext()
   const tnMapping = typeNameMapping(t)
   const parentRef = useRef<HTMLDivElement>(null)
   const [search, setSearch] = useState('')
@@ -1669,8 +1667,12 @@ const Panel = ({
   disableRowClick = false,
   hidePercentageInDetails,
   detailsExtraColumns,
+  dataLoading: dataLoadingProp,
+  activeTab: activeTabProp,
 }: PanelProps) => {
-  const { dataLoading, activeTab } = useViewProjectContext()
+  const ctx = useViewProjectContext()
+  const dataLoading = dataLoadingProp ?? ctx.dataLoading
+  const activeTab = activeTabProp ?? ctx.activeTab
   const { t } = useTranslation('common')
   const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
   const [detailsOpened, setDetailsOpened] = useState(false)
@@ -1917,6 +1919,7 @@ const Panel = ({
             disableRowClick={disableRowClick}
             hidePercentageInDetails={hidePercentageInDetails}
             detailsExtraColumns={detailsExtraColumns}
+            activeTab={activeTab}
           />
         }
         size='large'

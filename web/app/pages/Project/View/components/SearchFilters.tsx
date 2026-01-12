@@ -6,9 +6,9 @@ import { useState, useEffect, useCallback, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
 
-import { getFilters, getErrorsFilters, getVersionFilters } from '~/api'
+import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { FILTERS_PANELS_ORDER, ERRORS_FILTERS_PANELS_ORDER } from '~/lib/constants'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import FilterValueInput, { filterCategoryIcons, createVersionValue, parseVersionValue } from '~/ui/FilterValueInput'
 import Modal from '~/ui/Modal'
@@ -108,7 +108,6 @@ interface SearchFiltersProps {
 
 const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: SearchFiltersProps) => {
   const { id } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const { theme } = useTheme()
   const {
     t,
@@ -119,6 +118,7 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
   const [loadingColumns, setLoadingColumns] = useState<Set<string>>(new Set())
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { fetchFilters, fetchErrorsFilters, fetchVersionFilters } = useFiltersProxy()
 
   const panelOptions = type === 'traffic' ? FILTERS_PANELS_ORDER : ERRORS_FILTERS_PANELS_ORDER
 
@@ -128,22 +128,26 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
 
       setLoadingColumns((prev) => new Set(prev).add(column))
       try {
-        let result: string[]
+        let result: string[] = []
 
         // For browser/OS versions, fetch valid combinations from the backend
         if (column === 'brv') {
           const dataType = type === 'errors' ? 'errors' : 'traffic'
-          const pairs = await getVersionFilters(id, dataType, 'br', projectPassword)
-          result = pairs.map((p) => createVersionValue(p.name, p.version))
+          const pairs = await fetchVersionFilters(id, dataType, 'br')
+          if (pairs) {
+            result = pairs.map((p) => createVersionValue(p.name, p.version))
+          }
         } else if (column === 'osv') {
           const dataType = type === 'errors' ? 'errors' : 'traffic'
-          const pairs = await getVersionFilters(id, dataType, 'os', projectPassword)
-          result = pairs.map((p) => createVersionValue(p.name, p.version))
+          const pairs = await fetchVersionFilters(id, dataType, 'os')
+          if (pairs) {
+            result = pairs.map((p) => createVersionValue(p.name, p.version))
+          }
         } else {
           if (type === 'errors') {
-            result = await getErrorsFilters(id, column, projectPassword)
+            result = (await fetchErrorsFilters(id, column)) || []
           } else {
-            result = await getFilters(id, column, projectPassword)
+            result = (await fetchFilters(id, column)) || []
           }
         }
         setFilterValuesCache((prev) => ({ ...prev, [column]: result }))
@@ -158,7 +162,7 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
         })
       }
     },
-    [id, projectPassword, type, filterValuesCache, loadingColumns],
+    [id, type, filterValuesCache, loadingColumns, fetchFilters, fetchErrorsFilters, fetchVersionFilters],
   )
 
   // Pre-fetch all filter values when modal opens

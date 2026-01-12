@@ -2,7 +2,7 @@ import _isEmpty from 'lodash/isEmpty'
 import { marked, type Tokens } from 'marked'
 import sanitizeHtml from 'sanitize-html'
 
-import { getBlogPost, getBlogPostWithCategory } from '~/api'
+import { getBlogPost, getBlogPostWithCategory } from '~/api/api.server'
 
 import { renderTimeToSwitchCta, renderDitchGoogleCta } from './renderCtaHtml'
 import { extractTableOfContents, ensureHeaderIds, generateSlug, renderTocAsHtml } from './toc'
@@ -15,7 +15,6 @@ renderer.link = ({ href, text }: Tokens.Link) => {
   try {
     url = new URL(href, 'https://swetrix.com')
   } catch {
-    // If the href is invalid, render plain text to avoid breaking post rendering.
     return text
   }
 
@@ -26,18 +25,15 @@ renderer.link = ({ href, text }: Tokens.Link) => {
   return `<a href="${url.toString()}" referrerpolicy="strict-origin-when-cross-origin" target="_blank" rel="noopener noreferrer">${text}</a>`
 }
 
-// Add automatic ID generation to headers
 renderer.heading = ({ text, depth }: Tokens.Heading) => {
   const id = generateSlug(text)
   return `<h${depth} id="${id}">${text}</h${depth}>`
 }
 
-// Helper to parse inline markdown in table cells
 function parseInlineMarkdown(text: string): string {
   return marked.parseInline(text) as string
 }
 
-// Check if a row is a section header (first cell is bold, other cells are empty)
 function isSectionHeaderRow(row: Tokens.TableCell[]): boolean {
   const firstCellText = row[0]?.text?.trim() || ''
   const isBold = firstCellText.startsWith('**') && firstCellText.endsWith('**')
@@ -45,7 +41,6 @@ function isSectionHeaderRow(row: Tokens.TableCell[]): boolean {
   return isBold && otherCellsEmpty
 }
 
-// Custom table rendering with improved styling
 renderer.table = ({ header, rows }: Tokens.Table) => {
   const headerCells = header
     .map(
@@ -59,12 +54,10 @@ renderer.table = ({ header, rows }: Tokens.Table) => {
       const isHeader = isSectionHeaderRow(row)
 
       if (isHeader) {
-        // Section header row - spans all columns with background
         const cellContent = parseInlineMarkdown(row[0].text)
         return `<tr class="bg-slate-50 dark:bg-slate-800/70"><td colspan="${row.length}" class="px-4 py-3 text-sm font-semibold text-slate-900 dark:text-slate-100">${cellContent}</td></tr>`
       }
 
-      // Regular row
       return `<tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">${row
         .map((cell) => {
           return `<td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">${parseInlineMarkdown(cell.text)}</td>`
@@ -81,17 +74,14 @@ renderer.table = ({ header, rows }: Tokens.Table) => {
   </div>`
 }
 
-// SVG icons for checkmark, cross, and warning
 const CHECK_ICON_SVG = `<span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 align-middle"><svg class="h-3.5 w-3.5 overflow-visible text-emerald-600 dark:text-emerald-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Yes"><path d="M20 6 9 17l-5-5"/></svg></span>`
 
 const CROSS_ICON_SVG = `<span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 align-middle"><svg class="h-3.5 w-3.5 overflow-visible text-red-600 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="No"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span>`
 
 const WARNING_ICON_SVG = `<span class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30 align-middle"><svg class="h-3.5 w-3.5 overflow-visible text-amber-600 dark:text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Warning"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></span>`
 
-// Inline Swetrix logo that inherits font size
 const SWETRIX_LOGO_HTML = `<span class="inline-flex items-center gap-[0.15em] select-none whitespace-nowrap align-baseline"><img class="h-[0.9em] w-auto dark:hidden" src="/assets/logo/blue.png" alt="" /><img class="h-[0.9em] w-auto hidden dark:inline" src="/assets/logo/white.png" alt="" /><span class="font-bold text-indigo-950 dark:text-white">Swetrix</span></span>`
 
-// GitHub-style alert configurations
 const ALERT_CONFIGS = {
   NOTE: {
     icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 16 16"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>`,
@@ -142,10 +132,7 @@ const ALERT_CONFIGS = {
 
 type AlertType = keyof typeof ALERT_CONFIGS
 
-// Custom blockquote rendering for GitHub-style alerts
 renderer.blockquote = ({ text }: Tokens.Blockquote) => {
-  // Check for alert syntax: [!NOTE], [!TIP], [!IMPORTANT], [!WARNING], [!CAUTION]
-  // The text may be raw markdown or partially rendered, check for both formats
   const alertMatch = text.match(/^\s*(?:<p>)?\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:<br\s*\/?>|\n)?(?:<\/p>)?\s*/i)
 
   if (alertMatch) {
@@ -153,7 +140,6 @@ renderer.blockquote = ({ text }: Tokens.Blockquote) => {
     const config = ALERT_CONFIGS[alertType]
     const rawContent = text.replace(alertMatch[0], '').trim()
 
-    // Process content through marked to render markdown (links, bold, italic, etc.)
     const content = marked(rawContent, { renderer }) as string
 
     return `<div class="not-prose my-6 rounded-lg border-l-4 ${config.borderClass} ${config.bgClass} p-4">
@@ -167,24 +153,17 @@ renderer.blockquote = ({ text }: Tokens.Blockquote) => {
     </div>`
   }
 
-  // Default blockquote rendering - also process through marked for consistency
   const renderedText = marked(text, { renderer }) as string
   return `<blockquote>${renderedText}</blockquote>`
 }
 
-// Function to replace emoji with styled icons
 function replaceEmojiWithIcons(html: string): string {
   return html.replace(/✅/g, CHECK_ICON_SVG).replace(/❌/g, CROSS_ICON_SVG).replace(/⚠️/g, WARNING_ICON_SVG)
 }
 
-// Function to replace ::SWETRIX_LOGO:: placeholder
 function replaceSwetrixLogo(html: string): string {
   return html.replace(/::SWETRIX_LOGO::/g, SWETRIX_LOGO_HTML)
 }
-
-// Removes first 10 characters from the string (i.e. 2023-10-07-)
-export const getSlugFromFilename = (filename: string) => filename.substring(11)
-export const getDateFromFilename = (filename: string) => filename.substring(0, 10)
 
 interface GetPost {
   slug: string
@@ -198,14 +177,19 @@ interface GetPost {
   twitter_handle?: string
 }
 
-export async function getPost(slug: string, category?: string, tryStandalone?: boolean): Promise<GetPost | null> {
-  let post: any = null
+export async function getPost(
+  request: Request,
+  slug: string,
+  category?: string,
+  tryStandalone?: boolean,
+): Promise<GetPost | null> {
+  let post: Awaited<ReturnType<typeof getBlogPost>> = null
 
   try {
     if (category) {
-      post = await getBlogPostWithCategory(category, slug)
+      post = await getBlogPostWithCategory(request, category, slug)
     } else {
-      post = await getBlogPost(slug)
+      post = await getBlogPost(request, slug)
     }
   } catch {
     return null
@@ -229,11 +213,7 @@ export async function getPost(slug: string, category?: string, tryStandalone?: b
   let html = marked(post.body, { renderer }) as string
 
   html = ensureHeaderIds(html)
-
-  // Replace emoji icons with styled SVG icons
   html = replaceEmojiWithIcons(html)
-
-  // Replace ::SWETRIX_LOGO:: with inline logo
   html = replaceSwetrixLogo(html)
 
   const toc = extractTableOfContents(html)
@@ -243,23 +223,18 @@ export async function getPost(slug: string, category?: string, tryStandalone?: b
     html = html.replace(new RegExp(tocPlaceholder, 'gi'), tocHtml)
   }
 
-  // Handle CTA:TIME_TO_SWITCH placeholder
   if (hasCtaTimeToSwitch) {
     const ctaHtml = renderTimeToSwitchCta()
     html = html.replace(new RegExp(ctaTimeToSwitchPlaceholder, 'gi'), ctaHtml)
   }
 
-  // Handle CTA:TIME_TO_DITCH_GOOGLE placeholder
   if (hasCtaDitchGoogle) {
     const ctaHtml = renderDitchGoogleCta()
     html = html.replace(new RegExp(ctaDitchGooglePlaceholder, 'gi'), ctaHtml)
   }
 
-  // Sanitize generated HTML before sending it to the client to prevent stored XSS
-  // (CMS content, table-of-contents placeholder, and CTA placeholders).
   html = sanitizeHtml(html, {
     allowedTags: [
-      // Document structure
       'p',
       'br',
       'hr',
@@ -269,7 +244,6 @@ export async function getPost(slug: string, category?: string, tryStandalone?: b
       'h4',
       'h5',
       'h6',
-      // Text formatting
       'strong',
       'em',
       's',
@@ -277,24 +251,19 @@ export async function getPost(slug: string, category?: string, tryStandalone?: b
       'blockquote',
       'pre',
       'code',
-      // Lists
       'ul',
       'ol',
       'li',
-      // Links / media
       'a',
       'img',
-      // Tables
       'table',
       'thead',
       'tbody',
       'tr',
       'th',
       'td',
-      // Layout used by CTAs / alerts / icons
       'div',
       'span',
-      // Inline SVG used by our generated HTML snippets
       'svg',
       'path',
     ],
@@ -320,14 +289,11 @@ export async function getPost(slug: string, category?: string, tryStandalone?: b
       ],
       path: ['d', 'fill', 'fill-rule', 'clip-rule'],
     },
-    // Keep it tight: no javascript: URLs, no data: URLs (especially for <img>),
-    // but allow relative links and hash fragments.
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     allowedSchemesByTag: {
       img: ['http', 'https'],
     },
     allowProtocolRelative: false,
-    // Avoid CSS injection; we only rely on Tailwind classes.
     allowedStyles: {},
   })
 

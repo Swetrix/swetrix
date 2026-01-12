@@ -8,7 +8,7 @@ import {
   XIcon,
   MenuIcon,
 } from 'lucide-react'
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps } from 'react-router'
 
@@ -108,7 +108,7 @@ const CollapsibleGroup: React.FC<{
   searchParams: URLSearchParams
   isCollapsed?: boolean
   onMobileClose?: () => void
-}> = ({ group, activeTab, onTabChange, projectId, dataLoading, searchParams, isCollapsed, onMobileClose }) => {
+}> = memo(({ group, activeTab, onTabChange, projectId, dataLoading, searchParams, isCollapsed, onMobileClose }) => {
   const [isExpanded, setIsExpanded] = useState(() => getGroupExpandedState(group.id))
 
   const hasActiveTab = useMemo(() => {
@@ -259,7 +259,9 @@ const CollapsibleGroup: React.FC<{
       </div>
     </div>
   )
-}
+})
+
+CollapsibleGroup.displayName = 'CollapsibleGroup'
 
 const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   tabs,
@@ -620,4 +622,21 @@ export const MobileSidebarTrigger: React.FC<MobileSidebarTriggerProps> = ({ onCl
   )
 }
 
-export default ProjectSidebar
+const MemoizedProjectSidebar = memo(ProjectSidebar, (prevProps, nextProps) => {
+  return (
+    prevProps.activeTab === nextProps.activeTab &&
+    prevProps.projectId === nextProps.projectId &&
+    prevProps.projectName === nextProps.projectName &&
+    prevProps.websiteUrl === nextProps.websiteUrl &&
+    prevProps.dataLoading === nextProps.dataLoading &&
+    prevProps.allowedToManage === nextProps.allowedToManage &&
+    prevProps.isMobileOpen === nextProps.isMobileOpen &&
+    prevProps.className === nextProps.className &&
+    prevProps.searchParams.toString() === nextProps.searchParams.toString() &&
+    prevProps.tabs === nextProps.tabs &&
+    prevProps.onTabChange === nextProps.onTabChange &&
+    prevProps.onMobileClose === nextProps.onMobileClose
+  )
+})
+
+export default MemoizedProjectSidebar

@@ -4,26 +4,25 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import { StretchHorizontalIcon, LayoutGridIcon, SearchIcon, XIcon, FolderPlusIcon } from 'lucide-react'
-import React, { useState, useEffect, useRef, useMemo } from 'react'
+import React, { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLoaderData, useNavigate, useSearchParams } from 'react-router'
-import { ClientOnly } from 'remix-utils/client-only'
+import { useLoaderData, useNavigate, useSearchParams, useFetcher, useNavigation, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
-import { getProjects, getLiveVisitors, getOverallStats, createProject } from '~/api'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
-import { withAuthentication, auth } from '~/hoc/protected'
+import { useLiveVisitorsProxy, useOverallStatsProxy } from '~/hooks/useAnalyticsProxy'
 import useBreakpoint from '~/hooks/useBreakpoint'
 import useDebounce from '~/hooks/useDebounce'
-import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL, tbPeriodPairs } from '~/lib/constants'
-import { Overall, Project } from '~/lib/models/Project'
+import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL } from '~/lib/constants'
+import { Overall } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
+import type { DashboardLoaderData, DashboardActionData } from '~/routes/dashboard'
 import Input from '~/ui/Input'
+import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import Select from '~/ui/Select'
-import StatusPage from '~/ui/StatusPage'
 import { Text } from '~/ui/Text'
 import { setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
@@ -31,7 +30,7 @@ import routes from '~/utils/routes'
 import { AddProject } from './AddProject'
 import { NoProjects } from './NoProjects'
 import { PeriodSelector } from './PeriodSelector'
-import { ProjectCard, ProjectCardSkeleton } from './ProjectCard'
+import { ProjectCard } from './ProjectCard'
 import { SortSelector, SORT_OPTIONS } from './SortSelector'
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
@@ -45,20 +44,25 @@ const MAX_PROJECT_NAME_LENGTH = 50
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 const Dashboard = () => {
-  const { viewMode: defaultViewMode } = useLoaderData<any>()
-  const { user, isLoading: authLoading } = useAuth()
+  const loaderData = useLoaderData<DashboardLoaderData>()
   const navigate = useNavigate()
+  const navigation = useNavigation()
+  const revalidator = useRevalidator()
   const [searchParams, setSearchParams] = useSearchParams()
+  const fetcher = useFetcher<DashboardActionData>()
+
+  const { user } = useAuth()
 
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
-  const [viewMode, setViewMode] = useState(defaultViewMode)
+  const [viewMode, setViewMode] = useState(loaderData.viewMode)
   const isAboveLgBreakpoint = useBreakpoint('lg')
 
-  const [projects, setProjects] = useState<Project[]>([])
-  const [paginationTotal, setPaginationTotal] = useState(0)
+  const projects = useMemo(() => loaderData.projects?.results || [], [loaderData.projects?.results])
+  const paginationTotal = loaderData.projects?.total || 0
+
   const page = useMemo(() => {
     const pageParam = searchParams.get('page')
 
@@ -75,32 +79,32 @@ const Dashboard = () => {
     return parsedPage
   }, [searchParams])
 
-  const [pageSize, setPageSize] = useState(() => {
+  const pageSize = useMemo(() => {
     const pageSizeParam = searchParams.get('pageSize')
     return pageSizeParam && PAGE_SIZE_OPTIONS.includes(parseInt(pageSizeParam, 10))
       ? parseInt(pageSizeParam, 10)
       : PAGE_SIZE_OPTIONS[0]
-  })
-  const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  }, [searchParams])
+
+  const isLoading = navigation.state === 'loading' || revalidator.state === 'loading'
   const [liveStats, setLiveStats] = useState<Record<string, number>>({})
   const [overallStats, setOverallStats] = useState<Overall>({})
+  const { fetchLiveVisitors } = useLiveVisitorsProxy()
+  const { fetchOverallStats } = useOverallStatsProxy()
 
-  const [activePeriod, setActivePeriod] = useState(() => {
-    const periodParam = searchParams.get('period')
-    return periodParam || '7d'
-  })
+  const activePeriod = useMemo(() => {
+    return searchParams.get('period') || '7d'
+  }, [searchParams])
 
-  const [sortBy, setSortBy] = useState(() => {
+  const sortBy = useMemo(() => {
     const sortParam = searchParams.get('sort')
     return sortParam && Object.values(SORT_OPTIONS).includes(sortParam as any) ? sortParam : SORT_OPTIONS.ALPHA_ASC
-  })
+  }, [searchParams])
 
   // New project modal state
   const [newProjectModalOpen, setNewProjectModalOpen] = useState(false)
   const [newProjectName, setNewProjectName] = useState('')
   const [newProjectOrganisationId, setNewProjectOrganisationId] = useState<string | undefined>(undefined)
-  const [isNewProjectLoading, setIsNewProjectLoading] = useState(false)
   const [newProjectError, setNewProjectError] = useState<string | null>(null)
   const [newProjectBeenSubmitted, setNewProjectBeenSubmitted] = useState(false)
 
@@ -120,44 +124,34 @@ const Dashboard = () => {
   const pageAmount = Math.ceil(paginationTotal / pageSize)
 
   // This search represents what's inside the search input
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(searchParams.get('search') || '')
   const debouncedSearch = useDebounce(search, 500)
 
-  // Update URL only when values are explicitly changed
   const updateURL = (params: Record<string, string>) => {
     const newSearchParams = new URLSearchParams(searchParams)
     Object.entries(params).forEach(([key, value]) => {
-      newSearchParams.set(key, value)
+      if (value) {
+        newSearchParams.set(key, value)
+      } else {
+        newSearchParams.delete(key)
+      }
     })
     setSearchParams(newSearchParams)
   }
 
-  const setPage = (newPage: number) => {
-    const newSearchParams = new URLSearchParams(searchParams)
-    newSearchParams.set('page', newPage.toString())
-    setSearchParams(newSearchParams)
-  }
-
   const handlePageChange = (newPage: number) => {
-    setPage(newPage)
     updateURL({ page: newPage.toString() })
   }
 
   const handlePageSizeChange = (size: number) => {
-    setPageSize(size)
-    setPage(1)
     updateURL({ pageSize: size.toString(), page: '1' })
   }
 
   const handlePeriodChange = (period: string) => {
-    setActivePeriod(period)
-    setPage(1)
     updateURL({ period, page: '1' })
   }
 
   const handleSortChange = (sort: string) => {
-    setSortBy(sort)
-    setPage(1)
     updateURL({ sort, page: '1' })
   }
 
@@ -191,11 +185,23 @@ const Dashboard = () => {
     return { errors, valid: _isEmpty(_keys(errors)) }
   }
 
-  const onCreateProject = async () => {
-    if (isNewProjectLoading) {
-      return
+  // Handle fetcher responses for create project
+  useEffect(() => {
+    if (fetcher.data?.success && fetcher.data?.intent === 'create-project') {
+      refetchProjects()
+      toast.success(t('project.settings.created'))
+      closeNewProjectModal()
+    } else if (fetcher.data?.error && fetcher.data?.intent === 'create-project') {
+      setNewProjectError(fetcher.data.error)
+      toast.error(fetcher.data.error)
+    } else if (fetcher.data?.fieldErrors?.name && fetcher.data?.intent === 'create-project') {
+      setNewProjectError(fetcher.data.fieldErrors.name)
     }
+  }, [fetcher.data, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const isNewProjectLoading = fetcher.state === 'submitting'
+
+  const onCreateProject = () => {
     setNewProjectBeenSubmitted(true)
     const { errors, valid } = validateProjectName()
 
@@ -204,33 +210,13 @@ const Dashboard = () => {
       return
     }
 
-    setIsNewProjectLoading(true)
-
-    try {
-      await createProject({
-        name: newProjectName || DEFAULT_PROJECT_NAME,
-        organisationId: newProjectOrganisationId,
-      })
-
-      await refetchProjects()
-
-      toast.success(t('project.settings.created'))
-      closeNewProjectModal()
-    } catch (reason: unknown) {
-      console.error('[ERROR] Error while creating project:', reason)
-
-      const normalizedMessage =
-        typeof reason === 'string'
-          ? reason
-          : (reason as any)?.response?.data?.message ||
-            (reason as any)?.message ||
-            t('apiNotifications.somethingWentWrong')
-
-      setNewProjectError(normalizedMessage)
-      toast.error(normalizedMessage)
-    } finally {
-      setIsNewProjectLoading(false)
+    const formData = new FormData()
+    formData.set('intent', 'create-project')
+    formData.set('name', newProjectName || DEFAULT_PROJECT_NAME)
+    if (newProjectOrganisationId) {
+      formData.set('organisationId', newProjectOrganisationId)
     }
+    fetcher.submit(formData, { method: 'post' })
   }
 
   const closeNewProjectModal = () => {
@@ -245,25 +231,8 @@ const Dashboard = () => {
     setNewProjectBeenSubmitted(false)
   }
 
-  const refetchProjects = async () => {
-    await loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activePeriod, sortBy)
-  }
-
-  const loadProjects = async (take: number, skip: number, search?: string, period?: string, sort?: string) => {
-    if (isLoading) {
-      return
-    }
-    setIsLoading(true)
-
-    try {
-      const result = await getProjects(take, skip, search, period, sort)
-      setProjects(result.results)
-      setPaginationTotal(result.total)
-    } catch (reason: any) {
-      setError(reason)
-    } finally {
-      setIsLoading(false)
-    }
+  const refetchProjects = () => {
+    revalidator.revalidate()
   }
 
   // Redirect to onboarding if user hasn't completed it
@@ -274,15 +243,14 @@ const Dashboard = () => {
     }
   }, [user, navigate])
 
+  // Update URL when debounced search changes
   useEffect(() => {
-    if (authLoading) {
-      return
+    const currentSearch = searchParams.get('search') || ''
+    if (debouncedSearch !== currentSearch) {
+      updateURL({ search: debouncedSearch, page: '1' })
     }
-
-    loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activePeriod, sortBy)
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, debouncedSearch, activePeriod, authLoading, sortBy])
+  }, [debouncedSearch])
 
   // Set up interval for live visitors
   useEffect(() => {
@@ -291,60 +259,43 @@ const Dashboard = () => {
 
       try {
         const projectIds = projects.map((p) => p.id)
-        const stats = await getLiveVisitors(projectIds)
-        setLiveStats(stats)
+        const stats = await fetchLiveVisitors(projectIds)
+        if (stats) {
+          setLiveStats(stats)
+        }
       } catch (reason) {
         console.error('Failed to fetch live visitors:', reason)
       }
     }
 
-    const updateOverallStats = async (projectIds: string[]) => {
-      if (!projectIds.length) return
+    updateLiveVisitors()
+
+    const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
+
+    return () => clearInterval(interval)
+  }, [projects, fetchLiveVisitors]) // Reset interval when projects change
+
+  // Fetch overall stats when projects or period changes
+  useEffect(() => {
+    const updateOverallStats = async () => {
+      if (!projects.length) return
 
       try {
-        const timeBucket = tbPeriodPairs(t).find((p) => p.period === activePeriod)?.tbs[0] || ''
-        const stats = await getOverallStats(
-          projectIds,
-          timeBucket,
-          activePeriod,
-          '',
-          '',
-          'Etc/GMT',
-          '',
-          undefined,
-          true,
-        )
-        setOverallStats((prev) => ({ ...prev, ...stats }))
+        const projectIds = projects.map((p) => p.id)
+        const stats = await fetchOverallStats(projectIds, {
+          period: activePeriod,
+          timezone: user?.timezone || 'UTC',
+        })
+        if (stats) {
+          setOverallStats(stats)
+        }
       } catch (reason) {
         console.error('Failed to fetch overall stats:', reason)
       }
     }
 
-    const updateAllOverallStats = async () => {
-      await updateOverallStats(projects.map((p) => p.id))
-    }
-
-    updateLiveVisitors()
-    updateAllOverallStats()
-
-    const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
-
-    return () => clearInterval(interval)
-  }, [projects, activePeriod, t]) // Reset interval when projects change
-
-  if (error && isLoading === false) {
-    return (
-      <StatusPage
-        type='error'
-        title={t('apiNotifications.somethingWentWrong')}
-        description={t('apiNotifications.errorCode', { error })}
-        actions={[
-          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
-          { label: t('notFoundPage.support'), to: routes.contact },
-        ]}
-      />
-    )
-  }
+    updateOverallStats()
+  }, [projects, activePeriod, user?.timezone, fetchOverallStats])
 
   const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
@@ -424,13 +375,9 @@ const Dashboard = () => {
                 <PeriodSelector
                   activePeriod={activePeriod}
                   setActivePeriod={handlePeriodChange}
-                  isLoading={isLoading === null || isLoading}
+                  isLoading={isLoading}
                 />
-                <SortSelector
-                  activeSort={sortBy}
-                  setActiveSort={handleSortChange}
-                  isLoading={isLoading === null || isLoading}
-                />
+                <SortSelector activeSort={sortBy} setActiveSort={handleSortChange} isLoading={isLoading} />
                 <div className='hidden lg:block'>
                   {viewMode === DASHBOARD_VIEW.GRID ? (
                     <button
@@ -488,48 +435,31 @@ const Dashboard = () => {
                 </div>
               </div>
             ) : null}
-            {isLoading || isLoading === null ? (
-              <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                <ProjectCardSkeleton viewMode={_viewMode} />
-              </div>
+            {isLoading && !_isEmpty(projects) ? <LoadingBar /> : null}
+            {_isEmpty(projects) ? (
+              <NoProjects search={debouncedSearch} onClick={onNewProject} />
             ) : (
-              <ClientOnly
-                fallback={
-                  <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                    <ProjectCardSkeleton viewMode={_viewMode} />
-                  </div>
-                }
-              >
-                {() => (
-                  <>
-                    {_isEmpty(projects) ? (
-                      <NoProjects search={debouncedSearch} onClick={onNewProject} />
-                    ) : (
-                      <div
-                        className={cx(
-                          'grid gap-3',
-                          _viewMode === DASHBOARD_VIEW.GRID ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1',
-                        )}
-                      >
-                        {_map(projects, (project) => (
-                          <ProjectCard
-                            key={`${project.id}-${project.name}`}
-                            project={project}
-                            live={liveStats[project.id] ?? (_isEmpty(liveStats) ? null : 'N/A')}
-                            overallStats={overallStats[project.id]}
-                            activePeriod={activePeriod}
-                            viewMode={_viewMode}
-                            refetchProjects={refetchProjects}
-                          />
-                        ))}
-                        {_size(projects) % 12 !== 0 ? (
-                          <AddProject sitesCount={_size(projects)} onClick={onNewProject} viewMode={_viewMode} />
-                        ) : null}
-                      </div>
-                    )}
-                  </>
+              <div
+                className={cx(
+                  'grid gap-3',
+                  _viewMode === DASHBOARD_VIEW.GRID ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1',
                 )}
-              </ClientOnly>
+              >
+                {_map(projects, (project) => (
+                  <ProjectCard
+                    key={`${project.id}-${project.name}`}
+                    project={project}
+                    live={liveStats[project.id] ?? (_isEmpty(liveStats) ? null : 'N/A')}
+                    overallStats={overallStats[project.id]}
+                    activePeriod={activePeriod}
+                    viewMode={_viewMode}
+                    refetchProjects={refetchProjects}
+                  />
+                ))}
+                {_size(projects) % 12 !== 0 ? (
+                  <AddProject sitesCount={_size(projects)} onClick={onNewProject} viewMode={_viewMode} />
+                ) : null}
+              </div>
             )}
             {paginationTotal > PAGE_SIZE_OPTIONS[0] ? (
               <Pagination
@@ -605,4 +535,4 @@ const Dashboard = () => {
   )
 }
 
-export default withAuthentication(Dashboard, auth.authenticated)
+export default memo(Dashboard)

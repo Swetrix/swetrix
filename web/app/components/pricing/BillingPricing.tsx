@@ -7,9 +7,9 @@ import _map from 'lodash/map'
 import { CircleHelpIcon } from 'lucide-react'
 import React, { memo, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { changeSubscriptionPlan, getPaymentMetainfo, previewSubscriptionUpdate } from '~/api'
 import {
   BillingFrequency,
   CURRENCIES,
@@ -19,9 +19,10 @@ import {
   PURCHASABLE_LEGACY_PLANS,
   paddleLanguageMapping,
 } from '~/lib/constants'
-import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
+import { Metainfo, DEFAULT_METAINFO } from '~/lib/models/Metainfo'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import type { BillingActionData } from '~/routes/billing'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
@@ -32,11 +33,12 @@ import routes from '~/utils/routes'
 
 interface BillingPricingProps {
   lastEvent?: { event: string } | null
+  metainfo?: Metainfo
 }
 
 const formatEventsLong = (value: number): string => value.toLocaleString('en-US')
 
-const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
+const BillingPricing = ({ lastEvent, metainfo = DEFAULT_METAINFO }: BillingPricingProps) => {
   const {
     t,
     i18n: { language },
@@ -44,12 +46,12 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
   const { isAuthenticated, user, loadUser } = useAuth()
   const { theme } = useTheme()
 
-  const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
+  const previewFetcher = useFetcher<BillingActionData>()
+  const changePlanFetcher = useFetcher<BillingActionData>()
+
   const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
   const [isNewPlanConfirmationModalOpened, setIsNewPlanConfirmationModalOpened] = useState(false)
-  const [subUpdatePreview, setSubUpdatePreview] = useState<any>(null)
   const [newPlanId, setNewPlanId] = useState<number | null>(null)
-  const [isSubUpdating, setIsSubUpdating] = useState(false)
   const [downgradeTo, setDowngradeTo] = useState<{
     planCode: string
     name: string
@@ -60,14 +62,53 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
   const [billingFrequency, setBillingFrequency] = useState(user?.billingFrequency || BillingFrequency.monthly)
   const [enableLegacyPlans, setEnableLegacyPlans] = useState(false)
 
+  const subUpdatePreview = useMemo(() => {
+    if (previewFetcher.state === 'loading' || previewFetcher.state === 'submitting') {
+      return null
+    }
+    if (previewFetcher.data?.success && previewFetcher.data.data) {
+      return previewFetcher.data.data
+    }
+    if (previewFetcher.data?.error) {
+      return false
+    }
+    return null
+  }, [previewFetcher.data, previewFetcher.state])
+
+  const isSubUpdating = changePlanFetcher.state === 'submitting' || changePlanFetcher.state === 'loading'
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const legacyParam = urlParams.get('__ENABLE_LEGACY_PLANS')
     if (legacyParam === 'true') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reading URL param once on mount
       setEnableLegacyPlans(true)
     }
   }, [])
+
+  // Handle change plan fetcher response
+  useEffect(() => {
+    if (changePlanFetcher.data?.success) {
+      loadUser()
+      toast.success(t('apiNotifications.subscriptionUpdated'))
+      closeUpdateModal(true)
+    } else if (changePlanFetcher.data?.error) {
+      console.error('[ERROR] An error occured while updating subscription:', changePlanFetcher.data.error)
+      toast.error('An error occured while updating subscription')
+      closeUpdateModal(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [changePlanFetcher.data])
+
+  // Handle preview fetcher error
+  useEffect(() => {
+    if (previewFetcher.data?.error) {
+      console.error(
+        '[ERROR] An error occured while loading subscription update pricing preview:',
+        previewFetcher.data.error,
+      )
+      toast.error('An error occured while loading subscription update pricing preview')
+    }
+  }, [previewFetcher.data?.error])
 
   const PLAN_CODES_ARRAY = useMemo(() => {
     let basePlans = STANDARD_PLANS
@@ -80,7 +121,6 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
 
     const userPlan = user?.planCode
 
-    // Hide non-purchasable pseudo-plans from the list
     if (userPlan === 'trial' || userPlan === 'none') {
       return basePlans
     }
@@ -90,14 +130,6 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
 
   const currencyCode = user?.tierCurrency || metainfo.code
   const currency = CURRENCIES[currencyCode]
-
-  useEffect(() => {
-    const abortController = new AbortController()
-    getPaymentMetainfo({ signal: abortController.signal })
-      .then(setMetainfo)
-      .catch(() => {})
-    return () => abortController.abort()
-  }, [])
 
   useEffect(() => {
     if (!lastEvent) return
@@ -119,16 +151,12 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
     lastEventHandler(lastEvent)
   }, [lastEvent, t, loadUser])
 
-  const loadSubUpdatePreview = async (planId: number) => {
+  const loadSubUpdatePreview = (planId: number) => {
     setIsNewPlanConfirmationModalOpened(true)
-    try {
-      const preview = await previewSubscriptionUpdate(planId)
-      setSubUpdatePreview(preview)
-    } catch (reason) {
-      console.error('[ERROR] An error occured while loading subscription update pricing preview:', reason)
-      toast.error('An error occured while loading subscription update pricing preview')
-      setSubUpdatePreview(false)
-    }
+    previewFetcher.submit(
+      { intent: 'preview-subscription-update', planId: String(planId) },
+      { method: 'POST', action: '/billing' },
+    )
   }
 
   const onPlanChange = async (tier: any) => {
@@ -144,7 +172,7 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
     if (user.subID && !user.cancellationEffectiveDate && user.planCode !== 'none') {
       const planId = Number(billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid)
       setNewPlanId(planId)
-      await loadSubUpdatePreview(planId)
+      loadSubUpdatePreview(planId)
       return
     }
 
@@ -170,23 +198,14 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
   const closeUpdateModal = (force?: boolean) => {
     if (isSubUpdating && !force) return
     setIsNewPlanConfirmationModalOpened(false)
-    setSubUpdatePreview(null)
     setNewPlanId(null)
-    setIsSubUpdating(false)
   }
 
-  const updateSubscription = async () => {
-    setIsSubUpdating(true)
-    try {
-      await changeSubscriptionPlan(newPlanId as number)
-      await loadUser()
-      toast.success(t('apiNotifications.subscriptionUpdated'))
-      closeUpdateModal(true)
-    } catch (reason) {
-      console.error('[ERROR] An error occured while updating subscription:', reason)
-      toast.error('An error occured while updating subscription')
-      closeUpdateModal(true)
-    }
+  const updateSubscription = () => {
+    changePlanFetcher.submit(
+      { intent: 'change-subscription-plan', planId: String(newPlanId) },
+      { method: 'POST', action: '/billing' },
+    )
   }
 
   const downgradeHandler = (tier: any) => {
@@ -415,7 +434,7 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
                 />
               </p>
             ) : null}
-            {subUpdatePreview ? (
+            {subUpdatePreview && typeof subUpdatePreview === 'object' ? (
               <div>
                 <h2 className='text-base font-bold'>{t('billing.dueNow')}</h2>
                 <p className='text-sm'>{t('billing.dueNowDescription')}</p>
@@ -440,27 +459,35 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
                     <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
                       <tr>
                         <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 sm:pl-6 dark:text-gray-50'>
-                          {`${subUpdatePreview.immediatePayment.symbol}${subUpdatePreview.immediatePayment.amount}`}
+                          {`${(subUpdatePreview as any).immediatePayment.symbol}${(subUpdatePreview as any).immediatePayment.amount}`}
                         </td>
                         <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-50'>
                           {language === 'en'
-                            ? dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('MMMM D, YYYY')
-                            : dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('D MMMM, YYYY')}
+                            ? dayjs((subUpdatePreview as any).immediatePayment.date)
+                                .locale(language)
+                                .format('MMMM D, YYYY')
+                            : dayjs((subUpdatePreview as any).immediatePayment.date)
+                                .locale(language)
+                                .format('D MMMM, YYYY')}
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-                {subUpdatePreview.immediatePayment.amount < 0 ? (
+                {(subUpdatePreview as any).immediatePayment.amount < 0 ? (
                   <p className='mt-2 italic'>
                     {t('billing.negativePayment', {
-                      currency: subUpdatePreview.immediatePayment.symbol,
-                      dueNowAmount: -subUpdatePreview.immediatePayment.amount,
+                      currency: (subUpdatePreview as any).immediatePayment.symbol,
+                      dueNowAmount: -(subUpdatePreview as any).immediatePayment.amount,
                       dueNowDate:
                         language === 'en'
-                          ? dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('MMMM D, YYYY')
-                          : dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('D MMMM, YYYY'),
-                      nextPaymentAmount: subUpdatePreview.nextPayment.amount,
+                          ? dayjs((subUpdatePreview as any).immediatePayment.date)
+                              .locale(language)
+                              .format('MMMM D, YYYY')
+                          : dayjs((subUpdatePreview as any).immediatePayment.date)
+                              .locale(language)
+                              .format('D MMMM, YYYY'),
+                      nextPaymentAmount: (subUpdatePreview as any).nextPayment.amount,
                     })}
                   </p>
                 ) : null}
@@ -486,12 +513,16 @@ const BillingPricing = ({ lastEvent }: BillingPricingProps) => {
                     <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
                       <tr>
                         <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 sm:pl-6 dark:text-gray-50'>
-                          {`${subUpdatePreview.nextPayment.symbol}${subUpdatePreview.nextPayment.amount}`}
+                          {`${(subUpdatePreview as any).nextPayment.symbol}${(subUpdatePreview as any).nextPayment.amount}`}
                         </td>
                         <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-50'>
                           {language === 'en'
-                            ? dayjs(subUpdatePreview.nextPayment.date).locale(language).format('MMMM D, YYYY')
-                            : dayjs(subUpdatePreview.nextPayment.date).locale(language).format('D MMMM, YYYY')}
+                            ? dayjs((subUpdatePreview as any).nextPayment.date)
+                                .locale(language)
+                                .format('MMMM D, YYYY')
+                            : dayjs((subUpdatePreview as any).nextPayment.date)
+                                .locale(language)
+                                .format('D MMMM, YYYY')}
                         </td>
                       </tr>
                     </tbody>

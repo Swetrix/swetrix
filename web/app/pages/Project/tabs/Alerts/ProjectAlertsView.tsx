@@ -17,17 +17,18 @@ import {
   FileTextIcon,
   BellOffIcon,
 } from 'lucide-react'
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import { Link, useSearchParams, useFetcher, useLoaderData, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
-import { deleteAlert as deleteAlertApi, getProjectAlerts } from '~/api'
+import type { AlertsResponse } from '~/api/api.server'
 import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import type { ProjectLoaderData, ProjectViewActionData } from '~/routes/projects.$id'
 import { Badge, type BadgeProps } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
@@ -211,19 +212,47 @@ const AlertRow = ({
   )
 }
 
-const ProjectAlerts = () => {
+interface DeferredAlertsData {
+  alertsData: AlertsResponse | null
+}
+
+function AlertsDataResolver({ children }: { children: (data: DeferredAlertsData) => React.ReactNode }) {
+  const { alertsData: alertsDataPromise } = useLoaderData<ProjectLoaderData>()
+  const alertsData = alertsDataPromise ? use(alertsDataPromise) : null
+  return <>{children({ alertsData })}</>
+}
+
+function ProjectAlertsWrapper() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <AlertsDataResolver>{(deferredData) => <ProjectAlertsInner deferredData={deferredData} />}</AlertsDataResolver>
+    </Suspense>
+  )
+}
+
+interface ProjectAlertsInnerProps {
+  deferredData: DeferredAlertsData
+}
+
+const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
   const { id, project } = useCurrentProject()
+  const revalidator = useRevalidator()
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuth()
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
+  const fetcher = useFetcher<ProjectViewActionData>()
+  const lastHandledData = useRef<ProjectViewActionData | null>(null)
 
-  const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const [total, setTotal] = useState(0)
-  const [alerts, setAlerts] = useState<Alerts[]>([])
+  // Track if we're in pagination mode
+  const [isSearchMode, setIsSearchMode] = useState(false)
+  const [total, setTotal] = useState(() => deferredData.alertsData?.total || 0)
+  const [alerts, setAlerts] = useState<Alerts[]>(() => deferredData.alertsData?.results || [])
   const [page, setPage] = useState(1)
 
   const [error, setError] = useState<string | null>(null)
+
+  const isLoading = revalidator.state === 'loading' || fetcher.state !== 'idle'
 
   const pageAmount = Math.ceil(total / DEFAULT_ALERTS_TAKE)
 
@@ -245,30 +274,58 @@ const ProjectAlerts = () => {
     return newSearchParams.toString()
   }, [searchParams])
 
-  const loadAlerts = async (take: number, skip: number) => {
-    if (isLoading) {
-      return
+  // Sync state when loader provides new data
+  useEffect(() => {
+    if (deferredData.alertsData && revalidator.state === 'idle' && !isSearchMode) {
+      setAlerts(deferredData.alertsData.results || [])
+      setTotal(deferredData.alertsData.total || 0)
     }
-    setIsLoading(true)
+  }, [revalidator.state, deferredData.alertsData, isSearchMode])
 
-    try {
-      const result = await getProjectAlerts(id, take, skip)
-      setAlerts(result.results)
-      setTotal(result.total)
-    } catch (reason: any) {
-      setError(reason)
-    } finally {
-      setIsLoading(false)
-    }
+  const loadAlerts = (take: number, skip: number) => {
+    if (fetcher.state !== 'idle') return
+    setIsSearchMode(true)
+
+    fetcher.submit(
+      { intent: 'get-project-alerts', take: String(take), skip: String(skip) },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
+  // Handle fetcher responses
   useEffect(() => {
-    if (!canManageAlerts) {
-      return
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
+    const { intent, success, data, error: fetcherError } = fetcher.data
+
+    if (success) {
+      if (intent === 'get-project-alerts' && data) {
+        const result = data as { results: Alerts[]; total: number }
+        setAlerts(result.results)
+        setTotal(result.total)
+      } else if (intent === 'delete-alert') {
+        toast.success(t('alertsSettings.alertDeleted'))
+        if (page === 1) {
+          setIsSearchMode(false)
+          revalidator.revalidate()
+        } else {
+          loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+        }
+      }
+    } else if (fetcherError) {
+      setError(fetcherError)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetcher.state, fetcher.data, t, page, revalidator])
 
-    loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
-
+  // Handle page changes - use fetcher for pagination
+  useEffect(() => {
+    if (!canManageAlerts) return
+    if (page > 1 || isSearchMode) {
+      loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, canManageAlerts])
 
@@ -322,18 +379,18 @@ const ProjectAlerts = () => {
   const handleAlertSaved = () => {
     closeAlertSettings()
     // Reload alerts after saving
-    loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+    if (page === 1) {
+      setIsSearchMode(false)
+      revalidator.revalidate()
+    } else {
+      loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+    }
   }
 
-  const onDelete = async (alertId: string) => {
-    try {
-      await deleteAlertApi(alertId)
-      toast.success(t('alertsSettings.alertDeleted'))
-      // Reload alerts after deletion
-      loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
-    } catch (reason: any) {
-      toast.error(reason?.response?.data?.message || reason?.message || 'Something went wrong')
-    }
+  const onDelete = (alertId: string) => {
+    if (fetcher.state !== 'idle') return
+
+    fetcher.submit({ intent: 'delete-alert', alertId }, { method: 'POST', action: `/projects/${id}` })
   }
 
   if (!canManageAlerts) {
@@ -355,7 +412,7 @@ const ProjectAlerts = () => {
     )
   }
 
-  if (error && isLoading === false) {
+  if (error && !isLoading) {
     return (
       <StatusPage
         type='error'
@@ -366,14 +423,6 @@ const ProjectAlerts = () => {
           { label: t('notFoundPage.support'), to: routes.contact },
         ]}
       />
-    )
-  }
-
-  if (isLoading || isLoading === null) {
-    return (
-      <div className='mt-4'>
-        <Loader />
-      </div>
     )
   }
 
@@ -455,5 +504,7 @@ const ProjectAlerts = () => {
     </>
   )
 }
+
+const ProjectAlerts = ProjectAlertsWrapper
 
 export default ProjectAlerts

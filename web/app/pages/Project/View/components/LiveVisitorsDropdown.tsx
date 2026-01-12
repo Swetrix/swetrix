@@ -4,7 +4,8 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { getLiveVisitorsInfo, GetLiveVisitorsInfo } from '~/api'
+import type { LiveVisitorInfo } from '~/api/api.server'
+import { useLiveVisitorsProxy } from '~/hooks/useAnalyticsProxy'
 import { PROJECT_TABS } from '~/lib/constants'
 import Flag from '~/ui/Flag'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
@@ -12,23 +13,23 @@ import Spin from '~/ui/icons/Spin'
 import OutsideClickHandler from '~/ui/OutsideClickHandler'
 import { cn } from '~/utils/generic'
 
-import { useCurrentProject, useProjectPassword } from '../../../../providers/CurrentProjectProvider'
+import { useCurrentProject } from '../../../../providers/CurrentProjectProvider'
 
 const LiveVisitorsDropdown = () => {
   const { id, liveVisitors, updateLiveVisitors } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const { t } = useTranslation()
   const [isDropdownVisible, setIsDropdownVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [liveInfo, setLiveInfo] = useState<GetLiveVisitorsInfo[]>([])
+  const [liveInfo, setLiveInfo] = useState<LiveVisitorInfo[]>([])
+  const { fetchLiveVisitorsInfo } = useLiveVisitorsProxy()
 
   const getLiveVisitors = async () => {
     setIsLoading(true)
 
     try {
       // Getting live sessions list and updating live visitors count to make sure it matches the list length
-      const [info] = await Promise.all([getLiveVisitorsInfo(id, projectPassword), updateLiveVisitors()])
-      setLiveInfo(info)
+      const [info] = await Promise.all([fetchLiveVisitorsInfo(id), updateLiveVisitors()])
+      setLiveInfo(info || [])
     } catch (reason) {
       console.error('[LiveVisitorsDropdown] getLiveVisitors:', reason)
     }

@@ -329,8 +329,6 @@ export const getOgImageUrl = (title: string) => {
 // Cookies
 export const CONFIRMATION_TIMEOUT = 'confirmation_timeout'
 export const LOW_EVENTS_WARNING = 'low_events_warning'
-export const TOKEN = 'access_token'
-export const REFRESH_TOKEN = 'refresh_token'
 
 // LocalStorage
 export const LS_PROJECTS_PROTECTED_KEY = 'projects_protected'

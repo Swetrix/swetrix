@@ -10,7 +10,11 @@ export const getCookie = (key: string) => {
   const match = document.cookie.match(new RegExp(`(^| )${key}=([^;]+)`))
 
   if (match) {
-    return match[2]
+    try {
+      return decodeURIComponent(match[2])
+    } catch {
+      return match[2]
+    }
   }
 
   return null
@@ -26,13 +30,4 @@ export const setCookie = (key: string, value: string | number | boolean, maxAge 
   }
 
   document.cookie = generateCookieString(key, value, maxAge, sameSite)
-}
-
-export const deleteCookie = (key: string) => {
-  if (!isBrowser) {
-    return null
-  }
-
-  document.cookie = `${key}=; max-age=0; path=/; SameSite=strict`
-  document.cookie = `${key}=; max-age=0; path=/; SameSite=strict${COOKIE_SUFFIX}`
 }

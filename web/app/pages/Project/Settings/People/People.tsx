@@ -7,15 +7,16 @@ import _map from 'lodash/map'
 import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
-import { deleteShareProjectUsers, shareProject, changeShareRole } from '~/api'
 import useOnClickOutside from '~/hooks/useOnClickOutside'
 import { roles, INVITATION_EXPIRES_IN, isSelfhosted } from '~/lib/constants'
 import { Role } from '~/lib/models/Organisation'
 import { Project, ShareOwnerProject } from '~/lib/models/Project'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
+import { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
@@ -39,26 +40,36 @@ interface TableUserRowProps {
   onRemove: () => void
   language: string
   authedUserEmail: string | undefined
-  reloadProject: () => Promise<void>
+  projectId: string
 }
 
-const TableUserRow = ({ data, onRemove, language, authedUserEmail, reloadProject }: TableUserRowProps) => {
+const TableUserRow = ({ data, onRemove, language, authedUserEmail, projectId }: TableUserRowProps) => {
   const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const openRef = useRef<HTMLUListElement>(null)
   useOnClickOutside(openRef, () => setOpen(false))
+  const fetcher = useFetcher<ProjectSettingsActionData>()
+  const revalidator = useRevalidator()
   const { id, created, confirmed, role, user } = data || {}
 
-  const changeRole = async (newRole: string) => {
-    try {
-      await changeShareRole(id, { role: newRole })
-      await reloadProject()
-      toast.success(t('apiNotifications.roleUpdated'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while updating user's role: ${reason}`)
-      toast.error(t('apiNotifications.roleUpdateError'))
+  useEffect(() => {
+    if (fetcher.state === 'idle' && fetcher.data) {
+      if (fetcher.data.intent === 'change-share-role') {
+        if (fetcher.data.success) {
+          toast.success(t('apiNotifications.roleUpdated'))
+          revalidator.revalidate()
+        } else if (fetcher.data.error) {
+          toast.error(fetcher.data.error)
+        }
+      }
     }
+  }, [fetcher.state, fetcher.data, t, revalidator])
 
+  const changeRole = (newRole: string) => {
+    fetcher.submit(
+      { intent: 'change-share-role', shareId: id, role: newRole },
+      { method: 'POST', action: `/projects/settings/${projectId}` },
+    )
     setOpen(false)
   }
 
@@ -140,11 +151,11 @@ const TableUserRow = ({ data, onRemove, language, authedUserEmail, reloadProject
 
 interface PeopleProps {
   project: Project
-  reloadProject: () => Promise<void>
 }
 
-const People = ({ project, reloadProject }: PeopleProps) => {
+const People = ({ project }: PeopleProps) => {
   const { user: currentUser } = useAuth()
+  const fetcher = useFetcher<ProjectSettingsActionData>()
 
   const [showModal, setShowModal] = useState(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
@@ -167,10 +178,40 @@ const People = ({ project, reloadProject }: PeopleProps) => {
   const [validated, setValidated] = useState(false)
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
   const [memberToRemove, setMemberToRemove] = useState<ShareOwnerProject | null>(null)
 
   const { id, name, share } = project
+
+  const isSubmitting = fetcher.state !== 'idle'
+
+  useEffect(() => {
+    if (fetcher.state === 'idle' && fetcher.data) {
+      if (fetcher.data.intent === 'share-project') {
+        if (fetcher.data.success) {
+          toast.success(t('apiNotifications.userInvited'))
+          setTimeout(() => {
+            setShowModal(false)
+            setBeenSubmitted(false)
+            setErrors({})
+            setValidated(false)
+          }, 0)
+          setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
+        } else if (fetcher.data.error) {
+          toast.error(fetcher.data.error)
+        }
+      } else if (fetcher.data.intent === 'delete-share-user') {
+        if (fetcher.data.success) {
+          toast.success(t('apiNotifications.userRemoved'))
+          setTimeout(() => {
+            setShowDeleteModal(false)
+            setMemberToRemove(null)
+          }, 0)
+        } else if (fetcher.data.error) {
+          toast.error(fetcher.data.error)
+        }
+      }
+    }
+  }, [fetcher.state, fetcher.data, t])
 
   const validate = () => {
     const allErrors: {
@@ -194,7 +235,7 @@ const People = ({ project, reloadProject }: PeopleProps) => {
 
   useEffect(() => {
     if (showModal) {
-      validate()
+      setTimeout(() => validate(), 0)
     }
   }, [form]) // eslint-disable-line
 
@@ -207,22 +248,11 @@ const People = ({ project, reloadProject }: PeopleProps) => {
     }))
   }
 
-  const onSubmit = async () => {
-    setShowModal(false)
-    setErrors({})
-    setValidated(false)
-
-    try {
-      await shareProject(id, { email: form.email, role: form.role })
-      await reloadProject()
-      toast.success(t('apiNotifications.userInvited'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while inviting a user: ${reason}`)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.userInviteError'))
-    }
-
-    // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
+  const onSubmit = () => {
+    fetcher.submit(
+      { intent: 'share-project', email: form.email, role: form.role },
+      { method: 'POST', action: `/projects/settings/${id}` },
+    )
   }
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -239,28 +269,17 @@ const People = ({ project, reloadProject }: PeopleProps) => {
 
   const closeModal = () => {
     setShowModal(false)
+    setBeenSubmitted(false)
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
     setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
     setErrors({})
   }
 
-  const onRemove = async (member: ShareOwnerProject) => {
-    if (isDeleting) {
-      return
-    }
-
-    setIsDeleting(true)
-
-    try {
-      await deleteShareProjectUsers(id, member.id)
-      await reloadProject()
-      toast.success(t('apiNotifications.userRemoved'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while deleting a user: ${reason}`)
-      toast.error(t('apiNotifications.userRemoveError'))
-    } finally {
-      setIsDeleting(false)
-    }
+  const onRemove = (member: ShareOwnerProject) => {
+    fetcher.submit(
+      { intent: 'delete-share-user', shareId: member.id },
+      { method: 'POST', action: `/projects/settings/${id}` },
+    )
   }
 
   return (
@@ -313,7 +332,7 @@ const People = ({ project, reloadProject }: PeopleProps) => {
                     }}
                     language={language}
                     authedUserEmail={currentUser?.email}
-                    reloadProject={reloadProject}
+                    projectId={id}
                   />
                 ))}
               </tbody>
@@ -328,8 +347,8 @@ const People = ({ project, reloadProject }: PeopleProps) => {
           setMemberToRemove(null)
         }}
         onSubmit={() => {
-          setShowDeleteModal(false)
-          onRemove(memberToRemove!)
+          if (!memberToRemove) return
+          onRemove(memberToRemove)
         }}
         submitText={t('common.yes')}
         type='confirmed'
@@ -337,7 +356,7 @@ const People = ({ project, reloadProject }: PeopleProps) => {
         title={t('project.settings.removeUser', { user: memberToRemove?.user?.email })}
         message={t('project.settings.removeConfirm')}
         isOpened={showDeleteModal}
-        isLoading={isDeleting}
+        isLoading={isSubmitting ? fetcher.formData?.get('intent') === 'delete-share-user' : undefined}
       />
       <Modal
         onClose={closeModal}

@@ -26,11 +26,17 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
 
   useEffect(() => {
     let animationFrameId: number
+    let lastRenderedProgress = 0
 
     const animate = () => {
       const elapsed = Date.now() - startTimeRef.current
       const newProgress = Math.min((elapsed / REFRESH_INTERVAL_MS) * 100, 100)
-      setProgress(newProgress)
+
+      // Only update state if progress changed by at least 1% (reduces re-renders)
+      if (Math.abs(newProgress - lastRenderedProgress) >= 1 || newProgress >= 100) {
+        lastRenderedProgress = newProgress
+        setProgress(newProgress)
+      }
 
       // Check if we should trigger auto-refresh
       if (newProgress >= 100 && !hasTriggeredRefresh.current && !isRefreshing && !authLoading && !dataLoading) {

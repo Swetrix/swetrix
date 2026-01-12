@@ -13,20 +13,16 @@ import { XMarkIcon, ClipboardIcon, CheckIcon as HeroCheckIcon } from '@heroicons
 import cx from 'clsx'
 import _map from 'lodash/map'
 import { Trash2Icon, PlusIcon, CodeIcon, ChevronDownIcon, ChevronsUpDownIcon, CheckIcon } from 'lucide-react'
-import { useState, useEffect, useCallback, Fragment } from 'react'
+import { useState, useEffect, useCallback, Fragment, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import {
-  getFeatureFlag,
-  createFeatureFlag,
-  updateFeatureFlag,
-  getFilters,
-  type CreateFeatureFlag,
-  type TargetingRule,
-} from '~/api'
+import type { ProjectFeatureFlag, TargetingRule } from '~/api/api.server'
+import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { API_URL, isSelfhosted } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import FilterValueInput, { filterCategoryIcons } from '~/ui/FilterValueInput'
@@ -64,9 +60,11 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
   } = useTranslation()
   const { theme } = useTheme()
   const isNew = !flagId
+  const fetcher = useFetcher<ProjectViewActionData>()
+  const lastHandledData = useRef<ProjectViewActionData | null>(null)
+  const { fetchFilters } = useFiltersProxy()
 
   const [isLoading, setIsLoading] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const [showImplementation, setShowImplementation] = useState(false)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
@@ -82,6 +80,8 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
   const [targetingRules, setTargetingRules] = useState<TargetingRule[]>([])
   const [enabled, setEnabled] = useState(true)
 
+  const isSaving = fetcher.state === 'submitting' || fetcher.state === 'loading'
+
   const resetForm = () => {
     setKey('')
     setDescription('')
@@ -94,15 +94,16 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
 
   const fetchFilterValues = useCallback(
     async (column: string) => {
-      if (filterValuesCache[column] || loadingColumns.has(column)) return
+      const cacheKey = `${projectId}-${column}`
+      if (filterValuesCache[cacheKey] || loadingColumns.has(column)) return
 
       setLoadingColumns((prev) => new Set(prev).add(column))
       try {
-        const result = await getFilters(projectId, column)
-        setFilterValuesCache((prev) => ({ ...prev, [column]: result }))
+        const result = await fetchFilters(projectId, column)
+        setFilterValuesCache((prev) => ({ ...prev, [cacheKey]: result || [] }))
       } catch (error) {
         console.error('Failed to fetch filter values:', error)
-        setFilterValuesCache((prev) => ({ ...prev, [column]: [] }))
+        setFilterValuesCache((prev) => ({ ...prev, [cacheKey]: [] }))
       } finally {
         setLoadingColumns((prev) => {
           const newSet = new Set(prev)
@@ -111,85 +112,113 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
         })
       }
     },
-    [projectId, filterValuesCache, loadingColumns],
+    [projectId, filterValuesCache, loadingColumns, fetchFilters],
   )
 
   // Pre-fetch filter values when modal opens
   useEffect(() => {
     if (isOpen) {
-      // Pre-fetch values for all targeting columns
       TARGETING_COLUMNS.forEach(({ value: column }) => {
-        if (!filterValuesCache[column] && !loadingColumns.has(column)) {
+        const cacheKey = `${projectId}-${column}`
+        if (!filterValuesCache[cacheKey] && !loadingColumns.has(column)) {
           fetchFilterValues(column)
         }
       })
     }
-  }, [isOpen, fetchFilterValues, filterValuesCache, loadingColumns])
+  }, [isOpen, fetchFilterValues, filterValuesCache, loadingColumns, projectId])
 
-  const loadFlag = async () => {
-    if (!flagId) return
-    setIsLoading(true)
-    try {
-      const flag = await getFeatureFlag(flagId)
-      setKey(flag.key)
-      setDescription(flag.description || '')
-      setFlagType(flag.flagType)
-      setRolloutPercentage(flag.rolloutPercentage)
-      setTargetingRules(flag.targetingRules || [])
-      setEnabled(flag.enabled)
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to load feature flag')
-      onClose()
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
+  // Load flag via fetcher
   useEffect(() => {
-    if (isOpen) {
-      if (flagId) {
-        loadFlag()
-      } else {
-        resetForm()
-      }
+    if (isOpen && flagId) {
+      setIsLoading(true)
+      fetcher.submit({ intent: 'get-feature-flag', flagId }, { method: 'POST' })
+    } else if (isOpen && !flagId) {
+      resetForm()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, flagId])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSaving(true)
+  useEffect(() => {
+    if (fetcher.state !== 'idle') return
 
-    try {
-      if (isNew) {
-        const data: CreateFeatureFlag = {
-          pid: projectId,
-          key,
-          description: description || undefined,
-          flagType,
-          rolloutPercentage: flagType === 'rollout' ? rolloutPercentage : 100,
-          targetingRules: targetingRules.length > 0 ? targetingRules : undefined,
-          enabled,
-        }
-        await createFeatureFlag(data)
-        toast.success(t('featureFlags.created'))
-      } else if (flagId) {
-        await updateFeatureFlag(flagId, {
-          key,
-          description: description || null,
-          flagType,
-          rolloutPercentage: flagType === 'rollout' ? rolloutPercentage : 100,
-          targetingRules: targetingRules.length > 0 ? targetingRules : null,
-          enabled,
-        })
-        toast.success(t('featureFlags.updated'))
+    if (isLoading) {
+      setIsLoading(false)
+    }
+
+    if (!fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
+    if (fetcher.data.intent === 'get-feature-flag') {
+      if (fetcher.data.success && fetcher.data.data) {
+        const flag = fetcher.data.data as ProjectFeatureFlag
+        setKey(flag.key)
+        setDescription(flag.description || '')
+        setFlagType(flag.flagType)
+        setRolloutPercentage(flag.rolloutPercentage)
+        setTargetingRules(flag.targetingRules || [])
+        setEnabled(flag.enabled)
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+        onClose()
       }
-      onSuccess()
-      onClose()
-    } catch (err: any) {
-      toast.error(err?.message || t('apiNotifications.somethingWentWrong'))
-    } finally {
-      setIsSaving(false)
+    } else if (fetcher.data.intent === 'create-feature-flag') {
+      if (fetcher.data.success) {
+        toast.success(t('featureFlags.created'))
+        onSuccess()
+        onClose()
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+      }
+    } else if (fetcher.data.intent === 'update-feature-flag') {
+      if (fetcher.data.success) {
+        toast.success(t('featureFlags.updated'))
+        onSuccess()
+        onClose()
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+      }
+    }
+  }, [fetcher.data, fetcher.state, t, onSuccess, onClose, isLoading])
+
+  // Reset ref when modal opens to allow fresh data handling
+  useEffect(() => {
+    if (isOpen) {
+      lastHandledData.current = null
+    }
+  }, [isOpen])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    lastHandledData.current = null
+
+    if (isNew) {
+      fetcher.submit(
+        {
+          intent: 'create-feature-flag',
+          key,
+          description: description || '',
+          flagType,
+          rolloutPercentage: String(flagType === 'rollout' ? rolloutPercentage : 100),
+          targetingRules: JSON.stringify(targetingRules.length > 0 ? targetingRules : []),
+          enabled: String(enabled),
+        },
+        { method: 'POST' },
+      )
+    } else if (flagId) {
+      fetcher.submit(
+        {
+          intent: 'update-feature-flag',
+          flagId,
+          key,
+          description: description || '',
+          flagType,
+          rolloutPercentage: String(flagType === 'rollout' ? rolloutPercentage : 100),
+          targetingRules: JSON.stringify(targetingRules.length > 0 ? targetingRules : []),
+          enabled: String(enabled),
+        },
+        { method: 'POST' },
+      )
     }
   }
 
@@ -203,11 +232,12 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
       // Reset filter value when column changes
       updated[index] = { ...updated[index], column: value as string, filter: '' }
       // Fetch filter values for the new column if not already cached
-      if (value && !filterValuesCache[value as string] && !loadingColumns.has(value as string)) {
+      const cacheKey = `${projectId}-${value as string}`
+      if (value && !filterValuesCache[cacheKey] && !loadingColumns.has(value as string)) {
         fetchFilterValues(value as string)
       }
     } else {
-      // @ts-expect-error - TypeScript doesn't like dynamic field assignment
+      // @ts-ignore - TypeScript doesn't like dynamic field assignment
       updated[index][field] = value
     }
     setTargetingRules(updated)
@@ -525,7 +555,7 @@ const { flags } = await response.json()
 
                               {/* Value Input with Autocomplete */}
                               <FilterValueInput
-                                items={filterValuesCache[rule.column] || []}
+                                items={filterValuesCache[`${projectId}-${rule.column}`] || []}
                                 value={rule.filter}
                                 onChange={(value) => updateTargetingRule(index, 'filter', value)}
                                 placeholder={t('featureFlags.valuePlaceholder')}

@@ -830,7 +830,7 @@ export class ProjectController {
 
     await deleteProjectRedis(pid)
 
-    return secret
+    return { captchaSecretKey: secret }
   }
 
   @Delete('/partially/:pid')

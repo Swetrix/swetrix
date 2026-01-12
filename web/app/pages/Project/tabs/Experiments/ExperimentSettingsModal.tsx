@@ -4,23 +4,21 @@ import cx from 'clsx'
 import _map from 'lodash/map'
 import _sum from 'lodash/sum'
 import { PlusIcon, Trash2Icon, ChevronDownIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import {
-  createExperiment,
-  updateExperiment,
-  getExperiment,
-  getProjectGoals,
-  getProjectFeatureFlags,
-  type ExperimentVariant,
-  type Goal,
-  type ProjectFeatureFlag,
-  type ExposureTrigger,
-  type MultipleVariantHandling,
-  type FeatureFlagMode,
-} from '~/api'
+import type {
+  ExperimentVariant,
+  Goal,
+  ProjectFeatureFlag,
+  ExposureTrigger,
+  MultipleVariantHandling,
+  FeatureFlagMode,
+} from '~/api/api.server'
+import { useExperimentProxy, useProjectGoalsProxy, useProjectFeatureFlagsProxy } from '~/hooks/useAnalyticsProxy'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
@@ -52,13 +50,19 @@ const ExperimentSettingsModal = ({
 }: ExperimentSettingsModalProps) => {
   const { t } = useTranslation()
   const isEditing = !!experimentId
+  const experimentProxy = useExperimentProxy()
+  const goalsProxy = useProjectGoalsProxy()
+  const featureFlagsProxy = useProjectFeatureFlagsProxy()
+  const fetcher = useFetcher<ProjectViewActionData>()
+  const processedRef = useRef<string | null>(null)
 
   const [isLoading, setIsLoading] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const [goals, setGoals] = useState<Goal[]>([])
   const [goalsLoading, setGoalsLoading] = useState(false)
   const [featureFlags, setFeatureFlags] = useState<ProjectFeatureFlag[]>([])
   const [featureFlagsLoading, setFeatureFlagsLoading] = useState(false)
+
+  const isSaving = fetcher.state === 'submitting'
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -105,7 +109,10 @@ const ExperimentSettingsModal = ({
     if (!experimentId) return
     setIsLoading(true)
     try {
-      const experiment = await getExperiment(experimentId)
+      const experiment = await experimentProxy.fetchExperiment(experimentId)
+      if (!experiment) {
+        throw new Error('Failed to load experiment')
+      }
       setName(experiment.name)
       setDescription(experiment.description || '')
       setFeatureFlagKey(experiment.featureFlagKey || '')
@@ -150,8 +157,10 @@ const ExperimentSettingsModal = ({
     const loadGoals = async () => {
       setGoalsLoading(true)
       try {
-        const result = await getProjectGoals(projectId, 100, 0)
-        setGoals(result.results)
+        const result = await goalsProxy.fetchGoals(projectId, { take: 100, skip: 0 })
+        if (result) {
+          setGoals(result.results)
+        }
       } catch (error) {
         console.error('Failed to load goals:', error)
       } finally {
@@ -160,7 +169,7 @@ const ExperimentSettingsModal = ({
     }
 
     loadGoals()
-  }, [isOpen, projectId])
+  }, [isOpen, projectId, goalsProxy])
 
   useEffect(() => {
     if (!isOpen || featureFlagMode !== 'link') return
@@ -168,8 +177,10 @@ const ExperimentSettingsModal = ({
     const loadFeatureFlags = async () => {
       setFeatureFlagsLoading(true)
       try {
-        const result = await getProjectFeatureFlags(projectId, 100, 0)
-        setFeatureFlags(result.results)
+        const result = await featureFlagsProxy.fetchFeatureFlags(projectId, { take: 100, skip: 0 })
+        if (result) {
+          setFeatureFlags(result.results)
+        }
       } catch (error) {
         console.error('Failed to load feature flags:', error)
       } finally {
@@ -178,7 +189,7 @@ const ExperimentSettingsModal = ({
     }
 
     loadFeatureFlags()
-  }, [isOpen, projectId, featureFlagMode])
+  }, [isOpen, projectId, featureFlagMode, featureFlagsProxy])
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -226,43 +237,60 @@ const ExperimentSettingsModal = ({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle fetcher response
+  useEffect(() => {
+    if (!fetcher.data || fetcher.state !== 'idle') return
+
+    const responseKey = `${fetcher.data.intent}-${fetcher.data.success}`
+    if (processedRef.current === responseKey) return
+    processedRef.current = responseKey
+
+    if (fetcher.data.success) {
+      const { intent } = fetcher.data
+      if (intent === 'create-experiment') {
+        toast.success(t('experiments.created'))
+      } else if (intent === 'update-experiment') {
+        toast.success(t('experiments.updated'))
+      }
+      onSuccess()
+      onClose()
+    } else if (fetcher.data.error) {
+      toast.error(fetcher.data.error)
+    }
+  }, [fetcher.data, fetcher.state, t, onSuccess, onClose])
+
+  // Reset processed ref when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      processedRef.current = null
+    }
+  }, [isOpen])
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateForm()) return
 
-    setIsSaving(true)
-    try {
-      const effectiveFlagKey = featureFlagKey.trim() || suggestedFlagKey
+    processedRef.current = null
+    const effectiveFlagKey = featureFlagKey.trim() || suggestedFlagKey
 
-      const data = {
-        pid: projectId,
-        name: name.trim(),
-        description: description.trim() || undefined,
-        exposureTrigger,
-        customEventName: exposureTrigger === 'custom_event' ? customEventName.trim() : undefined,
-        multipleVariantHandling,
-        featureFlagMode,
-        featureFlagKey: featureFlagMode === 'create' ? effectiveFlagKey || undefined : undefined,
-        existingFeatureFlagId: featureFlagMode === 'link' ? existingFeatureFlagId : undefined,
-        goalId: goalId || undefined,
-        variants,
-      }
+    const formData = new FormData()
+    formData.set('intent', isEditing ? 'update-experiment' : 'create-experiment')
+    formData.set('name', name.trim())
+    formData.set('description', description.trim())
+    formData.set('exposureTrigger', exposureTrigger)
+    formData.set('customEventName', exposureTrigger === 'custom_event' ? customEventName.trim() : '')
+    formData.set('multipleVariantHandling', multipleVariantHandling)
+    formData.set('featureFlagMode', featureFlagMode)
+    formData.set('featureFlagKey', featureFlagMode === 'create' ? effectiveFlagKey : '')
+    formData.set('existingFeatureFlagId', featureFlagMode === 'link' ? existingFeatureFlagId : '')
+    formData.set('goalId', goalId)
+    formData.set('variants', JSON.stringify(variants))
 
-      if (experimentId) {
-        await updateExperiment(experimentId, data)
-        toast.success(t('experiments.updated'))
-      } else {
-        await createExperiment(data)
-        toast.success(t('experiments.created'))
-      }
-
-      onSuccess()
-      onClose()
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || error?.message || t('apiNotifications.somethingWentWrong'))
-    } finally {
-      setIsSaving(false)
+    if (isEditing && experimentId) {
+      formData.set('experimentId', experimentId)
     }
+
+    fetcher.submit(formData, { method: 'post' })
   }
 
   const distributePercentages = (variantsList: ExperimentVariant[]): ExperimentVariant[] => {

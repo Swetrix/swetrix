@@ -7,16 +7,16 @@ import _size from 'lodash/size'
 import _split from 'lodash/split'
 import _toNumber from 'lodash/toNumber'
 import _values from 'lodash/values'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { createAlert, updateAlert, deleteAlert, CreateAlert, getAlert } from '~/api'
 import { QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useAuth } from '~/providers/AuthProvider'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
@@ -48,6 +48,9 @@ const ProjectAlertsSettings = ({
   const { user, isLoading: authLoading } = useAuth()
 
   const { t } = useTranslation('common')
+  const fetcher = useFetcher<ProjectViewActionData>()
+  const lastHandledData = useRef<ProjectViewActionData | null>(null)
+
   const [form, setForm] = useState<Partial<Alerts>>({
     pid: projectId,
     name: '',
@@ -60,7 +63,6 @@ const ProjectAlertsSettings = ({
     alertOnNewErrorsOnly: true,
     alertOnEveryCustomEvent: false,
   })
-  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
@@ -79,42 +81,55 @@ const ProjectAlertsSettings = ({
     )
   }, [user])
 
-  const loadAlert = async (id: string) => {
-    if (!isSettings) {
-      setIsLoading(false)
-      return
-    }
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
 
-    if (isLoading) {
-      return
-    }
+    const { intent, success, data, error: fetcherError } = fetcher.data
 
-    setIsLoading(true)
-
-    try {
-      const result = await getAlert(id)
-      setAlert(result)
-      setForm(result)
-    } catch (reason: any) {
-      setError(reason)
-    } finally {
-      setIsLoading(false)
+    if (success) {
+      if (intent === 'get-alert' && data) {
+        const alertData = data as Alerts
+        setAlert(alertData)
+        setForm(alertData)
+        setIsLoading(false)
+      } else if (intent === 'create-alert') {
+        toast.success(t('alertsSettings.alertCreated'))
+        onSave?.()
+      } else if (intent === 'update-alert' && data) {
+        setAlert(data as Alerts)
+        toast.success(t('alertsSettings.alertUpdated'))
+        onSave?.()
+      } else if (intent === 'delete-alert') {
+        toast.success(t('alertsSettings.alertDeleted'))
+        onSave?.()
+      }
+    } else if (fetcherError) {
+      if (intent === 'get-alert') {
+        setError(fetcherError)
+        setIsLoading(false)
+      } else {
+        toast.error(fetcherError)
+      }
     }
-  }
+  }, [fetcher.state, fetcher.data, t, onSave])
 
   useEffect(() => {
     if (authLoading) {
       return
     }
 
-    if (alertId) {
-      loadAlert(alertId)
+    if (alertId && isSettings) {
+      setIsLoading(true)
+      fetcher.submit({ intent: 'get-alert', alertId }, { method: 'POST', action: `/projects/${projectId}` })
     } else {
       setIsLoading(false)
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, alertId, isSettings])
+  }, [authLoading, alertId, isSettings, projectId])
 
   const queryTimeTMapping: Record<string, string> = useMemo(() => {
     const values = _values(QUERY_TIME)
@@ -223,63 +238,18 @@ const ProjectAlertsSettings = ({
     const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
-    setValidated(valid)
+
+    return valid
   }
 
-  const onSubmit = (data: Partial<Alerts>) => {
-    let submissionData = { ...data }
-    if (data.queryMetric === QUERY_METRIC.ERRORS) {
-      submissionData = {
-        ...submissionData,
-        queryCondition: null,
-        queryValue: null,
-        queryTime: null,
-      }
-    } else if (data.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && data.alertOnEveryCustomEvent) {
-      submissionData = {
-        ...submissionData,
-        queryCondition: null,
-        queryValue: null,
-        queryTime: null,
-      }
-    }
-
-    if (isSettings && alertId) {
-      updateAlert(alertId, submissionData)
-        .then((res) => {
-          setAlert(res)
-          toast.success(t('alertsSettings.alertUpdated'))
-          onSave?.()
-        })
-        .catch((reason) => {
-          toast.error(reason.message || reason || 'Something went wrong')
-        })
-    } else {
-      createAlert(submissionData as CreateAlert)
-        .then(() => {
-          toast.success(t('alertsSettings.alertCreated'))
-          onSave?.()
-        })
-        .catch((reason) => {
-          toast.error(reason.message || reason || 'Something went wrong')
-        })
-    }
-  }
+  const shouldIncludeQueryFields =
+    form.queryMetric !== QUERY_METRIC.ERRORS &&
+    !(form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent)
 
   const onDeleteAlert = () => {
-    if (!alertId) {
-      toast.error('Something went wrong')
-      return
-    }
+    if (!alertId || fetcher.state !== 'idle') return
 
-    deleteAlert(alertId)
-      .then(() => {
-        toast.success(t('alertsSettings.alertDeleted'))
-        onSave?.()
-      })
-      .catch((reason) => {
-        toast.error(reason.message || reason || 'Something went wrong')
-      })
+    fetcher.submit({ intent: 'delete-alert', alertId }, { method: 'POST', action: `/projects/${projectId}` })
   }
 
   useEffect(() => {
@@ -296,29 +266,12 @@ const ProjectAlertsSettings = ({
   }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
     setBeenSubmitted(true)
 
-    let currentForm = { ...form }
-    if (form.queryMetric === QUERY_METRIC.ERRORS) {
-      currentForm = {
-        ...currentForm,
-        queryCondition: null,
-        queryValue: null,
-        queryTime: null,
-      }
-    } else if (form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent) {
-      currentForm = {
-        ...currentForm,
-        queryCondition: null,
-        queryValue: null,
-        queryTime: null,
-      }
-    }
+    const isValid = validate()
 
-    if (validated) {
-      onSubmit(currentForm)
+    if (!isValid) {
+      e.preventDefault()
     }
   }
 
@@ -387,7 +340,17 @@ const ProjectAlertsSettings = ({
           </Text>
         }
       />
-      <form className='w-full pb-4' onSubmit={handleSubmit}>
+      <fetcher.Form method='POST' action={`/projects/${projectId}`} className='w-full pb-4' onSubmit={handleSubmit}>
+        <input type='hidden' name='intent' value={isSettings && alertId ? 'update-alert' : 'create-alert'} />
+        {isSettings && alertId ? <input type='hidden' name='alertId' value={alertId} /> : null}
+        <input type='hidden' name='queryMetric' value={form.queryMetric || QUERY_METRIC.PAGE_VIEWS} />
+        {shouldIncludeQueryFields && form.queryCondition ? (
+          <input type='hidden' name='queryCondition' value={form.queryCondition} />
+        ) : null}
+        {shouldIncludeQueryFields && form.queryTime ? (
+          <input type='hidden' name='queryTime' value={form.queryTime} />
+        ) : null}
+
         {!authLoading && !isIntegrationLinked ? (
           <div className='mt-2 flex items-center rounded-sm bg-blue-50 px-5 py-3 text-base whitespace-pre-wrap dark:bg-slate-800 dark:text-gray-50'>
             <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
@@ -577,7 +540,7 @@ const ProjectAlertsSettings = ({
             </Button>
           </div>
         )}
-      </form>
+      </fetcher.Form>
       <Modal
         onClose={() => setShowModal(false)}
         onSubmit={onDeleteAlert}

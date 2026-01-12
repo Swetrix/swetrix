@@ -2,25 +2,19 @@ import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import { ChevronRightIcon } from 'lucide-react'
-import type { LoaderFunction, MetaFunction } from 'react-router'
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { redirect, Link, useLoaderData } from 'react-router'
 
-import { getBlogPosts } from '~/api'
+import { getBlogPosts } from '~/api/api.server'
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 import { getTitle } from '~/utils/seo'
 
-export const loader: LoaderFunction = async () => {
+export async function loader({ request }: LoaderFunctionArgs) {
   if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/dashboard', 302)
   }
 
-  const data = await getBlogPosts()
-    .then((data) => {
-      return data
-    })
-    .catch((error) => {
-      console.error(error)
-    })
+  const data = await getBlogPosts(request)
 
   if (!data || _isEmpty(data)) {
     return null

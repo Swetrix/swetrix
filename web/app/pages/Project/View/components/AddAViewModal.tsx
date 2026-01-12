@@ -4,13 +4,15 @@ import _find from 'lodash/find'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { getFilters, createProjectView, updateProjectView } from '~/api'
+import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { FILTERS_PANELS_ORDER } from '~/lib/constants'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import { ProjectViewActionData } from '~/routes/projects.$id'
 import Combobox from '~/ui/Combobox'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
@@ -189,26 +191,26 @@ const MAX_METRICS_IN_VIEW = 3
 
 const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultView }: AddAViewModalProps) => {
   const { id } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
+  const fetcher = useFetcher<ProjectViewActionData>()
   const [name, setName] = useState(defaultView?.name || '')
   const [filterType, setFilterType] = useState('')
   const [searchList, setSearchList] = useState<any[]>([])
   const [activeFilters, setActiveFilters] = useState<FilterType[]>(defaultView?.filters || [])
   const [customEvents, setCustomEvents] = useState<Partial<ProjectViewCustomEvent>[]>(defaultView?.customEvents || [])
-  const [isViewSubmitting, setIsViewSubmitting] = useState(false)
   const [errors, setErrors] = useState<AddAViewModalErrors>({})
+  const { fetchFilters } = useFiltersProxy()
 
   const getFiltersList = useCallback(
     async (category: string) => {
-      const result = await getFilters(id, category, projectPassword)
+      const result = await fetchFilters(id, category)
 
-      setSearchList(result)
+      setSearchList(result || [])
     },
-    [id, projectPassword],
+    [id, fetchFilters],
   )
 
   useEffect(() => {
@@ -237,7 +239,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
     getFiltersList(filterType)
   }, [filterType, showModal, getFiltersList])
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setShowModal(false)
     setTimeout(() => {
       setName('')
@@ -246,7 +248,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
       setCustomEvents([])
       setErrors({})
     }, 300)
-  }
+  }, [setShowModal])
 
   const onItemSelect = (item: string) => {
     let processedItem = item
@@ -308,7 +310,30 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
     return valid
   }
 
-  const onViewCreate = async () => {
+  const isViewSubmitting = fetcher.state !== 'idle'
+  const hasHandledResponse = useRef(false)
+
+  // Reset the handled flag when fetcher starts submitting
+  useEffect(() => {
+    if (fetcher.state === 'submitting') {
+      hasHandledResponse.current = false
+    }
+  }, [fetcher.state])
+
+  // Handle fetcher response
+  useEffect(() => {
+    if (fetcher.state === 'idle' && fetcher.data && !hasHandledResponse.current) {
+      hasHandledResponse.current = true
+      if (fetcher.data.success) {
+        onSubmit()
+        closeModal()
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+      }
+    }
+  }, [fetcher.state, fetcher.data, onSubmit, closeModal])
+
+  const onViewCreate = () => {
     if (isViewSubmitting) {
       return
     }
@@ -317,24 +342,20 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
       return
     }
 
-    setIsViewSubmitting(true)
+    const formData = new FormData()
+    formData.append('filters', JSON.stringify(activeFilters))
+    formData.append('customEvents', JSON.stringify(customEvents))
+    formData.append('name', name)
 
-    try {
-      // updating an existing view
-      if (defaultView?.id) {
-        await updateProjectView(id, defaultView?.id, name, activeFilters, customEvents)
-      } else {
-        // crating a new one
-        await createProjectView(id, name, 'traffic', activeFilters, customEvents)
-      }
-    } catch (reason) {
-      console.error('[ERROR] onViewCreate:', reason)
-      toast.error(t('apiNotifications.somethingWentWrong'))
+    if (defaultView?.id) {
+      formData.append('intent', 'update-project-view')
+      formData.append('viewId', defaultView.id)
+    } else {
+      formData.append('intent', 'create-project-view')
+      formData.append('type', 'traffic')
     }
 
-    setIsViewSubmitting(false)
-    onSubmit()
-    closeModal()
+    fetcher.submit(formData, { method: 'POST' })
   }
 
   return (

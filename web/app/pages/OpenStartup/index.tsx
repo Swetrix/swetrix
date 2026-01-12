@@ -1,10 +1,9 @@
 /* eslint-disable no-useless-escape */
 import billboard, { bar, line } from 'billboard.js'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { getGeneralStats } from '~/api'
 import { LIVE_DEMO_URL } from '~/lib/constants'
 import { Stats } from '~/lib/models/Stats'
 import { nFormatterSeparated } from '~/utils/generic'
@@ -384,19 +383,18 @@ const getSettings = () => {
   }
 }
 
-const OpenStartup = () => {
-  const { t }: any = useTranslation('common')
-  const [stats, setStats] = useState<Stats>({} as Stats)
+interface OpenStartupProps {
+  stats: Stats | null
+}
 
-  const events = nFormatterSeparated(Number(stats.events), 1)
-  const users = nFormatterSeparated(Number(stats.users), 1)
-  const websites = nFormatterSeparated(Number(stats.projects), 1)
+const OpenStartup = ({ stats }: OpenStartupProps) => {
+  const { t }: any = useTranslation('common')
+
+  const events = nFormatterSeparated(Number(stats?.events || 0), 1)
+  const users = nFormatterSeparated(Number(stats?.users || 0), 1)
+  const websites = nFormatterSeparated(Number(stats?.projects || 0), 1)
 
   useEffect(() => {
-    getGeneralStats()
-      .then((stats) => setStats(stats))
-      .catch(console.error)
-
     const bbSettings = getSettings()
 
     // @ts-expect-error

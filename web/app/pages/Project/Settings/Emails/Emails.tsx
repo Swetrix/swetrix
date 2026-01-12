@@ -9,12 +9,13 @@ import _toLower from 'lodash/toLower'
 import { MailPlusIcon, Trash2Icon } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher, useParams } from 'react-router'
 import { toast } from 'sonner'
 
-import { addSubscriber, removeSubscriber, getSubscribers, updateSubscriber } from '~/api'
 import useOnClickOutside from '~/hooks/useOnClickOutside'
 import { reportFrequencyForEmailsOptions } from '~/lib/constants'
 import { Subscriber } from '~/lib/models/Subscriber'
+import { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
@@ -141,29 +142,34 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
     t,
     i18n: { language },
   } = useTranslation('common')
+  const { id: projectId } = useParams()
+  const fetcher = useFetcher<ProjectSettingsActionData>()
   const [open, setOpen] = useState(false)
   const openRef = useRef<HTMLUListElement>(null)
   useOnClickOutside(openRef, () => setOpen(false))
-  const { id, addedAt, isConfirmed, projectId, email, reportFrequency } = data || {}
+  const { id, addedAt, isConfirmed, email, reportFrequency } = data || {}
 
-  const changeRole = async (reportType: { value: string; label: string }) => {
-    try {
-      const results = await updateSubscriber(projectId, id, { reportFrequency: reportType.value })
-      setEmails((prev) => {
-        const newEmails = _map(prev, (item) => {
-          if (item.id === results.id) {
-            return results
-          }
-          return item
-        })
-        return newEmails
-      })
-      toast.success(t('apiNotifications.updatedPeriodEmailReports'))
-    } catch (reason: any) {
-      console.error(`[ERROR] Error while updating user's role: ${reason}`)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.updatedPeriodEmailReportsError'))
+  useEffect(() => {
+    if (fetcher.data?.intent === 'update-subscriber') {
+      if (fetcher.data.success && fetcher.data.subscriber) {
+        const updated = fetcher.data.subscriber
+        setEmails((prev) => _map(prev, (item) => (item.id === updated.id ? updated : item)))
+        toast.success(t('apiNotifications.updatedPeriodEmailReports'))
+      } else if (fetcher.data.error) {
+        toast.error(
+          typeof fetcher.data.error === 'string'
+            ? fetcher.data.error
+            : t('apiNotifications.updatedPeriodEmailReportsError'),
+        )
+      }
     }
+  }, [fetcher.data, setEmails, t])
 
+  const changeRole = (reportType: { value: string; label: string }) => {
+    fetcher.submit(
+      { intent: 'update-subscriber', subscriberId: id, reportFrequency: reportType.value },
+      { method: 'post', action: `/projects/settings/${projectId}` },
+    )
     setOpen(false)
   }
 
@@ -254,6 +260,9 @@ const NoSubscribers = () => {
 const Emails = ({ projectId }: { projectId: string }) => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
+  const fetcher = useFetcher<ProjectSettingsActionData>()
+  const loadFetcher = useFetcher<ProjectSettingsActionData>()
+  const removeFetcher = useFetcher<ProjectSettingsActionData>()
   const [form, setForm] = useState<{
     email: string
     reportFrequency: string
@@ -276,27 +285,60 @@ const Emails = ({ projectId }: { projectId: string }) => {
   })
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
   const [emailToRemove, setEmailToRemove] = useState<Subscriber | null>(null)
+  const removingEmailId = useRef<string | null>(null)
 
-  const getSubcribersAsync = async () => {
-    try {
-      const { subscribers, count } = await getSubscribers(projectId, pagination.page - 1, pagination.limit)
-      setPagination((oldPaggination) => ({
-        ...oldPaggination,
-        count,
-      }))
-      setEmails(subscribers)
-    } catch (reason) {
-      console.error(`[ERROR] Error while getting subscribers: ${reason}`)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const isDeleting = removeFetcher.state !== 'idle'
 
   useEffect(() => {
-    getSubcribersAsync()
+    loadFetcher.submit(
+      { intent: 'get-subscribers', offset: String(pagination.page - 1), limit: String(pagination.limit) },
+      { method: 'post', action: `/projects/settings/${projectId}` },
+    )
   }, []) // eslint-disable-line
+
+  useEffect(() => {
+    if (loadFetcher.data?.intent === 'get-subscribers') {
+      if (loadFetcher.data.success) {
+        setTimeout(() => {
+          setEmails(loadFetcher.data!.subscribers || [])
+          setPagination((old) => ({ ...old, total: loadFetcher.data!.subscribersCount || 0 }))
+        }, 0)
+      }
+      setTimeout(() => setLoading(false), 0)
+    }
+  }, [loadFetcher.data])
+
+  useEffect(() => {
+    if (fetcher.data?.intent === 'add-subscriber') {
+      if (fetcher.data.success && fetcher.data.subscriber) {
+        setTimeout(() => setEmails((prev) => [...prev, fetcher.data!.subscriber!]), 0)
+        toast.success(t('apiNotifications.userInvited'))
+      } else if (fetcher.data.error) {
+        toast.error(typeof fetcher.data.error === 'string' ? fetcher.data.error : t('apiNotifications.userInviteError'))
+      }
+    }
+  }, [fetcher.data, t])
+
+  useEffect(() => {
+    if (removeFetcher.state === 'idle' && removeFetcher.data?.intent === 'remove-subscriber') {
+      if (removeFetcher.data.success) {
+        const capturedId = removingEmailId.current
+        setTimeout(() => {
+          setEmails((prev) => _filter(prev, (s) => s.id !== capturedId))
+          setShowDeleteModal(false)
+          setEmailToRemove(null)
+        }, 0)
+        removingEmailId.current = null
+      } else if (removeFetcher.data.error) {
+        toast.error(
+          typeof removeFetcher.data.error === 'string'
+            ? removeFetcher.data.error
+            : t('apiNotifications.somethingWentWrong'),
+        )
+      }
+    }
+  }, [removeFetcher.data, removeFetcher.state, t])
 
   const validate = () => {
     const allErrors: {
@@ -316,7 +358,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
 
   useEffect(() => {
     if (showModal) {
-      validate()
+      setTimeout(() => validate(), 0)
     }
   }, [form]) // eslint-disable-line
 
@@ -329,22 +371,18 @@ const Emails = ({ projectId }: { projectId: string }) => {
     }))
   }
 
-  const onSubmit = async () => {
+  const onSubmit = () => {
     setShowModal(false)
+    setBeenSubmitted(false)
     setErrors({})
     setValidated(false)
 
-    try {
-      const results = await addSubscriber(projectId, { reportFrequency: form.reportFrequency, email: form.email })
-      setEmails([...emails, results])
-      toast.success(t('apiNotifications.userInvited'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while inviting a user: ${reason}`)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.userInviteError'))
-    }
+    fetcher.submit(
+      { intent: 'add-subscriber', email: form.email, reportFrequency: form.reportFrequency },
+      { method: 'post', action: `/projects/settings/${projectId}` },
+    )
 
-    // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', reportFrequency: '' }), 300)
+    setTimeout(() => setForm({ email: '', reportFrequency: reportFrequencyForEmailsOptions[3].value }), 300)
   }
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -361,28 +399,22 @@ const Emails = ({ projectId }: { projectId: string }) => {
 
   const closeModal = () => {
     setShowModal(false)
+    setBeenSubmitted(false)
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', reportFrequency: '' }), 300)
+    setTimeout(() => setForm({ email: '', reportFrequency: reportFrequencyForEmailsOptions[3].value }), 300)
     setErrors({})
   }
 
-  const onRemove = async (emailId: string) => {
+  const onRemove = (emailId: string) => {
     if (isDeleting) {
       return
     }
 
-    setIsDeleting(true)
-
-    try {
-      await removeSubscriber(projectId, emailId)
-      const results = _filter(emails, (s) => s.id !== emailId)
-      setEmails(results)
-    } catch (reason: any) {
-      console.error(`[ERROR] Error while deleting a email: ${reason}`)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-    } finally {
-      setIsDeleting(false)
-    }
+    removingEmailId.current = emailId
+    removeFetcher.submit(
+      { intent: 'remove-subscriber', subscriberId: emailId },
+      { method: 'post', action: `/projects/settings/${projectId}` },
+    )
   }
 
   return (
@@ -464,10 +496,9 @@ const Emails = ({ projectId }: { projectId: string }) => {
           setShowDeleteModal(false)
           setEmailToRemove(null)
         }}
-        onSubmit={async () => {
-          await onRemove(emailToRemove!.id)
-          setEmailToRemove(null)
-          setShowDeleteModal(false)
+        onSubmit={() => {
+          if (!emailToRemove) return
+          onRemove(emailToRemove.id)
         }}
         submitText={t('common.yes')}
         type='confirmed'

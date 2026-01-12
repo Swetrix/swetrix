@@ -3,20 +3,16 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import { SearchIcon, XIcon } from 'lucide-react'
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ClientOnly } from 'remix-utils/client-only'
+import { useFetcher, useLoaderData, useNavigate, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
-import { createOrganisation, getOrganisations } from '~/api'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
-import { withAuthentication, auth } from '~/hoc/protected'
 import useDebounce from '~/hooks/useDebounce'
 import { ENTRIES_PER_PAGE_DASHBOARD } from '~/lib/constants'
-import { DetailedOrganisation } from '~/lib/models/Organisation'
-import { useAuth } from '~/providers/AuthProvider'
+import type { OrganisationsActionData, OrganisationsLoaderData } from '~/routes/organisations._index'
 import Input from '~/ui/Input'
-import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import StatusPage from '~/ui/StatusPage'
@@ -28,63 +24,39 @@ import { NoOrganisations } from './NoOrganisations'
 import { OrganisationCard } from './OrganisationCard'
 
 const Organisations = () => {
-  const { isLoading: authLoading } = useAuth()
+  const loaderData = useLoaderData<OrganisationsLoaderData>()
+  const fetcher = useFetcher<OrganisationsActionData>()
+  const navigate = useNavigate()
+  const { revalidate } = useRevalidator()
 
   const { t } = useTranslation('common')
-  const [isSearchActive, setIsSearchActive] = useState(false)
+  const [isSearchActive, setIsSearchActive] = useState(() => !!loaderData?.search)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(loaderData?.search || '')
   const debouncedSearch = useDebounce<string>(search, 500)
-  const [organisations, setOrganisations] = useState<DetailedOrganisation[]>([])
-  const [paginationTotal, setPaginationTotal] = useState(0)
-  const [page, setPage] = useState(1)
 
   const [newOrganisationModalOpen, setNewOrganisationModalOpen] = useState(false)
   const [newOrganisationName, setNewOrganisationName] = useState('')
-
-  const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const [isNewOrganisationLoading, setIsNewOrganisationLoading] = useState(false)
-
-  const [error, setError] = useState<string | null>(null)
   const [newOrganisationError, setNewOrganisationError] = useState<string | null>(null)
+
+  const isNewOrganisationLoading = fetcher.state === 'submitting'
+
+  const organisations = loaderData?.organisations || []
+  const paginationTotal = loaderData?.total || 0
+  const page = loaderData?.page || 1
+  const error = loaderData?.error
 
   const pageAmount = Math.ceil(paginationTotal / ENTRIES_PER_PAGE_DASHBOARD)
 
-  const onNewOrganisation = () => {
-    setNewOrganisationModalOpen(true)
+  const updateUrlParams = (newPage: number, newSearch: string) => {
+    const params = new URLSearchParams()
+    if (newPage > 1) params.set('page', String(newPage))
+    if (newSearch) params.set('search', newSearch)
+    navigate(`${routes.organisations}${params.toString() ? `?${params.toString()}` : ''}`, { replace: true })
   }
 
-  const onCreateOrganisation = async () => {
-    if (isNewOrganisationLoading) {
-      return
-    }
-
-    setIsNewOrganisationLoading(true)
-
-    try {
-      await createOrganisation(newOrganisationName)
-
-      const result = await getOrganisations(
-        ENTRIES_PER_PAGE_DASHBOARD,
-        (page - 1) * ENTRIES_PER_PAGE_DASHBOARD,
-        debouncedSearch,
-      )
-      setOrganisations(result.results)
-      setPaginationTotal(result.total)
-
-      toast.success(t('apiNotifications.organisationCreated'))
-
-      closeNewOrganisationModal()
-    } catch (reason: any) {
-      setNewOrganisationError(reason)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.organisationCreateError'))
-    } finally {
-      setIsNewOrganisationLoading(false)
-    }
-  }
-
-  const closeNewOrganisationModal = () => {
+  const closeNewOrganisationModal = useCallback(() => {
     if (isNewOrganisationLoading) {
       return
     }
@@ -92,46 +64,73 @@ const Organisations = () => {
     setNewOrganisationModalOpen(false)
     setNewOrganisationError(null)
     setNewOrganisationName('')
-  }
-
-  const loadOrganisations = async (take: number, skip: number, search?: string) => {
-    if (isLoading) {
-      return
-    }
-    setIsLoading(true)
-
-    try {
-      const result = await getOrganisations(take, skip, search)
-      setOrganisations(result.results)
-      setPaginationTotal(result.total)
-    } catch (reason: any) {
-      setError(reason)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const reloadOrganisations = useCallback(async () => {
-    try {
-      const result = await getOrganisations(
-        ENTRIES_PER_PAGE_DASHBOARD,
-        (page - 1) * ENTRIES_PER_PAGE_DASHBOARD,
-        debouncedSearch,
-      )
-      setOrganisations(result.results)
-      setPaginationTotal(result.total)
-    } catch (reason: any) {
-      console.error(`[ERROR] Error while reloading organisations: ${reason}`)
-    }
-  }, [debouncedSearch, page])
+  }, [isNewOrganisationLoading])
 
   useEffect(() => {
-    loadOrganisations(ENTRIES_PER_PAGE_DASHBOARD, (page - 1) * ENTRIES_PER_PAGE_DASHBOARD, debouncedSearch)
+    if (debouncedSearch !== loaderData?.search) {
+      updateUrlParams(1, debouncedSearch)
+    }
+  }, [debouncedSearch]) // eslint-disable-line react-hooks/exhaustive-deps
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, debouncedSearch])
+  // Handle fetcher responses
+  useEffect(() => {
+    if (!fetcher.data) return
 
-  if (error && isLoading === false) {
+    const { intent, success, error, fieldErrors } = fetcher.data
+
+    switch (intent) {
+      case 'create-organisation':
+        if (success) {
+          revalidate()
+          toast.success(t('apiNotifications.organisationCreated'))
+          // eslint-disable-next-line
+          closeNewOrganisationModal()
+        } else if (fieldErrors?.name) {
+          setNewOrganisationError(fieldErrors.name)
+          toast.error(fieldErrors.name)
+        } else if (error) {
+          setNewOrganisationError(error)
+          toast.error(error)
+        }
+        break
+
+      case 'accept-invitation':
+        if (success) {
+          revalidate()
+          toast.success(t('apiNotifications.acceptOrganisationInvitation'))
+        } else if (error) {
+          toast.error(error)
+        }
+        break
+
+      default:
+        if (error) {
+          toast.error(error)
+        }
+        break
+    }
+  }, [fetcher.data, t, revalidate, closeNewOrganisationModal])
+
+  const onNewOrganisation = () => {
+    setNewOrganisationModalOpen(true)
+  }
+
+  const onCreateOrganisation = () => {
+    if (fetcher.state === 'submitting') {
+      return
+    }
+
+    const formData = new FormData()
+    formData.set('intent', 'create-organisation')
+    formData.set('name', newOrganisationName)
+    fetcher.submit(formData, { method: 'post' })
+  }
+
+  const setPage = (newPage: number) => {
+    updateUrlParams(newPage, debouncedSearch)
+  }
+
+  if (error) {
     return (
       <StatusPage
         type='error'
@@ -250,38 +249,18 @@ const Organisations = () => {
                 </div>
               </div>
             ) : null}
-            {authLoading || isLoading || isLoading === null ? (
-              <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                <Loader />
-              </div>
-            ) : (
-              <ClientOnly
-                fallback={
-                  <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                    <Loader />
-                  </div>
-                }
-              >
-                {() => (
-                  <div>
-                    {_isEmpty(organisations) ? (
-                      <NoOrganisations onClick={onNewOrganisation} />
-                    ) : (
-                      <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
-                        {_map(organisations, (organisation) => (
-                          <OrganisationCard
-                            key={organisation.id}
-                            organisation={organisation}
-                            reloadOrganisations={reloadOrganisations}
-                          />
-                        ))}
-                        <AddOrganisation sitesCount={_size(organisations)} onClick={onNewOrganisation} />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </ClientOnly>
-            )}
+            <div>
+              {_isEmpty(organisations) ? (
+                <NoOrganisations onClick={onNewOrganisation} />
+              ) : (
+                <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
+                  {_map(organisations, (organisation) => (
+                    <OrganisationCard key={organisation.id} organisation={organisation} />
+                  ))}
+                  <AddOrganisation sitesCount={_size(organisations)} onClick={onNewOrganisation} />
+                </div>
+              )}
+            </div>
             {pageAmount > 1 ? (
               <Pagination
                 className='mt-2'
@@ -331,4 +310,4 @@ const Organisations = () => {
   )
 }
 
-export default withAuthentication(Organisations, auth.authenticated)
+export default Organisations
