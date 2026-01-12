@@ -50,6 +50,26 @@ interface ProxyResponse<T> {
   error: string | null
 }
 
+async function postAnalytics<T>(payload: unknown): Promise<ProxyResponse<T>> {
+  const response = await fetch('/api/analytics', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  let result: ProxyResponse<T>
+  try {
+    result = (await response.json()) as ProxyResponse<T>
+  } catch {
+    throw new Error(`Invalid JSON from /api/analytics (status ${response.status})`)
+  }
+
+  if (!response.ok) {
+    throw new Error(result.error || `Request failed (status ${response.status})`)
+  }
+  return result
+}
+
 export function useSessionsProxy() {
   const [data, setData] = useState<SessionsResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -60,12 +80,7 @@ export function useSessionsProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getSessions', projectId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<SessionsResponse>
+      const result = await postAnalytics<SessionsResponse>({ action: 'getSessions', projectId, params })
       setData(result.data)
       setError(result.error)
     } catch (err) {
@@ -88,12 +103,7 @@ export function useErrorsProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getErrors', projectId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<ErrorsResponse>
+      const result = await postAnalytics<ErrorsResponse>({ action: 'getErrors', projectId, params })
       setData(result.data)
       setError(result.error)
     } catch (err) {
@@ -116,12 +126,7 @@ export function useFeatureFlagStatsProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getFeatureFlagStats', projectId: '', flagId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<FeatureFlagStats>
+      const result = await postAnalytics<FeatureFlagStats>({ action: 'getFeatureFlagStats', flagId, params })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -146,12 +151,11 @@ export function useFeatureFlagProfilesProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getFeatureFlagProfiles', projectId: '', flagId, params }),
+      const result = await postAnalytics<FeatureFlagProfilesResponse>({
+        action: 'getFeatureFlagProfiles',
+        flagId,
+        params,
       })
-      const result = (await response.json()) as ProxyResponse<FeatureFlagProfilesResponse>
       setData(result.data)
       setError(result.error)
       return result.data
@@ -176,12 +180,7 @@ export function useGoalStatsProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getGoalStats', projectId: '', goalId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<GoalStats>
+      const result = await postAnalytics<GoalStats>({ action: 'getGoalStats', goalId, params })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -206,12 +205,7 @@ export function useGoalChartProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getGoalChart', projectId: '', goalId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<{ chart: GoalChartData }>
+      const result = await postAnalytics<{ chart: GoalChartData }>({ action: 'getGoalChart', goalId, params })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -236,12 +230,7 @@ export function useCaptchaProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getCaptchaData', projectId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<CaptchaDataResponse>
+      const result = await postAnalytics<CaptchaDataResponse>({ action: 'getCaptchaData', projectId, params })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -266,12 +255,7 @@ export function useExperimentResultsProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getExperimentResults', projectId: '', experimentId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<ExperimentResults>
+      const result = await postAnalytics<ExperimentResults>({ action: 'getExperimentResults', experimentId, params })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -296,12 +280,7 @@ export function useExperimentProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getExperiment', projectId: '', experimentId, params: {} }),
-      })
-      const result = (await response.json()) as ProxyResponse<Experiment>
+      const result = await postAnalytics<Experiment>({ action: 'getExperiment', experimentId, params: {} })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -326,12 +305,7 @@ export function useGoalProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getGoal', projectId: '', goalId, params: {} }),
-      })
-      const result = (await response.json()) as ProxyResponse<Goal>
+      const result = await postAnalytics<Goal>({ action: 'getGoal', goalId, params: {} })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -356,12 +330,7 @@ export function useProjectGoalsProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getProjectGoals', projectId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<GoalsResponse>
+      const result = await postAnalytics<GoalsResponse>({ action: 'getProjectGoals', projectId, params })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -386,12 +355,7 @@ export function useProjectFeatureFlagsProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getProjectFeatureFlags', projectId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<FeatureFlagsResponse>
+      const result = await postAnalytics<FeatureFlagsResponse>({ action: 'getProjectFeatureFlags', projectId, params })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -417,12 +381,7 @@ export function useProfilesProxy() {
       setError(null)
 
       try {
-        const response = await fetch('/api/analytics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'getProfiles', projectId, params }),
-        })
-        const result = (await response.json()) as ProxyResponse<ProfilesResponse>
+        const result = await postAnalytics<ProfilesResponse>({ action: 'getProfiles', projectId, params })
         setData(result.data)
         setError(result.error)
         return result.data
@@ -449,12 +408,7 @@ export function useProfileProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getProfile', projectId, profileId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<ProfileDetailsResponse>
+      const result = await postAnalytics<ProfileDetailsResponse>({ action: 'getProfile', projectId, profileId, params })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -480,12 +434,12 @@ export function useProfileSessionsProxy() {
       setError(null)
 
       try {
-        const response = await fetch('/api/analytics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'getProfileSessions', projectId, profileId, params }),
+        const result = await postAnalytics<ProfileSessionsResponse>({
+          action: 'getProfileSessions',
+          projectId,
+          profileId,
+          params,
         })
-        const result = (await response.json()) as ProxyResponse<ProfileSessionsResponse>
         setData(result.data)
         setError(result.error)
         return result.data
@@ -505,13 +459,7 @@ export function useProfileSessionsProxy() {
 export function useFiltersProxy() {
   const fetchFilters = useCallback(async (projectId: string, filterType: string): Promise<string[] | null> => {
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getFilters', projectId, filterType, params: {} }),
-      })
-      const result = (await response.json()) as ProxyResponse<string[]>
-      if (result.error) throw new Error(result.error)
+      const result = await postAnalytics<string[]>({ action: 'getFilters', projectId, filterType, params: {} })
       return result.data
     } catch (err) {
       console.error('[useFiltersProxy] Error:', err)
@@ -521,13 +469,7 @@ export function useFiltersProxy() {
 
   const fetchErrorsFilters = useCallback(async (projectId: string, filterType: string): Promise<string[] | null> => {
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getErrorsFilters', projectId, filterType, params: {} }),
-      })
-      const result = (await response.json()) as ProxyResponse<string[]>
-      if (result.error) throw new Error(result.error)
+      const result = await postAnalytics<string[]>({ action: 'getErrorsFilters', projectId, filterType, params: {} })
       return result.data
     } catch (err) {
       console.error('[useFiltersProxy] Error:', err)
@@ -542,13 +484,13 @@ export function useFiltersProxy() {
       filterColumn: 'br' | 'os',
     ): Promise<VersionFilter[] | null> => {
       try {
-        const response = await fetch('/api/analytics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'getVersionFilters', projectId, dataType, filterColumn, params: {} }),
+        const result = await postAnalytics<VersionFilter[]>({
+          action: 'getVersionFilters',
+          projectId,
+          dataType,
+          filterColumn,
+          params: {},
         })
-        const result = (await response.json()) as ProxyResponse<VersionFilter[]>
-        if (result.error) throw new Error(result.error)
         return result.data
       } catch (err) {
         console.error('[useFiltersProxy] Error:', err)
@@ -569,13 +511,12 @@ export function useCustomEventsMetadataProxy() {
       params: AnalyticsParams = {},
     ): Promise<CustomEventsMetadataResponse | null> => {
       try {
-        const response = await fetch('/api/analytics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'getCustomEventsMetadata', projectId, event, params }),
+        const result = await postAnalytics<CustomEventsMetadataResponse>({
+          action: 'getCustomEventsMetadata',
+          projectId,
+          event,
+          params,
         })
-        const result = (await response.json()) as ProxyResponse<CustomEventsMetadataResponse>
-        if (result.error) throw new Error(result.error)
         return result.data
       } catch (err) {
         console.error('[useCustomEventsMetadataProxy] Error:', err)
@@ -596,13 +537,12 @@ export function usePropertyMetadataProxy() {
       params: AnalyticsParams = {},
     ): Promise<PropertyMetadataResponse | null> => {
       try {
-        const response = await fetch('/api/analytics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'getPropertyMetadata', projectId, property, params }),
+        const result = await postAnalytics<PropertyMetadataResponse>({
+          action: 'getPropertyMetadata',
+          projectId,
+          property,
+          params,
         })
-        const result = (await response.json()) as ProxyResponse<PropertyMetadataResponse>
-        if (result.error) throw new Error(result.error)
         return result.data
       } catch (err) {
         console.error('[usePropertyMetadataProxy] Error:', err)
@@ -625,12 +565,12 @@ export function useErrorSessionsProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getErrorSessions', projectId, errorId, params }),
+      const result = await postAnalytics<ErrorSessionsResponse>({
+        action: 'getErrorSessions',
+        projectId,
+        errorId,
+        params,
       })
-      const result = (await response.json()) as ProxyResponse<ErrorSessionsResponse>
       setData(result.data)
       setError(result.error)
       return result.data
@@ -647,14 +587,12 @@ export function useErrorSessionsProxy() {
 
 export function useLiveVisitorsProxy() {
   const fetchLiveVisitors = useCallback(async (pids: string[]): Promise<LiveStats | null> => {
+    if (!pids || pids.length === 0) {
+      return null
+    }
+
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getLiveVisitors', projectId: pids[0] || '', pids, params: {} }),
-      })
-      const result = (await response.json()) as ProxyResponse<LiveStats>
-      if (result.error) throw new Error(result.error)
+      const result = await postAnalytics<LiveStats>({ action: 'getLiveVisitors', pids, params: {} })
       return result.data
     } catch (err) {
       console.error('[useLiveVisitorsProxy] Error:', err)
@@ -664,13 +602,7 @@ export function useLiveVisitorsProxy() {
 
   const fetchLiveVisitorsInfo = useCallback(async (projectId: string): Promise<LiveVisitorInfo[] | null> => {
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getLiveVisitorsInfo', projectId, params: {} }),
-      })
-      const result = (await response.json()) as ProxyResponse<LiveVisitorInfo[]>
-      if (result.error) throw new Error(result.error)
+      const result = await postAnalytics<LiveVisitorInfo[]>({ action: 'getLiveVisitorsInfo', projectId, params: {} })
       return result.data
     } catch (err) {
       console.error('[useLiveVisitorsProxy] Error:', err)
@@ -689,13 +621,12 @@ export function useProjectDataCustomEventsProxy() {
       params: AnalyticsParams = {},
     ): Promise<ProjectDataCustomEventsResponse | null> => {
       try {
-        const response = await fetch('/api/analytics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'getProjectDataCustomEvents', projectId, customEvents, params }),
+        const result = await postAnalytics<ProjectDataCustomEventsResponse>({
+          action: 'getProjectDataCustomEvents',
+          projectId,
+          customEvents,
+          params,
         })
-        const result = (await response.json()) as ProxyResponse<ProjectDataCustomEventsResponse>
-        if (result.error) throw new Error(result.error)
         return result.data
       } catch (err) {
         console.error('[useProjectDataCustomEventsProxy] Error:', err)
@@ -718,12 +649,7 @@ export function useUserFlowProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getUserFlow', projectId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<UserFlowResponse>
+      const result = await postAnalytics<UserFlowResponse>({ action: 'getUserFlow', projectId, params })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -748,12 +674,7 @@ export function useGSCKeywordsProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getGSCKeywords', projectId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<GSCKeywordsResponse>
+      const result = await postAnalytics<GSCKeywordsResponse>({ action: 'getGSCKeywords', projectId, params })
       setData(result.data)
       setError(result.error)
       return result.data
@@ -776,14 +697,8 @@ export function useRevenueProxy() {
 
   const fetchRevenueStatus = useCallback(async (projectId: string): Promise<RevenueStatus | null> => {
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getRevenueStatus', projectId, params: {} }),
-      })
-      const result = (await response.json()) as ProxyResponse<RevenueStatus>
+      const result = await postAnalytics<RevenueStatus>({ action: 'getRevenueStatus', projectId, params: {} })
       setStatusData(result.data)
-      if (result.error) throw new Error(result.error)
       return result.data
     } catch (err) {
       console.error('[useRevenueProxy] Error:', err)
@@ -796,12 +711,7 @@ export function useRevenueProxy() {
     setError(null)
 
     try {
-      const response = await fetch('/api/analytics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getRevenueData', projectId, params }),
-      })
-      const result = (await response.json()) as ProxyResponse<RevenueDataResponse>
+      const result = await postAnalytics<RevenueDataResponse>({ action: 'getRevenueData', projectId, params })
       setRevenueData(result.data)
       setError(result.error)
       return result.data
@@ -820,13 +730,11 @@ export function useOverallStatsProxy() {
   const fetchOverallStats = useCallback(
     async (pids: string[], params: AnalyticsParams = {}): Promise<Record<string, OverallObject> | null> => {
       try {
-        const response = await fetch('/api/analytics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'getOverallStats', projectId: '', pids, params }),
+        const result = await postAnalytics<Record<string, OverallObject>>({
+          action: 'getOverallStats',
+          pids,
+          params,
         })
-        const result = (await response.json()) as ProxyResponse<Record<string, OverallObject>>
-        if (result.error) throw new Error(result.error)
         return result.data
       } catch (err) {
         console.error('[useOverallStatsProxy] Error:', err)

@@ -154,8 +154,12 @@ export const ProjectCard = ({
   const [localIsPinned, setLocalIsPinned] = useState(isPinned)
 
   const isPinning =
-    fetcher.state === 'submitting' &&
+    (fetcher.state === 'submitting' || fetcher.state === 'loading') &&
     (fetcher.formData?.get('intent') === 'pin-project' || fetcher.formData?.get('intent') === 'unpin-project')
+
+  const isAccepting =
+    (fetcher.state === 'submitting' || fetcher.state === 'loading') &&
+    fetcher.formData?.get('intent') === 'accept-project-share'
 
   // Sync local state with prop
   useEffect(() => {
@@ -258,6 +262,10 @@ export const ProjectCard = ({
   }, [t, active, isTransferring, isPublic, organisation, share, project.isAccessConfirmed, project.role, shareId])
 
   const onAccept = () => {
+    if (fetcher.state !== 'idle') {
+      return
+    }
+
     if (!shareId) {
       toast.error(t('apiNotifications.acceptInvitationError'))
       return
@@ -391,6 +399,7 @@ export const ProjectCard = ({
             onAccept()
           }}
           submitText={t('common.accept')}
+          submitDisabled={isAccepting}
           type='confirmed'
           closeText={t('common.cancel')}
           title={t('dashboard.invitationFor', { project: name })}
