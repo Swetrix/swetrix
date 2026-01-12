@@ -92,10 +92,7 @@ function buildCookieHeader(
     path = '/',
     sameSite = 'Strict',
     secure = isSecureCookie(),
-    // TODO: At the moment we intentionally don't use HttpOnly so the client-side axios interceptor
-    // can read tokens and add Authorization headers.
-    // Enable this when all API calls are migrated to use loaders/actions
-    httpOnly = false,
+    httpOnly = true,
     domain = getCookieDomain(),
   } = options
 
