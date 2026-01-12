@@ -17,9 +17,7 @@ import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
-import { setAccessToken } from '~/utils/accessToken'
 import { cn, delay, openBrowserWindow } from '~/utils/generic'
-import { setRefreshToken } from '~/utils/refreshToken'
 import routes from '~/utils/routes'
 import { MIN_PASSWORD_CHARS } from '~/utils/validator'
 
@@ -149,16 +147,10 @@ const Signin = () => {
         await delay(HASH_CHECK_FREQUENCY)
 
         try {
-          const { accessToken, refreshToken, user, totalMonthlyEvents } = await getJWTBySSOHash(
-            uuid,
-            provider,
-            !dontRemember,
-          )
+          const { user, totalMonthlyEvents } = await getJWTBySSOHash(uuid, provider, !dontRemember)
           authWindow.close()
 
           if (user.isTwoFactorAuthenticationEnabled) {
-            setAccessToken(accessToken, true)
-            setRefreshToken(refreshToken)
             setUser(user)
             setSso2FARequired(true)
             setIsSsoLoading(false)
@@ -168,8 +160,6 @@ const Signin = () => {
           setUser(user)
           setIsAuthenticated(true)
           setTotalMonthlyEvents(totalMonthlyEvents)
-          setAccessToken(accessToken, !dontRemember)
-          setRefreshToken(refreshToken)
 
           // Redirect to onboarding if user hasn't completed it
           if (!user.hasCompletedOnboarding) {
