@@ -297,6 +297,8 @@ const ProjectSettings = () => {
     ipBlacklist?: string
     password?: string
     websiteUrl?: string
+    transferEmail?: string
+    email?: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
@@ -379,9 +381,7 @@ const ProjectSettings = () => {
   const [gscEmail, setGscEmail] = useState<string | null>(null)
 
   // CAPTCHA state
-  const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(
-    () => initialProject.captchaSecretKey || null,
-  )
+  const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(() => initialProject.captchaSecretKey || null)
   const [captchaDifficulty, setCaptchaDifficulty] = useState<number>(4)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
 
@@ -513,6 +513,8 @@ const ProjectSettings = () => {
     if (fetcher.data?.success) {
       const { intent, project: updatedProject } = fetcher.data
 
+      setErrors({})
+
       if (intent === 'update-project') {
         if (updatedProject) {
           // Merge with existing project to preserve fields like 'role' that aren't returned from update
@@ -537,6 +539,11 @@ const ProjectSettings = () => {
         toast.success(t('apiNotifications.projectAssigned'))
       }
 
+      setIsSaving(false)
+      setIsDeleting(false)
+      setIsResetting(false)
+    } else if (fetcher.data?.fieldErrors) {
+      setErrors(fetcher.data.fieldErrors)
       setIsSaving(false)
       setIsDeleting(false)
       setIsResetting(false)
@@ -618,23 +625,24 @@ const ProjectSettings = () => {
 
   // Wrapper for reset that handles tab logic
   const handleReset = () => {
-    setShowReset(false)
-
     if (fetcher.state === 'submitting') return
 
     if (tab === DELETE_DATA_MODAL_TABS[1].name) {
-      if (_isEmpty(dateRange)) {
+      if (_isEmpty(dateRange) || !dateRange[0] || !dateRange[1]) {
         toast.error(t('project.settings.noDateRange'))
         return
       }
+      setShowReset(false)
       onReset('partially', dateRange)
     } else if (tab === DELETE_DATA_MODAL_TABS[2].name) {
-      if (_isEmpty(activeFilter)) {
+      if (_isEmpty(activeFilter) || _isEmpty(filterType)) {
         toast.error(t('project.settings.noFilters'))
         return
       }
+      setShowReset(false)
       onReset('viaFilters', undefined, filterType, activeFilter)
-    } else {
+    } else if (tab === DELETE_DATA_MODAL_TABS[0].name) {
+      setShowReset(false)
       onReset('all')
     }
   }

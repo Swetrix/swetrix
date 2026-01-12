@@ -130,6 +130,16 @@ export async function serverFetch<T = unknown>(
         })
 
         if (retryResponse.ok) {
+          const retryContentType = retryResponse.headers.get('content-type')
+          if (!retryContentType?.includes('application/json')) {
+            return {
+              data: null,
+              error: null,
+              status: retryResponse.status,
+              cookies: refreshResult.cookies,
+            }
+          }
+
           const data = (await retryResponse.json()) as T
           return {
             data,
@@ -254,6 +264,14 @@ export async function streamingServerFetch(
 
       return finalResponse
     }
+
+    // Token refresh failed - clear auth cookies to prevent stale auth state
+    const clearCookies = clearAuthCookies()
+    const failedResponse = new Response(response.body, response)
+    for (const cookie of clearCookies) {
+      failedResponse.headers.append('Set-Cookie', cookie)
+    }
+    return failedResponse
   }
 
   return response
@@ -624,17 +642,15 @@ export async function getProjectDataServer(
   pid: string,
   params: AnalyticsParams,
 ): Promise<ServerFetchResult<TrafficLogResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    timeBucket: params.timeBucket,
-    period: params.period,
-    filters: serializeFiltersForUrl(params.filters),
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone,
-    mode: params.mode || 'periodical',
-    metrics: '[]',
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('timeBucket', params.timeBucket)
+  queryParams.append('period', params.period)
+  queryParams.append('filters', serializeFiltersForUrl(params.filters))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+  if (params.mode) queryParams.append('mode', params.mode)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -651,16 +667,15 @@ export async function getOverallStatsServer(
 ): Promise<ServerFetchResult<Record<string, OverallObject>>> {
   const pidsParam = `[${pids.map((pid) => `"${pid}"`).join(',')}]`
 
-  const queryParams = new URLSearchParams({
-    pids: pidsParam,
-    timeBucket: params.timeBucket,
-    period: params.period,
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone,
-    filters: serializeFiltersForUrl(params.filters),
-    includeChart: params.includeChart !== false ? 'true' : 'false',
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pids', pidsParam)
+  queryParams.append('timeBucket', params.timeBucket)
+  queryParams.append('period', params.period)
+  queryParams.append('filters', serializeFiltersForUrl(params.filters))
+  queryParams.append('includeChart', params.includeChart !== false ? 'true' : 'false')
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -682,16 +697,15 @@ export async function getCustomEventsDataServer(
   params: AnalyticsParams,
   customEvents: string[],
 ): Promise<ServerFetchResult<CustomEventsChartResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    timeBucket: params.timeBucket,
-    period: params.period,
-    filters: serializeFiltersForUrl(params.filters),
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone,
-    customEvents: JSON.stringify(customEvents),
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('timeBucket', params.timeBucket)
+  queryParams.append('period', params.period)
+  queryParams.append('filters', serializeFiltersForUrl(params.filters))
+  queryParams.append('customEvents', JSON.stringify(customEvents))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -723,16 +737,15 @@ export async function getPerfDataServer(
   pid: string,
   params: AnalyticsParams & { measure?: string },
 ): Promise<ServerFetchResult<PerformanceDataResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    timeBucket: params.timeBucket,
-    period: params.period,
-    filters: serializeFiltersForUrl(params.filters),
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone,
-    measure: params.measure || '',
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('timeBucket', params.timeBucket)
+  queryParams.append('period', params.period)
+  queryParams.append('filters', serializeFiltersForUrl(params.filters))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+  if (params.measure) queryParams.append('measure', params.measure)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -757,15 +770,14 @@ export async function getPerformanceOverallStatsServer(
 ): Promise<ServerFetchResult<Record<string, PerformanceOverallObject>>> {
   const pidsParam = `[${pids.map((pid) => `"${pid}"`).join(',')}]`
 
-  const queryParams = new URLSearchParams({
-    pids: pidsParam,
-    period: params.period,
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone,
-    filters: serializeFiltersForUrl(params.filters),
-    measure: params.measure || '',
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pids', pidsParam)
+  queryParams.append('period', params.period)
+  queryParams.append('filters', serializeFiltersForUrl(params.filters))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
+  if (params.measure) queryParams.append('measure', params.measure)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -811,16 +823,15 @@ export async function getSessionsServer(
   pid: string,
   params: AnalyticsParams & { take?: number; skip?: number },
 ): Promise<ServerFetchResult<SessionsResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    period: params.period,
-    filters: serializeFiltersForUrl(params.filters),
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone,
-    take: String(params.take || 30),
-    skip: String(params.skip || 0),
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period)
+  queryParams.append('filters', serializeFiltersForUrl(params.filters))
+  queryParams.append('take', String(params.take || 30))
+  queryParams.append('skip', String(params.skip || 0))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -907,18 +918,17 @@ export async function getErrorsServer(
   pid: string,
   params: AnalyticsParams & { take?: number; skip?: number; options?: Record<string, unknown> },
 ): Promise<ServerFetchResult<ErrorsResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    timeBucket: params.timeBucket,
-    period: params.period,
-    filters: serializeFiltersForUrl(params.filters),
-    options: JSON.stringify(params.options || {}),
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone,
-    take: String(params.take || 30),
-    skip: String(params.skip || 0),
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('timeBucket', params.timeBucket)
+  queryParams.append('period', params.period)
+  queryParams.append('filters', serializeFiltersForUrl(params.filters))
+  queryParams.append('options', JSON.stringify(params.options || {}))
+  queryParams.append('take', String(params.take || 30))
+  queryParams.append('skip', String(params.skip || 0))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -940,6 +950,9 @@ export interface ErrorDetailsResponse {
     last_seen: string
     first_seen: string
     status: 'active' | 'regressed' | 'fixed' | 'resolved'
+    users: number
+    sessions: number
+    stackTrace?: string
   }
   chart?: {
     x: string[]
@@ -957,17 +970,16 @@ export async function getErrorServer(
   eid: string,
   params: AnalyticsParams & { options?: Record<string, unknown> },
 ): Promise<ServerFetchResult<ErrorDetailsResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    eid,
-    timeBucket: params.timeBucket,
-    period: params.period,
-    filters: serializeFiltersForUrl(params.filters),
-    options: JSON.stringify(params.options || {}),
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone,
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('eid', eid)
+  queryParams.append('timeBucket', params.timeBucket)
+  queryParams.append('period', params.period)
+  queryParams.append('filters', serializeFiltersForUrl(params.filters))
+  queryParams.append('options', JSON.stringify(params.options || {}))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -998,16 +1010,15 @@ export async function getErrorOverviewServer(
   pid: string,
   params: AnalyticsParams & { options?: Record<string, unknown> },
 ): Promise<ServerFetchResult<ErrorOverviewResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    timeBucket: params.timeBucket,
-    period: params.period,
-    filters: serializeFiltersForUrl(params.filters),
-    options: JSON.stringify(params.options || {}),
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone,
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('timeBucket', params.timeBucket)
+  queryParams.append('period', params.period)
+  queryParams.append('filters', serializeFiltersForUrl(params.filters))
+  queryParams.append('options', JSON.stringify(params.options || {}))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -1238,18 +1249,16 @@ export async function getProjectAlertsServer(
 // MARK: Funnels API (Deferred Loading)
 // ============================================================================
 
-interface AnalyticsFunnelStep {
-  value: string
-  events: number
-  eventsPerc: number
-  eventsPercStep: number
-  dropoff: number
-  dropoffPerc: number
-  dropoffPercStep: number
-}
-
 export interface FunnelDataResponse {
-  funnel: AnalyticsFunnelStep[]
+  funnel: {
+    value: string
+    events: number
+    eventsPerc: number
+    eventsPercStep: number
+    dropoff: number
+    dropoffPerc: number
+    dropoffPercStep: number
+  }[]
   totalPageviews: number
 }
 
@@ -1263,14 +1272,13 @@ export async function getFunnelDataServer(
   timezone: string,
   password?: string,
 ): Promise<ServerFetchResult<FunnelDataResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    period,
-    from,
-    to,
-    timezone,
-    funnelId,
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', period)
+  queryParams.append('funnelId', funnelId)
+  if (from) queryParams.append('from', from)
+  if (to) queryParams.append('to', to)
+  if (timezone) queryParams.append('timezone', timezone)
 
   const headers: Record<string, string> = {}
   if (password) {
@@ -1310,14 +1318,13 @@ export async function getCaptchaDataServer(
   to = '',
   password?: string,
 ): Promise<ServerFetchResult<CaptchaDataResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    timeBucket,
-    period,
-    filters: JSON.stringify(filters),
-    from,
-    to,
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('timeBucket', timeBucket)
+  queryParams.append('period', period)
+  queryParams.append('filters', JSON.stringify(filters))
+  if (from) queryParams.append('from', from)
+  if (to) queryParams.append('to', to)
 
   const headers: Record<string, string> = {}
   if (password) {
@@ -1360,6 +1367,7 @@ export interface Experiment {
   exposureTrigger: ExposureTrigger
   customEventName?: string | null
   multipleVariantHandling: MultipleVariantHandling
+  filterInternalUsers: boolean
   featureFlagMode: FeatureFlagMode
   featureFlagId: string | null
   goalId: string | null
@@ -1463,17 +1471,16 @@ export async function getProfilesServer(
   profileType: 'all' | 'anonymous' | 'identified' = 'all',
   password?: string,
 ): Promise<ServerFetchResult<ProfilesResponse>> {
-  const params = new URLSearchParams({
-    pid,
-    take: String(take),
-    skip: String(skip),
-    period,
-    filters: JSON.stringify(filters),
-    from,
-    to,
-    timezone,
-    profileType,
-  })
+  const params = new URLSearchParams()
+  params.append('pid', pid)
+  params.append('take', String(take))
+  params.append('skip', String(skip))
+  params.append('period', period)
+  params.append('filters', JSON.stringify(filters))
+  params.append('profileType', profileType)
+  if (from) params.append('from', from)
+  if (to) params.append('to', to)
+  if (timezone) params.append('timezone', timezone)
 
   const headers: Record<string, string> = {}
   if (password) {
@@ -1522,14 +1529,13 @@ export async function getProfileServer(
   timezone = '',
   password?: string,
 ): Promise<ServerFetchResult<ProfileDetailsResponse>> {
-  const params = new URLSearchParams({
-    pid,
-    profileId: encodeURIComponent(profileId),
-    period,
-    from,
-    to,
-    timezone,
-  })
+  const params = new URLSearchParams()
+  params.append('pid', pid)
+  params.append('profileId', profileId)
+  params.append('period', period)
+  if (from) params.append('from', from)
+  if (to) params.append('to', to)
+  if (timezone) params.append('timezone', timezone)
 
   const headers: Record<string, string> = {}
   if (password) {
@@ -1573,17 +1579,16 @@ export async function getProfileSessionsServer(
   timezone = '',
   password?: string,
 ): Promise<ServerFetchResult<ProfileSessionsResponse>> {
-  const params = new URLSearchParams({
-    pid,
-    profileId: encodeURIComponent(profileId),
-    take: String(take),
-    skip: String(skip),
-    period,
-    filters: JSON.stringify(filters),
-    from,
-    to,
-    timezone,
-  })
+  const params = new URLSearchParams()
+  params.append('pid', pid)
+  params.append('profileId', profileId)
+  params.append('take', String(take))
+  params.append('skip', String(skip))
+  params.append('period', period)
+  params.append('filters', JSON.stringify(filters))
+  if (from) params.append('from', from)
+  if (to) params.append('to', to)
+  if (timezone) params.append('timezone', timezone)
 
   const headers: Record<string, string> = {}
   if (password) {
@@ -1662,15 +1667,14 @@ export async function getCustomEventsMetadataServer(
     password?: string
   } = {},
 ): Promise<ServerFetchResult<CustomEventsMetadataResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    event,
-    timeBucket: params.timeBucket || 'hour',
-    period: params.period || '1d',
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone || '',
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('event', event)
+  queryParams.append('timeBucket', params.timeBucket || 'hour')
+  queryParams.append('period', params.period || '1d')
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -1702,16 +1706,15 @@ export async function getPropertyMetadataServer(
     password?: string
   } = {},
 ): Promise<ServerFetchResult<PropertyMetadataResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    property,
-    timeBucket: params.timeBucket || 'hour',
-    period: params.period || '1d',
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone || '',
-    filters: JSON.stringify(params.filters || []),
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('property', property)
+  queryParams.append('timeBucket', params.timeBucket || 'hour')
+  queryParams.append('period', params.period || '1d')
+  queryParams.append('filters', JSON.stringify(params.filters || []))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -1755,16 +1758,15 @@ export async function getErrorSessionsServer(
     password?: string
   } = {},
 ): Promise<ServerFetchResult<ErrorSessionsResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    eid,
-    timeBucket: params.timeBucket || 'hour',
-    period: params.period || '7d',
-    from: params.from || '',
-    to: params.to || '',
-    take: String(params.take || 10),
-    skip: String(params.skip || 0),
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('eid', eid)
+  queryParams.append('timeBucket', params.timeBucket || 'hour')
+  queryParams.append('period', params.period || '7d')
+  queryParams.append('take', String(params.take || 10))
+  queryParams.append('skip', String(params.skip || 0))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -1843,16 +1845,15 @@ export async function getProjectDataCustomEventsServer(
     password?: string
   } = {},
 ): Promise<ServerFetchResult<ProjectDataCustomEventsResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    timeBucket: params.timeBucket || 'hour',
-    period: params.period || '3d',
-    filters: JSON.stringify(params.filters || []),
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone || '',
-    customEvents: JSON.stringify(params.customEvents || []),
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('timeBucket', params.timeBucket || 'hour')
+  queryParams.append('period', params.period || '3d')
+  queryParams.append('filters', JSON.stringify(params.filters || []))
+  queryParams.append('customEvents', JSON.stringify(params.customEvents || []))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -1987,15 +1988,14 @@ export async function getUserFlowServer(
     password?: string
   } = {},
 ): Promise<ServerFetchResult<UserFlowResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    timeBucket: params.timeBucket || 'hour',
-    period: params.period || '3d',
-    filters: JSON.stringify(params.filters || []),
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone || '',
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('timeBucket', params.timeBucket || 'hour')
+  queryParams.append('period', params.period || '3d')
+  queryParams.append('filters', JSON.stringify(params.filters || []))
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {
@@ -2098,13 +2098,12 @@ export async function getGSCKeywordsServer(
     password?: string
   } = {},
 ): Promise<ServerFetchResult<GSCKeywordsResponse>> {
-  const queryParams = new URLSearchParams({
-    pid,
-    period: params.period || '3d',
-    from: params.from || '',
-    to: params.to || '',
-    timezone: params.timezone || '',
-  })
+  const queryParams = new URLSearchParams()
+  queryParams.append('pid', pid)
+  queryParams.append('period', params.period || '3d')
+  if (params.from) queryParams.append('from', params.from)
+  if (params.to) queryParams.append('to', params.to)
+  if (params.timezone) queryParams.append('timezone', params.timezone)
 
   const headers: Record<string, string> = {}
   if (params.password) {

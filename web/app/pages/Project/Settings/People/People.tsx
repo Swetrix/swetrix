@@ -7,7 +7,7 @@ import _map from 'lodash/map'
 import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFetcher } from 'react-router'
+import { useFetcher, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
 import useOnClickOutside from '~/hooks/useOnClickOutside'
@@ -49,6 +49,7 @@ const TableUserRow = ({ data, onRemove, language, authedUserEmail, projectId }: 
   const openRef = useRef<HTMLUListElement>(null)
   useOnClickOutside(openRef, () => setOpen(false))
   const fetcher = useFetcher<ProjectSettingsActionData>()
+  const revalidator = useRevalidator()
   const { id, created, confirmed, role, user } = data || {}
 
   useEffect(() => {
@@ -56,12 +57,13 @@ const TableUserRow = ({ data, onRemove, language, authedUserEmail, projectId }: 
       if (fetcher.data.intent === 'change-share-role') {
         if (fetcher.data.success) {
           toast.success(t('apiNotifications.roleUpdated'))
+          revalidator.revalidate()
         } else if (fetcher.data.error) {
           toast.error(fetcher.data.error)
         }
       }
     }
-  }, [fetcher.state, fetcher.data, t])
+  }, [fetcher.state, fetcher.data, t, revalidator])
 
   const changeRole = (newRole: string) => {
     fetcher.submit(
@@ -275,7 +277,7 @@ const People = ({ project }: PeopleProps) => {
 
   const onRemove = (member: ShareOwnerProject) => {
     fetcher.submit(
-      { intent: 'delete-share-user', userId: member.id },
+      { intent: 'delete-share-user', shareId: member.id },
       { method: 'POST', action: `/projects/settings/${id}` },
     )
   }
@@ -345,7 +347,8 @@ const People = ({ project }: PeopleProps) => {
           setMemberToRemove(null)
         }}
         onSubmit={() => {
-          onRemove(memberToRemove!)
+          if (!memberToRemove) return
+          onRemove(memberToRemove)
         }}
         submitText={t('common.yes')}
         type='confirmed'

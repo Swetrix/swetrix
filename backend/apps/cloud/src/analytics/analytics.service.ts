@@ -4706,20 +4706,53 @@ export class AnalyticsService {
     let primaryEventsSubquery: string
 
     if (customEVFilterApplied) {
+      // When filtering by custom events, we need to:
+      // 1. Identify sessions (psids) that have matching custom events
+      // 2. Calculate session boundaries from ALL analytics events for those sessions
       primaryEventsSubquery = `
         SELECT
-          CAST(customEV.psid, 'String') AS psidCasted,
-          customEV.pid,
-          customEV.cc,
-          customEV.os,
-          customEV.br,
-          toTimeZone(customEV.created, {timezone:String}) AS created_for_grouping
-        FROM customEV
-        WHERE
-          customEV.pid = {pid:FixedString(12)}
-          AND customEV.psid IS NOT NULL
-          AND customEV.created BETWEEN {groupFrom:String} AND {groupTo:String}
-          ${filtersQuery}
+          all_events.psidCasted,
+          all_events.pid,
+          all_events.cc,
+          all_events.os,
+          all_events.br,
+          all_events.created_for_grouping
+        FROM (
+          SELECT
+            CAST(analytics.psid, 'String') AS psidCasted,
+            analytics.pid,
+            analytics.cc,
+            analytics.os,
+            analytics.br,
+            toTimeZone(analytics.created, {timezone:String}) AS created_for_grouping
+          FROM analytics
+          WHERE
+            analytics.pid = {pid:FixedString(12)}
+            AND analytics.psid IS NOT NULL
+            AND analytics.created BETWEEN {groupFrom:String} AND {groupTo:String}
+          UNION ALL
+          SELECT
+            CAST(customEV.psid, 'String') AS psidCasted,
+            customEV.pid,
+            customEV.cc,
+            customEV.os,
+            customEV.br,
+            toTimeZone(customEV.created, {timezone:String}) AS created_for_grouping
+          FROM customEV
+          WHERE
+            customEV.pid = {pid:FixedString(12)}
+            AND customEV.psid IS NOT NULL
+            AND customEV.created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ) AS all_events
+        WHERE all_events.psidCasted IN (
+          SELECT DISTINCT CAST(customEV.psid, 'String')
+          FROM customEV
+          WHERE
+            customEV.pid = {pid:FixedString(12)}
+            AND customEV.psid IS NOT NULL
+            AND customEV.created BETWEEN {groupFrom:String} AND {groupTo:String}
+            ${filtersQuery}
+        )
       `
     } else {
       primaryEventsSubquery = `

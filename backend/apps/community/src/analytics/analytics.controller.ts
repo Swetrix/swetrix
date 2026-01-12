@@ -588,7 +588,10 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    this.logger.log(`pid: ${pid}, period: ${period}, measure: ${measure}`, 'GET /analytics/performance')
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, measure: ${measure}`,
+      'GET /analytics/performance',
+    )
 
     let newTimeBucket = timeBucket
     let allowedTumebucketForPeriodAll
@@ -679,7 +682,10 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    this.logger.log(`pid: ${pid}, period: ${period}, measure: ${measure}`, 'GET /analytics/performance/chart')
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, measure: ${measure}`,
+      'GET /analytics/performance/chart',
+    )
 
     const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
@@ -711,7 +717,10 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    this.logger.log(`pid: ${pid}, period: ${period}`, 'GET /analytics/user-flow')
+    this.logger.log(
+      `pid: ${pid}, period: ${period}`,
+      'GET /analytics/user-flow',
+    )
 
     let diff
 
@@ -824,7 +833,10 @@ export class AnalyticsController {
 
     await Promise.all(validationPromises)
 
-    this.logger.log(`pidsArray: ${pidsArray}, measure: ${measure}`, 'GET /analytics/performance/birdseye')
+    this.logger.log(
+      `pidsArray: ${pidsArray}, measure: ${measure}`,
+      'GET /analytics/performance/birdseye',
+    )
 
     return this.analyticsService.getPerformanceSummary(
       pidsArray,
@@ -1358,7 +1370,10 @@ export class AnalyticsController {
       )
     }
 
-    this.logger.log(`pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`, 'GET /analytics/sessions')
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/sessions',
+    )
 
     let timeBucket
     let diff
@@ -1461,7 +1476,10 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    this.logger.log(`pid: ${pid}, period: ${period}, customEvents: ${customEvents}`, 'GET /analytics/custom-events')
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, customEvents: ${customEvents}`,
+      'GET /analytics/custom-events',
+    )
 
     let newTimeBucket = timeBucket
     let diff
@@ -1544,7 +1562,10 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    this.logger.log(`pid: ${pid}, type: ${type}`, 'GET /analytics/errors-filters')
+    this.logger.log(
+      `pid: ${pid}, type: ${type}`,
+      'GET /analytics/errors-filters',
+    )
 
     return this.analyticsService.getErrorsFilters(pid, type)
   }
@@ -1564,7 +1585,10 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    this.logger.log(`pid: ${pid}, type: ${type}, column: ${column}`, 'GET /analytics/filters/versions')
+    this.logger.log(
+      `pid: ${pid}, type: ${type}, column: ${column}`,
+      'GET /analytics/filters/versions',
+    )
 
     return this.analyticsService.getVersionFilters(pid, type, column)
   }
@@ -1720,7 +1744,10 @@ export class AnalyticsController {
       )
     }
 
-    this.logger.log(`pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`, 'GET /analytics/errors')
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/errors',
+    )
 
     let timeBucket
     let diff
@@ -1794,7 +1821,10 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    this.logger.log(`pid: ${pid}, eid: ${eid}, period: ${period}`, 'GET /analytics/get-error')
+    this.logger.log(
+      `pid: ${pid}, eid: ${eid}, period: ${period}`,
+      'GET /analytics/get-error',
+    )
 
     let newTimeBucket = timeBucket
     let diff
@@ -1855,7 +1885,10 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    this.logger.log(`pid: ${pid}, period: ${period}`, 'GET /analytics/error-overview')
+    this.logger.log(
+      `pid: ${pid}, period: ${period}`,
+      'GET /analytics/error-overview',
+    )
 
     let parsedOptions: GetErrorOverviewOptions = {}
 
@@ -1943,7 +1976,10 @@ export class AnalyticsController {
       )
     }
 
-    this.logger.log(`pid: ${pid}, eid: ${eid}, period: ${period}, take: ${take}, skip: ${skip}`, 'GET /analytics/error-sessions')
+    this.logger.log(
+      `pid: ${pid}, eid: ${eid}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/error-sessions',
+    )
 
     let newTimeBucket = timeBucket
     let diff
@@ -2010,7 +2046,10 @@ export class AnalyticsController {
       )
     }
 
-    this.logger.log(`pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`, 'GET /analytics/profiles')
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/profiles',
+    )
 
     let timeBucket
     let diff
@@ -2084,7 +2123,10 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    this.logger.log(`pid: ${pid}, profileId: ${profileId}, period: ${period}`, 'GET /analytics/profile')
+    this.logger.log(
+      `pid: ${pid}, profileId: ${profileId}, period: ${period}`,
+      'GET /analytics/profile',
+    )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
 
@@ -2166,7 +2208,10 @@ export class AnalyticsController {
       )
     }
 
-    this.logger.log(`pid: ${pid}, profileId: ${profileId}, period: ${period}, take: ${take}, skip: ${skip}`, 'GET /analytics/profile/sessions')
+    this.logger.log(
+      `pid: ${pid}, profileId: ${profileId}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/profile/sessions',
+    )
 
     let timeBucket
     let diff
@@ -2237,7 +2282,10 @@ export class AnalyticsController {
         ip,
       )
 
-      this.logger.log(`pid: ${pid}, profileId: ${profileId}`, 'POST /analytics/profile-id')
+      this.logger.log(
+        `pid: ${pid}, profileId: ${profileId}`,
+        'POST /analytics/profile-id',
+      )
 
       return { profileId }
     } catch (error) {
@@ -2265,7 +2313,10 @@ export class AnalyticsController {
         ip,
       )
 
-      this.logger.log(`pid: ${pid}, sessionId: ${psid}`, 'POST /analytics/session-id')
+      this.logger.log(
+        `pid: ${pid}, sessionId: ${psid}`,
+        'POST /analytics/session-id',
+      )
 
       return { sessionId: psid }
     } catch (error) {

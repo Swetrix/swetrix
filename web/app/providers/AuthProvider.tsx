@@ -51,14 +51,16 @@ export const AuthProvider = ({
     }
 
     if (initialUser) {
-      // Defer state updates to avoid synchronous cascading renders
-      queueMicrotask(() => {
-        setUserState(initialUser)
-        setIsAuthenticated(true)
-        setTotalMonthlyEvents(initialTotalMonthlyEvents || 0)
-      })
+      setUserState(initialUser)
+      setIsAuthenticated(true)
+      setTotalMonthlyEvents(initialTotalMonthlyEvents || 0)
+    } else {
+      setUserState(null)
+      setIsAuthenticated(false)
+      setTotalMonthlyEvents(0)
     }
-  }, [initialUser, initialTotalMonthlyEvents])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialUser?.id, initialTotalMonthlyEvents])
 
   const setUser = useCallback((newUser: User) => {
     setUserState(newUser)

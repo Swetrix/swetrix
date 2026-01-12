@@ -174,12 +174,16 @@ export const useAnnotations = (): UseAnnotationsReturn => {
   }, [loadFetcher, projectPassword])
 
   useEffect(() => {
-    if (loadFetcher.state === 'idle' && loadFetcher.data) {
+    if (loadFetcher.state === 'idle') {
       setAnnotationsLoading(false)
-      if (loadFetcher.data.success && loadFetcher.data.data) {
-        setAnnotations((loadFetcher.data.data as Annotation[]) || [])
-      } else if (loadFetcher.data.error) {
-        toast.error(loadFetcher.data.error)
+      if (loadFetcher.data) {
+        if (loadFetcher.data.success && loadFetcher.data.data) {
+          setAnnotations((loadFetcher.data.data as Annotation[]) || [])
+        } else if (loadFetcher.data.error) {
+          toast.error(loadFetcher.data.error)
+        } else {
+          setAnnotations([])
+        }
       }
     }
   }, [loadFetcher.state, loadFetcher.data])

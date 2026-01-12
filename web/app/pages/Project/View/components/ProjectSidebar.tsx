@@ -261,6 +261,8 @@ const CollapsibleGroup: React.FC<{
   )
 })
 
+CollapsibleGroup.displayName = 'CollapsibleGroup'
+
 const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   tabs,
   activeTab,

@@ -43,7 +43,7 @@ import {
   ERROR_PANELS_ORDER,
 } from '~/lib/constants'
 import { CountryEntry, Entry } from '~/lib/models/Entry'
-import { SwetrixError, SwetrixErrorDetails } from '~/lib/models/Project'
+import { SwetrixError } from '~/lib/models/Project'
 import { ErrorChart } from '~/pages/Project/tabs/Errors/ErrorChart'
 import { ErrorDetails } from '~/pages/Project/tabs/Errors/ErrorDetails'
 import NoErrorDetails from '~/pages/Project/tabs/Errors/NoErrorDetails'
@@ -414,7 +414,13 @@ function ErrorsDataResolver({ children }: { children: (data: DeferredErrorsData)
   const errorDetails = errorDetailsPromise ? use(errorDetailsPromise) : null
   const errorOverview = errorOverviewPromise ? use(errorOverviewPromise) : null
 
-  return <>{children({ errorsData, errorDetails, errorOverview })}</>
+  // Memoize deferredData so object identity only changes when contained data changes
+  const deferredData = useMemo(
+    () => ({ errorsData, errorDetails, errorOverview }),
+    [errorsData, errorDetails, errorOverview],
+  )
+
+  return <>{children(deferredData)}</>
 }
 
 function ErrorsViewWrapper() {
@@ -479,7 +485,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   const activeError = useMemo(() => {
     if (deferredData.errorDetails) {
       return {
-        details: deferredData.errorDetails.details as SwetrixErrorDetails,
+        details: deferredData.errorDetails.details,
         chart: deferredData.errorDetails.chart,
         params: deferredData.errorDetails.params,
         metadata: deferredData.errorDetails.metadata,
@@ -571,6 +577,8 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
 
   // Handle proxy response for pagination
   useEffect(() => {
+    if (revalidator.state === 'loading') return
+
     if (errorsProxy.data && !errorsProxy.isLoading) {
       const newErrors = errorsProxy.data.errors || []
       setErrors((prev) => [...prev, ...newErrors])
@@ -580,7 +588,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
     if (errorsProxy.error) {
       toast.error(errorsProxy.error)
     }
-  }, [errorsProxy.data, errorsProxy.error, errorsProxy.isLoading])
+  }, [errorsProxy.data, errorsProxy.error, errorsProxy.isLoading, revalidator.state])
 
   const updateStatusInErrors = useCallback(
     (status: 'active' | 'resolved') => {

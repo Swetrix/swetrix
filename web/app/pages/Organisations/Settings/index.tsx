@@ -38,6 +38,7 @@ const OrganisationSettings = () => {
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
+  const [isFormDirty, setIsFormDirty] = useState(false)
 
   const organisation = loaderData?.organisation || null
   const error = loaderData?.error
@@ -47,22 +48,23 @@ const OrganisationSettings = () => {
   }))
 
   useEffect(() => {
-    if (organisation) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (organisation && !isFormDirty) {
+      // eslint-disable-next-line
       setForm({ name: organisation.name || '' })
     }
-  }, [organisation])
+  }, [organisation, isFormDirty])
 
   const isSaving = fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'update-organisation'
   const isDeleting = fetcher.state === 'submitting' && fetcher.formData?.get('intent') === 'delete-organisation'
 
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (fetcher.data?.success) {
       const { intent } = fetcher.data
 
       if (intent === 'update-organisation') {
         toast.success(t('apiNotifications.orgSettingsUpdated'))
+        // eslint-disable-next-line
+        setIsFormDirty(false)
         revalidator.revalidate()
       } else if (intent === 'delete-organisation') {
         toast.success(t('apiNotifications.organisationDeleted'))
@@ -81,8 +83,7 @@ const OrganisationSettings = () => {
       toast.error(fetcher.data.error)
       setShowDelete(false)
     }
-  }, [fetcher.data, t, navigate]) // eslint-disable-line react-hooks/exhaustive-deps
-  /* eslint-enable react-hooks/set-state-in-effect */
+  }, [fetcher.data, t, navigate, revalidator])
 
   const isOrganisationOwner = useMemo(() => {
     if (!organisation) {
@@ -143,6 +144,7 @@ const OrganisationSettings = () => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
+    setIsFormDirty(true)
     setForm((oldForm) => ({
       ...oldForm,
       [target.name]: value,

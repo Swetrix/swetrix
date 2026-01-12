@@ -113,14 +113,13 @@ const UserSettings = () => {
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
-  const [error, setError] = useState<null | string>(null)
   const translatedFrequencies = useMemo(() => _map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
   const translatedTimeFormat = useMemo(() => _map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
   const [deletionFeedback, setDeletionFeedback] = useState('')
 
   const lastHandledData = useRef<UserSettingsActionData | null>(null)
   const passwordChangedRef = useRef(false)
-  const pendingToggleRef = useRef<{ intent: string; previousValue: boolean } | null>(null)
+  const pendingToggles = useRef<Map<string, boolean>>(new Map())
 
   const isSubmitting = fetcher.state === 'submitting'
 
@@ -151,11 +150,11 @@ const UserSettings = () => {
         mergeUser({ apiKey: null })
         toast.success(t('profileSettings.updated'))
       } else if (intent === 'toggle-live-visitors' && updatedUser) {
-        pendingToggleRef.current = null
+        pendingToggles.current.delete('live-visitors')
         mergeUser(updatedUser)
         toast.success(t('profileSettings.updated'))
       } else if (intent === 'toggle-login-notifications') {
-        pendingToggleRef.current = null
+        pendingToggles.current.delete('login-notifications')
         toast.success(t('profileSettings.updated'))
       } else if (intent === 'confirm-email') {
         setCookie(CONFIRMATION_TIMEOUT, true, 600)
@@ -166,14 +165,13 @@ const UserSettings = () => {
         navigate(routes.main)
       }
     } else if (fetcher.data?.error) {
-      if (pendingToggleRef.current) {
-        const { intent, previousValue } = pendingToggleRef.current
-        if (intent === 'toggle-live-visitors') {
-          mergeUser({ showLiveVisitorsInTitle: previousValue })
-        } else if (intent === 'toggle-login-notifications') {
-          mergeUser({ receiveLoginNotifications: previousValue })
-        }
-        pendingToggleRef.current = null
+      if (pendingToggles.current.has('live-visitors')) {
+        mergeUser({ showLiveVisitorsInTitle: pendingToggles.current.get('live-visitors') })
+        pendingToggles.current.delete('live-visitors')
+      }
+      if (pendingToggles.current.has('login-notifications')) {
+        mergeUser({ receiveLoginNotifications: pendingToggles.current.get('login-notifications') })
+        pendingToggles.current.delete('login-notifications')
       }
       toast.error(fetcher.data.error)
     }
@@ -254,10 +252,9 @@ const UserSettings = () => {
   }
 
   const handleShowLiveVisitorsSave = (checked: boolean) => {
-    pendingToggleRef.current = {
-      intent: 'toggle-live-visitors',
-      previousValue: user?.showLiveVisitorsInTitle ?? false,
-    }
+    if (pendingToggles.current.has('live-visitors')) return
+
+    pendingToggles.current.set('live-visitors', user?.showLiveVisitorsInTitle ?? false)
     const formData = new FormData()
     formData.set('intent', 'toggle-live-visitors')
     formData.set('show', checked.toString())
@@ -267,10 +264,9 @@ const UserSettings = () => {
   }
 
   const handleReceiveLoginNotifications = (checked: boolean) => {
-    pendingToggleRef.current = {
-      intent: 'toggle-login-notifications',
-      previousValue: user?.receiveLoginNotifications ?? false,
-    }
+    if (pendingToggles.current.has('login-notifications')) return
+
+    pendingToggles.current.set('login-notifications', user?.receiveLoginNotifications ?? false)
     const formData = new FormData()
     formData.set('intent', 'toggle-login-notifications')
     formData.set('receiveLoginNotifications', checked.toString())
@@ -692,7 +688,7 @@ const UserSettings = () => {
                 <Checkbox
                   checked={user?.showLiveVisitorsInTitle}
                   onChange={handleShowLiveVisitorsSave}
-                  disabled={isSubmitting}
+                  disabled={fetcher.formData?.get('intent') === 'toggle-live-visitors'}
                   name='active'
                   classes={{
                     label: 'mt-4',
@@ -740,7 +736,7 @@ const UserSettings = () => {
                   <Checkbox
                     checked={user?.receiveLoginNotifications}
                     onChange={handleReceiveLoginNotifications}
-                    disabled={isSubmitting}
+                    disabled={fetcher.formData?.get('intent') === 'toggle-login-notifications'}
                     name='receiveLoginNotifications'
                     classes={{
                       label: 'mt-4',
@@ -800,16 +796,6 @@ const UserSettings = () => {
         type='error'
         message={t('profileSettings.apiKeyDeleteConf')}
         isOpened={showAPIDeleteModal}
-      />
-      <Modal
-        onClose={() => {
-          setError(null)
-        }}
-        closeText={t('common.gotIt')}
-        type='error'
-        title={t('common.error')}
-        message={error}
-        isOpened={Boolean(error)}
       />
       <Modal
         onClose={() => {

@@ -80,7 +80,7 @@ const FeatureFlagSettingsModal = ({ isOpen, onClose, onSuccess, projectId, flagI
   const [targetingRules, setTargetingRules] = useState<TargetingRule[]>([])
   const [enabled, setEnabled] = useState(true)
 
-  const isSaving = fetcher.state === 'submitting'
+  const isSaving = fetcher.state === 'submitting' || fetcher.state === 'loading'
 
   const resetForm = () => {
     setKey('')

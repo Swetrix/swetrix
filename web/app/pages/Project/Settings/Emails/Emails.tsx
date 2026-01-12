@@ -152,9 +152,8 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
   useEffect(() => {
     if (fetcher.data?.intent === 'update-subscriber') {
       if (fetcher.data.success && fetcher.data.subscriber) {
-        setEmails((prev) =>
-          _map(prev, (item) => (item.id === fetcher.data!.subscriber!.id ? fetcher.data!.subscriber! : item)),
-        )
+        const updated = fetcher.data.subscriber
+        setEmails((prev) => _map(prev, (item) => (item.id === updated.id ? updated : item)))
         toast.success(t('apiNotifications.updatedPeriodEmailReports'))
       } else if (fetcher.data.error) {
         toast.error(
@@ -498,7 +497,8 @@ const Emails = ({ projectId }: { projectId: string }) => {
           setEmailToRemove(null)
         }}
         onSubmit={() => {
-          onRemove(emailToRemove!.id)
+          if (!emailToRemove) return
+          onRemove(emailToRemove.id)
         }}
         submitText={t('common.yes')}
         type='confirmed'

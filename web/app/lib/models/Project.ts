@@ -175,6 +175,7 @@ export interface AnalyticsFunnel {
   eventsPerc: number
   eventsPercStep: number
   dropoff: number
+  dropoffPerc: number
   dropoffPercStep: number
 }
 

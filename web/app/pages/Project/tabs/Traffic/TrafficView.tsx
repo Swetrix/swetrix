@@ -6,7 +6,18 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _some from 'lodash/some'
 import { BanIcon, ChartColumnBigIcon, ChartLineIcon, EyeIcon } from 'lucide-react'
-import React, { useState, useEffect, useMemo, useRef, lazy, Suspense, useCallback, use } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  lazy,
+  Suspense,
+  useCallback,
+  use,
+  Component,
+  type ReactNode,
+} from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, Link, useSearchParams, useLoaderData, useRevalidator } from 'react-router'
@@ -106,6 +117,46 @@ interface DeferredTrafficData {
   customEventsData: { chart?: { events?: Record<string, unknown> } } | null
 }
 
+interface TrafficErrorBoundaryState {
+  hasError: boolean
+  error: Error | null
+}
+
+class TrafficErrorBoundary extends Component<{ children: ReactNode }, TrafficErrorBoundaryState> {
+  constructor(props: { children: ReactNode }) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error: Error): TrafficErrorBoundaryState {
+    return { hasError: true, error }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className='flex min-h-[300px] flex-col items-center justify-center rounded-lg border border-red-200 bg-red-50 p-8 dark:border-red-800/50 dark:bg-red-900/20'>
+          <p className='text-center text-lg font-semibold text-red-600 dark:text-red-400'>
+            Failed to load traffic data
+          </p>
+          <p className='mt-2 text-center text-sm text-red-500 dark:text-red-300'>
+            {this.state.error?.message || 'An unexpected error occurred. Please try again.'}
+          </p>
+          <button
+            type='button'
+            onClick={() => window.location.reload()}
+            className='mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-hidden'
+          >
+            Reload page
+          </button>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+
 function TrafficDataResolver({ children }: { children: (data: DeferredTrafficData) => React.ReactNode }) {
   const {
     trafficData: trafficDataPromise,
@@ -126,11 +177,13 @@ function TrafficDataResolver({ children }: { children: (data: DeferredTrafficDat
 
 function TrafficViewWrapper(props: TrafficViewProps) {
   return (
-    <Suspense fallback={<Loader />}>
-      <TrafficDataResolver>
-        {(deferredData) => <TrafficViewInner {...props} deferredData={deferredData} />}
-      </TrafficDataResolver>
-    </Suspense>
+    <TrafficErrorBoundary>
+      <Suspense fallback={<Loader />}>
+        <TrafficDataResolver>
+          {(deferredData) => <TrafficViewInner {...props} deferredData={deferredData} />}
+        </TrafficDataResolver>
+      </Suspense>
+    </TrafficErrorBoundary>
   )
 }
 
@@ -544,6 +597,13 @@ const TrafficViewInner = ({
       return
     }
 
+    // Early return if base chart x-axis is not yet available
+    const chart = baseChartData as { x?: string[] }
+    if (!Array.isArray(chart?.x) || chart.x.length === 0) {
+      setRevenueOverlay(null)
+      return
+    }
+
     try {
       let from: string | undefined
       let to: string | undefined
@@ -566,11 +626,10 @@ const TrafficViewInner = ({
       const revRefunds = revChart?.refundsAmount || []
 
       // Align revenue series to the main traffic chart x-axis
-      const chart = baseChartData as { x?: string[] }
       let revenueData: number[] = []
       let refundsData: number[] = []
 
-      if (Array.isArray(chart?.x) && chart.x.length > 0 && Array.isArray(revX) && revX.length > 0) {
+      if (Array.isArray(revX) && revX.length > 0) {
         if (revX.length === chart.x.length && revX[0] === chart.x[0]) {
           revenueData = revY.map((v: any) => Number(v ?? 0))
           refundsData = revRefunds.map((v: any) => Number(v ?? 0))

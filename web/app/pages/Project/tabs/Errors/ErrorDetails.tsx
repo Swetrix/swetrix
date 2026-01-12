@@ -5,10 +5,9 @@ import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 
-import type { ErrorAffectedSession } from '~/api/api.server'
+import type { ErrorAffectedSession, ErrorDetailsResponse } from '~/api/api.server'
 import { useErrorSessionsProxy } from '~/hooks/useAnalyticsProxy'
 import { BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants'
-import { SwetrixErrorDetails } from '~/lib/models/Project'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import { Badge } from '~/ui/Badge'
@@ -21,7 +20,7 @@ import { getRelativeDateIfPossible } from '~/utils/date'
 const STACK_PREVIEW_LINES_COUNT = 5
 
 interface ErrorDetailsProps {
-  details: SwetrixErrorDetails
+  details: ErrorDetailsResponse['details']
   period?: string
   from?: string
   to?: string

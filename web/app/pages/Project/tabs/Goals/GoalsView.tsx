@@ -518,6 +518,7 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
     (take: number, skip: number, search?: string) => {
       if (fetcher.state !== 'idle') return
       setIsSearchMode(true)
+      setError(null)
 
       fetcher.submit(
         {
@@ -540,6 +541,7 @@ const GoalsViewInner = ({ period, from = '', to = '', timezone, deferredData }: 
           const result = fetcher.data.data as { results: Goal[]; total: number }
           setGoals(result.results)
           setTotal(result.total)
+          setError(null)
         } else if (fetcher.data.error) {
           setError(fetcher.data.error)
         }

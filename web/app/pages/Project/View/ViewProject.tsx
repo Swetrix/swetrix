@@ -445,13 +445,16 @@ const ViewProjectContent = () => {
 
   // Handle views load fetcher response
   useEffect(() => {
-    if (viewsLoadFetcher.state === 'idle' && viewsLoadFetcher.data) {
+    if (viewsLoadFetcher.state === 'idle') {
       setProjectViewsLoading(false)
-      if (viewsLoadFetcher.data.success && viewsLoadFetcher.data.data) {
-        setProjectViews((viewsLoadFetcher.data.data as ProjectView[]) || [])
-      } else if (viewsLoadFetcher.data.error) {
-        console.error('[ERROR] (loadProjectViews)', viewsLoadFetcher.data.error)
-        toast.error(viewsLoadFetcher.data.error)
+
+      if (viewsLoadFetcher.data) {
+        if (viewsLoadFetcher.data.success && viewsLoadFetcher.data.data) {
+          setProjectViews((viewsLoadFetcher.data.data as ProjectView[]) || [])
+        } else if (viewsLoadFetcher.data.error) {
+          console.error('[ERROR] (loadProjectViews)', viewsLoadFetcher.data.error)
+          toast.error(viewsLoadFetcher.data.error)
+        }
       }
     }
   }, [viewsLoadFetcher.state, viewsLoadFetcher.data])
@@ -1207,240 +1210,240 @@ const ViewProjectContent = () => {
             <>
               <div
                 className={cx('flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900', {
-                'min-h-including-header': !isEmbedded,
-                'min-h-screen': isEmbedded,
-              })}
-            >
-              {!isEmbedded ? <Header /> : null}
+                  'min-h-including-header': !isEmbedded,
+                  'min-h-screen': isEmbedded,
+                })}
+              >
+                {!isEmbedded ? <Header /> : null}
 
-              <div className='grid flex-1 grid-cols-1'>
-                <div ref={fullscreenMapRef} className='z-0 col-start-1 row-start-1 min-h-full w-full empty:hidden' />
+                <div className='grid flex-1 grid-cols-1'>
+                  <div ref={fullscreenMapRef} className='z-0 col-start-1 row-start-1 min-h-full w-full empty:hidden' />
 
-                <div
-                  className={cx(
-                    'z-10 col-start-1 row-start-1 mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 lg:px-8',
-                    isMapFullscreen ? 'pointer-events-none' : 'pointer-events-auto',
-                  )}
-                >
-                  <div ref={ref} className='relative flex gap-4'>
-                    <ProjectSidebar
-                      tabs={tabs}
-                      activeTab={activeTab}
-                      onTabChange={setDashboardTab}
-                      projectId={id}
-                      projectName={project.name}
-                      websiteUrl={project.websiteUrl}
-                      dataLoading={dataLoading}
-                      searchParams={searchParams}
-                      allowedToManage={allowedToManage}
-                      className='pointer-events-auto z-20 hidden md:flex'
-                    />
-                    {isMobileSidebarOpen ? (
-                      <div className='pointer-events-auto'>
-                        <ProjectSidebar
-                          tabs={tabs}
-                          activeTab={activeTab}
-                          onTabChange={setDashboardTab}
-                          projectId={id}
-                          projectName={project.name}
-                          websiteUrl={project.websiteUrl}
-                          dataLoading={dataLoading}
-                          searchParams={searchParams}
-                          allowedToManage={allowedToManage}
-                          isMobileOpen={isMobileSidebarOpen}
-                          onMobileClose={closeMobileSidebar}
-                        />
-                      </div>
-                    ) : null}
-                    {/* Main Content */}
-                    <div
-                      className={cx(
-                        'pointer-events-auto flex min-w-0 flex-1 flex-col',
-                        isMapFullscreen ? 'pointer-events-none' : 'pointer-events-auto',
-                      )}
-                      ref={dashboardRef}
-                    >
-                      <EventsRunningOutBanner />
-                      <div className='pointer-events-auto'>
-                        <MobileSidebarTrigger onClick={openMobileSidebar} activeTabLabel={activeTabLabel} />
-                      </div>
-                      <AnimatePresence mode='wait'>
-                        <motion.div
-                          key={activeTab}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.15 }}
-                        >
-                          {activeTab === PROJECT_TABS.ai ? <AskAIView projectId={id} /> : null}
-                          {activeTab === PROJECT_TABS.traffic ? (
-                            <TrafficView
-                              tnMapping={tnMapping}
-                              customMetrics={customMetrics}
-                              onRemoveCustomMetric={onRemoveCustomMetric}
-                              resetCustomMetrics={resetCustomMetrics}
-                              mode={mode}
-                              projectViews={projectViews}
-                              projectViewsLoading={projectViewsLoading}
-                              loadProjectViews={loadProjectViews}
-                              setProjectViewToUpdate={setProjectViewToUpdate}
-                              setIsAddAViewOpened={setIsAddAViewOpened}
-                              onCustomMetric={onCustomMetric}
-                            />
-                          ) : null}
-                          {activeTab === PROJECT_TABS.performance ? <PerformanceView tnMapping={tnMapping} /> : null}
-                          {activeTab === PROJECT_TABS.funnels ? <FunnelsView /> : null}
-                          {activeTab === PROJECT_TABS.alerts ? <ProjectAlertsView /> : null}
-                          {activeTab === PROJECT_TABS.profiles ? <ProfilesView tnMapping={tnMapping} /> : null}
-                          {activeTab === PROJECT_TABS.sessions ? (
-                            <SessionsView tnMapping={tnMapping} rotateXAxis={rotateXAxis} />
-                          ) : null}
-                          {activeTab === PROJECT_TABS.errors ? <ErrorsView /> : null}
-                          {activeTab === PROJECT_TABS.goals ? (
-                            <GoalsView
-                              period={period}
-                              from={dateRange ? getFormatDate(dateRange[0]) : ''}
-                              to={dateRange ? getFormatDate(dateRange[1]) : ''}
-                              timezone={timezone}
-                            />
-                          ) : null}
-                          {activeTab === PROJECT_TABS.experiments ? (
-                            <ExperimentsView
-                              period={period}
-                              from={dateRange ? getFormatDate(dateRange[0]) : ''}
-                              to={dateRange ? getFormatDate(dateRange[1]) : ''}
-                              timezone={timezone}
-                            />
-                          ) : null}
-                          {activeTab === PROJECT_TABS.featureFlags ? (
-                            <FeatureFlagsView
-                              period={period}
-                              from={dateRange ? getFormatDate(dateRange[0]) : ''}
-                              to={dateRange ? getFormatDate(dateRange[1]) : ''}
-                              timezone={timezone}
-                            />
-                          ) : null}
-                          {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
-                        </motion.div>
-                      </AnimatePresence>
+                  <div
+                    className={cx(
+                      'z-10 col-start-1 row-start-1 mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 lg:px-8',
+                      isMapFullscreen ? 'pointer-events-none' : 'pointer-events-auto',
+                    )}
+                  >
+                    <div ref={ref} className='relative flex gap-4'>
+                      <ProjectSidebar
+                        tabs={tabs}
+                        activeTab={activeTab}
+                        onTabChange={setDashboardTab}
+                        projectId={id}
+                        projectName={project.name}
+                        websiteUrl={project.websiteUrl}
+                        dataLoading={dataLoading}
+                        searchParams={searchParams}
+                        allowedToManage={allowedToManage}
+                        className='pointer-events-auto z-20 hidden md:flex'
+                      />
+                      {isMobileSidebarOpen ? (
+                        <div className='pointer-events-auto'>
+                          <ProjectSidebar
+                            tabs={tabs}
+                            activeTab={activeTab}
+                            onTabChange={setDashboardTab}
+                            projectId={id}
+                            projectName={project.name}
+                            websiteUrl={project.websiteUrl}
+                            dataLoading={dataLoading}
+                            searchParams={searchParams}
+                            allowedToManage={allowedToManage}
+                            isMobileOpen={isMobileSidebarOpen}
+                            onMobileClose={closeMobileSidebar}
+                          />
+                        </div>
+                      ) : null}
+                      {/* Main Content */}
+                      <div
+                        className={cx(
+                          'pointer-events-auto flex min-w-0 flex-1 flex-col',
+                          isMapFullscreen ? 'pointer-events-none' : 'pointer-events-auto',
+                        )}
+                        ref={dashboardRef}
+                      >
+                        <EventsRunningOutBanner />
+                        <div className='pointer-events-auto'>
+                          <MobileSidebarTrigger onClick={openMobileSidebar} activeTabLabel={activeTabLabel} />
+                        </div>
+                        <AnimatePresence mode='wait'>
+                          <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                          >
+                            {activeTab === PROJECT_TABS.ai ? <AskAIView projectId={id} /> : null}
+                            {activeTab === PROJECT_TABS.traffic ? (
+                              <TrafficView
+                                tnMapping={tnMapping}
+                                customMetrics={customMetrics}
+                                onRemoveCustomMetric={onRemoveCustomMetric}
+                                resetCustomMetrics={resetCustomMetrics}
+                                mode={mode}
+                                projectViews={projectViews}
+                                projectViewsLoading={projectViewsLoading}
+                                loadProjectViews={loadProjectViews}
+                                setProjectViewToUpdate={setProjectViewToUpdate}
+                                setIsAddAViewOpened={setIsAddAViewOpened}
+                                onCustomMetric={onCustomMetric}
+                              />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.performance ? <PerformanceView tnMapping={tnMapping} /> : null}
+                            {activeTab === PROJECT_TABS.funnels ? <FunnelsView /> : null}
+                            {activeTab === PROJECT_TABS.alerts ? <ProjectAlertsView /> : null}
+                            {activeTab === PROJECT_TABS.profiles ? <ProfilesView tnMapping={tnMapping} /> : null}
+                            {activeTab === PROJECT_TABS.sessions ? (
+                              <SessionsView tnMapping={tnMapping} rotateXAxis={rotateXAxis} />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.errors ? <ErrorsView /> : null}
+                            {activeTab === PROJECT_TABS.goals ? (
+                              <GoalsView
+                                period={period}
+                                from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                                to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                                timezone={timezone}
+                              />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.experiments ? (
+                              <ExperimentsView
+                                period={period}
+                                from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                                to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                                timezone={timezone}
+                              />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.featureFlags ? (
+                              <FeatureFlagsView
+                                period={period}
+                                from={dateRange ? getFormatDate(dateRange[0]) : ''}
+                                to={dateRange ? getFormatDate(dateRange[1]) : ''}
+                                timezone={timezone}
+                              />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
+                          </motion.div>
+                        </AnimatePresence>
 
-                      {isEmbedded ? null : (
-                        <>
-                          <div className='flex-1' />
-                          <div className='pointer-events-auto mt-4 flex w-full items-center justify-between gap-2'>
-                            <Dropdown
-                              items={whitelist}
-                              buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-slate-900 dark:text-gray-50'
-                              title={
-                                <span className='inline-flex items-center'>
-                                  <Flag
-                                    className='mr-2 rounded-xs'
-                                    country={languageFlag[language]}
-                                    size={16}
-                                    alt={languages[language]}
-                                  />
-                                  {languages[language]}
-                                </span>
-                              }
-                              labelExtractor={(lng: string) => (
-                                <div className='flex items-center'>
-                                  <Flag
-                                    className='mr-2 rounded-xs'
-                                    country={languageFlag[lng]}
-                                    size={16}
-                                    alt={languageFlag[lng]}
-                                  />
-                                  {languages[lng]}
-                                </div>
-                              )}
-                              onSelect={(lng: string) => {
-                                changeLanguage(lng)
-                              }}
-                              headless
-                            />
-                            <div className='flex items-center gap-2'>
-                              <button
-                                type='button'
-                                onClick={() => setIsHotkeysHelpOpened(true)}
-                                aria-label={t('modals.shortcuts.title')}
-                                className='relative rounded-md border border-transparent bg-gray-50 p-2 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-                              >
-                                <KeyboardIcon className='h-6 w-6 text-slate-700 dark:text-gray-200' />
-                              </button>
+                        {isEmbedded ? null : (
+                          <>
+                            <div className='flex-1' />
+                            <div className='pointer-events-auto mt-4 flex w-full items-center justify-between gap-2'>
                               <Dropdown
+                                items={whitelist}
+                                buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-slate-900 dark:text-gray-50'
                                 title={
-                                  <span className='flex items-center justify-center'>
-                                    <span className='sr-only'>{t('header.switchTheme')}</span>
-                                    {theme === 'dark' ? (
-                                      <SunIcon className='h-6 w-6 text-gray-200' aria-hidden='true' />
-                                    ) : (
-                                      <MoonIcon className='h-6 w-6 text-slate-700' aria-hidden='true' />
-                                    )}
+                                  <span className='inline-flex items-center'>
+                                    <Flag
+                                      className='mr-2 rounded-xs'
+                                      country={languageFlag[language]}
+                                      size={16}
+                                      alt={languages[language]}
+                                    />
+                                    {languages[language]}
                                   </span>
                                 }
-                                items={[
-                                  { key: 'light', label: t('header.light'), icon: SunIcon },
-                                  { key: 'dark', label: t('header.dark'), icon: MoonIcon },
-                                ]}
-                                keyExtractor={(item) => item.key}
-                                labelExtractor={(item) => (
-                                  <div
-                                    className={cx('flex w-full items-center', {
-                                      'light:text-indigo-600': item.key === 'light',
-                                      'dark:text-indigo-400': item.key === 'dark',
-                                    })}
-                                  >
-                                    <item.icon
-                                      className={cx('mr-2 h-5 w-5', {
-                                        'dark:text-gray-300': item.key === 'light',
-                                        'light:text-gray-400': item.key === 'dark',
-                                      })}
-                                      aria-hidden='true'
+                                labelExtractor={(lng: string) => (
+                                  <div className='flex items-center'>
+                                    <Flag
+                                      className='mr-2 rounded-xs'
+                                      country={languageFlag[lng]}
+                                      size={16}
+                                      alt={languageFlag[lng]}
                                     />
-                                    {item.label}
+                                    {languages[lng]}
                                   </div>
                                 )}
-                                onSelect={(item) => setTheme(item.key as 'light' | 'dark')}
-                                className='flex'
-                                chevron={null}
+                                onSelect={(lng: string) => {
+                                  changeLanguage(lng)
+                                }}
                                 headless
-                                buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 md:px-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-                                menuItemsClassName='top-5'
-                                selectItemClassName='font-semibold'
                               />
+                              <div className='flex items-center gap-2'>
+                                <button
+                                  type='button'
+                                  onClick={() => setIsHotkeysHelpOpened(true)}
+                                  aria-label={t('modals.shortcuts.title')}
+                                  className='relative rounded-md border border-transparent bg-gray-50 p-2 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                                >
+                                  <KeyboardIcon className='h-6 w-6 text-slate-700 dark:text-gray-200' />
+                                </button>
+                                <Dropdown
+                                  title={
+                                    <span className='flex items-center justify-center'>
+                                      <span className='sr-only'>{t('header.switchTheme')}</span>
+                                      {theme === 'dark' ? (
+                                        <SunIcon className='h-6 w-6 text-gray-200' aria-hidden='true' />
+                                      ) : (
+                                        <MoonIcon className='h-6 w-6 text-slate-700' aria-hidden='true' />
+                                      )}
+                                    </span>
+                                  }
+                                  items={[
+                                    { key: 'light', label: t('header.light'), icon: SunIcon },
+                                    { key: 'dark', label: t('header.dark'), icon: MoonIcon },
+                                  ]}
+                                  keyExtractor={(item) => item.key}
+                                  labelExtractor={(item) => (
+                                    <div
+                                      className={cx('flex w-full items-center', {
+                                        'light:text-indigo-600': item.key === 'light',
+                                        'dark:text-indigo-400': item.key === 'dark',
+                                      })}
+                                    >
+                                      <item.icon
+                                        className={cx('mr-2 h-5 w-5', {
+                                          'dark:text-gray-300': item.key === 'light',
+                                          'light:text-gray-400': item.key === 'dark',
+                                        })}
+                                        aria-hidden='true'
+                                      />
+                                      {item.label}
+                                    </div>
+                                  )}
+                                  onSelect={(item) => setTheme(item.key as 'light' | 'dark')}
+                                  className='flex'
+                                  chevron={null}
+                                  headless
+                                  buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 md:px-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                                  menuItemsClassName='top-5'
+                                  selectItemClassName='font-semibold'
+                                />
+                              </div>
                             </div>
-                          </div>
-                        </>
-                      )}
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {isEmbedded ? null : <Footer showDBIPMessage />}
-            </div>
-            <ViewProjectHotkeys isOpened={isHotkeysHelpOpened} onClose={() => setIsHotkeysHelpOpened(false)} />
-            <SearchFilters
-              type={activeTab === PROJECT_TABS.errors ? 'errors' : 'traffic'}
-              showModal={showFiltersSearch}
-              setShowModal={setShowFiltersSearch}
-              tnMapping={tnMapping}
-              filters={filters}
-            />
-            <AddAViewModal
-              showModal={isAddAViewOpened}
-              setShowModal={(show) => {
-                setIsAddAViewOpened(show)
-                setProjectViewToUpdate(undefined)
-              }}
-              onSubmit={() => {
-                setProjectViews([])
-                setProjectViewsLoading(null)
-                setProjectViewToUpdate(undefined)
-              }}
-              defaultView={projectViewToUpdate}
-              tnMapping={tnMapping}
-            />
+                {isEmbedded ? null : <Footer showDBIPMessage />}
+              </div>
+              <ViewProjectHotkeys isOpened={isHotkeysHelpOpened} onClose={() => setIsHotkeysHelpOpened(false)} />
+              <SearchFilters
+                type={activeTab === PROJECT_TABS.errors ? 'errors' : 'traffic'}
+                showModal={showFiltersSearch}
+                setShowModal={setShowFiltersSearch}
+                tnMapping={tnMapping}
+                filters={filters}
+              />
+              <AddAViewModal
+                showModal={isAddAViewOpened}
+                setShowModal={(show) => {
+                  setIsAddAViewOpened(show)
+                  setProjectViewToUpdate(undefined)
+                }}
+                onSubmit={() => {
+                  setProjectViews([])
+                  setProjectViewsLoading(null)
+                  setProjectViewToUpdate(undefined)
+                }}
+                defaultView={projectViewToUpdate}
+                tnMapping={tnMapping}
+              />
             </>
           </RefreshTriggersContext.Provider>
         </ViewProjectContext.Provider>

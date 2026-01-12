@@ -165,7 +165,15 @@ export const ProjectCard = ({
 
   // Handle fetcher responses
   useEffect(() => {
-    if (fetcher.data?.success) {
+    if (!fetcher.data) return
+
+    // Guard: only process responses for this specific project card
+    const submittedProjectId = fetcher.formData?.get('projectId')
+    const submittedShareId = fetcher.formData?.get('shareId')
+    const isForThisCard = submittedProjectId === id || submittedShareId === shareId
+    if (!isForThisCard) return
+
+    if (fetcher.data.success) {
       const { intent } = fetcher.data
 
       if (intent === 'pin-project') {
@@ -186,14 +194,14 @@ export const ProjectCard = ({
         refetchProjects()
         toast.success(t('apiNotifications.acceptInvitation'))
       }
-    } else if (fetcher.data?.error) {
+    } else if (fetcher.data.error) {
       // Revert optimistic update on error
       if (fetcher.data.intent === 'pin-project' || fetcher.data.intent === 'unpin-project') {
         setLocalIsPinned(isPinned)
       }
       toast.error(fetcher.data.error)
     }
-  }, [fetcher.data]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetcher.data, fetcher.formData, isPinned, shareId, user, mergeUser, refetchProjects, t, id])
 
   const handlePinToggle = useCallback(
     (e: React.MouseEvent) => {
@@ -331,10 +339,7 @@ export const ProjectCard = ({
               disabled={isPinning}
               aria-label={localIsPinned ? t('dashboard.unpin') : t('dashboard.pin')}
             >
-              <PinIcon
-                className={cx('size-5 transition-transform', localIsPinned && 'rotate-30')}
-                strokeWidth={1.5}
-              />
+              <PinIcon className={cx('size-5 transition-transform', localIsPinned && 'rotate-30')} strokeWidth={1.5} />
             </button>
             {project.isAccessConfirmed && role !== 'viewer' ? (
               <button

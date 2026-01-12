@@ -55,6 +55,8 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
 
   const prevActiveProfileIdRef = useRef<string | null>(activeProfileId)
   const profilesRequestIdRef = useRef(0)
+  const profileRequestIdRef = useRef(0)
+  const profileSessionsRequestIdRef = useRef(0)
   const skipNextProfilesAutoLoadRef = useRef(false)
   const isMountedRef = useRef(true)
 
@@ -125,6 +127,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
   }
 
   const loadProfile = async (profileId: string) => {
+    const requestId = ++profileRequestIdRef.current
     const hasExistingProfileData = !!activeProfile && activeProfile.profileId === profileId
 
     setProfileLoading(true)
@@ -140,30 +143,30 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       let from = ''
       let to = ''
 
-      if (dateRange) {
+      if (period === 'custom' && dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
       }
 
       const data = await profileProxy.fetchProfile(id, profileId, {
-        period: period === 'custom' ? '' : period,
+        period: period === 'custom' && dateRange ? '' : period,
         from,
         to,
         timezone,
       })
 
-      if (isMountedRef.current && data) {
+      if (requestId === profileRequestIdRef.current && isMountedRef.current && data) {
         setActiveProfile(data as unknown as ProfileDetailsType)
         // Load initial sessions for the profile (override existing on refresh)
         loadProfileSessionsData(profileId, 0, true)
       }
     } catch (reason) {
       console.error('[ERROR](loadProfile) Loading profile data failed:', reason)
-      if (isMountedRef.current) {
+      if (requestId === profileRequestIdRef.current && isMountedRef.current) {
         setActiveProfile(null)
       }
     } finally {
-      if (isMountedRef.current) {
+      if (requestId === profileRequestIdRef.current && isMountedRef.current) {
         setProfileLoading(false)
       }
     }
@@ -174,6 +177,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       return
     }
 
+    const requestId = ++profileSessionsRequestIdRef.current
     setProfileSessionsLoading(true)
 
     try {
@@ -181,7 +185,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       let from = ''
       let to = ''
 
-      if (dateRange) {
+      if (period === 'custom' && dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
       }
@@ -189,14 +193,14 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
       const dataSessions = await profileSessionsProxy.fetchProfileSessions(id, profileId, {
         period: period === 'custom' && dateRange ? '' : period,
         filters,
-        from: period === 'custom' && dateRange ? from : '',
-        to: period === 'custom' && dateRange ? to : '',
+        from,
+        to,
         take: SESSIONS_TAKE,
         skip,
         timezone,
       })
 
-      if (isMountedRef.current) {
+      if (requestId === profileSessionsRequestIdRef.current && isMountedRef.current) {
         const sessionsList = (dataSessions?.sessions || []) as unknown as Session[]
         if (override) {
           setProfileSessions(sessionsList)
@@ -219,7 +223,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
     } catch (reason) {
       console.error('[ERROR](loadProfileSessions) Loading profile sessions failed:', reason)
     } finally {
-      if (isMountedRef.current) {
+      if (requestId === profileSessionsRequestIdRef.current && isMountedRef.current) {
         setProfileSessionsLoading(false)
       }
     }

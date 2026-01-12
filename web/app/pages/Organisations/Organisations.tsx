@@ -3,9 +3,9 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import { SearchIcon, XIcon } from 'lucide-react'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFetcher, useLoaderData, useNavigate } from 'react-router'
+import { useFetcher, useLoaderData, useNavigate, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
 
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
@@ -27,6 +27,7 @@ const Organisations = () => {
   const loaderData = useLoaderData<OrganisationsLoaderData>()
   const fetcher = useFetcher<OrganisationsActionData>()
   const navigate = useNavigate()
+  const { revalidate } = useRevalidator()
 
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(() => !!loaderData?.search)
@@ -55,7 +56,7 @@ const Organisations = () => {
     navigate(`${routes.organisations}${params.toString() ? `?${params.toString()}` : ''}`, { replace: true })
   }
 
-  const closeNewOrganisationModal = () => {
+  const closeNewOrganisationModal = useCallback(() => {
     if (isNewOrganisationLoading) {
       return
     }
@@ -63,7 +64,7 @@ const Organisations = () => {
     setNewOrganisationModalOpen(false)
     setNewOrganisationError(null)
     setNewOrganisationName('')
-  }
+  }, [isNewOrganisationLoading])
 
   useEffect(() => {
     if (debouncedSearch !== loaderData?.search) {
@@ -72,25 +73,43 @@ const Organisations = () => {
   }, [debouncedSearch]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle fetcher responses
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (fetcher.data?.success && fetcher.data?.intent === 'create-organisation') {
-      updateUrlParams(page, debouncedSearch)
-      toast.success(t('apiNotifications.organisationCreated'))
-      closeNewOrganisationModal()
-    } else if (fetcher.data?.success && fetcher.data?.intent === 'accept-invitation') {
-      updateUrlParams(page, debouncedSearch)
-      toast.success(t('apiNotifications.acceptOrganisationInvitation'))
-    } else if (fetcher.data?.error && fetcher.data?.intent === 'create-organisation') {
-      setNewOrganisationError(fetcher.data.error)
-      toast.error(fetcher.data.error)
-    } else if (fetcher.data?.fieldErrors?.name && fetcher.data?.intent === 'create-organisation') {
-      setNewOrganisationError(fetcher.data.fieldErrors.name)
-    } else if (fetcher.data?.error) {
-      toast.error(fetcher.data.error)
+    if (!fetcher.data) return
+
+    const { intent, success, error, fieldErrors } = fetcher.data
+
+    switch (intent) {
+      case 'create-organisation':
+        if (success) {
+          revalidate()
+          toast.success(t('apiNotifications.organisationCreated'))
+          // eslint-disable-next-line
+          closeNewOrganisationModal()
+        } else if (fieldErrors?.name) {
+          setNewOrganisationError(fieldErrors.name)
+          toast.error(fieldErrors.name)
+        } else if (error) {
+          setNewOrganisationError(error)
+          toast.error(error)
+        }
+        break
+
+      case 'accept-invitation':
+        if (success) {
+          revalidate()
+          toast.success(t('apiNotifications.acceptOrganisationInvitation'))
+        } else if (error) {
+          toast.error(error)
+        }
+        break
+
+      default:
+        if (error) {
+          toast.error(error)
+        }
+        break
     }
-  }, [fetcher.data, page, debouncedSearch, t]) // eslint-disable-line react-hooks/exhaustive-deps
-  /* eslint-enable react-hooks/set-state-in-effect */
+  }, [fetcher.data, t, revalidate, closeNewOrganisationModal])
 
   const onNewOrganisation = () => {
     setNewOrganisationModalOpen(true)

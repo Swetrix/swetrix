@@ -82,7 +82,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   } | null>(() => {
     if (deferredData.funnelData) {
       return {
-        funnel: deferredData.funnelData.funnel as AnalyticsFunnel[],
+        funnel: deferredData.funnelData.funnel,
         totalPageviews: deferredData.funnelData.totalPageviews,
       }
     }
@@ -148,6 +148,12 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
           { intent: 'get-funnels', password: projectPassword },
           { method: 'POST', action: `/projects/${id}` },
         )
+        // If the updated funnel is currently being viewed, revalidate to refresh analytics
+        const updatedFunnelId = (fetcher.data.data as { id?: string })?.id
+        if (updatedFunnelId && activeFunnel?.id === updatedFunnelId) {
+          setDataLoading(true)
+          revalidator.revalidate()
+        }
       } else if (intent === 'delete-funnel') {
         toast.success(t('apiNotifications.funnelDeleted'))
         fetcher.submit(
@@ -160,7 +166,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
     } else if (error) {
       toast.error(error)
     }
-  }, [fetcher.state, fetcher.data, t, id, projectPassword, fetcher, mergeProject])
+  }, [fetcher.state, fetcher.data, t, id, projectPassword, fetcher, mergeProject, activeFunnel?.id, revalidator])
 
   const onFunnelCreate = (name: string, steps: string[]) => {
     if (funnelActionLoading) return
@@ -190,7 +196,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   useEffect(() => {
     if (deferredData.funnelData && revalidator.state === 'idle') {
       setFunnelAnalytics({
-        funnel: deferredData.funnelData.funnel as AnalyticsFunnel[],
+        funnel: deferredData.funnelData.funnel,
         totalPageviews: deferredData.funnelData.totalPageviews,
       })
       setDataLoading(false)
@@ -223,7 +229,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
     // If we have loader data for this funnel, use it
     if (deferredData.funnelData) {
       setFunnelAnalytics({
-        funnel: deferredData.funnelData.funnel as AnalyticsFunnel[],
+        funnel: deferredData.funnelData.funnel,
         totalPageviews: deferredData.funnelData.totalPageviews,
       })
     } else {
