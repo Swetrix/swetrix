@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import utc from 'dayjs/plugin/utc'
 import _round from 'lodash/round'
-import { memo, useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useLoaderData, useFetcher } from 'react-router'
 import { toast } from 'sonner'
@@ -11,7 +11,6 @@ import { toast } from 'sonner'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import FAQ from '~/components/marketing/FAQ'
 import BillingPricing from '~/components/pricing/BillingPricing'
-import { withAuthentication, auth } from '~/hoc/protected'
 import { PADDLE_JS_URL, PADDLE_VENDOR_ID, CONTACT_EMAIL, paddleLanguageMapping } from '~/lib/constants'
 import { DEFAULT_METAINFO } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
@@ -475,4 +474,4 @@ const Billing = () => {
   )
 }
 
-export default memo(withAuthentication(Billing, auth.authenticated))
+export default Billing
