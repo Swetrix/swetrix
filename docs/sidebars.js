@@ -92,7 +92,12 @@ module.exports = {
       },
     ],
     API: ['api/stats', 'api/events', 'api/admin'],
-    CAPTCHA: ['captcha/introduction', 'captcha/client-side-usage', 'captcha/server-side-validation', 'captcha/testing'],
+    CAPTCHA: [
+      'captcha/introduction',
+      'captcha/client-side-usage',
+      'captcha/server-side-validation',
+      'captcha/testing',
+    ],
     'Self-hosting': ['selfhosting/how-to', 'selfhosting/configuring'],
     Contribute: ['contribute/how-to'],
   },
