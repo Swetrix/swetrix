@@ -1,8 +1,8 @@
 {
   "private": true,
-  "sideEffects": false,
-  "type": "module",
   "license": "AGPL-3.0",
+  "type": "module",
+  "sideEffects": false,
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
@@ -68,18 +68,6 @@
     "timezone-soft": "^1.5.2",
     "use-stick-to-bottom": "^1.1.1"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "devDependencies": {
     "@react-router/dev": "^7.11.0",
     "@tailwindcss/forms": "^0.5.11",
@@ -94,14 +82,23 @@
     "cross-env": "^10.1.0",
     "knip": "^5.77.2",
     "oxfmt": "^0.24.0",
-    "oxlint": "^0.16.10",
+    "oxlint": "^1.39.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vite": "^7.3.0",
     "vite-tsconfig-paths": "^6.0.3"
   },
-  "engines": {
-    "node": ">=22"
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "devEngines": {
     "runtime": {
@@ -109,5 +106,8 @@
       "onFail": "error",
       "version": ">=22"
     }
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
