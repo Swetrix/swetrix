@@ -41,7 +41,6 @@ const {
   // 30 minutes
   JWT_ACCESS_TOKEN_LIFETIME = 60 * 30,
 } = process.env
-const isProxiedByCloudflare = process.env.CLOUDFLARE_PROXY_ENABLED === 'true'
 const isDevelopment = process.env.NODE_ENV === 'development'
 
 export const IS_REGISTRATION_DISABLED =
@@ -133,7 +132,6 @@ export {
   NUMBER_JWT_ACCESS_TOKEN_LIFETIME as JWT_ACCESS_TOKEN_LIFETIME,
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
-  isProxiedByCloudflare,
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,
   ERROR_COLUMNS,

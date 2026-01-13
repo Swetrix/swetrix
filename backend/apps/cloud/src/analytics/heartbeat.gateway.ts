@@ -9,7 +9,7 @@ import _split from 'lodash/split'
 
 import { AnalyticsService } from './analytics.service'
 import { AppLoggerService } from '../logger/logger.service'
-import { isProxiedByCloudflare } from '../common/constants'
+import { getIPFromHeaders } from '../common/utils'
 
 // Heartbeat interval: update session every 60 seconds
 const HEARTBEAT_INTERVAL_MS = 60_000
@@ -179,18 +179,12 @@ export class HeartbeatGateway
   private getIPFromSocket(client: Socket): string {
     const headers = client.handshake.headers
 
-    if (isProxiedByCloudflare && headers['cf-connecting-ip']) {
-      const cfIP = headers['cf-connecting-ip']
-      return Array.isArray(cfIP) ? cfIP[0] : cfIP
-    }
-
-    const ip = headers['x-forwarded-for'] || null
+    const ip = getIPFromHeaders(headers)
 
     if (!ip) {
       return client.handshake.address || ''
     }
 
-    const ipStr = Array.isArray(ip) ? ip[0] : ip
-    return _split(ipStr, ',')[0]
+    return ip
   }
 }

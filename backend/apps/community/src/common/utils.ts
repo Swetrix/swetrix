@@ -2,6 +2,7 @@ import { NotFoundException, HttpException } from '@nestjs/common'
 import path from 'path'
 import fs from 'fs'
 import crypto from 'crypto'
+import net from 'net'
 import randomstring from 'randomstring'
 import { CityResponse, Reader } from 'maxmind'
 import timezones from 'countries-and-timezones'
@@ -21,12 +22,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import _map from 'lodash/map'
 
-import {
-  redis,
-  isDevelopment,
-  isProxiedByCloudflare,
-  SELFHOSTED_GEOIP_DB_PATH,
-} from './constants'
+import { redis, isDevelopment, SELFHOSTED_GEOIP_DB_PATH } from './constants'
 import { clickhouse } from './integrations/clickhouse'
 import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { ProjectViewEntity } from '../project/entity/project-view.entity'
@@ -1157,25 +1153,44 @@ const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   }
 }
 
+const normalise = (raw: unknown): string | null => {
+  if (!raw) return null
+  const str = String(raw)
+  const first = str.split(',')[0]?.trim()
+  if (!first) return null
+
+  // Handle bracketed IPv6 like: [::1]:1234
+  const unbracketed = first.replace(/^\[([^\]]+)\](?::\d+)?$/, '$1')
+
+  if (net.isIP(unbracketed)) return unbracketed
+
+  // Handle IPv4 with port like: 203.0.113.1:1234
+  const ipv4PortMatch = unbracketed.match(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/)
+  if (ipv4PortMatch?.[1] && net.isIP(ipv4PortMatch[1])) {
+    return ipv4PortMatch[1]
+  }
+
+  return null
+}
+
+const getHeader = (headers: any, name: string): string | null | undefined => {
+  if (typeof headers?.get === 'function') {
+    return headers.get(name)
+  }
+  return headers?.[name] ?? headers?.[name.toLowerCase()]
+}
+
 const getIPFromHeaders = (headers: any) => {
-  if (isProxiedByCloudflare && headers['cf-connecting-ip']) {
-    return headers['cf-connecting-ip']
+  const customHeader = process.env.CLIENT_IP_HEADER
+
+  if (customHeader) {
+    const headerValue = getHeader(headers, customHeader)
+    if (headerValue) {
+      return normalise(headerValue)
+    }
   }
 
-  // Get IP based on the NGINX configuration
-  let ip = headers['x-real-ip']
-
-  if (ip) {
-    return ip
-  }
-
-  ip = headers['x-forwarded-for'] || null
-
-  if (!ip) {
-    return null
-  }
-
-  return _split(ip, ',')[0]
+  return normalise(getHeader(headers, 'x-forwarded-for'))
 }
 
 const sumArrays = (source: number[], target: number[]) => {
