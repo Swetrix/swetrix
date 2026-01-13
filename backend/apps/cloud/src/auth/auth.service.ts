@@ -92,7 +92,7 @@ export class AuthService {
   }
 
   private async createSha1Hash(text: string): Promise<string> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const sha1sum = createHash('sha1')
         .update(text)
         .digest('hex')
@@ -130,7 +130,7 @@ export class AuthService {
       const needle = `${lastChars}:`
       return String(response.data)
         .split('\n')
-        .some(line => line.startsWith(needle))
+        .some((line) => line.startsWith(needle))
     } catch (error) {
       console.error(
         `[ERROR][AuthService -> checkIfLeaked]: ${error} (prefix ${firstFiveChars})`,
@@ -159,9 +159,7 @@ export class AuthService {
       })
     }
 
-    const verificationLink = `${this.configService.get('CLIENT_URL')}/verify/${
-      actionToken.id
-    }`
+    const verificationLink = `${this.configService.get('CLIENT_URL')}/verify/${actionToken.id}`
 
     await this.mailerService.sendEmail(email, LetterTemplate.SignUp, {
       url: verificationLink,
@@ -947,7 +945,7 @@ export class AuthService {
           throw new BadRequestException('No email address found')
         }
 
-        email = _find(emails, e => e.primary).email
+        email = _find(emails, (e) => e.primary).email
       } catch (reason) {
         console.error(
           `[ERROR][AuthService -> processGithubCode -> axios.get (emails)]: ${reason}`,

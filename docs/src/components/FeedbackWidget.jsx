@@ -28,7 +28,11 @@ const hasRecentFeedback = (pathname) => {
     const raw = window.localStorage.getItem(key)
     if (raw) {
       const data = JSON.parse(raw)
-      if (data && typeof data.ts === 'number' && getNowMs() - data.ts < FEEDBACK_TTL_MS) {
+      if (
+        data &&
+        typeof data.ts === 'number' &&
+        getNowMs() - data.ts < FEEDBACK_TTL_MS
+      ) {
         return true
       }
     }
@@ -112,8 +116,14 @@ export default function FeedbackWidget() {
         <>
           {showReasonForm ? (
             <form className='swx-feedback-form' onSubmit={onSubmitReason}>
-              <p className='swx-feedback-question'>Why was this page not helpful to you?</p>
-              <div role='group' aria-label='Choose a reason' className='swx-feedback-reasons'>
+              <p className='swx-feedback-question'>
+                Why was this page not helpful to you?
+              </p>
+              <div
+                role='group'
+                aria-label='Choose a reason'
+                className='swx-feedback-reasons'
+              >
                 {NEGATIVE_REASONS.map((label) => (
                   <label key={label} className='swx-feedback-reason'>
                     <input
@@ -138,7 +148,9 @@ export default function FeedbackWidget() {
             </form>
           ) : (
             <>
-              <p className='swx-feedback-question'>Was this page helpful to you?</p>
+              <p className='swx-feedback-question'>
+                Was this page helpful to you?
+              </p>
               <div role='group' className='swx-feedback-actions'>
                 <button
                   type='button'

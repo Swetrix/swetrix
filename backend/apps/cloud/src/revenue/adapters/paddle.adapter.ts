@@ -332,7 +332,7 @@ export class PaddleAdapter {
     // Determine transaction type
     let type = RevenueType.SALE
     const lineItems = transaction.details.line_items || []
-    if (lineItems.some(item => item?.price?.billing_cycle != null)) {
+    if (lineItems.some((item) => item?.price?.billing_cycle != null)) {
       type = RevenueType.SUBSCRIPTION
     }
 

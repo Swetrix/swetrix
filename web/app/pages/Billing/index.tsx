@@ -1,22 +1,30 @@
-import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import {
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+} from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import utc from 'dayjs/plugin/utc'
 import _round from 'lodash/round'
-import { memo, useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
+import { useLoaderData, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { getPaymentMetainfo, getUsageInfo } from '~/api'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import FAQ from '~/components/marketing/FAQ'
 import BillingPricing from '~/components/pricing/BillingPricing'
-import { withAuthentication, auth } from '~/hoc/protected'
-import { isSelfhosted, PADDLE_JS_URL, PADDLE_VENDOR_ID, CONTACT_EMAIL, paddleLanguageMapping } from '~/lib/constants'
-import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
+import {
+  PADDLE_JS_URL,
+  PADDLE_VENDOR_ID,
+  CONTACT_EMAIL,
+  paddleLanguageMapping,
+} from '~/lib/constants'
+import { DEFAULT_METAINFO } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import type { BillingActionData, BillingLoaderData } from '~/routes/billing'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -26,31 +34,46 @@ import { loadScript } from '~/utils/generic'
 dayjs.extend(utc)
 dayjs.extend(duration)
 
-const Billing = () => {
-  const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
+const DEFAULT_USAGE_INFO: UsageInfo = {
+  total: 0,
+  traffic: 0,
+  errors: 0,
+  customEvents: 0,
+  captcha: 0,
+  trafficPerc: 0,
+  errorsPerc: 0,
+  customEventsPerc: 0,
+  captchaPerc: 0,
+}
 
-  const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
-  const [lastEvent, setLastEvent] = useState<{
-    event: string
-  } | null>(null)
+const Billing = () => {
+  const loaderData = useLoaderData<BillingLoaderData>()
+  const metainfoFetcher = useFetcher<BillingActionData>()
+
+  const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
+  const [lastEvent, setLastEvent] = useState<{ event: string } | null>(null)
 
   const { user, isLoading: authLoading } = useAuth()
   const { theme } = useTheme()
-  const [usageInfo, setUsageInfo] = useState<UsageInfo>({
-    total: 0,
-    traffic: 0,
-    errors: 0,
-    customEvents: 0,
-    captcha: 0,
-    trafficPerc: 0,
-    errorsPerc: 0,
-    customEventsPerc: 0,
-    captchaPerc: 0,
-  })
+
+  const metainfo = useMemo(() => {
+    if (metainfoFetcher.data?.success && metainfoFetcher.data.data) {
+      return metainfoFetcher.data.data as typeof DEFAULT_METAINFO
+    }
+    return loaderData?.metainfo ?? DEFAULT_METAINFO
+  }, [loaderData?.metainfo, metainfoFetcher.data])
+
+  const usageInfo = useMemo(
+    () => loaderData?.usageInfo ?? DEFAULT_USAGE_INFO,
+    [loaderData?.usageInfo],
+  )
+  const isLoading = !loaderData
+
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
+
   const {
     nextBillDate,
     planCode,
@@ -66,20 +89,10 @@ const Billing = () => {
   const isTrial = planCode === 'trial'
   const isNoSub = planCode === 'none'
 
-  const totalUsage = maxEventsCount ? _round((usageInfo.total / maxEventsCount) * 100, 2) : 0
+  const totalUsage = maxEventsCount
+    ? _round((usageInfo.total / maxEventsCount) * 100, 2)
+    : 0
   const remainingUsage = _round(100 - totalUsage, 2)
-
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const abortController = new AbortController()
-
-    getPaymentMetainfo({ signal: abortController.signal })
-      .then(setMetainfo)
-      .catch(() => {})
-
-    return () => abortController.abort()
-  }, [])
 
   // Paddle (payment processor) set-up
   useEffect(() => {
@@ -87,12 +100,9 @@ const Billing = () => {
 
     const interval = setInterval(paddleSetup, 200)
 
-    // prettier-ignore
     function paddleSetup() {
-      if (isSelfhosted) {
-        clearInterval(interval)
-      } else if ((window as any)?.Paddle) {
-        (window as any).Paddle.Setup({
+      if ((window as any)?.Paddle) {
+        ;(window as any).Paddle.Setup({
           vendor: PADDLE_VENDOR_ID,
           eventCallback: setLastEvent,
         })
@@ -101,32 +111,7 @@ const Billing = () => {
     }
   }, [])
 
-  const loadUsageInfo = async () => {
-    if (!isLoading) {
-      return
-    }
-
-    try {
-      const result = await getUsageInfo()
-      setUsageInfo(result)
-    } catch (reason: any) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.failedToLoadUsageInfo'))
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (authLoading) {
-      return
-    }
-
-    loadUsageInfo()
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading])
-
-  const isTrialEnded = useMemo(() => {
+  const isTrialEnded = (() => {
     if (!trialEndDate) {
       return false
     }
@@ -136,9 +121,9 @@ const Billing = () => {
     const diff = future.diff(now)
 
     return diff < 0
-  }, [trialEndDate])
+  })()
 
-  const trialEndsOnMessage = useMemo(() => {
+  const trialEndsOnMessage = (() => {
     if (!trialEndDate || !isTrial) {
       return null
     }
@@ -164,42 +149,21 @@ const Billing = () => {
     return t('billing.trialEnds', {
       date,
     })
-  }, [language, trialEndDate, isTrial, timeFormat, isTrialEnded, t])
-
-  const getSafePaddleUrl = (rawUrl: unknown): string | null => {
-    if (typeof rawUrl !== 'string' || rawUrl.trim().length === 0) return null
-
-    let parsed: URL
-    try {
-      parsed = new URL(rawUrl)
-    } catch {
-      return null
-    }
-
-    if (parsed.protocol !== 'https:') return null
-    if (parsed.username || parsed.password) return null
-
-    // Allow only Paddle-managed hosts.
-    const allowedHosts = new Set(['checkout.paddle.com', 'my.paddle.com'])
-    if (!allowedHosts.has(parsed.hostname)) return null
-
-    return parsed.toString()
-  }
+  })()
 
   const onSubscriptionCancel = () => {
-    const safeCancelUrl = getSafePaddleUrl(subCancelURL)
-    if (!safeCancelUrl) {
+    if (!subCancelURL) {
       toast.error(t('apiNotifications.somethingWentWrong'))
       return
     }
 
     if (!window.Paddle) {
-      window.location.replace(safeCancelUrl)
+      window.location.replace(subCancelURL)
       return
     }
 
     window.Paddle.Checkout.open({
-      override: safeCancelUrl,
+      override: subCancelURL,
       method: 'inline',
       frameTarget: 'checkout-container',
       frameInitialHeight: 416,
@@ -215,19 +179,18 @@ const Billing = () => {
   }
 
   const onUpdatePaymentDetails = () => {
-    const safeUpdateUrl = getSafePaddleUrl(subUpdateURL)
-    if (!safeUpdateUrl) {
+    if (!subUpdateURL) {
       toast.error(t('apiNotifications.somethingWentWrong'))
       return
     }
 
     if (!window.Paddle) {
-      window.location.replace(safeUpdateUrl)
+      window.location.replace(subUpdateURL)
       return
     }
 
     window.Paddle.Checkout.open({
-      override: safeUpdateUrl,
+      override: subUpdateURL,
       method: 'inline',
       frameTarget: 'checkout-container',
       frameInitialHeight: 416,
@@ -247,30 +210,44 @@ const Billing = () => {
       <DashboardLockedBanner />
 
       <div className='mx-auto px-4 pt-12 whitespace-pre-line sm:px-6 md:w-11/12'>
-        <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>{t('billing.title')}</h1>
+        <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>
+          {t('billing.title')}
+        </h1>
       </div>
 
       <div className='mx-auto mt-5 grid gap-x-10 gap-y-8 px-4 pb-4 whitespace-pre-line sm:px-6 md:w-11/12 lg:grid-cols-3'>
         <div className='lg:col-span-2'>
-          <h2 id='billing' className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'>
+          <h2
+            id='billing'
+            className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'
+          >
             {t('billing.subscription')}
           </h2>
           <p className='mt-1 text-base text-gray-900 dark:text-gray-50'>
             {isSubscriber ? t('billing.selectPlan') : t('billing.changePlan')}
           </p>
-          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('billing.membersNotification')}</p>
+          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+            {t('billing.membersNotification')}
+          </p>
           {isSubscriber && nextBillDate ? (
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
+                  <InformationCircleIcon
+                    aria-hidden='true'
+                    className='h-5 w-5 text-blue-400 dark:text-blue-100'
+                  />
                 </div>
                 <p className='ml-3 text-sm font-medium text-blue-700 dark:text-blue-100'>
                   {t('billing.nextBillDateIs', {
                     date:
                       language === 'en'
-                        ? dayjs(nextBillDate).locale(language).format('MMMM D, YYYY')
-                        : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY'),
+                        ? dayjs(nextBillDate)
+                            .locale(language)
+                            .format('MMMM D, YYYY')
+                        : dayjs(nextBillDate)
+                            .locale(language)
+                            .format('D MMMM, YYYY'),
                   })}
                 </p>
               </div>
@@ -280,7 +257,10 @@ const Billing = () => {
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
+                  <InformationCircleIcon
+                    aria-hidden='true'
+                    className='h-5 w-5 text-blue-400 dark:text-blue-100'
+                  />
                 </div>
                 <div className='ml-3'>
                   <h3 className='text-sm font-medium text-blue-700 dark:text-blue-100'>
@@ -290,8 +270,12 @@ const Billing = () => {
                     {t('billing.subscriptionCancelledDescription', {
                       date:
                         language === 'en'
-                          ? dayjs(cancellationEffectiveDate).locale(language).format('MMMM D, YYYY')
-                          : dayjs(cancellationEffectiveDate).locale(language).format('D MMMM, YYYY'),
+                          ? dayjs(cancellationEffectiveDate)
+                              .locale(language)
+                              .format('MMMM D, YYYY')
+                          : dayjs(cancellationEffectiveDate)
+                              .locale(language)
+                              .format('D MMMM, YYYY'),
                     })}
                   </p>
                 </div>
@@ -302,11 +286,18 @@ const Billing = () => {
             <div className='mt-5 max-w-prose rounded-md bg-amber-400/10 p-4 dark:bg-amber-600/20'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-amber-400 dark:text-amber-50' />
+                  <InformationCircleIcon
+                    aria-hidden='true'
+                    className='h-5 w-5 text-amber-400 dark:text-amber-50'
+                  />
                 </div>
                 <div className='ml-3'>
-                  <h3 className='text-sm font-medium text-amber-700 dark:text-amber-50'>{trialEndsOnMessage}</h3>
-                  <p className='mt-1 text-sm text-amber-700 dark:text-amber-50'>{t('billing.trialDescription')}</p>
+                  <h3 className='text-sm font-medium text-amber-700 dark:text-amber-50'>
+                    {trialEndsOnMessage}
+                  </h3>
+                  <p className='mt-1 text-sm text-amber-700 dark:text-amber-50'>
+                    {t('billing.trialDescription')}
+                  </p>
                 </div>
               </div>
             </div>
@@ -315,7 +306,10 @@ const Billing = () => {
             <div className='mt-5 max-w-prose rounded-md bg-red-50 p-4 dark:bg-red-600/20'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <ExclamationTriangleIcon aria-hidden='true' className='h-5 w-5 text-red-400 dark:text-red-100' />
+                  <ExclamationTriangleIcon
+                    aria-hidden='true'
+                    className='h-5 w-5 text-red-400 dark:text-red-100'
+                  />
                 </div>
                 <div className='ml-3'>
                   <h3 className='text-sm font-medium text-red-800 dark:text-red-100'>
@@ -329,19 +323,30 @@ const Billing = () => {
             </div>
           ) : null}
 
-          {isLoading ? (
+          {isLoading || authLoading ? (
             <Loader />
           ) : (
             <div className='mt-8 flex flex-col'>
-              <BillingPricing lastEvent={lastEvent} />
+              <BillingPricing lastEvent={lastEvent} metainfo={metainfo} />
               <div className='mt-2 space-y-2'>
                 {subUpdateURL && !cancellationEffectiveDate ? (
-                  <Button className='mr-2' onClick={onUpdatePaymentDetails} type='button' primary large>
+                  <Button
+                    className='mr-2'
+                    onClick={onUpdatePaymentDetails}
+                    type='button'
+                    primary
+                    large
+                  >
                     {t('billing.update')}
                   </Button>
                 ) : null}
                 {subCancelURL && !cancellationEffectiveDate ? (
-                  <Button onClick={() => setIsCancelSubModalOpened(true)} type='button' semiDanger large>
+                  <Button
+                    onClick={() => setIsCancelSubModalOpened(true)}
+                    type='button'
+                    semiDanger
+                    large
+                  >
                     {t('billing.cancelSub')}
                   </Button>
                 ) : null}
@@ -351,12 +356,17 @@ const Billing = () => {
         </div>
 
         <div className='lg:col-span-1'>
-          <h2 id='usage' className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'>
+          <h2
+            id='usage'
+            className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'
+          >
             {t('billing.planUsage')}
           </h2>
-          <p className='mt-1 max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('billing.planUsageDesc')}</p>
+          <p className='mt-1 max-w-prose text-base text-gray-900 dark:text-gray-50'>
+            {t('billing.planUsageDesc')}
+          </p>
 
-          {isLoading ? (
+          {isLoading || authLoading ? (
             <Loader />
           ) : (
             <div className='mt-4 text-gray-900 dark:text-gray-50'>
@@ -372,8 +382,12 @@ const Billing = () => {
                     <div className='ml-3'>
                       <p className='text-sm text-amber-800 dark:text-amber-100'>
                         {totalUsage >= 90
-                          ? t('billing.usageWarningCritical', { percentage: totalUsage })
-                          : t('billing.usageWarningHigh', { percentage: totalUsage })}
+                          ? t('billing.usageWarningCritical', {
+                              percentage: totalUsage,
+                            })
+                          : t('billing.usageWarningHigh', {
+                              percentage: totalUsage,
+                            })}
                       </p>
                     </div>
                   </div>
@@ -449,22 +463,34 @@ const Billing = () => {
                 className='w-full'
                 progress={[
                   {
-                    value: usageInfo.traffic === 0 ? 0 : (usageInfo.traffic / maxEventsCount) * 100,
+                    value:
+                      usageInfo.traffic === 0
+                        ? 0
+                        : (usageInfo.traffic / maxEventsCount) * 100,
                     lightColour: '#2563eb',
                     darkColour: '#1d4ed8',
                   },
                   {
-                    value: usageInfo.customEvents === 0 ? 0 : (usageInfo.customEvents / maxEventsCount) * 100,
+                    value:
+                      usageInfo.customEvents === 0
+                        ? 0
+                        : (usageInfo.customEvents / maxEventsCount) * 100,
                     lightColour: '#c026d3',
                     darkColour: '#a21caf',
                   },
                   {
-                    value: usageInfo.captcha === 0 ? 0 : (usageInfo.captcha / maxEventsCount) * 100,
+                    value:
+                      usageInfo.captcha === 0
+                        ? 0
+                        : (usageInfo.captcha / maxEventsCount) * 100,
                     lightColour: '#65a30d',
                     darkColour: '#4d7c0f',
                   },
                   {
-                    value: usageInfo.errors === 0 ? 0 : (usageInfo.errors / maxEventsCount) * 100,
+                    value:
+                      usageInfo.errors === 0
+                        ? 0
+                        : (usageInfo.errors / maxEventsCount) * 100,
                     lightColour: '#dc2626',
                     darkColour: '#b91c1c',
                   },
@@ -476,14 +502,20 @@ const Billing = () => {
                   {t('billing.xPercentUsed', { percentage: totalUsage })}
                 </p>
                 <p className='text-sm text-gray-600 dark:text-gray-400'>
-                  {t('billing.xPercentRemaining', { percentage: remainingUsage })}
+                  {t('billing.xPercentRemaining', {
+                    percentage: remainingUsage,
+                  })}
                 </p>
               </div>
 
               <p className='mt-4 text-sm text-gray-600 dark:text-gray-400'>
                 {t('billing.resetDate', {
                   days: Math.ceil(
-                    (new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).getTime() -
+                    (new Date(
+                      new Date().getFullYear(),
+                      new Date().getMonth() + 1,
+                      1,
+                    ).getTime() -
                       new Date().getTime()) /
                       (1000 * 60 * 60 * 24),
                   ),
@@ -524,4 +556,4 @@ const Billing = () => {
   )
 }
 
-export default memo(withAuthentication(Billing, auth.authenticated))
+export default Billing

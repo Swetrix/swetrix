@@ -15,7 +15,11 @@ import {
   PopoverBackdrop,
 } from '@headlessui/react'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import {
+  Bars3Icon,
+  XMarkIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/24/outline'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import { SiYoutube } from '@icons-pack/react-simple-icons'
 import cx from 'clsx'
@@ -25,13 +29,26 @@ import utc from 'dayjs/plugin/utc'
 import { type t as i18nextT } from 'i18next'
 import _map from 'lodash/map'
 import _startsWith from 'lodash/startsWith'
-import { GaugeIcon, ChartPieIcon, BugIcon, PuzzleIcon, PhoneIcon } from 'lucide-react'
+import {
+  GaugeIcon,
+  ChartPieIcon,
+  BugIcon,
+  PuzzleIcon,
+  PhoneIcon,
+} from 'lucide-react'
 import { memo, Fragment, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { changeLanguage } from '~/i18n'
-import { whitelist, languages, languageFlag, isSelfhosted, DOCS_URL, isDisableMarketingPages } from '~/lib/constants'
+import {
+  whitelist,
+  languages,
+  languageFlag,
+  isSelfhosted,
+  DOCS_URL,
+  isDisableMarketingPages,
+} from '~/lib/constants'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
@@ -78,7 +95,11 @@ const getSolutions = (t: typeof i18nextT) => [
 ]
 
 const getCallsToAction = (t: typeof i18nextT) => [
-  { name: t('header.watchDemo'), link: 'https://www.youtube.com/watch?v=XBp38fZREIE', icon: SiYoutube },
+  {
+    name: t('header.watchDemo'),
+    link: 'https://www.youtube.com/watch?v=XBp38fZREIE',
+    icon: SiYoutube,
+  },
   { name: t('header.contactSales'), link: routes.contact, icon: PhoneIcon },
 ]
 
@@ -126,7 +147,10 @@ const SolutionsMenu = () => {
                       />
                       <div>
                         {_startsWith(item.link, '/') ? (
-                          <Link to={item.link} className='text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                          <Link
+                            to={item.link}
+                            className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                          >
                             {item.name}
                             <span className='absolute inset-0' />
                           </Link>
@@ -142,7 +166,9 @@ const SolutionsMenu = () => {
                           </a>
                         )}
 
-                        <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>{item.description}</p>
+                        <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>
+                          {item.description}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -208,9 +234,12 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             <MenuButton className='underline-animate flex items-center justify-center text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'>
               <span>{t('common.account')}</span>
               <ChevronDownIcon
-                className={cx('ml-1 h-4 w-4 transform-gpu stroke-2 transition-transform', {
-                  'rotate-180': open,
-                })}
+                className={cx(
+                  'ml-1 h-4 w-4 transform-gpu stroke-2 transition-transform',
+                  {
+                    'rotate-180': open,
+                  },
+                )}
                 aria-hidden='true'
               />
             </MenuButton>
@@ -221,10 +250,16 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             modal={false}
           >
             <p className='truncate p-2' role='none'>
-              <span className='block text-xs text-gray-500 dark:text-gray-300' role='none'>
+              <span
+                className='block text-xs text-gray-500 dark:text-gray-300'
+                role='none'
+              >
                 {t('header.signedInAs')}
               </span>
-              <span className='mt-0.5 text-sm font-semibold text-gray-700 dark:text-gray-50' role='none'>
+              <span
+                className='mt-0.5 text-sm font-semibold text-gray-700 dark:text-gray-50'
+                role='none'
+              >
                 {user?.email}
               </span>
             </p>
@@ -394,16 +429,25 @@ const TrialBanner = () => {
       const isTomorrow = future.isSame(now.add(1, 'day'), 'day')
 
       if (isToday) {
-        return [TRIAL_STATUS_MAPPING.ENDS_TODAY, t('header.trialBanner.endsToday')]
+        return [
+          TRIAL_STATUS_MAPPING.ENDS_TODAY,
+          t('header.trialBanner.endsToday'),
+        ]
       }
       if (isTomorrow) {
-        return [TRIAL_STATUS_MAPPING.ENDS_TOMORROW, t('header.trialBanner.endsTomorrow')]
+        return [
+          TRIAL_STATUS_MAPPING.ENDS_TOMORROW,
+          t('header.trialBanner.endsTomorrow'),
+        ]
       }
     }
 
     // trial ends in more than 1 day
     const amount = Math.round(dayjs.duration(diff).asDays())
-    return [TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS, t('header.trialBanner.youHaveXDaysLeft', { amount })]
+    return [
+      TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
+      t('header.trialBanner.youHaveXDaysLeft', { amount }),
+    ]
   }, [user, t])
 
   const blackFridayBannerVisible = useMemo(() => {
@@ -504,17 +548,23 @@ const BlackFridayBanner = () => {
 
       {/* Mobile layout - compact, wraps if needed */}
       <div className='relative flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-3 py-1.5 sm:hidden'>
-        <span className='flex items-center gap-2 text-sm text-white/90'>Get</span>
+        <span className='flex items-center gap-2 text-sm text-white/90'>
+          Get
+        </span>
         <span className='rounded bg-gradient-to-r from-amber-500 to-orange-500 px-1.5 py-0.5 text-xs font-bold text-white'>
           50% OFF
         </span>
-        <div className='flex items-center gap-2 text-sm text-white/90'>with the code:</div>
+        <div className='flex items-center gap-2 text-sm text-white/90'>
+          with the code:
+        </div>
         <code className='rounded bg-black/40 px-1.5 py-0.5 font-mono text-xs font-bold text-amber-400'>
           BLACKFRIDAY
         </code>
         <span className='font-mono text-xs text-white/80'>
-          {String(timeLeft.days).padStart(2, '0')}:{String(timeLeft.hours).padStart(2, '0')}:
-          {String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+          {String(timeLeft.days).padStart(2, '0')}:
+          {String(timeLeft.hours).padStart(2, '0')}:
+          {String(timeLeft.minutes).padStart(2, '0')}:
+          {String(timeLeft.seconds).padStart(2, '0')}
         </span>
       </div>
 
@@ -590,7 +640,8 @@ const AuthedHeader = ({
   return (
     <header
       className={cx('relative overflow-x-clip', {
-        'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
+        'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900':
+          colourBackground,
       })}
     >
       <nav className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8' aria-label='Top'>
@@ -611,16 +662,8 @@ const AuthedHeader = ({
                   {t('billing.inactive')}
                 </Link>
               ) : null}
-              {!isSelfhosted && !isDisableMarketingPages ? <SolutionsMenu /> : null}
-              {isSelfhosted && !isDisableMarketingPages ? (
-                <a
-                  href={`https://swetrix.com${routes.blog}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
-                >
-                  {t('footer.blog')}
-                </a>
+              {!isSelfhosted && !isDisableMarketingPages ? (
+                <SolutionsMenu />
               ) : null}
               {!isSelfhosted && !isDisableMarketingPages ? (
                 <Link
@@ -679,7 +722,8 @@ const NotAuthedHeader = ({
   return (
     <header
       className={cx('relative overflow-x-clip', {
-        'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
+        'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900':
+          colourBackground,
       })}
     >
       <nav className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8' aria-label='Top'>
@@ -696,16 +740,8 @@ const NotAuthedHeader = ({
 
             {!refPage ? (
               <div className='ml-10 hidden items-center gap-4 space-x-1 lg:flex'>
-                {!isSelfhosted && !isDisableMarketingPages ? <SolutionsMenu /> : null}
-                {isSelfhosted && !isDisableMarketingPages ? (
-                  <a
-                    href={`https://swetrix.com${routes.blog}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
-                  >
-                    {t('footer.blog')}
-                  </a>
+                {!isSelfhosted && !isDisableMarketingPages ? (
+                  <SolutionsMenu />
                 ) : null}
                 {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
@@ -800,13 +836,25 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
 
       {/* Computer / Laptop / Tablet layout header */}
       {isAuthenticated ? (
-        <AuthedHeader logoutHandler={logoutHandler} colourBackground={!transparent} openMenu={openMenu} />
+        <AuthedHeader
+          logoutHandler={logoutHandler}
+          colourBackground={!transparent}
+          openMenu={openMenu}
+        />
       ) : (
-        <NotAuthedHeader colourBackground={!transparent} refPage={refPage} openMenu={openMenu} />
+        <NotAuthedHeader
+          colourBackground={!transparent}
+          refPage={refPage}
+          openMenu={openMenu}
+        />
       )}
 
       {/* Mobile header popup */}
-      <Dialog className='lg:hidden' open={mobileMenuOpen} onClose={setMobileMenuOpen}>
+      <Dialog
+        className='lg:hidden'
+        open={mobileMenuOpen}
+        onClose={setMobileMenuOpen}
+      >
         <div className='fixed inset-0 z-10' />
         <DialogPanel className='fixed inset-y-0 top-0 right-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl sm:max-w-sm sm:border dark:border-slate-900/80 dark:bg-slate-800/80'>
           <div className='flex items-center justify-between'>
@@ -852,7 +900,10 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                         <DisclosureButton className='flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'>
                           {t('header.solutions.title')}
                           <ChevronDownIcon
-                            className={cx(open ? 'rotate-180' : '', 'h-5 w-5 flex-none')}
+                            className={cx(
+                              open ? 'rotate-180' : '',
+                              'h-5 w-5 flex-none',
+                            )}
                             aria-hidden='true'
                           />
                         </DisclosureButton>
@@ -900,7 +951,9 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                                     </a>
                                   )}
 
-                                  <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>{item.description}</p>
+                                  <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>
+                                    {item.description}
+                                  </p>
                                 </div>
                               </DisclosureButton>
                             ))}
@@ -910,7 +963,9 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     )}
                   </Disclosure>
                 ) : null}
-                {!isSelfhosted && isAuthenticated && user?.planCode === 'none' ? (
+                {!isSelfhosted &&
+                isAuthenticated &&
+                user?.planCode === 'none' ? (
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
@@ -920,7 +975,10 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     {t('billing.inactive')}
                   </Link>
                 ) : null}
-                {!isSelfhosted && isAuthenticated && user?.planCode !== 'none' && user?.planCode !== 'trial' ? (
+                {!isSelfhosted &&
+                isAuthenticated &&
+                user?.planCode !== 'none' &&
+                user?.planCode !== 'trial' ? (
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
@@ -930,7 +988,9 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     {t('common.billing')}
                   </Link>
                 ) : null}
-                {!isSelfhosted && !isDisableMarketingPages && !isAuthenticated ? (
+                {!isSelfhosted &&
+                !isDisableMarketingPages &&
+                !isAuthenticated ? (
                   <Link
                     to={`${routes.main}#pricing`}
                     onClick={() => setMobileMenuOpen(false)}
@@ -939,17 +999,6 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   >
                     {t('common.pricing')}
                   </Link>
-                ) : null}
-                {isSelfhosted && !isDisableMarketingPages ? (
-                  <a
-                    onClick={() => setMobileMenuOpen(false)}
-                    href={`https://swetrix.com${routes.blog}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
-                  >
-                    {t('footer.blog')}
-                  </a>
                 ) : null}
                 {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
@@ -1020,7 +1069,9 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                       className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                       aria-label={t('titles.signup')}
                     >
-                      {isSelfhosted ? t('header.signUp') : t('header.startForFree')}
+                      {isSelfhosted
+                        ? t('header.signUp')
+                        : t('header.startForFree')}
                     </Link>
                   </>
                 )}

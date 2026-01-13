@@ -60,6 +60,6 @@ export class ProjectViewCustomEventEntity {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @ManyToOne(() => ProjectViewEntity, projectView => projectView.customEvents)
+  @ManyToOne(() => ProjectViewEntity, (projectView) => projectView.customEvents)
   view: ProjectViewEntity
 }

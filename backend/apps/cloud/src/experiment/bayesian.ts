@@ -43,7 +43,7 @@ function seedFromVariants(
 ): number {
   const normalized = [...variants]
     .sort((a, b) => a.key.localeCompare(b.key))
-    .map(v => `${v.key}:${v.exposures}:${v.conversions}`)
+    .map((v) => `${v.key}:${v.exposures}:${v.conversions}`)
     .join('|')
   return (fnv1a32(normalized) ^ (simulations >>> 0)) >>> 0
 }
@@ -125,7 +125,7 @@ export function calculateBayesianProbabilities(
 
   simulations = Math.max(1, Math.floor(simulations))
 
-  const sanitizedVariants = variants.map(v => {
+  const sanitizedVariants = variants.map((v) => {
     const exposures = Math.max(0, Math.floor(v.exposures))
     const conversions = Math.min(
       Math.max(0, Math.floor(v.conversions)),
@@ -144,7 +144,7 @@ export function calculateBayesianProbabilities(
   )
   if (totalExposures === 0) {
     const prob = 1 / sanitizedVariants.length
-    return new Map(sanitizedVariants.map(v => [v.key, prob]))
+    return new Map(sanitizedVariants.map((v) => [v.key, prob]))
   }
 
   const wins = new Map<string, number>()

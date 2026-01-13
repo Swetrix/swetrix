@@ -124,7 +124,7 @@ export class ExperimentController {
 
     const mappedResults: ExperimentDto[] = _map(
       result.results,
-      experiment =>
+      (experiment) =>
         ({
           ..._omit(experiment, ['project', 'goal', 'featureFlag']),
           pid: projectId,
@@ -244,7 +244,7 @@ export class ExperimentController {
       )
     }
 
-    const controlVariants = experimentDto.variants.filter(v => v.isControl)
+    const controlVariants = experimentDto.variants.filter((v) => v.isControl)
     if (controlVariants.length !== 1) {
       throw new BadRequestException(
         'An experiment must have exactly one control variant',
@@ -252,7 +252,7 @@ export class ExperimentController {
     }
 
     const totalPercentage = _sum(
-      experimentDto.variants.map(v => v.rolloutPercentage),
+      experimentDto.variants.map((v) => v.rolloutPercentage),
     )
     if (totalPercentage !== 100) {
       throw new BadRequestException(
@@ -324,7 +324,7 @@ export class ExperimentController {
       experiment.featureFlagKey = experimentDto.featureFlagKey || null
       experiment.featureFlag = existingFeatureFlag
 
-      experiment.variants = experimentDto.variants.map(v => {
+      experiment.variants = experimentDto.variants.map((v) => {
         const variant = new ExperimentVariant()
         variant.name = v.name
         variant.key = v.key
@@ -335,7 +335,7 @@ export class ExperimentController {
       })
 
       const newExperiment = await this.dataSource.transaction(
-        async transactionalEntityManager => {
+        async (transactionalEntityManager) => {
           const createdExperiment = await this.experimentService.create(
             experiment,
             transactionalEntityManager,
@@ -428,7 +428,7 @@ export class ExperimentController {
       }
     }
 
-    await this.dataSource.transaction(async transactionalEntityManager => {
+    await this.dataSource.transaction(async (transactionalEntityManager) => {
       if (experimentDto.variants) {
         if (experimentDto.variants.length < 2) {
           throw new BadRequestException(
@@ -436,7 +436,9 @@ export class ExperimentController {
           )
         }
 
-        const controlVariants = experimentDto.variants.filter(v => v.isControl)
+        const controlVariants = experimentDto.variants.filter(
+          (v) => v.isControl,
+        )
         if (controlVariants.length !== 1) {
           throw new BadRequestException(
             'An experiment must have exactly one control variant',
@@ -444,7 +446,7 @@ export class ExperimentController {
         }
 
         const totalPercentage = _sum(
-          experimentDto.variants.map(v => v.rolloutPercentage),
+          experimentDto.variants.map((v) => v.rolloutPercentage),
         )
         if (totalPercentage !== 100) {
           throw new BadRequestException(
@@ -533,7 +535,7 @@ export class ExperimentController {
         featureFlag,
       }
 
-      Object.keys(updatePayload).forEach(key => {
+      Object.keys(updatePayload).forEach((key) => {
         if (updatePayload[key] === undefined) {
           delete updatePayload[key]
         }
@@ -651,7 +653,7 @@ export class ExperimentController {
     }
 
     try {
-      await this.dataSource.transaction(async transactionalEntityManager => {
+      await this.dataSource.transaction(async (transactionalEntityManager) => {
         let featureFlag = experiment.featureFlag
         if (!featureFlag) {
           if (experiment.featureFlagMode === FeatureFlagMode.CREATE) {
@@ -928,7 +930,7 @@ export class ExperimentController {
     try {
       const result = await clickhouse
         .query({ query: exposuresQuery, query_params: exposuresParams })
-        .then(resultSet =>
+        .then((resultSet) =>
           resultSet.json<{ variantKey: string; exposures: number }>(),
         )
       exposuresData = result.data
@@ -997,7 +999,7 @@ export class ExperimentController {
       try {
         const result = await clickhouse
           .query({ query: conversionsQuery, query_params: conversionsParams })
-          .then(resultSet =>
+          .then((resultSet) =>
             resultSet.json<{ variantKey: string; conversions: number }>(),
           )
         conversionsData = result.data
@@ -1007,13 +1009,13 @@ export class ExperimentController {
     }
 
     const exposuresMap = new Map(
-      exposuresData.map(e => [e.variantKey, Number(e.exposures)]),
+      exposuresData.map((e) => [e.variantKey, Number(e.exposures)]),
     )
     const conversionsMap = new Map(
-      conversionsData.map(c => [c.variantKey, Number(c.conversions)]),
+      conversionsData.map((c) => [c.variantKey, Number(c.conversions)]),
     )
 
-    const controlVariant = experiment.variants.find(v => v.isControl)
+    const controlVariant = experiment.variants.find((v) => v.isControl)
     const controlExposures = controlVariant
       ? exposuresMap.get(controlVariant.key) || 0
       : 0
@@ -1023,7 +1025,7 @@ export class ExperimentController {
     const controlRate =
       controlExposures > 0 ? controlConversions / controlExposures : 0
 
-    const variantData = experiment.variants.map(v => ({
+    const variantData = experiment.variants.map((v) => ({
       key: v.key,
       exposures: exposuresMap.get(v.key) || 0,
       conversions: conversionsMap.get(v.key) || 0,
@@ -1031,7 +1033,7 @@ export class ExperimentController {
 
     const probabilities = calculateBayesianProbabilities(variantData)
 
-    const variantResults: VariantResultDto[] = experiment.variants.map(v => {
+    const variantResults: VariantResultDto[] = experiment.variants.map((v) => {
       const exposures = exposuresMap.get(v.key) || 0
       const conversions = conversionsMap.get(v.key) || 0
       const conversionRate = exposures > 0 ? conversions / exposures : 0
@@ -1058,8 +1060,8 @@ export class ExperimentController {
       }
     })
 
-    const totalExposures = _sum(variantResults.map(v => v.exposures))
-    const totalConversions = _sum(variantResults.map(v => v.conversions))
+    const totalExposures = _sum(variantResults.map((v) => v.exposures))
+    const totalConversions = _sum(variantResults.map((v) => v.conversions))
 
     let highestProbVariant: VariantResultDto | null = null
     let hasWinner = false
@@ -1168,7 +1170,7 @@ export class ExperimentController {
     try {
       const result = await clickhouse
         .query({ query: exposuresQuery, query_params: queryParams })
-        .then(resultSet => resultSet.json())
+        .then((resultSet) => resultSet.json())
       exposuresData = result.data as any[]
     } catch (err) {
       this.logger.warn({ err }, 'Failed to get time-bucketed exposures')
@@ -1241,14 +1243,14 @@ export class ExperimentController {
             query: conversionsQuery,
             query_params: { ...queryParams, goalValue, ...metaParams },
           })
-          .then(resultSet => resultSet.json())
+          .then((resultSet) => resultSet.json())
         conversionsData = result.data as any[]
       } catch (err) {
         this.logger.warn({ err }, 'Failed to get time-bucketed conversions')
       }
     }
 
-    const variantKeys = experiment.variants.map(v => v.key)
+    const variantKeys = experiment.variants.map((v) => v.key)
     const winProbability: Record<string, number[]> = {}
 
     for (const key of variantKeys) {
@@ -1302,7 +1304,7 @@ export class ExperimentController {
         }
       }
 
-      const variantData = variantKeys.map(key => ({
+      const variantData = variantKeys.map((key) => ({
         key,
         exposures: cumulativeExposures[key],
         conversions: cumulativeConversions[key],

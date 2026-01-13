@@ -1,6 +1,12 @@
-import { isDevelopment, isSelfhosted, isBrowser, COOKIE_DOMAIN } from '~/lib/constants'
+import {
+  isDevelopment,
+  isSelfhosted,
+  isBrowser,
+  COOKIE_DOMAIN,
+} from '~/lib/constants'
 
-const COOKIE_SUFFIX = isDevelopment || isSelfhosted ? '' : `; domain=${COOKIE_DOMAIN}; secure`
+const COOKIE_SUFFIX =
+  isDevelopment || isSelfhosted ? '' : `; domain=${COOKIE_DOMAIN}; secure`
 
 export const getCookie = (key: string) => {
   if (!isBrowser) {
@@ -10,29 +16,34 @@ export const getCookie = (key: string) => {
   const match = document.cookie.match(new RegExp(`(^| )${key}=([^;]+)`))
 
   if (match) {
-    return match[2]
+    try {
+      return decodeURIComponent(match[2])
+    } catch {
+      return match[2]
+    }
   }
 
   return null
 }
 
-const generateCookieString = (key: string, value: string | number | boolean, maxAge = 3600, sameSite = 'strict') => {
+const generateCookieString = (
+  key: string,
+  value: string | number | boolean,
+  maxAge = 3600,
+  sameSite = 'strict',
+) => {
   return `${key}=${value}; max-age=${maxAge}; path=/; SameSite=${sameSite}${COOKIE_SUFFIX}`
 }
 
-export const setCookie = (key: string, value: string | number | boolean, maxAge = 3600, sameSite = 'strict') => {
+export const setCookie = (
+  key: string,
+  value: string | number | boolean,
+  maxAge = 3600,
+  sameSite = 'strict',
+) => {
   if (!isBrowser) {
     return null
   }
 
   document.cookie = generateCookieString(key, value, maxAge, sameSite)
-}
-
-export const deleteCookie = (key: string) => {
-  if (!isBrowser) {
-    return null
-  }
-
-  document.cookie = `${key}=; max-age=0; path=/; SameSite=strict`
-  document.cookie = `${key}=; max-age=0; path=/; SameSite=strict${COOKIE_SUFFIX}`
 }

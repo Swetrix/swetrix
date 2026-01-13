@@ -22,7 +22,7 @@ export class Annotation {
   @CreateDateColumn()
   created: Date
 
-  @ManyToOne(() => Project, project => project.annotations)
+  @ManyToOne(() => Project, (project) => project.annotations)
   @JoinColumn()
   project: Project
 }

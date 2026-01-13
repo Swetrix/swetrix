@@ -66,7 +66,9 @@ const matchByMap = (host: string): string | null => {
   return null
 }
 
-const getCanonicalRefGroup = (refValue: string | null): { key: string; name: string } | null => {
+const getCanonicalRefGroup = (
+  refValue: string | null,
+): { key: string; name: string } | null => {
   const value = (refValue || '').trim()
 
   const host = extractHostname(value)
@@ -111,8 +113,12 @@ export const getFaviconHost = (value: string | null): string | null => {
   if (hostFromValue) return hostFromValue
 
   // 3) If value is a mapped referrer group name, use the first domain-like pattern
-  const mapping = REFERRER_MAP.find((m) => value.toLowerCase() === m.name.toLowerCase())
+  const mapping = REFERRER_MAP.find(
+    (m) => value.toLowerCase() === m.name.toLowerCase(),
+  )
   if (!mapping) return null
-  const domainLike = mapping.patterns.find((p) => !p.includes('://') && p.includes('.'))
+  const domainLike = mapping.patterns.find(
+    (p) => !p.includes('://') && p.includes('.'),
+  )
   return domainLike || null
 }

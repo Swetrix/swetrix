@@ -4,11 +4,11 @@ import { useEffect, useState, memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
-import { getUserFlow } from '~/api'
+import { useUserFlowProxy } from '~/hooks/useAnalyticsProxy'
 import { UserFlowType } from '~/lib/models/UserFlow'
 import Loader from '~/ui/Loader'
 
-import { useCurrentProject, useProjectPassword } from '../../../../providers/CurrentProjectProvider'
+import { useCurrentProject } from '../../../../providers/CurrentProjectProvider'
 import { useViewProjectContext } from '../../View/ViewProject'
 import { getFormatDate } from '../../View/ViewProject.helpers'
 
@@ -18,15 +18,16 @@ interface UserFlowProps {
 }
 
 const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
-  const { dateRange, period, timeBucket, timezone, filters } = useViewProjectContext()
+  const { dateRange, period, timeBucket, timezone, filters } =
+    useViewProjectContext()
   const { id } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [userFlow, setUserFlow] = useState<{
     ascending: UserFlowType
     descending: UserFlowType
   } | null>(null)
+  const { fetchUserFlow: fetchUserFlowProxy } = useUserFlowProxy()
 
   const [from, to] = useMemo(() => {
     if (!dateRange) {
@@ -44,19 +45,26 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
     setIsLoading(true)
 
     try {
-      const { ascending, descending } = await getUserFlow(
-        id,
+      const result = await fetchUserFlowProxy(id, {
         timeBucket,
         period,
         filters,
         from,
         to,
         timezone,
-        projectPassword,
-      )
-      setUserFlow({ ascending, descending })
+      })
+      if (result) {
+        setUserFlow({
+          ascending: result as unknown as UserFlowType,
+          descending: result as unknown as UserFlowType,
+        })
+      }
     } catch (error: any) {
-      toast.error(typeof error === 'string' ? error : t('apiNotifications.somethingWentWrong'))
+      toast.error(
+        typeof error === 'string'
+          ? error
+          : t('apiNotifications.somethingWentWrong'),
+      )
     } finally {
       setIsLoading(false)
     }
@@ -73,8 +81,12 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
 
   if (
     !isReversed
-      ? _isEmpty(userFlow?.ascending) || _isEmpty(userFlow?.ascending?.nodes) || _isEmpty(userFlow?.ascending?.links)
-      : _isEmpty(userFlow?.descending) || _isEmpty(userFlow?.descending?.links) || _isEmpty(userFlow?.descending?.nodes)
+      ? _isEmpty(userFlow?.ascending) ||
+        _isEmpty(userFlow?.ascending?.nodes) ||
+        _isEmpty(userFlow?.ascending?.links)
+      : _isEmpty(userFlow?.descending) ||
+        _isEmpty(userFlow?.descending?.links) ||
+        _isEmpty(userFlow?.descending?.nodes)
   ) {
     return (
       <>

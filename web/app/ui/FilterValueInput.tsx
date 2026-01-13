@@ -34,10 +34,21 @@ import {
   TvIcon,
   WatchIcon,
 } from 'lucide-react'
-import { useState, useEffect, useCallback, useRef, useMemo, ReactNode } from 'react'
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+  ReactNode,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants'
+import {
+  BROWSER_LOGO_MAP,
+  OS_LOGO_MAP,
+  OS_LOGO_MAP_DARK,
+} from '~/lib/constants'
 import Flag from '~/ui/Flag'
 import Spin from '~/ui/icons/Spin'
 import countries from '~/utils/isoCountries'
@@ -81,10 +92,13 @@ const deviceIconMapping: Record<string, ReactNode> = {
 const VERSION_SEPARATOR = '|||'
 
 // Helper to create combined version value
-export const createVersionValue = (parent: string, version: string) => `${parent}${VERSION_SEPARATOR}${version}`
+export const createVersionValue = (parent: string, version: string) =>
+  `${parent}${VERSION_SEPARATOR}${version}`
 
 // Helper to parse combined version value
-export const parseVersionValue = (value: string): { parent: string; version: string } | null => {
+export const parseVersionValue = (
+  value: string,
+): { parent: string; version: string } | null => {
   if (!value.includes(VERSION_SEPARATOR)) return null
   const [parent, version] = value.split(VERSION_SEPARATOR)
   return { parent, version }
@@ -125,7 +139,10 @@ const FilterValueInput = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false)
       }
     }
@@ -153,7 +170,15 @@ const FilterValueInput = ({
   const getIconForItem = useCallback(
     (item: string): ReactNode => {
       if (column === 'cc') {
-        return <Flag className='shrink-0 rounded-xs' country={item} size={16} alt='' aria-hidden='true' />
+        return (
+          <Flag
+            className='shrink-0 rounded-xs'
+            country={item}
+            size={16}
+            alt=''
+            aria-hidden='true'
+          />
+        )
       }
 
       if (column === 'br') {
@@ -187,7 +212,13 @@ const FilterValueInput = ({
         logoUrl ||= logoUrlLight
 
         if (logoUrl) {
-          return <img src={logoUrl} className='size-4 shrink-0 dark:fill-gray-50' alt='' />
+          return (
+            <img
+              src={logoUrl}
+              className='size-4 shrink-0 dark:fill-gray-50'
+              alt=''
+            />
+          )
         }
         return <GlobeIcon className='size-4 shrink-0' strokeWidth={1.5} />
       }
@@ -204,7 +235,13 @@ const FilterValueInput = ({
           logoUrl ||= logoUrlLight
 
           if (logoUrl) {
-            return <img src={logoUrl} className='size-4 shrink-0 dark:fill-gray-50' alt='' />
+            return (
+              <img
+                src={logoUrl}
+                className='size-4 shrink-0 dark:fill-gray-50'
+                alt=''
+              />
+            )
           }
         }
         return <GlobeIcon className='size-4 shrink-0' strokeWidth={1.5} />
@@ -215,7 +252,9 @@ const FilterValueInput = ({
         if (icon) {
           return <span className='shrink-0'>{icon}</span>
         }
-        return <CircleQuestionMark className='size-4 shrink-0' strokeWidth={1.5} />
+        return (
+          <CircleQuestionMark className='size-4 shrink-0' strokeWidth={1.5} />
+        )
       }
 
       return null
@@ -273,12 +312,17 @@ const FilterValueInput = ({
             onChange(alpha2)
           } else {
             // Check if it's already a valid alpha2 code
-            const validCode = items.find((item) => _toLower(item) === _toLower(inputValue))
+            const validCode = items.find(
+              (item) => _toLower(item) === _toLower(inputValue),
+            )
             onChange(validCode || inputValue.trim())
           }
         } else {
           // Check if input matches an existing item (case insensitive)
-          const matchingItem = items.find((item) => _toLower(getLabelForItem(item)) === _toLower(inputValue.trim()))
+          const matchingItem = items.find(
+            (item) =>
+              _toLower(getLabelForItem(item)) === _toLower(inputValue.trim()),
+          )
           onChange(matchingItem || inputValue.trim())
         }
         setInputValue('')
@@ -297,7 +341,9 @@ const FilterValueInput = ({
     <div ref={containerRef} className={cx('relative flex-1', className)}>
       <div className='relative'>
         {showIconInInput ? (
-          <span className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5'>{selectedIcon}</span>
+          <span className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-2.5'>
+            {selectedIcon}
+          </span>
         ) : null}
         <input
           ref={inputRef}
@@ -318,7 +364,11 @@ const FilterValueInput = ({
           disabled={disabled}
         />
         <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
-          {isLoading ? <Spin className='size-4' /> : <ChevronsUpDownIcon className='h-4 w-4 text-gray-400' />}
+          {isLoading ? (
+            <Spin className='size-4' />
+          ) : (
+            <ChevronsUpDownIcon className='h-4 w-4 text-gray-400' />
+          )}
         </span>
       </div>
 
@@ -336,7 +386,10 @@ const FilterValueInput = ({
                   type='button'
                   onClick={() => {
                     if (column === 'cc') {
-                      const alpha2 = countries.getAlpha2Code(inputValue, language)
+                      const alpha2 = countries.getAlpha2Code(
+                        inputValue,
+                        language,
+                      )
                       onChange(alpha2 || inputValue.trim())
                     } else {
                       onChange(inputValue.trim())
@@ -349,7 +402,9 @@ const FilterValueInput = ({
                   {t('project.filterUseValue', { value: inputValue.trim() })}
                 </button>
               ) : (
-                <span className='text-gray-500 dark:text-gray-400'>{t('common.nothingFound')}</span>
+                <span className='text-gray-500 dark:text-gray-400'>
+                  {t('common.nothingFound')}
+                </span>
               )}
             </div>
           ) : (
@@ -386,7 +441,13 @@ const FilterValueInput = ({
                       }}
                     >
                       {icon}
-                      <span className={cx('block truncate', { 'font-medium': selected })}>{labelValue}</span>
+                      <span
+                        className={cx('block truncate', {
+                          'font-medium': selected,
+                        })}
+                      >
+                        {labelValue}
+                      </span>
                       {selected ? (
                         <CheckIcon className='ml-auto h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400' />
                       ) : null}

@@ -118,7 +118,7 @@ export const processProjectUser = (
   project: Project,
   properties: Array<'share' | 'organisation.members'> = ['share'],
 ): Project => {
-  _map(properties, property => {
+  _map(properties, (property) => {
     const array =
       property === 'share' ? project.share : project.organisation?.members
 
@@ -497,7 +497,7 @@ export class ProjectService implements OnModuleDestroy {
         'pinnedProject.projectId = project.id AND pinnedProject.userId = :userId',
       )
       .where(
-        new Brackets(qb => {
+        new Brackets((qb) => {
           qb.where('project.adminId = :userId')
             .orWhere(
               'EXISTS (SELECT 1 FROM project_share ps WHERE ps.projectId = project.id AND ps.userId = :userId)',
@@ -562,7 +562,7 @@ export class ProjectService implements OnModuleDestroy {
       .leftJoin('project.share', 'share')
       .where('project.organisation IS NULL')
       .andWhere(
-        new Brackets(qb => {
+        new Brackets((qb) => {
           qb.where('admin.id = :userId', { userId }).orWhere(
             'share.user.id = :userId AND share.role = :adminRole',
             { userId, adminRole: Role.admin },
@@ -670,7 +670,7 @@ export class ProjectService implements OnModuleDestroy {
       ) !== -1 ||
       _findIndex(
         project.organisation?.members,
-        member => member.user?.id === uid && member.confirmed === true,
+        (member) => member.user?.id === uid && member.confirmed === true,
       ) !== -1
     ) {
       return null
@@ -703,14 +703,14 @@ export class ProjectService implements OnModuleDestroy {
       uid === project.admin?.id ||
       _findIndex(
         project.share,
-        share =>
+        (share) =>
           share.user?.id === uid &&
           share.role === Role.admin &&
           share.confirmed === true,
       ) !== -1 ||
       _findIndex(
         project.organisation?.members,
-        member =>
+        (member) =>
           member.user?.id === uid &&
           member.confirmed === true &&
           (member.role === OrganisationRole.admin ||
@@ -799,7 +799,7 @@ export class ProjectService implements OnModuleDestroy {
     }
 
     await Promise.all(
-      _map(queries, query =>
+      _map(queries, (query) =>
         clickhouse.command({
           query,
           query_params: params,
@@ -816,7 +816,7 @@ export class ProjectService implements OnModuleDestroy {
         'The list of allowed origins has to be smaller than 300 symbols',
       )
 
-    _map(projectDTO.origins, host => {
+    _map(projectDTO.origins, (host) => {
       if (!ORIGINS_REGEX.test(_trim(host))) {
         throw new ConflictException(`Host ${host} is not correct`)
       }
@@ -830,7 +830,7 @@ export class ProjectService implements OnModuleDestroy {
       throw new UnprocessableEntityException(
         'The list of allowed blacklisted IP addresses must be less than 300 characters.',
       )
-    _map(projectDTO.ipBlacklist, ip => {
+    _map(projectDTO.ipBlacklist, (ip) => {
       if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
         throw new ConflictException(`IP address ${ip} is not correct`)
       }
@@ -850,7 +850,7 @@ export class ProjectService implements OnModuleDestroy {
       )
 
     const countryCodeRegex = /^[A-Z]{2}$/
-    _map(projectDTO.countryBlacklist, code => {
+    _map(projectDTO.countryBlacklist, (code) => {
       const trimmedCode = _trim(code).toUpperCase()
       if (!countryCodeRegex.test(trimmedCode)) {
         throw new ConflictException(
@@ -942,25 +942,25 @@ export class ProjectService implements OnModuleDestroy {
               query: countEVQuery,
               query_params: params,
             })
-            .then(resultSet => resultSet.json()),
+            .then((resultSet) => resultSet.json()),
           clickhouse
             .query({
               query: countCustomEVQuery,
               query_params: params,
             })
-            .then(resultSet => resultSet.json()),
+            .then((resultSet) => resultSet.json()),
           clickhouse
             .query({
               query: countCaptchaQuery,
               query_params: params,
             })
-            .then(resultSet => resultSet.json()),
+            .then((resultSet) => resultSet.json()),
           clickhouse
             .query({
               query: countErrorsQuery,
               query_params: params,
             })
-            .then(resultSet => resultSet.json()),
+            .then((resultSet) => resultSet.json()),
         ])
 
         totalPageviews += pageviews[0]['count()']
@@ -1040,25 +1040,25 @@ export class ProjectService implements OnModuleDestroy {
               query: countEVQuery,
               query_params: params,
             })
-            .then(resultSet => resultSet.json()),
+            .then((resultSet) => resultSet.json()),
           clickhouse
             .query({
               query: countCustomEVQuery,
               query_params: params,
             })
-            .then(resultSet => resultSet.json()),
+            .then((resultSet) => resultSet.json()),
           clickhouse
             .query({
               query: countCaptchaQuery,
               query_params: params,
             })
-            .then(resultSet => resultSet.json()),
+            .then((resultSet) => resultSet.json()),
           clickhouse
             .query({
               query: countErrorsQuery,
               query_params: params,
             })
-            .then(resultSet => resultSet.json()),
+            .then((resultSet) => resultSet.json()),
         ])
 
         totalTraffic += rawTraffic[0]['count()']
@@ -1181,7 +1181,7 @@ export class ProjectService implements OnModuleDestroy {
         query,
         query_params: params,
       })
-      .then(resultSet => resultSet.json<{ pid: string }>())
+      .then((resultSet) => resultSet.json<{ pid: string }>())
 
     return _map(data, ({ pid }) => pid)
   }
@@ -1230,7 +1230,7 @@ export class ProjectService implements OnModuleDestroy {
         query,
         query_params: params,
       })
-      .then(resultSet => resultSet.json<{ pid: string }>())
+      .then((resultSet) => resultSet.json<{ pid: string }>())
 
     return _map(data, ({ pid }) => pid)
   }
@@ -1279,7 +1279,7 @@ export class ProjectService implements OnModuleDestroy {
         query,
         query_params: params,
       })
-      .then(resultSet => resultSet.json<{ pid: string }>())
+      .then((resultSet) => resultSet.json<{ pid: string }>())
 
     return _map(data, ({ pid }) => pid)
   }
@@ -1454,7 +1454,7 @@ export class ProjectService implements OnModuleDestroy {
       relations: ['project'],
       where: { id: subscriberId },
     })
-    return projects.map(project => project.project)
+    return projects.map((project) => project.project)
   }
 
   async getOwnProject(projectId: string, userId: string) {
@@ -1661,7 +1661,7 @@ export class ProjectService implements OnModuleDestroy {
           query,
           query_params: params,
         })
-        .then(resultSet => resultSet.json())
+        .then((resultSet) => resultSet.json())
 
       count = data[0]['count']
     } catch (reason) {
@@ -1744,10 +1744,12 @@ export class ProjectService implements OnModuleDestroy {
 
     const pinnedProjectIds = await this.getPinnedProjectIds(userId)
 
-    paginated.results = _map(paginated.results, project => {
-      const userShare = project.share?.find(share => share.user?.id === userId)
+    paginated.results = _map(paginated.results, (project) => {
+      const userShare = project.share?.find(
+        (share) => share.user?.id === userId,
+      )
       const organisationMembership = project.organisation?.members?.find(
-        member => member.user?.id === userId,
+        (member) => member.user?.id === userId,
       )
 
       let role
@@ -1793,7 +1795,7 @@ export class ProjectService implements OnModuleDestroy {
       },
     })
 
-    return _map(pinnedProjects, pp => pp.project?.id).filter(Boolean)
+    return _map(pinnedProjects, (pp) => pp.project?.id).filter(Boolean)
   }
 
   async pinProject(userId: string, projectId: string): Promise<void> {

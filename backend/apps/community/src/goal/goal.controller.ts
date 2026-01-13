@@ -128,7 +128,7 @@ export class GoalController {
 
     return {
       ...result,
-      results: _map(result.results, goal => ({
+      results: _map(result.results, (goal) => ({
         ...goal,
         pid: goal.projectId,
       })),
@@ -376,7 +376,7 @@ export class GoalController {
 
     const { data: conversionsData } = await clickhouse
       .query({ query: conversionsQuery, query_params: queryParams })
-      .then(resultSet =>
+      .then((resultSet) =>
         resultSet.json<{ conversions: number; uniqueSessions: number }>(),
       )
 
@@ -401,7 +401,7 @@ export class GoalController {
           groupTo: groupToUTC,
         },
       })
-      .then(resultSet => resultSet.json<{ totalSessions: number }>())
+      .then((resultSet) => resultSet.json<{ totalSessions: number }>())
 
     const totalSessions = totalData[0]?.totalSessions || 1
     const conversionRate = _round((uniqueSessions / totalSessions) * 100, 2)
@@ -423,7 +423,7 @@ export class GoalController {
 
     const { data: previousData } = await clickhouse
       .query({ query: conversionsQuery, query_params: previousQueryParams })
-      .then(resultSet =>
+      .then((resultSet) =>
         resultSet.json<{ conversions: number; uniqueSessions: number }>(),
       )
 
@@ -610,7 +610,7 @@ export class GoalController {
 
     const { data } = await clickhouse
       .query({ query: chartQuery, query_params: queryParams })
-      .then(resultSet =>
+      .then((resultSet) =>
         resultSet.json<{
           year: number
           month?: number

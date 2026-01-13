@@ -3,7 +3,7 @@
 const { queriesRunner, dbName } = require('./setup')
 
 const queries = [
-  `ALTER TABLE ${dbName}.project ADD COLUMN websiteUrl Nullable(String) DEFAULT NULL AFTER adminId;`,
+  `ALTER TABLE ${dbName}.project ADD COLUMN websiteUrl Nullable(String) CODEC(ZSTD(3)) AFTER adminId;`,
 ]
 
 queriesRunner(queries)

@@ -317,7 +317,7 @@ export class GSCService {
         position?: number
       }>
       return rows
-        .map(row => ({
+        .map((row) => ({
           name: row.keys?.[0] || '(not set)',
           count: Math.round(row.clicks || 0),
           impressions: Math.round(row.impressions || 0),

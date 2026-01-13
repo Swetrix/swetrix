@@ -22,10 +22,10 @@ export class OrganisationMember {
   id: string
 
   @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, user => user.organisationMemberships)
+  @ManyToOne(() => User, (user) => user.organisationMemberships)
   user: User
 
-  @ManyToOne(() => Organisation, org => org.members)
+  @ManyToOne(() => Organisation, (org) => org.members)
   organisation: Organisation
 
   @Column({

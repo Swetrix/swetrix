@@ -16,9 +16,20 @@ const CCRow = ({ cc, name, language, size = 21 }: CCRowProps) => {
 
   return (
     <>
-      <Flag className='rounded-xs' country={cc} size={size} alt='' aria-hidden='true' />
+      <Flag
+        className='rounded-xs'
+        country={cc}
+        size={size}
+        alt=''
+        aria-hidden='true'
+      />
       &nbsp;
-      {name || (cc ? countries.getName(cc, language) : <span className='italic'>{t('common.unknown')}</span>)}
+      {name ||
+        (cc ? (
+          countries.getName(cc, language)
+        ) : (
+          <span className='italic'>{t('common.unknown')}</span>
+        ))}
     </>
   )
 }

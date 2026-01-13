@@ -10,7 +10,9 @@ import routes from '~/utils/routes'
  */
 export function detectTheme(request: Request): ThemeType {
   // Stage 1: Check if theme is set via `theme` query param
-  const queryTheme = new URL(request.url).searchParams.get('theme') as ThemeType | null
+  const queryTheme = new URL(request.url).searchParams.get(
+    'theme',
+  ) as ThemeType | null
 
   if (queryTheme && _includes(SUPPORTED_THEMES, queryTheme)) {
     return queryTheme
@@ -27,24 +29,15 @@ export function detectTheme(request: Request): ThemeType {
   // Stage 3: Try to detect theme based on Sec-CH browser hints
   // Currently only Chromium-based browsers support this feature
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-CH-Prefers-Color-Scheme
-  const hintedTheme = request.headers.get('Sec-CH-Prefers-Color-Scheme') as ThemeType
+  const hintedTheme = request.headers.get(
+    'Sec-CH-Prefers-Color-Scheme',
+  ) as ThemeType
 
   if (_includes(SUPPORTED_THEMES, hintedTheme)) {
     return hintedTheme
   }
 
   return 'light'
-}
-
-function getAccessToken(request: Request): string | null {
-  const cookie = request.headers.get('Cookie')
-  const accessToken = cookie?.match(/(?<=access_token=)[^;]*/)?.[0]
-
-  return accessToken || null
-}
-
-export function isAuthenticated(request: Request): boolean {
-  return !!getAccessToken(request)
 }
 
 export function isWWW(url: URL): boolean {
@@ -56,7 +49,11 @@ interface GetPageMeta {
   prefixLessTitle: string
 }
 
-export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: string): GetPageMeta => {
+export const getPageMeta = (
+  t: typeof i18next.t,
+  url?: string,
+  _pathname?: string,
+): GetPageMeta => {
   const DEFAULT_RESULT = {
     title: t('titles.main'),
   } as Partial<GetPageMeta>

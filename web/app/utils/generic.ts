@@ -18,9 +18,14 @@ const formatterLookup = [
 ]
 
 export const nFormatter = (num: any, digits = 1) => {
-  const item = _find(formatterLookup.slice().reverse(), ({ value }) => Math.abs(num) >= value)
+  const item = _find(
+    formatterLookup.slice().reverse(),
+    ({ value }) => Math.abs(num) >= value,
+  )
 
-  return item ? _replace((num / item.value).toFixed(digits), rx, '$1') + item.symbol : '0'
+  return item
+    ? _replace((num / item.value).toFixed(digits), rx, '$1') + item.symbol
+    : '0'
 }
 
 export const nLocaleFormatter = (num: number): string => {
@@ -33,10 +38,16 @@ export const nLocaleFormatter = (num: number): string => {
 
 // returns something like [123, 'k'], [5.5, 'M'], [425, null]
 export const nFormatterSeparated = (num: any, digits = 1) => {
-  const item = _find(formatterLookup.slice().reverse(), ({ value }) => num >= value)
+  const item = _find(
+    formatterLookup.slice().reverse(),
+    ({ value }) => num >= value,
+  )
 
   if (item) {
-    return [Number(_replace((num / item.value).toFixed(digits), rx, '$1')), item.symbol || null]
+    return [
+      Number(_replace((num / item.value).toFixed(digits), rx, '$1')),
+      item.symbol || null,
+    ]
   }
 
   return [0, null]
@@ -115,7 +126,11 @@ export const loadScript = (url: string) => {
   document.body.appendChild(script)
 }
 
-export const calculateRelativePercentage = (oldVal: number, newVal: number, round = 2) => {
+export const calculateRelativePercentage = (
+  oldVal: number,
+  newVal: number,
+  round = 2,
+) => {
   if (oldVal === newVal) return 0
   if (oldVal === 0) return 100
   if (newVal === 0) return -100
@@ -131,7 +146,10 @@ const displayNamesPolyfill = {
   of: (name: string) => name,
 }
 
-export const getLocaleDisplayName = (locale: string | null, language: string): string => {
+export const getLocaleDisplayName = (
+  locale: string | null,
+  language: string,
+): string => {
   if (!locale) return ''
 
   const languageNames = Intl.DisplayNames
@@ -145,7 +163,8 @@ export const getLocaleDisplayName = (locale: string | null, language: string): s
   }
 }
 
-export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+export const delay = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms))
 
 export const cn = (...args: ClassValue[]) => {
   return twMerge(clsx(args))

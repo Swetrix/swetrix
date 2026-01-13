@@ -78,7 +78,9 @@ export const ChartContextMenu = ({
           top: y,
         }}
       >
-        <div className='px-3 py-2 text-sm text-gray-500 dark:text-gray-400'>{t('project.annotationsViewOnly')}</div>
+        <div className='px-3 py-2 text-sm text-gray-500 dark:text-gray-400'>
+          {t('project.annotationsViewOnly')}
+        </div>
       </div>
     )
   }

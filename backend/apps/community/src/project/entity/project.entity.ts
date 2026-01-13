@@ -18,6 +18,10 @@ export class Project {
   adminId: string | null
   // Optional website URL - used to display favicon and construct page links
   websiteUrl: string | null
+  // CAPTCHA fields
+  isCaptchaProject: boolean
+  captchaSecretKey?: string
+  captchaDifficulty?: number
 }
 
 export enum Role {

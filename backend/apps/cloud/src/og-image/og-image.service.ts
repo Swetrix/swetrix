@@ -233,7 +233,7 @@ export class OgImageService implements OnModuleDestroy {
       } catch (error) {
         lastError = error
         // Small backoff before retrying
-        await new Promise(r => setTimeout(r, attempt * 500))
+        await new Promise((r) => setTimeout(r, attempt * 500))
       }
     }
     throw lastError instanceof Error
@@ -280,7 +280,7 @@ export class OgImageService implements OnModuleDestroy {
       try {
         await page.setJavaScriptEnabled(false)
         await page.setRequestInterception(true)
-        page.on('request', req => {
+        page.on('request', (req) => {
           const url = req.url()
           // `setContent()` uses about:blank internally; the logo is a data: URL.
           if (url === 'about:blank' || url.startsWith('data:')) {
@@ -298,7 +298,7 @@ export class OgImageService implements OnModuleDestroy {
         return image
       } catch (error) {
         if (attempt === 2) throw error
-        await new Promise(r => setTimeout(r, attempt * 250))
+        await new Promise((r) => setTimeout(r, attempt * 250))
       } finally {
         try {
           await page.close()

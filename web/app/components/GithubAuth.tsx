@@ -13,7 +13,12 @@ interface GoogleAuthProps {
   disabled?: boolean
 }
 
-const GithubAuth = ({ isMiniButton, className, onClick, disabled }: GoogleAuthProps) => {
+const GithubAuth = ({
+  isMiniButton,
+  className,
+  onClick,
+  disabled,
+}: GoogleAuthProps) => {
   const { t } = useTranslation()
   const { theme } = useTheme()
 
@@ -30,7 +35,11 @@ const GithubAuth = ({ isMiniButton, className, onClick, disabled }: GoogleAuthPr
         regular
         disabled={disabled}
       >
-        {theme === 'dark' ? <GithubLightSVG className='size-5' /> : <GithubDarkSVG className='size-5' />}
+        {theme === 'dark' ? (
+          <GithubLightSVG className='size-5' />
+        ) : (
+          <GithubDarkSVG className='size-5' />
+        )}
       </Button>
     )
   }
@@ -47,7 +56,11 @@ const GithubAuth = ({ isMiniButton, className, onClick, disabled }: GoogleAuthPr
       disabled={disabled}
     >
       <>
-        {theme === 'dark' ? <GithubLightSVG className='mr-2 size-5' /> : <GithubDarkSVG className='mr-2 size-5' />}
+        {theme === 'dark' ? (
+          <GithubLightSVG className='mr-2 size-5' />
+        ) : (
+          <GithubDarkSVG className='mr-2 size-5' />
+        )}
         {t('auth.common.github')}
       </>
     </Button>

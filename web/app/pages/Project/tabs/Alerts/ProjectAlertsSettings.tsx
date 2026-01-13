@@ -1,4 +1,7 @@
-import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import {
+  ExclamationTriangleIcon,
+  XCircleIcon,
+} from '@heroicons/react/24/outline'
 import _findKey from 'lodash/findKey'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
@@ -7,16 +10,16 @@ import _size from 'lodash/size'
 import _split from 'lodash/split'
 import _toNumber from 'lodash/toNumber'
 import _values from 'lodash/values'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { createAlert, updateAlert, deleteAlert, CreateAlert, getAlert } from '~/api'
 import { QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import { useAuth } from '~/providers/AuthProvider'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
@@ -48,6 +51,9 @@ const ProjectAlertsSettings = ({
   const { user, isLoading: authLoading } = useAuth()
 
   const { t } = useTranslation('common')
+  const fetcher = useFetcher<ProjectViewActionData>()
+  const lastHandledData = useRef<ProjectViewActionData | null>(null)
+
   const [form, setForm] = useState<Partial<Alerts>>({
     pid: projectId,
     name: '',
@@ -60,7 +66,6 @@ const ProjectAlertsSettings = ({
     alertOnNewErrorsOnly: true,
     alertOnEveryCustomEvent: false,
   })
-  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
@@ -75,46 +80,64 @@ const ProjectAlertsSettings = ({
     }
 
     return Boolean(
-      (user.telegramChatId && user.isTelegramChatIdConfirmed) || user.slackWebhookUrl || user.discordWebhookUrl,
+      (user.telegramChatId && user.isTelegramChatIdConfirmed) ||
+      user.slackWebhookUrl ||
+      user.discordWebhookUrl,
     )
   }, [user])
 
-  const loadAlert = async (id: string) => {
-    if (!isSettings) {
-      setIsLoading(false)
-      return
-    }
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
 
-    if (isLoading) {
-      return
-    }
+    const { intent, success, data, error: fetcherError } = fetcher.data
 
-    setIsLoading(true)
-
-    try {
-      const result = await getAlert(id)
-      setAlert(result)
-      setForm(result)
-    } catch (reason: any) {
-      setError(reason)
-    } finally {
-      setIsLoading(false)
+    if (success) {
+      if (intent === 'get-alert' && data) {
+        const alertData = data as Alerts
+        setAlert(alertData)
+        setForm(alertData)
+        setIsLoading(false)
+      } else if (intent === 'create-alert') {
+        toast.success(t('alertsSettings.alertCreated'))
+        onSave?.()
+      } else if (intent === 'update-alert' && data) {
+        setAlert(data as Alerts)
+        toast.success(t('alertsSettings.alertUpdated'))
+        onSave?.()
+      } else if (intent === 'delete-alert') {
+        toast.success(t('alertsSettings.alertDeleted'))
+        onSave?.()
+      }
+    } else if (fetcherError) {
+      if (intent === 'get-alert') {
+        setError(fetcherError)
+        setIsLoading(false)
+      } else {
+        toast.error(fetcherError)
+      }
     }
-  }
+  }, [fetcher.state, fetcher.data, t, onSave])
 
   useEffect(() => {
     if (authLoading) {
       return
     }
 
-    if (alertId) {
-      loadAlert(alertId)
+    if (alertId && isSettings) {
+      setIsLoading(true)
+      fetcher.submit(
+        { intent: 'get-alert', alertId },
+        { method: 'POST', action: `/projects/${projectId}` },
+      )
     } else {
       setIsLoading(false)
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, alertId, isSettings])
+  }, [authLoading, alertId, isSettings, projectId])
 
   const queryTimeTMapping: Record<string, string> = useMemo(() => {
     const values = _values(QUERY_TIME)
@@ -190,7 +213,10 @@ const ProjectAlertsSettings = ({
   }, [form.queryMetric])
 
   useEffect(() => {
-    if (form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent) {
+    if (
+      form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
+      form.alertOnEveryCustomEvent
+    ) {
       setForm((prevForm) => ({
         ...prevForm,
         queryCondition: undefined,
@@ -207,15 +233,24 @@ const ProjectAlertsSettings = ({
       allErrors.name = t('alert.noNameError')
     }
 
-    if (form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && _isEmpty(form.queryCustomEvent)) {
+    if (
+      form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
+      _isEmpty(form.queryCustomEvent)
+    ) {
       allErrors.queryCustomEvent = t('alert.noCustomEventError')
     }
 
     if (
       form.queryMetric !== QUERY_METRIC.ERRORS &&
-      !(form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent)
+      !(
+        form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
+        form.alertOnEveryCustomEvent
+      )
     ) {
-      if (form.queryValue === undefined || Number.isNaN(_toNumber(form.queryValue))) {
+      if (
+        form.queryValue === undefined ||
+        Number.isNaN(_toNumber(form.queryValue))
+      ) {
         allErrors.queryValue = t('alert.queryValueError')
       }
     }
@@ -223,63 +258,24 @@ const ProjectAlertsSettings = ({
     const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
-    setValidated(valid)
+
+    return valid
   }
 
-  const onSubmit = (data: Partial<Alerts>) => {
-    let submissionData = { ...data }
-    if (data.queryMetric === QUERY_METRIC.ERRORS) {
-      submissionData = {
-        ...submissionData,
-        queryCondition: null,
-        queryValue: null,
-        queryTime: null,
-      }
-    } else if (data.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && data.alertOnEveryCustomEvent) {
-      submissionData = {
-        ...submissionData,
-        queryCondition: null,
-        queryValue: null,
-        queryTime: null,
-      }
-    }
-
-    if (isSettings && alertId) {
-      updateAlert(alertId, submissionData)
-        .then((res) => {
-          setAlert(res)
-          toast.success(t('alertsSettings.alertUpdated'))
-          onSave?.()
-        })
-        .catch((reason) => {
-          toast.error(reason.message || reason || 'Something went wrong')
-        })
-    } else {
-      createAlert(submissionData as CreateAlert)
-        .then(() => {
-          toast.success(t('alertsSettings.alertCreated'))
-          onSave?.()
-        })
-        .catch((reason) => {
-          toast.error(reason.message || reason || 'Something went wrong')
-        })
-    }
-  }
+  const shouldIncludeQueryFields =
+    form.queryMetric !== QUERY_METRIC.ERRORS &&
+    !(
+      form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
+      form.alertOnEveryCustomEvent
+    )
 
   const onDeleteAlert = () => {
-    if (!alertId) {
-      toast.error('Something went wrong')
-      return
-    }
+    if (!alertId || fetcher.state !== 'idle') return
 
-    deleteAlert(alertId)
-      .then(() => {
-        toast.success(t('alertsSettings.alertDeleted'))
-        onSave?.()
-      })
-      .catch((reason) => {
-        toast.error(reason.message || reason || 'Something went wrong')
-      })
+    fetcher.submit(
+      { intent: 'delete-alert', alertId },
+      { method: 'POST', action: `/projects/${projectId}` },
+    )
   }
 
   useEffect(() => {
@@ -296,29 +292,12 @@ const ProjectAlertsSettings = ({
   }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    e.stopPropagation()
     setBeenSubmitted(true)
 
-    let currentForm = { ...form }
-    if (form.queryMetric === QUERY_METRIC.ERRORS) {
-      currentForm = {
-        ...currentForm,
-        queryCondition: null,
-        queryValue: null,
-        queryTime: null,
-      }
-    } else if (form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent) {
-      currentForm = {
-        ...currentForm,
-        queryCondition: null,
-        queryValue: null,
-        queryTime: null,
-      }
-    }
+    const isValid = validate()
 
-    if (validated) {
-      onSubmit(currentForm)
+    if (!isValid) {
+      e.preventDefault()
     }
   }
 
@@ -341,7 +320,10 @@ const ProjectAlertsSettings = ({
       <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
         <div className='mx-auto max-w-max'>
           <main className='sm:flex'>
-            <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
+            <XCircleIcon
+              className='h-12 w-12 text-red-400'
+              aria-hidden='true'
+            />
             <div className='sm:ml-6'>
               <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
                 <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
@@ -382,12 +364,46 @@ const ProjectAlertsSettings = ({
         showRefreshButton={false}
         showPeriodSelector={false}
         leftContent={
-          <Text as='h2' size='xl' weight='bold' className='wrap-break-word break-all'>
+          <Text
+            as='h2'
+            size='xl'
+            weight='bold'
+            className='wrap-break-word break-all'
+          >
             {title}
           </Text>
         }
       />
-      <form className='w-full pb-4' onSubmit={handleSubmit}>
+      <fetcher.Form
+        method='POST'
+        action={`/projects/${projectId}`}
+        className='w-full pb-4'
+        onSubmit={handleSubmit}
+      >
+        <input
+          type='hidden'
+          name='intent'
+          value={isSettings && alertId ? 'update-alert' : 'create-alert'}
+        />
+        {isSettings && alertId ? (
+          <input type='hidden' name='alertId' value={alertId} />
+        ) : null}
+        <input
+          type='hidden'
+          name='queryMetric'
+          value={form.queryMetric || QUERY_METRIC.PAGE_VIEWS}
+        />
+        {shouldIncludeQueryFields && form.queryCondition ? (
+          <input
+            type='hidden'
+            name='queryCondition'
+            value={form.queryCondition}
+          />
+        ) : null}
+        {shouldIncludeQueryFields && form.queryTime ? (
+          <input type='hidden' name='queryTime' value={form.queryTime} />
+        ) : null}
+
         {!authLoading && !isIntegrationLinked ? (
           <div className='mt-2 flex items-center rounded-sm bg-blue-50 px-5 py-3 text-base whitespace-pre-wrap dark:bg-slate-800 dark:text-gray-50'>
             <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
@@ -395,7 +411,12 @@ const ProjectAlertsSettings = ({
               t={t}
               i18nKey='alert.noIntegration'
               components={{
-                url: <Link to={INTEGRATIONS_LINK} className='text-blue-600 hover:underline dark:text-blue-500' />,
+                url: (
+                  <Link
+                    to={INTEGRATIONS_LINK}
+                    className='text-blue-600 hover:underline dark:text-blue-500'
+                  />
+                ),
               }}
             />
           </div>
@@ -429,9 +450,14 @@ const ProjectAlertsSettings = ({
             id='queryMetric'
             label={t('alert.metric')}
             items={_values(queryMetricTMapping)}
-            title={form.queryMetric ? queryMetricTMapping[form.queryMetric] : ''}
+            title={
+              form.queryMetric ? queryMetricTMapping[form.queryMetric] : ''
+            }
             onSelect={(item) => {
-              const key = _findKey(queryMetricTMapping, (predicate) => predicate === item)
+              const key = _findKey(
+                queryMetricTMapping,
+                (predicate) => predicate === item,
+              )
 
               // @ts-expect-error
               setForm((prevForm) => ({
@@ -440,7 +466,11 @@ const ProjectAlertsSettings = ({
               }))
             }}
             capitalise
-            selectedItem={form.queryMetric ? queryMetricTMapping[form.queryMetric] : undefined}
+            selectedItem={
+              form.queryMetric
+                ? queryMetricTMapping[form.queryMetric]
+                : undefined
+            }
           />
         </div>
         {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS ? (
@@ -489,16 +519,26 @@ const ProjectAlertsSettings = ({
           />
         ) : null}
         {form.queryMetric !== QUERY_METRIC.ERRORS &&
-        !(form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent) ? (
+        !(
+          form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS &&
+          form.alertOnEveryCustomEvent
+        ) ? (
           <>
             <div className='mt-4'>
               <Select
                 id='queryCondition'
                 label={t('alert.condition')}
                 items={_values(queryConditionTMapping)}
-                title={form.queryCondition ? queryConditionTMapping[form.queryCondition] : ''}
+                title={
+                  form.queryCondition
+                    ? queryConditionTMapping[form.queryCondition]
+                    : ''
+                }
                 onSelect={(item) => {
-                  const key = _findKey(queryConditionTMapping, (predicate) => predicate === item)
+                  const key = _findKey(
+                    queryConditionTMapping,
+                    (predicate) => predicate === item,
+                  )
 
                   // @ts-expect-error
                   setForm((prevForm) => ({
@@ -507,7 +547,11 @@ const ProjectAlertsSettings = ({
                   }))
                 }}
                 capitalise
-                selectedItem={form.queryCondition ? queryConditionTMapping[form.queryCondition] : undefined}
+                selectedItem={
+                  form.queryCondition
+                    ? queryConditionTMapping[form.queryCondition]
+                    : undefined
+                }
               />
             </div>
             <Input
@@ -526,7 +570,10 @@ const ProjectAlertsSettings = ({
                 items={_values(queryTimeTMapping)}
                 title={form.queryTime ? queryTimeTMapping[form.queryTime] : ''}
                 onSelect={(item) => {
-                  const key = _findKey(queryTimeTMapping, (predicate) => predicate === item)
+                  const key = _findKey(
+                    queryTimeTMapping,
+                    (predicate) => predicate === item,
+                  )
 
                   // @ts-expect-error
                   setForm((prevForm) => ({
@@ -535,7 +582,9 @@ const ProjectAlertsSettings = ({
                   }))
                 }}
                 capitalise
-                selectedItem={form.queryTime ? queryTimeTMapping[form.queryTime] : undefined}
+                selectedItem={
+                  form.queryTime ? queryTimeTMapping[form.queryTime] : undefined
+                }
               />
             </div>
           </>
@@ -577,7 +626,7 @@ const ProjectAlertsSettings = ({
             </Button>
           </div>
         )}
-      </form>
+      </fetcher.Form>
       <Modal
         onClose={() => setShowModal(false)}
         onSubmit={onDeleteAlert}

@@ -17,17 +17,27 @@ import {
   FileTextIcon,
   BellOffIcon,
 } from 'lucide-react'
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import {
+  Link,
+  useSearchParams,
+  useFetcher,
+  useLoaderData,
+  useRevalidator,
+} from 'react-router'
 import { toast } from 'sonner'
 
-import { deleteAlert as deleteAlertApi, getProjectAlerts } from '~/api'
+import type { AlertsResponse } from '~/api/api.server'
 import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import type {
+  ProjectLoaderData,
+  ProjectViewActionData,
+} from '~/routes/projects.$id'
 import { Badge, type BadgeProps } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
@@ -45,8 +55,13 @@ const NoNotificationChannelSet = () => {
 
   return (
     <div className='mb-4 flex items-center gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 dark:border-yellow-500/20 dark:bg-yellow-500/10'>
-      <TriangleAlertIcon className='size-5 shrink-0 text-yellow-600 dark:text-yellow-500' strokeWidth={1.5} />
-      <p className='flex-1 text-sm text-yellow-800 dark:text-yellow-200'>{t('alert.noNotificationChannel')}</p>
+      <TriangleAlertIcon
+        className='size-5 shrink-0 text-yellow-600 dark:text-yellow-500'
+        strokeWidth={1.5}
+      />
+      <p className='flex-1 text-sm text-yellow-800 dark:text-yellow-200'>
+        {t('alert.noNotificationChannel')}
+      </p>
       <Link
         to={routes.user_settings}
         className='shrink-0 rounded-md bg-yellow-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-yellow-700 dark:bg-yellow-600 dark:hover:bg-yellow-500'
@@ -57,7 +72,10 @@ const NoNotificationChannelSet = () => {
   )
 }
 
-const COLOUR_QUERY_METRIC_MAPPING: Record<(typeof QUERY_METRIC)[keyof typeof QUERY_METRIC], BadgeProps['colour']> = {
+const COLOUR_QUERY_METRIC_MAPPING: Record<
+  (typeof QUERY_METRIC)[keyof typeof QUERY_METRIC],
+  BadgeProps['colour']
+> = {
   [QUERY_METRIC.PAGE_VIEWS]: 'yellow',
   [QUERY_METRIC.UNIQUE_PAGE_VIEWS]: 'indigo',
   [QUERY_METRIC.ONLINE_USERS]: 'sky',
@@ -69,10 +87,19 @@ const METRIC_ICON_MAPPING: Record<
   (typeof QUERY_METRIC)[keyof typeof QUERY_METRIC],
   { icon: React.ElementType; className: string }
 > = {
-  [QUERY_METRIC.PAGE_VIEWS]: { icon: FileTextIcon, className: 'text-yellow-500' },
-  [QUERY_METRIC.UNIQUE_PAGE_VIEWS]: { icon: EyeIcon, className: 'text-indigo-500' },
+  [QUERY_METRIC.PAGE_VIEWS]: {
+    icon: FileTextIcon,
+    className: 'text-yellow-500',
+  },
+  [QUERY_METRIC.UNIQUE_PAGE_VIEWS]: {
+    icon: EyeIcon,
+    className: 'text-indigo-500',
+  },
   [QUERY_METRIC.ONLINE_USERS]: { icon: UsersIcon, className: 'text-sky-500' },
-  [QUERY_METRIC.CUSTOM_EVENTS]: { icon: MousePointerClickIcon, className: 'text-green-500' },
+  [QUERY_METRIC.CUSTOM_EVENTS]: {
+    icon: MousePointerClickIcon,
+    className: 'text-green-500',
+  },
   [QUERY_METRIC.ERRORS]: { icon: BugIcon, className: 'text-red-500' },
 }
 
@@ -104,7 +131,8 @@ const AlertRow = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const MetricIcon = METRIC_ICON_MAPPING[queryMetric]?.icon || FileTextIcon
-  const metricIconClass = METRIC_ICON_MAPPING[queryMetric]?.className || 'text-gray-500'
+  const metricIconClass =
+    METRIC_ICON_MAPPING[queryMetric]?.className || 'text-gray-500'
 
   const lastTriggeredText = lastTriggered
     ? language === 'en'
@@ -124,15 +152,29 @@ const AlertRow = ({
             <div
               className={cx(
                 'flex size-9 shrink-0 items-center justify-center rounded-lg',
-                active ? 'bg-gray-100 dark:bg-slate-700/50' : 'bg-gray-100/50 opacity-60 dark:bg-slate-700/30',
+                active
+                  ? 'bg-gray-100 dark:bg-slate-700/50'
+                  : 'bg-gray-100/50 opacity-60 dark:bg-slate-700/30',
               )}
             >
-              <MetricIcon className={cx('size-4', metricIconClass, !active && 'opacity-50')} strokeWidth={1.5} />
+              <MetricIcon
+                className={cx(
+                  'size-4',
+                  metricIconClass,
+                  !active && 'opacity-50',
+                )}
+                strokeWidth={1.5}
+              />
             </div>
 
             <div className='min-w-0 flex-1'>
               <div className='flex items-center gap-2'>
-                <Text as='span' weight='semibold' truncate className={cx(!active && 'opacity-60')}>
+                <Text
+                  as='span'
+                  weight='semibold'
+                  truncate
+                  className={cx(!active && 'opacity-60')}
+                >
                   {name}
                 </Text>
                 {!active ? (
@@ -150,7 +192,9 @@ const AlertRow = ({
                 />
                 {/* Mobile: Show last triggered */}
                 <Text as='span' size='xs' colour='muted' className='sm:hidden'>
-                  {lastTriggeredText ? `• ${lastTriggeredText}` : `• ${t('alert.never')}`}
+                  {lastTriggeredText
+                    ? `• ${lastTriggeredText}`
+                    : `• ${t('alert.never')}`}
                 </Text>
               </div>
             </div>
@@ -163,7 +207,11 @@ const AlertRow = ({
               <Text as='p' size='xs' colour='muted'>
                 {t('alert.lastTriggered')}
               </Text>
-              <Text as='p' size='sm' colour={lastTriggeredText ? 'primary' : 'muted'}>
+              <Text
+                as='p'
+                size='sm'
+                colour={lastTriggeredText ? 'primary' : 'muted'}
+              >
                 {lastTriggeredText || t('alert.never')}
               </Text>
             </div>
@@ -211,19 +259,55 @@ const AlertRow = ({
   )
 }
 
-const ProjectAlerts = () => {
+interface DeferredAlertsData {
+  alertsData: AlertsResponse | null
+}
+
+function AlertsDataResolver({
+  children,
+}: {
+  children: (data: DeferredAlertsData) => React.ReactNode
+}) {
+  const { alertsData: alertsDataPromise } = useLoaderData<ProjectLoaderData>()
+  const alertsData = alertsDataPromise ? use(alertsDataPromise) : null
+  return <>{children({ alertsData })}</>
+}
+
+function ProjectAlertsWrapper() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <AlertsDataResolver>
+        {(deferredData) => <ProjectAlertsInner deferredData={deferredData} />}
+      </AlertsDataResolver>
+    </Suspense>
+  )
+}
+
+interface ProjectAlertsInnerProps {
+  deferredData: DeferredAlertsData
+}
+
+const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
   const { id, project } = useCurrentProject()
+  const revalidator = useRevalidator()
   const { t } = useTranslation()
   const { user, isAuthenticated } = useAuth()
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
+  const fetcher = useFetcher<ProjectViewActionData>()
+  const lastHandledData = useRef<ProjectViewActionData | null>(null)
 
-  const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const [total, setTotal] = useState(0)
-  const [alerts, setAlerts] = useState<Alerts[]>([])
+  // Track if we're in pagination mode
+  const [isSearchMode, setIsSearchMode] = useState(false)
+  const [total, setTotal] = useState(() => deferredData.alertsData?.total || 0)
+  const [alerts, setAlerts] = useState<Alerts[]>(
+    () => deferredData.alertsData?.results || [],
+  )
   const [page, setPage] = useState(1)
 
   const [error, setError] = useState<string | null>(null)
+
+  const isLoading = revalidator.state === 'loading' || fetcher.state !== 'idle'
 
   const pageAmount = Math.ceil(total / DEFAULT_ALERTS_TAKE)
 
@@ -245,30 +329,62 @@ const ProjectAlerts = () => {
     return newSearchParams.toString()
   }, [searchParams])
 
-  const loadAlerts = async (take: number, skip: number) => {
-    if (isLoading) {
-      return
+  // Sync state when loader provides new data
+  useEffect(() => {
+    if (
+      deferredData.alertsData &&
+      revalidator.state === 'idle' &&
+      !isSearchMode
+    ) {
+      setAlerts(deferredData.alertsData.results || [])
+      setTotal(deferredData.alertsData.total || 0)
     }
-    setIsLoading(true)
+  }, [revalidator.state, deferredData.alertsData, isSearchMode])
 
-    try {
-      const result = await getProjectAlerts(id, take, skip)
-      setAlerts(result.results)
-      setTotal(result.total)
-    } catch (reason: any) {
-      setError(reason)
-    } finally {
-      setIsLoading(false)
-    }
+  const loadAlerts = (take: number, skip: number) => {
+    if (fetcher.state !== 'idle') return
+    setIsSearchMode(true)
+
+    fetcher.submit(
+      { intent: 'get-project-alerts', take: String(take), skip: String(skip) },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
+  // Handle fetcher responses
   useEffect(() => {
-    if (!canManageAlerts) {
-      return
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
+    const { intent, success, data, error: fetcherError } = fetcher.data
+
+    if (success) {
+      if (intent === 'get-project-alerts' && data) {
+        const result = data as { results: Alerts[]; total: number }
+        setAlerts(result.results)
+        setTotal(result.total)
+      } else if (intent === 'delete-alert') {
+        toast.success(t('alertsSettings.alertDeleted'))
+        if (page === 1) {
+          setIsSearchMode(false)
+          revalidator.revalidate()
+        } else {
+          loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+        }
+      }
+    } else if (fetcherError) {
+      setError(fetcherError)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetcher.state, fetcher.data, t, page, revalidator])
 
-    loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
-
+  // Handle page changes - use fetcher for pagination
+  useEffect(() => {
+    if (!canManageAlerts) return
+    if (page > 1 || isSearchMode) {
+      loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, canManageAlerts])
 
@@ -291,7 +407,9 @@ const ProjectAlerts = () => {
     }
 
     return Boolean(
-      (user.telegramChatId && user.isTelegramChatIdConfirmed) || user.slackWebhookUrl || user.discordWebhookUrl,
+      (user.telegramChatId && user.isTelegramChatIdConfirmed) ||
+      user.slackWebhookUrl ||
+      user.discordWebhookUrl,
     )
   }, [user])
 
@@ -322,18 +440,21 @@ const ProjectAlerts = () => {
   const handleAlertSaved = () => {
     closeAlertSettings()
     // Reload alerts after saving
-    loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+    if (page === 1) {
+      setIsSearchMode(false)
+      revalidator.revalidate()
+    } else {
+      loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+    }
   }
 
-  const onDelete = async (alertId: string) => {
-    try {
-      await deleteAlertApi(alertId)
-      toast.success(t('alertsSettings.alertDeleted'))
-      // Reload alerts after deletion
-      loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
-    } catch (reason: any) {
-      toast.error(reason?.response?.data?.message || reason?.message || 'Something went wrong')
-    }
+  const onDelete = (alertId: string) => {
+    if (fetcher.state !== 'idle') return
+
+    fetcher.submit(
+      { intent: 'delete-alert', alertId },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
   if (!canManageAlerts) {
@@ -343,7 +464,9 @@ const ProjectAlerts = () => {
           <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
           <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
         </div>
-        <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
+        <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
+          {t('dashboard.alertsDesc')}
+        </p>
         <Link
           to={routes.signup}
           className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
@@ -355,25 +478,21 @@ const ProjectAlerts = () => {
     )
   }
 
-  if (error && isLoading === false) {
+  if (error && !isLoading) {
     return (
       <StatusPage
         type='error'
         title={t('apiNotifications.somethingWentWrong')}
         description={t('apiNotifications.errorCode', { error })}
         actions={[
-          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
+          {
+            label: t('dashboard.reloadPage'),
+            onClick: () => window.location.reload(),
+            primary: true,
+          },
           { label: t('notFoundPage.support'), to: routes.contact },
         ]}
       />
-    )
-  }
-
-  if (isLoading || isLoading === null) {
-    return (
-      <div className='mt-4'>
-        <Loader />
-      </div>
     )
   }
 
@@ -401,7 +520,9 @@ const ProjectAlerts = () => {
               <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
               <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
             </div>
-            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
+            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
+              {t('dashboard.alertsDesc')}
+            </p>
             <Button
               onClick={handleNewAlert}
               className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
@@ -451,9 +572,14 @@ const ProjectAlerts = () => {
           />
         ) : null}
       </div>
-      <PaidFeature isOpened={isPaidFeatureOpened} onClose={() => setIsPaidFeatureOpened(false)} />
+      <PaidFeature
+        isOpened={isPaidFeatureOpened}
+        onClose={() => setIsPaidFeatureOpened(false)}
+      />
     </>
   )
 }
+
+const ProjectAlerts = ProjectAlertsWrapper
 
 export default ProjectAlerts

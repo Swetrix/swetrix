@@ -223,7 +223,7 @@ export class RevenueService {
           groupTo: groupToUTC,
         },
       })
-      .then(resultSet =>
+      .then((resultSet) =>
         resultSet.json<{
           totalRevenue: number
           salesCount: number
@@ -266,7 +266,7 @@ export class RevenueService {
           groupTo: groupFromUTC,
         },
       })
-      .then(resultSet => resultSet.json<{ totalRevenue: number }>())
+      .then((resultSet) => resultSet.json<{ totalRevenue: number }>())
 
     const previousRevenue = previousData[0]?.totalRevenue || 0
     const revenueChange =
@@ -336,7 +336,7 @@ export class RevenueService {
           timezone,
         },
       })
-      .then(resultSet =>
+      .then((resultSet) =>
         resultSet.json<{
           year: number
           month?: number
@@ -431,7 +431,7 @@ export class RevenueService {
     `
     const { data: countData } = await clickhouse
       .query({ query: countQuery, query_params: params })
-      .then(resultSet => resultSet.json<{ total: number }>())
+      .then((resultSet) => resultSet.json<{ total: number }>())
 
     // Get transactions
     const transactionsQuery = `
@@ -479,7 +479,7 @@ export class RevenueService {
         query: transactionsQuery,
         query_params: { ...params, take, skip },
       })
-      .then(resultSet =>
+      .then((resultSet) =>
         resultSet.json<{
           transaction_id: string
           provider: string
@@ -496,7 +496,7 @@ export class RevenueService {
         }>(),
       )
 
-    const transactions: RevenueTransactionDto[] = data.map(row => ({
+    const transactions: RevenueTransactionDto[] = data.map((row) => ({
       transactionId: row.transaction_id,
       provider: row.provider,
       type: row.type,

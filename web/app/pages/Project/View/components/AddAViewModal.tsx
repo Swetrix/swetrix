@@ -4,13 +4,15 @@ import _find from 'lodash/find'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { getFilters, createProjectView, updateProjectView } from '~/api'
+import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { FILTERS_PANELS_ORDER } from '~/lib/constants'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import { ProjectViewActionData } from '~/routes/projects.$id'
 import Combobox from '~/ui/Combobox'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
@@ -34,7 +36,13 @@ interface AddAViewModalProps {
   defaultView?: ProjectView
 }
 
-const InlineButton = ({ text, onClick }: { text: string; onClick: () => void }) => (
+const InlineButton = ({
+  text,
+  onClick,
+}: {
+  text: string
+  onClick: () => void
+}) => (
   <button
     type='button'
     onClick={onClick}
@@ -52,7 +60,13 @@ interface EditMetricProps {
   onDelete: () => void
 }
 
-const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: EditMetricProps) => {
+const EditMetric = ({
+  metric,
+  onChange,
+  onDelete,
+  errors,
+  setErrors,
+}: EditMetricProps) => {
   const { t } = useTranslation('common')
 
   const customEventTypes = useMemo(
@@ -74,7 +88,8 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: EditMetri
   )
 
   const activeCustomEventType = useMemo(
-    () => _find(customEventTypes, ({ key }) => key === metric.metaValueType)?.label,
+    () =>
+      _find(customEventTypes, ({ key }) => key === metric.metaValueType)?.label,
     [customEventTypes, metric.metaValueType],
   )
 
@@ -165,7 +180,9 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: EditMetri
             hint={t('project.metrics.metricType.description')}
             title={activeCustomEventType}
             capitalise
-            selectedItem={customEventTypes.find((item) => item.key === metric.metaValueType)}
+            selectedItem={customEventTypes.find(
+              (item) => item.key === metric.metaValueType,
+            )}
           />
         </div>
       </div>
@@ -187,28 +204,38 @@ interface AddAViewModalErrors {
 
 const MAX_METRICS_IN_VIEW = 3
 
-const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultView }: AddAViewModalProps) => {
+const AddAViewModal = ({
+  onSubmit,
+  showModal,
+  setShowModal,
+  tnMapping,
+  defaultView,
+}: AddAViewModalProps) => {
   const { id } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
+  const fetcher = useFetcher<ProjectViewActionData>()
   const [name, setName] = useState(defaultView?.name || '')
   const [filterType, setFilterType] = useState('')
   const [searchList, setSearchList] = useState<any[]>([])
-  const [activeFilters, setActiveFilters] = useState<FilterType[]>(defaultView?.filters || [])
-  const [customEvents, setCustomEvents] = useState<Partial<ProjectViewCustomEvent>[]>(defaultView?.customEvents || [])
-  const [isViewSubmitting, setIsViewSubmitting] = useState(false)
+  const [activeFilters, setActiveFilters] = useState<FilterType[]>(
+    defaultView?.filters || [],
+  )
+  const [customEvents, setCustomEvents] = useState<
+    Partial<ProjectViewCustomEvent>[]
+  >(defaultView?.customEvents || [])
   const [errors, setErrors] = useState<AddAViewModalErrors>({})
+  const { fetchFilters } = useFiltersProxy()
 
   const getFiltersList = useCallback(
     async (category: string) => {
-      const result = await getFilters(id, category, projectPassword)
+      const result = await fetchFilters(id, category)
 
-      setSearchList(result)
+      setSearchList(result || [])
     },
-    [id, projectPassword],
+    [id, fetchFilters],
   )
 
   useEffect(() => {
@@ -237,7 +264,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
     getFiltersList(filterType)
   }, [filterType, showModal, getFiltersList])
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setShowModal(false)
     setTimeout(() => {
       setName('')
@@ -246,7 +273,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
       setCustomEvents([])
       setErrors({})
     }, 300)
-  }
+  }, [setShowModal])
 
   const onItemSelect = (item: string) => {
     let processedItem = item
@@ -255,7 +282,10 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
       processedItem = countries.getAlpha2Code(item, language) as string
     }
 
-    const itemExists = _find(activeFilters, ({ column, filter }) => filter === processedItem && column === filterType)
+    const itemExists = _find(
+      activeFilters,
+      ({ column, filter }) => filter === processedItem && column === filterType,
+    )
 
     if (itemExists) {
       return
@@ -288,12 +318,16 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
       const { id, customEventName, metricKey } = customEvents[i]
 
       if (!customEventName) {
-        metricErrors[`${id}_customEventName`] = t('apiNotifications.inputCannotBeEmpty')
+        metricErrors[`${id}_customEventName`] = t(
+          'apiNotifications.inputCannotBeEmpty',
+        )
         valid = false
       }
 
       if (!metricKey) {
-        metricErrors[`${id}_metricKey`] = t('apiNotifications.inputCannotBeEmpty')
+        metricErrors[`${id}_metricKey`] = t(
+          'apiNotifications.inputCannotBeEmpty',
+        )
         valid = false
       }
     }
@@ -308,7 +342,34 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
     return valid
   }
 
-  const onViewCreate = async () => {
+  const isViewSubmitting = fetcher.state !== 'idle'
+  const hasHandledResponse = useRef(false)
+
+  // Reset the handled flag when fetcher starts submitting
+  useEffect(() => {
+    if (fetcher.state === 'submitting') {
+      hasHandledResponse.current = false
+    }
+  }, [fetcher.state])
+
+  // Handle fetcher response
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data &&
+      !hasHandledResponse.current
+    ) {
+      hasHandledResponse.current = true
+      if (fetcher.data.success) {
+        onSubmit()
+        closeModal()
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+      }
+    }
+  }, [fetcher.state, fetcher.data, onSubmit, closeModal])
+
+  const onViewCreate = () => {
     if (isViewSubmitting) {
       return
     }
@@ -317,24 +378,20 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
       return
     }
 
-    setIsViewSubmitting(true)
+    const formData = new FormData()
+    formData.append('filters', JSON.stringify(activeFilters))
+    formData.append('customEvents', JSON.stringify(customEvents))
+    formData.append('name', name)
 
-    try {
-      // updating an existing view
-      if (defaultView?.id) {
-        await updateProjectView(id, defaultView?.id, name, activeFilters, customEvents)
-      } else {
-        // crating a new one
-        await createProjectView(id, name, 'traffic', activeFilters, customEvents)
-      }
-    } catch (reason) {
-      console.error('[ERROR] onViewCreate:', reason)
-      toast.error(t('apiNotifications.somethingWentWrong'))
+    if (defaultView?.id) {
+      formData.append('intent', 'update-project-view')
+      formData.append('viewId', defaultView.id)
+    } else {
+      formData.append('intent', 'create-project-view')
+      formData.append('type', 'traffic')
     }
 
-    setIsViewSubmitting(false)
-    onSubmit()
-    closeModal()
+    fetcher.submit(formData, { method: 'POST' })
   }
 
   return (
@@ -372,13 +429,17 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
             labelExtractor={(item) => t(`project.mapping.${item}`)}
             onSelect={(item) => setFilterType(item)}
             title={
-              _isEmpty(filterType) ? t('project.settings.reseted.selectFilters') : t(`project.mapping.${filterType}`)
+              _isEmpty(filterType)
+                ? t('project.settings.reseted.selectFilters')
+                : t(`project.mapping.${filterType}`)
             }
             selectedItem={_isEmpty(filterType) ? undefined : filterType}
           />
           {filterType && !_isEmpty(searchList) ? (
             <>
-              <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('project.filters')}</p>
+              <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>
+                {t('project.filters')}
+              </p>
               <Combobox
                 items={searchList}
                 labelExtractor={(item) => {
@@ -394,60 +455,71 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
             </>
           ) : null}
           <div className='mt-2'>
-            {_map(activeFilters, ({ filter, column, isExclusive, isContains }) => (
-              <Filter
-                key={`${column}-${filter}-${isExclusive}-${isContains}`}
-                onRemoveFilter={(e) => {
-                  e.preventDefault()
+            {_map(
+              activeFilters,
+              ({ filter, column, isExclusive, isContains }) => (
+                <Filter
+                  key={`${column}-${filter}-${isExclusive}-${isContains}`}
+                  onRemoveFilter={(e) => {
+                    e.preventDefault()
 
-                  setActiveFilters((prevFilters: any) => {
-                    return _filter(
-                      prevFilters,
-                      ({ column: prevColumn, filter: prevFilter }) => prevFilter !== filter || prevColumn !== column,
-                    )
-                  })
-                }}
-                onChangeExclusive={(e) => {
-                  e.preventDefault()
+                    setActiveFilters((prevFilters: any) => {
+                      return _filter(
+                        prevFilters,
+                        ({ column: prevColumn, filter: prevFilter }) =>
+                          prevFilter !== filter || prevColumn !== column,
+                      )
+                    })
+                  }}
+                  onChangeExclusive={(e) => {
+                    e.preventDefault()
 
-                  setActiveFilters((prevFilters: any) => {
-                    return _map(prevFilters, (item) => {
-                      if (item.column === column && item.filter === filter) {
-                        let nextContains = isContains
-                        let nextExclusive = isExclusive
-                        if (!isContains && !isExclusive) {
-                          nextContains = false
-                          nextExclusive = true
-                        } else if (!isContains && isExclusive) {
-                          nextContains = true
-                          nextExclusive = false
-                        } else if (isContains && !isExclusive) {
-                          nextContains = true
-                          nextExclusive = true
-                        } else {
-                          nextContains = false
-                          nextExclusive = false
+                    setActiveFilters((prevFilters: any) => {
+                      return _map(prevFilters, (item) => {
+                        if (item.column === column && item.filter === filter) {
+                          let nextContains = isContains
+                          let nextExclusive = isExclusive
+                          if (!isContains && !isExclusive) {
+                            nextContains = false
+                            nextExclusive = true
+                          } else if (!isContains && isExclusive) {
+                            nextContains = true
+                            nextExclusive = false
+                          } else if (isContains && !isExclusive) {
+                            nextContains = true
+                            nextExclusive = true
+                          } else {
+                            nextContains = false
+                            nextExclusive = false
+                          }
+
+                          return {
+                            column,
+                            filter,
+                            isExclusive: nextExclusive,
+                            isContains: nextContains,
+                          }
                         }
 
-                        return { column, filter, isExclusive: nextExclusive, isContains: nextContains }
-                      }
-
-                      return item
+                        return item
+                      })
                     })
-                  })
-                }}
-                isExclusive={isExclusive}
-                column={column}
-                filter={filter}
-                tnMapping={tnMapping}
-                isContains={isContains}
-                canChangeExclusive
-                removable
-              />
-            ))}
+                  }}
+                  isExclusive={isExclusive}
+                  column={column}
+                  filter={filter}
+                  tnMapping={tnMapping}
+                  isContains={isContains}
+                  canChangeExclusive
+                  removable
+                />
+              ),
+            )}
           </div>
           <hr className='my-4' />
-          <p className='text-sm font-medium text-gray-700 dark:text-gray-100'>{t('project.customEventsAndMetrics')}</p>
+          <p className='text-sm font-medium text-gray-700 dark:text-gray-100'>
+            {t('project.customEventsAndMetrics')}
+          </p>
           <div className='divide-y divide-gray-300/80 dark:divide-slate-900/60'>
             {_map(customEvents, (ev) => (
               <EditMetric
@@ -470,7 +542,9 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
                   )
                 }}
                 onDelete={() => {
-                  setCustomEvents((prev) => _filter(prev, ({ id }) => id !== ev.id))
+                  setCustomEvents((prev) =>
+                    _filter(prev, ({ id }) => id !== ev.id),
+                  )
                 }}
               />
             ))}
@@ -479,7 +553,10 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
             <InlineButton
               text={t('project.addAMetric')}
               onClick={() => {
-                setCustomEvents((prev) => [...prev, { ...EMPTY_CUSTOM_EVENT, id: Math.random().toString() }])
+                setCustomEvents((prev) => [
+                  ...prev,
+                  { ...EMPTY_CUSTOM_EVENT, id: Math.random().toString() },
+                ])
               }}
             />
           ) : null}

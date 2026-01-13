@@ -27,9 +27,18 @@ const PROJECT_OPTIONS = [
 ]
 
 const TOKEN_OPTIONS = [
-  { value: 'PASS000000000000000000', label: 'captchaPage.demoPage.tokenAlwaysPass' },
-  { value: 'FAIL000000000000000000', label: 'captchaPage.demoPage.tokenAlwaysFail' },
-  { value: 'USED000000000000000000', label: 'captchaPage.demoPage.tokenAlreadyUsed' },
+  {
+    value: 'PASS000000000000000000',
+    label: 'captchaPage.demoPage.tokenAlwaysPass',
+  },
+  {
+    value: 'FAIL000000000000000000',
+    label: 'captchaPage.demoPage.tokenAlwaysFail',
+  },
+  {
+    value: 'USED000000000000000000',
+    label: 'captchaPage.demoPage.tokenAlreadyUsed',
+  },
 ]
 
 const THEME_OPTIONS = [
@@ -47,7 +56,9 @@ const CaptchaDemo = () => {
   })
   const [validationResult, setValidationResult] = useState<string | null>(null)
   const [captchaInitialised, setCaptchaInitialised] = useState(false)
-  const captchaScriptStatus = useScript('https://cdn.swetrixcaptcha.com/captcha-loader.js')
+  const captchaScriptStatus = useScript(
+    'https://cdn.swetrixcaptcha.com/captcha-loader.js',
+  )
 
   // Initialise captcha when script is loaded
   useEffect(() => {
@@ -83,9 +94,12 @@ const CaptchaDemo = () => {
     }
   }, [config.theme, config.projectId, captchaInitialised])
 
-  const updateConfig = useCallback((key: keyof CaptchaConfig, value: string) => {
-    setConfig((prev) => ({ ...prev, [key]: value }))
-  }, [])
+  const updateConfig = useCallback(
+    (key: keyof CaptchaConfig, value: string) => {
+      setConfig((prev) => ({ ...prev, [key]: value }))
+    },
+    [],
+  )
 
   const handleValidateToken = async () => {
     try {
@@ -103,11 +117,16 @@ const CaptchaDemo = () => {
       const data = await response.json()
       setValidationResult(JSON.stringify(data, null, 2))
     } catch {
-      setValidationResult(JSON.stringify({ error: 'Failed to validate token' }, null, 2))
+      setValidationResult(
+        JSON.stringify({ error: 'Failed to validate token' }, null, 2),
+      )
     }
   }
 
-  const findSelectedOption = <T extends { value: string }>(options: T[], value: string) => {
+  const findSelectedOption = <T extends { value: string }>(
+    options: T[],
+    value: string,
+  ) => {
     return options.find((opt) => opt.value === value) || options[0]
   }
 
@@ -116,7 +135,13 @@ const CaptchaDemo = () => {
       <main className='mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12 lg:px-8'>
         {/* Header Section */}
         <div className='mb-8 md:mb-12'>
-          <Text as='h1' size='3xl' weight='bold' tracking='tight' className='md:text-4xl lg:text-5xl'>
+          <Text
+            as='h1'
+            size='3xl'
+            weight='bold'
+            tracking='tight'
+            className='md:text-4xl lg:text-5xl'
+          >
             {t('captchaPage.demoPage.title')}
           </Text>
           <Text as='p' size='lg' colour='muted' className='mt-2'>
@@ -133,7 +158,11 @@ const CaptchaDemo = () => {
             className='rounded-lg border border-gray-200 bg-white p-6 dark:border-slate-800/60 dark:bg-slate-800/25'
             key={`${config.theme}-${config.projectId}`}
           >
-            <div className='swecaptcha' data-project-id={config.projectId} data-theme={config.theme} />
+            <div
+              className='swecaptcha'
+              data-project-id={config.projectId}
+              data-theme={config.theme}
+            />
             {captchaScriptStatus === 'error' ? (
               <Text as='div' size='sm' colour='error'>
                 Failed to load CAPTCHA. Please refresh the page.
@@ -151,27 +180,37 @@ const CaptchaDemo = () => {
             <div>
               <Select
                 label={t('captchaPage.demoPage.theme')}
-                items={THEME_OPTIONS.map((opt) => ({ ...opt, label: t(opt.label) }))}
+                items={THEME_OPTIONS.map((opt) => ({
+                  ...opt,
+                  label: t(opt.label),
+                }))}
                 labelExtractor={(item) => item.label}
                 keyExtractor={(item) => item.value}
                 onSelect={(item) => updateConfig('theme', item.value)}
                 title={t(findSelectedOption(THEME_OPTIONS, config.theme).label)}
-                selectedItem={THEME_OPTIONS.map((opt) => ({ ...opt, label: t(opt.label) })).find(
-                  (opt) => opt.value === config.theme,
-                )}
+                selectedItem={THEME_OPTIONS.map((opt) => ({
+                  ...opt,
+                  label: t(opt.label),
+                })).find((opt) => opt.value === config.theme)}
               />
             </div>
             <div>
               <Select
                 label={t('captchaPage.demoPage.mode')}
-                items={PROJECT_OPTIONS.map((opt) => ({ ...opt, label: t(opt.label) }))}
+                items={PROJECT_OPTIONS.map((opt) => ({
+                  ...opt,
+                  label: t(opt.label),
+                }))}
                 labelExtractor={(item) => item.label}
                 keyExtractor={(item) => item.value}
                 onSelect={(item) => updateConfig('projectId', item.value)}
-                title={t(findSelectedOption(PROJECT_OPTIONS, config.projectId).label)}
-                selectedItem={PROJECT_OPTIONS.map((opt) => ({ ...opt, label: t(opt.label) })).find(
-                  (opt) => opt.value === config.projectId,
+                title={t(
+                  findSelectedOption(PROJECT_OPTIONS, config.projectId).label,
                 )}
+                selectedItem={PROJECT_OPTIONS.map((opt) => ({
+                  ...opt,
+                  label: t(opt.label),
+                })).find((opt) => opt.value === config.projectId)}
               />
             </div>
           </div>
@@ -187,17 +226,28 @@ const CaptchaDemo = () => {
               <div className='flex-1'>
                 <Select
                   label={t('captchaPage.demoPage.tokenType')}
-                  items={TOKEN_OPTIONS.map((opt) => ({ ...opt, label: t(opt.label) }))}
+                  items={TOKEN_OPTIONS.map((opt) => ({
+                    ...opt,
+                    label: t(opt.label),
+                  }))}
                   labelExtractor={(item) => item.label}
                   keyExtractor={(item) => item.value}
                   onSelect={(item) => updateConfig('dummySecret', item.value)}
-                  title={t(findSelectedOption(TOKEN_OPTIONS, config.dummySecret).label)}
-                  selectedItem={TOKEN_OPTIONS.map((opt) => ({ ...opt, label: t(opt.label) })).find(
-                    (opt) => opt.value === config.dummySecret,
+                  title={t(
+                    findSelectedOption(TOKEN_OPTIONS, config.dummySecret).label,
                   )}
+                  selectedItem={TOKEN_OPTIONS.map((opt) => ({
+                    ...opt,
+                    label: t(opt.label),
+                  })).find((opt) => opt.value === config.dummySecret)}
                 />
               </div>
-              <Button type='button' primary regular onClick={handleValidateToken}>
+              <Button
+                type='button'
+                primary
+                regular
+                onClick={handleValidateToken}
+              >
                 {t('captchaPage.demoPage.validateButton')}
               </Button>
             </div>

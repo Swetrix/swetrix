@@ -3,12 +3,17 @@ import { CheckIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 import _map from 'lodash/map'
 import { ArrowRightIcon, CircleHelpIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { getPaymentMetainfo } from '~/api'
-import { CURRENCIES, PLAN_LIMITS, STANDARD_PLANS, BillingFrequency, TRIAL_DAYS } from '~/lib/constants'
+import {
+  CURRENCIES,
+  PLAN_LIMITS,
+  STANDARD_PLANS,
+  BillingFrequency,
+  TRIAL_DAYS,
+} from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { useAuth } from '~/providers/AuthProvider'
 import Tooltip from '~/ui/Tooltip'
@@ -16,31 +21,34 @@ import routes from '~/utils/routes'
 
 const formatEventsLong = (value: number) => value.toLocaleString('en-US')
 
-const MarketingPricing = () => {
+interface MarketingPricingProps {
+  metainfo?: Metainfo
+}
+
+const MarketingPricing = ({
+  metainfo = DEFAULT_METAINFO,
+}: MarketingPricingProps) => {
   const { isAuthenticated } = useAuth()
   const { t } = useTranslation('common')
-  const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
-  const [billingFrequency, setBillingFrequency] = useState(BillingFrequency.monthly)
-
-  useEffect(() => {
-    const abortController = new AbortController()
-    getPaymentMetainfo({ signal: abortController.signal })
-      .then(setMetainfo)
-      .catch(() => {})
-    return () => abortController.abort()
-  }, [])
+  const [billingFrequency, setBillingFrequency] = useState(
+    BillingFrequency.monthly,
+  )
 
   const currencyCode = metainfo.code
   const currency = CURRENCIES[currencyCode]
 
-  const plans = STANDARD_PLANS.map((code) => PLAN_LIMITS[code as keyof typeof PLAN_LIMITS])
+  const plans = STANDARD_PLANS.map(
+    (code) => PLAN_LIMITS[code as keyof typeof PLAN_LIMITS],
+  )
 
   return (
     <section id='pricing' className='relative p-2'>
       <div className='rounded-xl bg-slate-900 py-16 sm:py-20'>
         <div className='mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 sm:px-6 lg:grid-cols-12 lg:gap-10 lg:px-8'>
           <div className='col-span-12 lg:col-span-5'>
-            <h2 className='text-3xl font-extrabold tracking-tight text-white sm:text-4xl'>{t('pricing.title')}</h2>
+            <h2 className='text-3xl font-extrabold tracking-tight text-white sm:text-4xl'>
+              {t('pricing.title')}
+            </h2>
             <p className='mt-2 max-w-md text-sm text-gray-100'>
               {t('pricing.adv', {
                 amount: TRIAL_DAYS,
@@ -52,10 +60,19 @@ const MarketingPricing = () => {
                 {
                   label: (
                     <div className='flex items-center gap-2'>
-                      <span>{t('pricing.tiers.upToXWebsites', { amount: 50 })}</span>
+                      <span>
+                        {t('pricing.tiers.upToXWebsites', { amount: 50 })}
+                      </span>
                       <Tooltip
-                        text={t('pricing.tiers.moreWebsitesForFee', { amount: 50 })}
-                        tooltipNode={<CircleHelpIcon className='size-4 stroke-gray-50' strokeWidth={1.5} />}
+                        text={t('pricing.tiers.moreWebsitesForFee', {
+                          amount: 50,
+                        })}
+                        tooltipNode={
+                          <CircleHelpIcon
+                            className='size-4 stroke-gray-50'
+                            strokeWidth={1.5}
+                          />
+                        }
                       />
                     </div>
                   ),
@@ -113,11 +130,15 @@ const MarketingPricing = () => {
               to={isAuthenticated ? routes.billing : routes.signup}
               className='mt-8 flex max-w-max items-center justify-center rounded-md border-2 border-slate-50 bg-gray-50 px-8 py-4 text-slate-900 transition-all hover:bg-transparent hover:text-gray-50'
               aria-label={
-                isAuthenticated ? t('main.goToBilling') : t('main.startAXDayFreeTrial', { amount: TRIAL_DAYS })
+                isAuthenticated
+                  ? t('main.goToBilling')
+                  : t('main.startAXDayFreeTrial', { amount: TRIAL_DAYS })
               }
             >
               <span className='mr-1 text-center text-base font-semibold'>
-                {isAuthenticated ? t('main.goToBilling') : t('main.startAXDayFreeTrial', { amount: TRIAL_DAYS })}
+                {isAuthenticated
+                  ? t('main.goToBilling')
+                  : t('main.startAXDayFreeTrial', { amount: TRIAL_DAYS })}
               </span>
               <ArrowRightIcon className='mt-[1px] h-4 w-5' />
             </Link>
@@ -136,7 +157,9 @@ const MarketingPricing = () => {
                   value={BillingFrequency.monthly}
                   className={({ checked }) =>
                     cx(
-                      checked ? 'bg-white/90 text-slate-900' : 'text-gray-200 hover:bg-white/30 hover:text-white',
+                      checked
+                        ? 'bg-white/90 text-slate-900'
+                        : 'text-gray-200 hover:bg-white/30 hover:text-white',
                       'flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-all',
                     )
                   }
@@ -148,7 +171,9 @@ const MarketingPricing = () => {
                   value={BillingFrequency.yearly}
                   className={({ checked }) =>
                     cx(
-                      checked ? 'bg-white/90 text-slate-900' : 'text-gray-200 hover:bg-white/30 hover:text-white',
+                      checked
+                        ? 'bg-white/90 text-slate-900'
+                        : 'text-gray-200 hover:bg-white/30 hover:text-white',
                       'flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-all',
                     )
                   }
@@ -164,9 +189,13 @@ const MarketingPricing = () => {
                   className='flex items-center justify-between rounded-xl border border-white/10 bg-white/2 px-4 py-3 text-white backdrop-blur-sm transition-all hover:bg-white/10'
                 >
                   <div>
-                    <span className='text-base font-medium'>{formatEventsLong(tier.monthlyUsageLimit)}</span>
+                    <span className='text-base font-medium'>
+                      {formatEventsLong(tier.monthlyUsageLimit)}
+                    </span>
                     &nbsp;
-                    <span className='text-sm text-gray-400'>{t('pricing.eventsPerMonth')}</span>
+                    <span className='text-sm text-gray-400'>
+                      {t('pricing.eventsPerMonth')}
+                    </span>
                   </div>
                   <div className='text-sm'>
                     <span className='font-semibold text-white'>
@@ -178,7 +207,12 @@ const MarketingPricing = () => {
                     </span>
                     &nbsp;
                     <span className='text-sm text-gray-400'>
-                      /{t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
+                      /
+                      {t(
+                        billingFrequency === BillingFrequency.monthly
+                          ? 'pricing.perMonth'
+                          : 'pricing.perYear',
+                      )}
                     </span>
                   </div>
                 </div>
@@ -192,9 +226,13 @@ const MarketingPricing = () => {
                 className='group flex items-center justify-between rounded-xl border border-white/10 bg-white/2 px-4 py-3 text-white backdrop-blur-sm transition-all hover:bg-white/10'
               >
                 <span className='text-base font-medium'>
-                  {t('pricing.overXEvents', { amount: formatEventsLong(20000000) })}
+                  {t('pricing.overXEvents', {
+                    amount: formatEventsLong(20000000),
+                  })}
                 </span>
-                <p className='text-sm group-hover:underline'>{t('pricing.contactUs')}</p>
+                <p className='text-sm group-hover:underline'>
+                  {t('pricing.contactUs')}
+                </p>
               </a>
             </div>
           </div>

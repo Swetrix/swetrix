@@ -8,7 +8,12 @@ const RefRow = ({ rowName }: { rowName: string | null }) => {
   const { t } = useTranslation('common')
 
   const { isUrl, faviconHost, displayRowName } = useMemo(() => {
-    if (!rowName) return { isUrl: false, faviconHost: null as string | null, displayRowName: '' }
+    if (!rowName)
+      return {
+        isUrl: false,
+        faviconHost: null as string | null,
+        displayRowName: '',
+      }
     let isUrl = false
     try {
       new URL(rowName)
@@ -17,7 +22,9 @@ const RefRow = ({ rowName }: { rowName: string | null }) => {
       isUrl = false
     }
 
-    const displayRowName = rowName.replace(/^https?:\/\//, '').replace(/\/$/, '')
+    const displayRowName = rowName
+      .replace(/^https?:\/\//, '')
+      .replace(/\/$/, '')
 
     return { isUrl, faviconHost: getFaviconHost(rowName), displayRowName }
   }, [rowName])
@@ -42,7 +49,9 @@ const RefRow = ({ rowName }: { rowName: string | null }) => {
           aria-hidden='true'
         />
       ) : null}
-      <span className='truncate text-sm text-gray-900 dark:text-gray-100'>{displayRowName}</span>
+      <span className='truncate text-sm text-gray-900 dark:text-gray-100'>
+        {displayRowName}
+      </span>
       {isUrl ? (
         <a
           href={rowName}

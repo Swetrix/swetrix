@@ -21,7 +21,12 @@ const WaitingForAnEvent = () => {
       <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
         {t('project.waiting.title')}
       </Text>
-      <Text as='p' size='sm' colour='secondary' className='mx-auto mt-2 max-w-md whitespace-pre-line'>
+      <Text
+        as='p'
+        size='sm'
+        colour='secondary'
+        className='mx-auto mt-2 max-w-md whitespace-pre-line'
+      >
         <Trans
           t={t}
           i18nKey='project.waiting.desc'
@@ -35,12 +40,14 @@ const WaitingForAnEvent = () => {
               />
             ),
             curl: (
-              <Link to={routes.contact} className='font-medium text-indigo-600 hover:underline dark:text-indigo-400' />
+              <Link
+                to={routes.contact}
+                className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
+              />
             ),
             snippet: (
-              <span
-                tabIndex={0}
-                role='button'
+              <button
+                type='button'
                 className='cursor-pointer font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                 onClick={() => setIsModalOpened(true)}
               />
@@ -48,7 +55,10 @@ const WaitingForAnEvent = () => {
           }}
         />
       </Text>
-      <TrackingSnippet isOpened={isModalOpened} onClose={() => setIsModalOpened(false)} />
+      <TrackingSnippet
+        isOpened={isModalOpened}
+        onClose={() => setIsModalOpened(false)}
+      />
     </div>
   )
 }

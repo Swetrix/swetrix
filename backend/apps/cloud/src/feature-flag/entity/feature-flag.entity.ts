@@ -53,7 +53,7 @@ export class FeatureFlag {
   enabled: boolean
 
   @ApiProperty({ type: () => Project })
-  @ManyToOne(() => Project, project => project.featureFlags)
+  @ManyToOne(() => Project, (project) => project.featureFlags)
   @JoinColumn()
   project: Project
 

@@ -14,12 +14,16 @@ interface ExitIntentPopupProps {
 const COOKIE_NAME = 'exit-intent-dismissed'
 const COOKIE_EXPIRATION = 7 * 24 * 60 * 60
 
-export default function ExitIntentPopup({ isStandalone = false }: ExitIntentPopupProps) {
+export default function ExitIntentPopup({
+  isStandalone = false,
+}: ExitIntentPopupProps) {
   const { t } = useTranslation('common')
   const [isVisible, setIsVisible] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
   const contextMenuActiveRef = useRef(false)
-  const contextMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const contextMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
 
   useEffect(() => {
     if (isStandalone) {
@@ -105,14 +109,20 @@ export default function ExitIntentPopup({ isStandalone = false }: ExitIntentPopu
         </button>
 
         <div className='mb-6'>
-          <Badge className='text-base' label={t('exitIntentPopup.freeTrial')} colour='green' />
+          <Badge
+            className='text-base'
+            label={t('exitIntentPopup.freeTrial')}
+            colour='green'
+          />
         </div>
 
         <h2 className='mb-4 max-w-3xl text-[2.5rem]/10 font-semibold tracking-tight text-pretty text-gray-950 lg:text-5xl dark:text-gray-200'>
           {t('exitIntentPopup.title')}
         </h2>
 
-        <p className='mb-8 text-xl leading-relaxed text-gray-950 dark:text-gray-200'>{t('exitIntentPopup.desc')}</p>
+        <p className='mb-8 text-xl leading-relaxed text-gray-950 dark:text-gray-200'>
+          {t('exitIntentPopup.desc')}
+        </p>
 
         <Link
           to='/'

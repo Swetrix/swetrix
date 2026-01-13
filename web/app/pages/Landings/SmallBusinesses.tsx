@@ -6,7 +6,13 @@ import { Link } from 'react-router'
 import Header from '~/components/Header'
 import { ComparisonTable } from '~/components/marketing/ComparisonTable'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import { BOOK_A_CALL_URL, DISCORD_URL, LIVE_DEMO_URL, TWITTER_URL, INTEGRATIONS_URL } from '~/lib/constants'
+import {
+  BOOK_A_CALL_URL,
+  DISCORD_URL,
+  LIVE_DEMO_URL,
+  TWITTER_URL,
+  INTEGRATIONS_URL,
+} from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
 import routesPath from '~/utils/routes'
 
@@ -22,17 +28,33 @@ const SmallBusinesses = () => {
           aria-hidden='true'
         >
           <defs>
-            <pattern id='rect-pattern' width={200} height={200} x='50%' y={-1} patternUnits='userSpaceOnUse'>
+            <pattern
+              id='rect-pattern'
+              width={200}
+              height={200}
+              x='50%'
+              y={-1}
+              patternUnits='userSpaceOnUse'
+            >
               <path d='M.5 200V.5H200' fill='none' />
             </pattern>
           </defs>
-          <svg x='50%' y={-1} className='overflow-visible fill-white dark:fill-gray-800/20'>
+          <svg
+            x='50%'
+            y={-1}
+            className='overflow-visible fill-white dark:fill-gray-800/20'
+          >
             <path
               d='M-200 0h201v201h-201Z M600 0h201v201h-201Z M-400 600h201v201h-201Z M200 800h201v201h-201Z'
               strokeWidth={0}
             />
           </svg>
-          <rect width='100%' height='100%' strokeWidth={0} fill='url(#rect-pattern)' />
+          <rect
+            width='100%'
+            height='100%'
+            strokeWidth={0}
+            fill='url(#rect-pattern)'
+          />
         </svg>
         <div
           className='absolute top-10 left-[calc(50%-4rem)] -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)] lg:top-[calc(50%-30rem)] lg:left-48 xl:left-[calc(50%-24rem)]'
@@ -82,7 +104,9 @@ const SmallBusinesses = () => {
                   rel='noopener noreferrer'
                   aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
                 >
-                  <span className='text-base font-semibold'>{t('common.liveDemo')}</span>
+                  <span className='text-base font-semibold'>
+                    {t('common.liveDemo')}
+                  </span>
                 </a>
               </div>
               <a
@@ -92,14 +116,20 @@ const SmallBusinesses = () => {
                 rel='noopener noreferrer'
                 aria-label={`${t('common.bookACall')} (opens in a new tab)`}
               >
-                <span className='text-base font-semibold'>{t('common.bookACall')}</span>
+                <span className='text-base font-semibold'>
+                  {t('common.bookACall')}
+                </span>
                 <ArrowRightIcon className='mt-[1px] h-4 w-5' />
               </a>
             </div>
           </div>
           <div className='relative z-20 mx-auto mt-10 block max-w-[1300px] px-4 md:px-0'>
             <img
-              src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
+              src={
+                theme === 'dark'
+                  ? '/assets/screenshot_dark.png'
+                  : '/assets/screenshot_light.png'
+              }
               className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
               width='100%'
               height='auto'
@@ -110,47 +140,53 @@ const SmallBusinesses = () => {
       </div>
 
       <div className='mx-auto mt-12 mb-6 max-w-5xl px-5'>
-        {_map(t('smbs.whyUs', { returnObjects: true }), (item: { name: string; desc: string[] }) => (
-          <div key={item.name} className='mb-10 text-slate-900 last:mb-0 dark:text-white'>
-            <h2 className='mb-5 text-4xl font-extrabold'>{item.name}</h2>
-            {_map(item.desc, (descText) => (
-              <p key={descText} className='mb-5 text-lg'>
-                <Trans
-                  t={t}
-                  components={{
-                    span: <span className='font-bold' />,
-                    integrationLink: (
-                      <a
-                        href={INTEGRATIONS_URL}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-blue-600 hover:underline dark:text-blue-500'
-                      />
-                    ),
-                    discordUrl: (
-                      <a
-                        href={DISCORD_URL}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-blue-600 hover:underline dark:text-blue-500'
-                      />
-                    ),
-                    twitterUrl: (
-                      <a
-                        href={TWITTER_URL}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-blue-600 hover:underline dark:text-blue-500'
-                      />
-                    ),
-                  }}
-                >
-                  {descText}
-                </Trans>
-              </p>
-            ))}
-          </div>
-        ))}
+        {_map(
+          t('smbs.whyUs', { returnObjects: true }),
+          (item: { name: string; desc: string[] }) => (
+            <div
+              key={item.name}
+              className='mb-10 text-slate-900 last:mb-0 dark:text-white'
+            >
+              <h2 className='mb-5 text-4xl font-extrabold'>{item.name}</h2>
+              {_map(item.desc, (descText) => (
+                <p key={descText} className='mb-5 text-lg'>
+                  <Trans
+                    t={t}
+                    components={{
+                      span: <span className='font-bold' />,
+                      integrationLink: (
+                        <a
+                          href={INTEGRATIONS_URL}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='text-blue-600 hover:underline dark:text-blue-500'
+                        />
+                      ),
+                      discordUrl: (
+                        <a
+                          href={DISCORD_URL}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='text-blue-600 hover:underline dark:text-blue-500'
+                        />
+                      ),
+                      twitterUrl: (
+                        <a
+                          href={TWITTER_URL}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='text-blue-600 hover:underline dark:text-blue-500'
+                        />
+                      ),
+                    }}
+                  >
+                    {descText}
+                  </Trans>
+                </p>
+              ))}
+            </div>
+          ),
+        )}
 
         <ComparisonTable className='py-5' />
       </div>

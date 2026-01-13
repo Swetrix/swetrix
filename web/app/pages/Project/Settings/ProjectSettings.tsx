@@ -8,7 +8,6 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _size from 'lodash/size'
-import _split from 'lodash/split'
 import _toUpper from 'lodash/toUpper'
 import {
   Settings2Icon,
@@ -23,33 +22,28 @@ import {
   ShieldCheckIcon,
   DollarSignIcon,
 } from 'lucide-react'
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useLoaderData, useNavigate, Link, useSearchParams } from 'react-router'
+import {
+  useLoaderData,
+  useNavigate,
+  Link,
+  useSearchParams,
+  useFetcher,
+} from 'react-router'
 import { toast } from 'sonner'
 
-import {
-  updateProject,
-  deleteProject,
-  resetProject,
-  transferProject,
-  deletePartially,
-  getFilters,
-  resetFilters,
-  getProject,
-  assignProjectToOrganisation,
-  generateGSCAuthURL,
-  getGSCStatus,
-  getGSCProperties,
-  setGSCProperty,
-  disconnectGSC,
-  reGenerateCaptchaSecretKey,
-} from '~/api'
-import { withAuthentication, auth } from '~/hoc/protected'
+import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
-import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
+import {
+  isSelfhosted,
+  TITLE_SUFFIX,
+  FILTERS_PANELS_ORDER,
+  isBrowser,
+} from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
+import type { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
 import Button from '~/ui/Button'
 import DatePicker from '~/ui/Datepicker'
 import Dropdown from '~/ui/Dropdown'
@@ -60,13 +54,11 @@ import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import MultiSelect from '~/ui/MultiSelect'
 import Select from '~/ui/Select'
-import StatusPage from '~/ui/StatusPage'
 // Select is used inside tab components
 import countries from '~/utils/isoCountries'
 import routes from '~/utils/routes'
 
 import CCRow from '../View/components/CCRow'
-import { getFormatDate } from '../View/ViewProject.helpers'
 
 import Annotations from './Annotations'
 import Emails from './Emails'
@@ -106,6 +98,10 @@ interface ModalMessageProps {
   setActiveFilter: any
   filterType: string
   setFilterType: (a: string) => void
+  fetchFilters: (
+    projectId: string,
+    filterType: string,
+  ) => Promise<string[] | null>
 }
 
 const ModalMessage = ({
@@ -118,6 +114,7 @@ const ModalMessage = ({
   setActiveFilter,
   filterType,
   setFilterType,
+  fetchFilters,
 }: ModalMessageProps) => {
   const {
     t,
@@ -128,9 +125,9 @@ const ModalMessage = ({
 
   const getFiltersList = async () => {
     if (!_isEmpty(filterType)) {
-      const res = await getFilters(pid, filterType)
-      setFilterList(res)
-      setSearchList(res)
+      const res = await fetchFilters(pid, filterType)
+      setFilterList(res || [])
+      setSearchList(res || [])
       if (!_isEmpty(activeFilter)) {
         setActiveFilter([])
       }
@@ -144,7 +141,9 @@ const ModalMessage = ({
 
   return (
     <>
-      <p className='mt-1 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>{t('project.settings.resetHint')}</p>
+      <p className='mt-1 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>
+        {t('project.settings.resetHint')}
+      </p>
       <div className='mt-6'>
         <nav className='-mb-px flex space-x-6'>
           {_map(DELETE_DATA_MODAL_TABS, (tabDelete) => (
@@ -152,11 +151,15 @@ const ModalMessage = ({
               key={tabDelete.name}
               type='button'
               onClick={() => setTab(tabDelete.name)}
-              className={cx('text-md border-b-2 px-1 pb-2 font-medium whitespace-nowrap', {
-                'border-indigo-500 text-indigo-600 dark:border-gray-50 dark:text-gray-50': tabDelete.name === tab,
-                'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                  tab !== tabDelete.name,
-              })}
+              className={cx(
+                'text-md border-b-2 px-1 pb-2 font-medium whitespace-nowrap',
+                {
+                  'border-indigo-500 text-indigo-600 dark:border-gray-50 dark:text-gray-50':
+                    tabDelete.name === tab,
+                  'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                    tab !== tabDelete.name,
+                },
+              )}
             >
               {t(tabDelete.title)}
             </button>
@@ -200,7 +203,9 @@ const ModalMessage = ({
             <Dropdown
               className='min-w-[160px]'
               title={
-                !_isEmpty(filterType) ? t(`project.mapping.${filterType}`) : t('project.settings.reseted.selectFilters')
+                !_isEmpty(filterType)
+                  ? t(`project.mapping.${filterType}`)
+                  : t('project.settings.reseted.selectFilters')
               }
               items={FILTERS_PANELS_ORDER}
               labelExtractor={(item) => t(`project.mapping.${item}`)}
@@ -233,13 +238,20 @@ const ModalMessage = ({
                     if (filterType === 'cc') {
                       setSearchList(
                         _filter(filterList, (item) =>
-                          _includes(_toUpper(countries.getName(item, language)), _toUpper(search)),
+                          _includes(
+                            _toUpper(countries.getName(item, language)),
+                            _toUpper(search),
+                          ),
                         ),
                       )
                       return
                     }
 
-                    setSearchList(_filter(filterList, (item) => _includes(_toUpper(item), _toUpper(search))))
+                    setSearchList(
+                      _filter(filterList, (item) =>
+                        _includes(_toUpper(item), _toUpper(search)),
+                      ),
+                    )
                   } else {
                     setSearchList(filterList)
                   }
@@ -254,7 +266,9 @@ const ModalMessage = ({
                   })
                 }
                 onRemove={(item: string) =>
-                  setActiveFilter((oldItems: string[]) => _filter(oldItems, (i) => i !== item))
+                  setActiveFilter((oldItems: string[]) =>
+                    _filter(oldItems, (i) => i !== item),
+                  )
                 }
               />
             ) : (
@@ -279,26 +293,37 @@ interface Form extends Partial<Project> {
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 const ProjectSettings = () => {
-  const { user, isLoading: authLoading } = useAuth()
+  const { user } = useAuth()
 
   const { t } = useTranslation('common')
   const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
-  const { requestOrigin } = useLoaderData<{ requestOrigin: string | null }>()
+  const { project: initialProject, requestOrigin } = useLoaderData<{
+    project: Project
+    requestOrigin: string | null
+  }>()
+  const fetcher = useFetcher<ProjectSettingsActionData>()
+  const gscFetcher = useFetcher<ProjectSettingsActionData>()
+  const { fetchFilters } = useFiltersProxy()
 
-  const [project, setProject] = useState<Project | null>(null)
-  const [form, setForm] = useState<Form>({
-    name: '',
-    id,
-    public: false,
-    isPasswordProtected: false,
-    origins: null,
-    ipBlacklist: null,
-    countryBlacklist: [],
-    botsProtectionLevel: 'basic',
-    gscPropertyUri: null,
-    websiteUrl: null,
-  })
+  const [project, setProject] = useState<Project>(initialProject)
+  const [form, setForm] = useState<Form>(() => ({
+    name: initialProject.name || '',
+    id: initialProject.id,
+    public: initialProject.public || false,
+    isPasswordProtected: initialProject.isPasswordProtected || false,
+    origins: _isString(initialProject.origins)
+      ? initialProject.origins
+      : _join(initialProject.origins, ', '),
+    ipBlacklist: _isString(initialProject.ipBlacklist)
+      ? initialProject.ipBlacklist
+      : _join(initialProject.ipBlacklist, ', '),
+    countryBlacklist: initialProject.countryBlacklist || [],
+    botsProtectionLevel:
+      (initialProject.botsProtectionLevel as 'off' | 'basic') || 'basic',
+    gscPropertyUri: initialProject.gscPropertyUri || null,
+    websiteUrl: initialProject.websiteUrl || null,
+  }))
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     name?: string
@@ -306,12 +331,14 @@ const ProjectSettings = () => {
     ipBlacklist?: string
     password?: string
     websiteUrl?: string
+    transferEmail?: string
+    email?: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [showReset, setShowReset] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [setResetting, setIsResetting] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [showTransfer, setShowTransfer] = useState(false)
   const [transferEmail, setTransferEmail] = useState('')
@@ -319,8 +346,6 @@ const ProjectSettings = () => {
   const [tab, setTab] = useState(DELETE_DATA_MODAL_TABS[0].name)
   const [showProtected, setShowProtected] = useState(false)
 
-  const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
   type SettingsTab =
@@ -338,14 +363,29 @@ const ProjectSettings = () => {
   const tabs = useMemo(
     () =>
       [
-        { id: 'general', label: t('project.settings.tabs.general'), icon: Settings2Icon, visible: true },
-        { id: 'access', label: t('project.settings.tabs.access'), icon: LockIcon, visible: true },
-        { id: 'shields', label: t('project.settings.tabs.shields'), icon: ShieldIcon, visible: true },
+        {
+          id: 'general',
+          label: t('project.settings.tabs.general'),
+          icon: Settings2Icon,
+          visible: true,
+        },
+        {
+          id: 'access',
+          label: t('project.settings.tabs.access'),
+          icon: LockIcon,
+          visible: true,
+        },
+        {
+          id: 'shields',
+          label: t('project.settings.tabs.shields'),
+          icon: ShieldIcon,
+          visible: true,
+        },
         {
           id: 'captcha',
           label: t('project.settings.tabs.captcha'),
           icon: ShieldCheckIcon,
-          visible: !isSelfhosted,
+          visible: true,
         },
         {
           id: 'integrations',
@@ -359,9 +399,24 @@ const ProjectSettings = () => {
           icon: DollarSignIcon,
           visible: !isSelfhosted,
         },
-        { id: 'emails', label: t('project.settings.tabs.emails'), icon: MailIcon, visible: !isSelfhosted },
-        { id: 'people', label: t('project.settings.tabs.people'), icon: UserRoundIcon, visible: true },
-        { id: 'annotations', label: t('project.settings.tabs.annotations'), icon: StickyNoteIcon, visible: true },
+        {
+          id: 'emails',
+          label: t('project.settings.tabs.emails'),
+          icon: MailIcon,
+          visible: !isSelfhosted,
+        },
+        {
+          id: 'people',
+          label: t('project.settings.tabs.people'),
+          icon: UserRoundIcon,
+          visible: true,
+        },
+        {
+          id: 'annotations',
+          label: t('project.settings.tabs.annotations'),
+          icon: StickyNoteIcon,
+          visible: true,
+        },
         {
           id: 'danger',
           label: t('project.settings.tabs.danger'),
@@ -386,14 +441,17 @@ const ProjectSettings = () => {
 
   // Google Search Console integration state
   const [gscConnected, setGscConnected] = useState<boolean | null>(null)
-  const [gscProperties, setGscProperties] = useState<{ siteUrl: string; permissionLevel?: string }[]>([])
+  const [gscProperties, setGscProperties] = useState<
+    { siteUrl: string; permissionLevel?: string }[]
+  >([])
   const [gscEmail, setGscEmail] = useState<string | null>(null)
 
   // CAPTCHA state
-  const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(null)
+  const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(
+    () => initialProject.captchaSecretKey || null,
+  )
   const [captchaDifficulty, setCaptchaDifficulty] = useState<number>(4)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
-  const [isSavingDifficulty, setIsSavingDifficulty] = useState(false)
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
@@ -419,173 +477,281 @@ const ProjectSettings = () => {
         name: t('common.notSet'),
       },
       ...(user?.organisationMemberships || [])
-        .filter((om) => om.confirmed && (om.role === 'admin' || om.role === 'owner'))
+        .filter(
+          (om) => om.confirmed && (om.role === 'admin' || om.role === 'owner'),
+        )
         .map((om) => om.organisation),
     ],
     [user?.organisationMemberships, t],
   )
 
-  const assignOrganisation = async (organisationId?: string) => {
-    try {
-      await assignProjectToOrganisation(id, organisationId)
-      toast.success(t('apiNotifications.projectAssigned'))
-    } catch (reason: any) {
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.projectAssignError'))
-    }
+  const assignOrganisation = async (organisationId?: string): Promise<void> => {
+    const formData = new FormData()
+    formData.set('intent', 'assign-organisation')
+    if (organisationId) formData.set('organisationId', organisationId)
+    fetcher.submit(formData, { method: 'post' })
   }
 
   const sharableLink = useMemo(() => {
-    const origin = requestOrigin || isBrowser ? window.location.origin : 'https://swetrix.com'
+    const origin =
+      requestOrigin ??
+      (isBrowser ? window.location.origin : 'https://swetrix.com')
 
     return `${origin}/projects/${id}`
   }, [requestOrigin, id])
 
-  const loadProject = async (projectId: string) => {
-    if (isLoading) {
-      return
-    }
-    setIsLoading(true)
+  const [gscPropertiesPending, setGscPropertiesPending] = useState(false)
+  const lastHandledGscData = useRef<ProjectSettingsActionData | null>(null)
+  const gscInitialized = useRef(false)
 
-    try {
-      const result = await getProject(projectId)
-      setProject(result)
-      setCaptchaSecretKey(result.captchaSecretKey)
-      setCaptchaDifficulty(result.captchaDifficulty || 4)
-      setForm({
-        ...result,
-        ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
-        origins: _isString(result.origins) ? result.origins : _join(result.origins, ', '),
-        countryBlacklist: result.countryBlacklist || [],
-        websiteUrl: result.websiteUrl || null,
-      })
-    } catch (reason: any) {
-      setError(reason)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // Handle GSC fetcher responses
+  useEffect(() => {
+    if (gscFetcher.state !== 'idle' || !gscFetcher.data) return
 
-  const refreshGSCStatus = useCallback(async () => {
-    try {
-      const { connected, email } = await getGSCStatus(id)
-      setGscConnected(connected)
-      setGscEmail(email || null)
-      if (connected) {
-        try {
-          const props = await getGSCProperties(id)
-          setGscProperties(props)
-        } catch {
-          //
+    // Prevent handling the same response twice
+    if (lastHandledGscData.current === gscFetcher.data) return
+    lastHandledGscData.current = gscFetcher.data
+
+    const {
+      intent,
+      success,
+      gscStatus,
+      gscProperties: properties,
+      gscAuthUrl,
+      error: gscError,
+    } = gscFetcher.data
+
+    if (success) {
+      if (intent === 'gsc-status' && gscStatus) {
+        setGscConnected(gscStatus.connected)
+        setGscEmail(gscStatus.email || null)
+        if (gscStatus.connected) {
+          setGscPropertiesPending(true)
+        } else {
+          setGscProperties([])
         }
-      } else {
+      } else if (intent === 'gsc-properties' && properties) {
+        setGscProperties(properties)
+        setGscPropertiesPending(false)
+      } else if (intent === 'gsc-connect' && gscAuthUrl) {
+        const safeUrl = (() => {
+          try {
+            const parsed = new URL(gscAuthUrl)
+            if (parsed.protocol !== 'https:') return null
+            if (parsed.username || parsed.password) return null
+            if (parsed.hostname !== 'accounts.google.com') return null
+            return parsed.toString()
+          } catch {
+            return null
+          }
+        })()
+
+        if (!safeUrl) {
+          toast.error(t('apiNotifications.somethingWentWrong'))
+          return
+        }
+
+        window.location.href = safeUrl
+      } else if (intent === 'gsc-disconnect') {
+        setGscConnected(false)
         setGscProperties([])
+        setGscEmail(null)
+        setForm((prevForm) => ({
+          ...prevForm,
+          gscPropertyUri: null,
+        }))
+        toast.success(t('project.settings.gsc.disconnected'))
+      } else if (intent === 'gsc-set-property') {
+        toast.success(t('project.settings.gsc.propertyConnected'))
       }
-    } catch {
-      setGscConnected(false)
+    } else if (gscError) {
+      toast.error(
+        typeof gscError === 'string'
+          ? gscError
+          : t('apiNotifications.somethingWentWrong'),
+      )
+      setGscPropertiesPending(false)
     }
-  }, [id])
+  }, [gscFetcher.state, gscFetcher.data, t])
 
+  // Fetch GSC properties after status confirms connected
   useEffect(() => {
-    refreshGSCStatus()
-  }, [refreshGSCStatus])
-
-  useEffect(() => {
-    if (authLoading) {
-      return
+    if (gscPropertiesPending && gscFetcher.state === 'idle') {
+      setGscPropertiesPending(false)
+      gscFetcher.submit({ intent: 'gsc-properties' }, { method: 'post' })
     }
-
-    loadProject(id)
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, id])
+  }, [gscPropertiesPending, gscFetcher.state])
 
-  const onSubmit = async (data: Form) => {
-    if (!isSaving) {
-      setIsSaving(true)
-      try {
-        const formalisedData = {
-          ...data,
-          origins: _isEmpty(data.origins)
-            ? null
-            : _map(_split(data.origins, ','), (origin) => {
-                try {
-                  if (_includes(origin, 'localhost')) {
-                    return origin
-                  }
-                  return new URL(origin).host
-                } catch {
-                  return origin
-                }
-              }),
-          ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist, ','),
-          countryBlacklist: _isEmpty(data.countryBlacklist) ? null : data.countryBlacklist,
+  // Initial GSC status fetch
+  useEffect(() => {
+    if (isSelfhosted || gscInitialized.current) return
+    gscInitialized.current = true
+    gscFetcher.submit({ intent: 'gsc-status' }, { method: 'post' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      const { intent, project: updatedProject } = fetcher.data
+
+      setErrors({})
+
+      if (intent === 'update-project') {
+        if (updatedProject) {
+          // Merge with existing project to preserve fields like 'role' that aren't returned from update
+          setProject((prev) =>
+            prev ? { ...prev, ...updatedProject } : updatedProject,
+          )
         }
-        await updateProject(id, formalisedData as Partial<Project>)
+        setBeenSubmitted(false)
         toast.success(t('project.settings.updated'))
-      } catch (reason: any) {
-        toast.error(reason)
-      } finally {
-        setIsSaving(false)
+      } else if (intent === 'delete-project') {
+        toast.success(t('project.settings.deleted'))
+        navigate(routes.dashboard)
+      } else if (
+        intent === 'reset-project' ||
+        intent === 'delete-partially' ||
+        intent === 'reset-filters'
+      ) {
+        toast.success(t('project.settings.resetSuccess'))
+        setShowReset(false)
+      } else if (intent === 'transfer-project') {
+        toast.success(t('apiNotifications.transferRequestSent'))
+        setShowTransfer(false)
+        setTransferEmail('')
+      } else if (
+        intent === 'regenerate-captcha-key' &&
+        updatedProject?.captchaSecretKey
+      ) {
+        setCaptchaSecretKey(updatedProject.captchaSecretKey)
+        toast.success(t('project.settings.updated'))
+      } else if (intent === 'assign-organisation') {
+        toast.success(t('apiNotifications.projectAssigned'))
       }
+
+      setIsSaving(false)
+      setIsDeleting(false)
+      setIsResetting(false)
+    } else if (fetcher.data?.fieldErrors) {
+      setErrors(fetcher.data.fieldErrors)
+      setIsSaving(false)
+      setIsDeleting(false)
+      setIsResetting(false)
+    } else if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
+      setIsSaving(false)
+      setIsDeleting(false)
+      setIsResetting(false)
     }
+  }, [fetcher.data, t, navigate])
+
+  const onSubmit = (data: Form) => {
+    if (fetcher.state === 'submitting') return
+
+    setIsSaving(true)
+    const formData = new FormData()
+    formData.set('intent', 'update-project')
+    if (data.name) formData.set('name', data.name)
+    formData.set('public', data.public ? 'true' : 'false')
+    formData.set(
+      'isPasswordProtected',
+      data.isPasswordProtected ? 'true' : 'false',
+    )
+    if (data.password) formData.set('password', data.password)
+    if (data.origins !== null) formData.set('origins', data.origins)
+    if (data.ipBlacklist !== null) formData.set('ipBlacklist', data.ipBlacklist)
+    if (data.botsProtectionLevel)
+      formData.set('botsProtectionLevel', data.botsProtectionLevel)
+    if (data.countryBlacklist)
+      formData.set('countryBlacklist', JSON.stringify(data.countryBlacklist))
+    if (data.websiteUrl !== undefined)
+      formData.set('websiteUrl', data.websiteUrl || '')
+
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const onDelete = async () => {
+  const onDelete = () => {
     setShowDelete(false)
 
-    if (isDeleting) {
-      return
-    }
+    if (fetcher.state === 'submitting') return
 
     setIsDeleting(true)
-    try {
-      await deleteProject(id)
-      toast.success(t('project.settings.deleted'))
-      navigate(routes.dashboard)
-    } catch (reason: any) {
-      toast.error(reason)
-    } finally {
-      setIsDeleting(false)
-    }
+    const formData = new FormData()
+    formData.set('intent', 'delete-project')
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const onReset = async () => {
-    setShowReset(false)
-
-    if (setResetting) {
-      return
-    }
+  const onReset = (
+    resetTab: string,
+    dateRange?: Date[],
+    filterType?: string,
+    filterValue?: string[],
+  ) => {
+    if (fetcher.state === 'submitting') return
 
     setIsResetting(true)
+    const formData = new FormData()
 
-    try {
-      if (tab === DELETE_DATA_MODAL_TABS[1].name) {
-        if (_isEmpty(dateRange)) {
-          toast.error(t('project.settings.noDateRange'))
-          setIsResetting(false)
-          return
-        }
-        await deletePartially(id, {
-          from: getFormatDate(dateRange[0]),
-          to: getFormatDate(dateRange[1]),
-        })
-      } else if (tab === DELETE_DATA_MODAL_TABS[2].name) {
-        if (_isEmpty(activeFilter)) {
-          toast.error(t('project.settings.noFilters'))
-          setIsResetting(false)
-          return
-        }
+    if (resetTab === 'all') {
+      formData.set('intent', 'reset-project')
+    } else if (resetTab === 'partially' && dateRange) {
+      formData.set('intent', 'delete-partially')
+      formData.set('from', dateRange[0]?.toISOString() || '')
+      formData.set('to', dateRange[1]?.toISOString() || '')
+    } else if (
+      resetTab === 'viaFilters' &&
+      filterType &&
+      filterValue &&
+      filterValue.length > 0
+    ) {
+      formData.set('intent', 'reset-filters')
+      formData.set('type', filterType)
+      formData.set('value', JSON.stringify(filterValue))
+    }
 
-        await resetFilters(id, filterType, activeFilter)
-      } else {
-        await resetProject(id)
+    fetcher.submit(formData, { method: 'post' })
+  }
+
+  const onTransfer = () => {
+    if (fetcher.state === 'submitting') return
+
+    const formData = new FormData()
+    formData.set('intent', 'transfer-project')
+    formData.set('email', transferEmail)
+    fetcher.submit(formData, { method: 'post' })
+  }
+
+  const onRegenerateCaptchaKey = () => {
+    if (fetcher.state === 'submitting') return
+
+    const formData = new FormData()
+    formData.set('intent', 'regenerate-captcha-key')
+    fetcher.submit(formData, { method: 'post' })
+  }
+
+  // Wrapper for reset that handles tab logic
+  const handleReset = () => {
+    if (fetcher.state === 'submitting') return
+
+    if (tab === DELETE_DATA_MODAL_TABS[1].name) {
+      if (_isEmpty(dateRange) || !dateRange[0] || !dateRange[1]) {
+        toast.error(t('project.settings.noDateRange'))
+        return
       }
-      toast.success(t('project.settings.projectReset'))
-      navigate(routes.dashboard)
-    } catch (reason: any) {
-      toast.error(reason)
-    } finally {
-      setIsResetting(false)
+      setShowReset(false)
+      onReset('partially', dateRange)
+    } else if (tab === DELETE_DATA_MODAL_TABS[2].name) {
+      if (_isEmpty(activeFilter) || _isEmpty(filterType)) {
+        toast.error(t('project.settings.noFilters'))
+        return
+      }
+      setShowReset(false)
+      onReset('viaFilters', undefined, filterType, activeFilter)
+    } else if (tab === DELETE_DATA_MODAL_TABS[0].name) {
+      setShowReset(false)
+      onReset('all')
     }
   }
 
@@ -603,15 +769,21 @@ const ProjectSettings = () => {
     }
 
     if (_size(form.name) > MAX_NAME_LENGTH) {
-      allErrors.name = t('project.settings.pxCharsError', { amount: MAX_NAME_LENGTH })
+      allErrors.name = t('project.settings.pxCharsError', {
+        amount: MAX_NAME_LENGTH,
+      })
     }
 
     if (_size(form.origins) > MAX_ORIGINS_LENGTH) {
-      allErrors.origins = t('project.settings.oxCharsError', { amount: MAX_ORIGINS_LENGTH })
+      allErrors.origins = t('project.settings.oxCharsError', {
+        amount: MAX_ORIGINS_LENGTH,
+      })
     }
 
     if (_size(form.ipBlacklist) > MAX_IPBLACKLIST_LENGTH) {
-      allErrors.ipBlacklist = t('project.settings.oxCharsError', { amount: MAX_IPBLACKLIST_LENGTH })
+      allErrors.ipBlacklist = t('project.settings.oxCharsError', {
+        amount: MAX_IPBLACKLIST_LENGTH,
+      })
     }
 
     // Validate websiteUrl if provided
@@ -656,21 +828,6 @@ const ProjectSettings = () => {
     }
   }
 
-  const onTransfer = async () => {
-    await transferProject(id, transferEmail)
-      .then(() => {
-        toast.success(t('apiNotifications.transferRequestSent'))
-        navigate(routes.dashboard)
-      })
-      .catch((reason) => {
-        toast.error(reason)
-      })
-      .finally(() => {
-        setShowTransfer(false)
-        setTransferEmail('')
-      })
-  }
-
   const onProtected = async () => {
     setBeenSubmitted(true)
 
@@ -689,15 +846,6 @@ const ProjectSettings = () => {
     }
   }
 
-  const reloadProject = useCallback(async () => {
-    try {
-      const result = await getProject(id)
-      setProject(result)
-    } catch (reason: any) {
-      console.error(`[ERROR] Error while reloading project: ${reason}`)
-    }
-  }, [id])
-
   const title = `${t('project.settings.settings')} ${form.name}`
 
   useEffect(() => {
@@ -707,28 +855,6 @@ const ProjectSettings = () => {
   const currentTabLabel = useMemo(() => {
     return (tabs.find((t) => t.id === activeTab)?.label as string) || ''
   }, [tabs, activeTab])
-
-  if (error && !isLoading) {
-    return (
-      <StatusPage
-        type='error'
-        title={t('apiNotifications.somethingWentWrong')}
-        description={t('apiNotifications.errorCode', { error })}
-        actions={[
-          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
-          { label: t('notFoundPage.support'), to: routes.contact },
-        ]}
-      />
-    )
-  }
-
-  if (isLoading || isLoading === null || !project) {
-    return (
-      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
-        <Loader />
-      </div>
-    )
-  }
 
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 pb-40 dark:bg-slate-900'>
@@ -740,7 +866,9 @@ const ProjectSettings = () => {
           <ChevronLeftIcon className='mr-1 size-3' strokeWidth={1.5} />
           {t('project.backToStats')}
         </Link>
-        <h2 className='mt-1 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
+        <h2 className='mt-1 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+          {title}
+        </h2>
 
         <hr className='mt-5 border-gray-200 dark:border-gray-600' />
 
@@ -756,7 +884,9 @@ const ProjectSettings = () => {
                 const Icon = item.icon
                 return <Icon className='h-4 w-4' strokeWidth={1.5} />
               }}
-              onSelect={(item: any) => setActiveTab(item.id as typeof activeTab)}
+              onSelect={(item: any) =>
+                setActiveTab(item.id as typeof activeTab)
+              }
               selectedItem={tabs.find((tab) => tab.id === activeTab)}
             />
           </div>
@@ -775,7 +905,8 @@ const ProjectSettings = () => {
                     className={cx(
                       'group flex items-center rounded-md px-3 py-2 text-left text-sm text-gray-900 transition-colors',
                       {
-                        'bg-gray-200 font-semibold dark:bg-slate-800 dark:text-gray-50': isCurrent,
+                        'bg-gray-200 font-semibold dark:bg-slate-800 dark:text-gray-50':
+                          isCurrent,
                         'hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-slate-800 dark:hover:text-gray-50':
                           !isCurrent,
                       },
@@ -852,10 +983,17 @@ const ProjectSettings = () => {
               </form>
             ) : null}
 
-            {activeTab === 'emails' && !isSelfhosted ? <Emails projectId={id} /> : null}
-            {activeTab === 'people' ? <People project={project} reloadProject={reloadProject} /> : null}
+            {activeTab === 'emails' && !isSelfhosted ? (
+              <Emails projectId={id} />
+            ) : null}
+            {activeTab === 'people' ? <People project={project} /> : null}
             {activeTab === 'annotations' ? (
-              <Annotations projectId={id} allowedToManage={project?.role === 'owner' || project?.role === 'admin'} />
+              <Annotations
+                projectId={id}
+                allowedToManage={
+                  project?.role === 'owner' || project?.role === 'admin'
+                }
+              />
             ) : null}
 
             {activeTab === 'integrations' ? (
@@ -869,36 +1007,24 @@ const ProjectSettings = () => {
                     <Loader />
                   ) : !gscConnected ? (
                     <div className='flex flex-col items-center justify-between gap-4 md:flex-row'>
-                      <p className='text-sm text-gray-800 dark:text-gray-200'>{t('project.settings.gsc.connect')}</p>
+                      <p className='text-sm text-gray-800 dark:text-gray-200'>
+                        {t('project.settings.gsc.connect')}
+                      </p>
                       <Button
                         className='flex items-center gap-2'
                         type='button'
-                        onClick={async () => {
-                          try {
-                            const { url } = await generateGSCAuthURL(id)
-                            const safeUrl = (() => {
-                              try {
-                                const parsed = new URL(url)
-                                if (parsed.protocol !== 'https:') return null
-                                if (parsed.username || parsed.password) return null
-                                // Google OAuth consent screen
-                                if (parsed.hostname !== 'accounts.google.com') return null
-                                return parsed.toString()
-                              } catch {
-                                return null
-                              }
-                            })()
-
-                            if (!safeUrl) {
-                              toast.error(t('apiNotifications.somethingWentWrong'))
-                              return
-                            }
-
-                            window.location.href = safeUrl
-                          } catch (reason: any) {
-                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-                          }
+                        onClick={() => {
+                          gscFetcher.submit(
+                            { intent: 'gsc-connect' },
+                            { method: 'post' },
+                          )
                         }}
+                        loading={
+                          gscFetcher.state !== 'idle'
+                            ? gscFetcher.formData?.get('intent') ===
+                              'gsc-connect'
+                            : undefined
+                        }
                         primary
                         regular
                       >
@@ -920,21 +1046,18 @@ const ProjectSettings = () => {
                         className='max-w-max'
                         semiDanger
                         regular
-                        onClick={async () => {
-                          try {
-                            await disconnectGSC(id)
-                            setGscConnected(false)
-                            setGscProperties([])
-                            setGscEmail(null)
-                            setForm((prevForm) => ({
-                              ...prevForm,
-                              gscPropertyUri: null,
-                            }))
-                            toast.success(t('project.settings.gsc.disconnected'))
-                          } catch (reason: any) {
-                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-                          }
+                        onClick={() => {
+                          gscFetcher.submit(
+                            { intent: 'gsc-disconnect' },
+                            { method: 'post' },
+                          )
                         }}
+                        loading={
+                          gscFetcher.state !== 'idle'
+                            ? gscFetcher.formData?.get('intent') ===
+                              'gsc-disconnect'
+                            : undefined
+                        }
                       >
                         {t('common.disconnect')}
                       </Button>
@@ -945,7 +1068,10 @@ const ProjectSettings = () => {
                         hintClassName='lg:w-2/3'
                         label={t('project.settings.gsc.websiteProperty')}
                         hint={t('project.settings.gsc.websitePropertyHint')}
-                        items={_map(gscProperties, (p) => ({ key: p.siteUrl, label: p.siteUrl }))}
+                        items={_map(gscProperties, (p) => ({
+                          key: p.siteUrl,
+                          label: p.siteUrl,
+                        }))}
                         keyExtractor={(item) => item.key}
                         labelExtractor={(item) => item.label}
                         onSelect={(item: { key: string; label: string }) => {
@@ -954,24 +1080,39 @@ const ProjectSettings = () => {
                             gscPropertyUri: item.key,
                           }))
                         }}
-                        title={form.gscPropertyUri || t('project.settings.gsc.selectProperty')}
+                        title={
+                          form.gscPropertyUri ||
+                          t('project.settings.gsc.selectProperty')
+                        }
                         selectedItem={
-                          form.gscPropertyUri ? { key: form.gscPropertyUri, label: form.gscPropertyUri } : undefined
+                          form.gscPropertyUri
+                            ? {
+                                key: form.gscPropertyUri,
+                                label: form.gscPropertyUri,
+                              }
+                            : undefined
                         }
                       />
 
                       <Button
                         type='button'
                         className='max-w-max'
-                        onClick={async () => {
+                        onClick={() => {
                           if (!form.gscPropertyUri) return
-                          try {
-                            await setGSCProperty(id, form.gscPropertyUri)
-                            toast.success(t('project.settings.gsc.propertyConnected'))
-                          } catch (reason: any) {
-                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-                          }
+                          gscFetcher.submit(
+                            {
+                              intent: 'gsc-set-property',
+                              propertyUri: form.gscPropertyUri,
+                            },
+                            { method: 'post' },
+                          )
                         }}
+                        loading={
+                          gscFetcher.state !== 'idle'
+                            ? gscFetcher.formData?.get('intent') ===
+                              'gsc-set-property'
+                            : undefined
+                        }
                         primary
                         regular
                       >
@@ -1027,7 +1168,12 @@ const ProjectSettings = () => {
                         disabled
                       />
                       <div className='mt-4 flex gap-2'>
-                        <Button type='button' onClick={() => setShowRegenerateSecret(true)} danger regular>
+                        <Button
+                          type='button'
+                          onClick={() => setShowRegenerateSecret(true)}
+                          danger
+                          regular
+                        >
                           {t('project.settings.captcha.regenerateKey')}
                         </Button>
                       </div>
@@ -1039,46 +1185,80 @@ const ProjectSettings = () => {
                           className='lg:w-1/2'
                           hintClassName='lg:w-2/3'
                           items={[
-                            { value: 2, label: t('project.settings.captcha.difficultyLevels.veryEasy') },
-                            { value: 3, label: t('project.settings.captcha.difficultyLevels.easy') },
-                            { value: 4, label: t('project.settings.captcha.difficultyLevels.medium') },
-                            { value: 5, label: t('project.settings.captcha.difficultyLevels.hard') },
-                            { value: 6, label: t('project.settings.captcha.difficultyLevels.veryHard') },
+                            {
+                              value: 2,
+                              label: t(
+                                'project.settings.captcha.difficultyLevels.veryEasy',
+                              ),
+                            },
+                            {
+                              value: 3,
+                              label: t(
+                                'project.settings.captcha.difficultyLevels.easy',
+                              ),
+                            },
+                            {
+                              value: 4,
+                              label: t(
+                                'project.settings.captcha.difficultyLevels.medium',
+                              ),
+                            },
+                            {
+                              value: 5,
+                              label: t(
+                                'project.settings.captcha.difficultyLevels.hard',
+                              ),
+                            },
+                            {
+                              value: 6,
+                              label: t(
+                                'project.settings.captcha.difficultyLevels.veryHard',
+                              ),
+                            },
                           ]}
                           keyExtractor={(item) => String(item.value)}
                           labelExtractor={(item) => item.label}
                           selectedItem={{ value: captchaDifficulty, label: '' }}
-                          onSelect={(item: { value: number; label: string }) => {
+                          onSelect={(item: {
+                            value: number
+                            label: string
+                          }) => {
                             setCaptchaDifficulty(item.value)
                           }}
                           title={
                             captchaDifficulty === 2
-                              ? t('project.settings.captcha.difficultyLevels.veryEasy')
+                              ? t(
+                                  'project.settings.captcha.difficultyLevels.veryEasy',
+                                )
                               : captchaDifficulty === 3
-                                ? t('project.settings.captcha.difficultyLevels.easy')
+                                ? t(
+                                    'project.settings.captcha.difficultyLevels.easy',
+                                  )
                                 : captchaDifficulty === 4
-                                  ? t('project.settings.captcha.difficultyLevels.medium')
+                                  ? t(
+                                      'project.settings.captcha.difficultyLevels.medium',
+                                    )
                                   : captchaDifficulty === 5
-                                    ? t('project.settings.captcha.difficultyLevels.hard')
-                                    : t('project.settings.captcha.difficultyLevels.veryHard')
+                                    ? t(
+                                        'project.settings.captcha.difficultyLevels.hard',
+                                      )
+                                    : t(
+                                        'project.settings.captcha.difficultyLevels.veryHard',
+                                      )
                           }
                         />
                         <Button
                           type='button'
                           className='mt-4'
-                          loading={isSavingDifficulty}
-                          onClick={async () => {
-                            setIsSavingDifficulty(true)
-                            try {
-                              await updateProject(id, { captchaDifficulty })
-                              toast.success(t('project.settings.updated'))
-                            } catch (reason: any) {
-                              toast.error(
-                                typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'),
-                              )
-                            } finally {
-                              setIsSavingDifficulty(false)
-                            }
+                          loading={fetcher.state === 'submitting'}
+                          onClick={() => {
+                            const formData = new FormData()
+                            formData.set('intent', 'update-project')
+                            formData.set(
+                              'captchaDifficulty',
+                              captchaDifficulty.toString(),
+                            )
+                            fetcher.submit(formData, { method: 'post' })
                           }}
                           primary
                           regular
@@ -1094,15 +1274,7 @@ const ProjectSettings = () => {
                       </p>
                       <Button
                         type='button'
-                        onClick={async () => {
-                          try {
-                            const newKey = await reGenerateCaptchaSecretKey(id)
-                            setCaptchaSecretKey(newKey)
-                            toast.success(t('project.settings.captcha.keyGenerated'))
-                          } catch (reason: any) {
-                            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-                          }
-                        }}
+                        onClick={onRegenerateCaptchaKey}
                         primary
                         regular
                       >
@@ -1122,7 +1294,7 @@ const ProjectSettings = () => {
                 setShowReset={setShowReset}
                 setShowDelete={setShowDelete}
                 isDeleting={isDeleting}
-                setResetting={setResetting}
+                setResetting={isResetting}
               />
             ) : null}
           </section>
@@ -1141,7 +1313,7 @@ const ProjectSettings = () => {
       />
       <Modal
         onClose={() => setShowReset(false)}
-        onSubmit={onReset}
+        onSubmit={handleReset}
         size='large'
         submitText={t('project.settings.reset')}
         closeText={t('common.close')}
@@ -1157,6 +1329,7 @@ const ProjectSettings = () => {
             setActiveFilter={setActiveFilter}
             filterType={filterType}
             setFilterType={setFilterType}
+            fetchFilters={fetchFilters}
           />
         }
         submitType='danger'
@@ -1177,7 +1350,9 @@ const ProjectSettings = () => {
         title={t('project.settings.protected')}
         message={
           <div>
-            <p className='mt-1 mb-4 text-sm text-gray-500 dark:text-gray-300'>{t('project.settings.protectedHint')}</p>
+            <p className='mt-1 mb-4 text-sm text-gray-500 dark:text-gray-300'>
+              {t('project.settings.protectedHint')}
+            </p>
             <Input
               name='password'
               type='password'
@@ -1199,7 +1374,9 @@ const ProjectSettings = () => {
         closeText={t('common.cancel')}
         message={
           <div>
-            <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>{t('project.settings.transferTo')}</h2>
+            <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
+              {t('project.settings.transferTo')}
+            </h2>
             <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
               {t('project.settings.transferHint', {
                 name: form.name || DEFAULT_PROJECT_NAME,
@@ -1221,15 +1398,9 @@ const ProjectSettings = () => {
       />
       <Modal
         onClose={() => setShowRegenerateSecret(false)}
-        onSubmit={async () => {
-          try {
-            const newKey = await reGenerateCaptchaSecretKey(id)
-            setCaptchaSecretKey(newKey)
-            setShowRegenerateSecret(false)
-            toast.success(t('project.settings.captcha.keyRegenerated'))
-          } catch (reason: any) {
-            toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
-          }
+        onSubmit={() => {
+          setShowRegenerateSecret(false)
+          onRegenerateCaptchaKey()
         }}
         submitText={t('project.settings.captcha.regenerateKey')}
         closeText={t('common.cancel')}
@@ -1243,4 +1414,4 @@ const ProjectSettings = () => {
   )
 }
 
-export default withAuthentication(ProjectSettings, auth.authenticated)
+export default ProjectSettings

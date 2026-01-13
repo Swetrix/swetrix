@@ -33,7 +33,14 @@ export const SessionChart = ({
   const options: ChartOptions = useMemo(() => {
     // Session inspector chart is always rendered as a line/area chart,
     // regardless of the user's global chart type preference.
-    return getSettingsSession(chart, timeBucket as string, timeFormat, rotateXAxis, chartTypes.line, onZoom)
+    return getSettingsSession(
+      chart,
+      timeBucket as string,
+      timeFormat,
+      rotateXAxis,
+      chartTypes.line,
+      onZoom,
+    )
   }, [chart, timeBucket, timeFormat, rotateXAxis, onZoom])
 
   const deps = useMemo(

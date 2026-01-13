@@ -14,7 +14,12 @@ const NotFound = () => {
     <div className='min-h-min-footer bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
       <div className='mx-auto max-w-max'>
         <main className='sm:flex'>
-          <Text as='p' size='4xl' weight='bold' className='text-indigo-600 sm:text-5xl dark:text-indigo-500'>
+          <Text
+            as='p'
+            size='4xl'
+            weight='bold'
+            className='text-indigo-600 sm:text-5xl dark:text-indigo-500'
+          >
             404
           </Text>
           <div className='sm:ml-6'>
@@ -22,7 +27,12 @@ const NotFound = () => {
               <Text as='h1' size='4xl' weight='bold' className='sm:text-5xl'>
                 {t('notFoundPage.title')}
               </Text>
-              <Text as='p' size='base' colour='muted' className='mt-1 whitespace-pre-line'>
+              <Text
+                as='p'
+                size='base'
+                colour='muted'
+                className='mt-1 whitespace-pre-line'
+              >
                 {t('notFoundPage.description')}
               </Text>
             </div>

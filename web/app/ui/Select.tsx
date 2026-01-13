@@ -1,4 +1,11 @@
-import { Listbox, Transition, Label, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react'
+import {
+  Listbox,
+  Transition,
+  Label,
+  ListboxButton,
+  ListboxOptions,
+  ListboxOption,
+} from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 import _map from 'lodash/map'
@@ -82,7 +89,10 @@ function Select<T>({
                 {title}
               </span>
               <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
-                <ChevronUpDownIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
+                <ChevronUpDownIcon
+                  className='h-5 w-5 text-gray-400'
+                  aria-hidden='true'
+                />
               </span>
             </ListboxButton>
 
@@ -104,14 +114,20 @@ function Select<T>({
                   const selected = isItemSelected(item)
                   return (
                     <ListboxOption
-                      key={keyExtractor ? keyExtractor(item, index) : (item as Key)}
+                      key={
+                        keyExtractor ? keyExtractor(item, index) : (item as Key)
+                      }
                       className={({ focus }) =>
-                        cx('relative mx-1 cursor-pointer rounded-md py-2 pr-4 pl-8 transition-colors select-none', {
-                          'bg-gray-200 dark:bg-slate-700': focus && !selected,
-                          'bg-gray-300 dark:bg-slate-600': selected,
-                          'text-gray-700 dark:text-gray-50': !focus && !selected,
-                          'text-gray-900 dark:text-white': focus || selected,
-                        })
+                        cx(
+                          'relative mx-1 cursor-pointer rounded-md py-2 pr-4 pl-8 transition-colors select-none',
+                          {
+                            'bg-gray-200 dark:bg-slate-700': focus && !selected,
+                            'bg-gray-300 dark:bg-slate-600': selected,
+                            'text-gray-700 dark:text-gray-50':
+                              !focus && !selected,
+                            'text-gray-900 dark:text-white': focus || selected,
+                          },
+                        )
                       }
                       value={item}
                     >
@@ -127,11 +143,17 @@ function Select<T>({
                             labelClassName,
                           )}
                         >
-                          {labelExtractor ? labelExtractor(item, index) : (item as React.ReactNode)}
+                          {labelExtractor
+                            ? labelExtractor(item, index)
+                            : (item as React.ReactNode)}
                         </span>
 
                         {iconExtractor ? (
-                          <span className={cx('absolute inset-y-0 left-0 flex items-center pl-1.5')}>
+                          <span
+                            className={cx(
+                              'absolute inset-y-0 left-0 flex items-center pl-1.5',
+                            )}
+                          >
                             {iconExtractor(item, index)}
                           </span>
                         ) : null}
@@ -153,7 +175,12 @@ function Select<T>({
             </Transition>
           </div>
           {hint ? (
-            <p className={cx('mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300', hintClassName)}>
+            <p
+              className={cx(
+                'mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300',
+                hintClassName,
+              )}
+            >
               {hint}
             </p>
           ) : null}

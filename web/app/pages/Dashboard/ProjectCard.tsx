@@ -1,18 +1,22 @@
 import cx from 'clsx'
 import _find from 'lodash/find'
 import _isNumber from 'lodash/isNumber'
-import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _size from 'lodash/size'
-import { Settings2Icon, PinIcon, ChevronUpIcon, ChevronDownIcon } from 'lucide-react'
+import {
+  Settings2Icon,
+  PinIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+} from 'lucide-react'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useFetcher, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
-import { acceptProjectShare, pinProject, unpinProject } from '~/api'
 import { OverallObject, Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
+import type { DashboardActionData } from '~/routes/dashboard'
 import { Badge, BadgeProps } from '~/ui/Badge'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
@@ -25,13 +29,17 @@ import Sparkline from './Sparkline'
 
 // Detect if device supports hover (i.e., not a touch-only device)
 const useIsTouchDevice = () => {
-  const [isTouchDevice, setIsTouchDevice] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia('(hover: none)').matches
-  })
+  // Important for SSR hydration: first client render must match server output.
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
     const mediaQuery = window.matchMedia('(hover: none)')
+    queueMicrotask(() => setIsTouchDevice(mediaQuery.matches))
+
     const handler = (e: MediaQueryListEvent) => setIsTouchDevice(e.matches)
     mediaQuery.addEventListener('change', handler)
     return () => mediaQuery.removeEventListener('change', handler)
@@ -46,7 +54,7 @@ interface ProjectCardProps {
   project: Project
   activePeriod: string
   viewMode: 'grid' | 'list'
-  refetchProjects: () => Promise<void>
+  refetchProjects: () => void
 }
 
 interface MiniCardProps {
@@ -123,6 +131,8 @@ export const ProjectCard = ({
 }: ProjectCardProps) => {
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
+  const fetcher = useFetcher<DashboardActionData>()
+  const navigate = useNavigate()
 
   const { user, mergeUser } = useAuth()
   const isTouchDevice = useIsTouchDevice()
@@ -145,47 +155,97 @@ export const ProjectCard = ({
     websiteUrl,
   } = project
 
-  const faviconHost = useMemo(() => getFaviconHost(websiteUrl || null), [websiteUrl])
-  const [isPinning, setIsPinning] = useState(false)
+  const faviconHost = useMemo(
+    () => getFaviconHost(websiteUrl || null),
+    [websiteUrl],
+  )
   const [localIsPinned, setLocalIsPinned] = useState(isPinned)
+
+  const isPinning =
+    (fetcher.state === 'submitting' || fetcher.state === 'loading') &&
+    (fetcher.formData?.get('intent') === 'pin-project' ||
+      fetcher.formData?.get('intent') === 'unpin-project')
+
+  const isAccepting =
+    (fetcher.state === 'submitting' || fetcher.state === 'loading') &&
+    fetcher.formData?.get('intent') === 'accept-project-share'
 
   // Sync local state with prop
   useEffect(() => {
     setLocalIsPinned(isPinned)
   }, [isPinned])
 
+  // Handle fetcher responses
+  useEffect(() => {
+    if (!fetcher.data) return
+
+    // Guard: only process responses for this specific project card
+    const submittedProjectId = fetcher.formData?.get('projectId')
+    const submittedShareId = fetcher.formData?.get('shareId')
+    const isForThisCard =
+      submittedProjectId === id || submittedShareId === shareId
+    if (!isForThisCard) return
+
+    if (fetcher.data.success) {
+      const { intent } = fetcher.data
+
+      if (intent === 'pin-project') {
+        toast.success(t('dashboard.pinned'))
+        refetchProjects()
+      } else if (intent === 'unpin-project') {
+        toast.success(t('dashboard.unpinned'))
+        refetchProjects()
+      } else if (intent === 'accept-project-share') {
+        mergeUser({
+          sharedProjects: user?.sharedProjects?.map((item) => {
+            if (item.id === shareId) {
+              return { ...item, isAccessConfirmed: true }
+            }
+            return item
+          }),
+        })
+        refetchProjects()
+        toast.success(t('apiNotifications.acceptInvitation'))
+      }
+    } else if (fetcher.data.error) {
+      // Revert optimistic update on error
+      if (
+        fetcher.data.intent === 'pin-project' ||
+        fetcher.data.intent === 'unpin-project'
+      ) {
+        setLocalIsPinned(isPinned)
+      }
+      toast.error(fetcher.data.error)
+    }
+  }, [
+    fetcher.data,
+    fetcher.formData,
+    isPinned,
+    shareId,
+    user,
+    mergeUser,
+    refetchProjects,
+    t,
+    id,
+  ])
+
   const handlePinToggle = useCallback(
-    async (e: React.MouseEvent) => {
+    (e: React.MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
 
       if (isPinning) return
 
-      setIsPinning(true)
       // Optimistically update local state
       const newPinnedState = !localIsPinned
       setLocalIsPinned(newPinnedState)
 
-      try {
-        if (!newPinnedState) {
-          await unpinProject(id)
-          toast.success(t('dashboard.unpinned'))
-        } else {
-          await pinProject(id)
-          toast.success(t('dashboard.pinned'))
-        }
-        // Silently refetch projects in background - don't await
-        refetchProjects()
-      } catch (reason: any) {
-        // Revert on error
-        setLocalIsPinned(!newPinnedState)
-        console.error('[ERROR] Error while toggling pin:', reason)
-        toast.error(t('apiNotifications.somethingWentWrong'))
-      } finally {
-        setIsPinning(false)
-      }
+      const formData = new FormData()
+      formData.set('intent', newPinnedState ? 'pin-project' : 'unpin-project')
+      formData.set('projectId', id)
+      fetcher.submit(formData, { method: 'post' })
     },
-    [id, localIsPinned, isPinning, refetchProjects, t],
+    [id, localIsPinned, isPinning, fetcher],
   )
 
   const badges = useMemo(() => {
@@ -218,37 +278,39 @@ export const ProjectCard = ({
     const members = _size(share)
 
     if (members > 0) {
-      list.push({ colour: 'slate', label: t('common.xMembers', { number: members + 1 }) })
+      list.push({
+        colour: 'slate',
+        label: t('common.xMembers', { number: members + 1 }),
+      })
     }
 
     return list
-  }, [t, active, isTransferring, isPublic, organisation, share, project.isAccessConfirmed, project.role, shareId])
+  }, [
+    t,
+    active,
+    isTransferring,
+    isPublic,
+    organisation,
+    share,
+    project.isAccessConfirmed,
+    project.role,
+    shareId,
+  ])
 
-  const onAccept = async () => {
-    try {
-      if (!shareId) {
-        throw new Error('Project share not found')
-      }
-
-      await acceptProjectShare(shareId)
-
-      mergeUser({
-        sharedProjects: user?.sharedProjects?.map((item) => {
-          if (item.id === shareId) {
-            return { ...item, isAccessConfirmed: true }
-          }
-
-          return item
-        }),
-      })
-
-      await refetchProjects()
-
-      toast.success(t('apiNotifications.acceptInvitation'))
-    } catch (reason: any) {
-      console.error(`[ERROR] Error while accepting project invitation: ${reason}`)
-      toast.error(t('apiNotifications.acceptInvitationError'))
+  const onAccept = () => {
+    if (fetcher.state !== 'idle') {
+      return
     }
+
+    if (!shareId) {
+      toast.error(t('apiNotifications.acceptInvitationError'))
+      return
+    }
+
+    const formData = new FormData()
+    formData.set('intent', 'accept-project-share')
+    formData.set('shareId', shareId)
+    fetcher.submit(formData, { method: 'post' })
   }
 
   const onElementClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -281,7 +343,9 @@ export const ProjectCard = ({
       onClick={onElementClick}
       className={cx(
         'group relative cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60',
-        viewMode === 'list' ? 'flex items-center justify-between px-6 py-4' : 'min-h-[153.1px]',
+        viewMode === 'list'
+          ? 'flex items-center justify-between px-6 py-4'
+          : 'min-h-[153.1px]',
       )}
     >
       {/* Background sparkline chart */}
@@ -290,8 +354,18 @@ export const ProjectCard = ({
           <Sparkline chart={overallStats.chart} className='w-full' />
         </div>
       ) : null}
-      <div className={cx('relative z-10 flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
-        <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
+      <div
+        className={cx(
+          'relative z-10 flex flex-col',
+          viewMode === 'list' ? 'flex-1' : 'px-4 py-4',
+        )}
+      >
+        <div
+          className={cx(
+            'flex items-center',
+            viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1',
+          )}
+        >
           <div className='flex min-w-0 items-center gap-1'>
             {faviconHost ? (
               <img
@@ -310,7 +384,9 @@ export const ProjectCard = ({
           <div
             className={cx(
               'flex shrink-0 items-center transition-opacity',
-              alwaysShowActions ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+              alwaysShowActions
+                ? 'opacity-100'
+                : 'opacity-0 group-hover:opacity-100',
             )}
           >
             <button
@@ -318,48 +394,75 @@ export const ProjectCard = ({
               className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               onClick={handlePinToggle}
               disabled={isPinning}
-              aria-label={localIsPinned ? t('dashboard.unpin') : t('dashboard.pin')}
+              aria-label={
+                localIsPinned ? t('dashboard.unpin') : t('dashboard.pin')
+              }
             >
               <PinIcon
-                className={cx('size-5 transition-transform', localIsPinned && 'rotate-[30deg]')}
+                className={cx(
+                  'size-5 transition-transform',
+                  localIsPinned && 'rotate-30',
+                )}
                 strokeWidth={1.5}
               />
             </button>
             {project.isAccessConfirmed && role !== 'viewer' ? (
-              <Link
+              <button
+                type='button'
                 className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
-                onClick={(e) => e.stopPropagation()}
-                to={_replace(routes.project_settings, ':id', id)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  navigate(_replace(routes.project_settings, ':id', id))
+                }}
                 aria-label={`${t('project.settings.settings')} ${name}`}
               >
                 <Settings2Icon className='size-5' strokeWidth={1.5} />
-              </Link>
+              </button>
             ) : null}
           </div>
         </div>
         <div className='mt-1 flex shrink-0 flex-wrap gap-2'>
           {badges.length > 0 ? (
-            badges.map((badge) => <Badge key={badge.label as string} {...badge} />)
+            badges.map((badge) => (
+              <Badge key={badge.label as string} {...badge} />
+            ))
           ) : (
             <Badge label='I' colour='slate' className='invisible' />
           )}
         </div>
       </div>
-      <div className={cx('relative z-10 flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4')}>
+      <div
+        className={cx(
+          'relative z-10 flex shrink-0 gap-5',
+          viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4',
+        )}
+      >
         <MiniCard
           labelTKey='dashboard.pageviews'
           total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
           percChange={
             live === 'N/A'
               ? 0
-              : calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)
+              : calculateRelativePercentage(
+                  overallStats?.previous.all ?? 0,
+                  overallStats?.current.all ?? 0,
+                )
           }
-          hasData={project?.isDataExists || project?.isErrorDataExists || project?.isCaptchaDataExists}
+          hasData={
+            project?.isDataExists ||
+            project?.isErrorDataExists ||
+            project?.isCaptchaDataExists
+          }
         />
         <MiniCard
           labelTKey='dashboard.liveVisitors'
           total={live}
-          hasData={project?.isDataExists || project?.isErrorDataExists || project?.isCaptchaDataExists}
+          hasData={
+            project?.isDataExists ||
+            project?.isErrorDataExists ||
+            project?.isCaptchaDataExists
+          }
         />
       </div>
       {project.role !== 'owner' && !project.isAccessConfirmed ? (
@@ -372,6 +475,7 @@ export const ProjectCard = ({
             onAccept()
           }}
           submitText={t('common.accept')}
+          submitDisabled={isAccepting}
           type='confirmed'
           closeText={t('common.cancel')}
           title={t('dashboard.invitationFor', { project: name })}
@@ -380,46 +484,5 @@ export const ProjectCard = ({
         />
       ) : null}
     </Link>
-  )
-}
-
-interface ProjectCardSkeletonProps {
-  viewMode: 'grid' | 'list'
-}
-
-export const ProjectCardSkeleton = ({ viewMode }: ProjectCardSkeletonProps) => {
-  return (
-    <div
-      className={cx(
-        'grid gap-x-6 gap-y-3',
-        viewMode === 'grid' ? 'grid-cols-1 lg:grid-cols-3 lg:gap-y-6' : 'grid-cols-1 gap-y-3',
-      )}
-    >
-      {_map(Array(viewMode === 'grid' ? 12 : 8), (_, index) => (
-        <div
-          key={index}
-          className={cx(
-            'animate-pulse cursor-wait overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-slate-800/25 dark:bg-slate-800',
-            viewMode === 'list' ? 'flex items-center justify-between px-6 py-4' : 'min-h-[153.1px]',
-          )}
-        >
-          <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
-            <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
-              <div className='h-6 w-3/4 max-w-80 rounded-sm bg-gray-200 dark:bg-slate-700' />
-              <div className='size-6 rounded-[3px] bg-gray-200 dark:bg-slate-700' />
-            </div>
-            <div className='mt-1 flex shrink-0 flex-wrap gap-2'>
-              <div className='h-6 w-16 rounded-sm bg-gray-200 dark:bg-slate-700' />
-              <div className='h-6 w-16 rounded-sm bg-gray-200 dark:bg-slate-700' />
-              <div className='h-6 w-16 rounded-sm bg-gray-200 dark:bg-slate-700' />
-            </div>
-          </div>
-          <div className={cx('flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-[1.375rem] px-4 pb-4')}>
-            <div className='h-10 w-24 rounded-sm bg-gray-200 dark:bg-slate-700' />
-            <div className='h-10 w-24 rounded-sm bg-gray-200 dark:bg-slate-700' />
-          </div>
-        </div>
-      ))}
-    </div>
   )
 }

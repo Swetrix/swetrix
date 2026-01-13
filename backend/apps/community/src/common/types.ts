@@ -39,3 +39,10 @@ export interface ClickhouseAnnotation {
   projectId: string
   created: string
 }
+
+export interface ClickhouseSalt {
+  rotation: string
+  salt: string
+  expiresAt: string
+  created: string
+}

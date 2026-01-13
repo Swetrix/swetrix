@@ -1,9 +1,13 @@
-import type { LoaderFunction, MetaFunction } from 'react-router'
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { redirect, data } from 'react-router'
 
-import { isSelfhosted, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
+import {
+  isSelfhosted,
+  getOgImageUrl,
+  isDisableMarketingPages,
+} from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
-import { getPost } from '~/utils/getPosts'
+import { getPost } from '~/utils/getPosts.server'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = (loaderData: any) => {
@@ -16,7 +20,7 @@ export const meta: MetaFunction = (loaderData: any) => {
   ]
 }
 
-export const loader: LoaderFunction = async ({ params }) => {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/dashboard', 302)
   }
@@ -29,7 +33,7 @@ export const loader: LoaderFunction = async ({ params }) => {
     })
   }
 
-  const post = await getPost(slug, category)
+  const post = await getPost(request, slug, category)
 
   if (!post) {
     return data(null, {

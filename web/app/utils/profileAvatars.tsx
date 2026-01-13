@@ -185,7 +185,10 @@ const generateDisplayName = (profileId: string): string => {
 /**
  * Get display name for a profile - handles both identified and anonymous users
  */
-export const getProfileDisplayName = (profileId: string, isIdentified: boolean): string => {
+export const getProfileDisplayName = (
+  profileId: string,
+  isIdentified: boolean,
+): string => {
   if (isIdentified) {
     const userId = profileId.replace('usr_', '')
     if (userId.length <= 20) {
@@ -205,10 +208,19 @@ interface ProfileAvatarProps {
 /**
  * Avatar component for user profiles using boring-avatars
  */
-export const ProfileAvatar = ({ profileId, size = 40, className }: ProfileAvatarProps) => {
+export const ProfileAvatar = ({
+  profileId,
+  size = 40,
+  className,
+}: ProfileAvatarProps) => {
   return (
     <div className={className}>
-      <Avatar size={size} name={profileId} variant='beam' colors={AVATAR_COLORS} />
+      <Avatar
+        size={size}
+        name={profileId}
+        variant='beam'
+        colors={AVATAR_COLORS}
+      />
     </div>
   )
 }

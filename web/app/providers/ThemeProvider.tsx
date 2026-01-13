@@ -15,7 +15,10 @@ interface ThemeProviderProps {
   initialTheme: ThemeType
 }
 
-export const ThemeProvider = ({ children, initialTheme }: ThemeProviderProps) => {
+export const ThemeProvider = ({
+  children,
+  initialTheme,
+}: ThemeProviderProps) => {
   const [theme, setTheme] = useState(initialTheme)
 
   const _setTheme = useCallback((theme: ThemeType) => {
@@ -23,7 +26,11 @@ export const ThemeProvider = ({ children, initialTheme }: ThemeProviderProps) =>
     setCookie(LS_THEME_SETTING, theme, 3600 * 24 * 90)
   }, [])
 
-  return <ThemeContext.Provider value={{ theme, setTheme: _setTheme }}>{children}</ThemeContext.Provider>
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme: _setTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  )
 }
 
 export const useTheme = () => {

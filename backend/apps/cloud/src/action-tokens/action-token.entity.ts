@@ -23,7 +23,7 @@ export class ActionToken {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @ManyToOne(() => User, user => user.actionTokens, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.actionTokens, { onDelete: 'CASCADE' })
   user: User
 
   @CreateDateColumn()

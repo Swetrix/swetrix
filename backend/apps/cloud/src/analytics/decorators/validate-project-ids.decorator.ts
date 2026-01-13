@@ -26,7 +26,7 @@ export function ValidateProjectIds(validationOptions?: ValidationOptions) {
             return false
           }
 
-          return value.every(pid => PID_REGEX.test(pid))
+          return value.every((pid) => PID_REGEX.test(pid))
         },
         defaultMessage() {
           return 'One of the provided Project IDs (pids) is incorrect'

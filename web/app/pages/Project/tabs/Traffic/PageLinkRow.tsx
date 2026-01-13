@@ -30,7 +30,9 @@ const PageLinkRow = ({ pagePath, websiteUrl }: PageLinkRowProps) => {
 
   return (
     <div className='scrollbar-thin hover-always-overflow flex min-w-0 items-center'>
-      <span className='truncate text-sm text-gray-900 dark:text-gray-100'>{pagePath}</span>
+      <span className='truncate text-sm text-gray-900 dark:text-gray-100'>
+        {pagePath}
+      </span>
       {fullUrl ? (
         <a
           href={fullUrl}

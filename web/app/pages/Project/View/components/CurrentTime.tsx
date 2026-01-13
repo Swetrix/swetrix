@@ -33,7 +33,9 @@ const CurrentTime = () => {
             </Text>
             {isEmbedded ? null : (
               <Text size='xs' colour='secondary' className='mt-1 text-gray-200'>
-                {isAuthenticated ? t('project.changeInSettings') : t('project.signInToChange')}
+                {isAuthenticated
+                  ? t('project.changeInSettings')
+                  : t('project.signInToChange')}
               </Text>
             )}
           </div>

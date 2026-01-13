@@ -1,12 +1,19 @@
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+} from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
 import { Trash2Icon, PlusIcon } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { getGoal, createGoal, updateGoal, type CreateGoal } from '~/api'
+import { useGoalProxy } from '~/hooks/useAnalyticsProxy'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
@@ -30,19 +37,31 @@ interface GoalSettingsModalProps {
   goalId?: string | null
 }
 
-const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: GoalSettingsModalProps) => {
+const GoalSettingsModal = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  projectId: _projectId,
+  goalId,
+}: GoalSettingsModalProps) => {
   const { t } = useTranslation()
+  const fetcher = useFetcher<ProjectViewActionData>()
+  const processedRef = useRef<string | null>(null)
+  const goalProxy = useGoalProxy()
   const isNew = !goalId
 
   const [isLoading, setIsLoading] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
 
   // Form state
   const [name, setName] = useState('')
   const [type, setType] = useState<'pageview' | 'custom_event'>('pageview')
   const [matchType, setMatchType] = useState<'exact' | 'contains'>('exact')
   const [value, setValue] = useState('')
-  const [metadataFilters, setMetadataFilters] = useState<{ key: string; value: string }[]>([])
+  const [metadataFilters, setMetadataFilters] = useState<
+    { key: string; value: string }[]
+  >([])
+
+  const isSaving = fetcher.state === 'submitting'
 
   const resetForm = () => {
     setName('')
@@ -56,7 +75,10 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
     if (!goalId) return
     setIsLoading(true)
     try {
-      const goal = await getGoal(goalId)
+      const goal = await goalProxy.fetchGoal(goalId)
+      if (!goal) {
+        throw new Error('Failed to load goal')
+      }
       setName(goal.name)
       setType(goal.type)
       setMatchType(goal.matchType)
@@ -81,46 +103,63 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, goalId])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSaving(true)
+  // Handle fetcher responses
+  useEffect(() => {
+    if (!fetcher.data || fetcher.state !== 'idle') return
 
-    try {
-      if (isNew) {
-        const data: CreateGoal = {
-          pid: projectId,
-          name,
-          type,
-          matchType,
-          value: value || undefined,
-          metadataFilters: metadataFilters.length > 0 ? metadataFilters : undefined,
-        }
-        await createGoal(data)
+    const responseKey = `${fetcher.data.intent}-${fetcher.data.success}`
+    if (processedRef.current === responseKey) return
+    processedRef.current = responseKey
+
+    if (fetcher.data.success) {
+      const { intent } = fetcher.data
+      if (intent === 'create-goal') {
         toast.success(t('goals.created'))
-      } else if (goalId) {
-        await updateGoal(goalId, {
-          name,
-          type,
-          matchType,
-          value: value || null,
-          metadataFilters: metadataFilters.length > 0 ? metadataFilters : null,
-        })
+      } else if (intent === 'update-goal') {
         toast.success(t('goals.updated'))
       }
       onSuccess()
       onClose()
-    } catch (err: any) {
-      toast.error(err?.message || t('apiNotifications.somethingWentWrong'))
-    } finally {
-      setIsSaving(false)
+    } else if (fetcher.data.error) {
+      toast.error(fetcher.data.error)
     }
+  }, [fetcher.data, fetcher.state, t, onSuccess, onClose])
+
+  // Reset processed ref when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      processedRef.current = null
+    }
+  }, [isOpen])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    processedRef.current = null
+
+    const formData = new FormData()
+    formData.set('intent', isNew ? 'create-goal' : 'update-goal')
+    formData.set('name', name)
+    formData.set('type', type)
+    formData.set('matchType', matchType)
+    formData.set('value', value)
+    formData.set('metadataFilters', JSON.stringify(metadataFilters))
+
+    if (!isNew && goalId) {
+      formData.set('goalId', goalId)
+    }
+
+    fetcher.submit(formData, { method: 'post' })
   }
 
   const addMetadataFilter = () => {
     setMetadataFilters([...metadataFilters, { key: '', value: '' }])
   }
 
-  const updateMetadataFilter = (index: number, field: 'key' | 'value', val: string) => {
+  const updateMetadataFilter = (
+    index: number,
+    field: 'key' | 'value',
+    val: string,
+  ) => {
     const updated = [...metadataFilters]
     updated[index][field] = val
     setMetadataFilters(updated)
@@ -178,15 +217,21 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
                       </label>
                       <Select
                         items={GOAL_TYPES}
-                        onSelect={(item) => setType(item.value as 'pageview' | 'custom_event')}
-                        title={GOAL_TYPES.find((t) => t.value === type)?.label || ''}
+                        onSelect={(item) =>
+                          setType(item.value as 'pageview' | 'custom_event')
+                        }
+                        title={
+                          GOAL_TYPES.find((t) => t.value === type)?.label || ''
+                        }
                         labelExtractor={(item) => item.label}
                         keyExtractor={(item) => item.value}
                         selectedItem={GOAL_TYPES.find((t) => t.value === type)}
                         capitalise
                       />
                       <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                        {type === 'pageview' ? t('goals.typePageviewDesc') : t('goals.typeCustomEventDesc')}
+                        {type === 'pageview'
+                          ? t('goals.typePageviewDesc')
+                          : t('goals.typeCustomEventDesc')}
                       </p>
                     </div>
 
@@ -196,17 +241,28 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
                       </label>
                       <Select
                         items={GOAL_MATCH_TYPES}
-                        onSelect={(item) => setMatchType(item.value as 'exact' | 'contains')}
-                        title={GOAL_MATCH_TYPES.find((t) => t.value === matchType)?.label || ''}
+                        onSelect={(item) =>
+                          setMatchType(item.value as 'exact' | 'contains')
+                        }
+                        title={
+                          GOAL_MATCH_TYPES.find((t) => t.value === matchType)
+                            ?.label || ''
+                        }
                         labelExtractor={(item) => item.label}
                         keyExtractor={(item) => item.value}
-                        selectedItem={GOAL_MATCH_TYPES.find((t) => t.value === matchType)}
+                        selectedItem={GOAL_MATCH_TYPES.find(
+                          (t) => t.value === matchType,
+                        )}
                         capitalise
                       />
                     </div>
 
                     <Input
-                      label={type === 'pageview' ? t('goals.pagePath') : t('goals.eventName')}
+                      label={
+                        type === 'pageview'
+                          ? t('goals.pagePath')
+                          : t('goals.eventName')
+                      }
                       value={value}
                       onChange={(e) => setValue(e.target.value)}
                       placeholder={
@@ -238,17 +294,32 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
                       {metadataFilters.length > 0 ? (
                         <div className='space-y-2'>
                           {_map(metadataFilters, (filter, index) => (
-                            <div key={index} className='flex items-center gap-2'>
+                            <div
+                              key={index}
+                              className='flex items-center gap-2'
+                            >
                               <Input
                                 value={filter.key}
-                                onChange={(e) => updateMetadataFilter(index, 'key', e.target.value)}
+                                onChange={(e) =>
+                                  updateMetadataFilter(
+                                    index,
+                                    'key',
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder={t('goals.filterKey')}
                                 className='flex-1'
                               />
                               <span className='text-gray-500'>=</span>
                               <Input
                                 value={filter.value}
-                                onChange={(e) => updateMetadataFilter(index, 'value', e.target.value)}
+                                onChange={(e) =>
+                                  updateMetadataFilter(
+                                    index,
+                                    'value',
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder={t('goals.filterValue')}
                                 className='flex-1'
                               />
@@ -263,7 +334,9 @@ const GoalSettingsModal = ({ isOpen, onClose, onSuccess, projectId, goalId }: Go
                           ))}
                         </div>
                       ) : (
-                        <p className='text-sm text-gray-500 dark:text-gray-400'>{t('goals.noMetadataFilters')}</p>
+                        <p className='text-sm text-gray-500 dark:text-gray-400'>
+                          {t('goals.noMetadataFilters')}
+                        </p>
                       )}
                     </div>
                   </div>

@@ -254,7 +254,7 @@ Available columns for filters:
             .optional()
             .describe('Measure type for performance data'),
         }),
-        execute: async params => {
+        execute: async (params) => {
           if (!params.dataType) {
             return { error: 'dataType is required' }
           }
@@ -307,7 +307,7 @@ Available columns for filters:
             .describe('Start date (YYYY-MM-DD format)'),
           to: z.string().optional().describe('End date (YYYY-MM-DD format)'),
         }),
-        execute: async params => {
+        execute: async (params) => {
           this.logger.log(
             { pid: project.id, goalId: params.goalId, period: params.period },
             'Tool: getGoalStats called',
@@ -344,7 +344,7 @@ Available columns for filters:
             .describe('Start date (YYYY-MM-DD format)'),
           to: z.string().optional().describe('End date (YYYY-MM-DD format)'),
         }),
-        execute: async params => {
+        execute: async (params) => {
           if (!params.funnelId) {
             return { error: 'funnelId is required' }
           }
@@ -401,8 +401,12 @@ Available columns for filters:
       name: project.name,
       created: project.created,
       captchaEnabled: !!project.captchaSecretKey,
-      funnels: _map(funnels, f => ({ id: f.id, name: f.name, steps: f.steps })),
-      goals: _map(goals, g => ({
+      funnels: _map(funnels, (f) => ({
+        id: f.id,
+        name: f.name,
+        steps: f.steps,
+      })),
+      goals: _map(goals, (g) => ({
         id: g.id,
         name: g.name,
         type: g.type,
@@ -540,7 +544,7 @@ Available columns for filters:
           ...filterConditions.params,
         },
       })
-      .then(r => r.json())
+      .then((r) => r.json())
 
     // Get chart data
     const chartQuery = `
@@ -567,7 +571,7 @@ Available columns for filters:
           ...filterConditions.params,
         },
       })
-      .then(r => r.json())
+      .then((r) => r.json())
 
     // Get top pages
     const pagesQuery = `
@@ -586,7 +590,7 @@ Available columns for filters:
         query: pagesQuery,
         query_params: { pid, groupFrom, groupTo, ...filterConditions.params },
       })
-      .then(r => r.json())
+      .then((r) => r.json())
 
     // Get top countries
     const countriesQuery = `
@@ -606,7 +610,7 @@ Available columns for filters:
         query: countriesQuery,
         query_params: { pid, groupFrom, groupTo, ...filterConditions.params },
       })
-      .then(r => r.json())
+      .then((r) => r.json())
 
     // Get top referrers
     const referrersQuery = `
@@ -626,7 +630,7 @@ Available columns for filters:
         query: referrersQuery,
         query_params: { pid, groupFrom, groupTo, ...filterConditions.params },
       })
-      .then(r => r.json())
+      .then((r) => r.json())
 
     // Get browsers
     const browsersQuery = `
@@ -646,7 +650,7 @@ Available columns for filters:
         query: browsersQuery,
         query_params: { pid, groupFrom, groupTo, ...filterConditions.params },
       })
-      .then(r => r.json())
+      .then((r) => r.json())
 
     // Get devices
     const devicesQuery = `
@@ -665,7 +669,7 @@ Available columns for filters:
         query: devicesQuery,
         query_params: { pid, groupFrom, groupTo, ...filterConditions.params },
       })
-      .then(r => r.json())
+      .then((r) => r.json())
 
     return {
       overall: overallData[0] || {},
@@ -731,7 +735,7 @@ Available columns for filters:
           ...filterConditions.params,
         },
       })
-      .then(r => r.json())
+      .then((r) => r.json())
 
     // Get chart data
     const chartQuery = `
@@ -758,7 +762,7 @@ Available columns for filters:
           ...filterConditions.params,
         },
       })
-      .then(r => r.json())
+      .then((r) => r.json())
 
     return {
       overall: overallData[0] || {},
@@ -793,7 +797,7 @@ Available columns for filters:
         query: overallQuery,
         query_params: { pid, groupFrom, groupTo },
       })
-      .then(r => r.json())
+      .then((r) => r.json())
 
     // Get top errors
     const topErrorsQuery = `
@@ -815,7 +819,7 @@ Available columns for filters:
         query: topErrorsQuery,
         query_params: { pid, groupFrom, groupTo },
       })
-      .then(r => r.json())
+      .then((r) => r.json())
 
     return {
       overall: overallData[0] || {},
@@ -884,7 +888,7 @@ Available columns for filters:
               groupTo: groupToUTC,
             },
           })
-          .then(r => r.json())
+          .then((r) => r.json())
 
         return {
           goal: { id: goal.id, name: goal.name, type: goal.type },
@@ -899,7 +903,7 @@ Available columns for filters:
       })
 
       const results = await Promise.all(
-        goals.map(async goal => {
+        goals.map(async (goal) => {
           const table = goal.type === 'custom_event' ? 'customEV' : 'analytics'
           const matchCondition =
             goal.matchType === 'exact'
@@ -928,7 +932,7 @@ Available columns for filters:
                 groupTo: groupToUTC,
               },
             })
-            .then(r => r.json())
+            .then((r) => r.json())
 
           return {
             id: goal.id,

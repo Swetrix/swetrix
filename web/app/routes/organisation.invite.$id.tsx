@@ -1,51 +1,56 @@
-import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router'
+import type { LoaderFunctionArgs } from 'react-router'
+import { useLoaderData } from 'react-router'
+import type { SitemapFunction } from 'remix-sitemap'
 
-import { acceptOrganisationInvitation } from '~/api'
+import { serverFetch } from '~/api/api.server'
 import StatusPage from '~/ui/StatusPage'
 import routes from '~/utils/routes'
 
-export default function ConfirmOrganisationInvitation() {
-  const { t } = useTranslation('common')
-  const { id } = useParams()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export const sitemap: SitemapFunction = () => ({
+  exclude: true,
+})
 
-  useEffect(() => {
-    setLoading(true)
+export interface OrganisationInviteLoaderData {
+  success: boolean
+  error?: string
+}
 
-    if (!id) {
-      setError(t('common.error'))
-      setLoading(false)
-      return
-    }
+export async function loader({
+  request,
+  params,
+}: LoaderFunctionArgs): Promise<OrganisationInviteLoaderData> {
+  const { id } = params
 
-    const acceptInvitation = async () => {
-      try {
-        await acceptOrganisationInvitation(id)
-      } catch (reason) {
-        setError(typeof reason === 'string' ? reason : t('apiNotifications.acceptOrganisationInvitationError'))
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    acceptInvitation()
-  }, [id]) // eslint-disable-line
-
-  if (loading) {
-    return <StatusPage loading />
+  if (!id) {
+    return { success: false, error: 'Invalid invitation link' }
   }
 
-  if (error) {
+  const result = await serverFetch(request, `/user/organisation/${id}`, {
+    method: 'POST',
+  })
+
+  if (result.error) {
+    const errorMessage =
+      typeof result.error === 'string'
+        ? result.error
+        : 'Failed to accept invitation'
+    return { success: false, error: errorMessage }
+  }
+
+  return { success: true }
+}
+
+export default function OrganisationInviteRoute() {
+  const data = useLoaderData<OrganisationInviteLoaderData>()
+
+  if (data.error) {
     return (
       <StatusPage
         type='error'
-        title={error}
+        title={data.error}
         actions={[
-          { label: t('common.dashboard'), to: routes.dashboard, primary: true },
-          { label: t('notFoundPage.support'), to: routes.contact },
+          { label: 'Dashboard', to: routes.dashboard, primary: true },
+          { label: 'Support', to: routes.contact },
         ]}
       />
     )
@@ -54,8 +59,8 @@ export default function ConfirmOrganisationInvitation() {
   return (
     <StatusPage
       type='success'
-      title={t('apiNotifications.acceptOrganisationInvitation')}
-      actions={[{ label: t('common.dashboard'), to: routes.dashboard, primary: true }]}
+      title='Organisation invitation accepted'
+      actions={[{ label: 'Dashboard', to: routes.dashboard, primary: true }]}
     />
   )
 }

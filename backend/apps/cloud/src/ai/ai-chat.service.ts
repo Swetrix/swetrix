@@ -101,7 +101,7 @@ export class AiChatService {
   }
 
   private generateChatName(messages: ChatMessage[]): string {
-    const firstUserMessage = messages.find(m => m.role === 'user')
+    const firstUserMessage = messages.find((m) => m.role === 'user')
     if (firstUserMessage) {
       const content = firstUserMessage.content.trim()
       return content.length > 100 ? content.slice(0, 97) + '...' : content

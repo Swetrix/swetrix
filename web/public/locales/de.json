@@ -1335,6 +1335,12 @@
     "trendlineTotal": "Seitenansichten Trendlinie",
     "noEvContent": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst. Bitte versuchen Sie einen anderen Zeitraum.",
     "noEventsFiltersDesc": "Für den angegebenen Zeitraum oder die angewendeten Filter wurden keine Ereignisse erfasst. Bitte versuchen Sie es mit einem anderen Zeitraum oder ändern Sie die angewendeten Filter.",
+    "noProfilesTitle": "Noch keine Profile",
+    "noProfilesContent": "Für den angegebenen Zeitraum wurden keine Profile erfasst, bitte versuchen Sie einen anderen Zeitraum.",
+    "noProfilesFiltersDesc": "Für den angegebenen Zeitraum oder mit den angewendeten Filtern wurden keine Profile erfasst, bitte versuchen Sie einen anderen Zeitraum oder ändern Sie die angewendeten Filter.",
+    "noSessionsTitle": "Noch keine Sitzungen",
+    "noSessionsContent": "Für den angegebenen Zeitraum wurden keine Sitzungen erfasst, bitte versuchen Sie einen anderen Zeitraum.",
+    "noSessionsFiltersDesc": "Für den angegebenen Zeitraum oder mit den angewendeten Filtern wurden keine Sitzungen erfasst, bitte versuchen Sie einen anderen Zeitraum oder ändern Sie die angewendeten Filter.",
     "noCaptchaEv": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst.\nWenn Sie CAPTCHA noch nicht eingerichtet haben, können Sie sich unsere <url>Docs</url> anschauen, um es einfach in Ihre App zu integrieren.",
     "mapping": {
       "cc": "Land",

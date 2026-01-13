@@ -1,5 +1,11 @@
 import { Chart } from 'billboard.js'
-import React, { createContext, useContext, useRef, useCallback, ReactNode } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useRef,
+  useCallback,
+  ReactNode,
+} from 'react'
 
 interface ChartManagerContextType {
   registerChart: (id: string, chart: Chart | null) => void
@@ -14,7 +20,9 @@ const ChartManagerContext = createContext<ChartManagerContextType | null>(null)
 export const useChartManager = () => {
   const context = useContext(ChartManagerContext)
   if (!context) {
-    throw new Error('useChartManager must be used within a ChartManagerProvider')
+    throw new Error(
+      'useChartManager must be used within a ChartManagerProvider',
+    )
   }
   return context
 }
@@ -23,7 +31,9 @@ interface ChartManagerProviderProps {
   children: ReactNode
 }
 
-export const ChartManagerProvider = ({ children }: ChartManagerProviderProps) => {
+export const ChartManagerProvider = ({
+  children,
+}: ChartManagerProviderProps) => {
   const chartsRef = useRef<Map<string, Chart>>(new Map())
 
   const registerChart = useCallback((id: string, chart: Chart | null) => {
@@ -73,5 +83,9 @@ export const ChartManagerProvider = ({ children }: ChartManagerProviderProps) =>
     destroyAllCharts,
   }
 
-  return <ChartManagerContext.Provider value={value}>{children}</ChartManagerContext.Provider>
+  return (
+    <ChartManagerContext.Provider value={value}>
+      {children}
+    </ChartManagerContext.Provider>
+  )
 }

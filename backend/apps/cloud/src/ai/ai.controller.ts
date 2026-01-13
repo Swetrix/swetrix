@@ -147,8 +147,8 @@ export class AiController {
       })
 
       const messages = chatDto.messages
-        .filter(m => m.content && m.content.trim().length > 0)
-        .map(m => ({
+        .filter((m) => m.content && m.content.trim().length > 0)
+        .map((m) => ({
           role: m.role as 'user' | 'assistant',
           content: m.content,
         }))
@@ -387,7 +387,7 @@ export class AiController {
       query.limit ?? 5,
     )
 
-    return chats.map(chat => ({
+    return chats.map((chat) => ({
       id: chat.id,
       name: chat.name,
       created: chat.created,
@@ -431,7 +431,7 @@ export class AiController {
     )
 
     return {
-      chats: result.chats.map(chat => ({
+      chats: result.chats.map((chat) => ({
         id: chat.id,
         name: chat.name,
         created: chat.created,

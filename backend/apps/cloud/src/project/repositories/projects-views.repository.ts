@@ -38,7 +38,7 @@ export class ProjectsViewsRepository {
     })
 
     if (data.customEvents) {
-      const customEventPromises = data.customEvents.map(customEvent => {
+      const customEventPromises = data.customEvents.map((customEvent) => {
         return this.projectViewCustomEventsRepository.save({
           viewId: view.id,
           customEventName: customEvent.customEventName,
@@ -112,7 +112,7 @@ export class ProjectsViewsRepository {
     await this.viewsRepository.save(entity)
 
     if (!_isEmpty(entity.customEvents)) {
-      const customEventPromises = entity.customEvents.map(customEvent => {
+      const customEventPromises = entity.customEvents.map((customEvent) => {
         return this.projectViewCustomEventsRepository.save({
           id: customEvent.id,
           viewId: id,

@@ -23,14 +23,27 @@ import {
   FlaskConicalIcon,
   FileUser,
 } from 'lucide-react'
-import React, { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext, lazy } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  createContext,
+  useContext,
+  lazy,
+} from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams, LinkProps } from 'react-router'
+import {
+  useNavigate,
+  useSearchParams,
+  LinkProps,
+  useFetcher,
+} from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { getProjectViews, deleteProjectView } from '~/api'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
@@ -59,6 +72,7 @@ import {
 import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import { ProjectViewActionData } from '~/routes/projects.$id'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
@@ -66,7 +80,10 @@ import { trackCustom } from '~/utils/analytics'
 import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
-import { useCurrentProject, useProjectPassword } from '../../../providers/CurrentProjectProvider'
+import {
+  useCurrentProject,
+  useProjectPassword,
+} from '../../../providers/CurrentProjectProvider'
 import ProjectAlertsView from '../tabs/Alerts/ProjectAlertsView'
 import AskAIView from '../tabs/AskAI'
 import ErrorsView from '../tabs/Errors/ErrorsView'
@@ -84,9 +101,15 @@ import { ChartManagerProvider } from './components/ChartManager'
 const CaptchaView = lazy(() => import('../tabs/Captcha/CaptchaView'))
 import LockedDashboard from './components/LockedDashboard'
 import PasswordRequiredModal from './components/PasswordRequiredModal'
-import ProjectSidebar, { MobileSidebarTrigger } from './components/ProjectSidebar'
+import ProjectSidebar, {
+  MobileSidebarTrigger,
+} from './components/ProjectSidebar'
 import SearchFilters from './components/SearchFilters'
-import { Filter, ProjectView, ProjectViewCustomEvent } from './interfaces/traffic'
+import {
+  Filter,
+  ProjectView,
+  ProjectViewCustomEvent,
+} from './interfaces/traffic'
 import { parseFilters } from './utils/filters'
 import {
   getFormatDate,
@@ -111,16 +134,6 @@ interface ViewProjectContextType {
   dataLoading: boolean
   activeTab: keyof typeof PROJECT_TABS
   filters: Filter[]
-  captchaRefreshTrigger: number
-  goalsRefreshTrigger: number
-  experimentsRefreshTrigger: number
-  featureFlagsRefreshTrigger: number
-  sessionsRefreshTrigger: number
-  errorsRefreshTrigger: number
-  performanceRefreshTrigger: number
-  trafficRefreshTrigger: number
-  funnelsRefreshTrigger: number
-  profilesRefreshTrigger: number
 
   isActiveCompare: boolean
   dateRangeCompare: Date[] | null
@@ -141,7 +154,11 @@ interface ViewProjectContextType {
   shouldEnableZoom: boolean
 
   getFilterLink: (column: string, value: string | null) => LinkProps['to']
-  getVersionFilterLink: (parent: string | null, version: string | null, panelType: 'br' | 'os') => string
+  getVersionFilterLink: (
+    parent: string | null,
+    version: string | null,
+    panelType: 'br' | 'os',
+  ) => string
 
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
   updateTimebucket: (newTimebucket: TimeBucket) => void
@@ -151,6 +168,23 @@ interface ViewProjectContextType {
 
   refCalendar: React.RefObject<any>
   refCalendarCompare: React.RefObject<any>
+
+  fullscreenMapRef: React.RefObject<HTMLDivElement | null>
+  isMapFullscreen: boolean
+  setIsMapFullscreen: (value: boolean) => void
+}
+
+interface RefreshTriggersContextType {
+  captchaRefreshTrigger: number
+  goalsRefreshTrigger: number
+  experimentsRefreshTrigger: number
+  featureFlagsRefreshTrigger: number
+  sessionsRefreshTrigger: number
+  errorsRefreshTrigger: number
+  performanceRefreshTrigger: number
+  trafficRefreshTrigger: number
+  funnelsRefreshTrigger: number
+  profilesRefreshTrigger: number
 }
 
 const defaultViewProjectContext: ViewProjectContextType = {
@@ -166,16 +200,6 @@ const defaultViewProjectContext: ViewProjectContextType = {
   dataLoading: false,
   activeTab: PROJECT_TABS.traffic,
   filters: [],
-  captchaRefreshTrigger: 0,
-  goalsRefreshTrigger: 0,
-  experimentsRefreshTrigger: 0,
-  featureFlagsRefreshTrigger: 0,
-  sessionsRefreshTrigger: 0,
-  errorsRefreshTrigger: 0,
-  performanceRefreshTrigger: 0,
-  trafficRefreshTrigger: 0,
-  funnelsRefreshTrigger: 0,
-  profilesRefreshTrigger: 0,
 
   isActiveCompare: false,
   dateRangeCompare: null,
@@ -205,12 +229,39 @@ const defaultViewProjectContext: ViewProjectContextType = {
   refreshStats: async () => {},
   refCalendar: { current: null } as any,
   refCalendarCompare: { current: null } as any,
+
+  fullscreenMapRef: { current: null } as any,
+  isMapFullscreen: false,
+  setIsMapFullscreen: () => {},
 }
 
-export const ViewProjectContext = createContext<ViewProjectContextType>(defaultViewProjectContext)
+const defaultRefreshTriggersContext: RefreshTriggersContextType = {
+  captchaRefreshTrigger: 0,
+  goalsRefreshTrigger: 0,
+  experimentsRefreshTrigger: 0,
+  featureFlagsRefreshTrigger: 0,
+  sessionsRefreshTrigger: 0,
+  errorsRefreshTrigger: 0,
+  performanceRefreshTrigger: 0,
+  trafficRefreshTrigger: 0,
+  funnelsRefreshTrigger: 0,
+  profilesRefreshTrigger: 0,
+}
+
+export const ViewProjectContext = createContext<ViewProjectContextType>(
+  defaultViewProjectContext,
+)
+export const RefreshTriggersContext = createContext<RefreshTriggersContextType>(
+  defaultRefreshTriggersContext,
+)
 
 export const useViewProjectContext = () => {
   const context = useContext(ViewProjectContext)
+  return context
+}
+
+export const useRefreshTriggers = () => {
+  const context = useContext(RefreshTriggersContext)
   return context
 }
 
@@ -239,6 +290,9 @@ const ViewProjectContent = () => {
   } = useTranslation('common')
 
   const dashboardRef = useRef<HTMLDivElement>(null)
+  const fullscreenMapRef = useRef<HTMLDivElement>(null)
+
+  const [isMapFullscreen, setIsMapFullscreen] = useState(false)
 
   const navigate = useNavigate()
 
@@ -261,14 +315,17 @@ const ViewProjectContent = () => {
   const [captchaRefreshTrigger, setCaptchaRefreshTrigger] = useState(0)
   const [goalsRefreshTrigger, setGoalsRefreshTrigger] = useState(0)
   const [experimentsRefreshTrigger, setExperimentsRefreshTrigger] = useState(0)
-  const [featureFlagsRefreshTrigger, setFeatureFlagsRefreshTrigger] = useState(0)
+  const [featureFlagsRefreshTrigger, setFeatureFlagsRefreshTrigger] =
+    useState(0)
   const [sessionsRefreshTrigger, setSessionsRefreshTrigger] = useState(0)
   const [errorsRefreshTrigger, setErrorsRefreshTrigger] = useState(0)
   const [performanceRefreshTrigger, setPerformanceRefreshTrigger] = useState(0)
   const [trafficRefreshTrigger, setTrafficRefreshTrigger] = useState(0)
   const [funnelsRefreshTrigger, setFunnelsRefreshTrigger] = useState(0)
   const [profilesRefreshTrigger, setProfilesRefreshTrigger] = useState(0)
-  const [activeChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
+  const [activeChartMetrics] = useState<
+    Record<keyof typeof CHART_METRICS_MAPPING, boolean>
+  >({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
     [CHART_METRICS_MAPPING.sessionDuration]: false,
@@ -280,7 +337,9 @@ const ViewProjectContent = () => {
     [CHART_METRICS_MAPPING.revenue]: false,
     ...(preferences.metricsVisualisation || {}),
   } as Record<keyof typeof CHART_METRICS_MAPPING, boolean>)
-  const [customMetrics, setCustomMetrics] = useState<ProjectViewCustomEvent[]>([])
+  const [customMetrics, setCustomMetrics] = useState<ProjectViewCustomEvent[]>(
+    [],
+  )
   const filters = useMemo<Filter[]>(() => {
     return parseFilters(searchParams)
   }, [searchParams])
@@ -338,7 +397,10 @@ const ViewProjectContent = () => {
     let tbs = null
 
     if (dateRange) {
-      const days = Math.ceil(Math.abs(dateRange[1].getTime() - dateRange[0].getTime()) / (1000 * 3600 * 24))
+      const days = Math.ceil(
+        Math.abs(dateRange[1].getTime() - dateRange[0].getTime()) /
+          (1000 * 3600 * 24),
+      )
 
       for (const index in timeBucketToDays) {
         if (timeBucketToDays[index].lt >= days) {
@@ -368,7 +430,10 @@ const ViewProjectContent = () => {
     }
 
     if (dateRange) {
-      const days = Math.ceil(Math.abs(dateRange[1].getTime() - dateRange[0].getTime()) / (1000 * 3600 * 24))
+      const days = Math.ceil(
+        Math.abs(dateRange[1].getTime() - dateRange[0].getTime()) /
+          (1000 * 3600 * 24),
+      )
 
       for (const index in timeBucketToDays) {
         if (timeBucketToDays[index].lt >= days) {
@@ -384,56 +449,63 @@ const ViewProjectContent = () => {
     return _timeBucket
   }, [searchParams, preferences.timeBucket, periodPairs, period, dateRange])
 
-  const activePeriod = useMemo(() => _find(periodPairs, (p) => p.period === period), [period, periodPairs])
+  const activePeriod = useMemo(
+    () => _find(periodPairs, (p) => p.period === period),
+    [period, periodPairs],
+  )
 
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
 
   // null -> not loaded yet
   const [projectViews, setProjectViews] = useState<ProjectView[]>([])
-  const [projectViewsLoading, setProjectViewsLoading] = useState<boolean | null>(null) //  // null - not loaded, true - loading, false - loaded
-  const [projectViewDeleting, setProjectViewDeleting] = useState(false)
-  const [projectViewToUpdate, setProjectViewToUpdate] = useState<ProjectView | undefined>()
+  const [projectViewsLoading, setProjectViewsLoading] = useState<
+    boolean | null
+  >(null) //  // null - not loaded, true - loading, false - loaded
+  const [projectViewToUpdate, setProjectViewToUpdate] = useState<
+    ProjectView | undefined
+  >()
 
-  const mode = activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode] ? 'cumulative' : 'periodical'
+  const viewsLoadFetcher = useFetcher<ProjectViewActionData>()
 
-  const loadProjectViews = async (forced?: boolean) => {
-    if (!forced && projectViewsLoading !== null) {
-      return
+  const mode = activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode]
+    ? 'cumulative'
+    : 'periodical'
+
+  const loadProjectViews = useCallback(
+    (forced?: boolean) => {
+      if (!forced && projectViewsLoading !== null) {
+        return
+      }
+
+      if (viewsLoadFetcher.state !== 'idle') {
+        return
+      }
+
+      setProjectViewsLoading(true)
+
+      const formData = new FormData()
+      formData.append('intent', 'get-project-views')
+      if (projectPassword) {
+        formData.append('password', projectPassword)
+      }
+
+      viewsLoadFetcher.submit(formData, { method: 'POST' })
+    },
+    [projectViewsLoading, viewsLoadFetcher, projectPassword],
+  )
+
+  // Handle views load fetcher response
+  useEffect(() => {
+    if (viewsLoadFetcher.state === 'idle' && viewsLoadFetcher.data) {
+      if (viewsLoadFetcher.data.success && viewsLoadFetcher.data.data) {
+        setProjectViews((viewsLoadFetcher.data.data as ProjectView[]) || [])
+      } else if (viewsLoadFetcher.data.error) {
+        console.error('[ERROR] (loadProjectViews)', viewsLoadFetcher.data.error)
+        toast.error(viewsLoadFetcher.data.error)
+      }
+      setProjectViewsLoading(false)
     }
-
-    setProjectViewsLoading(true)
-
-    try {
-      const views = await getProjectViews(id, projectPassword)
-      setProjectViews(views)
-    } catch (reason: any) {
-      console.error('[ERROR] (loadProjectViews)', reason)
-      toast.error(reason)
-    }
-
-    setProjectViewsLoading(false)
-  }
-
-  const onProjectViewDelete = async (viewId: string) => {
-    if (projectViewDeleting) {
-      return
-    }
-
-    setProjectViewDeleting(true)
-
-    try {
-      await deleteProjectView(id, viewId)
-    } catch (reason: any) {
-      console.error('[ERROR] (deleteProjectView)', reason)
-      toast.error(reason)
-      setProjectViewDeleting(false)
-      return
-    }
-
-    toast.success(t('apiNotifications.segmentDeleted'))
-    await loadProjectViews(true)
-    setProjectViewDeleting(false)
-  }
+  }, [viewsLoadFetcher.state, viewsLoadFetcher.data])
 
   const getVersionFilterLink = useCallback(
     (parent: string | null, version: string | null, panelType: 'br' | 'os') => {
@@ -454,7 +526,10 @@ const ViewProjectContent = () => {
     [searchParams],
   )
 
-  const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user?.timeFormat || TimeFormat['12-hour'], [user])
+  const timeFormat = useMemo<'12-hour' | '24-hour'>(
+    () => user?.timeFormat || TimeFormat['12-hour'],
+    [user],
+  )
   const [ref, size] = useSize()
   const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
   const [chartType, setChartType] = useState<keyof typeof chartTypes>(
@@ -467,8 +542,12 @@ const ViewProjectContent = () => {
       period: string
     }[]
   >(tbPeriodPairsCompare(t, undefined, language))
-  const [isActiveCompare, setIsActiveCompare] = useState(getItem(LS_IS_ACTIVE_COMPARE_KEY) === 'true')
-  const [activePeriodCompare, setActivePeriodCompare] = useState(periodPairsCompare[0].period)
+  const [isActiveCompare, setIsActiveCompare] = useState(
+    getItem(LS_IS_ACTIVE_COMPARE_KEY) === 'true',
+  )
+  const [activePeriodCompare, setActivePeriodCompare] = useState(
+    periodPairsCompare[0].period,
+  )
   const maxRangeCompare = useMemo(() => {
     if (!isActiveCompare) {
       return 0
@@ -488,7 +567,9 @@ const ViewProjectContent = () => {
       return
     }
 
-    let pageTitle = user?.showLiveVisitorsInTitle ? `👀 ${liveVisitors} - ${project.name}` : project.name
+    let pageTitle = user?.showLiveVisitorsInTitle
+      ? `👀 ${liveVisitors} - ${project.name}`
+      : project.name
 
     if (!pageTitle) {
       pageTitle = t('titles.main')
@@ -549,6 +630,11 @@ const ViewProjectContent = () => {
         label: t('dashboard.featureFlags'),
         icon: FlagIcon,
       },
+      {
+        id: PROJECT_TABS.captcha,
+        label: t('common.captcha'),
+        icon: PuzzleIcon,
+      },
     ]
 
     const adminTabs = allowedToManage
@@ -578,11 +664,6 @@ const ViewProjectContent = () => {
         icon: BellRingIcon,
       },
       {
-        id: PROJECT_TABS.captcha,
-        label: t('common.captcha'),
-        icon: PuzzleIcon,
-      },
-      {
         id: PROJECT_TABS.experiments,
         label: t('dashboard.experiments'),
         icon: FlaskConicalIcon,
@@ -597,7 +678,10 @@ const ViewProjectContent = () => {
     return newTabs
   }, [t, projectQueryTabs, allowedToManage])
 
-  const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
+  const activeTabLabel = useMemo(
+    () => _find(tabs, (tab) => tab.id === activeTab)?.label,
+    [tabs, activeTab],
+  )
 
   const compareDisable = useCallback(() => {
     setIsActiveCompare(false)
@@ -618,7 +702,10 @@ const ViewProjectContent = () => {
       return
     }
 
-    const newMetrics = _filter(customMetrics, (metric) => metric.id !== metricId)
+    const newMetrics = _filter(
+      customMetrics,
+      (metric) => metric.id !== metricId,
+    )
 
     setCustomMetrics(newMetrics)
   }
@@ -631,16 +718,21 @@ const ViewProjectContent = () => {
     setCustomMetrics([])
   }
 
-  const setDashboardTab = (key: keyof typeof PROJECT_TABS) => {
-    if (dataLoading) {
-      return
-    }
+  const setDashboardTab = useCallback(
+    (key: keyof typeof PROJECT_TABS) => {
+      if (dataLoading) {
+        return
+      }
 
-    const newSearchParams = new URLSearchParams(searchParams.toString())
-    newSearchParams.set('tab', key)
-    setSearchParams(newSearchParams)
-    trackCustom('DASHBOARD_TAB_CHANGED', { tab: key })
-  }
+      setIsMapFullscreen(false)
+
+      const newSearchParams = new URLSearchParams(searchParams.toString())
+      newSearchParams.set('tab', key)
+      setSearchParams(newSearchParams)
+      trackCustom('DASHBOARD_TAB_CHANGED', { tab: key })
+    },
+    [dataLoading, searchParams, setSearchParams],
+  )
 
   const refreshStats = useCallback(
     async (_isManual = true) => {
@@ -771,8 +863,11 @@ const ViewProjectContent = () => {
   const isTouchDevice = useMemo(() => {
     if (typeof window === 'undefined') return false
     const hasTouchEvent = 'ontouchstart' in window
-    const hasMaxTouchPoints = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0
-    const coarsePointer = window.matchMedia ? window.matchMedia('(pointer: coarse)').matches : false
+    const hasMaxTouchPoints =
+      typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0
+    const coarsePointer = window.matchMedia
+      ? window.matchMedia('(pointer: coarse)').matches
+      : false
     return hasTouchEvent || hasMaxTouchPoints || coarsePointer
   }, [])
 
@@ -786,13 +881,18 @@ const ViewProjectContent = () => {
     }
 
     // Enable zoom only if the range is more than 1 day
-    const daysDiff = Math.ceil((dateRange[1].getTime() - dateRange[0].getTime()) / (1000 * 3600 * 24))
+    const daysDiff = Math.ceil(
+      (dateRange[1].getTime() - dateRange[0].getTime()) / (1000 * 3600 * 24),
+    )
     return daysDiff > 1
   }, [period, dateRange, isTouchDevice])
 
   const getFilterLink = useCallback(
     (column: string, value: string | null): LinkProps['to'] => {
-      const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
+      const isFilterActive =
+        filters.findIndex(
+          (filter) => filter.column === column && filter.filter === value,
+        ) >= 0
 
       const newSearchParams = new URLSearchParams(searchParams.toString())
       let searchString = ''
@@ -884,8 +984,12 @@ const ViewProjectContent = () => {
   // 'Timebuckets selection' shortcuts
   useHotkeys(SHORTCUTS_TIMEBUCKETS_LISTENERS, ({ key }) => {
     const pairs = tbPeriodPairs(t, undefined, undefined, language)
-    // @ts-expect-error
-    const pair = _find(pairs, ({ period }) => period === timebucketShortcutsMap[key])
+    const pair = _find(
+      pairs,
+      ({ period }) =>
+        period ===
+        timebucketShortcutsMap[key as keyof typeof timebucketShortcutsMap],
+    )
 
     if (!pair) {
       return
@@ -917,7 +1021,10 @@ const ViewProjectContent = () => {
   })
 
   const openMobileSidebar = useCallback(() => setIsMobileSidebarOpen(true), [])
-  const closeMobileSidebar = useCallback(() => setIsMobileSidebarOpen(false), [])
+  const closeMobileSidebar = useCallback(
+    () => setIsMobileSidebarOpen(false),
+    [],
+  )
 
   const contextValue = useMemo(
     () => ({
@@ -933,16 +1040,6 @@ const ViewProjectContent = () => {
       dataLoading,
       activeTab,
       filters,
-      captchaRefreshTrigger,
-      goalsRefreshTrigger,
-      experimentsRefreshTrigger,
-      featureFlagsRefreshTrigger,
-      sessionsRefreshTrigger,
-      errorsRefreshTrigger,
-      performanceRefreshTrigger,
-      trafficRefreshTrigger,
-      funnelsRefreshTrigger,
-      profilesRefreshTrigger,
 
       isActiveCompare,
       dateRangeCompare,
@@ -973,6 +1070,9 @@ const ViewProjectContent = () => {
 
       refCalendar,
       refCalendarCompare,
+      fullscreenMapRef,
+      isMapFullscreen,
+      setIsMapFullscreen,
     }),
     [
       timezone,
@@ -987,16 +1087,6 @@ const ViewProjectContent = () => {
       dataLoading,
       activeTab,
       filters,
-      captchaRefreshTrigger,
-      goalsRefreshTrigger,
-      experimentsRefreshTrigger,
-      featureFlagsRefreshTrigger,
-      sessionsRefreshTrigger,
-      errorsRefreshTrigger,
-      performanceRefreshTrigger,
-      trafficRefreshTrigger,
-      funnelsRefreshTrigger,
-      profilesRefreshTrigger,
       isActiveCompare,
       dateRangeCompare,
       activePeriodCompare,
@@ -1021,6 +1111,36 @@ const ViewProjectContent = () => {
       refreshStats,
       refCalendar,
       refCalendarCompare,
+      fullscreenMapRef,
+      isMapFullscreen,
+      setIsMapFullscreen,
+    ],
+  )
+
+  const refreshTriggersValue = useMemo(
+    () => ({
+      captchaRefreshTrigger,
+      goalsRefreshTrigger,
+      experimentsRefreshTrigger,
+      featureFlagsRefreshTrigger,
+      sessionsRefreshTrigger,
+      errorsRefreshTrigger,
+      performanceRefreshTrigger,
+      trafficRefreshTrigger,
+      funnelsRefreshTrigger,
+      profilesRefreshTrigger,
+    }),
+    [
+      captchaRefreshTrigger,
+      goalsRefreshTrigger,
+      experimentsRefreshTrigger,
+      featureFlagsRefreshTrigger,
+      sessionsRefreshTrigger,
+      errorsRefreshTrigger,
+      performanceRefreshTrigger,
+      trafficRefreshTrigger,
+      funnelsRefreshTrigger,
+      profilesRefreshTrigger,
     ],
   )
 
@@ -1057,7 +1177,10 @@ const ViewProjectContent = () => {
                 {/* Skeleton metric cards */}
                 <div className='mb-6 grid grid-cols-2 gap-4 md:grid-cols-4'>
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className='h-24 animate-pulse rounded-lg bg-gray-200 dark:bg-slate-700' />
+                    <div
+                      key={i}
+                      className='h-24 animate-pulse rounded-lg bg-gray-200 dark:bg-slate-700'
+                    />
                   ))}
                 </div>
 
@@ -1067,7 +1190,10 @@ const ViewProjectContent = () => {
                 {/* Skeleton panels */}
                 <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className='h-48 animate-pulse rounded-lg bg-gray-200 dark:bg-slate-700' />
+                    <div
+                      key={i}
+                      className='h-48 animate-pulse rounded-lg bg-gray-200 dark:bg-slate-700'
+                    />
                   ))}
                 </div>
               </div>
@@ -1078,7 +1204,10 @@ const ViewProjectContent = () => {
         </div>
 
         {/* Password Modal */}
-        <PasswordRequiredModal isOpen={isPasswordRequired} onSubmit={submitPassword} />
+        <PasswordRequiredModal
+          isOpen={isPasswordRequired}
+          onSubmit={submitPassword}
+        />
       </>
     )
   }
@@ -1105,10 +1234,13 @@ const ViewProjectContent = () => {
       <>
         {!isEmbedded ? <Header /> : null}
         <div
-          className={cx('flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900', {
-            'min-h-including-header': !isEmbedded,
-            'min-h-screen': isEmbedded,
-          })}
+          className={cx(
+            'flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900',
+            {
+              'min-h-including-header': !isEmbedded,
+              'min-h-screen': isEmbedded,
+            },
+          )}
         >
           <div className='mx-auto w-full max-w-7xl flex-1 px-4 py-2 sm:px-6 lg:px-8'>
             <div className='relative flex gap-4'>
@@ -1127,24 +1259,31 @@ const ViewProjectContent = () => {
               />
               {/* Mobile Sidebar */}
               {isMobileSidebarOpen ? (
-                <ProjectSidebar
-                  tabs={tabs}
-                  activeTab={activeTab}
-                  onTabChange={setDashboardTab}
-                  projectId={id}
-                  projectName={project.name}
-                  websiteUrl={project.websiteUrl}
-                  dataLoading={dataLoading}
-                  searchParams={searchParams}
-                  allowedToManage={allowedToManage}
-                  isMobileOpen={isMobileSidebarOpen}
-                  onMobileClose={closeMobileSidebar}
-                />
+                <div className='pointer-events-auto'>
+                  <ProjectSidebar
+                    tabs={tabs}
+                    activeTab={activeTab}
+                    onTabChange={setDashboardTab}
+                    projectId={id}
+                    projectName={project.name}
+                    websiteUrl={project.websiteUrl}
+                    dataLoading={dataLoading}
+                    searchParams={searchParams}
+                    allowedToManage={allowedToManage}
+                    isMobileOpen={isMobileSidebarOpen}
+                    onMobileClose={closeMobileSidebar}
+                  />
+                </div>
               ) : null}
 
               {/* Main Content */}
               <div className='flex min-w-0 flex-1 flex-col'>
-                <MobileSidebarTrigger onClick={openMobileSidebar} activeTabLabel={activeTabLabel} />
+                <div className='pointer-events-auto'>
+                  <MobileSidebarTrigger
+                    onClick={openMobileSidebar}
+                    activeTabLabel={activeTabLabel}
+                  />
+                </div>
                 <LockedDashboard />
               </div>
             </div>
@@ -1160,227 +1299,316 @@ const ViewProjectContent = () => {
     <ClientOnly>
       {() => (
         <ViewProjectContext.Provider value={contextValue}>
-          <>
-            <div
-              className={cx('flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900', {
-                'min-h-including-header': !isEmbedded,
-                'min-h-screen': isEmbedded,
-              })}
-            >
-              {!isEmbedded ? <Header /> : null}
+          <RefreshTriggersContext.Provider value={refreshTriggersValue}>
+            <>
+              <div
+                className={cx(
+                  'flex min-h-screen flex-col bg-gray-50 dark:bg-slate-900',
+                  {
+                    'min-h-including-header': !isEmbedded,
+                    'min-h-screen': isEmbedded,
+                  },
+                )}
+              >
+                {!isEmbedded ? <Header /> : null}
 
-              <div className='mx-auto w-full max-w-7xl flex-1 px-4 py-2 sm:px-6 lg:px-8'>
-                <div ref={ref} className='relative flex gap-4'>
-                  <ProjectSidebar
-                    tabs={tabs}
-                    activeTab={activeTab}
-                    onTabChange={setDashboardTab}
-                    projectId={id}
-                    projectName={project.name}
-                    websiteUrl={project.websiteUrl}
-                    dataLoading={dataLoading}
-                    searchParams={searchParams}
-                    allowedToManage={allowedToManage}
-                    className='hidden md:flex'
+                <div className='grid flex-1 grid-cols-1'>
+                  <div
+                    ref={fullscreenMapRef}
+                    className='z-0 col-start-1 row-start-1 min-h-full w-full empty:hidden'
                   />
-                  {isMobileSidebarOpen ? (
-                    <ProjectSidebar
-                      tabs={tabs}
-                      activeTab={activeTab}
-                      onTabChange={setDashboardTab}
-                      projectId={id}
-                      projectName={project.name}
-                      websiteUrl={project.websiteUrl}
-                      dataLoading={dataLoading}
-                      searchParams={searchParams}
-                      allowedToManage={allowedToManage}
-                      isMobileOpen={isMobileSidebarOpen}
-                      onMobileClose={closeMobileSidebar}
-                    />
-                  ) : null}
-                  {/* Main Content */}
-                  <div className='flex min-w-0 flex-1 flex-col' ref={dashboardRef}>
-                    <EventsRunningOutBanner />
-                    <MobileSidebarTrigger onClick={openMobileSidebar} activeTabLabel={activeTabLabel} />
-                    <AnimatePresence mode='wait'>
-                      <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                      >
-                        {activeTab === PROJECT_TABS.ai ? <AskAIView projectId={id} /> : null}
-                        {activeTab === PROJECT_TABS.traffic ? (
-                          <TrafficView
-                            tnMapping={tnMapping}
-                            customMetrics={customMetrics}
-                            onRemoveCustomMetric={onRemoveCustomMetric}
-                            resetCustomMetrics={resetCustomMetrics}
-                            mode={mode}
-                            projectViews={projectViews}
-                            projectViewsLoading={projectViewsLoading}
-                            projectViewDeleting={projectViewDeleting}
-                            loadProjectViews={loadProjectViews}
-                            onProjectViewDelete={onProjectViewDelete}
-                            setProjectViewToUpdate={setProjectViewToUpdate}
-                            setIsAddAViewOpened={setIsAddAViewOpened}
-                            onCustomMetric={onCustomMetric}
-                          />
-                        ) : null}
-                        {activeTab === PROJECT_TABS.performance ? <PerformanceView tnMapping={tnMapping} /> : null}
-                        {activeTab === PROJECT_TABS.funnels ? <FunnelsView /> : null}
-                        {activeTab === PROJECT_TABS.alerts ? <ProjectAlertsView /> : null}
-                        {activeTab === PROJECT_TABS.profiles ? <ProfilesView tnMapping={tnMapping} /> : null}
-                        {activeTab === PROJECT_TABS.sessions ? (
-                          <SessionsView tnMapping={tnMapping} rotateXAxis={rotateXAxis} />
-                        ) : null}
-                        {activeTab === PROJECT_TABS.errors ? <ErrorsView /> : null}
-                        {activeTab === PROJECT_TABS.goals ? (
-                          <GoalsView
-                            period={period}
-                            from={dateRange ? getFormatDate(dateRange[0]) : ''}
-                            to={dateRange ? getFormatDate(dateRange[1]) : ''}
-                            timezone={timezone}
-                          />
-                        ) : null}
-                        {activeTab === PROJECT_TABS.experiments ? (
-                          <ExperimentsView
-                            period={period}
-                            from={dateRange ? getFormatDate(dateRange[0]) : ''}
-                            to={dateRange ? getFormatDate(dateRange[1]) : ''}
-                            timezone={timezone}
-                          />
-                        ) : null}
-                        {activeTab === PROJECT_TABS.featureFlags ? (
-                          <FeatureFlagsView
-                            period={period}
-                            from={dateRange ? getFormatDate(dateRange[0]) : ''}
-                            to={dateRange ? getFormatDate(dateRange[1]) : ''}
-                            timezone={timezone}
-                          />
-                        ) : null}
-                        {activeTab === PROJECT_TABS.captcha ? <CaptchaView projectId={id} /> : null}
-                      </motion.div>
-                    </AnimatePresence>
 
-                    {isEmbedded ? null : (
-                      <>
-                        <div className='flex-1' />
-                        <div className='mt-4 flex w-full items-center justify-between gap-2'>
-                          <Dropdown
-                            items={whitelist}
-                            buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-slate-900 dark:text-gray-50'
-                            title={
-                              <span className='inline-flex items-center'>
-                                <Flag
-                                  className='mr-2 rounded-xs'
-                                  country={languageFlag[language]}
-                                  size={16}
-                                  alt={languages[language]}
-                                />
-                                {languages[language]}
-                              </span>
-                            }
-                            labelExtractor={(lng: string) => (
-                              <div className='flex items-center'>
-                                <Flag
-                                  className='mr-2 rounded-xs'
-                                  country={languageFlag[lng]}
-                                  size={16}
-                                  alt={languageFlag[lng]}
-                                />
-                                {languages[lng]}
-                              </div>
-                            )}
-                            onSelect={(lng: string) => {
-                              changeLanguage(lng)
-                            }}
-                            headless
-                          />
-                          <div className='flex items-center gap-2'>
-                            <button
-                              type='button'
-                              onClick={() => setIsHotkeysHelpOpened(true)}
-                              aria-label={t('modals.shortcuts.title')}
-                              className='relative rounded-md border border-transparent bg-gray-50 p-2 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-                            >
-                              <KeyboardIcon className='h-6 w-6 text-slate-700 dark:text-gray-200' />
-                            </button>
-                            <Dropdown
-                              title={
-                                <span className='flex items-center justify-center'>
-                                  <span className='sr-only'>{t('header.switchTheme')}</span>
-                                  {theme === 'dark' ? (
-                                    <SunIcon className='h-6 w-6 text-gray-200' aria-hidden='true' />
-                                  ) : (
-                                    <MoonIcon className='h-6 w-6 text-slate-700' aria-hidden='true' />
-                                  )}
-                                </span>
-                              }
-                              items={[
-                                { key: 'light', label: t('header.light'), icon: SunIcon },
-                                { key: 'dark', label: t('header.dark'), icon: MoonIcon },
-                              ]}
-                              keyExtractor={(item) => item.key}
-                              labelExtractor={(item) => (
-                                <div
-                                  className={cx('flex w-full items-center', {
-                                    'light:text-indigo-600': item.key === 'light',
-                                    'dark:text-indigo-400': item.key === 'dark',
-                                  })}
-                                >
-                                  <item.icon
-                                    className={cx('mr-2 h-5 w-5', {
-                                      'dark:text-gray-300': item.key === 'light',
-                                      'light:text-gray-400': item.key === 'dark',
-                                    })}
-                                    aria-hidden='true'
-                                  />
-                                  {item.label}
-                                </div>
-                              )}
-                              onSelect={(item) => setTheme(item.key as 'light' | 'dark')}
-                              className='flex'
-                              chevron={null}
-                              headless
-                              buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 md:px-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-                              menuItemsClassName='top-5'
-                              selectItemClassName='font-semibold'
-                            />
-                          </div>
-                        </div>
-                      </>
+                  <div
+                    className={cx(
+                      'z-10 col-start-1 row-start-1 mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 lg:px-8',
+                      isMapFullscreen
+                        ? 'pointer-events-none'
+                        : 'pointer-events-auto',
                     )}
+                  >
+                    <div ref={ref} className='relative flex gap-4'>
+                      <ProjectSidebar
+                        tabs={tabs}
+                        activeTab={activeTab}
+                        onTabChange={setDashboardTab}
+                        projectId={id}
+                        projectName={project.name}
+                        websiteUrl={project.websiteUrl}
+                        dataLoading={dataLoading}
+                        searchParams={searchParams}
+                        allowedToManage={allowedToManage}
+                        className='pointer-events-auto z-20 hidden md:flex'
+                      />
+                      {isMobileSidebarOpen ? (
+                        <div className='pointer-events-auto'>
+                          <ProjectSidebar
+                            tabs={tabs}
+                            activeTab={activeTab}
+                            onTabChange={setDashboardTab}
+                            projectId={id}
+                            projectName={project.name}
+                            websiteUrl={project.websiteUrl}
+                            dataLoading={dataLoading}
+                            searchParams={searchParams}
+                            allowedToManage={allowedToManage}
+                            isMobileOpen={isMobileSidebarOpen}
+                            onMobileClose={closeMobileSidebar}
+                          />
+                        </div>
+                      ) : null}
+                      {/* Main Content */}
+                      <div
+                        className={cx(
+                          'pointer-events-auto flex min-w-0 flex-1 flex-col',
+                          isMapFullscreen
+                            ? 'pointer-events-none'
+                            : 'pointer-events-auto',
+                        )}
+                        ref={dashboardRef}
+                      >
+                        <EventsRunningOutBanner />
+                        <div className='pointer-events-auto'>
+                          <MobileSidebarTrigger
+                            onClick={openMobileSidebar}
+                            activeTabLabel={activeTabLabel}
+                          />
+                        </div>
+                        <AnimatePresence mode='wait'>
+                          <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                          >
+                            {activeTab === PROJECT_TABS.ai ? (
+                              <AskAIView projectId={id} />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.traffic ? (
+                              <TrafficView
+                                tnMapping={tnMapping}
+                                customMetrics={customMetrics}
+                                onRemoveCustomMetric={onRemoveCustomMetric}
+                                resetCustomMetrics={resetCustomMetrics}
+                                mode={mode}
+                                projectViews={projectViews}
+                                projectViewsLoading={projectViewsLoading}
+                                loadProjectViews={loadProjectViews}
+                                setProjectViewToUpdate={setProjectViewToUpdate}
+                                setIsAddAViewOpened={setIsAddAViewOpened}
+                                onCustomMetric={onCustomMetric}
+                              />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.performance ? (
+                              <PerformanceView tnMapping={tnMapping} />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.funnels ? (
+                              <FunnelsView />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.alerts ? (
+                              <ProjectAlertsView />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.profiles ? (
+                              <ProfilesView tnMapping={tnMapping} />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.sessions ? (
+                              <SessionsView
+                                tnMapping={tnMapping}
+                                rotateXAxis={rotateXAxis}
+                              />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.errors ? (
+                              <ErrorsView />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.goals ? (
+                              <GoalsView
+                                period={period}
+                                from={
+                                  dateRange ? getFormatDate(dateRange[0]) : ''
+                                }
+                                to={
+                                  dateRange ? getFormatDate(dateRange[1]) : ''
+                                }
+                                timezone={timezone}
+                              />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.experiments ? (
+                              <ExperimentsView
+                                period={period}
+                                from={
+                                  dateRange ? getFormatDate(dateRange[0]) : ''
+                                }
+                                to={
+                                  dateRange ? getFormatDate(dateRange[1]) : ''
+                                }
+                                timezone={timezone}
+                              />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.featureFlags ? (
+                              <FeatureFlagsView
+                                period={period}
+                                from={
+                                  dateRange ? getFormatDate(dateRange[0]) : ''
+                                }
+                                to={
+                                  dateRange ? getFormatDate(dateRange[1]) : ''
+                                }
+                                timezone={timezone}
+                              />
+                            ) : null}
+                            {activeTab === PROJECT_TABS.captcha ? (
+                              <CaptchaView projectId={id} />
+                            ) : null}
+                          </motion.div>
+                        </AnimatePresence>
+
+                        {isEmbedded ? null : (
+                          <>
+                            <div className='flex-1' />
+                            <div className='pointer-events-auto mt-4 flex w-full items-center justify-between gap-2'>
+                              <Dropdown
+                                items={whitelist}
+                                buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-slate-900 dark:text-gray-50'
+                                title={
+                                  <span className='inline-flex items-center'>
+                                    <Flag
+                                      className='mr-2 rounded-xs'
+                                      country={languageFlag[language]}
+                                      size={16}
+                                      alt={languages[language]}
+                                    />
+                                    {languages[language]}
+                                  </span>
+                                }
+                                labelExtractor={(lng: string) => (
+                                  <div className='flex items-center'>
+                                    <Flag
+                                      className='mr-2 rounded-xs'
+                                      country={languageFlag[lng]}
+                                      size={16}
+                                      alt={languageFlag[lng]}
+                                    />
+                                    {languages[lng]}
+                                  </div>
+                                )}
+                                onSelect={(lng: string) => {
+                                  changeLanguage(lng)
+                                }}
+                                headless
+                              />
+                              <div className='flex items-center gap-2'>
+                                <button
+                                  type='button'
+                                  onClick={() => setIsHotkeysHelpOpened(true)}
+                                  aria-label={t('modals.shortcuts.title')}
+                                  className='relative rounded-md border border-transparent bg-gray-50 p-2 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                                >
+                                  <KeyboardIcon className='h-6 w-6 text-slate-700 dark:text-gray-200' />
+                                </button>
+                                <Dropdown
+                                  title={
+                                    <span className='flex items-center justify-center'>
+                                      <span className='sr-only'>
+                                        {t('header.switchTheme')}
+                                      </span>
+                                      {theme === 'dark' ? (
+                                        <SunIcon
+                                          className='h-6 w-6 text-gray-200'
+                                          aria-hidden='true'
+                                        />
+                                      ) : (
+                                        <MoonIcon
+                                          className='h-6 w-6 text-slate-700'
+                                          aria-hidden='true'
+                                        />
+                                      )}
+                                    </span>
+                                  }
+                                  items={[
+                                    {
+                                      key: 'light',
+                                      label: t('header.light'),
+                                      icon: SunIcon,
+                                    },
+                                    {
+                                      key: 'dark',
+                                      label: t('header.dark'),
+                                      icon: MoonIcon,
+                                    },
+                                  ]}
+                                  keyExtractor={(item) => item.key}
+                                  labelExtractor={(item) => (
+                                    <div
+                                      className={cx(
+                                        'flex w-full items-center',
+                                        {
+                                          'light:text-indigo-600':
+                                            item.key === 'light',
+                                          'dark:text-indigo-400':
+                                            item.key === 'dark',
+                                        },
+                                      )}
+                                    >
+                                      <item.icon
+                                        className={cx('mr-2 h-5 w-5', {
+                                          'dark:text-gray-300':
+                                            item.key === 'light',
+                                          'light:text-gray-400':
+                                            item.key === 'dark',
+                                        })}
+                                        aria-hidden='true'
+                                      />
+                                      {item.label}
+                                    </div>
+                                  )}
+                                  onSelect={(item) =>
+                                    setTheme(item.key as 'light' | 'dark')
+                                  }
+                                  className='flex'
+                                  chevron={null}
+                                  headless
+                                  buttonClassName='relative rounded-md border border-transparent bg-gray-50 p-2 md:px-2 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                                  menuItemsClassName='top-5'
+                                  selectItemClassName='font-semibold'
+                                />
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {isEmbedded ? null : <Footer showDBIPMessage />}
-            </div>
-            <ViewProjectHotkeys isOpened={isHotkeysHelpOpened} onClose={() => setIsHotkeysHelpOpened(false)} />
-            <SearchFilters
-              type={activeTab === PROJECT_TABS.errors ? 'errors' : 'traffic'}
-              showModal={showFiltersSearch}
-              setShowModal={setShowFiltersSearch}
-              tnMapping={tnMapping}
-              filters={filters}
-            />
-            <AddAViewModal
-              showModal={isAddAViewOpened}
-              setShowModal={(show) => {
-                setIsAddAViewOpened(show)
-                setProjectViewToUpdate(undefined)
-              }}
-              onSubmit={() => {
-                setProjectViews([])
-                setProjectViewsLoading(null)
-                setProjectViewToUpdate(undefined)
-              }}
-              defaultView={projectViewToUpdate}
-              tnMapping={tnMapping}
-            />
-          </>
+                {isEmbedded ? null : <Footer showDBIPMessage />}
+              </div>
+              <ViewProjectHotkeys
+                isOpened={isHotkeysHelpOpened}
+                onClose={() => setIsHotkeysHelpOpened(false)}
+              />
+              <SearchFilters
+                type={activeTab === PROJECT_TABS.errors ? 'errors' : 'traffic'}
+                showModal={showFiltersSearch}
+                setShowModal={setShowFiltersSearch}
+                tnMapping={tnMapping}
+                filters={filters}
+              />
+              <AddAViewModal
+                showModal={isAddAViewOpened}
+                setShowModal={(show) => {
+                  setIsAddAViewOpened(show)
+                  setProjectViewToUpdate(undefined)
+                }}
+                onSubmit={() => {
+                  setProjectViews([])
+                  setProjectViewsLoading(null)
+                  setProjectViewToUpdate(undefined)
+                }}
+                defaultView={projectViewToUpdate}
+                tnMapping={tnMapping}
+              />
+            </>
+          </RefreshTriggersContext.Provider>
         </ViewProjectContext.Provider>
       )}
     </ClientOnly>

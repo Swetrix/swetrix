@@ -24,7 +24,7 @@ export class Funnel {
   @CreateDateColumn()
   created: Date
 
-  @ManyToOne(() => Project, project => project.funnels)
+  @ManyToOne(() => Project, (project) => project.funnels)
   @JoinColumn()
   project: Project
 }

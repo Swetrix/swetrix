@@ -216,7 +216,7 @@ export class OrganisationController {
     // }
 
     const isAlreadyMember = !_isEmpty(
-      _find(organisation.members, member => member.user?.id === invitee.id),
+      _find(organisation.members, (member) => member.user?.id === invitee.id),
     )
 
     if (isAlreadyMember) {

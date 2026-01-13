@@ -64,6 +64,9 @@ import {
 } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
+import { GetProfilesDto } from './dto/get-profiles.dto'
+import { GetProfileDto, GetProfileSessionsDto } from './dto/get-profile.dto'
+import { GetProfileIdDto, GetSessionIdDto } from './dto/get-id.dto'
 import { ErrorDto } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDto } from './dto/get-error.dto'
@@ -197,6 +200,7 @@ export class AnalyticsController {
     @Query() data: GetDataDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
+    isCaptcha = false,
   ) {
     const {
       pid,
@@ -216,12 +220,21 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    const parsedMetrics = this.analyticsService.parseMetrics(metrics)
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, metrics: ${metrics}`,
+      'GET /analytics',
+    )
 
-    if (_size(parsedMetrics) > MAX_METRICS_IN_VIEW) {
-      throw new BadRequestException(
-        `The maximum number of metrics within one request is ${MAX_METRICS_IN_VIEW}`,
-      )
+    let parsedMetrics
+
+    if (!isCaptcha) {
+      parsedMetrics = this.analyticsService.parseMetrics(metrics)
+
+      if (_size(parsedMetrics) > MAX_METRICS_IN_VIEW) {
+        throw new BadRequestException(
+          `The maximum number of metrics within one request is ${MAX_METRICS_IN_VIEW}`,
+        )
+      }
     }
 
     let newTimebucket = timeBucket
@@ -232,7 +245,7 @@ export class AnalyticsController {
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        'analytics',
+        isCaptcha ? 'captcha' : 'analytics',
       )
 
       diff = res.diff
@@ -244,7 +257,10 @@ export class AnalyticsController {
     }
 
     const [filtersQuery, filtersParams, parsedFilters, customEVFilterApplied] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+      this.analyticsService.getFiltersQuery(
+        filters,
+        isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
+      )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
@@ -257,9 +273,11 @@ export class AnalyticsController {
         diff,
       )
 
-    let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    let subQuery = `FROM ${
+      isCaptcha ? 'captcha' : 'analytics'
+    } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
-    if (customEVFilterApplied) {
+    if (customEVFilterApplied && !isCaptcha) {
       subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
@@ -272,18 +290,41 @@ export class AnalyticsController {
       },
     }
 
-    const result = await this.analyticsService.groupByTimeBucket(
-      newTimebucket,
-      groupFrom,
-      groupTo,
-      subQuery,
-      filtersQuery,
-      paramsData,
-      safeTimezone,
-      customEVFilterApplied,
-      parsedFilters,
-      mode,
-    )
+    let result: any | void
+
+    if (isCaptcha) {
+      result = await this.analyticsService.groupCaptchaByTimeBucket(
+        newTimebucket,
+        groupFrom,
+        groupTo,
+        subQuery,
+        filtersQuery,
+        paramsData,
+        safeTimezone,
+        mode,
+      )
+    } else {
+      result = await this.analyticsService.groupByTimeBucket(
+        newTimebucket,
+        groupFrom,
+        groupTo,
+        subQuery,
+        filtersQuery,
+        paramsData,
+        safeTimezone,
+        customEVFilterApplied,
+        parsedFilters,
+        mode,
+      )
+    }
+
+    if (isCaptcha) {
+      return {
+        ...result,
+        appliedFilters: parsedFilters,
+        timeBucket: allowedTumebucketForPeriodAll,
+      }
+    }
 
     const customs = await this.analyticsService.getCustomEvents(
       filtersQuery,
@@ -324,6 +365,15 @@ export class AnalyticsController {
     }
   }
 
+  @Get('captcha')
+  @Auth(true, true)
+  async getCaptchaData(
+    @Query() data: GetDataDto,
+    @CurrentUserId() uid: string,
+  ) {
+    return this.getData(data, uid, {}, true)
+  }
+
   @Get('funnel')
   @Auth(true, true)
   async getFunnel(
@@ -352,6 +402,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}, period: ${period}`, 'GET /analytics/funnel')
 
     let diff
 
@@ -412,6 +464,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(`pid: ${pid}`, 'GET /analytics/meta')
+
     return this.analyticsService.getCustomEventMetadata(data)
   }
 
@@ -430,6 +484,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(`pid: ${pid}`, 'GET /analytics/property')
+
     return this.analyticsService.getPagePropertyMeta(data)
   }
 
@@ -447,6 +503,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}, type: ${type}`, 'GET /analytics/filters')
 
     return this.analyticsService.getFilters(pid, type)
   }
@@ -485,6 +543,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}, period: ${period}`, 'GET /analytics/chart')
 
     const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
@@ -528,10 +588,14 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, measure: ${measure}`,
+      'GET /analytics/performance',
+    )
+
     let newTimeBucket = timeBucket
     let allowedTumebucketForPeriodAll
     let diff
-
     if (period === 'all') {
       const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
@@ -618,6 +682,11 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, measure: ${measure}`,
+      'GET /analytics/performance/chart',
+    )
+
     const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
     const chart = await this.analyticsService.getPerfChartData(
@@ -646,6 +715,11 @@ export class AnalyticsController {
       pid,
       uid,
       headers['x-password'],
+    )
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}`,
+      'GET /analytics/user-flow',
     )
 
     let diff
@@ -700,7 +774,9 @@ export class AnalyticsController {
     } = data
     const pidsArray = getPIDsArray(pids, pid)
 
-    const validationPromises = _map(pidsArray, async currentPID => {
+    this.logger.log(`pidsArray: ${pidsArray}`, 'GET /analytics/birdseye')
+
+    const validationPromises = _map(pidsArray, async (currentPID) => {
       await this.analyticsService.checkProjectAccess(
         currentPID,
         uid,
@@ -747,7 +823,7 @@ export class AnalyticsController {
       measure = DEFAULT_MEASURE
     }
 
-    const validationPromises = _map(pidsArray, async currentPID => {
+    const validationPromises = _map(pidsArray, async (currentPID) => {
       await this.analyticsService.checkProjectAccess(
         currentPID,
         uid,
@@ -756,6 +832,11 @@ export class AnalyticsController {
     })
 
     await Promise.all(validationPromises)
+
+    this.logger.log(
+      `pidsArray: ${pidsArray}, measure: ${measure}`,
+      'GET /analytics/performance/birdseye',
+    )
 
     return this.analyticsService.getPerformanceSummary(
       pidsArray,
@@ -777,7 +858,9 @@ export class AnalyticsController {
     const { pids, pid } = data
     const pidsArray = getPIDsArray(pids, pid)
 
-    const validationPromises = _map(pidsArray, async currentPID => {
+    this.logger.log(`pidsArray: ${pidsArray}`, 'GET /analytics/hb')
+
+    const validationPromises = _map(pidsArray, async (currentPID) => {
       await this.analyticsService.checkProjectAccess(
         currentPID,
         uid,
@@ -789,12 +872,12 @@ export class AnalyticsController {
 
     const result = {}
 
-    const keyCountPromises = _map(pidsArray, async currentPID => {
+    const keyCountPromises = _map(pidsArray, async (currentPID) => {
       result[currentPID] =
         await this.analyticsService.getOnlineUserCount(currentPID)
     })
 
-    await Promise.all(keyCountPromises).catch(reason => {
+    await Promise.all(keyCountPromises).catch((reason) => {
       this.logger.error(`[GET /analytics/hb] ${reason}`)
       throw new InternalServerErrorException(
         'An error occured while calculating heartbeat statistics',
@@ -818,6 +901,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}`, 'GET /analytics/live-visitors')
 
     const since = dayjs
       .utc()
@@ -869,7 +954,7 @@ export class AnalyticsController {
           since,
         },
       })
-      .then(resultSet => resultSet.json())
+      .then((resultSet) => resultSet.json())
 
     return data
   }
@@ -913,6 +998,11 @@ export class AnalyticsController {
     )
 
     this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(
+      `pid: ${eventsDTO.pid}, ev: ${eventsDTO.ev}, pg: ${eventsDTO.pg}`,
+      'POST /analytics/custom',
+    )
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1020,6 +1110,8 @@ export class AnalyticsController {
     await this.analyticsService.extendSessionTTL(psid)
     await this.analyticsService.recordSessionActivity(psid, pid, profileId)
 
+    this.logger.log(`pid: ${pid}, psid: ${psid}`, 'POST /analytics/hb')
+
     return {}
   }
 
@@ -1067,6 +1159,8 @@ export class AnalyticsController {
     const { city, region, regionCode, country } = getGeoDetails(ip, logDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(`pid: ${logDTO.pid}, pg: ${logDTO.pg}`, 'POST /analytics')
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1172,6 +1266,8 @@ export class AnalyticsController {
     const { 'user-agent': userAgent, origin } = headers
     const { pid } = data
 
+    const logDTO: PageviewsDto = { pid }
+
     const isBot = await this.analyticsService.isBot(pid, userAgent)
 
     if (isBot) {
@@ -1180,8 +1276,6 @@ export class AnalyticsController {
     }
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
-
-    const logDTO: PageviewsDto = { pid }
 
     const project = await this.analyticsService.validate(logDTO, origin, ip)
 
@@ -1208,6 +1302,8 @@ export class AnalyticsController {
     const { city, region, regionCode, country } = getGeoDetails(ip, null)
 
     this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(`pid: ${pid}`, 'GET /analytics/noscript')
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1276,6 +1372,11 @@ export class AnalyticsController {
       )
     }
 
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/sessions',
+    )
+
     let timeBucket
     let diff
 
@@ -1339,6 +1440,9 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    this.logger.log(`pid: ${pid}, psid: ${psid}`, 'GET /analytics/session')
+
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
 
     const result = await this.analyticsService.getSessionDetails(
@@ -1372,6 +1476,11 @@ export class AnalyticsController {
       pid,
       uid,
       headers['x-password'],
+    )
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, customEvents: ${customEvents}`,
+      'GET /analytics/custom-events',
     )
 
     let newTimeBucket = timeBucket
@@ -1455,6 +1564,11 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(
+      `pid: ${pid}, type: ${type}`,
+      'GET /analytics/errors-filters',
+    )
+
     return this.analyticsService.getErrorsFilters(pid, type)
   }
 
@@ -1471,6 +1585,11 @@ export class AnalyticsController {
       pid,
       uid,
       headers['x-password'],
+    )
+
+    this.logger.log(
+      `pid: ${pid}, type: ${type}, column: ${column}`,
+      'GET /analytics/filters/versions',
     )
 
     return this.analyticsService.getVersionFilters(pid, type, column)
@@ -1513,6 +1632,11 @@ export class AnalyticsController {
     const { city, region, regionCode, country } = getGeoDetails(ip, errorDTO.tz)
 
     this.analyticsService.checkCountryBlacklist(project, country)
+
+    this.logger.log(
+      `pid: ${errorDTO.pid}, pg: ${errorDTO.pg}, name: ${errorDTO.name}, message: ${errorDTO.message}`,
+      'POST /analytics/error',
+    )
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
@@ -1622,6 +1746,11 @@ export class AnalyticsController {
       )
     }
 
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/errors',
+    )
+
     let timeBucket
     let diff
 
@@ -1694,6 +1823,11 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    this.logger.log(
+      `pid: ${pid}, eid: ${eid}, period: ${period}`,
+      'GET /analytics/get-error',
+    )
+
     let newTimeBucket = timeBucket
     let diff
 
@@ -1751,6 +1885,11 @@ export class AnalyticsController {
       pid,
       uid,
       headers['x-password'],
+    )
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}`,
+      'GET /analytics/error-overview',
     )
 
     let parsedOptions: GetErrorOverviewOptions = {}
@@ -1839,6 +1978,11 @@ export class AnalyticsController {
       )
     }
 
+    this.logger.log(
+      `pid: ${pid}, eid: ${eid}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/error-sessions',
+    )
+
     let newTimeBucket = timeBucket
     let diff
 
@@ -1870,5 +2014,316 @@ export class AnalyticsController {
       take,
       skip,
     )
+  }
+
+  @Get('profiles')
+  @Auth(true, true)
+  async getProfiles(
+    @Query() data: GetProfilesDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+      profileType = 'all',
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of profiles to return is 150',
+      )
+    }
+
+    this.logger.log(
+      `pid: ${pid}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/profiles',
+    )
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    const [filtersQuery, filtersParams, appliedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
+
+    const profiles = await this.analyticsService.getProfilesList(
+      pid,
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      take,
+      skip,
+      profileType,
+    )
+
+    return { profiles, appliedFilters, take, skip }
+  }
+
+  @Get('profile')
+  @Auth(true, true)
+  async getProfile(
+    @Query() data: GetProfileDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      profileId,
+      timezone = DEFAULT_TIMEZONE,
+      period,
+      from,
+      to,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    this.logger.log(
+      `pid: ${pid}, profileId: ${profileId}, period: ${period}`,
+      'GET /analytics/profile',
+    )
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const [details, topPages, activityCalendar, chart] = await Promise.all([
+      this.analyticsService.getProfileDetails(pid, profileId, safeTimezone),
+      this.analyticsService.getProfileTopPages(pid, profileId),
+      this.analyticsService.getProfileActivityCalendar(pid, profileId),
+      this.analyticsService.getProfileChartData(
+        pid,
+        profileId,
+        timeBucket,
+        groupFromUTC,
+        groupToUTC,
+        safeTimezone,
+      ),
+    ])
+
+    return {
+      ...details,
+      topPages,
+      activityCalendar,
+      chart,
+      timeBucket,
+    }
+  }
+
+  @Get('profile/sessions')
+  @Auth(true, true)
+  async getProfileSessions(
+    @Query() data: GetProfileSessionsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const {
+      pid,
+      profileId,
+      period,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+    } = data
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 150',
+      )
+    }
+
+    this.logger.log(
+      `pid: ${pid}, profileId: ${profileId}, period: ${period}, take: ${take}, skip: ${skip}`,
+      'GET /analytics/profile/sessions',
+    )
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    const [filtersQuery, filtersParams, appliedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        ...filtersParams,
+      },
+    }
+
+    const sessions = await this.analyticsService.getProfileSessionsList(
+      pid,
+      profileId,
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      take,
+      skip,
+    )
+
+    return { sessions, appliedFilters, take, skip }
+  }
+
+  @Post('profile-id')
+  @Public()
+  async getOrCreateProfileId(
+    @Body() dto: GetProfileIdDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ profileId: string | null }> {
+    const { 'user-agent': userAgent } = headers
+    const { pid } = dto
+
+    try {
+      const ip = getIPFromHeaders(headers) || reqIP || ''
+
+      const profileId = await this.analyticsService.generateProfileId(
+        pid,
+        userAgent,
+        ip,
+      )
+
+      this.logger.log(
+        `pid: ${pid}, profileId: ${profileId}`,
+        'POST /analytics/profile-id',
+      )
+
+      return { profileId }
+    } catch (error) {
+      this.logger.error({ error, pid }, 'Error generating profile ID')
+      return { profileId: null }
+    }
+  }
+
+  @Post('session-id')
+  @Public()
+  async getOrCreateSessionId(
+    @Body() dto: GetSessionIdDto,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<{ sessionId: string | null }> {
+    const { 'user-agent': userAgent } = headers
+    const { pid } = dto
+
+    try {
+      const ip = getIPFromHeaders(headers) || reqIP || ''
+
+      const { psid } = await this.analyticsService.getSessionId(
+        pid,
+        userAgent,
+        ip,
+      )
+
+      this.logger.log(
+        `pid: ${pid}, sessionId: ${psid}`,
+        'POST /analytics/session-id',
+      )
+
+      return { sessionId: psid }
+    } catch (error) {
+      this.logger.error({ error, pid }, 'Error generating session ID')
+      return { sessionId: null }
+    }
   }
 }

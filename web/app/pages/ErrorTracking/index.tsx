@@ -19,7 +19,10 @@ const ErrorTracking = () => {
       <main className='bg-gray-50 dark:bg-slate-900'>
         <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-800/50'>
           <div className='relative mx-2 overflow-hidden rounded-4xl'>
-            <div aria-hidden className='pointer-events-none absolute inset-0 -z-10'>
+            <div
+              aria-hidden
+              className='pointer-events-none absolute inset-0 -z-10'
+            >
               <div className='absolute inset-0 rounded-4xl bg-linear-115 from-rose-200 from-15% via-red-400 via-70% to-red-700 opacity-50 ring-1 ring-black/5 ring-inset sm:bg-linear-145 dark:from-slate-600 dark:opacity-60' />
             </div>
             <Header transparent />
@@ -55,7 +58,11 @@ const ErrorTracking = () => {
               <div className='col-span-6 mt-10 overflow-visible lg:mt-0 lg:mr-0 lg:ml-4'>
                 <div className='relative z-20 mx-auto mt-10 overflow-hidden rounded-xl ring-2 ring-gray-900/10 lg:hidden dark:ring-white/10'>
                   <img
-                    src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
+                    src={
+                      theme === 'dark'
+                        ? '/assets/screenshot_dark.png'
+                        : '/assets/screenshot_light.png'
+                    }
                     className='relative w-full'
                     width='100%'
                     height='auto'
@@ -78,7 +85,9 @@ const ErrorTracking = () => {
                   <div className='relative h-[580px] lg:h-[640px] xl:h-[700px]'>
                     <img
                       src={
-                        theme === 'dark' ? '/assets/screenshot_errors_dark.png' : '/assets/screenshot_errors_light.png'
+                        theme === 'dark'
+                          ? '/assets/screenshot_errors_dark.png'
+                          : '/assets/screenshot_errors_light.png'
                       }
                       className='size-full object-cover object-left'
                       alt='Swetrix Error Tracking'
@@ -103,14 +112,19 @@ const ErrorTracking = () => {
         </div>
 
         <div className='mx-auto mt-12 max-w-7xl bg-white px-4 pb-16 whitespace-pre-line dark:bg-slate-900'>
-          <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>{t('errors.fast.title')}</h2>
+          <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>
+            {t('errors.fast.title')}
+          </h2>
           <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>
             <Trans
               t={t}
               i18nKey='errors.fast.desc'
               components={{
                 indexUrl: (
-                  <Link to={routesPath.main} className='font-medium text-red-600 hover:underline dark:text-red-400' />
+                  <Link
+                    to={routesPath.main}
+                    className='font-medium text-red-600 hover:underline dark:text-red-400'
+                  />
                 ),
 
                 perfUrl: (
@@ -138,13 +152,19 @@ const ErrorTracking = () => {
             ))}
           </ul>
 
-          <h2 className='mt-10 text-4xl font-extrabold text-slate-900 dark:text-white'>{t('errors.track.title')}</h2>
-          <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>{t('errors.track.desc')}</p>
+          <h2 className='mt-10 text-4xl font-extrabold text-slate-900 dark:text-white'>
+            {t('errors.track.title')}
+          </h2>
+          <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>
+            {t('errors.track.desc')}
+          </p>
 
           <h2 className='mt-10 text-4xl font-extrabold text-slate-900 dark:text-white'>
             {t('performance.privacy.title')}
           </h2>
-          <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>{t('performance.privacy.desc')}</p>
+          <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>
+            {t('performance.privacy.desc')}
+          </p>
         </div>
 
         <MarketingPricing />

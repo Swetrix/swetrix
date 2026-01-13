@@ -83,7 +83,7 @@ export class GoalService {
         query,
         query_params: { id },
       })
-      .then(resultSet => resultSet.json<ClickhouseGoal>())
+      .then((resultSet) => resultSet.json<ClickhouseGoal>())
 
     if (_isEmpty(data)) {
       return null
@@ -109,9 +109,9 @@ export class GoalService {
         query,
         query_params: { projectId },
       })
-      .then(resultSet => resultSet.json<ClickhouseGoal>())
+      .then((resultSet) => resultSet.json<ClickhouseGoal>())
 
-    return _map(data, goal => this.formatGoalFromClickhouse(goal))
+    return _map(data, (goal) => this.formatGoalFromClickhouse(goal))
   }
 
   async paginate(
@@ -157,17 +157,17 @@ export class GoalService {
           query: countQuery,
           query_params: queryParams,
         })
-        .then(resultSet => resultSet.json<{ total: number }>()),
+        .then((resultSet) => resultSet.json<{ total: number }>()),
       clickhouse
         .query({
           query: dataQuery,
           query_params: queryParams,
         })
-        .then(resultSet => resultSet.json<ClickhouseGoal>()),
+        .then((resultSet) => resultSet.json<ClickhouseGoal>()),
     ])
 
     const total = countResult.data[0]?.total || 0
-    const results = _map(dataResult.data, goal =>
+    const results = _map(dataResult.data, (goal) =>
       this.formatGoalFromClickhouse(goal),
     )
 
@@ -189,7 +189,7 @@ export class GoalService {
         query,
         query_params: { projectId },
       })
-      .then(resultSet => resultSet.json<{ total: number }>())
+      .then((resultSet) => resultSet.json<{ total: number }>())
 
     return data[0]?.total || 0
   }
@@ -228,7 +228,7 @@ export class GoalService {
     const filtered = _reduce(
       _filter(
         _keys(goalData),
-        key =>
+        (key) =>
           ALLOWED_GOAL_KEYS.includes(key) &&
           goalData[key as keyof Goal] !== undefined,
       ),
@@ -249,7 +249,7 @@ export class GoalService {
 
     const params: Record<string, any> = { id }
 
-    const assignments = _map(columns, col => {
+    const assignments = _map(columns, (col) => {
       const value = formattedData[col as keyof ClickhouseGoal]
       params[col] = value
 

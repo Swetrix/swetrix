@@ -29,10 +29,26 @@ import routesPath from '~/utils/routes'
 export const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
 
 const products = [
-  { key: 'header.solutions.analytics.title', href: routesPath.main, internal: true },
-  { key: 'header.solutions.performance.title', href: routesPath.performance, internal: true },
-  { key: 'header.solutions.errors.title', href: routesPath.errorTracking, internal: true },
-  { key: 'header.solutions.captcha.title', href: routesPath.captchaLanding, internal: true },
+  {
+    key: 'header.solutions.analytics.title',
+    href: routesPath.main,
+    internal: true,
+  },
+  {
+    key: 'header.solutions.performance.title',
+    href: routesPath.performance,
+    internal: true,
+  },
+  {
+    key: 'header.solutions.errors.title',
+    href: routesPath.errorTracking,
+    internal: true,
+  },
+  {
+    key: 'header.solutions.captcha.title',
+    href: routesPath.captchaLanding,
+    internal: true,
+  },
 ]
 
 const productionNavigation = {
@@ -68,6 +84,7 @@ const productionNavigation = {
     { name: 'Pirsch', href: '/comparison/pirsch' },
     { name: 'Umami', href: '/comparison/umami' },
     { name: 'Matomo', href: '/comparison/matomo' },
+    { name: 'PostHog', href: '/comparison/posthog' },
   ],
   legal: [
     { key: 'privacy', href: routesPath.privacy, internal: true },
@@ -83,14 +100,34 @@ const communityEditionNavigation = {
   resources: [
     { key: 'docs', href: DOCS_URL, internal: false },
     { key: 'pricing', href: `https://swetrix.com/#pricing`, internal: false },
-    { key: 'tools', href: `https://swetrix.com${routesPath.tools}`, internal: false },
-    { key: 'utm', href: `https://swetrix.com${routesPath.utm_generator}`, internal: false },
-    { key: 'ctr', href: `https://swetrix.com${routesPath.ctr_calculator}`, internal: false },
-    { key: 'roi', href: `https://swetrix.com${routesPath.roi_calculator}`, internal: false },
+    {
+      key: 'tools',
+      href: `https://swetrix.com${routesPath.tools}`,
+      internal: false,
+    },
+    {
+      key: 'utm',
+      href: `https://swetrix.com${routesPath.utm_generator}`,
+      internal: false,
+    },
+    {
+      key: 'ctr',
+      href: `https://swetrix.com${routesPath.ctr_calculator}`,
+      internal: false,
+    },
+    {
+      key: 'roi',
+      href: `https://swetrix.com${routesPath.roi_calculator}`,
+      internal: false,
+    },
   ],
   company: [
     { key: 'cloudEdition', href: 'https://swetrix.com', internal: false },
-    { key: 'blog', href: `https://swetrix.com${routesPath.blog}`, internal: false },
+    {
+      key: 'blog',
+      href: `https://swetrix.com${routesPath.blog}`,
+      internal: false,
+    },
     { key: 'supportUs', href: DONATE_URL, internal: false },
   ],
   community: [
@@ -99,14 +136,51 @@ const communityEditionNavigation = {
     { name: 'X', href: TWITTER_URL },
     { name: 'LinkedIn', href: LINKEDIN_URL },
   ],
-  comparisons: [{ name: 'Plausible', href: 'https://swetrix.com/blog/swetrix-vs-plausible' }],
+  comparisons: [
+    {
+      name: 'Google Analytics',
+      href: 'https://swetrix.com/comparison/google-analytics',
+    },
+    { name: 'Plausible', href: 'https://swetrix.com/comparison/plausible' },
+    {
+      name: 'Cloudflare Analytics',
+      href: 'https://swetrix.com/comparison/cloudflare-analytics',
+    },
+    {
+      name: 'Fathom Analytics',
+      href: 'https://swetrix.com/comparison/fathom-analytics',
+    },
+    {
+      name: 'Simple Analytics',
+      href: 'https://swetrix.com/comparison/simple-analytics',
+    },
+    {
+      name: 'Vercel Web Analytics',
+      href: 'https://swetrix.com/comparison/vercel-web-analytics',
+    },
+    { name: 'Rybbit', href: 'https://swetrix.com/comparison/rybbit' },
+    { name: 'Pirsch', href: 'https://swetrix.com/comparison/pirsch' },
+    { name: 'Umami', href: 'https://swetrix.com/comparison/umami' },
+    { name: 'Matomo', href: 'https://swetrix.com/comparison/matomo' },
+    { name: 'PostHog', href: 'https://swetrix.com/comparison/posthog' },
+  ],
   legal: [
-    { key: 'contact', href: `https://swetrix.com${routesPath.contact}`, internal: false },
-    { key: 'imprint', href: `https://swetrix.com${routesPath.imprint}`, internal: false },
+    {
+      key: 'contact',
+      href: `https://swetrix.com${routesPath.contact}`,
+      internal: false,
+    },
+    {
+      key: 'imprint',
+      href: `https://swetrix.com${routesPath.imprint}`,
+      internal: false,
+    },
   ],
 }
 
-const navigation = isSelfhosted ? communityEditionNavigation : productionNavigation
+const navigation = isSelfhosted
+  ? communityEditionNavigation
+  : productionNavigation
 
 const LanguageSelector = () => {
   const {
@@ -120,13 +194,23 @@ const LanguageSelector = () => {
       buttonClassName='!py-2 !px-3 inline-flex items-center rounded-md bg-transparent hover:bg-white/10 [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-white border border-white/20'
       title={
         <span className='inline-flex items-center'>
-          <Flag className='mr-2 rounded-xs' country={languageFlag[language]} size={16} alt={languages[language]} />
+          <Flag
+            className='mr-2 rounded-xs'
+            country={languageFlag[language]}
+            size={16}
+            alt={languages[language]}
+          />
           {languages[language]}
         </span>
       }
       labelExtractor={(lng: string) => (
         <div className='flex items-center'>
-          <Flag className='mr-2 rounded-xs' country={languageFlag[lng]} size={16} alt={languageFlag[lng]} />
+          <Flag
+            className='mr-2 rounded-xs'
+            country={languageFlag[lng]}
+            size={16}
+            alt={languageFlag[lng]}
+          />
           {languages[lng]}
         </div>
       )}
@@ -149,9 +233,15 @@ const ThemeSelector = () => {
       title={
         <span className='flex items-center'>
           {theme === 'dark' ? (
-            <MoonIcon className='mr-2 h-4 w-4 text-gray-300' aria-hidden='true' />
+            <MoonIcon
+              className='mr-2 h-4 w-4 text-gray-300'
+              aria-hidden='true'
+            />
           ) : (
-            <SunIcon className='mr-2 h-4 w-4 text-gray-300' aria-hidden='true' />
+            <SunIcon
+              className='mr-2 h-4 w-4 text-gray-300'
+              aria-hidden='true'
+            />
           )}
           {theme === 'dark' ? t('header.dark') : t('header.light')}
         </span>
@@ -190,10 +280,21 @@ interface FooterProps {
   showDBIPMessage?: boolean
 }
 
-const FooterLink = ({ href, internal, children }: { href: string; internal: boolean; children: React.ReactNode }) => {
+const FooterLink = ({
+  href,
+  internal,
+  children,
+}: {
+  href: string
+  internal: boolean
+  children: React.ReactNode
+}) => {
   if (internal) {
     return (
-      <Link to={href} className='underline-animate text-sm text-white transition-colors'>
+      <Link
+        to={href}
+        className='underline-animate text-sm text-white transition-colors'
+      >
         {children}
       </Link>
     )
@@ -233,7 +334,9 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
               <ul className='-mx-3 flex flex-row flex-wrap gap-y-8 lg:flex-nowrap'>
                 <li className='flex w-1/2 flex-col px-3 lg:w-1/5'>
                   <ul>
-                    <li className='mb-4 text-sm font-bold text-white uppercase'>{t('footer.products')}</li>
+                    <li className='mb-4 text-sm font-bold text-white uppercase'>
+                      {t('footer.products')}
+                    </li>
                     {_map(navigation.products, ({ key, href, internal }) => (
                       <li key={key} className='mb-2'>
                         <FooterLink href={href} internal={internal}>
@@ -246,7 +349,9 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
 
                 <li className='flex w-1/2 flex-col px-3 lg:w-1/5'>
                   <ul>
-                    <li className='mb-4 text-sm font-bold text-white uppercase'>{t('footer.resources')}</li>
+                    <li className='mb-4 text-sm font-bold text-white uppercase'>
+                      {t('footer.resources')}
+                    </li>
                     {_map(navigation.resources, ({ key, href, internal }) => (
                       <li key={key} className='mb-2'>
                         <FooterLink href={href} internal={internal}>
@@ -259,7 +364,9 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
 
                 <li className='flex w-1/2 flex-col px-3 lg:w-1/5'>
                   <ul>
-                    <li className='mb-4 text-sm font-bold text-white uppercase'>{t('footer.company')}</li>
+                    <li className='mb-4 text-sm font-bold text-white uppercase'>
+                      {t('footer.company')}
+                    </li>
                     {_map(navigation.company, ({ key, href, internal }) => (
                       <li key={key} className='mb-2'>
                         <FooterLink href={href} internal={internal}>
@@ -272,7 +379,9 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
 
                 <li className='flex w-1/2 flex-col px-3 lg:w-1/5'>
                   <ul>
-                    <li className='mb-4 text-sm font-bold text-white uppercase'>{t('footer.community')}</li>
+                    <li className='mb-4 text-sm font-bold text-white uppercase'>
+                      {t('footer.community')}
+                    </li>
                     {_map(navigation.community, ({ name, href }) => (
                       <li key={name} className='mb-2'>
                         <FooterLink href={href} internal={false}>
@@ -285,7 +394,9 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
 
                 <li className='flex w-1/2 flex-col px-3 lg:w-1/5'>
                   <ul>
-                    <li className='mb-4 text-sm font-bold text-white uppercase'>{t('footer.comparisons')}</li>
+                    <li className='mb-4 text-sm font-bold text-white uppercase'>
+                      {t('footer.comparisons')}
+                    </li>
                     {_map(navigation.comparisons, ({ name, href }) => (
                       <li key={name} className='mb-2'>
                         <FooterLink href={href} internal={!isSelfhosted}>
@@ -301,7 +412,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
             <div className='mt-12 md:mt-0 md:w-fit md:min-w-[280px]'>
               <SwetrixLogo theme='dark' lazy />
 
-              <p className='mt-4 text-sm text-white'>
+              <p className='mt-4 max-w-72 text-sm text-white'>
                 {isSelfhosted ? (
                   <Trans
                     t={t}
@@ -325,9 +436,27 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
               {isSelfhosted ? null : (
                 <div className='mt-2 flex text-sm text-white'>
                   <Trans t={t} i18nKey='footer.madeInHostedIn'>
-                    <Flag className='mx-[1ch]' country='GB' size={16} alt='GB' aria-hidden='true' />
-                    <Flag className='mx-[1ch]' country='UA' size={16} alt='UA' aria-hidden='true' />
-                    <Flag className='mx-[1ch]' country='EU' size={16} alt='EU' aria-hidden='true' />
+                    <Flag
+                      className='mx-[1ch]'
+                      country='GB'
+                      size={16}
+                      alt='GB'
+                      aria-hidden='true'
+                    />
+                    <Flag
+                      className='mx-[1ch]'
+                      country='UA'
+                      size={16}
+                      alt='UA'
+                      aria-hidden='true'
+                    />
+                    <Flag
+                      className='mx-[1ch]'
+                      country='EU'
+                      size={16}
+                      alt='EU'
+                      aria-hidden='true'
+                    />
                   </Trans>
                 </div>
               )}
@@ -358,7 +487,12 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                 {showDBIPMessage && isSelfhosted ? (
                   <>
                     {' · '}
-                    <a href='https://db-ip.com' target='_blank' rel='noopener noreferrer' className='underline-animate'>
+                    <a
+                      href='https://db-ip.com'
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='underline-animate'
+                    >
                       IP Geolocation by DB-IP
                     </a>
                   </>

@@ -89,6 +89,12 @@ export const PerformanceChart = ({
   )
 
   return (
-    <MainChart chartId='performance-chart' options={options} dataNames={dataNames} className={className} deps={deps} />
+    <MainChart
+      chartId='performance-chart'
+      options={options}
+      dataNames={dataNames}
+      className={className}
+      deps={deps}
+    />
   )
 }

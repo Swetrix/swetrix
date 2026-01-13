@@ -34,7 +34,7 @@ const shouldBotBeLaunched = isPrimaryNode() && isPrimaryClusterNode()
     UserModule,
     ProjectModule,
     AnalyticsModule,
-  ].filter(m => !!m),
+  ].filter((m) => !!m),
   providers: [
     TelegramUpdate,
     StartScene,

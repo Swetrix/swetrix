@@ -48,8 +48,6 @@ interface UserShareProject {
   id: string
 }
 
-export type LiveStats = Record<string, number>
-
 export interface ShareOwnerProject {
   id: string
   confirmed: boolean
@@ -83,13 +81,6 @@ export interface SwetrixError {
   status: 'active' | 'regressed' | 'fixed' | 'resolved'
   users: number
   sessions: number
-}
-
-export interface SwetrixErrorDetails extends SwetrixError {
-  colno: number
-  lineno: number
-  first_seen: string
-  stackTrace?: string
 }
 
 export interface Session {
@@ -177,6 +168,7 @@ export interface AnalyticsFunnel {
   eventsPerc: number
   eventsPercStep: number
   dropoff: number
+  dropoffPerc: number
   dropoffPercStep: number
 }
 

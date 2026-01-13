@@ -31,7 +31,7 @@ const loadMap = (): ReferrerJson[] => {
 
 export const getDomainsForRefName = (name: string): string[] | null => {
   const list = loadMap()
-  const found = list.find(g => g.name.toLowerCase() === name.toLowerCase())
+  const found = list.find((g) => g.name.toLowerCase() === name.toLowerCase())
   if (!found) return null
   return found.patterns
 }

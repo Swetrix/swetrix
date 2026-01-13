@@ -29,7 +29,13 @@ interface AddFunnelProps {
   openFunnelSettings: (funnel?: Funnel) => void
 }
 
-const FunnelCard = ({ funnel, openFunnelSettings, deleteFunnel, loading, allowedToManage }: FunnelCardProps) => {
+const FunnelCard = ({
+  funnel,
+  openFunnelSettings,
+  deleteFunnel,
+  loading,
+  allowedToManage,
+}: FunnelCardProps) => {
   const { t } = useTranslation()
   const [searchParams] = useSearchParams()
 
@@ -107,7 +113,12 @@ const AddFunnel = ({ openFunnelSettings }: AddFunnelProps) => {
           className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
           strokeWidth={1}
         />
-        <Text as='span' size='sm' weight='semibold' className='mt-2 block group-hover:dark:text-gray-400'>
+        <Text
+          as='span'
+          size='sm'
+          weight='semibold'
+          className='mt-2 block group-hover:dark:text-gray-400'
+        >
           {t('dashboard.newFunnel')}
         </Text>
       </div>
@@ -115,7 +126,13 @@ const AddFunnel = ({ openFunnelSettings }: AddFunnelProps) => {
   )
 }
 
-const FunnelsList = ({ funnels, openFunnelSettings, deleteFunnel, loading, allowedToManage }: FunnelsListProps) => {
+const FunnelsList = ({
+  funnels,
+  openFunnelSettings,
+  deleteFunnel,
+  loading,
+  allowedToManage,
+}: FunnelsListProps) => {
   const { isAuthenticated } = useAuth()
 
   return (
@@ -130,7 +147,9 @@ const FunnelsList = ({ funnels, openFunnelSettings, deleteFunnel, loading, allow
           allowedToManage={allowedToManage}
         />
       ))}
-      {isAuthenticated && allowedToManage ? <AddFunnel openFunnelSettings={openFunnelSettings} /> : null}
+      {isAuthenticated && allowedToManage ? (
+        <AddFunnel openFunnelSettings={openFunnelSettings} />
+      ) : null}
     </div>
   )
 }

@@ -1,16 +1,14 @@
 import { Module } from '@nestjs/common'
-import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { AnalyticsService } from './analytics.service'
 import { AnalyticsController } from './analytics.controller'
 import { HeartbeatGateway } from './heartbeat.gateway'
 import { SaltService } from './salt.service'
-import { Salt } from './entities/salt.entity'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Salt]), AppLoggerModule, ProjectModule],
+  imports: [AppLoggerModule, ProjectModule],
   providers: [AnalyticsService, SaltService, HeartbeatGateway],
   exports: [AnalyticsService, SaltService],
   controllers: [AnalyticsController],

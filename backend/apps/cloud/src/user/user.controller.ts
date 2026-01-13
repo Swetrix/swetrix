@@ -515,9 +515,7 @@ export class UserController {
       ActionTokenType.EMAIL_VERIFICATION,
       user.email,
     )
-    const url = `${
-      isDevelopment ? request.headers.origin : PRODUCTION_ORIGIN
-    }/verify/${token.id}`
+    const url = `${isDevelopment ? request.headers.origin : PRODUCTION_ORIGIN}/verify/${token.id}`
 
     await this.userService.update(id, { emailRequests: 1 + user.emailRequests })
     await this.mailerService.sendEmail(user.email, LetterTemplate.SignUp, {

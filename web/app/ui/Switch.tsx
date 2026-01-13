@@ -12,7 +12,14 @@ interface SwitchProps {
   id?: string
 }
 
-export const Switch = ({ checked, onChange, disabled = false, className, label, id }: SwitchProps) => {
+export const Switch = ({
+  checked,
+  onChange,
+  disabled = false,
+  className,
+  label,
+  id,
+}: SwitchProps) => {
   const generatedId = useId()
   const switchId = id || generatedId
 

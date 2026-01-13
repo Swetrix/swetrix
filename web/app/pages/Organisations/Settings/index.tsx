@@ -2,17 +2,24 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _size from 'lodash/size'
 import { Trash2Icon } from 'lucide-react'
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router'
+import {
+  Link,
+  useNavigate,
+  useFetcher,
+  useLoaderData,
+  useRevalidator,
+} from 'react-router'
 import { toast } from 'sonner'
 
-import { transferProject, getOrganisation, updateOrganisation, deleteOrganisation } from '~/api'
-import { withAuthentication, auth } from '~/hoc/protected'
-import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { TITLE_SUFFIX } from '~/lib/constants'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
+import type {
+  OrganisationSettingsActionData,
+  OrganisationLoaderData,
+} from '~/routes/organisations.$id'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
@@ -23,18 +30,16 @@ import routes from '~/utils/routes'
 import People from './People'
 import { Projects } from './Projects'
 
-// import { ArrowLeftRight } from 'lucide-react'
-
 const MAX_NAME_LENGTH = 50
-
-const DEFAULT_ORGANISATION_NAME = 'Untitled Organisation'
 
 const OrganisationSettings = () => {
   const { t } = useTranslation('common')
-  const { id } = useRequiredParams<{ id: string }>()
+  const loaderData = useLoaderData<OrganisationLoaderData>()
   const navigate = useNavigate()
+  const fetcher = useFetcher<OrganisationSettingsActionData>()
+  const revalidator = useRevalidator()
 
-  const { user, isLoading: authLoading } = useAuth()
+  const { user } = useAuth()
 
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
@@ -42,18 +47,56 @@ const OrganisationSettings = () => {
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [showTransfer, setShowTransfer] = useState(false)
-  const [transferEmail, setTransferEmail] = useState('')
+  const [isFormDirty, setIsFormDirty] = useState(false)
 
-  const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const organisation = loaderData?.organisation || null
+  const error = loaderData?.error
 
-  const [organisation, setOrganisation] = useState<DetailedOrganisation | null>(null)
-  const [form, setForm] = useState<Pick<DetailedOrganisation, 'name'>>({
-    name: '',
-  })
+  const [form, setForm] = useState<Pick<DetailedOrganisation, 'name'>>(() => ({
+    name: organisation?.name || '',
+  }))
+
+  useEffect(() => {
+    if (organisation && !isFormDirty) {
+      // eslint-disable-next-line
+      setForm({ name: organisation.name || '' })
+    }
+  }, [organisation, isFormDirty])
+
+  const isSaving =
+    fetcher.state === 'submitting' &&
+    fetcher.formData?.get('intent') === 'update-organisation'
+  const isDeleting =
+    fetcher.state === 'submitting' &&
+    fetcher.formData?.get('intent') === 'delete-organisation'
+
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      const { intent } = fetcher.data
+
+      if (intent === 'update-organisation') {
+        toast.success(t('apiNotifications.orgSettingsUpdated'))
+        // eslint-disable-next-line
+        setIsFormDirty(false)
+        revalidator.revalidate()
+      } else if (intent === 'delete-organisation') {
+        toast.success(t('apiNotifications.organisationDeleted'))
+        setShowDelete(false)
+        navigate(routes.organisations)
+      } else if (
+        intent === 'invite-member' ||
+        intent === 'remove-member' ||
+        intent === 'update-member-role' ||
+        intent === 'add-project' ||
+        intent === 'remove-project'
+      ) {
+        revalidator.revalidate()
+      }
+    } else if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
+      setShowDelete(false)
+    }
+  }, [fetcher.data, t, navigate, revalidator])
 
   const isOrganisationOwner = useMemo(() => {
     if (!organisation) {
@@ -65,81 +108,21 @@ const OrganisationSettings = () => {
     return owner?.user?.email === user?.email
   }, [organisation, user])
 
-  const loadOrganisation = async (organisationId: string) => {
-    if (isLoading) {
-      return
-    }
-    setIsLoading(true)
+  const onSubmit = (formData: Pick<DetailedOrganisation, 'name'>) => {
+    if (fetcher.state === 'submitting') return
 
-    try {
-      const result = await getOrganisation(organisationId)
-      setOrganisation(result)
-      setForm({
-        name: result.name,
-      })
-    } catch (reason: any) {
-      setError(reason)
-    } finally {
-      setIsLoading(false)
-    }
+    const fd = new FormData()
+    fd.set('intent', 'update-organisation')
+    fd.set('name', formData.name)
+    fetcher.submit(fd, { method: 'post' })
   }
 
-  const reloadOrganisation = useCallback(async () => {
-    try {
-      const result = await getOrganisation(id)
-      setOrganisation(result)
-      setForm({
-        name: result.name,
-      })
-    } catch (reason: any) {
-      console.error(`[ERROR] Error while reloading organisation: ${reason}`)
-    }
-  }, [id])
+  const onDelete = () => {
+    if (fetcher.state === 'submitting') return
 
-  useEffect(() => {
-    if (authLoading) {
-      return
-    }
-
-    loadOrganisation(id)
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, id])
-
-  const onSubmit = async (data: any) => {
-    if (isSaving) {
-      return
-    }
-
-    setIsSaving(true)
-
-    try {
-      await updateOrganisation(id, { name: data.name })
-      toast.success(t('apiNotifications.orgSettingsUpdated'))
-    } catch (reason: any) {
-      toast.error(reason)
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const onDelete = async () => {
-    if (isDeleting) {
-      return
-    }
-
-    setIsDeleting(true)
-
-    try {
-      await deleteOrganisation(id)
-      toast.success(t('apiNotifications.organisationDeleted'))
-      navigate(routes.organisations)
-    } catch (reason: any) {
-      toast.error(reason)
-    } finally {
-      setIsDeleting(false)
-      setShowDelete(false)
-    }
+    const fd = new FormData()
+    fd.set('intent', 'delete-organisation')
+    fetcher.submit(fd, { method: 'post' })
   }
 
   const validate = () => {
@@ -155,7 +138,9 @@ const OrganisationSettings = () => {
     }
 
     if (_size(form.name) > MAX_NAME_LENGTH) {
-      allErrors.name = t('project.settings.pxCharsError', { amount: MAX_NAME_LENGTH })
+      allErrors.name = t('project.settings.pxCharsError', {
+        amount: MAX_NAME_LENGTH,
+      })
     }
 
     const valid = _isEmpty(_keys(allErrors))
@@ -164,14 +149,17 @@ const OrganisationSettings = () => {
     setValidated(valid)
   }
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     validate()
-  }, [form]) // eslint-disable-line
+  }, [form]) // eslint-disable-line react-hooks/exhaustive-deps
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
+    setIsFormDirty(true)
     setForm((oldForm) => ({
       ...oldForm,
       [target.name]: value,
@@ -188,28 +176,31 @@ const OrganisationSettings = () => {
     }
   }
 
-  const onTransfer = async () => {
-    await transferProject(id, transferEmail)
-      .then(() => {
-        toast.success(t('apiNotifications.transferRequestSent'))
-        navigate(routes.dashboard)
-      })
-      .catch((reason) => {
-        toast.error(reason)
-      })
-      .finally(() => {
-        setShowTransfer(false)
-        setTransferEmail('')
-      })
-  }
-
   const title = `${t('project.settings.settings')} ${form.name}`
 
   useEffect(() => {
     document.title = `${t('project.settings.settings')} ${form.name} ${TITLE_SUFFIX}`
   }, [form, t])
 
-  if (isLoading || isLoading === null || !organisation) {
+  if (error) {
+    return (
+      <StatusPage
+        type='error'
+        title={t('apiNotifications.somethingWentWrong')}
+        description={t('apiNotifications.errorCode', { error })}
+        actions={[
+          {
+            label: t('dashboard.reloadPage'),
+            onClick: () => window.location.reload(),
+            primary: true,
+          },
+          { label: t('notFoundPage.support'), to: routes.contact },
+        ]}
+      />
+    )
+  }
+
+  if (!organisation) {
     return (
       <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <Loader />
@@ -217,25 +208,18 @@ const OrganisationSettings = () => {
     )
   }
 
-  if (error && !isLoading) {
-    return (
-      <StatusPage
-        type='error'
-        title={t('apiNotifications.somethingWentWrong')}
-        description={t('apiNotifications.errorCode', { error })}
-        actions={[
-          { label: t('dashboard.reloadPage'), onClick: () => window.location.reload(), primary: true },
-          { label: t('notFoundPage.support'), to: routes.contact },
-        ]}
-      />
-    )
-  }
-
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 pb-40 dark:bg-slate-900'>
-      <form className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
-        <h3 className='mt-4 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
+      <form
+        className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'
+        onSubmit={handleSubmit}
+      >
+        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+          {title}
+        </h2>
+        <h3 className='mt-4 text-lg font-bold text-gray-900 dark:text-gray-50'>
+          {t('profileSettings.general')}
+        </h3>
         <Input
           name='name'
           label={t('common.name')}
@@ -266,7 +250,12 @@ const OrganisationSettings = () => {
                 <ArrowLeftRight className='mr-1 h-5 w-5' />
                 {t('project.settings.transfer')}
               </Button> */}
-              <Button onClick={() => setShowDelete(true)} disabled={isDeleting} danger semiSmall>
+              <Button
+                onClick={() => setShowDelete(true)}
+                disabled={isDeleting}
+                danger
+                semiSmall
+              >
                 <Trash2Icon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                 {t('organisations.delete')}
               </Button>
@@ -274,8 +263,8 @@ const OrganisationSettings = () => {
           ) : null}
         </div>
         <hr className='mt-2 border-gray-200 sm:mt-5 dark:border-gray-600' />
-        <People organisation={organisation} reloadOrganisation={reloadOrganisation} />
-        <Projects organisation={organisation} reloadOrganisation={reloadOrganisation} />
+        <People organisation={organisation} />
+        <Projects organisation={organisation} />
       </form>
       <Modal
         onClose={() => setShowDelete(false)}
@@ -291,36 +280,8 @@ const OrganisationSettings = () => {
         isOpened={showDelete}
         isLoading={isDeleting}
       />
-      <Modal
-        onClose={() => {
-          setShowTransfer(false)
-        }}
-        submitText={t('project.settings.transfer')}
-        closeText={t('common.cancel')}
-        message={
-          <div>
-            <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>{t('project.settings.transferTo')}</h2>
-            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
-              {t('project.settings.transferHint', {
-                name: form.name || DEFAULT_ORGANISATION_NAME,
-              })}
-            </p>
-            <Input
-              name='email'
-              type='email'
-              label={t('project.settings.transfereeEmail')}
-              value={transferEmail}
-              placeholder='you@example.com'
-              className='mt-4'
-              onChange={(e) => setTransferEmail(e.target.value)}
-            />
-          </div>
-        }
-        isOpened={showTransfer}
-        onSubmit={onTransfer}
-      />
     </div>
   )
 }
 
-export default withAuthentication(OrganisationSettings, auth.authenticated)
+export default OrganisationSettings

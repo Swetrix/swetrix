@@ -16,8 +16,10 @@ const FAQ = () => {
   }
 
   const values = {
-    lowestPlanEventsAmount: PLAN_LIMITS['100k'].monthlyUsageLimit.toLocaleString('en-US'),
-    moderatePlanEventsAmount: PLAN_LIMITS['500k'].monthlyUsageLimit.toLocaleString('en-US'),
+    lowestPlanEventsAmount:
+      PLAN_LIMITS['100k'].monthlyUsageLimit.toLocaleString('en-US'),
+    moderatePlanEventsAmount:
+      PLAN_LIMITS['500k'].monthlyUsageLimit.toLocaleString('en-US'),
     freeTrialDays: TRIAL_DAYS,
   }
   const stripTags = (html: string) =>
@@ -25,7 +27,10 @@ const FAQ = () => {
       allowedTags: [],
       allowedAttributes: {},
     })
-  const items = t('main.faq.items', { returnObjects: true }) as { q: string; a: string }[]
+  const items = t('main.faq.items', { returnObjects: true }) as {
+    q: string
+    a: string
+  }[]
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -55,7 +60,11 @@ const FAQ = () => {
           return (
             <details
               key={item.q}
-              className={cn('group w-full text-left', showTopBorder && 'border-t border-gray-200 dark:border-white/10')}
+              className={cn(
+                'group w-full text-left',
+                showTopBorder &&
+                  'border-t border-gray-200 dark:border-white/10',
+              )}
             >
               <summary className='flex w-full cursor-pointer items-center justify-between px-4 py-4'>
                 <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-white'>

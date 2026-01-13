@@ -3,7 +3,7 @@ import _split from 'lodash/split'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { processSSOToken, processSSOTokenCommunityEdition } from '~/api'
+import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { isSelfhosted, SSO_PROVIDERS } from '~/lib/constants'
 import StatusPage from '~/ui/StatusPage'
 import routes from '~/utils/routes'
@@ -12,10 +12,15 @@ const Socialised = () => {
   const { t } = useTranslation('common')
   const [loading, setLoading] = useState(true)
   const [isError, setIsError] = useState(false)
+  const { processSSOToken, processSSOTokenCommunityEdition } = useAuthProxy()
 
   useEffect(() => {
     // For some reason, Google redirects to a hash URL, let's fix it
-    const _location = _replace(window.location.href, `${routes.socialised}#`, `${routes.socialised}?`)
+    const _location = _replace(
+      window.location.href,
+      `${routes.socialised}#`,
+      `${routes.socialised}?`,
+    )
 
     const { searchParams } = new URL(_location)
     const state = searchParams.get('state')
@@ -74,7 +79,11 @@ const Socialised = () => {
         if (processedKey) {
           sessionStorage.setItem(processedKey, '1')
         }
-        await processSSOTokenCommunityEdition(code, state, `${window.location.origin}${routes.socialised}`)
+        await processSSOTokenCommunityEdition(
+          code,
+          state,
+          `${window.location.origin}${routes.socialised}`,
+        )
       } catch (reason) {
         setIsError(true)
         setLoading(false)
@@ -91,7 +100,7 @@ const Socialised = () => {
     } else {
       processCode()
     }
-  }, [])
+  }, [processSSOToken, processSSOTokenCommunityEdition])
 
   if (loading) {
     return <StatusPage loading />

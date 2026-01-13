@@ -6,12 +6,18 @@
 @theme {
   /* Fonts */
   --font-sans:
-    -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', ui-sans-serif, sans-serif,
-    ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+    -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', ui-sans-serif, sans-serif, ui-sans-serif, system-ui,
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+  --font-mono:
+    ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono,
+    monospace;
 
   /* Colors */
-  --color-gray-750: oklch(23.11% 0.0357 262.54); /* Converting #141d2e to OKLCH */
+  --color-gray-750: oklch(
+    23.11% 0.0357 262.54
+  ); /* Converting #141d2e to OKLCH */
 
   /* Heights */
   --header-height: 60px;
@@ -20,7 +26,7 @@
   --min-height-min-footer: calc(100vh - 157px);
   --min-height-including-header: calc(100vh - var(--header-height));
 
-  --default-transition-duration: 250ms;
+  --default-transition-duration: 200ms;
 }
 
 /* Custom Animations */
@@ -207,33 +213,41 @@
   /* Open animations (handle both delayed and instant) */
   .tooltip-content[data-state='delayed-open'][data-side='top'],
   .tooltip-content[data-state='instant-open'][data-side='top'] {
-    animation: tooltipSlideUpAndFadeIn var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideUpAndFadeIn var(--default-transition-duration, 250ms)
+      cubic-bezier(0.16, 1, 0.3, 1);
   }
   .tooltip-content[data-state='delayed-open'][data-side='bottom'],
   .tooltip-content[data-state='instant-open'][data-side='bottom'] {
-    animation: tooltipSlideDownAndFadeIn var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideDownAndFadeIn
+      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
   .tooltip-content[data-state='delayed-open'][data-side='left'],
   .tooltip-content[data-state='instant-open'][data-side='left'] {
-    animation: tooltipSlideLeftAndFadeIn var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideLeftAndFadeIn
+      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
   .tooltip-content[data-state='delayed-open'][data-side='right'],
   .tooltip-content[data-state='instant-open'][data-side='right'] {
-    animation: tooltipSlideRightAndFadeIn var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideRightAndFadeIn
+      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Close animations */
   .tooltip-content[data-state='closed'][data-side='top'] {
-    animation: tooltipSlideUpAndFadeOut var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideUpAndFadeOut
+      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
   .tooltip-content[data-state='closed'][data-side='bottom'] {
-    animation: tooltipSlideDownAndFadeOut var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideDownAndFadeOut
+      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
   .tooltip-content[data-state='closed'][data-side='left'] {
-    animation: tooltipSlideLeftAndFadeOut var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideLeftAndFadeOut
+      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
   .tooltip-content[data-state='closed'][data-side='right'] {
-    animation: tooltipSlideRightAndFadeOut var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
+    animation: tooltipSlideRightAndFadeOut
+      var(--default-transition-duration, 250ms) cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 

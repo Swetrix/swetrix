@@ -18,6 +18,6 @@ export class ProjectPasswordDto {
   password?: string | null
 
   @IsOptional()
-  @ValidateIf(o => o.isPasswordProtected !== null)
+  @ValidateIf((o) => o.isPasswordProtected !== null)
   isPasswordProtected?: boolean | null
 }

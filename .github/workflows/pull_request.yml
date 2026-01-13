@@ -28,6 +28,9 @@ jobs:
       - name: Backend Lint Validation
         run: npm run lint
         working-directory: backend
+      - name: Backend Code Formatting Validation
+        run: npm run format:check
+        working-directory: backend
       - name: Backend TypeScript Validation
         run: npm run lint:tsc
         working-directory: backend
@@ -57,7 +60,7 @@ jobs:
         run: npm run lint
         working-directory: web
       - name: Web Code Formatting Validation
-        run: npm run format
+        run: npm run format:check
         working-directory: web
       - name: Web TypeScript Validation
         run: npm run typecheck
@@ -65,3 +68,25 @@ jobs:
       - name: Web Knip Validation
         run: npm run knip
         working-directory: web
+
+  docs-checks:
+    name: Documentation Checks
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22.x.x]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - name: Setup NodeJS ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Documentation Dependencies
+        run: npm install --force
+        working-directory: docs
+      - name: Documentation Code Formatting Validation
+        run: npm run format:check
+        working-directory: docs

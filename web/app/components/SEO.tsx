@@ -45,7 +45,10 @@ export const SEO = () => {
         <>
           <title>{title}</title>
           <meta property='og:title' content='Swetrix' />
-          <meta name='twitter:title' content='Swetrix | Turn traffic into insights' />
+          <meta
+            name='twitter:title'
+            content='Swetrix | Turn traffic into insights'
+          />
           <meta
             name='description'
             content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative'
@@ -60,14 +63,26 @@ export const SEO = () => {
           />
           {isMainPage ? (
             <>
-              <meta name='twitter:image' content='https://swetrix.com/assets/og_image.png?v=1' />
-              <meta property='og:image' content='https://swetrix.com/assets/og_image.png?v=1' />
+              <meta
+                name='twitter:image'
+                content='https://swetrix.com/assets/og_image.png?v=1'
+              />
+              <meta
+                property='og:image'
+                content='https://swetrix.com/assets/og_image.png?v=1'
+              />
             </>
           ) : null}
           {isErrorsPage ? (
             <>
-              <meta name='twitter:image' content='https://swetrix.com/assets/og_image_errors.png?v=1' />
-              <meta property='og:image' content='https://swetrix.com/assets/og_image_errors.png?v=1' />
+              <meta
+                name='twitter:image'
+                content='https://swetrix.com/assets/og_image_errors.png?v=1'
+              />
+              <meta
+                property='og:image'
+                content='https://swetrix.com/assets/og_image_errors.png?v=1'
+              />
             </>
           ) : null}
           {!isProjectViewPage && !isMainPage && !isErrorsPage ? (

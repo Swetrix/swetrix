@@ -77,7 +77,7 @@ export class FeatureFlagController {
 
   @ApiBearerAuth()
   @Get('/project/:projectId')
-  @Auth(false, true)
+  @Auth(true, true)
   @ApiResponse({ status: 200, type: [FeatureFlagDto] })
   @ApiOperation({ summary: 'Get all feature flags for a project' })
   async getProjectFeatureFlags(
@@ -114,7 +114,7 @@ export class FeatureFlagController {
     )
 
     // @ts-expect-error
-    result.results = _map(result.results, flag => ({
+    result.results = _map(result.results, (flag) => ({
       ..._omit(flag, ['project']),
       pid: projectId,
     }))
@@ -124,7 +124,7 @@ export class FeatureFlagController {
 
   @ApiBearerAuth()
   @Get('/:flagId')
-  @Auth(false, true)
+  @Auth(true, true)
   @ApiResponse({ status: 200, type: FeatureFlagDto })
   @ApiOperation({ summary: 'Get a feature flag by ID' })
   async getFeatureFlag(
@@ -335,13 +335,13 @@ export class FeatureFlagController {
     // Determine experiment variants for flags linked to running experiments
     const experimentVariants = new Map<string, string>()
     const flagsWithExperiments = flags.filter(
-      f => f.experimentId && evaluatedFlags[f.key],
+      (f) => f.experimentId && evaluatedFlags[f.key],
     )
 
     if (flagsWithExperiments.length > 0) {
       // Get running experiments for these flags
       const experiments = await this.experimentService.find({
-        where: flagsWithExperiments.map(f => ({
+        where: flagsWithExperiments.map((f) => ({
           id: f.experimentId,
           status: ExperimentStatus.RUNNING,
         })),
@@ -356,7 +356,7 @@ export class FeatureFlagController {
           )
           const variantKey = getExperimentVariant(
             experiment.id,
-            sortedVariants.map(v => ({
+            sortedVariants.map((v) => ({
               key: v.key,
               rolloutPercentage: v.rolloutPercentage,
             })),
@@ -376,7 +376,7 @@ export class FeatureFlagController {
       evaluatedFlags,
       profileId,
       experimentVariants,
-    ).catch(err => {
+    ).catch((err) => {
       this.logger.error({ err }, 'Failed to track flag evaluations')
     })
 
@@ -406,7 +406,7 @@ export class FeatureFlagController {
 
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
 
-    const values = flags.map(flag => ({
+    const values = flags.map((flag) => ({
       pid,
       flagId: flag.id,
       flagKey: flag.key,
@@ -546,7 +546,7 @@ export class FeatureFlagController {
 
   @ApiBearerAuth()
   @Get('/:id/stats')
-  @Auth(false, true)
+  @Auth(true, true)
   @ApiResponse({ status: 200, type: FeatureFlagStatsDto })
   @ApiOperation({ summary: 'Get statistics for a feature flag' })
   async getFeatureFlagStats(
@@ -605,7 +605,7 @@ export class FeatureFlagController {
     try {
       const { data } = await clickhouse
         .query({ query: statsQuery, query_params: queryParams })
-        .then(resultSet =>
+        .then((resultSet) =>
           resultSet.json<{
             evaluations: number
             profileCount: number
@@ -648,7 +648,7 @@ export class FeatureFlagController {
 
   @ApiBearerAuth()
   @Get('/:id/profiles')
-  @Auth(false, true)
+  @Auth(true, true)
   @ApiResponse({ status: 200, type: FeatureFlagProfilesResponseDto })
   @ApiOperation({
     summary: 'Get profiles who have evaluated a feature flag',
@@ -748,7 +748,7 @@ export class FeatureFlagController {
       const [profilesResult, countResult] = await Promise.all([
         clickhouse
           .query({ query: profilesQuery, query_params: queryParams })
-          .then(resultSet =>
+          .then((resultSet) =>
             resultSet.json<{
               profileId: string
               lastEvaluated: string
@@ -758,10 +758,10 @@ export class FeatureFlagController {
           ),
         clickhouse
           .query({ query: countQuery, query_params: queryParams })
-          .then(resultSet => resultSet.json<{ total: number }>()),
+          .then((resultSet) => resultSet.json<{ total: number }>()),
       ])
 
-      const profiles = profilesResult.data.map(row => ({
+      const profiles = profilesResult.data.map((row) => ({
         profileId: row.profileId,
         isIdentified: row.profileId.startsWith('usr_'),
         lastResult: row.lastResult === 1,

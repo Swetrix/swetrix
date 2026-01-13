@@ -1,4 +1,9 @@
-import { Checkbox as HeadlessCheckbox, Description, Field, Label } from '@headlessui/react'
+import {
+  Checkbox as HeadlessCheckbox,
+  Description,
+  Field,
+  Label,
+} from '@headlessui/react'
 import { CheckIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import React, { memo } from 'react'
@@ -16,7 +21,15 @@ interface CheckboxProps {
   }
 }
 
-const Checkbox = ({ label, hint, name, onChange, checked, disabled, classes }: CheckboxProps) => (
+const Checkbox = ({
+  label,
+  hint,
+  name,
+  onChange,
+  checked,
+  disabled,
+  classes,
+}: CheckboxProps) => (
   <Field disabled={disabled}>
     <div className={cx('flex items-center gap-2', classes?.label)}>
       <HeadlessCheckbox
@@ -27,10 +40,19 @@ const Checkbox = ({ label, hint, name, onChange, checked, disabled, classes }: C
       >
         <CheckIcon className='pointer-events-none size-4 scale-90 text-white opacity-0 transition-all duration-100 group-data-[checked]:scale-100 group-data-[checked]:opacity-100 dark:text-black' />
       </HeadlessCheckbox>
-      <Label className='cursor-pointer text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label>
+      <Label className='cursor-pointer text-sm font-medium text-gray-900 dark:text-gray-200'>
+        {label}
+      </Label>
     </div>
     {hint ? (
-      <Description className={cx('mt-1 text-sm text-gray-500 dark:text-gray-300', classes?.hint)}>{hint}</Description>
+      <Description
+        className={cx(
+          'mt-1 text-sm text-gray-500 dark:text-gray-300',
+          classes?.hint,
+        )}
+      >
+        {hint}
+      </Description>
     ) : null}
   </Field>
 )

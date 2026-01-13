@@ -111,7 +111,7 @@ export class MailerService {
       mxRecords.sort((a, b) => a.priority - b.priority)
 
       const targets = mxRecords.length
-        ? mxRecords.map(mx => mx.exchange)
+        ? mxRecords.map((mx) => mx.exchange)
         : [domain]
 
       for (const host of targets) {

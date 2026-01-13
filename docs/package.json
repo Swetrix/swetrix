@@ -10,7 +10,8 @@
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
-    "format": "prettier --write .",
+    "format": "oxfmt --write ./src ./*.js",
+    "format:check": "oxfmt --check ./src ./*.js",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids"
   },
@@ -33,7 +34,7 @@
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.9.2",
     "@docusaurus/types": "3.9.2",
-    "prettier": "^3.6.2"
+    "oxfmt": "^0.24.0"
   },
   "browserslist": {
     "production": [

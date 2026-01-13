@@ -26,14 +26,29 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
 
   useEffect(() => {
     let animationFrameId: number
+    let lastRenderedProgress = 0
 
     const animate = () => {
       const elapsed = Date.now() - startTimeRef.current
       const newProgress = Math.min((elapsed / REFRESH_INTERVAL_MS) * 100, 100)
-      setProgress(newProgress)
+
+      // Only update state if progress changed by at least 1% (reduces re-renders)
+      if (
+        Math.abs(newProgress - lastRenderedProgress) >= 1 ||
+        newProgress >= 100
+      ) {
+        lastRenderedProgress = newProgress
+        setProgress(newProgress)
+      }
 
       // Check if we should trigger auto-refresh
-      if (newProgress >= 100 && !hasTriggeredRefresh.current && !isRefreshing && !authLoading && !dataLoading) {
+      if (
+        newProgress >= 100 &&
+        !hasTriggeredRefresh.current &&
+        !isRefreshing &&
+        !authLoading &&
+        !dataLoading
+      ) {
         hasTriggeredRefresh.current = true
         ;(async () => {
           setIsRefreshing(true)
@@ -64,7 +79,10 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
     setIsRefreshing(false)
   }
 
-  const remainingSeconds = Math.max(1, Math.ceil(AUTO_REFRESH_INTERVAL_SECONDS * (1 - progress / 100)))
+  const remainingSeconds = Math.max(
+    1,
+    Math.ceil(AUTO_REFRESH_INTERVAL_SECONDS * (1 - progress / 100)),
+  )
   const showSpinner = isRefreshing || dataLoading
 
   return (
@@ -81,9 +99,12 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
     >
       <div className='relative h-5 w-5'>
         <RotateCw
-          className={cn('absolute inset-0 h-5 w-5 text-gray-400/80 dark:text-slate-600', {
-            'animate-spin': showSpinner,
-          })}
+          className={cn(
+            'absolute inset-0 h-5 w-5 text-gray-400/80 dark:text-slate-600',
+            {
+              'animate-spin': showSpinner,
+            },
+          )}
         />
         {!showSpinner ? (
           <div
@@ -101,7 +122,9 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
         ) : null}
       </div>
       <div className='pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-slate-700'>
-        {showSpinner ? t('project.refreshing') : t('project.refreshingIn', { seconds: remainingSeconds })}
+        {showSpinner
+          ? t('project.refreshing')
+          : t('project.refreshingIn', { seconds: remainingSeconds })}
         <div className='absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-slate-700' />
       </div>
     </button>

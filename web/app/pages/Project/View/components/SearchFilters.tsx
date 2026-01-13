@@ -1,16 +1,35 @@
-import { Listbox, Transition, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react'
+import {
+  Listbox,
+  Transition,
+  ListboxButton,
+  ListboxOptions,
+  ListboxOption,
+} from '@headlessui/react'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import { CheckIcon, ChevronsUpDownIcon, PlusIcon, SlidersHorizontalIcon, Trash2Icon } from 'lucide-react'
+import {
+  CheckIcon,
+  ChevronsUpDownIcon,
+  PlusIcon,
+  SlidersHorizontalIcon,
+  Trash2Icon,
+} from 'lucide-react'
 import { useState, useEffect, useCallback, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
 
-import { getFilters, getErrorsFilters, getVersionFilters } from '~/api'
-import { FILTERS_PANELS_ORDER, ERRORS_FILTERS_PANELS_ORDER } from '~/lib/constants'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
+import {
+  FILTERS_PANELS_ORDER,
+  ERRORS_FILTERS_PANELS_ORDER,
+} from '~/lib/constants'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import FilterValueInput, { filterCategoryIcons, createVersionValue, parseVersionValue } from '~/ui/FilterValueInput'
+import FilterValueInput, {
+  filterCategoryIcons,
+  createVersionValue,
+  parseVersionValue,
+} from '~/ui/FilterValueInput'
 import Modal from '~/ui/Modal'
 import countries from '~/utils/isoCountries'
 
@@ -85,7 +104,9 @@ const OPERATORS: { value: FilterOperator; labelKey: string }[] = [
   { value: 'notContains', labelKey: 'project.contains.not' },
 ]
 
-const operatorToFilter = (operator: FilterOperator): { isExclusive: boolean; isContains: boolean } => {
+const operatorToFilter = (
+  operator: FilterOperator,
+): { isExclusive: boolean; isContains: boolean } => {
   switch (operator) {
     case 'is':
       return { isExclusive: false, isContains: false }
@@ -106,21 +127,31 @@ interface SearchFiltersProps {
   type: 'traffic' | 'errors'
 }
 
-const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: SearchFiltersProps) => {
+const SearchFilters = ({
+  showModal,
+  setShowModal,
+  tnMapping,
+  filters,
+  type,
+}: SearchFiltersProps) => {
   const { id } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const { theme } = useTheme()
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const [filterRows, setFilterRows] = useState<FilterRow[]>([])
-  const [filterValuesCache, setFilterValuesCache] = useState<Record<string, string[]>>({})
+  const [filterValuesCache, setFilterValuesCache] = useState<
+    Record<string, string[]>
+  >({})
   const [loadingColumns, setLoadingColumns] = useState<Set<string>>(new Set())
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { fetchFilters, fetchErrorsFilters, fetchVersionFilters } =
+    useFiltersProxy()
 
-  const panelOptions = type === 'traffic' ? FILTERS_PANELS_ORDER : ERRORS_FILTERS_PANELS_ORDER
+  const panelOptions =
+    type === 'traffic' ? FILTERS_PANELS_ORDER : ERRORS_FILTERS_PANELS_ORDER
 
   const fetchFilterValues = useCallback(
     async (column: string) => {
@@ -128,22 +159,26 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
 
       setLoadingColumns((prev) => new Set(prev).add(column))
       try {
-        let result: string[]
+        let result: string[] = []
 
         // For browser/OS versions, fetch valid combinations from the backend
         if (column === 'brv') {
           const dataType = type === 'errors' ? 'errors' : 'traffic'
-          const pairs = await getVersionFilters(id, dataType, 'br', projectPassword)
-          result = pairs.map((p) => createVersionValue(p.name, p.version))
+          const pairs = await fetchVersionFilters(id, dataType, 'br')
+          if (pairs) {
+            result = pairs.map((p) => createVersionValue(p.name, p.version))
+          }
         } else if (column === 'osv') {
           const dataType = type === 'errors' ? 'errors' : 'traffic'
-          const pairs = await getVersionFilters(id, dataType, 'os', projectPassword)
-          result = pairs.map((p) => createVersionValue(p.name, p.version))
+          const pairs = await fetchVersionFilters(id, dataType, 'os')
+          if (pairs) {
+            result = pairs.map((p) => createVersionValue(p.name, p.version))
+          }
         } else {
           if (type === 'errors') {
-            result = await getErrorsFilters(id, column, projectPassword)
+            result = (await fetchErrorsFilters(id, column)) || []
           } else {
-            result = await getFilters(id, column, projectPassword)
+            result = (await fetchFilters(id, column)) || []
           }
         }
         setFilterValuesCache((prev) => ({ ...prev, [column]: result }))
@@ -158,7 +193,15 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
         })
       }
     },
-    [id, projectPassword, type, filterValuesCache, loadingColumns],
+    [
+      id,
+      type,
+      filterValuesCache,
+      loadingColumns,
+      fetchFilters,
+      fetchErrorsFilters,
+      fetchVersionFilters,
+    ],
   )
 
   // Pre-fetch all filter values when modal opens
@@ -171,20 +214,31 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
         }
       })
     }
-  }, [showModal, panelOptions, fetchFilterValues, filterValuesCache, loadingColumns])
+  }, [
+    showModal,
+    panelOptions,
+    fetchFilterValues,
+    filterValuesCache,
+    loadingColumns,
+  ])
 
   // Initialize filter rows when modal opens
   useEffect(() => {
     if (showModal) {
       if (_isEmpty(filterRows)) {
         // Start with one empty filter row
-        setFilterRows([{ id: crypto.randomUUID(), column: '', operator: 'is', value: '' }])
+        setFilterRows([
+          { id: crypto.randomUUID(), column: '', operator: 'is', value: '' },
+        ])
       }
     }
   }, [showModal, filterRows])
 
   const addFilterRow = () => {
-    setFilterRows((prev) => [...prev, { id: crypto.randomUUID(), column: '', operator: 'is', value: '' }])
+    setFilterRows((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), column: '', operator: 'is', value: '' },
+    ])
   }
 
   const removeFilterRow = (rowId: string) => {
@@ -192,20 +246,30 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
       const newRows = prev.filter((r) => r.id !== rowId)
       // Keep at least one row
       if (newRows.length === 0) {
-        return [{ id: crypto.randomUUID(), column: '', operator: 'is', value: '' }]
+        return [
+          { id: crypto.randomUUID(), column: '', operator: 'is', value: '' },
+        ]
       }
       return newRows
     })
   }
 
-  const updateFilterRow = (rowId: string, field: keyof FilterRow, fieldValue: string) => {
+  const updateFilterRow = (
+    rowId: string,
+    field: keyof FilterRow,
+    fieldValue: string,
+  ) => {
     setFilterRows((prev) =>
       prev.map((row) => {
         if (row.id !== rowId) return row
 
         if (field === 'column') {
           // Reset value when column changes, but fetch values immediately
-          if (fieldValue && !filterValuesCache[fieldValue] && !loadingColumns.has(fieldValue)) {
+          if (
+            fieldValue &&
+            !filterValuesCache[fieldValue] &&
+            !loadingColumns.has(fieldValue)
+          ) {
             fetchFilterValues(fieldValue)
           }
           return { ...row, column: fieldValue, value: '' }
@@ -223,7 +287,9 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
   }
 
   const clearAllFilters = () => {
-    setFilterRows([{ id: crypto.randomUUID(), column: '', operator: 'is', value: '' }])
+    setFilterRows([
+      { id: crypto.randomUUID(), column: '', operator: 'is', value: '' },
+    ])
   }
 
   const onSubmit = () => {
@@ -308,7 +374,12 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
         })
       })
 
-    const newUrlParams = getFiltersUrlParams(filters, validFilters, true, searchParams)
+    const newUrlParams = getFiltersUrlParams(
+      filters,
+      validFilters,
+      true,
+      searchParams,
+    )
     navigate({ search: newUrlParams.toString() })
     closeModal()
   }
@@ -335,14 +406,22 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
             {filterRows.map((row) => (
               <div key={row.id} className='flex items-center gap-2'>
                 {/* Column Select */}
-                <Listbox value={row.column} onChange={(value) => updateFilterRow(row.id, 'column', value)}>
+                <Listbox
+                  value={row.column}
+                  onChange={(value) => updateFilterRow(row.id, 'column', value)}
+                >
                   {({ open }) => (
                     <div className='relative w-44'>
                       <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'>
-                        <span className={cx('flex items-center gap-2 truncate', { 'text-gray-400': !row.column })}>
+                        <span
+                          className={cx('flex items-center gap-2 truncate', {
+                            'text-gray-400': !row.column,
+                          })}
+                        >
                           {row.column ? filterCategoryIcons[row.column] : null}
                           {row.column
-                            ? tnMapping[row.column] || t(`project.mapping.${row.column}`)
+                            ? tnMapping[row.column] ||
+                              t(`project.mapping.${row.column}`)
                             : t('project.selectColumn')}
                         </span>
                         <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
@@ -368,19 +447,27 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
                               key={option}
                               value={option}
                               className={({ focus }) =>
-                                cx('relative cursor-pointer py-2 pr-4 pl-3 select-none', {
-                                  'bg-gray-100 dark:bg-slate-700': focus,
-                                  'text-gray-700 dark:text-gray-50': !focus,
-                                })
+                                cx(
+                                  'relative cursor-pointer py-2 pr-4 pl-3 select-none',
+                                  {
+                                    'bg-gray-100 dark:bg-slate-700': focus,
+                                    'text-gray-700 dark:text-gray-50': !focus,
+                                  },
+                                )
                               }
                             >
                               {({ selected }) => (
-                                <span className={cx('flex items-center gap-2', { 'font-medium': selected })}>
+                                <span
+                                  className={cx('flex items-center gap-2', {
+                                    'font-medium': selected,
+                                  })}
+                                >
                                   <span className='shrink-0 text-gray-500 dark:text-gray-400'>
                                     {filterCategoryIcons[option]}
                                   </span>
                                   <span className='truncate'>
-                                    {tnMapping[option] || t(`project.mapping.${option}`)}
+                                    {tnMapping[option] ||
+                                      t(`project.mapping.${option}`)}
                                   </span>
                                   {selected ? (
                                     <CheckIcon className='ml-auto h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400' />
@@ -396,12 +483,20 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
                 </Listbox>
 
                 {/* Operator Select */}
-                <Listbox value={row.operator} onChange={(value) => updateFilterRow(row.id, 'operator', value)}>
+                <Listbox
+                  value={row.operator}
+                  onChange={(value) =>
+                    updateFilterRow(row.id, 'operator', value)
+                  }
+                >
                   {({ open }) => (
                     <div className='relative w-32'>
                       <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'>
                         <span className='block truncate'>
-                          {t(OPERATORS.find((o) => o.value === row.operator)?.labelKey || '')}
+                          {t(
+                            OPERATORS.find((o) => o.value === row.operator)
+                              ?.labelKey || '',
+                          )}
                         </span>
                         <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
                           <ChevronsUpDownIcon className='h-4 w-4 text-gray-400' />
@@ -426,15 +521,22 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
                               key={op.value}
                               value={op.value}
                               className={({ focus }) =>
-                                cx('relative cursor-pointer py-2 pr-4 pl-8 select-none', {
-                                  'bg-gray-100 dark:bg-slate-700': focus,
-                                  'text-gray-700 dark:text-gray-50': !focus,
-                                })
+                                cx(
+                                  'relative cursor-pointer py-2 pr-4 pl-8 select-none',
+                                  {
+                                    'bg-gray-100 dark:bg-slate-700': focus,
+                                    'text-gray-700 dark:text-gray-50': !focus,
+                                  },
+                                )
                               }
                             >
                               {({ selected }) => (
                                 <>
-                                  <span className={cx('block truncate', { 'font-medium': selected })}>
+                                  <span
+                                    className={cx('block truncate', {
+                                      'font-medium': selected,
+                                    })}
+                                  >
                                     {t(op.labelKey)}
                                   </span>
                                   {selected ? (
@@ -510,7 +612,8 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
                 {filters.map(({ column, filter, isExclusive, isContains }) => {
                   let displayFilter = filter
                   if (column === 'cc') {
-                    displayFilter = countries.getName(filter, language) || filter
+                    displayFilter =
+                      countries.getName(filter, language) || filter
                   }
                   const operatorLabel = isContains
                     ? isExclusive
@@ -530,10 +633,14 @@ const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: Se
                       </span>
                       <span
                         className={cx({
-                          'text-green-600 dark:text-green-400': !isExclusive && !isContains,
-                          'text-red-600 dark:text-red-400': isExclusive && !isContains,
-                          'text-yellow-600 dark:text-yellow-400': !isExclusive && isContains,
-                          'text-orange-600 dark:text-orange-400': isExclusive && isContains,
+                          'text-green-600 dark:text-green-400':
+                            !isExclusive && !isContains,
+                          'text-red-600 dark:text-red-400':
+                            isExclusive && !isContains,
+                          'text-yellow-600 dark:text-yellow-400':
+                            !isExclusive && isContains,
+                          'text-orange-600 dark:text-orange-400':
+                            isExclusive && isContains,
                         })}
                       >
                         {operatorLabel}

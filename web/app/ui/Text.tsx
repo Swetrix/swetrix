@@ -2,10 +2,36 @@ import React from 'react'
 
 import { cn } from '~/utils/generic'
 
-type TextElement = 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'label' | 'div'
-type TextSize = 'xxs' | 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
+type TextElement =
+  | 'span'
+  | 'p'
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'h4'
+  | 'h5'
+  | 'h6'
+  | 'label'
+  | 'div'
+type TextSize =
+  | 'xxs'
+  | 'xs'
+  | 'sm'
+  | 'base'
+  | 'lg'
+  | 'xl'
+  | '2xl'
+  | '3xl'
+  | '4xl'
 type TextWeight = 'light' | 'normal' | 'medium' | 'semibold' | 'bold'
-type TextColour = 'primary' | 'secondary' | 'muted' | 'success' | 'warning' | 'error' | 'inherit'
+type TextColour =
+  | 'primary'
+  | 'secondary'
+  | 'muted'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'inherit'
 type Tracking = 'tight' | 'normal' | 'wide'
 
 interface TextProps {
@@ -76,7 +102,8 @@ export const Text = ({
       colourClasses[colour],
       trackingClasses[tracking],
       { truncate },
-      code && 'rounded bg-gray-200/80 px-1.5 py-0.5 font-mono dark:bg-slate-700',
+      code &&
+        'rounded bg-gray-200/80 px-1.5 py-0.5 font-mono dark:bg-slate-700',
       className,
     )}
     {...props}

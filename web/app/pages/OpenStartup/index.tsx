@@ -1,10 +1,9 @@
 /* eslint-disable no-useless-escape */
 import billboard, { bar, line } from 'billboard.js'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { getGeneralStats } from '~/api'
 import { LIVE_DEMO_URL } from '~/lib/constants'
 import { Stats } from '~/lib/models/Stats'
 import { nFormatterSeparated } from '~/utils/generic'
@@ -275,14 +274,23 @@ const financeData = {
 
 const financeDataToColumns = (financeData: any) => {
   const dates = Object.keys(financeData)
-  const columns = [['Technical Expenses'], ['Business Expenses'], ['MRR'], ['Profit'], ['Revenue'], ['x']]
+  const columns = [
+    ['Technical Expenses'],
+    ['Business Expenses'],
+    ['MRR'],
+    ['Profit'],
+    ['Revenue'],
+    ['x'],
+  ]
 
   dates.forEach((date) => {
     columns[0].push(financeData[date]['Technical Expenses'])
     columns[1].push(financeData[date]['Business Expenses'])
     columns[2].push(financeData[date]['MRR'])
     columns[3].push(
-      financeData[date]['Revenue'] + financeData[date]['Technical Expenses'] + financeData[date]['Business Expenses'],
+      financeData[date]['Revenue'] +
+        financeData[date]['Technical Expenses'] +
+        financeData[date]['Business Expenses'],
     )
     columns[4].push(financeData[date]['Revenue'])
     columns[5].push(date)
@@ -293,7 +301,13 @@ const financeDataToColumns = (financeData: any) => {
 
 const columns = financeDataToColumns(financeData)
 
-const groups = ['Revenue', 'MRR', 'Profit', 'Technical Expenses', 'Business Expenses']
+const groups = [
+  'Revenue',
+  'MRR',
+  'Profit',
+  'Technical Expenses',
+  'Business Expenses',
+]
 
 const getSettings = () => {
   return {
@@ -384,19 +398,18 @@ const getSettings = () => {
   }
 }
 
-const OpenStartup = () => {
-  const { t }: any = useTranslation('common')
-  const [stats, setStats] = useState<Stats>({} as Stats)
+interface OpenStartupProps {
+  stats: Stats | null
+}
 
-  const events = nFormatterSeparated(Number(stats.events), 1)
-  const users = nFormatterSeparated(Number(stats.users), 1)
-  const websites = nFormatterSeparated(Number(stats.projects), 1)
+const OpenStartup = ({ stats }: OpenStartupProps) => {
+  const { t }: any = useTranslation('common')
+
+  const events = nFormatterSeparated(Number(stats?.events || 0), 1)
+  const users = nFormatterSeparated(Number(stats?.users || 0), 1)
+  const websites = nFormatterSeparated(Number(stats?.projects || 0), 1)
 
   useEffect(() => {
-    getGeneralStats()
-      .then((stats) => setStats(stats))
-      .catch(console.error)
-
     const bbSettings = getSettings()
 
     // @ts-expect-error
@@ -406,41 +419,67 @@ const OpenStartup = () => {
   return (
     <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
       <div className='mx-auto px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
-        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.open')}</h1>
+        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>
+          {t('titles.open')}
+        </h1>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>{t('open.desc')}</p>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
+          {t('open.desc')}
+        </p>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>{t('open.updated')}</p>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
+          {t('open.updated')}
+        </p>
 
-        <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50'>{t('open.finance.title')}</h2>
+        <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50'>
+          {t('open.finance.title')}
+        </h2>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>{t('open.finance.desc')}</p>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
+          {t('open.finance.desc')}
+        </p>
 
         <div className='mt-4 h-80' id='open-startup' />
 
-        <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50'>{t('open.usage.title')}</h2>
+        <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50'>
+          {t('open.usage.title')}
+        </h2>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>{t('open.usage.desc')}</p>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
+          {t('open.usage.desc')}
+        </p>
 
         <p className='text-md mt-2 text-gray-900 dark:text-gray-50'>
           {t('main.users')}
           {': '}
           {users[0]}
-          {users[1] ? <span className='text-gray-900 dark:text-indigo-200'>{users[1]}+</span> : null}
+          {users[1] ? (
+            <span className='text-gray-900 dark:text-indigo-200'>
+              {users[1]}+
+            </span>
+          ) : null}
         </p>
 
         <p className='text-md mt-2 text-gray-900 dark:text-gray-50'>
           {t('main.websites')}
           {': '}
           {websites[0]}
-          {websites[1] ? <span className='text-gray-900 dark:text-indigo-200'>{websites[1]}+</span> : null}
+          {websites[1] ? (
+            <span className='text-gray-900 dark:text-indigo-200'>
+              {websites[1]}+
+            </span>
+          ) : null}
         </p>
 
         <p className='text-md mt-2 text-gray-900 dark:text-gray-50'>
           {t('main.pageviews')}
           {': '}
           {events[0]}
-          {events[1] ? <span className='text-gray-900 dark:text-indigo-200'>{events[1]}+</span> : null}
+          {events[1] ? (
+            <span className='text-gray-900 dark:text-indigo-200'>
+              {events[1]}+
+            </span>
+          ) : null}
         </p>
 
         <p className='text-md mt-2 text-gray-900 dark:text-gray-50'>

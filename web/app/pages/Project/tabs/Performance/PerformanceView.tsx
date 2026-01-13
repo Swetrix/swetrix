@@ -1,18 +1,32 @@
 import cx from 'clsx'
-import dayjs from 'dayjs'
-import _find from 'lodash/find'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import { EyeIcon, PercentIcon } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react'
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  lazy,
+  Suspense,
+  use,
+} from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams } from 'react-router'
-import { toast } from 'sonner'
+import {
+  useNavigate,
+  useSearchParams,
+  useLoaderData,
+  useRevalidator,
+} from 'react-router'
 
-import { getPerfData, getPerformanceCompareData, getPerformanceOverallStats, getOverallStats } from '~/api'
+import type {
+  PerformanceDataResponse,
+  PerformanceOverallObject,
+} from '~/api/api.server'
 import { useAnnotations } from '~/hooks/useAnnotations'
-import { PERFORMANCE_PANELS_ORDER, chartTypes, PERIOD_PAIRS_COMPARE, type TimeBucket } from '~/lib/constants'
+import { PERFORMANCE_PANELS_ORDER, chartTypes } from '~/lib/constants'
 import { CountryEntry } from '~/lib/models/Entry'
 import { OverallPerformanceObject } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
@@ -25,126 +39,84 @@ import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { Panel } from '~/pages/Project/View/Panels'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
 import {
-  getFormatDate,
+  useViewProjectContext,
+  useRefreshTriggers,
+} from '~/pages/Project/View/ViewProject'
+import {
   panelIconMapping,
   CHART_METRICS_MAPPING_PERF,
   CHART_MEASURES_MAPPING_PERF,
   getDeviceRowMapper,
 } from '~/pages/Project/View/ViewProject.helpers'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Dropdown from '~/ui/Dropdown'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 
-const InteractiveMap = lazy(() => import('~/pages/Project/View/components/InteractiveMap'))
-
-// Period to compare date mapping
-const periodToCompareDate = [
-  {
-    period: '1d',
-    formula: (date?: Date[]) =>
-      date
-        ? { from: getFormatDate(dayjs(date[0]).subtract(1, 'day').toDate()), to: getFormatDate(date[0]) }
-        : {
-            from: dayjs().subtract(2, 'day').format('YYYY-MM-DD'),
-            to: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
-          },
-  },
-  {
-    period: '1h',
-    formula: () => ({
-      from: dayjs().subtract(2, 'hour').format('YYYY-MM-DD HH:mm:ss'),
-      to: dayjs().subtract(1, 'hour').format('YYYY-MM-DD HH:mm:ss'),
-    }),
-  },
-  {
-    period: 'today',
-    formula: () => ({ from: dayjs().subtract(1, 'day').format('YYYY-MM-DD'), to: dayjs().format('YYYY-MM-DD') }),
-  },
-  {
-    period: 'yesterday',
-    formula: () => ({
-      from: dayjs().subtract(2, 'day').format('YYYY-MM-DD'),
-      to: dayjs().subtract(1, 'day').format('YYYY-MM-DD'),
-    }),
-  },
-  {
-    period: '7d',
-    formula: (date?: Date[]) =>
-      date
-        ? { from: getFormatDate(dayjs(date[0]).subtract(7, 'day').toDate()), to: getFormatDate(date[0]) }
-        : {
-            from: dayjs().subtract(14, 'day').format('YYYY-MM-DD'),
-            to: dayjs().subtract(7, 'day').format('YYYY-MM-DD'),
-          },
-  },
-  {
-    period: '4w',
-    formula: (date?: Date[]) =>
-      date
-        ? { from: getFormatDate(dayjs(date[0]).subtract(4, 'week').toDate()), to: getFormatDate(date[0]) }
-        : {
-            from: dayjs().subtract(8, 'week').format('YYYY-MM-DD'),
-            to: dayjs().subtract(4, 'week').format('YYYY-MM-DD'),
-          },
-  },
-  {
-    period: '3M',
-    formula: (date?: Date[]) =>
-      date
-        ? { from: getFormatDate(dayjs(date[0]).subtract(3, 'month').toDate()), to: getFormatDate(date[0]) }
-        : {
-            from: dayjs().subtract(6, 'month').format('YYYY-MM-DD'),
-            to: dayjs().subtract(3, 'month').format('YYYY-MM-DD'),
-          },
-  },
-  {
-    period: '12M',
-    formula: (date?: Date[]) =>
-      date
-        ? { from: getFormatDate(dayjs(date[0]).subtract(12, 'month').toDate()), to: getFormatDate(date[0]) }
-        : {
-            from: dayjs().subtract(24, 'month').format('YYYY-MM-DD'),
-            to: dayjs().subtract(12, 'month').format('YYYY-MM-DD'),
-          },
-  },
-  {
-    period: '24M',
-    formula: (date?: Date[]) =>
-      date
-        ? { from: getFormatDate(dayjs(date[0]).subtract(24, 'month').toDate()), to: getFormatDate(date[0]) }
-        : {
-            from: dayjs().subtract(48, 'month').format('YYYY-MM-DD'),
-            to: dayjs().subtract(24, 'month').format('YYYY-MM-DD'),
-          },
-  },
-]
+const InteractiveMap = lazy(
+  () => import('~/pages/Project/View/components/InteractiveMap'),
+)
 
 interface PerformanceViewProps {
   tnMapping: Record<string, string>
 }
 
-const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
-  const { id, project, allowedToManage } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
+interface DeferredPerfData {
+  perfData: PerformanceDataResponse | null
+  perfOverallStats: Record<string, PerformanceOverallObject> | null
+}
+
+function PerfDataResolver({
+  children,
+}: {
+  children: (data: DeferredPerfData) => React.ReactNode
+}) {
   const {
-    performanceRefreshTrigger,
-    timezone,
-    period,
-    dateRange,
+    perfData: perfDataPromise,
+    perfOverallStats: perfOverallStatsPromise,
+  } = useLoaderData<ProjectLoaderData>()
+
+  const perfData = perfDataPromise ? use(perfDataPromise) : null
+  const perfOverallStats = perfOverallStatsPromise
+    ? use(perfOverallStatsPromise)
+    : null
+
+  return <>{children({ perfData, perfOverallStats })}</>
+}
+
+function PerformanceViewWrapper(props: PerformanceViewProps) {
+  return (
+    <Suspense fallback={<Loader />}>
+      <PerfDataResolver>
+        {(deferredData) => (
+          <PerformanceViewInner {...props} deferredData={deferredData} />
+        )}
+      </PerfDataResolver>
+    </Suspense>
+  )
+}
+
+interface PerformanceViewInnerProps extends PerformanceViewProps {
+  deferredData: DeferredPerfData
+}
+
+const PerformanceViewInner = ({
+  tnMapping,
+  deferredData,
+}: PerformanceViewInnerProps) => {
+  const { id, project, allowedToManage } = useCurrentProject()
+  const revalidator = useRevalidator()
+  const { performanceRefreshTrigger } = useRefreshTriggers()
+  const {
     filters,
     timeFormat,
     timeBucket,
-    activePeriod,
-    // Comparison state from context
-    isActiveCompare,
-    dateRangeCompare,
+    // Comparison state from context (not implemented via SSR yet)
     activePeriodCompare,
-    compareDisable,
     // Chart state from context
     chartType,
     setChartTypeOnClick,
@@ -155,6 +127,9 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     // Filter functions from context
     getFilterLink,
     getVersionFilterLink,
+    isMapFullscreen,
+    setIsMapFullscreen,
+    fullscreenMapRef,
   } = useViewProjectContext()
 
   // Annotations hook
@@ -181,19 +156,82 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  // Performance-specific state
+  // State for data - initialized from loader, can be overridden by client-side fetches
   const [dataLoading, setDataLoading] = useState(false)
-  const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
-  const [panelsData, setPanelsData] = useState<any>({})
-  const [chartData, setChartData] = useState<any>({})
-  const [overall, setOverall] = useState<Partial<OverallPerformanceObject>>({})
-  const [overallCompare, setOverallCompare] = useState<Partial<OverallPerformanceObject>>({})
-  const [chartDataCompare, setChartDataCompare] = useState<any>({})
+  const [panelsData, setPanelsData] = useState<any>(() => {
+    if (deferredData.perfData?.params) {
+      return {
+        types: _keys(deferredData.perfData.params),
+        data: deferredData.perfData.params,
+      }
+    }
+    return { data: {} }
+  })
+  const [chartData, setChartData] = useState<any>(
+    () => deferredData.perfData?.chart || {},
+  )
+  const [overall, setOverall] = useState<Partial<OverallPerformanceObject>>(
+    () => {
+      if (deferredData.perfOverallStats && id) {
+        return deferredData.perfOverallStats[id] || {}
+      }
+      return {}
+    },
+  )
 
-  // Chart metrics and measures
-  const [activeChartMetrics, setActiveChartMetrics] = useState(CHART_METRICS_MAPPING_PERF.timing)
-  const [activeMeasure, setActiveMeasure] = useState(CHART_MEASURES_MAPPING_PERF.median)
+  // Track if we've ever shown actual content to prevent NoEvents flash during exit animation
+  const hasShownContentRef = useRef(false)
+
+  const isPanelsDataEmptyRaw = _isEmpty(panelsData.data)
+
+  // Track when we've shown content to prevent NoEvents flash during exit animation
+  if (!isPanelsDataEmptyRaw) {
+    hasShownContentRef.current = true
+  }
+
+  // Don't show NoEvents if we've previously shown content (prevents flash during tab switch)
+  const isPanelsDataEmpty = isPanelsDataEmptyRaw && !hasShownContentRef.current
+
+  // Sync state when loader provides new data (e.g., after URL changes)
+  useEffect(() => {
+    if (revalidator.state === 'idle' && deferredData.perfData) {
+      const { chart, params } = deferredData.perfData
+      setChartData(chart || {})
+      setPanelsData({
+        types: _keys(params),
+        data: params,
+      })
+      if (deferredData.perfOverallStats && id) {
+        setOverall(deferredData.perfOverallStats[id] || {})
+      }
+      setDataLoading(false)
+    } else if (revalidator.state === 'loading') {
+      setDataLoading(true)
+    }
+  }, [revalidator.state, deferredData, id])
+
+  // Get chart metrics and measure from URL params (SSR-friendly)
+  const activeChartMetrics =
+    searchParams.get('perfMetric') || CHART_METRICS_MAPPING_PERF.timing
+  const activeMeasure =
+    searchParams.get('measure') || CHART_MEASURES_MAPPING_PERF.median
+
+  // Update URL when changing chart metrics or measure
+  const setActiveChartMetrics = (metric: string) => {
+    const newParams = new URLSearchParams(searchParams.toString())
+    newParams.set('perfMetric', metric)
+    setSearchParams(newParams)
+  }
+
+  const setActiveMeasure = (measure: string) => {
+    const newParams = new URLSearchParams(searchParams.toString())
+    newParams.set('measure', measure)
+    setSearchParams(newParams)
+  }
+
+  // Compare mode not implemented via SSR yet - use empty defaults
+  const overallCompare: Partial<OverallPerformanceObject> = {}
+  const chartDataCompare: any = {}
 
   // Panel active tabs
   const [activeTabs, setActiveTabs] = useState<{
@@ -205,19 +243,6 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     page: 'pg',
     device: 'br',
   })
-
-  // Map fullscreen state
-  const [isMapFullscreen, setIsMapFullscreen] = useState(false)
-
-  const isMountedRef = useRef(true)
-
-  // Cleanup on unmount
-  useEffect(() => {
-    isMountedRef.current = true
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [])
 
   const chartMetrics = useMemo(
     () => [
@@ -291,6 +316,9 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
       render: t('dashboard.render'),
       domLoad: t('dashboard.domLoad'),
       ttfb: t('dashboard.ttfb'),
+      frontend: t('dashboard.frontend'),
+      backend: t('dashboard.backend'),
+      network: t('dashboard.network'),
       p50: t('dashboard.xPercentile', { x: 50 }),
       p75: t('dashboard.xPercentile', { x: 75 }),
       p95: t('dashboard.xPercentile', { x: 95 }),
@@ -302,7 +330,9 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
   const createVersionDataMapping = useMemo(() => {
     const browserDataSource = panelsData.data?.brv
 
-    const browserVersions: { [key: string]: { name: string; count: number }[] } = {}
+    const browserVersions: {
+      [key: string]: { name: string; count: number }[]
+    } = {}
 
     if (browserDataSource) {
       browserDataSource.forEach((entry: any) => {
@@ -317,192 +347,13 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     return { browserVersions }
   }, [panelsData.data?.brv])
 
-  const loadAnalytics = async () => {
-    if (!project) return
-
-    setDataLoading(true)
-
-    try {
-      let dataPerf: { timeBucket?: TimeBucket[]; params?: any; chart?: any }
-      let from
-      let to
-      let dataCompare
-      let fromCompare: string | undefined
-      let toCompare: string | undefined
-      let rawOverall: any
-
-      const measure =
-        activeChartMetrics === CHART_METRICS_MAPPING_PERF.quantiles
-          ? CHART_METRICS_MAPPING_PERF.quantiles
-          : activeMeasure
-
-      if (isActiveCompare) {
-        if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
-          let start
-          let end
-          let diff
-          const startCompare = dayjs.utc(dateRangeCompare[0])
-          const endCompare = dayjs.utc(dateRangeCompare[1])
-          const diffCompare = endCompare.diff(startCompare, 'day')
-
-          if (activePeriod?.period === 'custom' && dateRange) {
-            start = dayjs.utc(dateRange[0])
-            end = dayjs.utc(dateRange[1])
-            diff = end.diff(start, 'day')
-          }
-
-          // @ts-expect-error
-          if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
-            fromCompare = getFormatDate(dateRangeCompare[0])
-            toCompare = getFormatDate(dateRangeCompare[1])
-          } else {
-            toast.error(t('project.compareDateRangeError'))
-            compareDisable()
-          }
-        } else {
-          let date
-          if (dateRange) {
-            date = _find(periodToCompareDate, (item) => item.period === period)?.formula(dateRange)
-          } else {
-            date = _find(periodToCompareDate, (item) => item.period === period)?.formula()
-          }
-
-          if (date) {
-            fromCompare = date.from
-            toCompare = date.to
-          }
-        }
-
-        if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          dataCompare = await getPerformanceCompareData(
-            id,
-            timeBucket,
-            '',
-            filters,
-            fromCompare,
-            toCompare,
-            timezone,
-            measure,
-            projectPassword,
-          )
-          const compareOverall = await getPerformanceOverallStats(
-            [id],
-            'custom',
-            fromCompare,
-            toCompare,
-            timezone,
-            filters,
-            measure,
-            projectPassword,
-          )
-          dataCompare.overall = compareOverall[id]
-        }
-      }
-
-      if (dateRange) {
-        from = getFormatDate(dateRange[0])
-        to = getFormatDate(dateRange[1])
-      }
-
-      if (period === 'custom' && dateRange) {
-        dataPerf = await getPerfData(id, timeBucket, '', filters, from, to, timezone, measure, projectPassword)
-        rawOverall = await getOverallStats([id], timeBucket, period, from, to, timezone, filters, projectPassword)
-      } else {
-        dataPerf = await getPerfData(id, timeBucket, period, filters, '', '', timezone, measure, projectPassword)
-        rawOverall = await getPerformanceOverallStats([id], period, '', '', timezone, filters, measure, projectPassword)
-      }
-
-      // @ts-expect-error
-      dataPerf.overall = rawOverall[id]
-
-      if (isMountedRef.current) {
-        setOverall(rawOverall[id])
-
-        if (_keys(dataPerf).length < 2) {
-          setIsPanelsDataEmpty(true)
-          setDataLoading(false)
-          setAnalyticsLoading(false)
-          return
-        }
-
-        let newTimebucket = timeBucket
-
-        if (period === 'all' && !_isEmpty(dataPerf.timeBucket)) {
-          newTimebucket = dataPerf.timeBucket?.includes(timeBucket as TimeBucket)
-            ? timeBucket
-            : (dataPerf.timeBucket?.[0] as TimeBucket)
-          const newSearchParams = new URLSearchParams(searchParams.toString())
-          newSearchParams.set('timeBucket', newTimebucket)
-          setSearchParams(newSearchParams)
-        }
-
-        if (!_isEmpty(dataCompare)) {
-          if (!_isEmpty(dataCompare?.chart)) {
-            setChartDataCompare(dataCompare.chart)
-          }
-
-          if (!_isEmpty(dataCompare?.overall)) {
-            setOverallCompare(dataCompare.overall)
-          }
-        }
-
-        if (_isEmpty(dataPerf.params)) {
-          setIsPanelsDataEmpty(true)
-        } else {
-          const { chart: chartPerf } = dataPerf
-          setChartData(chartPerf)
-
-          setPanelsData({
-            types: _keys(dataPerf.params),
-            data: dataPerf.params,
-          })
-
-          setIsPanelsDataEmpty(false)
-        }
-
-        setAnalyticsLoading(false)
-        setDataLoading(false)
-      }
-    } catch (reason) {
-      if (isMountedRef.current) {
-        setAnalyticsLoading(false)
-        setDataLoading(false)
-        setIsPanelsDataEmpty(true)
-        console.error('[ERROR](loadAnalytics) Loading analytics data failed:', reason)
-      }
-    }
-  }
-
-  // Load analytics on mount and when dependencies change
-  useEffect(() => {
-    if (!project) return
-    loadAnalytics()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeMeasure,
-    activeChartMetrics,
-    filters,
-    project,
-    isActiveCompare,
-    dateRange,
-    period,
-    timeBucket,
-    dateRangeCompare,
-    activePeriodCompare,
-  ])
-
   // Handle refresh trigger
   useEffect(() => {
     if (performanceRefreshTrigger > 0) {
-      loadAnalytics()
+      revalidator.revalidate()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [performanceRefreshTrigger])
-
-  // Show loader during initial load
-  if (analyticsLoading) {
-    return <Loader />
-  }
 
   // Show no events if data is empty
   if (isPanelsDataEmpty) {
@@ -514,7 +365,13 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     )
   }
 
-  const ChartTypeSwitcher = ({ type, onSwitch }: { type: string; onSwitch: (type: 'line' | 'bar') => void }) => {
+  const ChartTypeSwitcher = ({
+    type,
+    onSwitch,
+  }: {
+    type: string
+    onSwitch: (type: 'line' | 'bar') => void
+  }) => {
     if (type === chartTypes.bar) {
       return (
         <button
@@ -565,36 +422,40 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
   }
 
   // Fullscreen map view - takes over the entire content area
-  if (isMapFullscreen) {
+  if (isMapFullscreen && fullscreenMapRef.current) {
     const countryData = panelsData.data?.cc || []
     const regionData = panelsData.data?.rg || []
-    const total = countryData.reduce((acc: number, curr: any) => acc + curr.count, 0)
+    const total = countryData.reduce(
+      (acc: number, curr: any) => acc + curr.count,
+      0,
+    )
 
-    return (
-      <div className='-mx-4 -my-2 flex h-full min-h-[calc(100vh-8rem)] flex-col sm:-mx-6 lg:-mx-8'>
-        <Suspense
-          fallback={
-            <div className='flex h-full flex-1 items-center justify-center'>
-              <div className='flex flex-col items-center gap-2'>
-                <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent' />
-                <span className='text-sm text-neutral-600 dark:text-neutral-300'>Loading map...</span>
-              </div>
+    return createPortal(
+      <Suspense
+        fallback={
+          <div className='flex h-full flex-1 items-center justify-center'>
+            <div className='flex flex-col items-center gap-2'>
+              <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent' />
+              <span className='text-sm text-neutral-600 dark:text-neutral-300'>
+                Loading map...
+              </span>
             </div>
-          }
-        >
-          <InteractiveMap
-            data={countryData}
-            regionData={regionData}
-            total={total}
-            onClick={(type, key) => {
-              const link = getFilterLink(type, key)
-              navigate(link)
-            }}
-            onFullscreenToggle={setIsMapFullscreen}
-            isFullscreen={true}
-          />
-        </Suspense>
-      </div>
+          </div>
+        }
+      >
+        <InteractiveMap
+          data={countryData}
+          regionData={regionData}
+          total={total}
+          onClick={(type, key) => {
+            const link = getFilterLink(type, key)
+            navigate(link)
+          }}
+          onFullscreenToggle={setIsMapFullscreen}
+          isFullscreen={true}
+        />
+      </Suspense>,
+      fullscreenMapRef.current,
     )
   }
 
@@ -602,15 +463,23 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     <>
       <DashboardHeader />
       {dataLoading && !isPanelsDataEmpty ? <LoadingBar /> : null}
-      <div className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}>
-        {!isPanelsDataEmpty ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
+      <div className={cx({ hidden: isPanelsDataEmpty })}>
+        {!isPanelsDataEmpty ? (
+          <Filters className='mb-3' tnMapping={tnMapping} />
+        ) : null}
         <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
           <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
             <Dropdown
               items={chartMetrics}
               className='xs:min-w-0'
               header={t('main.metric')}
-              title={[<EyeIcon key='eye-icon' aria-label={t('project.metricVis')} className='h-5 w-5' />]}
+              title={[
+                <EyeIcon
+                  key='eye-icon'
+                  aria-label={t('project.metricVis')}
+                  className='h-5 w-5'
+                />,
+              ]}
               labelExtractor={(pair) => pair.label}
               keyExtractor={(pair) => pair.id}
               onSelect={({ id: pairID }) => {
@@ -621,11 +490,19 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
               headless
             />
             <Dropdown
-              disabled={activeChartMetrics === CHART_METRICS_MAPPING_PERF.quantiles}
+              disabled={
+                activeChartMetrics === CHART_METRICS_MAPPING_PERF.quantiles
+              }
               items={chartMeasures}
               className='xs:min-w-0'
               header={t('project.aggregation')}
-              title={[<PercentIcon key='percent-icon' aria-label={t('project.aggregation')} className='h-5 w-5' />]}
+              title={[
+                <PercentIcon
+                  key='percent-icon'
+                  aria-label={t('project.aggregation')}
+                  className='h-5 w-5'
+                />,
+              ]}
               labelExtractor={(pair) => pair.label}
               keyExtractor={(pair) => pair.id}
               onSelect={({ id: pairID }) => {
@@ -635,7 +512,10 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
               chevron='mini'
               headless
             />
-            <ChartTypeSwitcher onSwitch={setChartTypeOnClick} type={chartType} />
+            <ChartTypeSwitcher
+              onSwitch={setChartTypeOnClick}
+              type={chartType}
+            />
           </div>
 
           {!_isEmpty(overall) ? (
@@ -646,7 +526,10 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
             />
           ) : null}
           {activeChartMetrics && !_isEmpty(chartData) ? (
-            <div onContextMenu={(e) => handleChartContextMenu(e, chartData?.x)} className='relative'>
+            <div
+              onContextMenu={(e) => handleChartContextMenu(e, chartData?.x)}
+              className='relative'
+            >
               <PerformanceChart
                 chart={chartData}
                 timeBucket={timeBucket}
@@ -679,7 +562,13 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
                     const { name: entryName, cc } = entry
 
                     if (cc !== undefined) {
-                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
+                      return (
+                        <CCRow
+                          cc={cc}
+                          name={entryName || undefined}
+                          language={language}
+                        />
+                      )
                     }
 
                     return <CCRow cc={entryName} language={language} />
@@ -703,14 +592,18 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
                       data={panelsData.data[activeTabs.location]}
                       rowMapper={rowMapper}
                       // @ts-expect-error
-                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                      valueMapper={(value) =>
+                        getStringFromTime(getTimeFromSeconds(value), true)
+                      }
                       customRenderer={
                         activeTabs.location === 'map'
                           ? () => {
                               const countryData = panelsData.data?.cc || []
                               const regionData = panelsData.data?.rg || []
-                              // @ts-expect-error
-                              const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
+                              const total = countryData.reduce(
+                                (acc: number, curr: any) => acc + curr.count,
+                                0,
+                              )
 
                               return (
                                 <Suspense
@@ -769,12 +662,24 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
                       }
                       activeTabId={activeTabs.device}
                       data={panelsData.data[activeTabs.device]}
-                      rowMapper={getDeviceRowMapper(activeTabs.device, theme, t)}
+                      rowMapper={getDeviceRowMapper(
+                        activeTabs.device,
+                        theme,
+                        t,
+                      )}
                       capitalize={activeTabs.device === 'dv'}
-                      versionData={activeTabs.device === 'br' ? createVersionDataMapping.browserVersions : undefined}
-                      getVersionFilterLink={(parent, version) => getVersionFilterLink(parent, version, 'br')}
+                      versionData={
+                        activeTabs.device === 'br'
+                          ? createVersionDataMapping.browserVersions
+                          : undefined
+                      }
+                      getVersionFilterLink={(parent, version) =>
+                        getVersionFilterLink(parent, version, 'br')
+                      }
                       // @ts-expect-error
-                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                      valueMapper={(value) =>
+                        getStringFromTime(getTimeFromSeconds(value), true)
+                      }
                       valuesHeaderName={t('project.loadTime')}
                       highlightColour='orange'
                     />
@@ -800,7 +705,9 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
                         if (!entryName) {
                           return (
                             <span className='italic'>
-                              {activeTabs.page === 'pg' ? t('common.notSet') : t('project.unknownHost')}
+                              {activeTabs.page === 'pg'
+                                ? t('common.notSet')
+                                : t('project.unknownHost')}
                             </span>
                           )
                         }
@@ -815,7 +722,12 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
 
                         // For page paths (pg tab), show with clickable link
                         if (activeTabs.page === 'pg' && project?.websiteUrl) {
-                          return <PageLinkRow pagePath={decodedUri} websiteUrl={project.websiteUrl} />
+                          return (
+                            <PageLinkRow
+                              pagePath={decodedUri}
+                              websiteUrl={project.websiteUrl}
+                            />
+                          )
                         }
 
                         return decodedUri
@@ -831,7 +743,9 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
                       activeTabId={activeTabs.page}
                       data={panelsData.data[activeTabs.page]}
                       // @ts-expect-error
-                      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                      valueMapper={(value) =>
+                        getStringFromTime(getTimeFromSeconds(value), true)
+                      }
                       valuesHeaderName={t('project.loadTime')}
                       highlightColour='orange'
                     />
@@ -862,7 +776,11 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
           }}
           onEditAnnotation={
             contextMenu.annotation
-              ? () => openAnnotationModal(contextMenu.annotation?.date, contextMenu.annotation!)
+              ? () =>
+                  openAnnotationModal(
+                    contextMenu.annotation?.date,
+                    contextMenu.annotation!,
+                  )
               : undefined
           }
           onDeleteAnnotation={
@@ -879,5 +797,7 @@ const PerformanceView = ({ tnMapping }: PerformanceViewProps) => {
     </>
   )
 }
+
+const PerformanceView = PerformanceViewWrapper
 
 export default PerformanceView

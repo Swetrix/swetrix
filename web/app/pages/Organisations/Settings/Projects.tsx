@@ -1,18 +1,23 @@
-import { InformationCircleIcon, MagnifyingGlassIcon, FolderPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import {
+  InformationCircleIcon,
+  MagnifyingGlassIcon,
+  FolderPlusIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { removeProjectFromOrganisation, getProjectsAvailableForOrganisation, addProjectToOrganisation } from '~/api'
 import useDebounce from '~/hooks/useDebounce'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
+import type { OrganisationSettingsActionData } from '~/routes/organisations.$id'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -29,39 +34,43 @@ const PROJECT_LIST_PAGE_SIZE = 20
 
 const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
   const { t } = useTranslation('common')
+  const fetcher = useFetcher<OrganisationSettingsActionData>()
 
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
   const [total, setTotal] = useState(0)
 
   const debouncedSearch = useDebounce(search, 500)
   const pageAmount = Math.ceil(total / PROJECT_SELECT_PAGE_SIZE)
+  const isLoading =
+    fetcher.state === 'submitting' || fetcher.state === 'loading'
 
+  // Fetch projects when page or search changes
   useEffect(() => {
-    const loadProjects = async () => {
-      setIsLoading(true)
-      try {
-        const { results, total: totalCount } = await getProjectsAvailableForOrganisation(
-          PROJECT_SELECT_PAGE_SIZE,
-          (currentPage - 1) * PROJECT_SELECT_PAGE_SIZE,
-          debouncedSearch,
-        )
-        setProjects(results)
-        setTotal(totalCount)
-      } catch (reason) {
-        console.error('Failed to load projects:', reason)
-      } finally {
-        setIsLoading(false)
-      }
+    const formData = new FormData()
+    formData.set('intent', 'get-available-projects')
+    formData.set('take', String(PROJECT_SELECT_PAGE_SIZE))
+    formData.set('skip', String((currentPage - 1) * PROJECT_SELECT_PAGE_SIZE))
+    formData.set('search', debouncedSearch)
+    fetcher.submit(formData, { method: 'post' })
+  }, [currentPage, debouncedSearch]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Update local state when fetcher returns data
+  useEffect(() => {
+    if (
+      fetcher.data?.intent === 'get-available-projects' &&
+      fetcher.data?.availableProjects
+    ) {
+      setTimeout(() => {
+        setProjects(fetcher.data!.availableProjects!.results as Project[])
+        setTotal(fetcher.data!.availableProjects!.total)
+      }, 0)
     }
-
-    loadProjects()
-  }, [currentPage, debouncedSearch])
+  }, [fetcher.data])
 
   useEffect(() => {
-    setCurrentPage(1)
+    setTimeout(() => setCurrentPage(1), 0)
   }, [debouncedSearch])
 
   return (
@@ -96,7 +105,9 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
                 >
                   <div className='flex items-center px-4 py-4 sm:px-6'>
                     <div className='min-w-0 flex-1'>
-                      <p className='truncate text-sm font-medium text-gray-900 dark:text-white'>{project.name}</p>
+                      <p className='truncate text-sm font-medium text-gray-900 dark:text-white'>
+                        {project.name}
+                      </p>
                     </div>
                   </div>
                 </li>
@@ -126,7 +137,9 @@ const NoProjects = () => {
   return (
     <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
       <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('organisations.noProjectsFound')}</h2>
+        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>
+          {t('organisations.noProjectsFound')}
+        </h2>
       </div>
     </div>
   )
@@ -144,7 +157,10 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
   return projects.map((project) => (
     <tr key={project.id} className='dark:bg-slate-800'>
       <td className='py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white'>
-        <Link to={_replace(routes.project, ':id', project.id)} className='hover:underline'>
+        <Link
+          to={_replace(routes.project, ':id', project.id)}
+          className='hover:underline'
+        >
           {project.name}
         </Link>
       </td>
@@ -153,8 +169,12 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
           {project.admin.email !== user?.email ? (
             <Tooltip
               className='mr-2'
-              text={t('organisations.projectOwnedBy', { email: project.admin.email })}
-              tooltipNode={<InformationCircleIcon className='size-5 text-gray-400' />}
+              text={t('organisations.projectOwnedBy', {
+                email: project.admin.email,
+              })}
+              tooltipNode={
+                <InformationCircleIcon className='size-5 text-gray-400' />
+              }
             />
           ) : null}
 
@@ -169,17 +189,17 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
 
 interface ProjectsProps {
   organisation: DetailedOrganisation
-  reloadOrganisation: () => Promise<void>
 }
 
-export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) => {
+export const Projects = ({ organisation }: ProjectsProps) => {
   const { t } = useTranslation('common')
+  const fetcher = useFetcher<OrganisationSettingsActionData>()
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showAddProjectModal, setShowAddProjectModal] = useState(false)
-  const [projectToRemove, setProjectToRemove] = useState<DetailedOrganisation['projects'][number] | null>(null)
-
-  const [isActionLoading, setIsActionLoading] = useState(false)
+  const [projectToRemove, setProjectToRemove] = useState<
+    DetailedOrganisation['projects'][number] | null
+  >(null)
   const [selectedProject, setSelectedProject] = useState<any>(null)
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -187,56 +207,57 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
   const [isSearchActive, setIsSearchActive] = useState(false)
   const { projects } = organisation
 
+  const isSubmitting = fetcher.state === 'submitting'
+  const isAddingProject =
+    isSubmitting && fetcher.formData?.get('intent') === 'add-project'
+  const isRemovingProject =
+    isSubmitting && fetcher.formData?.get('intent') === 'remove-project'
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      const { intent } = fetcher.data
+      if (intent === 'add-project') {
+        toast.success(t('apiNotifications.projectAddedToOrganisation'))
+        setShowAddProjectModal(false)
+        setSelectedProject(null)
+      } else if (intent === 'remove-project') {
+        toast.success(t('apiNotifications.projectRemovedFromOrganisation'))
+        setShowDeleteModal(false)
+        setProjectToRemove(null)
+      }
+    } else if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
+    }
+  }, [fetcher.data, t])
+  /* eslint-enable react-hooks/set-state-in-effect */
+
   const filteredProjects = useMemo(() => {
     if (!search) {
       return projects
     }
 
-    return projects.filter((project) => project.name.toLowerCase().includes(search))
+    return projects.filter((project) =>
+      project.name.toLowerCase().includes(search),
+    )
   }, [projects, search])
 
   const pageAmount = Math.ceil(filteredProjects.length / PROJECT_LIST_PAGE_SIZE)
 
-  const removeProject = async (projectId: string) => {
-    if (isActionLoading) {
-      return
-    }
-
-    setIsActionLoading(true)
-
-    try {
-      await removeProjectFromOrganisation(organisation.id, projectId)
-      await reloadOrganisation()
-      toast.success(t('apiNotifications.projectRemovedFromOrganisation'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while deleting a project: ${reason}`)
-      toast.error(t('apiNotifications.projectRemoveError'))
-    } finally {
-      setProjectToRemove(null)
-      setIsActionLoading(false)
-    }
+  const removeProject = (projectId: string) => {
+    const formData = new FormData()
+    formData.set('intent', 'remove-project')
+    formData.set('projectId', projectId)
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const onAddProject = async () => {
-    setShowAddProjectModal(false)
+  const onAddProject = () => {
+    if (!selectedProject) return
 
-    if (isActionLoading) {
-      return
-    }
-
-    setIsActionLoading(true)
-
-    try {
-      await addProjectToOrganisation(organisation.id, selectedProject.id)
-      await reloadOrganisation()
-      toast.success(t('apiNotifications.projectAddedToOrganisation'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while adding a project: ${reason}`)
-      toast.error(t('apiNotifications.projectAddError'))
-    } finally {
-      setSelectedProject(null)
-      setIsActionLoading(false)
-    }
+    const formData = new FormData()
+    formData.set('intent', 'add-project')
+    formData.set('projectId', selectedProject.id)
+    fetcher.submit(formData, { method: 'post' })
   }
 
   return (
@@ -353,13 +374,15 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
             type='button'
             className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
             onClick={onAddProject}
-            disabled={!selectedProject || isActionLoading}
+            disabled={!selectedProject || isAddingProject}
           >
             {t('organisations.addProject')}
           </button>
         }
         closeText={t('common.cancel')}
-        title={t('organisations.modals.addProject.title', { organisation: organisation.name })}
+        title={t('organisations.modals.addProject.title', {
+          organisation: organisation.name,
+        })}
         message={
           <div>
             <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
@@ -368,7 +391,9 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
 
             {selectedProject ? (
               <div className='mt-4 flex items-center justify-between rounded-lg border border-gray-200 p-4 dark:border-slate-600'>
-                <span className='text-sm font-medium text-gray-900 dark:text-white'>{selectedProject.name}</span>
+                <span className='text-sm font-medium text-gray-900 dark:text-white'>
+                  {selectedProject.name}
+                </span>
                 <button
                   type='button'
                   onClick={() => setSelectedProject(null)}
@@ -383,7 +408,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
           </div>
         }
         isOpened={showAddProjectModal}
-        isLoading={isActionLoading}
+        isLoading={isAddingProject}
       />
 
       <Modal
@@ -391,17 +416,18 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
           setShowDeleteModal(false)
           setProjectToRemove(null)
         }}
-        onSubmit={async () => {
-          await removeProject(projectToRemove!.id)
-          setShowDeleteModal(false)
+        onSubmit={() => {
+          removeProject(projectToRemove!.id)
         }}
         submitText={t('common.yes')}
         closeText={t('common.no')}
-        title={t('organisations.modals.remove.title', { project: projectToRemove?.name })}
+        title={t('organisations.modals.remove.title', {
+          project: projectToRemove?.name,
+        })}
         message={t('organisations.modals.remove.message')}
         isOpened={showDeleteModal}
         type='warning'
-        isLoading={isActionLoading}
+        isLoading={isRemovingProject}
       />
     </div>
   )

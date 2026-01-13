@@ -781,7 +781,7 @@ export class ProjectController {
     ]
 
     try {
-      const promises = _map(queries, async query =>
+      const promises = _map(queries, async (query) =>
         clickhouse.command({
           query,
           query_params: {
@@ -830,7 +830,7 @@ export class ProjectController {
 
     await deleteProjectRedis(pid)
 
-    return secret
+    return { captchaSecretKey: secret }
   }
 
   @Delete('/partially/:pid')
@@ -1052,7 +1052,7 @@ export class ProjectController {
     }
 
     const isSharingWithUser = !_isEmpty(
-      _find(project.share, share => share.user?.id === invitee.id),
+      _find(project.share, (share) => share.user?.id === invitee.id),
     )
 
     if (isSharingWithUser) {
@@ -1083,9 +1083,7 @@ export class ProjectController {
         ActionTokenType.PROJECT_SHARE,
         share.id,
       )
-      const url = `${
-        isDevelopment ? headers.origin : PRODUCTION_ORIGIN
-      }/share/${actionToken.id}`
+      const url = `${isDevelopment ? headers.origin : PRODUCTION_ORIGIN}/share/${actionToken.id}`
       await this.mailerService.sendEmail(
         invitee.email,
         LetterTemplate.ProjectInvitation,
@@ -1581,7 +1579,7 @@ export class ProjectController {
     ]
 
     try {
-      const promises = _map(queries, async query =>
+      const promises = _map(queries, async (query) =>
         clickhouse.command({
           query,
           query_params: {
@@ -1941,9 +1939,11 @@ export class ProjectController {
     let isAccessConfirmed = true
 
     if (userId) {
-      const userShare = project.share?.find(share => share.user?.id === userId)
+      const userShare = project.share?.find(
+        (share) => share.user?.id === userId,
+      )
       const organisationMembership = project.organisation?.members?.find(
-        member => member.user?.id === userId,
+        (member) => member.user?.id === userId,
       )
 
       if (project.admin?.id === userId) {

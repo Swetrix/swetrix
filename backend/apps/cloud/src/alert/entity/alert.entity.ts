@@ -9,7 +9,7 @@ export class Alert {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @ManyToOne(() => Project, project => project.alerts)
+  @ManyToOne(() => Project, (project) => project.alerts)
   project: Project
 
   @ApiProperty()

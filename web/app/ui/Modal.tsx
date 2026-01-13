@@ -1,4 +1,9 @@
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+} from '@headlessui/react'
 import {
   CheckIcon,
   ExclamationTriangleIcon,
@@ -51,7 +56,11 @@ const Modal = ({
   const { t } = useTranslation()
 
   return (
-    <Dialog className={cn('relative z-40', className)} open={isOpened} onClose={onClose}>
+    <Dialog
+      className={cn('relative z-40', className)}
+      open={isOpened}
+      onClose={onClose}
+    >
       <DialogBackdrop
         transition
         className='fixed inset-0 bg-gray-500/75 transition-opacity data-closed:opacity-0 data-enter:ease-out data-leave:duration-200 data-leave:ease-in'
@@ -76,37 +85,55 @@ const Modal = ({
             <div className='sm:flex sm:items-start'>
               {type === 'success' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
-                  <CheckIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
+                  <CheckIcon
+                    className='h-6 w-6 text-green-600'
+                    aria-hidden='true'
+                  />
                 </div>
               ) : null}
               {type === 'error' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mr-3 sm:h-10 sm:w-10'>
-                  <ExclamationTriangleIcon className='h-6 w-6 text-red-600' aria-hidden='true' />
+                  <ExclamationTriangleIcon
+                    className='h-6 w-6 text-red-600'
+                    aria-hidden='true'
+                  />
                 </div>
               ) : null}
               {type === 'info' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-center sm:mr-3 sm:h-10 sm:w-10'>
-                  <InformationCircleIcon className='h-6 w-6 text-blue-600' aria-hidden='true' />
+                  <InformationCircleIcon
+                    className='h-6 w-6 text-blue-600'
+                    aria-hidden='true'
+                  />
                 </div>
               ) : null}
               {type === 'warning' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mr-3 sm:h-10 sm:w-10'>
-                  <ExclamationTriangleIcon className='h-6 w-6 text-amber-600' aria-hidden='true' />
+                  <ExclamationTriangleIcon
+                    className='h-6 w-6 text-amber-600'
+                    aria-hidden='true'
+                  />
                 </div>
               ) : null}
               {type === 'confirmed' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
-                  <UserGroupIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
+                  <UserGroupIcon
+                    className='h-6 w-6 text-green-600'
+                    aria-hidden='true'
+                  />
                 </div>
               ) : null}
               <div className='w-full text-center sm:text-left'>
                 {title ? (
                   <DialogTitle
                     as='h3'
-                    className={cn('flex items-center text-lg leading-6 font-medium text-gray-900 dark:text-gray-50', {
-                      'justify-between': !closeText,
-                      'justify-center sm:justify-start': closeText,
-                    })}
+                    className={cn(
+                      'flex items-center text-lg leading-6 font-medium text-gray-900 dark:text-gray-50',
+                      {
+                        'justify-between': !closeText,
+                        'justify-center sm:justify-start': closeText,
+                      },
+                    )}
                   >
                     <div>{title}</div>
                     {!closeText ? (
@@ -125,7 +152,9 @@ const Modal = ({
                     ) : null}
                   </DialogTitle>
                 ) : null}
-                <div className='mt-2 text-sm whitespace-pre-line text-gray-600 dark:text-gray-200'>{message}</div>
+                <div className='mt-2 text-sm whitespace-pre-line text-gray-600 dark:text-gray-200'>
+                  {message}
+                </div>
               </div>
             </div>
             <div className='px-4 py-3 transition-colors sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
@@ -139,8 +168,10 @@ const Modal = ({
                       'bg-indigo-600': submitType === 'regular',
                       'bg-red-600': submitType === 'danger',
                       'cursor-not-allowed opacity-70': submitDisabled,
-                      'hover:bg-indigo-700': submitType === 'regular' && !submitDisabled,
-                      'hover:bg-red-700': submitType === 'danger' && !submitDisabled,
+                      'hover:bg-indigo-700':
+                        submitType === 'regular' && !submitDisabled,
+                      'hover:bg-red-700':
+                        submitType === 'danger' && !submitDisabled,
                     },
                   )}
                   onClick={onSubmit}

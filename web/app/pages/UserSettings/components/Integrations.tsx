@@ -1,14 +1,18 @@
-import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/solid'
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+} from '@heroicons/react/24/solid'
 import type i18next from 'i18next'
-import _isString from 'lodash/isString'
 import _map from 'lodash/map'
-import React, { useState, memo } from 'react'
+import React, { useState, memo, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { removeTgIntegration } from '~/api'
 import { User } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
+import type { UserSettingsActionData } from '~/routes/user-settings'
 import Button from '~/ui/Button'
 import Discord from '~/ui/icons/Discord'
 import Slack from '~/ui/icons/Slack'
@@ -49,10 +53,14 @@ const TG_BOT_URL = 'https://t.me/swetrixbot'
 const TG_BOT_USERNAME = '@swetrixbot'
 
 const SLACK_WEBHOOKS_HELP = 'https://api.slack.com/messaging/webhooks'
-const DISCORD_WEBHOOKS_HELP = 'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks'
+const DISCORD_WEBHOOKS_HELP =
+  'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks'
 
 interface IntegrationsProps {
-  handleIntegrationSave: (data: Partial<User>, cb: (isSuccess: boolean) => void) => void
+  handleIntegrationSave: (
+    data: Partial<User>,
+    cb: (isSuccess: boolean) => void,
+  ) => void
 }
 
 interface IntegrationStatus {
@@ -66,10 +74,29 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
 
   const { t } = useTranslation('common')
   const available = getAvailableIntegrations(t)
-  const [integrationConfigurating, setIntegrationConfigurating] = useState<string | null>(null)
+  const [integrationConfigurating, setIntegrationConfigurating] = useState<
+    string | null
+  >(null)
   const [integrationInput, setIntegrationInput] = useState<string | null>(null)
   const [isIntegrationLoading, setIsIntegrationLoading] = useState(false)
   const [isRemovalLoading, setIsRemovalLoading] = useState(false)
+
+  const fetcher = useFetcher<UserSettingsActionData>()
+  const isTgRemovalLoading = fetcher.state !== 'idle'
+
+  useEffect(() => {
+    if (fetcher.data?.intent === 'remove-tg-integration') {
+      if (fetcher.data.success) {
+        mergeUser({
+          isTelegramChatIdConfirmed: false,
+          telegramChatId: null,
+        })
+        trackCustom('INTEGRATION_REMOVED', { integration: 'telegram' })
+      } else if (fetcher.data.error) {
+        toast.error(fetcher.data.error)
+      }
+    }
+  }, [fetcher.data, mergeUser])
 
   const setupIntegration = (key: string) => () => {
     setIntegrationConfigurating(key)
@@ -167,34 +194,24 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
   }
 
   const removeIntegration = async (key: string) => {
-    if (isRemovalLoading || !user) {
+    if (isRemovalLoading || isTgRemovalLoading || !user) {
+      return
+    }
+
+    if (key === 'telegram') {
+      if (!user.telegramChatId) {
+        toast.error(t('apiNotifications.integrationRemovalError'))
+        return
+      }
+
+      fetcher.submit(
+        { intent: 'remove-tg-integration', tgID: user.telegramChatId },
+        { method: 'POST' },
+      )
       return
     }
 
     setIsRemovalLoading(true)
-
-    if (key === 'telegram') {
-      try {
-        if (user.telegramChatId) {
-          await removeTgIntegration(user.telegramChatId)
-        } else {
-          throw new Error('No chat ID')
-        }
-        mergeUser({
-          isTelegramChatIdConfirmed: false,
-          telegramChatId: null,
-        })
-      } catch (reason) {
-        if (_isString(reason)) {
-          toast.error(reason)
-        } else {
-          toast.error(t('apiNotifications.integrationRemovalError'))
-        }
-        console.error(`[ERROR] Failed to remove TG integration: ${reason}`)
-      }
-
-      setIsRemovalLoading(false)
-    }
 
     if (key === 'slack') {
       handleIntegrationSave(
@@ -204,6 +221,8 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         (isSuccess: boolean) => {
           if (!isSuccess) {
             toast.error(t('apiNotifications.integrationRemovalError'))
+          } else {
+            trackCustom('INTEGRATION_REMOVED', { integration: key })
           }
 
           mergeUser({
@@ -222,6 +241,8 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         (isSuccess: boolean) => {
           if (!isSuccess) {
             toast.error(t('apiNotifications.integrationRemovalError'))
+          } else {
+            trackCustom('INTEGRATION_REMOVED', { integration: key })
           }
 
           mergeUser({
@@ -231,10 +252,6 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         },
       )
     }
-
-    trackCustom('INTEGRATION_REMOVED', {
-      integration: key,
-    })
   }
 
   if (integrationConfigurating) {
@@ -402,7 +419,9 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
 
   return (
     <>
-      <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.integrationsDesc')}</p>
+      <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+        {t('profileSettings.integrationsDesc')}
+      </p>
       <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-900'>
         <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
           <thead className='bg-gray-50 dark:bg-slate-800'>
@@ -431,10 +450,17 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
           <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
             {_map(available, ({ name, key, description, Icon }) => {
               const { connected, confirmed, id } = getIntegrationStatus(key)
-              const status = connected ? (confirmed ? 'connected' : 'pending') : 'notConnected'
+              const status = connected
+                ? confirmed
+                  ? 'connected'
+                  : 'pending'
+                : 'notConnected'
 
               return (
-                <tr key={key} className='hover:bg-gray-50 dark:hover:bg-slate-800/50'>
+                <tr
+                  key={key}
+                  className='hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                >
                   <td className='px-4 py-3 text-sm text-gray-900 dark:text-gray-100'>
                     <div className='flex items-center gap-2'>
                       <div className='hidden shrink-0 sm:block'>
@@ -463,13 +489,22 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
                   <td className='px-4 py-3 text-sm text-gray-700 dark:text-gray-300'>
                     <div className='flex items-center'>
                       {status === 'notConnected' ? (
-                        <XCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-red-400' aria-hidden='true' />
+                        <XCircleIcon
+                          className='mr-1.5 h-5 w-5 shrink-0 text-red-400'
+                          aria-hidden='true'
+                        />
                       ) : null}
                       {status === 'pending' ? (
-                        <ClockIcon className='mr-1.5 h-5 w-5 shrink-0 text-yellow-400' aria-hidden='true' />
+                        <ClockIcon
+                          className='mr-1.5 h-5 w-5 shrink-0 text-yellow-400'
+                          aria-hidden='true'
+                        />
                       ) : null}
                       {status === 'connected' ? (
-                        <CheckCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-green-400' aria-hidden='true' />
+                        <CheckCircleIcon
+                          className='mr-1.5 h-5 w-5 shrink-0 text-green-400'
+                          aria-hidden='true'
+                        />
                       ) : null}
                       {t(`common.${status}`)}
                     </div>
@@ -477,7 +512,11 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
                   <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
                     <div className='flex items-center justify-end gap-2'>
                       {connected ? (
-                        <Button onClick={() => removeIntegration(key)} small danger>
+                        <Button
+                          onClick={() => removeIntegration(key)}
+                          small
+                          danger
+                        >
                           {t('profileSettings.removeIntegration')}
                         </Button>
                       ) : (

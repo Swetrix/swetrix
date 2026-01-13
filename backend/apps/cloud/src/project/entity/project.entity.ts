@@ -80,43 +80,43 @@ export class Project {
   botsProtectionLevel: BotsProtectionLevel
 
   @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, user => user.projects)
+  @ManyToOne(() => User, (user) => user.projects)
   admin: User
 
   @ApiProperty({ type: () => ProjectShare })
-  @OneToMany(() => ProjectShare, share => share.project)
+  @OneToMany(() => ProjectShare, (share) => share.project)
   share: ProjectShare[]
 
   @ApiProperty({ type: () => Alert })
-  @OneToMany(() => Alert, alert => alert.project)
+  @OneToMany(() => Alert, (alert) => alert.project)
   alerts: Alert[]
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date
 
-  @OneToMany(() => ProjectSubscriber, subscriber => subscriber.project, {
+  @OneToMany(() => ProjectSubscriber, (subscriber) => subscriber.project, {
     cascade: true,
   })
   subscribers: ProjectSubscriber[]
 
   @ApiProperty({ type: () => Funnel })
-  @OneToMany(() => Funnel, funnel => funnel.project)
+  @OneToMany(() => Funnel, (funnel) => funnel.project)
   funnels: Funnel[]
 
   @ApiProperty({ type: () => Annotation })
-  @OneToMany(() => Annotation, annotation => annotation.project)
+  @OneToMany(() => Annotation, (annotation) => annotation.project)
   annotations: Annotation[]
 
   @ApiProperty({ type: () => Goal })
-  @OneToMany(() => Goal, goal => goal.project)
+  @OneToMany(() => Goal, (goal) => goal.project)
   goals: Goal[]
 
   @ApiProperty({ type: () => FeatureFlag })
-  @OneToMany(() => FeatureFlag, featureFlag => featureFlag.project)
+  @OneToMany(() => FeatureFlag, (featureFlag) => featureFlag.project)
   featureFlags: FeatureFlag[]
 
   @ApiProperty({ type: () => Experiment })
-  @OneToMany(() => Experiment, experiment => experiment.project)
+  @OneToMany(() => Experiment, (experiment) => experiment.project)
   experiments: Experiment[]
 
   @Column('varchar', {
@@ -132,10 +132,10 @@ export class Project {
   @Column('boolean', { default: false })
   isArchived: boolean
 
-  @OneToMany(() => ProjectViewEntity, projectView => projectView.id)
+  @OneToMany(() => ProjectViewEntity, (projectView) => projectView.id)
   views: ProjectViewEntity[]
 
-  @ManyToOne(() => Organisation, org => org.projects, { nullable: true })
+  @ManyToOne(() => Organisation, (org) => org.projects, { nullable: true })
   organisation: Organisation | null
 
   // Google Search Console integration

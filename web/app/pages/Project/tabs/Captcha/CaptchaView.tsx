@@ -1,15 +1,26 @@
 import { GlobeAltIcon } from '@heroicons/react/24/outline'
+import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
-import { CompassIcon, MapPinIcon, MonitorCog, TabletSmartphoneIcon } from 'lucide-react'
-import { useState, useEffect, useMemo, useContext } from 'react'
+import {
+  CompassIcon,
+  MapPinIcon,
+  MonitorCog,
+  TabletSmartphoneIcon,
+} from 'lucide-react'
+import { useState, useEffect, useMemo, useContext, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 
-import { getCaptchaData } from '~/api'
+import { useCaptchaProxy } from '~/hooks/useAnalyticsProxy'
 import useSize from '~/hooks/useSize'
-import { chartTypes, BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK } from '~/lib/constants'
+import {
+  chartTypes,
+  BROWSER_LOGO_MAP,
+  OS_LOGO_MAP,
+  OS_LOGO_MAP_DARK,
+} from '~/lib/constants'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Loader from '~/ui/Loader'
@@ -21,7 +32,10 @@ import Filters from '../../View/components/Filters'
 import { Filter } from '../../View/interfaces/traffic'
 import { Panel } from '../../View/Panels'
 import { parseFilters } from '../../View/utils/filters'
-import { ViewProjectContext } from '../../View/ViewProject'
+import {
+  ViewProjectContext,
+  RefreshTriggersContext,
+} from '../../View/ViewProject'
 import { deviceIconMapping } from '../../View/ViewProject.helpers'
 
 import { CaptchaChart } from './CaptchaChart'
@@ -52,8 +66,13 @@ interface CaptchaViewProps {
 const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const { theme } = useTheme()
   const { project } = useCurrentProject()
-  const { period, timeBucket, dateRange, captchaRefreshTrigger, timeFormat, size } = useContext(ViewProjectContext)
+  const { captchaRefreshTrigger } = useContext(RefreshTriggersContext)
+  const { period, timeBucket, dateRange, timeFormat, size } =
+    useContext(ViewProjectContext)
   const [searchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
+  const isMountedRef = useRef(true)
+  const captchaProxy = useCaptchaProxy()
 
   const {
     t,
@@ -61,7 +80,10 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   } = useTranslation('common')
 
   const [panelsData, setPanelsData] = useState<any>({})
-  const [chartData, setChartData] = useState<{ x: string[]; results: number[] } | null>(null)
+  const [chartData, setChartData] = useState<{
+    x: string[]
+    results: number[]
+  } | null>(null)
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [dataLoading, setDataLoading] = useState(false)
@@ -82,6 +104,13 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   const tnMapping = captchaTypeNameMapping(t)
   const [ref] = useSize() as any
 
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
   const getFormatDate = (date: Date) => {
     const yyyy = date.getFullYear()
     let mm: string | number = date.getMonth() + 1
@@ -95,20 +124,23 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
     setDataLoading(true)
 
     try {
-      let data
-      let from
-      let to
+      let from = ''
+      let to = ''
 
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
       }
 
-      if (period === 'custom' && dateRange) {
-        data = await getCaptchaData(projectId, timeBucket, '', filters, from, to)
-      } else {
-        data = await getCaptchaData(projectId, timeBucket, period, filters, '', '')
-      }
+      const data = await captchaProxy.fetchCaptcha(projectId, {
+        timeBucket,
+        period: period === 'custom' && dateRange ? '' : period,
+        filters,
+        from: period === 'custom' && dateRange ? from : '',
+        to: period === 'custom' && dateRange ? to : '',
+      })
+
+      if (!isMountedRef.current) return
 
       if (_isEmpty(data)) {
         setAnalyticsLoading(false)
@@ -139,6 +171,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
       setAnalyticsLoading(false)
       setDataLoading(false)
     } catch (reason) {
+      if (!isMountedRef.current) return
       setAnalyticsLoading(false)
       setDataLoading(false)
       setIsPanelsDataEmpty(true)
@@ -161,7 +194,10 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   }, [captchaRefreshTrigger])
 
   const getFilterLink = (column: string, value: string | null) => {
-    const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
+    const isFilterActive =
+      filters.findIndex(
+        (filter) => filter.column === column && filter.filter === value,
+      ) >= 0
     const newSearchParams = new URLSearchParams(searchParams.toString())
 
     if (isFilterActive) {
@@ -183,16 +219,30 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
 
   // Show Loader only on initial load (no existing data)
   if (analyticsLoading && !hasExistingData) {
-    return <Loader />
+    return (
+      <div
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
+          'min-h-including-header': !isEmbedded,
+          'min-h-screen': isEmbedded,
+        })}
+      >
+        <Loader />
+      </div>
+    )
   }
 
   if (isPanelsDataEmpty && !dataLoading) {
-    return <NoCaptchaEvents filters={filters} />
+    return (
+      <>
+        <DashboardHeader showLiveVisitors={false} />
+        <NoCaptchaEvents filters={filters} />
+      </>
+    )
   }
 
   return (
     <>
-      <DashboardHeader showLiveVisitors />
+      <DashboardHeader showLiveVisitors={false} />
       <div ref={ref}>
         {dataLoading && hasExistingData ? <LoadingBar /> : null}
         <div>
@@ -217,7 +267,9 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                     const rowMapper = (entry: any) => {
                       const { name: entryName, cc } = entry
                       if (cc) {
-                        return <CCRow cc={cc} name={entryName} language={language} />
+                        return (
+                          <CCRow cc={cc} name={entryName} language={language} />
+                        )
                       }
                       return <CCRow cc={entryName} language={language} />
                     }
@@ -245,7 +297,9 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                         getFilterLink={getFilterLink}
                         name={panelName}
                         data={panelsData.data[type]}
-                        rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
+                        rowMapper={(entry: {
+                          name: keyof typeof deviceIconMapping
+                        }) => {
                           const { name: entryName } = entry
                           const icon = deviceIconMapping[entryName]
                           if (!icon) {
@@ -309,7 +363,8 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                       const logoUrlLight = OS_LOGO_MAP[entryName]
                       // @ts-expect-error
                       const logoUrlDark = OS_LOGO_MAP_DARK[entryName]
-                      let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
+                      let logoUrl =
+                        theme === 'dark' ? logoUrlDark : logoUrlLight
                       logoUrl ||= logoUrlLight
 
                       if (!logoUrl) {
@@ -324,7 +379,11 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
 
                       return (
                         <>
-                          <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
+                          <img
+                            src={logoUrl}
+                            className='h-5 w-5 dark:fill-gray-50'
+                            alt=''
+                          />
                           &nbsp;
                           {entryName}
                         </>

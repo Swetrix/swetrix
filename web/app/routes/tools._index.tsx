@@ -21,24 +21,42 @@ export async function loader() {
 const TOOLS = [
   {
     title: 'ROI Calculator',
-    description: 'Calculate ROAS, ROI, CAC, and other key metrics to measure your marketing campaign performance',
+    description:
+      'Calculate ROAS, ROI, CAC, and other key metrics to measure your marketing campaign performance',
     href: '/tools/roi-calculator',
     color: 'from-green-500 to-emerald-600',
-    features: ['ROAS & ROI', 'CAC Analysis', 'Profit Margins', 'Break-even Analysis'],
+    features: [
+      'ROAS & ROI',
+      'CAC Analysis',
+      'Profit Margins',
+      'Break-even Analysis',
+    ],
   },
   {
     title: 'CTR Calculator',
-    description: 'Calculate your Click-Through Rate and understand your campaign performance instantly',
+    description:
+      'Calculate your Click-Through Rate and understand your campaign performance instantly',
     href: '/tools/ctr-calculator',
     color: 'from-blue-500 to-indigo-600',
-    features: ['CTR Analysis', 'Performance Insights', 'Industry Benchmarks', 'Optimization Tips'],
+    features: [
+      'CTR Analysis',
+      'Performance Insights',
+      'Industry Benchmarks',
+      'Optimization Tips',
+    ],
   },
   {
     title: 'UTM Generator',
-    description: 'Create trackable URLs with UTM parameters to measure your marketing campaigns effectively',
+    description:
+      'Create trackable URLs with UTM parameters to measure your marketing campaigns effectively',
     href: '/tools/utm-generator',
     color: 'from-purple-500 to-pink-600',
-    features: ['UTM Builder', 'Campaign Tracking', 'URL Shortener Compatible', 'Auto-detection'],
+    features: [
+      'UTM Builder',
+      'Campaign Tracking',
+      'URL Shortener Compatible',
+      'Auto-detection',
+    ],
   },
 ]
 
@@ -60,8 +78,8 @@ export default function Tools() {
           </h1>
 
           <p className='mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-400'>
-            Professional marketing calculators and generators to optimize your campaigns, track performance, and
-            maximize ROI. No sign-up required.
+            Professional marketing calculators and generators to optimize your
+            campaigns, track performance, and maximize ROI. No sign-up required.
           </p>
         </div>
 
@@ -73,13 +91,20 @@ export default function Tools() {
               className='group relative overflow-hidden rounded-2xl bg-white p-8 ring-1 ring-gray-200 transition-all dark:bg-slate-800 dark:ring-slate-700'
             >
               <div className='relative'>
-                <h3 className='mb-2 text-2xl font-bold text-gray-900 dark:text-white'>{tool.title}</h3>
+                <h3 className='mb-2 text-2xl font-bold text-gray-900 dark:text-white'>
+                  {tool.title}
+                </h3>
 
-                <p className='mb-6 text-gray-600 dark:text-gray-400'>{tool.description}</p>
+                <p className='mb-6 text-gray-600 dark:text-gray-400'>
+                  {tool.description}
+                </p>
 
                 <div className='mb-6 space-y-2'>
                   {tool.features.map((feature) => (
-                    <div key={feature} className='flex items-center text-sm text-gray-600 dark:text-gray-400'>
+                    <div
+                      key={feature}
+                      className='flex items-center text-sm text-gray-600 dark:text-gray-400'
+                    >
                       <CheckIcon className='mr-2 h-4 w-4 text-green-500' />
                       {feature}
                     </div>

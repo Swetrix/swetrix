@@ -4,33 +4,78 @@ import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import { FilterIcon } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router'
+import {
+  Link,
+  useSearchParams,
+  useFetcher,
+  useLoaderData,
+  useRevalidator,
+} from 'react-router'
 import { toast } from 'sonner'
 
-import { addFunnel, updateFunnel, deleteFunnel, getFunnelData, getFunnels } from '~/api'
+import type { FunnelDataResponse } from '~/api/api.server'
 import { FUNNELS_PERIOD_PAIRS } from '~/lib/constants'
 import { Funnel, AnalyticsFunnel } from '~/lib/models/Project'
 import NewFunnel from '~/modals/NewFunnel'
 import { FunnelChart } from '~/pages/Project/tabs/Funnels/FunnelChart'
 import FunnelsList from '~/pages/Project/tabs/Funnels/FunnelsList'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
-import { getFormatDate } from '~/pages/Project/View/ViewProject.helpers'
+import {
+  useViewProjectContext,
+  useRefreshTriggers,
+} from '~/pages/Project/View/ViewProject'
 import { useAuth } from '~/providers/AuthProvider'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import {
+  useCurrentProject,
+  useProjectPassword,
+} from '~/providers/CurrentProjectProvider'
+import type {
+  ProjectLoaderData,
+  ProjectViewActionData,
+} from '~/routes/projects.$id'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
 import { nLocaleFormatter } from '~/utils/generic'
 import routes from '~/utils/routes'
 
-const FunnelsView = () => {
+interface DeferredFunnelData {
+  funnelData: FunnelDataResponse | null
+}
+
+function FunnelDataResolver({
+  children,
+}: {
+  children: (data: DeferredFunnelData) => React.ReactNode
+}) {
+  const { funnelData: funnelDataPromise } = useLoaderData<ProjectLoaderData>()
+  const funnelData = funnelDataPromise ? use(funnelDataPromise) : null
+  return <>{children({ funnelData })}</>
+}
+
+function FunnelsViewWrapper() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <FunnelDataResolver>
+        {(deferredData) => <FunnelsViewInner deferredData={deferredData} />}
+      </FunnelDataResolver>
+    </Suspense>
+  )
+}
+
+interface FunnelsViewInnerProps {
+  deferredData: DeferredFunnelData
+}
+
+const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   const { id, project, mergeProject, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
+  const revalidator = useRevalidator()
   const { isAuthenticated } = useAuth()
-  const { timezone, period, dateRange, periodPairs, funnelsRefreshTrigger } = useViewProjectContext()
+  const { funnelsRefreshTrigger } = useRefreshTriggers()
+  const { periodPairs } = useViewProjectContext()
 
   // Filter periods to only include those valid for funnels
   const timeBucketSelectorItems = useMemo(() => {
@@ -40,19 +85,35 @@ const FunnelsView = () => {
   }, [periodPairs])
   const { t } = useTranslation('common')
   const [searchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
 
   const isMountedRef = useRef(true)
+  const fetcher = useFetcher<ProjectViewActionData>()
+  const lastHandledData = useRef<ProjectViewActionData | null>(null)
 
   // Funnels state
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
-  const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(undefined)
-  const [funnelActionLoading, setFunnelActionLoading] = useState(false)
+  const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(
+    undefined,
+  )
   const [dataLoading, setDataLoading] = useState(false)
-  const [analyticsLoading, setAnalyticsLoading] = useState(true)
+
+  // Initialize funnelAnalytics from loader data
   const [funnelAnalytics, setFunnelAnalytics] = useState<{
     funnel: AnalyticsFunnel[]
     totalPageviews: number
-  } | null>(null)
+  } | null>(() => {
+    if (deferredData.funnelData) {
+      return {
+        funnel: deferredData.funnelData.funnel,
+        totalPageviews: deferredData.funnelData.totalPageviews,
+      }
+    }
+    return null
+  })
+
+  const funnelActionLoading = fetcher.state !== 'idle'
+  const analyticsLoading = revalidator.state === 'loading'
 
   // Search params without the funnel id. Needed for the back button.
   const pureSearchParams = useMemo(() => {
@@ -84,119 +145,99 @@ const FunnelsView = () => {
     }
   }, [])
 
-  const onFunnelCreate = async (name: string, steps: string[]) => {
-    if (funnelActionLoading) {
-      return
+  // Handle fetcher responses
+  useEffect(() => {
+    if (fetcher.state !== 'idle' || !fetcher.data) return
+    if (lastHandledData.current === fetcher.data) return
+    lastHandledData.current = fetcher.data
+
+    const { intent, success, error } = fetcher.data
+
+    if (success) {
+      if (intent === 'create-funnel') {
+        toast.success(t('apiNotifications.funnelCreated'))
+        setIsNewFunnelOpened(false)
+        setFunnelToEdit(undefined)
+        // Reload funnels list
+        fetcher.submit(
+          { intent: 'get-funnels', password: projectPassword },
+          { method: 'POST', action: `/projects/${id}` },
+        )
+      } else if (intent === 'update-funnel') {
+        toast.success(t('apiNotifications.funnelUpdated'))
+        setIsNewFunnelOpened(false)
+        setFunnelToEdit(undefined)
+        fetcher.submit(
+          { intent: 'get-funnels', password: projectPassword },
+          { method: 'POST', action: `/projects/${id}` },
+        )
+        // If the updated funnel is currently being viewed, revalidate to refresh analytics
+        const updatedFunnelId = (fetcher.data.data as { id?: string })?.id
+        if (updatedFunnelId && activeFunnel?.id === updatedFunnelId) {
+          setDataLoading(true)
+          revalidator.revalidate()
+        }
+      } else if (intent === 'delete-funnel') {
+        toast.success(t('apiNotifications.funnelDeleted'))
+        fetcher.submit(
+          { intent: 'get-funnels', password: projectPassword },
+          { method: 'POST', action: `/projects/${id}` },
+        )
+      } else if (intent === 'get-funnels' && fetcher.data.data) {
+        mergeProject({ funnels: fetcher.data.data as Funnel[] })
+      }
+    } else if (error) {
+      toast.error(error)
     }
+  }, [
+    fetcher.state,
+    fetcher.data,
+    t,
+    id,
+    projectPassword,
+    fetcher,
+    mergeProject,
+    activeFunnel?.id,
+    revalidator,
+  ])
 
-    setFunnelActionLoading(true)
+  const onFunnelCreate = (name: string, steps: string[]) => {
+    if (funnelActionLoading) return
 
-    try {
-      await addFunnel(id, name, steps)
-    } catch (reason: any) {
-      console.error('[ERROR] (onFunnelCreate)(addFunnel)', reason)
-      toast.error(reason)
-    }
-
-    try {
-      const funnels = await getFunnels(id, projectPassword)
-      mergeProject({ funnels })
-    } catch (reason: any) {
-      console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
-    }
-
-    toast.success(t('apiNotifications.funnelCreated'))
-    setFunnelActionLoading(false)
+    fetcher.submit(
+      { intent: 'create-funnel', name, steps: JSON.stringify(steps) },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
-  const onFunnelEdit = async (funnelId: string, name: string, steps: string[]) => {
-    if (funnelActionLoading) {
-      return
-    }
+  const onFunnelEdit = (funnelId: string, name: string, steps: string[]) => {
+    if (funnelActionLoading) return
 
-    setFunnelActionLoading(true)
-
-    try {
-      await updateFunnel(funnelId, id, name, steps)
-    } catch (reason: any) {
-      console.error('[ERROR] (onFunnelEdit)(updateFunnel)', reason)
-      toast.error(reason)
-    }
-
-    try {
-      const funnels = await getFunnels(id, projectPassword)
-      mergeProject({ funnels })
-    } catch (reason: any) {
-      console.error('[ERROR] (onFunnelEdit)(getFunnels)', reason)
-    }
-
-    toast.success(t('apiNotifications.funnelUpdated'))
-    setFunnelActionLoading(false)
+    fetcher.submit(
+      { intent: 'update-funnel', funnelId, name, steps: JSON.stringify(steps) },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
-  const onFunnelDelete = async (funnelId: string) => {
-    if (funnelActionLoading) {
-      return
-    }
+  const onFunnelDelete = (funnelId: string) => {
+    if (funnelActionLoading) return
 
-    setFunnelActionLoading(true)
-
-    try {
-      await deleteFunnel(funnelId, id)
-    } catch (reason: any) {
-      console.error('[ERROR] (onFunnelDelete)(deleteFunnel)', reason)
-      toast.error(reason)
-    }
-
-    try {
-      const funnels = await getFunnels(id, projectPassword)
-      mergeProject({ funnels })
-    } catch (reason: any) {
-      console.error('[ERROR] (onFunnelDelete)(getFunnels)', reason)
-    }
-
-    toast.success(t('apiNotifications.funnelDeleted'))
-    setFunnelActionLoading(false)
+    fetcher.submit(
+      { intent: 'delete-funnel', funnelId },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
-  const loadFunnelsData = async () => {
-    if (!activeFunnel?.id) {
-      return
+  // Sync funnelAnalytics when loader data changes
+  useEffect(() => {
+    if (deferredData.funnelData && revalidator.state === 'idle') {
+      setFunnelAnalytics({
+        funnel: deferredData.funnelData.funnel,
+        totalPageviews: deferredData.funnelData.totalPageviews,
+      })
+      setDataLoading(false)
     }
-
-    setDataLoading(true)
-
-    try {
-      let dataFunnel: { funnel: AnalyticsFunnel[]; totalPageviews: number }
-      let from
-      let to
-
-      if (dateRange) {
-        from = getFormatDate(dateRange[0])
-        to = getFormatDate(dateRange[1])
-      }
-
-      if (period === 'custom' && dateRange) {
-        dataFunnel = await getFunnelData(id, '', from, to, timezone, activeFunnel.id, projectPassword)
-      } else {
-        dataFunnel = await getFunnelData(id, period, '', '', timezone, activeFunnel.id, projectPassword)
-      }
-
-      const { funnel, totalPageviews } = dataFunnel
-
-      if (isMountedRef.current) {
-        setFunnelAnalytics({ funnel, totalPageviews })
-        setAnalyticsLoading(false)
-        setDataLoading(false)
-      }
-    } catch (reason) {
-      if (isMountedRef.current) {
-        setAnalyticsLoading(false)
-        setDataLoading(false)
-        console.error('[ERROR](loadFunnelsData) Loading funnels data failed:', reason)
-      }
-    }
-  }
+  }, [deferredData.funnelData, revalidator.state])
 
   const funnelSummary = useMemo(() => {
     if (!funnelAnalytics || _isEmpty(funnelAnalytics.funnel)) {
@@ -206,7 +247,9 @@ const FunnelsView = () => {
     const stepsCount = funnelAnalytics.funnel.length
     const startVisitors = funnelAnalytics.funnel[0]?.events || 0
     const endVisitors = funnelAnalytics.funnel[stepsCount - 1]?.events || 0
-    const conversionRate = Number(((endVisitors / Math.max(startVisitors, 1)) * 100).toFixed(2))
+    const conversionRate = Number(
+      ((endVisitors / Math.max(startVisitors, 1)) * 100).toFixed(2),
+    )
 
     return {
       stepsCount,
@@ -216,25 +259,48 @@ const FunnelsView = () => {
     }
   }, [funnelAnalytics])
 
-  // Load funnels data when activeFunnel changes
+  // When activeFunnel changes (URL params) and we have loader data, sync it
+  // The actual data fetching happens via the loader when URL changes
   useEffect(() => {
-    if (!project) return
+    if (!project || !activeFunnel) return
 
-    loadFunnelsData()
+    // If we have loader data for this funnel, use it
+    if (deferredData.funnelData) {
+      setFunnelAnalytics({
+        funnel: deferredData.funnelData.funnel,
+        totalPageviews: deferredData.funnelData.totalPageviews,
+      })
+    } else {
+      // No loader data yet, trigger revalidation
+      setDataLoading(true)
+      revalidator.revalidate()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFunnel, project, dateRange, period])
+  }, [activeFunnel?.id])
 
   // Handle refresh trigger from parent
   useEffect(() => {
     if (funnelsRefreshTrigger > 0) {
-      loadFunnelsData()
+      if (activeFunnel?.id) {
+        setDataLoading(true)
+      }
+      revalidator.revalidate()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [funnelsRefreshTrigger])
 
-  // Show loader during initial load when viewing a specific funnel
-  if (activeFunnel && analyticsLoading) {
-    return <Loader />
+  // Show loader during initial load when viewing a specific funnel (only when no data yet)
+  if (activeFunnel && analyticsLoading && !funnelAnalytics) {
+    return (
+      <div
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
+          'min-h-including-header': !isEmbedded,
+          'min-h-screen': isEmbedded,
+        })}
+      >
+        <Loader />
+      </div>
+    )
   }
 
   // Render funnel detail view
@@ -243,12 +309,18 @@ const FunnelsView = () => {
       <>
         <DashboardHeader
           backLink={`?${pureSearchParams}`}
+          backButtonLabel={t('project.backToFunnels')}
           showLiveVisitors={false}
           showSearchButton={false}
           hideTimeBucket
           timeBucketSelectorItems={timeBucketSelectorItems}
           leftContent={
-            <Text as='h2' size='xl' weight='bold' className='wrap-break-word break-all'>
+            <Text
+              as='h2'
+              size='xl'
+              weight='bold'
+              className='wrap-break-word break-all'
+            >
               {activeFunnel?.name}
             </Text>
           }
@@ -265,14 +337,20 @@ const FunnelsView = () => {
           {funnelSummary ? (
             <>
               <p className='font-medium text-gray-900 lg:text-left dark:text-gray-50'>
-                {t('project.funnelSummary.xStepFunnel', { x: funnelSummary.stepsCount })}
+                {t('project.funnelSummary.xStepFunnel', {
+                  x: funnelSummary.stepsCount,
+                })}
                 <span className='mx-2 text-gray-400'>•</span>
-                {t('project.funnelSummary.conversionRateShort', { x: funnelSummary.conversionRate })}
+                {t('project.funnelSummary.conversionRateShort', {
+                  x: funnelSummary.conversionRate,
+                })}
               </p>
               <p className='text-center text-gray-900 lg:text-left dark:text-gray-50'>
-                {t('project.funnelSummary.startShort')}: {nLocaleFormatter(funnelSummary.startVisitors)}
+                {t('project.funnelSummary.startShort')}:{' '}
+                {nLocaleFormatter(funnelSummary.startVisitors)}
                 <span className='mx-1'>→</span>
-                {t('project.funnelSummary.endShort')}: {nLocaleFormatter(funnelSummary.endVisitors)}
+                {t('project.funnelSummary.endShort')}:{' '}
+                {nLocaleFormatter(funnelSummary.endVisitors)}
               </p>
             </>
           ) : null}
@@ -356,7 +434,9 @@ const FunnelsView = () => {
           <FilterIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
           <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
         </div>
-        <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.funnelsDesc')}</p>
+        <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
+          {t('dashboard.funnelsDesc')}
+        </p>
         {isAuthenticated ? (
           <button
             type='button'
@@ -395,5 +475,7 @@ const FunnelsView = () => {
     </>
   )
 }
+
+const FunnelsView = FunnelsViewWrapper
 
 export default FunnelsView

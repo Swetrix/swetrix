@@ -64,7 +64,7 @@ import {
   AnnotationUpdateDTO,
 } from './dto'
 import { AppLoggerService } from '../logger/logger.service'
-import { isValidPID } from '../common/constants'
+import { isValidPID, CAPTCHA_SECRET_KEY_LENGTH } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
   getProjectsClickhouse,
@@ -100,6 +100,7 @@ import {
   getPinnedProjectsClickhouse,
   pinProjectClickhouse,
   unpinProjectClickhouse,
+  generateRandomString,
 } from '../common/utils'
 import { Funnel } from './entity/funnel.entity'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -186,17 +187,17 @@ export class ProjectController {
     // 3) Combine owned and shared projects, remove duplicates (prefer owned)
     const combinedProjectsMap: Record<string, Project> = {}
 
-    _map(ownedProjects, p => {
+    _map(ownedProjects, (p) => {
       combinedProjectsMap[p.id] = p
     })
 
-    _map(sharedProjects, p => {
+    _map(sharedProjects, (p) => {
       if (!combinedProjectsMap[p.id]) {
         combinedProjectsMap[p.id] = p
       }
     })
 
-    let combinedProjects = _map(combinedProjectsMap, p => p)
+    let combinedProjects = _map(combinedProjectsMap, (p) => p)
 
     // Get pinned project IDs to mark shared projects as pinned too
     const pinnedProjectIds = await getPinnedProjectsClickhouse(userId)
@@ -204,8 +205,9 @@ export class ProjectController {
     // Always sort by pinned first, then by the requested sort criteria
     combinedProjects = [...combinedProjects].sort((a: any, b: any) => {
       // First, sort by pinned status (pinned projects first)
-      const aIsPinned = a.isPinned || _includes(pinnedProjectIds, a.id)
-      const bIsPinned = b.isPinned || _includes(pinnedProjectIds, b.id)
+      // Check pinnedProjectIds array - this is the source of truth
+      const aIsPinned = _includes(pinnedProjectIds, a.id)
+      const bIsPinned = _includes(pinnedProjectIds, b.id)
 
       if (aIsPinned && !bIsPinned) return -1
       if (!aIsPinned && bIsPinned) return 1
@@ -227,18 +229,26 @@ export class ProjectController {
       return (a.name || '').localeCompare(b.name || '')
     })
 
+    // Calculate total before pagination
+    const total = _size(combinedProjects)
+
+    // Apply pagination first to avoid fetching unnecessary data
+    const paginatedProjects =
+      take !== undefined
+        ? combinedProjects.slice(skip || 0, (skip || 0) + take)
+        : combinedProjects
+
+    // Only fetch additional data for paginated projects
+    const paginatedPids = _map(paginatedProjects, ({ id }) => id)
+
     const pidsWithData =
-      await this.projectService.getPIDsWhereAnalyticsDataExists(
-        _map(combinedProjects, ({ id }) => id),
-      )
+      await this.projectService.getPIDsWhereAnalyticsDataExists(paginatedPids)
 
     const pidsWithErrorData =
-      await this.projectService.getPIDsWhereErrorsDataExists(
-        _map(combinedProjects, ({ id }) => id),
-      )
+      await this.projectService.getPIDsWhereErrorsDataExists(paginatedPids)
 
     const funnelsData = await Promise.allSettled(
-      pidsWithData.map(async pid => {
+      pidsWithData.map(async (pid) => {
         return {
           pid,
           data: await getFunnelsClickhouse(pid),
@@ -264,7 +274,7 @@ export class ProjectController {
       {},
     )
 
-    const results = _map(combinedProjects, project => {
+    const results = _map(paginatedProjects, (project) => {
       const userShare = sharesByProjectId[project.id]
       const isOwner = userId && project.adminId === userId
       const role = isOwner
@@ -304,12 +314,10 @@ export class ProjectController {
       }
     })
 
-    // Pinned projects are already sorted at the combined sort step above
-
     return {
       results,
-      page_total: _size(combinedProjects),
-      total: _size(combinedProjects),
+      page_total: _size(results),
+      total,
     }
   }
 
@@ -580,6 +588,70 @@ export class ProjectController {
       this.logger.error(e)
       return 'Error while resetting your project'
     }
+  }
+
+  @ApiBearerAuth()
+  @Post('/secret-gen/:pid')
+  @HttpCode(200)
+  @Auth()
+  @ApiResponse({ status: 200, description: 'A regenerated CAPTCHA secret key' })
+  async secretGen(
+    @Param('pid') pid: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, pid }, 'POST /project/secret-gen/:pid')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, uid)
+
+    const secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
+
+    await updateProjectClickhouse({ id: pid, captchaSecretKey: secret })
+
+    await deleteProjectRedis(pid)
+
+    return { captchaSecretKey: secret }
+  }
+
+  @ApiBearerAuth()
+  @Delete('/secret-gen/:pid')
+  @HttpCode(200)
+  @Auth()
+  @ApiResponse({ status: 200, description: 'CAPTCHA secret key deleted' })
+  async deleteSecretKey(
+    @Param('pid') pid: string,
+    @CurrentUserId() uid: string,
+  ): Promise<void> {
+    this.logger.log({ uid, pid }, 'DELETE /project/secret-gen/:pid')
+
+    if (!isValidPID(pid)) {
+      throw new BadRequestException(
+        'The provided Project ID (pid) is incorrect',
+      )
+    }
+
+    const project = await this.projectService.getFullProject(pid)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToManage(project, uid)
+
+    await updateProjectClickhouse({ id: pid, captchaSecretKey: null })
+
+    await deleteProjectRedis(pid)
   }
 
   @Post('/funnel')
@@ -1039,6 +1111,10 @@ export class ProjectController {
         : null
     }
 
+    if (projectDTO.captchaDifficulty !== undefined) {
+      project.captchaDifficulty = projectDTO.captchaDifficulty
+    }
+
     await updateProjectClickhouse(
       this.projectService.formatToClickhouse(project),
     )
@@ -1091,13 +1167,16 @@ export class ProjectController {
 
     this.projectService.allowedToView(project, userId, headers['x-password'])
 
-    const isDataExists = !_isEmpty(
-      await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
-    )
-
-    const isErrorDataExists = !_isEmpty(
-      await this.projectService.getPIDsWhereErrorsDataExists([id]),
-    )
+    const [isDataExists, isErrorDataExists, isCaptchaDataExists] =
+      await Promise.all([
+        !_isEmpty(
+          await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
+        ),
+        !_isEmpty(await this.projectService.getPIDsWhereErrorsDataExists([id])),
+        !_isEmpty(
+          await this.projectService.getPIDsWhereCaptchaDataExists([id]),
+        ),
+      ])
 
     const funnels = await getFunnelsClickhouse(id)
     const rawShares = await findProjectSharesByProjectClickhouse(id)
@@ -1140,6 +1219,7 @@ export class ProjectController {
       funnels: this.projectService.formatFunnelsFromClickhouse(funnels),
       isDataExists,
       isErrorDataExists,
+      isCaptchaDataExists,
       role,
       isLocked: false,
       isAccessConfirmed,

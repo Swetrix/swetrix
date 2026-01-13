@@ -3,7 +3,12 @@ import _some from 'lodash/some'
 import { useMemo } from 'react'
 import { useLocation, Location } from 'react-router'
 
-import { whitelist, whitelistWithCC, MAIN_URL, defaultLanguage } from '~/lib/constants'
+import {
+  whitelist,
+  whitelistWithCC,
+  MAIN_URL,
+  defaultLanguage,
+} from '~/lib/constants'
 
 const getUrlFromLocation = (location: Location) => {
   const { pathname, hash, search } = location
@@ -69,7 +74,10 @@ const getShouldBeIgnored = (location: Location) => {
 export const LocaleLinks = () => {
   const location = useLocation()
 
-  const shouldBeIgnored = useMemo(() => getShouldBeIgnored(location), [location])
+  const shouldBeIgnored = useMemo(
+    () => getShouldBeIgnored(location),
+    [location],
+  )
   const altLinks = useMemo(() => getAlternateLinks(location), [location])
 
   if (shouldBeIgnored) {

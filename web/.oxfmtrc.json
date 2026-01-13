@@ -1,0 +1,17 @@
+{
+  "printWidth": 80,
+  "useTabs": false,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "semi": false,
+  "singleQuote": true,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "jsxSingleQuote": true,
+  "bracketSameLine": false,
+  "endOfLine": "lf",
+  "experimentalTailwindcss": {
+    "stylesheet": "app/styles/tailwind.css",
+    "functions": ["clsx", "cn", "cx"]
+  }
+}

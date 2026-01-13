@@ -1,11 +1,18 @@
 import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
-import { scalePow, scaleQuantize } from 'd3-scale'
+import { scalePow, scaleThreshold } from 'd3-scale'
 import { Feature, GeoJsonObject } from 'geojson'
 import { Layer, Path } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import _round from 'lodash/round'
-import React, { memo, useState, useMemo, useEffect, useCallback, useRef } from 'react'
+import React, {
+  memo,
+  useState,
+  useMemo,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { GeoJSON, MapContainer, useMapEvent } from 'react-leaflet'
 import { ClientOnly } from 'remix-utils/client-only'
@@ -15,7 +22,11 @@ import { Entry } from '~/lib/models/Entry'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
 import Spin from '~/ui/icons/Spin'
-import { getTimeFromSeconds, getStringFromTime, nFormatter } from '~/utils/generic'
+import {
+  getTimeFromSeconds,
+  getStringFromTime,
+  nFormatter,
+} from '~/utils/generic'
 import { loadCountriesGeoData, loadRegionsGeoData } from '~/utils/geoData'
 
 import { useViewProjectContext } from '../ViewProject'
@@ -43,9 +54,13 @@ const InteractiveMapCore = ({
   const { activeTab, dataLoading } = useViewProjectContext()
   const { theme } = useTheme()
 
-  const [countriesGeoData, setCountriesGeoData] = useState<GeoJsonObject | null>(null)
-  const [regionsGeoData, setRegionsGeoData] = useState<GeoJsonObject | null>(null)
-  const [filteredRegionsGeoData, setFilteredRegionsGeoData] = useState<GeoJsonObject | null>(null)
+  const [countriesGeoData, setCountriesGeoData] =
+    useState<GeoJsonObject | null>(null)
+  const [regionsGeoData, setRegionsGeoData] = useState<GeoJsonObject | null>(
+    null,
+  )
+  const [filteredRegionsGeoData, setFilteredRegionsGeoData] =
+    useState<GeoJsonObject | null>(null)
   const [mapView, setMapView] = useState<'countries' | 'regions'>('countries')
   const [tooltipContent, setTooltipContent] = useState<{
     name: string
@@ -63,7 +78,8 @@ const InteractiveMapCore = ({
   const isTrafficTab = activeTab === PROJECT_TABS.traffic
   const isErrorsTab = activeTab === PROJECT_TABS.errors
   const isPerformanceTab = activeTab === PROJECT_TABS.performance
-  const isGeoDataLoading = mapView === 'regions' ? !regionsGeoData : !countriesGeoData
+  const isGeoDataLoading =
+    mapView === 'regions' ? !regionsGeoData : !countriesGeoData
 
   useEffect(() => {
     const loadGeoData = async () => {
@@ -170,7 +186,6 @@ const InteractiveMapCore = ({
     const dataToUse = mapView === 'countries' ? data : regionData
     const values = dataToUse?.map((d) => d.count) || [0]
     const maxValue = Math.max(...values)
-    const minValue = Math.min(...values)
 
     // Errors: light red to deep red, higher == worse
     if (isErrorsTab) {
@@ -180,23 +195,22 @@ const InteractiveMapCore = ({
         .range(['hsla(0, 60%, 55%, 0.15)', 'hsla(0, 70%, 50%, 0.9)'])
     }
 
-    // Performance: discrete, darker Tailwind palette with 80% opacity -> blue (fast) to warm (slow)
+    // Performance: use fixed thresholds based on web performance standards (values are in seconds)
+    // This ensures colors represent absolute performance, not relative to the data
     if (isPerformanceTab) {
-      if (minValue === maxValue) {
-        const singleColor = 'rgba(34, 197, 94, 0.85)' // green-500 @ 85%
-        return () => singleColor
-      }
       const perfColors = [
-        'rgba(34, 197, 94, 0.85)', // green-500 @ 85% (fast)
-        'rgba(74, 222, 128, 0.85)', // green-400 @ 85%
-        'rgba(163, 230, 53, 0.85)', // lime-400 @ 85%
-        'rgba(250, 204, 21, 0.85)', // yellow-400 @ 85%
-        'rgba(251, 146, 60, 0.85)', // orange-400 @ 85%
-        'rgba(239, 68, 68, 0.85)', // red-500 @ 85%
-        'rgba(220, 38, 38, 0.85)', // red-600 @ 85%
-        'rgba(185, 28, 28, 0.85)', // red-700 @ 85% (slow)
+        'rgba(34, 197, 94, 0.55)', // green-500 @ 55% (< 1s - excellent)
+        'rgba(74, 222, 128, 0.55)', // green-400 @ 55% (1-2s - good)
+        'rgba(250, 204, 21, 0.55)', // yellow-400 @ 55% (2-3s - moderate)
+        'rgba(251, 146, 60, 0.55)', // orange-400 @ 55% (3-4s - slow)
+        'rgba(239, 68, 68, 0.55)', // red-500 @ 55% (4-5s - poor)
+        'rgba(185, 28, 28, 0.55)', // red-700 @ 55% (> 5s - critical)
       ]
-      return scaleQuantize<string>().domain([minValue, maxValue]).range(perfColors)
+      // Fixed thresholds in seconds for absolute performance classification
+      const thresholds = [1, 2, 3, 4, 5]
+      return scaleThreshold<number, string>()
+        .domain(thresholds)
+        .range(perfColors)
     }
 
     // Traffic (default): blue/indigo gradient to match site color scheme
@@ -205,6 +219,26 @@ const InteractiveMapCore = ({
       .domain([0, maxValue])
       .range(['hsla(220, 70%, 55%, 0.12)', 'hsla(224, 75%, 50%, 0.9)'])
   }, [data, regionData, mapView, isErrorsTab, isPerformanceTab])
+
+  // Get tooltip text color based on the metric value and tab
+  const getTooltipColor = useCallback(
+    (count: number) => {
+      if (isTrafficTab) {
+        return 'rgb(79, 70, 229)' // indigo-600
+      }
+      if (isErrorsTab) {
+        return 'rgb(220, 38, 38)' // red-600
+      }
+      // Performance: use fixed thresholds matching the map colors (but fully opaque for text)
+      if (count < 1) return 'rgb(34, 197, 94)' // green-500
+      if (count < 2) return 'rgb(22, 163, 74)' // green-600
+      if (count < 3) return 'rgb(202, 138, 4)' // yellow-600
+      if (count < 4) return 'rgb(234, 88, 12)' // orange-600
+      if (count < 5) return 'rgb(220, 38, 38)' // red-600
+      return 'rgb(153, 27, 27)' // red-800
+    },
+    [isTrafficTab, isErrorsTab],
+  )
 
   const findDataForFeature = useCallback(
     (feature: Feature | undefined) => {
@@ -245,11 +279,15 @@ const InteractiveMapCore = ({
       const metricValue = result?.data?.count || 0
 
       // No-data countries: subtle, muted gray that blends with the background
-      const noDataFill = theme === 'dark' ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.6)'
+      const noDataFill =
+        theme === 'dark' ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.6)'
       const fill = metricValue > 0 ? colorScale(metricValue) : noDataFill
 
       // Borders: very subtle, almost invisible for cleaner look
-      const borderBaseColour = theme === 'dark' ? 'rgba(71, 85, 105, 0.4)' : 'rgba(148, 163, 184, 0.35)'
+      const borderBaseColour =
+        theme === 'dark'
+          ? 'rgba(71, 85, 105, 0.4)'
+          : 'rgba(148, 163, 184, 0.35)'
 
       return {
         color: borderBaseColour,
@@ -259,7 +297,8 @@ const InteractiveMapCore = ({
         fillOpacity: metricValue > 0 ? 0.85 : 0.4,
         opacity: 1,
         smoothFactor: mapView === 'regions' ? 1 : 0.3,
-        className: 'transition-[stroke,stroke-width,fill-opacity] duration-200 ease-out',
+        className:
+          'transition-[stroke,stroke-width,fill-opacity] duration-200 ease-out',
       }
     },
     [mapView, colorScale, findDataForFeature, theme],
@@ -280,11 +319,15 @@ const InteractiveMapCore = ({
           } else {
             borderHoverColour = theme === 'dark' ? '#818cf8' : '#4f46e5' // indigo-400/600 for traffic
           }
-          const borderNeutralHoverColour = theme === 'dark' ? '#64748b' : '#94a3b8' // slate-500/400
+          const borderNeutralHoverColour =
+            theme === 'dark' ? '#64748b' : '#94a3b8' // slate-500/400
           const pathLayer = layer as unknown as Path
           const canSetStyle = typeof (pathLayer as any).setStyle === 'function'
           if (canSetStyle) {
-            pathLayer.setStyle({ color: hasData ? borderHoverColour : borderNeutralHoverColour, weight: 1.5 } as any)
+            pathLayer.setStyle({
+              color: hasData ? borderHoverColour : borderNeutralHoverColour,
+              weight: 1.5,
+            } as any)
             ;(pathLayer as any).bringToFront?.()
           }
           const cx = e?.originalEvent?.clientX ?? 0
@@ -300,12 +343,16 @@ const InteractiveMapCore = ({
             const props: any = feature.properties || {}
             const isCountryView = mapView === 'countries'
 
-            const name = props['name'] || props['ADMIN'] || result?.key || 'Unknown'
+            const name =
+              props['name'] || props['ADMIN'] || result?.key || 'Unknown'
             const count = result?.data?.count ?? 0
             const percentage = total > 0 ? _round((count / total) * 100, 2) : 0
 
-            const ccFromProps = isCountryView ? props?.iso_a2 : (props?.iso_3166_2 || '').split('-')[0]
-            const cc = (result?.data?.cc as string | undefined) || ccFromProps || ''
+            const ccFromProps = isCountryView
+              ? props?.iso_a2
+              : (props?.iso_3166_2 || '').split('-')[0]
+            const cc =
+              (result?.data?.cc as string | undefined) || ccFromProps || ''
 
             setTooltipContent({
               name,
@@ -347,13 +394,24 @@ const InteractiveMapCore = ({
           const props: any = feature.properties || {}
           const iso = props?.iso_3166_2 as string | undefined
           const isTaiwanRegion = !!(iso && iso.toUpperCase() === 'TW')
-          const clickType = mapView === 'regions' ? (isTaiwanRegion ? 'cc' : 'rg') : 'cc'
+          const clickType =
+            mapView === 'regions' ? (isTaiwanRegion ? 'cc' : 'rg') : 'cc'
 
           onClick(clickType, key)
         },
       })
     },
-    [findDataForFeature, total, onClick, mapView, theme, handleStyle, repositionTooltip, isErrorsTab, isPerformanceTab],
+    [
+      findDataForFeature,
+      total,
+      onClick,
+      mapView,
+      theme,
+      handleStyle,
+      repositionTooltip,
+      isErrorsTab,
+      isPerformanceTab,
+    ],
   )
 
   const MapEventHandler = () => {
@@ -402,21 +460,27 @@ const InteractiveMapCore = ({
 
       {/* Exit fullscreen button */}
       {isFullscreen && onFullscreenToggle ? (
-        <button
-          type='button'
-          onClick={() => onFullscreenToggle(false)}
-          className='absolute top-3 left-3 z-50 flex items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-        >
-          <XMarkIcon className='mr-1.5 h-4 w-4' />
-          {t('common.close')}
-        </button>
+        <div className='pointer-events-none absolute inset-x-0 top-3 z-50 mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 lg:px-8'>
+          <div className='relative flex w-full justify-end'>
+            <button
+              type='button'
+              onClick={() => onFullscreenToggle(false)}
+              className='pointer-events-auto flex items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+            >
+              <XMarkIcon className='mr-1.5 h-4 w-4' />
+              {t('common.close')}
+            </button>
+          </div>
+        </div>
       ) : null}
 
       {dataLoading || isGeoDataLoading ? (
         <div className='absolute inset-0 z-10 flex items-center justify-center rounded-md bg-slate-900/20 backdrop-blur-sm'>
           <div className='flex flex-col items-center gap-2'>
             <Spin />
-            <span className='text-sm text-slate-900 dark:text-gray-50'>{t('project.loadingMapData')}</span>
+            <span className='text-sm text-slate-900 dark:text-gray-50'>
+              {t('project.loadingMapData')}
+            </span>
           </div>
         </div>
       ) : null}
@@ -480,18 +544,34 @@ const InteractiveMapCore = ({
           style={{ left: 0, top: 0, transform: 'translate(-50%, -100%)' }}
         >
           <div className='flex items-center gap-1.5 font-medium'>
-            <Flag className='rounded-xs' country={tooltipContent.code} size={18} alt='' aria-hidden='true' />
+            <Flag
+              className='rounded-xs'
+              country={tooltipContent.code}
+              size={18}
+              alt=''
+              aria-hidden='true'
+            />
             <span>{tooltipContent.name}</span>
           </div>
           <div className='mt-0.5'>
-            <span className='font-bold text-indigo-600 dark:text-indigo-400'>
+            <span
+              className='font-bold'
+              style={{ color: getTooltipColor(tooltipContent.count) }}
+            >
               {isTrafficTab || isErrorsTab
                 ? nFormatter(tooltipContent.count, 1)
-                : getStringFromTime(getTimeFromSeconds(tooltipContent.count), true)}
+                : getStringFromTime(
+                    getTimeFromSeconds(tooltipContent.count),
+                    true,
+                  )}
             </span>{' '}
             <span className='text-gray-500 dark:text-gray-400'>
               ({tooltipContent.percentage.toFixed(1)}%)
-              {isTrafficTab ? ' visitors' : isErrorsTab ? ' occurrences' : ' avg load time'}
+              {isTrafficTab
+                ? ' visitors'
+                : isErrorsTab
+                  ? ' occurrences'
+                  : ' avg load time'}
             </span>
           </div>
         </div>
@@ -516,7 +596,9 @@ const InteractiveMap = ({
         <div className='relative flex h-full w-full items-center justify-center'>
           <div className='flex flex-col items-center gap-2'>
             <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent'></div>
-            <span className='text-sm text-neutral-600 dark:text-neutral-300'>{t('project.loadingMapData')}</span>
+            <span className='text-sm text-neutral-600 dark:text-neutral-300'>
+              {t('project.loadingMapData')}
+            </span>
           </div>
         </div>
       }

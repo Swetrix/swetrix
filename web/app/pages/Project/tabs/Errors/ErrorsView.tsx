@@ -16,13 +16,36 @@ import {
   AlertTriangleIcon,
   UserIcon,
 } from 'lucide-react'
-import { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react'
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  lazy,
+  Suspense,
+  use,
+} from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation, useSearchParams, useNavigate, type LinkProps } from 'react-router'
+import {
+  Link,
+  useLocation,
+  useSearchParams,
+  useNavigate,
+  useFetcher,
+  useLoaderData,
+  useRevalidator,
+  type LinkProps,
+} from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { getErrors, getErrorOverview, getError, updateErrorStatus, type ErrorOverviewResponse } from '~/api'
+import type {
+  ErrorsResponse,
+  ErrorDetailsResponse,
+  ErrorOverviewResponse,
+} from '~/api/api.server'
+import { useErrorsProxy } from '~/hooks/useAnalyticsProxy'
 import {
   TimeFormat,
   tbsFormatMapper,
@@ -33,7 +56,7 @@ import {
   ERROR_PANELS_ORDER,
 } from '~/lib/constants'
 import { CountryEntry, Entry } from '~/lib/models/Entry'
-import { SwetrixError, SwetrixErrorDetails } from '~/lib/models/Project'
+import { SwetrixError } from '~/lib/models/Project'
 import { ErrorChart } from '~/pages/Project/tabs/Errors/ErrorChart'
 import { ErrorDetails } from '~/pages/Project/tabs/Errors/ErrorDetails'
 import NoErrorDetails from '~/pages/Project/tabs/Errors/NoErrorDetails'
@@ -44,15 +67,25 @@ import Filters from '~/pages/Project/View/components/Filters'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { Panel, MetadataPanel } from '~/pages/Project/View/Panels'
 import { ERROR_FILTERS_MAPPING } from '~/pages/Project/View/utils/filters'
-import { useViewProjectContext } from '~/pages/Project/View/ViewProject'
+import {
+  useViewProjectContext,
+  useRefreshTriggers,
+} from '~/pages/Project/View/ViewProject'
 import {
   getFormatDate,
   typeNameMapping,
   panelIconMapping,
   getDeviceRowMapper,
 } from '~/pages/Project/View/ViewProject.helpers'
-import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
+import {
+  useCurrentProject,
+  useProjectPassword,
+} from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
+import type {
+  ProjectViewActionData,
+  ProjectLoaderData,
+} from '~/routes/projects.$id'
 import { Badge } from '~/ui/Badge'
 import BillboardChart from '~/ui/BillboardChart'
 import Checkbox from '~/ui/Checkbox'
@@ -64,10 +97,17 @@ import Tooltip from '~/ui/Tooltip'
 import { getRelativeDateIfPossible } from '~/utils/date'
 import { getLocaleDisplayName, nFormatter } from '~/utils/generic'
 
-const InteractiveMap = lazy(() => import('~/pages/Project/View/components/InteractiveMap'))
+const InteractiveMap = lazy(
+  () => import('~/pages/Project/View/components/InteractiveMap'),
+)
 
-const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
-  const validData = data.filter((n) => n !== undefined && n !== null && Number.isFinite(n))
+const calculateOptimalTicks = (
+  data: number[],
+  targetCount: number = 6,
+): number[] => {
+  const validData = data.filter(
+    (n) => n !== undefined && n !== null && Number.isFinite(n),
+  )
 
   if (validData.length === 0) {
     return [0, 1]
@@ -126,11 +166,13 @@ const getErrorTrendsChartSettings = (
     ['affectedUsers', ...chartData.affectedUsers],
   ]
 
-  const allYValues: number[] = [...chartData.occurrences, ...chartData.affectedUsers].filter(
-    (n) => n !== undefined && n !== null,
-  )
+  const allYValues: number[] = [
+    ...chartData.occurrences,
+    ...chartData.affectedUsers,
+  ].filter((n) => n !== undefined && n !== null)
 
-  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+  const optimalTicks =
+    allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
 
   return {
     data: {
@@ -167,8 +209,14 @@ const getErrorTrendsChartSettings = (
           format:
             // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+              ? (x: string) =>
+                  d3.timeFormat(tbsFormatMapper24h[timeBucket])(
+                    x as unknown as Date,
+                  )
+              : (x: string) =>
+                  d3.timeFormat(tbsFormatMapper[timeBucket])(
+                    x as unknown as Date,
+                  ),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -243,7 +291,9 @@ interface StatCardProps {
 
 const StatCard = ({ icon, value, label }: StatCardProps) => (
   <div className='relative overflow-hidden rounded-xl border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
-    <div className='pointer-events-none absolute -bottom-5 -left-5 opacity-10 [&>svg]:size-24'>{icon}</div>
+    <div className='pointer-events-none absolute -bottom-5 -left-5 opacity-10 [&>svg]:size-24'>
+      {icon}
+    </div>
     <div className='relative'>
       <Text as='p' size='3xl' weight='bold' className='leading-tight'>
         {value}
@@ -299,7 +349,10 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
 
   const maxNameLength = 80
   const maxMessageLength = 150
-  const displayName = error.name.length > maxNameLength ? `${error.name.slice(0, maxNameLength)}...` : error.name
+  const displayName =
+    error.name.length > maxNameLength
+      ? `${error.name.slice(0, maxNameLength)}...`
+      : error.name
   const displayMessage =
     error.message && error.message.length > maxMessageLength
       ? `${error.message.slice(0, maxMessageLength)}...`
@@ -321,10 +374,18 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
               />
               {error.filename ? (
                 <>
-                  <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none self-center fill-gray-400'>
+                  <svg
+                    viewBox='0 0 2 2'
+                    className='h-0.5 w-0.5 flex-none self-center fill-gray-400'
+                  >
                     <circle cx={1} cy={1} r={1} />
                   </svg>
-                  <Text size='xs' weight='normal' colour='muted' className='mx-1 max-w-[200px] truncate'>
+                  <Text
+                    size='xs'
+                    weight='normal'
+                    colour='muted'
+                    className='mx-1 max-w-[200px] truncate'
+                  >
                     {error.filename}
                   </Text>
                 </>
@@ -334,16 +395,28 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
               <Tooltip
                 text={error.message}
                 tooltipNode={
-                  <Text as='p' size='sm' colour='muted' className='mt-1 flex text-left leading-5'>
+                  <Text
+                    as='p'
+                    size='sm'
+                    colour='muted'
+                    className='mt-1 flex text-left leading-5'
+                  >
                     {displayMessage}
                   </Text>
                 }
               />
             ) : null}
             <p className='mt-1 flex items-center gap-x-2 text-sm leading-5 text-gray-500 dark:text-gray-300'>
-              <Badge className='mr-2 sm:hidden' label={status.label} colour={status.colour} />
+              <Badge
+                className='mr-2 sm:hidden'
+                label={status.label}
+                colour={status.colour}
+              />
               {lastSeen}
-              <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400 sm:hidden'>
+              <svg
+                viewBox='0 0 2 2'
+                className='h-0.5 w-0.5 flex-none fill-gray-400 sm:hidden'
+              >
                 <circle cx={1} cy={1} r={1} />
               </svg>
               <span className='sm:hidden'>
@@ -353,11 +426,19 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
               </span>
             </p>
             <p className='mt-2 flex text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
-              <span className='mr-3 flex items-center' title={t('project.affectedUsers')}>
-                <UserIcon className='mr-1 size-4' strokeWidth={1.5} /> {error.users}
+              <span
+                className='mr-3 flex items-center'
+                title={t('project.affectedUsers')}
+              >
+                <UserIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                {error.users}
               </span>
-              <span className='flex items-center' title={t('project.affectedSessions')}>
-                <MonitorIcon className='mr-1 size-4' strokeWidth={1.5} /> {error.sessions}
+              <span
+                className='flex items-center'
+                title={t('project.affectedSessions')}
+              >
+                <MonitorIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                {error.sessions}
               </span>
             </p>
           </div>
@@ -365,14 +446,26 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
         <div className='flex shrink-0 items-center gap-x-4'>
           <div className='hidden gap-1 sm:flex sm:flex-col sm:items-end'>
             <div className='flex items-center gap-x-3 text-sm leading-6 text-gray-900 dark:text-gray-50'>
-              <span className='flex items-center' title={t('dashboard.xOccurrences', { x: error.count })}>
-                <AlertTriangleIcon className='mr-1 size-4' strokeWidth={1.5} /> {error.count}
+              <span
+                className='flex items-center'
+                title={t('dashboard.xOccurrences', { x: error.count })}
+              >
+                <AlertTriangleIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                {error.count}
               </span>
-              <span className='flex items-center' title={t('project.xAffectedUsers', { x: error.users })}>
-                <UserIcon className='mr-1 size-4' strokeWidth={1.5} /> {error.users}
+              <span
+                className='flex items-center'
+                title={t('project.xAffectedUsers', { x: error.users })}
+              >
+                <UserIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                {error.users}
               </span>
-              <span className='flex items-center' title={t('project.xAffectedSessions', { x: error.sessions })}>
-                <MonitorIcon className='mr-1 size-4' strokeWidth={1.5} /> {error.sessions}
+              <span
+                className='flex items-center'
+                title={t('project.xAffectedSessions', { x: error.sessions })}
+              >
+                <MonitorIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                {error.sessions}
               </span>
             </div>
             <Badge label={status.label} colour={status.colour} />
@@ -386,10 +479,57 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
 
 const ERRORS_TAKE = 30
 
-const ErrorsView = () => {
+interface DeferredErrorsData {
+  errorsData: ErrorsResponse | null
+  errorDetails: ErrorDetailsResponse | null
+  errorOverview: ErrorOverviewResponse | null
+}
+
+function ErrorsDataResolver({
+  children,
+}: {
+  children: (data: DeferredErrorsData) => React.ReactNode
+}) {
+  const {
+    errorsData: errorsDataPromise,
+    errorDetails: errorDetailsPromise,
+    errorOverview: errorOverviewPromise,
+  } = useLoaderData<ProjectLoaderData>()
+
+  const errorsData = errorsDataPromise ? use(errorsDataPromise) : null
+  const errorDetails = errorDetailsPromise ? use(errorDetailsPromise) : null
+  const errorOverview = errorOverviewPromise ? use(errorOverviewPromise) : null
+
+  // Memoize deferredData so object identity only changes when contained data changes
+  const deferredData = useMemo(
+    () => ({ errorsData, errorDetails, errorOverview }),
+    [errorsData, errorDetails, errorOverview],
+  )
+
+  return <>{children(deferredData)}</>
+}
+
+function ErrorsViewWrapper() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <ErrorsDataResolver>
+        {(deferredData) => <ErrorsViewInner deferredData={deferredData} />}
+      </ErrorsDataResolver>
+    </Suspense>
+  )
+}
+
+interface ErrorsViewInnerProps {
+  deferredData: DeferredErrorsData
+}
+
+const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   const { id, allowedToManage, project } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
-  const { errorsRefreshTrigger, timeBucket, timeFormat, period, dateRange, timezone, filters, size } =
+  const revalidator = useRevalidator()
+  const errorsProxy = useErrorsProxy()
+  const { errorsRefreshTrigger } = useRefreshTriggers()
+  const { timeBucket, timeFormat, period, dateRange, timezone, filters, size } =
     useViewProjectContext()
   const {
     t,
@@ -397,32 +537,62 @@ const ErrorsView = () => {
   } = useTranslation('common')
   const { theme } = useTheme()
   const [searchParams] = useSearchParams()
+  const isEmbedded = searchParams.get('embedded') === 'true'
   const navigate = useNavigate()
+  const errorStatusFetcher = useFetcher<ProjectViewActionData>()
+  const lastHandledStatusData = useRef<ProjectViewActionData | null>(null)
+  const pendingStatusUpdate = useRef<'resolved' | 'active' | null>(null)
 
   const from = dateRange ? getFormatDate(dateRange[0]) : ''
   const to = dateRange ? getFormatDate(dateRange[1]) : ''
   const tnMapping = typeNameMapping(t)
   const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
 
+  // Initialize state from deferred data
+  const initialDataProcessed = useRef(false)
+
   const [errorOptions, setErrorOptions] = useState<Record<string, boolean>>({
     [ERROR_FILTERS_MAPPING.showResolved]: false,
   })
 
-  const [overviewLoading, setOverviewLoading] = useState<boolean | null>(null)
-  const [overview, setOverview] = useState<ErrorOverviewResponse | null>(null)
+  // Overview from loader
+  const overview = deferredData.errorOverview
+  const overviewLoading = revalidator.state === 'loading'
+
   const isMountedRef = useRef(true)
 
-  const [errorsLoading, setErrorsLoading] = useState<boolean | null>(null)
-  const [errors, setErrors] = useState<SwetrixError[]>([])
-  const [errorsSkip, setErrorsSkip] = useState(0)
-  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(false)
-  const errorsRequestIdRef = useRef(0)
+  const [errorsLoading, setErrorsLoading] = useState<boolean | null>(() =>
+    deferredData.errorsData ? false : null,
+  )
+  const [errors, setErrors] = useState<SwetrixError[]>(
+    () => deferredData.errorsData?.errors || [],
+  )
+  const [errorsSkip, setErrorsSkip] = useState(
+    () => deferredData.errorsData?.errors?.length || 0,
+  )
+  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(
+    () => (deferredData.errorsData?.errors?.length || 0) >= ERRORS_TAKE,
+  )
 
   const activeEID = useMemo(() => searchParams.get('eid'), [searchParams])
-  const prevActiveEIDRef = useRef<string | null>(activeEID)
-  const [activeError, setActiveError] = useState<{ details: SwetrixErrorDetails; [key: string]: any } | null>(null)
-  const [errorLoading, setErrorLoading] = useState(false)
-  const [errorStatusUpdating, setErrorStatusUpdating] = useState(false)
+
+  // Error details from loader
+  const activeError = useMemo(() => {
+    if (deferredData.errorDetails) {
+      return {
+        details: deferredData.errorDetails.details,
+        chart: deferredData.errorDetails.chart,
+        params: deferredData.errorDetails.params,
+        metadata: deferredData.errorDetails.metadata,
+        timeBucket: deferredData.errorDetails.timeBucket,
+      }
+    }
+    return null
+  }, [deferredData.errorDetails])
+
+  const errorLoading = activeEID ? revalidator.state === 'loading' : false
+
+  const errorStatusUpdating = errorStatusFetcher.state !== 'idle'
 
   const [errorsActiveTabs, setErrorsActiveTabs] = useState<{
     location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
@@ -447,113 +617,90 @@ const ErrorsView = () => {
     }
   }, [])
 
-  const loadOverview = useCallback(async () => {
-    if (overviewLoading) return
+  // Process deferred data on mount
+  useEffect(() => {
+    if (initialDataProcessed.current) return
+    initialDataProcessed.current = true
 
-    setOverviewLoading(true)
-    try {
-      const result = await getErrorOverview(
-        id,
-        timeBucket,
-        period,
-        filters,
-        errorOptions,
-        from,
-        to,
-        timezone || '',
-        projectPassword,
-      )
-      if (isMountedRef.current) {
-        setOverview(result)
-      }
-    } catch (reason: any) {
-      console.error('[ErrorsView] Failed to load overview:', reason)
-      if (isMountedRef.current) {
-        toast.error(reason?.message || t('apiNotifications.somethingWentWrong'))
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setOverviewLoading(false)
-      }
+    if (deferredData.errorsData) {
+      const errorsList = deferredData.errorsData.errors || []
+      setErrors(errorsList)
+      setErrorsSkip(ERRORS_TAKE)
+      setCanLoadMoreErrors(errorsList.length >= ERRORS_TAKE)
+    } else {
+      setErrors([])
+      setCanLoadMoreErrors(false)
     }
-  }, [id, timeBucket, period, filters, errorOptions, from, to, timezone, projectPassword, overviewLoading, t])
+    setErrorsLoading(false)
+  }, [deferredData])
 
-  const loadErrors = useCallback(
-    async (forcedSkip?: number, override?: boolean) => {
-      if (errorsLoading && !override) return
-
-      const currentRequestId = ++errorsRequestIdRef.current
+  // Sync state when revalidation completes with new data
+  useEffect(() => {
+    if (!initialDataProcessed.current) return
+    if (revalidator.state === 'idle') {
+      if (deferredData.errorsData) {
+        const errorsList = deferredData.errorsData.errors || []
+        setErrors(errorsList)
+        setErrorsSkip(ERRORS_TAKE)
+        setCanLoadMoreErrors(errorsList.length >= ERRORS_TAKE)
+      } else {
+        setErrors([])
+        setCanLoadMoreErrors(false)
+      }
+      setErrorsLoading(false)
+    } else if (revalidator.state === 'loading') {
       setErrorsLoading(true)
+    }
+  }, [revalidator.state, deferredData])
 
-      const skip = forcedSkip !== undefined ? forcedSkip : errorsSkip
+  // Load more errors via proxy
+  const loadMoreErrors = useCallback(() => {
+    if (errorsLoading) return
 
-      try {
-        const { errors: newErrors } = await getErrors(
-          id,
-          timeBucket,
-          period === 'custom' ? '' : period,
-          filters,
-          errorOptions,
-          from,
-          to,
-          ERRORS_TAKE,
-          skip,
-          timezone || '',
-          projectPassword,
-        )
+    errorsProxy.fetchErrors(id, {
+      timeBucket,
+      period: period === 'custom' ? '' : period,
+      from: from || undefined,
+      to: to || undefined,
+      timezone: timezone || '',
+      filters,
+      take: ERRORS_TAKE,
+      skip: errorsSkip,
+      options: errorOptions,
+    })
+  }, [
+    id,
+    timeBucket,
+    period,
+    from,
+    to,
+    timezone,
+    filters,
+    errorsSkip,
+    errorOptions,
+    errorsLoading,
+    errorsProxy,
+  ])
 
-        if (!isMountedRef.current || currentRequestId !== errorsRequestIdRef.current) return
+  // Handle proxy response for pagination
+  useEffect(() => {
+    if (revalidator.state === 'loading') return
 
-        if (skip === 0) {
-          setErrors(newErrors)
-        } else {
-          setErrors((prev) => [...prev, ...newErrors])
-        }
-
-        setErrorsSkip(skip + ERRORS_TAKE)
-        setCanLoadMoreErrors(newErrors.length >= ERRORS_TAKE)
-      } catch (reason: any) {
-        console.error('[ErrorsView] Failed to load errors:', reason)
-        if (isMountedRef.current && currentRequestId === errorsRequestIdRef.current) {
-          toast.error(reason?.message || t('apiNotifications.somethingWentWrong'))
-        }
-      } finally {
-        if (isMountedRef.current && currentRequestId === errorsRequestIdRef.current) {
-          setErrorsLoading(false)
-        }
-      }
-    },
-    [id, timeBucket, period, filters, errorOptions, from, to, timezone, projectPassword, errorsLoading, errorsSkip, t],
-  )
-
-  const loadError = useCallback(
-    async (eid: string) => {
-      setErrorLoading(true)
-
-      try {
-        let error
-        if (period === 'custom' && dateRange) {
-          error = await getError(id, eid, timeBucket, '', filters, from, to, timezone, projectPassword)
-        } else {
-          error = await getError(id, eid, timeBucket, period, filters, '', '', timezone, projectPassword)
-        }
-
-        setActiveError(error)
-      } catch (reason: any) {
-        if (reason?.status === 400) {
-          setErrorLoading(false)
-          setActiveError(null)
-          return
-        }
-
-        const message = _isEmpty(reason.data?.message) ? reason.data : reason.data.message
-        console.error('[ErrorsView] Failed to load error:', message)
-        toast.error(message)
-      }
-      setErrorLoading(false)
-    },
-    [dateRange, id, period, timeBucket, projectPassword, timezone, filters, from, to],
-  )
+    if (errorsProxy.data && !errorsProxy.isLoading) {
+      const newErrors = errorsProxy.data.errors || []
+      setErrors((prev) => [...prev, ...newErrors])
+      setErrorsSkip((prev) => prev + ERRORS_TAKE)
+      setCanLoadMoreErrors(newErrors.length >= ERRORS_TAKE)
+    }
+    if (errorsProxy.error) {
+      toast.error(errorsProxy.error)
+    }
+  }, [
+    errorsProxy.data,
+    errorsProxy.error,
+    errorsProxy.isLoading,
+    revalidator.state,
+  ])
 
   const updateStatusInErrors = useCallback(
     (status: 'active' | 'resolved') => {
@@ -571,44 +718,48 @@ const ErrorsView = () => {
     [activeError?.details?.eid],
   )
 
-  const markErrorAsResolved = async () => {
+  // Handle error status update response
+  useEffect(() => {
+    if (errorStatusFetcher.state !== 'idle' || !errorStatusFetcher.data) return
+    if (lastHandledStatusData.current === errorStatusFetcher.data) return
+    lastHandledStatusData.current = errorStatusFetcher.data
+
+    const { intent, success, error } = errorStatusFetcher.data
+
+    if (intent === 'update-error-status') {
+      if (success && pendingStatusUpdate.current) {
+        updateStatusInErrors(pendingStatusUpdate.current)
+        if (activeEID) {
+          revalidator.revalidate()
+        }
+        toast.success(t('apiNotifications.errorStatusUpdated'))
+        pendingStatusUpdate.current = null
+      } else if (error) {
+        toast.error(error)
+        pendingStatusUpdate.current = null
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [errorStatusFetcher.state, errorStatusFetcher.data, t, activeEID])
+
+  const markErrorAsResolved = () => {
     if (errorStatusUpdating || !activeEID || !activeError?.details?.eid) return
 
-    setErrorStatusUpdating(true)
-
-    try {
-      await updateErrorStatus(id, 'resolved', activeEID)
-      await loadError(activeEID)
-      updateStatusInErrors('resolved')
-    } catch (reason) {
-      console.error('[markErrorAsResolved]', reason)
-      toast.error(t('apiNotifications.updateErrorStatusFailed'))
-      setErrorStatusUpdating(false)
-      return
-    }
-
-    toast.success(t('apiNotifications.errorStatusUpdated'))
-    setErrorStatusUpdating(false)
+    pendingStatusUpdate.current = 'resolved'
+    errorStatusFetcher.submit(
+      { intent: 'update-error-status', eid: activeEID, status: 'resolved' },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
-  const markErrorAsActive = async () => {
+  const markErrorAsActive = () => {
     if (errorStatusUpdating || !activeEID || !activeError?.details?.eid) return
 
-    setErrorStatusUpdating(true)
-
-    try {
-      await updateErrorStatus(id, 'active', activeEID)
-      await loadError(activeEID)
-      updateStatusInErrors('active')
-    } catch (reason) {
-      console.error('[markErrorAsActive]', reason)
-      toast.error(t('apiNotifications.updateErrorStatusFailed'))
-      setErrorStatusUpdating(false)
-      return
-    }
-
-    toast.success(t('apiNotifications.errorStatusUpdated'))
-    setErrorStatusUpdating(false)
+    pendingStatusUpdate.current = 'active'
+    errorStatusFetcher.submit(
+      { intent: 'update-error-status', eid: activeEID, status: 'active' },
+      { method: 'POST', action: `/projects/${id}` },
+    )
   }
 
   const switchActiveErrorFilter = useMemo(
@@ -630,63 +781,47 @@ const ErrorsView = () => {
     ]
   }, [t, errorOptions])
 
-  // Load data on mount and when params change (only for list view)
+  // Handle refresh trigger - use revalidator for URL-based data
   useEffect(() => {
-    if (!id || !timeBucket || !period || activeEID) return
-
-    loadOverview()
-    setErrorsSkip(0)
-    loadErrors(0, true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, period, from, to, timeBucket, timezone, filters, errorOptions])
-
-  // Handle activeEID changes
-  useEffect(() => {
-    if (!activeEID) {
-      setActiveError(null)
-      // Coming back from error detail to list: reset and reload
-      if (prevActiveEIDRef.current) {
-        setErrorsSkip(0)
-        loadErrors(0, true)
-        loadOverview()
-      }
-      prevActiveEIDRef.current = null
-      return
+    if (errorsRefreshTrigger > 0) {
+      revalidator.revalidate()
     }
-
-    loadError(activeEID)
-    prevActiveEIDRef.current = activeEID
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, dateRange, timeBucket, activeEID, filters])
-
-  // Handle refresh trigger (list + detail)
-  useEffect(() => {
-    if (errorsRefreshTrigger <= 0) return
-
-    if (activeEID) {
-      loadError(activeEID)
-      return
-    }
-
-    setErrorsSkip(0)
-    loadErrors(0, true)
-    loadOverview()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [errorsRefreshTrigger])
 
   const chartOptions = useMemo(() => {
-    if (!overview?.chart || !overview.chart.x || overview.chart.x.length === 0) return null
-    return getErrorTrendsChartSettings(overview.chart, timeBucket, timeFormat, chartTypes.line, {
-      occurrences: t('project.totalErrors'),
-      affectedUsers: t('project.affectedUsers'),
-    })
+    if (!overview?.chart || !overview.chart.x || overview.chart.x.length === 0)
+      return null
+    return getErrorTrendsChartSettings(
+      overview.chart,
+      timeBucket,
+      timeFormat,
+      chartTypes.line,
+      {
+        occurrences: t('project.totalErrors'),
+        affectedUsers: t('project.affectedUsers'),
+      },
+    )
   }, [overview?.chart, timeBucket, timeFormat, t])
 
-  const hasErrors = !_isEmpty(errors) || overview?.stats?.totalErrors
+  const hasErrorsRaw = !_isEmpty(errors) || overview?.stats?.totalErrors
+
+  // Track if we've ever shown actual content to prevent NoEvents flash during exit animation
+  const hasShownContentRef = useRef(false)
+
+  if (hasErrorsRaw) {
+    hasShownContentRef.current = true
+  }
+
+  // Don't show NoEvents if we've previously shown content (prevents flash during tab switch)
+  const hasErrors = hasErrorsRaw || hasShownContentRef.current
 
   const getFilterLink = useCallback(
     (column: string, value: string | null): LinkProps['to'] => {
-      const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
+      const isFilterActive =
+        filters.findIndex(
+          (filter) => filter.column === column && filter.filter === value,
+        ) >= 0
       const newSearchParams = new URLSearchParams(searchParams.toString())
 
       if (isFilterActive) {
@@ -759,13 +894,18 @@ const ErrorsView = () => {
     [t],
   )
 
-  if (typeof project?.isErrorDataExists === 'boolean' && !project.isErrorDataExists) {
+  if (
+    typeof project?.isErrorDataExists === 'boolean' &&
+    !project.isErrorDataExists
+  ) {
     return <WaitingForAnError />
   }
 
   if (activeEID) {
     const resolveButton =
-      allowedToManage && activeError && activeError?.details?.status !== 'resolved' ? (
+      allowedToManage &&
+      activeError &&
+      activeError?.details?.status !== 'resolved' ? (
         <button
           type='button'
           disabled={errorStatusUpdating}
@@ -773,14 +913,17 @@ const ErrorsView = () => {
           className={cx(
             'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
             {
-              'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
+              'cursor-not-allowed opacity-50':
+                errorLoading && !errorStatusUpdating,
               'animate-pulse cursor-not-allowed': errorStatusUpdating,
             },
           )}
         >
           {t('project.resolve')}
         </button>
-      ) : allowedToManage && activeError && activeError?.details?.status === 'resolved' ? (
+      ) : allowedToManage &&
+        activeError &&
+        activeError?.details?.status === 'resolved' ? (
         <button
           type='button'
           disabled={errorStatusUpdating}
@@ -788,7 +931,8 @@ const ErrorsView = () => {
           className={cx(
             'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
             {
-              'cursor-not-allowed opacity-50': errorLoading && !errorStatusUpdating,
+              'cursor-not-allowed opacity-50':
+                errorLoading && !errorStatusUpdating,
               'animate-pulse cursor-not-allowed': errorStatusUpdating,
             },
           )}
@@ -824,7 +968,7 @@ const ErrorsView = () => {
         ) : null}
 
         {activeError?.chart ? (
-          <div className='mt-4'>
+          <div className='mt-3'>
             <ErrorChart
               chart={activeError?.chart}
               timeBucket={activeError?.timeBucket}
@@ -856,15 +1000,28 @@ const ErrorsView = () => {
                         return <CCRow cc={null} language={language} />
                       }
                       const entryNameArray = entryName.split('-')
-                      const displayName = getLocaleDisplayName(entryName, language)
+                      const displayName = getLocaleDisplayName(
+                        entryName,
+                        language,
+                      )
 
                       return (
-                        <CCRow cc={entryNameArray[entryNameArray.length - 1]} name={displayName} language={language} />
+                        <CCRow
+                          cc={entryNameArray[entryNameArray.length - 1]}
+                          name={displayName}
+                          language={language}
+                        />
                       )
                     }
 
                     if (cc !== undefined) {
-                      return <CCRow cc={cc} name={entryName || undefined} language={language} />
+                      return (
+                        <CCRow
+                          cc={cc}
+                          name={entryName || undefined}
+                          language={language}
+                        />
+                      )
                     }
 
                     return <CCRow cc={entryName} language={language} />
@@ -885,15 +1042,19 @@ const ErrorsView = () => {
                         })
                       }
                       activeTabId={errorsActiveTabs.location}
-                      data={activeError?.params?.[errorsActiveTabs.location] || []}
+                      data={
+                        activeError?.params?.[errorsActiveTabs.location] || []
+                      }
                       rowMapper={rowMapper}
                       customRenderer={
                         errorsActiveTabs.location === 'map'
                           ? () => {
                               const countryData = activeError?.params?.cc || []
                               const regionData = activeError?.params?.rg || []
-                              // @ts-expect-error
-                              const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
+                              const total = countryData.reduce(
+                                (acc, curr) => acc + curr.count,
+                                0,
+                              )
 
                               return (
                                 <Suspense
@@ -944,11 +1105,20 @@ const ErrorsView = () => {
                       name={t('project.devices')}
                       tabs={deviceTabs}
                       onTabChange={(tab) =>
-                        setErrorsActiveTabs({ ...errorsActiveTabs, device: tab as 'br' | 'os' | 'dv' })
+                        setErrorsActiveTabs({
+                          ...errorsActiveTabs,
+                          device: tab as 'br' | 'os' | 'dv',
+                        })
                       }
                       activeTabId={errorsActiveTabs.device}
-                      data={activeError?.params?.[errorsActiveTabs.device] || []}
-                      rowMapper={getDeviceRowMapper(errorsActiveTabs.device, theme, t)}
+                      data={
+                        activeError?.params?.[errorsActiveTabs.device] || []
+                      }
+                      rowMapper={getDeviceRowMapper(
+                        errorsActiveTabs.device,
+                        theme,
+                        t,
+                      )}
                       capitalize={errorsActiveTabs.device === 'dv'}
                       versionData={
                         errorsActiveTabs.device === 'br'
@@ -958,7 +1128,11 @@ const ErrorsView = () => {
                             : undefined
                       }
                       getVersionFilterLink={(parent, version) =>
-                        getVersionFilterLink(parent, version, errorsActiveTabs.device === 'br' ? 'br' : 'os')
+                        getVersionFilterLink(
+                          parent,
+                          version,
+                          errorsActiveTabs.device === 'br' ? 'br' : 'os',
+                        )
                       }
                       valuesHeaderName={t('project.occurrences')}
                       highlightColour='red'
@@ -982,7 +1156,9 @@ const ErrorsView = () => {
                         if (!entryName) {
                           return (
                             <span className='italic'>
-                              {errorsActiveTabs.page === 'pg' ? t('common.notSet') : t('project.unknownHost')}
+                              {errorsActiveTabs.page === 'pg'
+                                ? t('common.notSet')
+                                : t('project.unknownHost')}
                             </span>
                           )
                         }
@@ -999,7 +1175,12 @@ const ErrorsView = () => {
                       }}
                       name={t('project.pages')}
                       tabs={pageTabs}
-                      onTabChange={(tab) => setErrorsActiveTabs({ ...errorsActiveTabs, page: tab as 'pg' | 'host' })}
+                      onTabChange={(tab) =>
+                        setErrorsActiveTabs({
+                          ...errorsActiveTabs,
+                          page: tab as 'pg' | 'host',
+                        })
+                      }
                       activeTabId={errorsActiveTabs.page}
                       data={activeError?.params?.[errorsActiveTabs.page] || []}
                       valuesHeaderName={t('project.occurrences')}
@@ -1011,7 +1192,9 @@ const ErrorsView = () => {
                 return null
               })
             : null}
-          {activeError?.metadata ? <MetadataPanel metadata={activeError.metadata} /> : null}
+          {activeError?.metadata ? (
+            <MetadataPanel metadata={activeError.metadata} />
+          ) : null}
         </div>
 
         {_isEmpty(activeError) && errorLoading ? <Loader /> : null}
@@ -1022,8 +1205,21 @@ const ErrorsView = () => {
   }
 
   // List view - Initial loading state
-  if ((overviewLoading === null || overviewLoading) && !overview && _isEmpty(errors)) {
-    return <Loader />
+  if (
+    (overviewLoading === null || overviewLoading) &&
+    !overview &&
+    _isEmpty(errors)
+  ) {
+    return (
+      <div
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
+          'min-h-including-header': !isEmbedded,
+          'min-h-screen': isEmbedded,
+        })}
+      >
+        <Loader />
+      </div>
+    )
   }
 
   const filtersDropdown = hasErrors ? (
@@ -1057,13 +1253,22 @@ const ErrorsView = () => {
 
   return (
     <div>
-      <DashboardHeader showLiveVisitors showSearchButton={false} hideTimeBucket rightContent={filtersDropdown} />
+      <DashboardHeader
+        showLiveVisitors
+        showSearchButton={false}
+        hideTimeBucket
+        rightContent={filtersDropdown}
+      />
 
-      {(overviewLoading || errorsLoading) && (overview || !_isEmpty(errors)) ? <LoadingBar /> : null}
+      {(overviewLoading || errorsLoading) && (overview || !_isEmpty(errors)) ? (
+        <LoadingBar />
+      ) : null}
 
       {hasErrors ? <Filters className='mb-3' tnMapping={tnMapping} /> : null}
 
-      {!hasErrors && errorsLoading === false && overviewLoading === false ? <NoEvents filters={filters} /> : null}
+      {!hasErrors && errorsLoading === false && overviewLoading === false ? (
+        <NoEvents filters={filters} />
+      ) : null}
 
       {hasErrors ? (
         <>
@@ -1081,7 +1286,9 @@ const ErrorsView = () => {
                 label={t('project.totalErrors')}
               />
               <StatCard
-                icon={<PercentIcon className='text-orange-600' strokeWidth={1.5} />}
+                icon={
+                  <PercentIcon className='text-orange-600' strokeWidth={1.5} />
+                }
                 value={`${overview?.stats?.errorRate || 0}%`}
                 label={t('project.errorRate')}
               />
@@ -1091,7 +1298,9 @@ const ErrorsView = () => {
                 label={t('project.affectedUsers')}
               />
               <StatCard
-                icon={<MonitorIcon className='text-purple-600' strokeWidth={1.5} />}
+                icon={
+                  <MonitorIcon className='text-purple-600' strokeWidth={1.5} />
+                }
                 value={nFormatter(overview?.stats?.affectedSessions || 0, 1)}
                 label={t('project.affectedSessions')}
               />
@@ -1122,7 +1331,7 @@ const ErrorsView = () => {
               <button
                 type='button'
                 title={t('project.loadMore')}
-                onClick={() => loadErrors()}
+                onClick={loadMoreErrors}
                 className={cx(
                   'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                   {
@@ -1139,5 +1348,7 @@ const ErrorsView = () => {
     </div>
   )
 }
+
+const ErrorsView = ErrorsViewWrapper
 
 export default ErrorsView

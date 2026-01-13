@@ -22,16 +22,18 @@ import {
 import { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import type {
+  Experiment,
+  ExperimentResults as ExperimentResultsType,
+  ExperimentChartData,
+  ExperimentVariantResult,
+  Goal,
+} from '~/api/api.server'
 import {
-  getExperiment,
-  getExperimentResults,
-  getGoal,
-  type Experiment,
-  type ExperimentResults as ExperimentResultsType,
-  type ExperimentChartData,
-  type ExperimentVariantResult,
-  type Goal,
-} from '~/api'
+  useExperimentProxy,
+  useExperimentResultsProxy,
+  useGoalProxy,
+} from '~/hooks/useAnalyticsProxy'
 import {
   TimeFormat,
   tbsFormatMapper,
@@ -81,10 +83,17 @@ interface StatCardProps {
 
 const StatCard = memo(({ icon, value, label, subValue }: StatCardProps) => (
   <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
-    <div className='pointer-events-none absolute -bottom-5 -left-5 opacity-10 [&>svg]:size-24'>{icon}</div>
+    <div className='pointer-events-none absolute -bottom-5 -left-5 opacity-10 [&>svg]:size-24'>
+      {icon}
+    </div>
     <div className='relative'>
       <div className='flex items-baseline gap-1.5'>
-        <Text as='p' size='3xl' weight='bold' className='leading-tight tabular-nums'>
+        <Text
+          as='p'
+          size='3xl'
+          weight='bold'
+          className='leading-tight tabular-nums'
+        >
           {value}
         </Text>
         {subValue ? (
@@ -110,7 +119,9 @@ const getWinProbabilityChartSettings = (
 ): ChartOptions => {
   const xAxisSize = _size(chartData.x)
 
-  const columns: any[] = [['x', ..._map(chartData.x, (el) => dayjs(el).toDate())]]
+  const columns: any[] = [
+    ['x', ..._map(chartData.x, (el) => dayjs(el).toDate())],
+  ]
 
   const types: Record<string, any> = {}
   const colors: Record<string, string> = {}
@@ -155,8 +166,14 @@ const getWinProbabilityChartSettings = (
           format:
             // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
+              ? (x: string) =>
+                  d3.timeFormat(tbsFormatMapper24h[timeBucket])(
+                    x as unknown as Date,
+                  )
+              : (x: string) =>
+                  d3.timeFormat(tbsFormatMapper[timeBucket])(
+                    x as unknown as Date,
+                  ),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -231,8 +248,19 @@ const WinProbabilityChart = memo(
     const { timeFormat } = useViewProjectContext()
 
     const chartOptions = useMemo(() => {
-      if (!chartData || !chartData.x || chartData.x.length === 0 || variants.length === 0) return null
-      return getWinProbabilityChartSettings(chartData, variants, timeBucket, timeFormat)
+      if (
+        !chartData ||
+        !chartData.x ||
+        chartData.x.length === 0 ||
+        variants.length === 0
+      )
+        return null
+      return getWinProbabilityChartSettings(
+        chartData,
+        variants,
+        timeBucket,
+        timeFormat,
+      )
     }, [chartData, variants, timeBucket, timeFormat])
 
     if (!chartOptions) {
@@ -269,7 +297,10 @@ const ConfidenceBar = memo(
     isControl: boolean
   }) => {
     const maxRange = 30
-    const clampedImprovement = Math.max(-maxRange, Math.min(maxRange, improvement))
+    const clampedImprovement = Math.max(
+      -maxRange,
+      Math.min(maxRange, improvement),
+    )
     const position = ((clampedImprovement + maxRange) / (maxRange * 2)) * 100
 
     const isPositive = improvement > 0
@@ -297,8 +328,16 @@ const ConfidenceBar = memo(
 
         <div className='absolute top-1/2 left-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 bg-gray-300 dark:bg-gray-600' />
 
-        <div className='absolute top-1/2 -translate-x-1/2 -translate-y-1/2' style={{ left: `${position}%` }}>
-          <div className={cx('size-3.5 rotate-45 rounded-sm shadow-sm', getColor())} />
+        <div
+          className='absolute top-1/2 -translate-x-1/2 -translate-y-1/2'
+          style={{ left: `${position}%` }}
+        >
+          <div
+            className={cx(
+              'size-3.5 rotate-45 rounded-sm shadow-sm',
+              getColor(),
+            )}
+          />
         </div>
       </div>
     )
@@ -307,7 +346,13 @@ const ConfidenceBar = memo(
 
 ConfidenceBar.displayName = 'ConfidenceBar'
 
-const TableHeader = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+const TableHeader = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) => (
   <th
     className={cx(
       'px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400',
@@ -318,12 +363,22 @@ const TableHeader = ({ children, className }: { children: React.ReactNode; class
   </th>
 )
 
-const TableCell = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <td className={cx('px-4 py-4', className)}>{children}</td>
-)
+const TableCell = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) => <td className={cx('px-4 py-4', className)}>{children}</td>
 
 const ExposuresTable = memo(
-  ({ variants, totalExposures }: { variants: ExperimentVariantResult[]; totalExposures: number }) => {
+  ({
+    variants,
+    totalExposures,
+  }: {
+    variants: ExperimentVariantResult[]
+    totalExposures: number
+  }) => {
     const { t } = useTranslation()
 
     return (
@@ -344,9 +399,15 @@ const ExposuresTable = memo(
             </thead>
             <tbody className='divide-y divide-gray-200 dark:divide-slate-700'>
               {_map(variants, (variant) => {
-                const percentage = totalExposures > 0 ? ((variant.exposures / totalExposures) * 100).toFixed(1) : '0.0'
+                const percentage =
+                  totalExposures > 0
+                    ? ((variant.exposures / totalExposures) * 100).toFixed(1)
+                    : '0.0'
                 return (
-                  <tr key={variant.key} className='hover:bg-gray-50 dark:hover:bg-slate-700/30'>
+                  <tr
+                    key={variant.key}
+                    className='hover:bg-gray-50 dark:hover:bg-slate-700/30'
+                  >
                     <TableCell>
                       <div className='flex items-center gap-2'>
                         <Text weight='medium' size='sm'>
@@ -431,7 +492,9 @@ const MetricsTable = memo(
                 <TableHeader>{t('experiments.variants')}</TableHeader>
                 <TableHeader>Value</TableHeader>
                 <TableHeader>{t('experiments.improvement')}</TableHeader>
-                <TableHeader>{t('experiments.probabilityOfWinning')}</TableHeader>
+                <TableHeader>
+                  {t('experiments.probabilityOfWinning')}
+                </TableHeader>
                 <TableHeader className='w-48'>
                   <div className='flex items-center justify-between text-[10px]'>
                     <span>-30%</span>
@@ -456,11 +519,22 @@ const MetricsTable = memo(
                   </TableCell>
                   <TableCell>
                     <div className='flex flex-col'>
-                      <Text as='p' weight='semibold' size='sm' className='tabular-nums'>
+                      <Text
+                        as='p'
+                        weight='semibold'
+                        size='sm'
+                        className='tabular-nums'
+                      >
                         {controlVariant.conversionRate}%
                       </Text>
-                      <Text as='p' size='xs' colour='muted' className='mt-0.5 tabular-nums'>
-                        {nFormatter(controlVariant.conversions, 1)} / {nFormatter(controlVariant.exposures, 1)}
+                      <Text
+                        as='p'
+                        size='xs'
+                        colour='muted'
+                        className='mt-0.5 tabular-nums'
+                      >
+                        {nFormatter(controlVariant.conversions, 1)} /{' '}
+                        {nFormatter(controlVariant.exposures, 1)}
                       </Text>
                     </div>
                   </TableCell>
@@ -477,7 +551,9 @@ const MetricsTable = memo(
                   <TableCell>
                     <ConfidenceBar
                       improvement={0}
-                      probabilityOfWinning={controlVariant.probabilityOfBeingBest}
+                      probabilityOfWinning={
+                        controlVariant.probabilityOfBeingBest
+                      }
                       isControl
                     />
                   </TableCell>
@@ -491,9 +567,12 @@ const MetricsTable = memo(
                 return (
                   <tr
                     key={variant.key}
-                    className={cx('hover:bg-gray-50 dark:hover:bg-slate-700/30', {
-                      'bg-green-50/50 dark:bg-green-900/10': isWinner,
-                    })}
+                    className={cx(
+                      'hover:bg-gray-50 dark:hover:bg-slate-700/30',
+                      {
+                        'bg-green-50/50 dark:bg-green-900/10': isWinner,
+                      },
+                    )}
                   >
                     <TableCell>
                       <div className='flex items-center gap-2'>
@@ -510,21 +589,37 @@ const MetricsTable = memo(
                     </TableCell>
                     <TableCell>
                       <div className='flex flex-col'>
-                        <Text as='p' weight='semibold' size='sm' className='tabular-nums'>
+                        <Text
+                          as='p'
+                          weight='semibold'
+                          size='sm'
+                          className='tabular-nums'
+                        >
                           {variant.conversionRate}%
                         </Text>
-                        <Text as='p' size='xs' colour='muted' className='mt-0.5 tabular-nums'>
-                          {nFormatter(variant.conversions, 1)} / {nFormatter(variant.exposures, 1)}
+                        <Text
+                          as='p'
+                          size='xs'
+                          colour='muted'
+                          className='mt-0.5 tabular-nums'
+                        >
+                          {nFormatter(variant.conversions, 1)} /{' '}
+                          {nFormatter(variant.exposures, 1)}
                         </Text>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div
-                        className={cx('flex items-center gap-1 text-sm font-medium', {
-                          'text-green-600 dark:text-green-400': isPositive,
-                          'text-red-600 dark:text-red-400': !isPositive && variant.improvement !== 0,
-                          'text-gray-500 dark:text-gray-400': variant.improvement === 0,
-                        })}
+                        className={cx(
+                          'flex items-center gap-1 text-sm font-medium',
+                          {
+                            'text-green-600 dark:text-green-400': isPositive,
+                            'text-red-600 dark:text-red-400':
+                              !isPositive && variant.improvement !== 0,
+                            'text-gray-500 dark:text-gray-400':
+                              variant.improvement === 0,
+                          },
+                        )}
                       >
                         {variant.improvement !== 0 ? (
                           <>
@@ -545,9 +640,14 @@ const MetricsTable = memo(
                       <div className='flex items-center gap-2'>
                         <Text
                           size='sm'
-                          weight={variant.probabilityOfBeingBest >= 95 ? 'semibold' : 'normal'}
+                          weight={
+                            variant.probabilityOfBeingBest >= 95
+                              ? 'semibold'
+                              : 'normal'
+                          }
                           className={cx('tabular-nums', {
-                            'text-green-600 dark:text-green-400': variant.probabilityOfBeingBest >= 95,
+                            'text-green-600 dark:text-green-400':
+                              variant.probabilityOfBeingBest >= 95,
                           })}
                         >
                           {variant.probabilityOfBeingBest}%
@@ -580,7 +680,15 @@ const MetricsTable = memo(
 MetricsTable.displayName = 'MetricsTable'
 
 const CollapsibleSection = memo(
-  ({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) => {
+  ({
+    title,
+    children,
+    defaultOpen = true,
+  }: {
+    title: string
+    children: React.ReactNode
+    defaultOpen?: boolean
+  }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen)
 
     return (
@@ -599,7 +707,11 @@ const CollapsibleSection = memo(
             <ChevronDownIcon className='size-4 text-gray-500' />
           )}
         </button>
-        {isOpen ? <div className='border-t border-gray-200 px-4 py-4 dark:border-slate-700'>{children}</div> : null}
+        {isOpen ? (
+          <div className='border-t border-gray-200 px-4 py-4 dark:border-slate-700'>
+            {children}
+          </div>
+        ) : null}
       </div>
     )
   },
@@ -619,6 +731,9 @@ const ExperimentResults = ({
 }: ExperimentResultsProps) => {
   const { t } = useTranslation()
   const isMountedRef = useRef(true)
+  const experimentProxy = useExperimentProxy()
+  const resultsProxy = useExperimentResultsProxy()
+  const goalProxy = useGoalProxy()
 
   const [experiment, setExperiment] = useState<Experiment | null>(null)
   const [results, setResults] = useState<ExperimentResultsType | null>(null)
@@ -645,14 +760,20 @@ const ExperimentResults = ({
 
       try {
         const [experimentData, resultsData] = await Promise.all([
-          getExperiment(experimentId),
-          getExperimentResults(experimentId, period, timeBucket, from, to, timezone),
+          experimentProxy.fetchExperiment(experimentId),
+          resultsProxy.fetchResults(experimentId, {
+            period,
+            timeBucket,
+            from,
+            to,
+            timezone,
+          }),
         ])
 
         let goalData: Goal | null = null
-        if (experimentData.goalId) {
+        if (experimentData?.goalId) {
           try {
-            goalData = await getGoal(experimentData.goalId)
+            goalData = await goalProxy.fetchGoal(experimentData.goalId)
           } catch {
             goalData = null
           }
@@ -676,11 +797,22 @@ const ExperimentResults = ({
 
     loadData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [experimentId, period, timeBucket, from, to, timezone, reloadToken, refreshTrigger])
+  }, [
+    experimentId,
+    period,
+    timeBucket,
+    from,
+    to,
+    timezone,
+    reloadToken,
+    refreshTrigger,
+  ])
 
   const overallConversionRate = useMemo(() => {
     if (!results || results.totalExposures === 0) return 0
-    return ((results.totalConversions / results.totalExposures) * 100).toFixed(2)
+    return ((results.totalConversions / results.totalExposures) * 100).toFixed(
+      2,
+    )
   }, [results])
 
   const sortedVariants = useMemo(() => {
@@ -729,7 +861,9 @@ const ExperimentResults = ({
               <Button
                 type='button'
                 onClick={() => setIsSettingsOpen(true)}
-                disabled={results.status === 'running' || results.status === 'completed'}
+                disabled={
+                  results.status === 'running' || results.status === 'completed'
+                }
                 ghost
                 small
               >
@@ -741,24 +875,40 @@ const ExperimentResults = ({
         }
         leftContent={
           <div className='flex items-center gap-2'>
-            <FlaskConicalIcon className='size-5 text-purple-500' strokeWidth={1.5} />
+            <FlaskConicalIcon
+              className='size-5 text-purple-500'
+              strokeWidth={1.5}
+            />
             <Text as='h2' size='xl' weight='bold' truncate>
               {experiment.name}
             </Text>
             <div
-              className={cx('inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium', {
-                'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400': results.status === 'draft',
-                'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400': results.status === 'running',
-                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400': results.status === 'paused',
-                'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400': results.status === 'completed',
-              })}
+              className={cx(
+                'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                {
+                  'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400':
+                    results.status === 'draft',
+                  'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400':
+                    results.status === 'running',
+                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400':
+                    results.status === 'paused',
+                  'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400':
+                    results.status === 'completed',
+                },
+              )}
             >
               {t(`experiments.status.${results.status}`)}
             </div>
             {goal?.name ? (
               <div className='inline-flex max-w-[240px] items-center gap-1.5 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'>
                 <TargetIcon className='size-3.5' strokeWidth={1.5} />
-                <Text as='span' size='xs' weight='medium' colour='inherit' truncate>
+                <Text
+                  as='span'
+                  size='xs'
+                  weight='medium'
+                  colour='inherit'
+                  truncate
+                >
                   {goal.name}
                 </Text>
               </div>
@@ -780,12 +930,18 @@ const ExperimentResults = ({
               <TrophyIcon className='size-6 text-green-600 dark:text-green-400' />
             </div>
             <div>
-              <Text weight='bold' size='lg' className='text-green-800 dark:text-green-200'>
+              <Text
+                weight='bold'
+                size='lg'
+                className='text-green-800 dark:text-green-200'
+              >
                 {t('experiments.winnerFound')}
               </Text>
               <Text size='sm' className='text-green-700 dark:text-green-300'>
                 {t('experiments.winnerDescription', {
-                  variant: results.variants.find((v) => v.key === results.winnerKey)?.name || results.winnerKey,
+                  variant:
+                    results.variants.find((v) => v.key === results.winnerKey)
+                      ?.name || results.winnerKey,
                 })}
               </Text>
             </div>
@@ -795,10 +951,18 @@ const ExperimentResults = ({
         {results.totalExposures === 0 ? (
           <div className='flex items-start gap-4 rounded-lg border border-yellow-300 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20'>
             <div className='flex size-12 shrink-0 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/40'>
-              <InfoIcon className='size-6 text-yellow-700 dark:text-yellow-300' strokeWidth={1.5} />
+              <InfoIcon
+                className='size-6 text-yellow-700 dark:text-yellow-300'
+                strokeWidth={1.5}
+              />
             </div>
             <div className='min-w-0 flex-1'>
-              <Text as='p' weight='bold' size='lg' className='text-yellow-900 dark:text-yellow-100'>
+              <Text
+                as='p'
+                weight='bold'
+                size='lg'
+                className='text-yellow-900 dark:text-yellow-100'
+              >
                 {t('experiments.noDataYet')}
               </Text>
               <Text as='p' colour='muted' size='sm' className='mt-1'>
@@ -821,7 +985,11 @@ const ExperimentResults = ({
 
         <div className='flex flex-col gap-3 lg:flex-row'>
           <div className='w-full lg:w-[65%]'>
-            <WinProbabilityChart chartData={results.chart} variants={sortedVariants} timeBucket={timeBucket} />
+            <WinProbabilityChart
+              chartData={results.chart}
+              variants={sortedVariants}
+              timeBucket={timeBucket}
+            />
           </div>
 
           <div className='grid w-full grid-cols-2 gap-3 lg:w-[35%]'>
@@ -837,21 +1005,35 @@ const ExperimentResults = ({
               label={t('experiments.totalConversions')}
             />
             <StatCard
-              icon={<FlaskConicalIcon className='text-purple-600' strokeWidth={1.5} />}
+              icon={
+                <FlaskConicalIcon
+                  className='text-purple-600'
+                  strokeWidth={1.5}
+                />
+              }
               value={results.variants.length}
               label={t('experiments.variantsCount')}
             />
             <StatCard
-              icon={<PercentIcon className='text-amber-600' strokeWidth={1.5} />}
+              icon={
+                <PercentIcon className='text-amber-600' strokeWidth={1.5} />
+              }
               value={`${results.confidenceLevel}%`}
               label={t('experiments.confidenceLevel')}
             />
           </div>
         </div>
 
-        <MetricsTable variants={sortedVariants} winnerKey={results.winnerKey} hasWinner={results.hasWinner} />
+        <MetricsTable
+          variants={sortedVariants}
+          winnerKey={results.winnerKey}
+          hasWinner={results.hasWinner}
+        />
 
-        <ExposuresTable variants={sortedVariants} totalExposures={results.totalExposures} />
+        <ExposuresTable
+          variants={sortedVariants}
+          totalExposures={results.totalExposures}
+        />
 
         {experiment.hypothesis ? (
           <CollapsibleSection title={t('experiments.hypothesisLabel')}>

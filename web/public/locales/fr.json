@@ -1335,6 +1335,12 @@
     "trendlineTotal": "Tendance des pages vues",
     "noEvContent": "Aucun événement n'a été capturé pour la période spécifiée.\nSi vous n'avez pas encore suivi d'événements, vous pouvez consulter notre <url>Documentation</url> pour intégrer facilement le suivi dans votre application.",
     "noEventsFiltersDesc": "Aucun événement n'a été capturé pour la période spécifiée ou les filtres appliqués. Veuillez essayer une autre période ou modifier les filtres appliqués.",
+    "noProfilesTitle": "Aucun profil pour le moment",
+    "noProfilesContent": "Aucun profil n’a été enregistré pour la période spécifiée, veuillez essayer une autre période.",
+    "noProfilesFiltersDesc": "Aucun profil n’a été enregistré pour la période spécifiée ou avec les filtres appliqués, veuillez essayer une autre période ou modifier les filtres appliqués.",
+    "noSessionsTitle": "Aucune session pour le moment",
+    "noSessionsContent": "Aucune session n’a été enregistrée pour la période spécifiée, veuillez essayer une autre période.",
+    "noSessionsFiltersDesc": "Aucune session n’a été enregistrée pour la période spécifiée ou avec les filtres appliqués, veuillez essayer une autre période ou modifier les filtres appliqués.",
     "noCaptchaEv": "Aucun événement n'a été capturé pour la période spécifiée.\nSi vous n'avez pas encore configuré CAPTCHA, vous pouvez consulter notre <url>Documentation</url> pour l'intégrer facilement dans votre application.",
     "mapping": {
       "cc": "Pays",

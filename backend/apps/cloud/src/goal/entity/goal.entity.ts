@@ -65,7 +65,7 @@ export class Goal {
   active: boolean
 
   @ApiProperty({ type: () => Project })
-  @ManyToOne(() => Project, project => project.goals)
+  @ManyToOne(() => Project, (project) => project.goals)
   @JoinColumn()
   project: Project
 

@@ -138,14 +138,17 @@ export default function CTRCalculator() {
               CTR Calculator
             </h1>
             <p className='mt-4 text-lg text-gray-600 dark:text-gray-400'>
-              Calculate your Click-Through Rate and understand your campaign performance instantly
+              Calculate your Click-Through Rate and understand your campaign
+              performance instantly
             </p>
           </div>
 
           <div className='mt-12 rounded-xl bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
             <div className='space-y-6'>
               <div>
-                <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>Calculate Your CTR</h2>
+                <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                  Calculate Your CTR
+                </h2>
 
                 <div className='grid gap-6 md:grid-cols-2'>
                   <div>
@@ -154,11 +157,15 @@ export default function CTRCalculator() {
                       placeholder='Enter number of clicks'
                       label='Total Clicks'
                       value={metrics.clicks}
-                      onChange={(e) => handleMetricChange('clicks', e.target.value)}
+                      onChange={(e) =>
+                        handleMetricChange('clicks', e.target.value)
+                      }
                       className='w-full'
                       min='0'
                     />
-                    <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>How many times your ad was clicked</p>
+                    <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                      How many times your ad was clicked
+                    </p>
                   </div>
 
                   <div>
@@ -167,11 +174,15 @@ export default function CTRCalculator() {
                       placeholder='Enter number of impressions'
                       label='Total Impressions'
                       value={metrics.impressions}
-                      onChange={(e) => handleMetricChange('impressions', e.target.value)}
+                      onChange={(e) =>
+                        handleMetricChange('impressions', e.target.value)
+                      }
                       className='w-full'
                       min='1'
                     />
-                    <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>How many times your ad was shown</p>
+                    <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                      How many times your ad was shown
+                    </p>
                   </div>
                 </div>
 
@@ -184,26 +195,38 @@ export default function CTRCalculator() {
 
               {result ? (
                 <div className='border-t border-gray-200 pt-6 dark:border-gray-700'>
-                  <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>Results</h3>
+                  <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                    Results
+                  </h3>
 
                   <div className='rounded-lg bg-gray-50 p-6 dark:bg-slate-700/50'>
                     <div className='text-center'>
-                      <div className='text-5xl font-bold text-gray-900 dark:text-white'>{result.ctr.toFixed(2)}%</div>
-                      <div className='mt-2 text-lg text-gray-600 dark:text-gray-400'>Click-Through Rate</div>
-                      <div className={`mt-4 text-lg font-semibold ${result.color}`}>
+                      <div className='text-5xl font-bold text-gray-900 dark:text-white'>
+                        {result.ctr.toFixed(2)}%
+                      </div>
+                      <div className='mt-2 text-lg text-gray-600 dark:text-gray-400'>
+                        Click-Through Rate
+                      </div>
+                      <div
+                        className={`mt-4 text-lg font-semibold ${result.color}`}
+                      >
                         {result.performance} Performance
                       </div>
                     </div>
 
                     <div className='mt-6 grid gap-4 text-sm md:grid-cols-2'>
                       <div className='rounded-lg bg-white p-4 dark:bg-slate-800'>
-                        <div className='text-gray-500 dark:text-gray-400'>Formula Used</div>
+                        <div className='text-gray-500 dark:text-gray-400'>
+                          Formula Used
+                        </div>
                         <div className='mt-1 font-mono text-gray-900 dark:text-white'>
                           CTR = (Clicks ÷ Impressions) × 100
                         </div>
                       </div>
                       <div className='rounded-lg bg-white p-4 dark:bg-slate-800'>
-                        <div className='text-gray-500 dark:text-gray-400'>Your Calculation</div>
+                        <div className='text-gray-500 dark:text-gray-400'>
+                          Your Calculation
+                        </div>
                         <div className='mt-1 font-mono text-gray-900 dark:text-white'>
                           ({metrics.clicks} ÷ {metrics.impressions}) × 100
                         </div>
@@ -251,18 +274,27 @@ export default function CTRCalculator() {
                   className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
                 >
                   <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
-                    <h3 className='text-lg font-medium text-gray-900 dark:text-white'>{item.question}</h3>
+                    <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
+                      {item.question}
+                    </h3>
                     <svg
                       className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180'
                       fill='none'
                       viewBox='0 0 24 24'
                       stroke='currentColor'
                     >
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M19 9l-7 7-7-7'
+                      />
                     </svg>
                   </summary>
                   <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
-                    <p className='text-gray-600 dark:text-gray-400'>{item.answer}</p>
+                    <p className='text-gray-600 dark:text-gray-400'>
+                      {item.answer}
+                    </p>
                   </div>
                 </details>
               ))}

@@ -53,15 +53,23 @@ interface PageflowItemProps {
   websiteUrl?: string | null
 }
 
-const MetadataPanel = ({ metadata, t }: { metadata: Metadata[]; t: TFunction }) => {
+const MetadataPanel = ({
+  metadata,
+  t,
+}: {
+  metadata: Metadata[]
+  t: TFunction
+}) => {
   const [showAll, setShowAll] = useState(false)
   const INITIAL_SHOW_COUNT = 5
   const hasMore = metadata.length > INITIAL_SHOW_COUNT
-  const displayedMetadata = showAll ? metadata : metadata.slice(0, INITIAL_SHOW_COUNT)
+  const displayedMetadata = showAll
+    ? metadata
+    : metadata.slice(0, INITIAL_SHOW_COUNT)
   const remainingCount = metadata.length - INITIAL_SHOW_COUNT
 
   return (
-    <div className='mt-2 ml-5 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900/50'>
+    <div className='mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white sm:ml-5 dark:border-slate-700 dark:bg-slate-900/50'>
       {/* Header */}
       <div className='border-b border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-800/50'>
         <span className='text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400'>
@@ -73,15 +81,19 @@ const MetadataPanel = ({ metadata, t }: { metadata: Metadata[]; t: TFunction }) 
       <div className='divide-y divide-slate-100 dark:divide-slate-800'>
         {_map(displayedMetadata, ({ key, value }, index) => {
           const needsTruncation = _size(value) > 60
-          const displayValue = needsTruncation ? _truncate(value, { length: 60 }) : value
+          const displayValue = needsTruncation
+            ? _truncate(value, { length: 60 })
+            : value
 
           return (
             <div
               key={`${key}${value}${index}`}
-              className='grid grid-cols-[minmax(80px,auto)_1fr] gap-3 px-3 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/30'
+              className='flex flex-col gap-1 px-3 py-2 transition-colors hover:bg-slate-50 sm:grid sm:grid-cols-[minmax(80px,auto)_1fr] sm:gap-3 dark:hover:bg-slate-800/30'
             >
               <div className='flex items-start'>
-                <span className='font-mono text-[11px] font-medium text-slate-500 dark:text-slate-400'>{key}</span>
+                <span className='font-mono text-[11px] font-medium text-slate-500 dark:text-slate-400'>
+                  {key}
+                </span>
               </div>
               <div className='flex items-start'>
                 <span
@@ -106,7 +118,9 @@ const MetadataPanel = ({ metadata, t }: { metadata: Metadata[]; t: TFunction }) 
           onClick={() => setShowAll(!showAll)}
           className='w-full border-t border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300'
         >
-          {showAll ? t('project.showLess') : t('project.showMore', { count: remainingCount })}
+          {showAll
+            ? t('project.showLess')
+            : t('project.showMore', { count: remainingCount })}
         </button>
       ) : null}
     </div>
@@ -165,37 +179,66 @@ const PageflowItem = ({
         <div className='relative flex space-x-3'>
           <div>
             <span
-              className={cn('flex h-8 w-8 items-center justify-center rounded-full', {
-                'bg-slate-400 dark:bg-slate-800': type === 'pageview' || type === 'event',
-                'bg-red-400 dark:bg-red-800': type === 'error',
-                'bg-green-500 dark:bg-green-700': type === 'sale',
-                'bg-orange-500 dark:bg-orange-700': type === 'refund',
-              })}
+              className={cn(
+                'flex h-8 w-8 items-center justify-center rounded-full',
+                {
+                  'bg-slate-400 dark:bg-slate-800':
+                    type === 'pageview' || type === 'event',
+                  'bg-red-400 dark:bg-red-800': type === 'error',
+                  'bg-green-500 dark:bg-green-700': type === 'sale',
+                  'bg-orange-500 dark:bg-orange-700': type === 'refund',
+                },
+              )}
             >
               {type === 'pageview' ? (
-                <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+                <FileTextIcon
+                  className='h-5 w-5 text-white'
+                  aria-hidden='true'
+                  strokeWidth={1.5}
+                />
               ) : null}
               {type === 'event' ? (
-                <MousePointerClickIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+                <MousePointerClickIcon
+                  className='h-5 w-5 text-white'
+                  aria-hidden='true'
+                  strokeWidth={1.5}
+                />
               ) : null}
               {type === 'error' ? (
-                <BugIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+                <BugIcon
+                  className='h-5 w-5 text-white'
+                  aria-hidden='true'
+                  strokeWidth={1.5}
+                />
               ) : null}
               {type === 'sale' ? (
-                <DollarSignIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+                <DollarSignIcon
+                  className='h-5 w-5 text-white'
+                  aria-hidden='true'
+                  strokeWidth={1.5}
+                />
               ) : null}
               {type === 'refund' ? (
-                <RotateCcwIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+                <RotateCcwIcon
+                  className='h-5 w-5 text-white'
+                  aria-hidden='true'
+                  strokeWidth={1.5}
+                />
               ) : null}
             </span>
           </div>
           <div className='flex min-w-0 flex-1 flex-col pt-1.5'>
-            <div className='flex justify-between space-x-4'>
+            <div className='flex flex-col gap-y-1 sm:flex-row sm:justify-between sm:space-x-4'>
               <div
-                className={cn('flex items-center text-sm text-gray-700 dark:text-gray-300', {
-                  'cursor-pointer': hasMetadata,
-                })}
-                onClick={hasMetadata ? () => setIsExpanded(!isExpanded) : undefined}
+                className={cn(
+                  'flex flex-wrap items-center gap-x-1 text-sm text-gray-700 dark:text-gray-300',
+                  {
+                    'cursor-pointer': hasMetadata,
+                  },
+                )}
+                onClick={
+                  hasMetadata ? () => setIsExpanded(!isExpanded) : undefined
+                }
                 role={hasMetadata ? 'button' : undefined}
                 tabIndex={hasMetadata ? 0 : undefined}
                 onKeyDown={
@@ -214,7 +257,8 @@ const PageflowItem = ({
                     <span
                       className={cn('font-semibold', {
                         'text-green-600 dark:text-green-400': type === 'sale',
-                        'text-orange-600 dark:text-orange-400': type === 'refund',
+                        'text-orange-600 dark:text-orange-400':
+                          type === 'refund',
                       })}
                     >
                       {type === 'refund' ? '-' : ''}
@@ -223,13 +267,21 @@ const PageflowItem = ({
                         currency: currency || 'USD',
                       }).format(Math.abs(amount || 0))}
                     </span>
-                    {value ? <span className='ml-2 text-gray-500 dark:text-gray-400'>({value})</span> : null}
+                    {value ? (
+                      <span className='ml-2 text-gray-500 dark:text-gray-400'>
+                        ({value})
+                      </span>
+                    ) : null}
                   </span>
                 ) : (
                   <Trans
                     t={t}
                     i18nKey={
-                      type === 'pageview' ? 'project.pageviewX' : type === 'event' ? 'project.eventX' : 'project.errorX'
+                      type === 'pageview'
+                        ? 'project.pageviewX'
+                        : type === 'event'
+                          ? 'project.eventX'
+                          : 'project.errorX'
                     }
                     components={{
                       value: fullPageUrl ? (
@@ -238,7 +290,7 @@ const PageflowItem = ({
                           target='_blank'
                           rel='noopener noreferrer nofollow'
                           onClick={(e) => e.stopPropagation()}
-                          className='ml-1 font-medium text-gray-900 underline decoration-dashed underline-offset-2 hover:decoration-solid dark:text-gray-50'
+                          className='ml-1 font-medium break-all text-gray-900 underline decoration-dashed underline-offset-2 hover:decoration-solid dark:text-gray-50'
                         />
                       ) : (
                         <span className='ml-1 font-medium text-gray-900 dark:text-gray-50' />
@@ -266,13 +318,15 @@ const PageflowItem = ({
                   />
                 ) : null}
               </div>
-              <div className='text-right text-sm whitespace-nowrap text-gray-700 dark:text-gray-300'>
+              <div className='text-left text-xs whitespace-nowrap text-gray-500 sm:text-right sm:text-sm sm:text-gray-700 dark:text-gray-400 sm:dark:text-gray-300'>
                 <time dateTime={created}>{displayCreated}</time>
               </div>
             </div>
 
             {/* Collapsible metadata */}
-            {hasMetadata && isExpanded ? <MetadataPanel metadata={metadata!} t={t} /> : null}
+            {hasMetadata && isExpanded ? (
+              <MetadataPanel metadata={metadata!} t={t} />
+            ) : null}
 
             {/* Time duration to next step */}
             {timeDuration !== null && timeDuration > 0 ? (
@@ -285,7 +339,11 @@ const PageflowItem = ({
                   xmlns='http://www.w3.org/2000/svg'
                 >
                   <circle cx='12' cy='12' r='10' strokeWidth='2' />
-                  <polyline points='12 6 12 12 16 14' strokeWidth='2' strokeLinecap='round' />
+                  <polyline
+                    points='12 6 12 12 16 14'
+                    strokeWidth='2'
+                    strokeLinecap='round'
+                  />
                 </svg>
                 {formatDuration(timeDuration)}
               </div>
@@ -297,7 +355,13 @@ const PageflowItem = ({
   )
 }
 
-export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0, websiteUrl }: PageflowProps) => {
+export const Pageflow = ({
+  pages,
+  timeFormat,
+  zoomedTimeRange,
+  sdur = 0,
+  websiteUrl,
+}: PageflowProps) => {
   const {
     t,
     i18n: { language },
@@ -314,7 +378,10 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0, website
 
     return pages.filter((page) => {
       const pageTime = new Date(page.created).getTime()
-      return pageTime >= zoomedTimeRange[0].getTime() && pageTime <= zoomedTimeRange[1].getTime()
+      return (
+        pageTime >= zoomedTimeRange[0].getTime() &&
+        pageTime <= zoomedTimeRange[1].getTime()
+      )
     })
   }, [pages, zoomedTimeRange])
 
@@ -341,8 +408,12 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0, website
     }
 
     const firstEventTime = new Date(filteredPages[0].created).getTime()
-    const lastEventTime = new Date(filteredPages[filteredPages.length - 1].created).getTime()
-    const timeBetweenFirstAndLast = Math.round((lastEventTime - firstEventTime) / 1000)
+    const lastEventTime = new Date(
+      filteredPages[filteredPages.length - 1].created,
+    ).getTime()
+    const timeBetweenFirstAndLast = Math.round(
+      (lastEventTime - firstEventTime) / 1000,
+    )
     const remaining = sdur - timeBetweenFirstAndLast
 
     return remaining > 0 ? remaining : 0
@@ -359,36 +430,48 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0, website
   return (
     <div className='flow-root'>
       <ul className='-mb-8'>
-        {_map(filteredPages, ({ value, created, type, metadata, amount, currency }, index) => {
-          const displayCreated = new Date(created).toLocaleDateString(language, {
-            day: 'numeric',
-            month: 'short',
-            hour: 'numeric',
-            minute: 'numeric',
-            second: 'numeric',
-            hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
-          })
+        {_map(
+          filteredPages,
+          ({ value, created, type, metadata, amount, currency }, index) => {
+            const displayCreated = new Date(created).toLocaleDateString(
+              language,
+              {
+                day: 'numeric',
+                month: 'short',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+                hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+              },
+            )
 
-          const isLastEvent = index === filteredPages.length - 1
-          const timeDuration = !isLastEvent ? timeBetweenEvents[index] : null
+            const isLastEvent = index === filteredPages.length - 1
+            // For the last event, show the remaining time (sdur - time between first and last event)
+            // as "time spent on the last event" under the last item rather than under "End of session".
+            const timeDuration = !isLastEvent
+              ? timeBetweenEvents[index]
+              : timeAfterLastEvent > 0
+                ? timeAfterLastEvent
+                : null
 
-          return (
-            <PageflowItem
-              key={`${value}${created}${index}`}
-              value={value}
-              created={created}
-              type={type}
-              metadata={metadata}
-              displayCreated={displayCreated}
-              timeDuration={timeDuration}
-              isLastEvent={isLastEvent}
-              t={t}
-              amount={amount}
-              currency={currency}
-              websiteUrl={websiteUrl}
-            />
-          )
-        })}
+            return (
+              <PageflowItem
+                key={`${value}${created}${index}`}
+                value={value}
+                created={created}
+                type={type}
+                metadata={metadata}
+                displayCreated={displayCreated}
+                timeDuration={timeDuration}
+                isLastEvent={isLastEvent}
+                t={t}
+                amount={amount}
+                currency={currency}
+                websiteUrl={websiteUrl}
+              />
+            )
+          },
+        )}
 
         {/* End of session marker */}
         {filteredPages.length > 0 ? (
@@ -410,22 +493,6 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange, sdur = 0, website
                       {t('project.endOfSession')}
                     </div>
                   </div>
-                  {/* Time after last event (only if sdur > 0) */}
-                  {timeAfterLastEvent > 0 ? (
-                    <div className='mt-1 flex items-center text-xs text-gray-500 dark:text-gray-400'>
-                      <svg
-                        className='mr-1 h-3 w-3'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                        xmlns='http://www.w3.org/2000/svg'
-                      >
-                        <circle cx='12' cy='12' r='10' strokeWidth='2' />
-                        <polyline points='12 6 12 12 16 14' strokeWidth='2' strokeLinecap='round' />
-                      </svg>
-                      {formatDuration(timeAfterLastEvent)}
-                    </div>
-                  ) : null}
                 </div>
               </div>
             </div>

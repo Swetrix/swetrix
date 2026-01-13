@@ -44,12 +44,44 @@ export const ErrorChart = ({
   }, [customDataNames, t])
 
   const options: ChartOptions = useMemo(() => {
-    return getSettingsError(chart, timeBucket as string, timeFormat, rotateXAxis, chartType, annotations, dataNames)
-  }, [chart, timeBucket, timeFormat, rotateXAxis, chartType, annotations, dataNames])
+    return getSettingsError(
+      chart,
+      timeBucket as string,
+      timeFormat,
+      rotateXAxis,
+      chartType,
+      annotations,
+      dataNames,
+    )
+  }, [
+    chart,
+    timeBucket,
+    timeFormat,
+    rotateXAxis,
+    chartType,
+    annotations,
+    dataNames,
+  ])
 
   const deps = useMemo(
-    () => [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames, annotations],
-    [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames, annotations],
+    () => [
+      chart,
+      timeBucket,
+      timeFormat,
+      rotateXAxis,
+      chartType,
+      dataNames,
+      annotations,
+    ],
+    [
+      chart,
+      timeBucket,
+      timeFormat,
+      rotateXAxis,
+      chartType,
+      dataNames,
+      annotations,
+    ],
   )
 
   return (

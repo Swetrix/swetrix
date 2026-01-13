@@ -4,7 +4,8 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { getLiveVisitorsInfo, GetLiveVisitorsInfo } from '~/api'
+import type { LiveVisitorInfo } from '~/api/api.server'
+import { useLiveVisitorsProxy } from '~/hooks/useAnalyticsProxy'
 import { PROJECT_TABS } from '~/lib/constants'
 import Flag from '~/ui/Flag'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
@@ -12,23 +13,26 @@ import Spin from '~/ui/icons/Spin'
 import OutsideClickHandler from '~/ui/OutsideClickHandler'
 import { cn } from '~/utils/generic'
 
-import { useCurrentProject, useProjectPassword } from '../../../../providers/CurrentProjectProvider'
+import { useCurrentProject } from '../../../../providers/CurrentProjectProvider'
 
 const LiveVisitorsDropdown = () => {
   const { id, liveVisitors, updateLiveVisitors } = useCurrentProject()
-  const projectPassword = useProjectPassword(id)
   const { t } = useTranslation()
   const [isDropdownVisible, setIsDropdownVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [liveInfo, setLiveInfo] = useState<GetLiveVisitorsInfo[]>([])
+  const [liveInfo, setLiveInfo] = useState<LiveVisitorInfo[]>([])
+  const { fetchLiveVisitorsInfo } = useLiveVisitorsProxy()
 
   const getLiveVisitors = async () => {
     setIsLoading(true)
 
     try {
       // Getting live sessions list and updating live visitors count to make sure it matches the list length
-      const [info] = await Promise.all([getLiveVisitorsInfo(id, projectPassword), updateLiveVisitors()])
-      setLiveInfo(info)
+      const [info] = await Promise.all([
+        fetchLiveVisitorsInfo(id),
+        updateLiveVisitors(),
+      ])
+      setLiveInfo(info || [])
     } catch (reason) {
       console.error('[LiveVisitorsDropdown] getLiveVisitors:', reason)
     }
@@ -65,16 +69,19 @@ const LiveVisitorsDropdown = () => {
             })}{' '}
           </span>
           <ChevronDownIcon
-            className={cn('ml-1 inline h-4 w-4 transition-transform duration-150 ease-out', {
-              'rotate-180': isDropdownVisible,
-            })}
+            className={cn(
+              'ml-1 inline h-4 w-4 transition-transform duration-150 ease-out',
+              {
+                'rotate-180': isDropdownVisible,
+              },
+            )}
           />
         </button>
 
         <div
           id='live-visitors-dropdown'
           className={cn(
-            'scrollbar-thin absolute top-5 right-0 z-10 mt-2 origin-top-right transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white text-gray-900 shadow-lg transition duration-150 ease-out outline-none dark:border-slate-700/50 dark:bg-slate-900',
+            'scrollbar-thin absolute top-5 right-0 z-40 mt-2 origin-top-right transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white text-gray-900 shadow-lg transition duration-150 ease-out outline-none dark:border-slate-700/50 dark:bg-slate-900',
             liveInfo.length === 0 || isLoading ? 'min-w-[200px]' : 'min-w-max',
             isDropdownVisible
               ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
@@ -84,7 +91,9 @@ const LiveVisitorsDropdown = () => {
         >
           <div className='flex w-full flex-col'>
             <div className='flex items-center justify-between border-b border-black/10 bg-white p-2 dark:border-slate-700/50 dark:bg-slate-900'>
-              <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>{t('dashboard.liveVisitors')}</p>
+              <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                {t('dashboard.liveVisitors')}
+              </p>
 
               <button
                 className='-m-1 rounded-md p-1 transition-colors hover:bg-gray-200 dark:hover:bg-slate-700'
@@ -102,7 +111,9 @@ const LiveVisitorsDropdown = () => {
                   {t('common.loading')}
                 </p>
               ) : liveInfo.length === 0 ? (
-                <p className='py-2 text-sm text-gray-900 dark:text-gray-50'>{t('project.noData')}</p>
+                <p className='py-2 text-sm text-gray-900 dark:text-gray-50'>
+                  {t('project.noData')}
+                </p>
               ) : (
                 <div className='table w-full border-separate border-spacing-y-2'>
                   <div className='table-row-group'>
@@ -119,7 +130,13 @@ const LiveVisitorsDropdown = () => {
                           to={stringifiedUrl}
                         >
                           <div className='table-cell rounded-l-lg bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'>
-                            <Flag className='m-2 rounded-xs' country={cc} size={21} alt='' aria-hidden='true' />
+                            <Flag
+                              className='m-2 rounded-xs'
+                              country={cc}
+                              size={21}
+                              alt=''
+                              aria-hidden='true'
+                            />
                           </div>
                           <div className='table-cell bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'>
                             {os}

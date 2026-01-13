@@ -7,13 +7,14 @@ import _map from 'lodash/map'
 import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import { changeOrganisationRole, inviteOrganisationMember, removeOrganisationMember } from '~/api'
 import useOnClickOutside from '~/hooks/useOnClickOutside'
 import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
 import { DetailedOrganisation, Role } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
+import type { OrganisationSettingsActionData } from '~/routes/organisations.$id'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
@@ -26,7 +27,9 @@ const NoPeople = () => {
   return (
     <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
       <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
+        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>
+          {t('project.settings.noPeople')}
+        </h2>
       </div>
     </div>
   )
@@ -35,30 +38,28 @@ const NoPeople = () => {
 interface UsersListProps {
   members: DetailedOrganisation['members']
   onRemove: (member: DetailedOrganisation['members'][number]) => void
-  reloadOrganisation: () => Promise<void>
+  fetcher: ReturnType<typeof useFetcher<OrganisationSettingsActionData>>
 }
 
-const UsersList = ({ members, onRemove, reloadOrganisation }: UsersListProps) => {
+const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const { user } = useAuth()
 
-  const [roleEditDropdownId, setRoleEditDropdownId] = useState<string | null>(null)
+  const [roleEditDropdownId, setRoleEditDropdownId] = useState<string | null>(
+    null,
+  )
   const openRef = useRef<HTMLUListElement>(null)
   useOnClickOutside(openRef, () => setRoleEditDropdownId(null))
 
-  const changeRole = async (memberId: string, newRole: Role) => {
-    try {
-      await changeOrganisationRole(memberId, newRole)
-      await reloadOrganisation()
-      toast.success(t('apiNotifications.roleUpdated'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while updating user's role: ${reason}`)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.roleUpdateError'))
-    }
-
+  const changeRole = (memberId: string, newRole: Role) => {
+    const formData = new FormData()
+    formData.set('intent', 'update-member-role')
+    formData.set('memberId', memberId)
+    formData.set('role', newRole)
+    fetcher.submit(formData, { method: 'post' })
     setRoleEditDropdownId(null)
   }
 
@@ -76,14 +77,23 @@ const UsersList = ({ members, onRemove, reloadOrganisation }: UsersListProps) =>
         {member.confirmed ? (
           <div>
             <button
-              onClick={() => setRoleEditDropdownId((prev) => (prev === member.id ? null : member.id))}
+              onClick={() =>
+                setRoleEditDropdownId((prev) =>
+                  prev === member.id ? null : member.id,
+                )
+              }
               type='button'
-              disabled={member.user.email === user?.email || member.role === 'owner'}
+              disabled={
+                member.user.email === user?.email || member.role === 'owner'
+              }
               className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`organisations.role.${member.role}.name`)}
               <ChevronDownIcon
-                style={{ transform: roleEditDropdownId === member.id ? 'rotate(180deg)' : '' }}
+                style={{
+                  transform:
+                    roleEditDropdownId === member.id ? 'rotate(180deg)' : '',
+                }}
                 className='ml-0.5 h-4 w-4 pt-px'
               />
             </button>
@@ -123,14 +133,20 @@ const UsersList = ({ members, onRemove, reloadOrganisation }: UsersListProps) =>
                   }}
                   className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
                 >
-                  <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
+                  <p className='font-bold text-red-600 dark:text-red-500'>
+                    {t('project.settings.removeMember')}
+                  </p>
                 </li>
               </ul>
             ) : null}
           </div>
         ) : (
           <div className='flex items-center justify-end'>
-            <Badge colour='yellow' className='mr-3' label={t('common.pending')} />
+            <Badge
+              colour='yellow'
+              className='mr-3'
+              label={t('common.pending')}
+            />
             <Button
               type='button'
               className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
@@ -148,12 +164,13 @@ const UsersList = ({ members, onRemove, reloadOrganisation }: UsersListProps) =>
 
 interface PeopleProps {
   organisation: DetailedOrganisation
-  reloadOrganisation: () => Promise<void>
 }
 
-const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
+const People = ({ organisation }: PeopleProps) => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
+  const fetcher = useFetcher<OrganisationSettingsActionData>()
+
   const [form, setForm] = useState<{
     email: string
     role: Role
@@ -169,10 +186,46 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
   const [validated, setValidated] = useState(false)
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [memberToRemove, setMemberToRemove] = useState<DetailedOrganisation['members'][number] | null>(null)
+  const [memberToRemove, setMemberToRemove] = useState<
+    DetailedOrganisation['members'][number] | null
+  >(null)
 
   const { name, members } = organisation
+
+  const isSubmitting = fetcher.state === 'submitting'
+  const isDeleting =
+    isSubmitting && fetcher.formData?.get('intent') === 'remove-member'
+
+  const closeModal = () => {
+    setShowModal(false)
+    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
+    setErrors({})
+    setBeenSubmitted(false)
+  }
+
+  const closeRemoveUserModal = () => {
+    setShowDeleteModal(false)
+    setTimeout(() => setMemberToRemove(null), 300)
+  }
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (fetcher.data?.success) {
+      const { intent } = fetcher.data
+      if (intent === 'invite-member') {
+        toast.success(t('apiNotifications.userInvited'))
+        closeModal()
+      } else if (intent === 'remove-member') {
+        toast.success(t('apiNotifications.orgUserRemoved'))
+        closeRemoveUserModal()
+      } else if (intent === 'update-member-role') {
+        toast.success(t('apiNotifications.roleUpdated'))
+      }
+    } else if (fetcher.data?.error) {
+      toast.error(fetcher.data.error)
+    }
+  }, [fetcher.data, t])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const validate = () => {
     const allErrors: {
@@ -194,11 +247,13 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
     setValidated(valid)
   }
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (showModal) {
       validate()
     }
-  }, [form]) // eslint-disable-line
+  }, [form]) // eslint-disable-line react-hooks/exhaustive-deps
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleInput = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
     const value = target.type === 'checkbox' ? target.checked : target.value
@@ -209,22 +264,12 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
     }))
   }
 
-  const onInviteToOrganisation = async () => {
-    setShowModal(false)
-    setErrors({})
-    setValidated(false)
-
-    try {
-      await inviteOrganisationMember(organisation.id, form)
-      await reloadOrganisation()
-      toast.success(t('apiNotifications.userInvited'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while inviting a user: ${reason}`)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.userInviteError'))
-    }
-
-    // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
+  const onInviteToOrganisation = () => {
+    const formData = new FormData()
+    formData.set('intent', 'invite-member')
+    formData.set('email', form.email)
+    formData.set('role', form.role)
+    fetcher.submit(formData, { method: 'post' })
   }
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -239,36 +284,11 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
     }
   }
 
-  const closeModal = () => {
-    setShowModal(false)
-    // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
-    setErrors({})
-  }
-
-  const closeRemoveUserModal = () => {
-    setShowDeleteModal(false)
-    setTimeout(() => setMemberToRemove(null), 300)
-  }
-
-  const onRemove = async (member: DetailedOrganisation['members'][number]) => {
-    if (isDeleting) {
-      return
-    }
-
-    setIsDeleting(true)
-
-    try {
-      await removeOrganisationMember(member.id)
-      await reloadOrganisation()
-
-      toast.success(t('apiNotifications.orgUserRemoved'))
-    } catch (reason) {
-      console.error(`[ERROR] Error while removing user from the organisation: ${reason}`)
-      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.orgUserRemoveError'))
-    } finally {
-      setIsDeleting(false)
-    }
+  const onRemove = (member: DetailedOrganisation['members'][number]) => {
+    const formData = new FormData()
+    formData.set('intent', 'remove-member')
+    formData.set('memberId', member.id)
+    fetcher.submit(formData, { method: 'post' })
   }
 
   return (
@@ -278,9 +298,17 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
           <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('project.settings.people')}
           </h3>
-          <p className='text-sm text-gray-500 dark:text-gray-400'>{t('project.settings.inviteCoworkers')}</p>
+          <p className='text-sm text-gray-500 dark:text-gray-400'>
+            {t('project.settings.inviteCoworkers')}
+          </p>
         </div>
-        <Button className='h-8 pl-2' primary regular type='button' onClick={() => setShowModal(true)}>
+        <Button
+          className='h-8 pl-2'
+          primary
+          regular
+          type='button'
+          onClick={() => setShowModal(true)}
+        >
           <>
             <UserRoundPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             {t('project.settings.invite')}
@@ -320,7 +348,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
                           setMemberToRemove(member)
                           setShowDeleteModal(true)
                         }}
-                        reloadOrganisation={reloadOrganisation}
+                        fetcher={fetcher}
                       />
                     </tbody>
                   </table>
@@ -339,7 +367,9 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
         submitText={t('common.yes')}
         type='confirmed'
         closeText={t('common.no')}
-        title={t('project.settings.removeUser', { user: memberToRemove?.user.email })}
+        title={t('project.settings.removeUser', {
+          user: memberToRemove?.user.email,
+        })}
         message={t('project.settings.removeConfirm')}
         isOpened={showDeleteModal}
         isLoading={isDeleting}
@@ -380,13 +410,19 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
             />
             <fieldset className='mt-4'>
               {}
-              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300' htmlFor='role'>
+              <label
+                className='block text-sm font-medium text-gray-700 dark:text-gray-300'
+                htmlFor='role'
+              >
                 {t('project.settings.role')}
               </label>
               <div
-                className={cx('mt-1 -space-y-px rounded-md bg-white dark:bg-slate-900', {
-                  'border border-red-300': errors.role,
-                })}
+                className={cx(
+                  'mt-1 -space-y-px rounded-md bg-white dark:bg-slate-900',
+                  {
+                    'border border-red-300': errors.role,
+                  },
+                )}
               >
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                 <label
@@ -411,16 +447,20 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
                   <div className='ml-3 flex flex-col'>
                     <span
                       className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white': form.role === 'admin',
-                        'text-gray-700 dark:text-gray-200': form.role !== 'admin',
+                        'text-indigo-900 dark:text-white':
+                          form.role === 'admin',
+                        'text-gray-700 dark:text-gray-200':
+                          form.role !== 'admin',
                       })}
                     >
                       {t('organisations.role.admin.name')}
                     </span>
                     <span
                       className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100': form.role === 'admin',
-                        'text-gray-700 dark:text-gray-200': form.role !== 'admin',
+                        'text-indigo-700 dark:text-gray-100':
+                          form.role === 'admin',
+                        'text-gray-700 dark:text-gray-200':
+                          form.role !== 'admin',
                       })}
                     >
                       {t('organisations.role.admin.desc')}
@@ -450,16 +490,20 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
                   <div className='ml-3 flex flex-col'>
                     <span
                       className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white': form.role === 'viewer',
-                        'text-gray-700 dark:text-gray-200': form.role !== 'viewer',
+                        'text-indigo-900 dark:text-white':
+                          form.role === 'viewer',
+                        'text-gray-700 dark:text-gray-200':
+                          form.role !== 'viewer',
                       })}
                     >
                       {t('organisations.role.viewer.name')}
                     </span>
                     <span
                       className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100': form.role === 'viewer',
-                        'text-gray-700 dark:text-gray-200': form.role !== 'viewer',
+                        'text-indigo-700 dark:text-gray-100':
+                          form.role === 'viewer',
+                        'text-gray-700 dark:text-gray-200':
+                          form.role !== 'viewer',
                       })}
                     >
                       {t('organisations.role.viewer.desc')}
@@ -468,7 +512,10 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
                 </label>
               </div>
               {errors.role ? (
-                <p className='mt-2 text-sm text-red-600 dark:text-red-500' id='email-error'>
+                <p
+                  className='mt-2 text-sm text-red-600 dark:text-red-500'
+                  id='email-error'
+                >
                   {errors.role}
                 </p>
               ) : null}

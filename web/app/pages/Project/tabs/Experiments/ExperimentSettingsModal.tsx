@@ -1,26 +1,39 @@
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+} from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _map from 'lodash/map'
 import _sum from 'lodash/sum'
-import { PlusIcon, Trash2Icon, ChevronDownIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react'
-import { useState, useEffect, useMemo } from 'react'
+import {
+  PlusIcon,
+  Trash2Icon,
+  ChevronDownIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+} from 'lucide-react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
+import type {
+  ExperimentVariant,
+  Goal,
+  ProjectFeatureFlag,
+  ExposureTrigger,
+  MultipleVariantHandling,
+  FeatureFlagMode,
+} from '~/api/api.server'
 import {
-  createExperiment,
-  updateExperiment,
-  getExperiment,
-  getProjectGoals,
-  getProjectFeatureFlags,
-  type ExperimentVariant,
-  type Goal,
-  type ProjectFeatureFlag,
-  type ExposureTrigger,
-  type MultipleVariantHandling,
-  type FeatureFlagMode,
-} from '~/api'
+  useExperimentProxy,
+  useProjectGoalsProxy,
+  useProjectFeatureFlagsProxy,
+} from '~/hooks/useAnalyticsProxy'
+import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
@@ -52,13 +65,19 @@ const ExperimentSettingsModal = ({
 }: ExperimentSettingsModalProps) => {
   const { t } = useTranslation()
   const isEditing = !!experimentId
+  const experimentProxy = useExperimentProxy()
+  const goalsProxy = useProjectGoalsProxy()
+  const featureFlagsProxy = useProjectFeatureFlagsProxy()
+  const fetcher = useFetcher<ProjectViewActionData>()
+  const processedRef = useRef<string | null>(null)
 
   const [isLoading, setIsLoading] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const [goals, setGoals] = useState<Goal[]>([])
   const [goalsLoading, setGoalsLoading] = useState(false)
   const [featureFlags, setFeatureFlags] = useState<ProjectFeatureFlag[]>([])
   const [featureFlagsLoading, setFeatureFlagsLoading] = useState(false)
+
+  const isSaving = fetcher.state === 'submitting'
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -68,10 +87,13 @@ const ExperimentSettingsModal = ({
   const [variants, setVariants] = useState<ExperimentVariant[]>(defaultVariants)
 
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const [exposureTrigger, setExposureTrigger] = useState<ExposureTrigger>('feature_flag')
+  const [exposureTrigger, setExposureTrigger] =
+    useState<ExposureTrigger>('feature_flag')
   const [customEventName, setCustomEventName] = useState('')
-  const [multipleVariantHandling, setMultipleVariantHandling] = useState<MultipleVariantHandling>('exclude')
-  const [featureFlagMode, setFeatureFlagMode] = useState<FeatureFlagMode>('create')
+  const [multipleVariantHandling, setMultipleVariantHandling] =
+    useState<MultipleVariantHandling>('exclude')
+  const [featureFlagMode, setFeatureFlagMode] =
+    useState<FeatureFlagMode>('create')
   const [existingFeatureFlagId, setExistingFeatureFlagId] = useState('')
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -105,15 +127,22 @@ const ExperimentSettingsModal = ({
     if (!experimentId) return
     setIsLoading(true)
     try {
-      const experiment = await getExperiment(experimentId)
+      const experiment = await experimentProxy.fetchExperiment(experimentId)
+      if (!experiment) {
+        throw new Error('Failed to load experiment')
+      }
       setName(experiment.name)
       setDescription(experiment.description || '')
       setFeatureFlagKey(experiment.featureFlagKey || '')
       setGoalId(experiment.goalId || '')
-      setVariants(experiment.variants.length > 0 ? experiment.variants : defaultVariants)
+      setVariants(
+        experiment.variants.length > 0 ? experiment.variants : defaultVariants,
+      )
       setExposureTrigger(experiment.exposureTrigger || 'feature_flag')
       setCustomEventName(experiment.customEventName || '')
-      setMultipleVariantHandling(experiment.multipleVariantHandling || 'exclude')
+      setMultipleVariantHandling(
+        experiment.multipleVariantHandling || 'exclude',
+      )
       setFeatureFlagMode(experiment.featureFlagMode || 'create')
       setExistingFeatureFlagId(experiment.featureFlagId || '')
 
@@ -126,7 +155,9 @@ const ExperimentSettingsModal = ({
       }
     } catch (error) {
       console.error('Failed to load experiment:', error)
-      toast.error(t('experiments.loadError'))
+      toast.error(
+        typeof error === 'string' ? error : t('experiments.loadError'),
+      )
       onClose()
     } finally {
       setIsLoading(false)
@@ -150,8 +181,13 @@ const ExperimentSettingsModal = ({
     const loadGoals = async () => {
       setGoalsLoading(true)
       try {
-        const result = await getProjectGoals(projectId, 100, 0)
-        setGoals(result.results)
+        const result = await goalsProxy.fetchGoals(projectId, {
+          take: 100,
+          skip: 0,
+        })
+        if (result) {
+          setGoals(result.results)
+        }
       } catch (error) {
         console.error('Failed to load goals:', error)
       } finally {
@@ -160,7 +196,7 @@ const ExperimentSettingsModal = ({
     }
 
     loadGoals()
-  }, [isOpen, projectId])
+  }, [isOpen, projectId, goalsProxy])
 
   useEffect(() => {
     if (!isOpen || featureFlagMode !== 'link') return
@@ -168,8 +204,13 @@ const ExperimentSettingsModal = ({
     const loadFeatureFlags = async () => {
       setFeatureFlagsLoading(true)
       try {
-        const result = await getProjectFeatureFlags(projectId, 100, 0)
-        setFeatureFlags(result.results)
+        const result = await featureFlagsProxy.fetchFeatureFlags(projectId, {
+          take: 100,
+          skip: 0,
+        })
+        if (result) {
+          setFeatureFlags(result.results)
+        }
       } catch (error) {
         console.error('Failed to load feature flags:', error)
       } finally {
@@ -178,7 +219,7 @@ const ExperimentSettingsModal = ({
     }
 
     loadFeatureFlags()
-  }, [isOpen, projectId, featureFlagMode])
+  }, [isOpen, projectId, featureFlagMode, featureFlagsProxy])
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -226,46 +267,77 @@ const ExperimentSettingsModal = ({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle fetcher response
+  useEffect(() => {
+    if (!fetcher.data || fetcher.state !== 'idle') return
+
+    const responseKey = `${fetcher.data.intent}-${fetcher.data.success}`
+    if (processedRef.current === responseKey) return
+    processedRef.current = responseKey
+
+    if (fetcher.data.success) {
+      const { intent } = fetcher.data
+      if (intent === 'create-experiment') {
+        toast.success(t('experiments.created'))
+      } else if (intent === 'update-experiment') {
+        toast.success(t('experiments.updated'))
+      }
+      onSuccess()
+      onClose()
+    } else if (fetcher.data.error) {
+      toast.error(fetcher.data.error)
+    }
+  }, [fetcher.data, fetcher.state, t, onSuccess, onClose])
+
+  // Reset processed ref when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      processedRef.current = null
+    }
+  }, [isOpen])
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateForm()) return
 
-    setIsSaving(true)
-    try {
-      const effectiveFlagKey = featureFlagKey.trim() || suggestedFlagKey
+    processedRef.current = null
+    const effectiveFlagKey = featureFlagKey.trim() || suggestedFlagKey
 
-      const data = {
-        pid: projectId,
-        name: name.trim(),
-        description: description.trim() || undefined,
-        exposureTrigger,
-        customEventName: exposureTrigger === 'custom_event' ? customEventName.trim() : undefined,
-        multipleVariantHandling,
-        featureFlagMode,
-        featureFlagKey: featureFlagMode === 'create' ? effectiveFlagKey || undefined : undefined,
-        existingFeatureFlagId: featureFlagMode === 'link' ? existingFeatureFlagId : undefined,
-        goalId: goalId || undefined,
-        variants,
-      }
+    const formData = new FormData()
+    formData.set(
+      'intent',
+      isEditing ? 'update-experiment' : 'create-experiment',
+    )
+    formData.set('name', name.trim())
+    formData.set('description', description.trim())
+    formData.set('exposureTrigger', exposureTrigger)
+    formData.set(
+      'customEventName',
+      exposureTrigger === 'custom_event' ? customEventName.trim() : '',
+    )
+    formData.set('multipleVariantHandling', multipleVariantHandling)
+    formData.set('featureFlagMode', featureFlagMode)
+    formData.set(
+      'featureFlagKey',
+      featureFlagMode === 'create' ? effectiveFlagKey : '',
+    )
+    formData.set(
+      'existingFeatureFlagId',
+      featureFlagMode === 'link' ? existingFeatureFlagId : '',
+    )
+    formData.set('goalId', goalId)
+    formData.set('variants', JSON.stringify(variants))
 
-      if (experimentId) {
-        await updateExperiment(experimentId, data)
-        toast.success(t('experiments.updated'))
-      } else {
-        await createExperiment(data)
-        toast.success(t('experiments.created'))
-      }
-
-      onSuccess()
-      onClose()
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || error?.message || t('apiNotifications.somethingWentWrong'))
-    } finally {
-      setIsSaving(false)
+    if (isEditing && experimentId) {
+      formData.set('experimentId', experimentId)
     }
+
+    fetcher.submit(formData, { method: 'post' })
   }
 
-  const distributePercentages = (variantsList: ExperimentVariant[]): ExperimentVariant[] => {
+  const distributePercentages = (
+    variantsList: ExperimentVariant[],
+  ): ExperimentVariant[] => {
     const count = variantsList.length
     const basePercentage = Math.floor(100 / count)
     const remainder = 100 - basePercentage * count
@@ -307,7 +379,11 @@ const ExperimentSettingsModal = ({
     }
   }
 
-  const handleVariantChange = (index: number, field: keyof ExperimentVariant, value: string | number | boolean) => {
+  const handleVariantChange = (
+    index: number,
+    field: keyof ExperimentVariant,
+    value: string | number | boolean,
+  ) => {
     const newVariants = [...variants]
     if (field === 'isControl' && value === true) {
       newVariants.forEach((v, i) => {
@@ -370,7 +446,9 @@ const ExperimentSettingsModal = ({
                 <div className='px-6 pt-5 pb-4'>
                   <div className='flex items-center justify-between'>
                     <DialogTitle className='text-lg font-semibold text-gray-900 dark:text-gray-50'>
-                      {isEditing ? t('experiments.edit') : t('experiments.create')}
+                      {isEditing
+                        ? t('experiments.edit')
+                        : t('experiments.create')}
                     </DialogTitle>
                     <button
                       type='button'
@@ -417,22 +495,41 @@ const ExperimentSettingsModal = ({
                     {featureFlagMode === 'create' ? (
                       <div>
                         <div className='flex items-center gap-1.5'>
-                          <Text as='label' size='sm' weight='medium' className='text-gray-700 dark:text-gray-200'>
+                          <Text
+                            as='label'
+                            size='sm'
+                            weight='medium'
+                            className='text-gray-700 dark:text-gray-200'
+                          >
                             {t('experiments.featureFlagKey')}
                           </Text>
-                          <Tooltip text={t('experiments.featureFlagKeyHint')} className='flex items-center' />
+                          <Tooltip
+                            text={t('experiments.featureFlagKeyHint')}
+                            className='flex items-center'
+                          />
                         </div>
                         <input
                           type='text'
                           value={featureFlagKey}
-                          onChange={(e) => setFeatureFlagKey(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '_'))}
-                          placeholder={suggestedFlagKey || t('experiments.featureFlagKeyPlaceholder')}
+                          onChange={(e) =>
+                            setFeatureFlagKey(
+                              e.target.value
+                                .toLowerCase()
+                                .replace(/[^a-z0-9_-]/g, '_'),
+                            )
+                          }
+                          placeholder={
+                            suggestedFlagKey ||
+                            t('experiments.featureFlagKeyPlaceholder')
+                          }
                           className='mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 font-mono text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-gray-100'
                         />
                         {!featureFlagKey && suggestedFlagKey ? (
                           <Text size='xs' colour='muted' className='mt-1'>
                             Will use:{' '}
-                            <code className='rounded bg-gray-100 px-1 dark:bg-slate-700'>{suggestedFlagKey}</code>
+                            <code className='rounded bg-gray-100 px-1 dark:bg-slate-700'>
+                              {suggestedFlagKey}
+                            </code>
                           </Text>
                         ) : null}
                       </div>
@@ -441,7 +538,12 @@ const ExperimentSettingsModal = ({
                     <div>
                       <div className='mb-2 flex items-center justify-between'>
                         <div className='flex items-center gap-1.5'>
-                          <Text as='label' size='sm' weight='medium' className='text-gray-700 dark:text-gray-200'>
+                          <Text
+                            as='label'
+                            size='sm'
+                            weight='medium'
+                            className='text-gray-700 dark:text-gray-200'
+                          >
                             {t('experiments.variants')}
                           </Text>
                           <Tooltip
@@ -490,7 +592,13 @@ const ExperimentSettingsModal = ({
                               <input
                                 type='text'
                                 value={variant.name}
-                                onChange={(e) => handleVariantChange(index, 'name', e.target.value)}
+                                onChange={(e) =>
+                                  handleVariantChange(
+                                    index,
+                                    'name',
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder='Name'
                                 className='w-32 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-700'
                               />
@@ -501,7 +609,9 @@ const ExperimentSettingsModal = ({
                                   handleVariantChange(
                                     index,
                                     'key',
-                                    e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_'),
+                                    e.target.value
+                                      .toLowerCase()
+                                      .replace(/[^a-z0-9_]/g, '_'),
                                   )
                                 }
                                 placeholder='key'
@@ -515,9 +625,16 @@ const ExperimentSettingsModal = ({
                                 inputMode='numeric'
                                 value={variant.rolloutPercentage}
                                 onChange={(e) => {
-                                  const val = e.target.value.replace(/[^0-9]/g, '')
+                                  const val = e.target.value.replace(
+                                    /[^0-9]/g,
+                                    '',
+                                  )
                                   const num = parseInt(val, 10) || 0
-                                  handleVariantChange(index, 'rolloutPercentage', Math.min(100, num))
+                                  handleVariantChange(
+                                    index,
+                                    'rolloutPercentage',
+                                    Math.min(100, num),
+                                  )
                                 }}
                                 className='w-12 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-center text-sm dark:border-slate-600 dark:bg-slate-700'
                               />
@@ -531,7 +648,9 @@ const ExperimentSettingsModal = ({
                                 type='radio'
                                 name='controlVariant'
                                 checked={variant.isControl}
-                                onChange={() => handleVariantChange(index, 'isControl', true)}
+                                onChange={() =>
+                                  handleVariantChange(index, 'isControl', true)
+                                }
                                 className='size-3.5 text-indigo-600'
                               />
                               <Text size='xs' colour='muted'>
@@ -565,7 +684,9 @@ const ExperimentSettingsModal = ({
                           size='sm'
                           weight='medium'
                           className={
-                            isPercentageValid ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                            isPercentageValid
+                              ? 'text-green-600 dark:text-green-400'
+                              : 'text-red-600 dark:text-red-400'
                           }
                         >
                           {totalPercentage}%
@@ -575,7 +696,12 @@ const ExperimentSettingsModal = ({
 
                     <div>
                       <div className='flex items-center gap-1.5'>
-                        <Text as='label' size='sm' weight='medium' className='text-gray-700 dark:text-gray-200'>
+                        <Text
+                          as='label'
+                          size='sm'
+                          weight='medium'
+                          className='text-gray-700 dark:text-gray-200'
+                        >
                           {t('experiments.goal')}
                         </Text>
                         <Tooltip
@@ -594,8 +720,13 @@ const ExperimentSettingsModal = ({
                             keyExtractor={(item) => item.value}
                             labelExtractor={(item) => item.label}
                             onSelect={(item) => setGoalId(item.value)}
-                            selectedItem={goalOptions.find((g) => g.value === goalId)}
-                            title={goalOptions.find((g) => g.value === goalId)?.label || t('experiments.noGoal')}
+                            selectedItem={goalOptions.find(
+                              (g) => g.value === goalId,
+                            )}
+                            title={
+                              goalOptions.find((g) => g.value === goalId)
+                                ?.label || t('experiments.noGoal')
+                            }
                             capitalise
                           />
                         </div>
@@ -654,7 +785,10 @@ const ExperimentSettingsModal = ({
                           Advanced settings
                         </Text>
                         <ChevronDownIcon
-                          className={cx('size-4 text-gray-400 transition-transform', showAdvanced && 'rotate-180')}
+                          className={cx(
+                            'size-4 text-gray-400 transition-transform',
+                            showAdvanced && 'rotate-180',
+                          )}
                         />
                       </button>
 
@@ -662,7 +796,12 @@ const ExperimentSettingsModal = ({
                         <div className='mt-4 space-y-4'>
                           <div>
                             <div className='flex items-center gap-1.5'>
-                              <Text as='label' size='sm' weight='medium' className='text-gray-700 dark:text-gray-200'>
+                              <Text
+                                as='label'
+                                size='sm'
+                                weight='medium'
+                                className='text-gray-700 dark:text-gray-200'
+                              >
                                 Feature flag source
                               </Text>
                               <Tooltip
@@ -705,11 +844,16 @@ const ExperimentSettingsModal = ({
                                 items={featureFlagOptions}
                                 keyExtractor={(item) => item.value}
                                 labelExtractor={(item) => item.label}
-                                onSelect={(item) => setExistingFeatureFlagId(item.value)}
-                                selectedItem={featureFlagOptions.find((f) => f.value === existingFeatureFlagId)}
+                                onSelect={(item) =>
+                                  setExistingFeatureFlagId(item.value)
+                                }
+                                selectedItem={featureFlagOptions.find(
+                                  (f) => f.value === existingFeatureFlagId,
+                                )}
                                 title={
-                                  featureFlagOptions.find((f) => f.value === existingFeatureFlagId)?.label ||
-                                  t('experiments.selectFeatureFlag')
+                                  featureFlagOptions.find(
+                                    (f) => f.value === existingFeatureFlagId,
+                                  )?.label || t('experiments.selectFeatureFlag')
                                 }
                               />
                               {featureFlagsLoading ? (
@@ -727,7 +871,12 @@ const ExperimentSettingsModal = ({
 
                           <div>
                             <div className='flex items-center gap-1.5'>
-                              <Text as='label' size='sm' weight='medium' className='text-gray-700 dark:text-gray-200'>
+                              <Text
+                                as='label'
+                                size='sm'
+                                weight='medium'
+                                className='text-gray-700 dark:text-gray-200'
+                              >
                                 Exposure tracking
                               </Text>
                               <Tooltip
@@ -738,7 +887,9 @@ const ExperimentSettingsModal = ({
                             <div className='mt-1.5 flex gap-2'>
                               <button
                                 type='button'
-                                onClick={() => setExposureTrigger('feature_flag')}
+                                onClick={() =>
+                                  setExposureTrigger('feature_flag')
+                                }
                                 className={cx(
                                   'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
                                   exposureTrigger === 'feature_flag'
@@ -750,7 +901,9 @@ const ExperimentSettingsModal = ({
                               </button>
                               <button
                                 type='button'
-                                onClick={() => setExposureTrigger('custom_event')}
+                                onClick={() =>
+                                  setExposureTrigger('custom_event')
+                                }
                                 className={cx(
                                   'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
                                   exposureTrigger === 'custom_event'
@@ -766,8 +919,12 @@ const ExperimentSettingsModal = ({
                               <Input
                                 className='mt-2'
                                 value={customEventName}
-                                onChange={(e) => setCustomEventName(e.target.value)}
-                                placeholder={t('experiments.exposureTrigger.eventNamePlaceholder')}
+                                onChange={(e) =>
+                                  setCustomEventName(e.target.value)
+                                }
+                                placeholder={t(
+                                  'experiments.exposureTrigger.eventNamePlaceholder',
+                                )}
                                 error={errors.customEvent}
                               />
                             ) : null}
@@ -775,18 +932,28 @@ const ExperimentSettingsModal = ({
 
                           <div>
                             <div className='flex items-center gap-1.5'>
-                              <Text as='label' size='sm' weight='medium' className='text-gray-700 dark:text-gray-200'>
+                              <Text
+                                as='label'
+                                size='sm'
+                                weight='medium'
+                                className='text-gray-700 dark:text-gray-200'
+                              >
                                 Multi-exposure handling
                               </Text>
                               <Tooltip
                                 text={
                                   <div>
-                                    <p className='font-medium'>What happens if a user sees multiple variants?</p>
+                                    <p className='font-medium'>
+                                      What happens if a user sees multiple
+                                      variants?
+                                    </p>
                                     <p className='mt-1'>
-                                      <strong>Exclude:</strong> Remove them from analysis (recommended)
+                                      <strong>Exclude:</strong> Remove them from
+                                      analysis (recommended)
                                     </p>
                                     <p className='mt-0.5'>
-                                      <strong>First exposure:</strong> Only count their first variant
+                                      <strong>First exposure:</strong> Only
+                                      count their first variant
                                     </p>
                                   </div>
                                 }
@@ -796,7 +963,9 @@ const ExperimentSettingsModal = ({
                             <div className='mt-1.5 flex gap-2'>
                               <button
                                 type='button'
-                                onClick={() => setMultipleVariantHandling('exclude')}
+                                onClick={() =>
+                                  setMultipleVariantHandling('exclude')
+                                }
                                 className={cx(
                                   'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
                                   multipleVariantHandling === 'exclude'
@@ -808,7 +977,9 @@ const ExperimentSettingsModal = ({
                               </button>
                               <button
                                 type='button'
-                                onClick={() => setMultipleVariantHandling('first_exposure')}
+                                onClick={() =>
+                                  setMultipleVariantHandling('first_exposure')
+                                }
                                 className={cx(
                                   'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
                                   multipleVariantHandling === 'first_exposure'

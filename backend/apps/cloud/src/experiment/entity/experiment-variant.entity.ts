@@ -35,7 +35,7 @@ export class ExperimentVariant {
   isControl: boolean
 
   @ApiProperty({ type: () => Experiment })
-  @ManyToOne(() => Experiment, experiment => experiment.variants, {
+  @ManyToOne(() => Experiment, (experiment) => experiment.variants, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()

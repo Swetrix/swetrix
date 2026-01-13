@@ -1,4 +1,9 @@
-import { Description, Field, Label, Textarea as HeadlessTextarea } from '@headlessui/react'
+import {
+  Description,
+  Field,
+  Label,
+  Textarea as HeadlessTextarea,
+} from '@headlessui/react'
 import _isEmpty from 'lodash/isEmpty'
 import React, { memo } from 'react'
 
@@ -38,7 +43,11 @@ const Textarea = ({
 
   return (
     <Field as='div' className={classes?.container}>
-      {label ? <Label className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label> : null}
+      {label ? (
+        <Label className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>
+          {label}
+        </Label>
+      ) : null}
       <HeadlessTextarea
         rows={rows}
         name={name}
@@ -47,7 +56,8 @@ const Textarea = ({
           {
             'text-red-900 placeholder-red-300 ring-red-600': isError,
             'ring-gray-300 dark:ring-slate-800/50': !isError,
-            'cursor-not-allowed bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400': disabled,
+            'cursor-not-allowed bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400':
+              disabled,
           },
           classes?.textarea,
         )}
@@ -58,9 +68,13 @@ const Textarea = ({
         readOnly={readOnly}
         invalid={isError}
       />
-      {isError ? <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p> : null}
+      {isError ? (
+        <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p>
+      ) : null}
       {hint ? (
-        <Description className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</Description>
+        <Description className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>
+          {hint}
+        </Description>
       ) : null}
     </Field>
   )

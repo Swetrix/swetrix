@@ -52,7 +52,9 @@ export default async function handleRequest(
       },
     })
 
-  const callbackName = isbot(request.headers.get('user-agent')) ? 'onAllReady' : 'onShellReady'
+  const callbackName = isbot(request.headers.get('user-agent'))
+    ? 'onAllReady'
+    : 'onShellReady'
 
   return new Promise((resolve, reject) => {
     let didError = false
@@ -68,7 +70,10 @@ export default async function handleRequest(
 
           responseHeaders.set('Content-Type', 'text/html')
           // Prevent HTML from being cached so users always get fresh chunk references after deployments
-          responseHeaders.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
+          responseHeaders.set(
+            'Cache-Control',
+            'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          )
           responseHeaders.set('Pragma', 'no-cache')
           responseHeaders.set('Expires', '0')
           responseHeaders.append('Vary', 'Cookie')

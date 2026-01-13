@@ -47,13 +47,13 @@ export class ProjectViewEntity {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @ManyToOne(() => Project, project => project.views, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Project, (project) => project.views, { onDelete: 'CASCADE' })
   project: Project
 
   @ApiProperty({ type: ProjectViewCustomEventEntity, isArray: true })
   @OneToMany(
     () => ProjectViewCustomEventEntity,
-    projectViewCustomEvent => projectViewCustomEvent.view,
+    (projectViewCustomEvent) => projectViewCustomEvent.view,
   )
   customEvents: ProjectViewCustomEventEntity[]
 }

@@ -9,7 +9,11 @@ interface AddProjectProps {
   viewMode: 'grid' | 'list'
 }
 
-export const AddProject = ({ onClick, sitesCount, viewMode }: AddProjectProps) => {
+export const AddProject = ({
+  onClick,
+  sitesCount,
+  viewMode,
+}: AddProjectProps) => {
   const { t } = useTranslation('common')
 
   return (
@@ -20,9 +24,12 @@ export const AddProject = ({ onClick, sitesCount, viewMode }: AddProjectProps) =
         'group cursor-pointer border-2 border-dashed border-gray-300 hover:border-gray-400',
         viewMode === 'list'
           ? 'flex h-[72px] items-center justify-center rounded-lg'
-          : cx('flex h-auto min-h-[153.1px] items-center justify-center rounded-lg', {
-              'lg:min-h-auto': sitesCount % 3 !== 0,
-            }),
+          : cx(
+              'flex h-auto min-h-[153.1px] items-center justify-center rounded-lg',
+              {
+                'lg:min-h-auto': sitesCount % 3 !== 0,
+              },
+            ),
       )}
     >
       <div className={cx(viewMode === 'list' && 'flex items-center')}>

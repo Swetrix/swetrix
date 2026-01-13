@@ -20,9 +20,14 @@ const SelfhostedApiUrlBanner = () => {
           <div className='flex flex-wrap items-center justify-between'>
             <div className='flex flex-1 items-center'>
               <span className='flex rounded-lg bg-yellow-600 p-2'>
-                <ExclamationTriangleIcon className='h-6 w-6 text-white' aria-hidden='true' />
+                <ExclamationTriangleIcon
+                  className='h-6 w-6 text-white'
+                  aria-hidden='true'
+                />
               </span>
-              <p className='ml-3 truncate font-medium text-black'>{t('ce.noApiUrl.banner')}</p>
+              <p className='ml-3 truncate font-medium text-black'>
+                {t('ce.noApiUrl.banner')}
+              </p>
             </div>
             <div className='order-3 mt-2 w-full shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
               <span
@@ -51,10 +56,12 @@ const SelfhostedApiUrlBanner = () => {
             <p className='mb-2 font-medium'>{t('ce.noApiUrl.examplesTitle')}</p>
             <ul className='mb-3 list-disc pl-6'>
               <li>
-                {t('ce.noApiUrl.exampleLocal.label')} <code>{t('ce.noApiUrl.exampleLocal.value')}</code>
+                {t('ce.noApiUrl.exampleLocal.label')}{' '}
+                <code>{t('ce.noApiUrl.exampleLocal.value')}</code>
               </li>
               <li>
-                {t('ce.noApiUrl.exampleSubdomain.label')} <code>{t('ce.noApiUrl.exampleSubdomain.value')}</code>
+                {t('ce.noApiUrl.exampleSubdomain.label')}{' '}
+                <code>{t('ce.noApiUrl.exampleSubdomain.value')}</code>
               </li>
             </ul>
             <p>{t('ce.noApiUrl.finalNote')}</p>

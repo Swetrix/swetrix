@@ -8,7 +8,14 @@ import {
   XIcon,
   MenuIcon,
 } from 'lucide-react'
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+  memo,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps } from 'react-router'
 
@@ -108,157 +115,215 @@ const CollapsibleGroup: React.FC<{
   searchParams: URLSearchParams
   isCollapsed?: boolean
   onMobileClose?: () => void
-}> = ({ group, activeTab, onTabChange, projectId, dataLoading, searchParams, isCollapsed, onMobileClose }) => {
-  const [isExpanded, setIsExpanded] = useState(() => getGroupExpandedState(group.id))
+}> = memo(
+  ({
+    group,
+    activeTab,
+    onTabChange,
+    projectId,
+    dataLoading,
+    searchParams,
+    isCollapsed,
+    onMobileClose,
+  }) => {
+    const [isExpanded, setIsExpanded] = useState(() =>
+      getGroupExpandedState(group.id),
+    )
 
-  const hasActiveTab = useMemo(() => {
-    return group.tabs.some((tab) => tab.id === activeTab)
-  }, [group.tabs, activeTab])
+    const hasActiveTab = useMemo(() => {
+      return group.tabs.some((tab) => tab.id === activeTab)
+    }, [group.tabs, activeTab])
 
-  const prevHasActiveTab = useRef(hasActiveTab)
+    const prevHasActiveTab = useRef(hasActiveTab)
 
-  React.useEffect(() => {
-    // Only auto-expand when user navigates TO this group (not on initial mount)
-    if (hasActiveTab && !prevHasActiveTab.current && !isExpanded) {
-      setIsExpanded(true)
-      setGroupExpandedState(group.id, true)
+    React.useEffect(() => {
+      // Only auto-expand when user navigates TO this group (not on initial mount)
+      if (hasActiveTab && !prevHasActiveTab.current && !isExpanded) {
+        setIsExpanded(true)
+        setGroupExpandedState(group.id, true)
+      }
+      prevHasActiveTab.current = hasActiveTab
+    }, [hasActiveTab, group.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    if (isCollapsed) {
+      return (
+        <div className='mb-1'>
+          <nav className='flex flex-col gap-0.5'>
+            {_map(group.tabs, (tab) => {
+              const isCurrent = tab.id === activeTab
+              const TabIcon = tab.icon
+              const iconColorClass = ICON_COLORS[tab.id] || 'text-gray-500'
+
+              const handleClick = (e: React.MouseEvent) => {
+                if (tab.id === 'settings') {
+                  onMobileClose?.()
+                  return
+                }
+
+                e.preventDefault()
+                if (!dataLoading) {
+                  onTabChange(tab.id as keyof typeof PROJECT_TABS)
+                  onMobileClose?.()
+                }
+              }
+
+              const newSearchParams = new URLSearchParams(
+                searchParams.toString(),
+              )
+              newSearchParams.set('tab', tab.id)
+              const tabUrl: LinkProps['to'] =
+                tab.id === 'settings'
+                  ? routes.project_settings.replace(':id', projectId)
+                  : { search: newSearchParams.toString() }
+
+              return (
+                <Tooltip
+                  key={tab.id}
+                  text={tab.label}
+                  tooltipNode={
+                    <Link
+                      to={tabUrl}
+                      onClick={handleClick}
+                      className={cn(
+                        'group flex items-center justify-center rounded-md p-2 transition-colors',
+                        {
+                          'bg-gray-100 dark:bg-slate-800': isCurrent,
+                          'hover:bg-gray-100 dark:hover:bg-slate-800/60':
+                            !isCurrent,
+                          'cursor-wait': dataLoading && tab.id !== 'settings',
+                        },
+                      )}
+                      aria-current={isCurrent ? 'page' : undefined}
+                      aria-label={tab.label}
+                    >
+                      <TabIcon
+                        className={cn('size-5 shrink-0', iconColorClass)}
+                        strokeWidth={1.5}
+                        aria-hidden='true'
+                      />
+                    </Link>
+                  }
+                  disableHoverableContent
+                />
+              )
+            })}
+          </nav>
+        </div>
+      )
     }
-    prevHasActiveTab.current = hasActiveTab
-  }, [hasActiveTab, group.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (isCollapsed) {
     return (
       <div className='mb-1'>
-        <nav className='flex flex-col gap-0.5'>
-          {_map(group.tabs, (tab) => {
-            const isCurrent = tab.id === activeTab
-            const TabIcon = tab.icon
-            const iconColorClass = ICON_COLORS[tab.id] || 'text-gray-500'
+        <button
+          type='button'
+          onClick={() => {
+            const newValue = !isExpanded
+            setIsExpanded(newValue)
+            setGroupExpandedState(group.id, newValue)
+          }}
+          className='group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800/60'
+        >
+          <Text
+            as='span'
+            size='xs'
+            colour='secondary'
+            weight='semibold'
+            truncate
+            className='max-w-full'
+          >
+            {group.label}
+          </Text>
+          {isExpanded ? (
+            <ChevronDownIcon
+              className='size-3.5 text-gray-400'
+              strokeWidth={2}
+            />
+          ) : (
+            <ChevronRightIcon
+              className='size-3.5 text-gray-400'
+              strokeWidth={2}
+            />
+          )}
+        </button>
 
-            const handleClick = (e: React.MouseEvent) => {
-              if (tab.id === 'settings') {
-                onMobileClose?.()
-                return
-              }
+        <div
+          className={cn(
+            'overflow-hidden transition-all duration-200 ease-in-out',
+            {
+              'max-h-96 opacity-100': isExpanded,
+              'max-h-0 opacity-0': !isExpanded,
+            },
+          )}
+        >
+          <nav className='mt-1 flex flex-col gap-0.5 pl-2'>
+            {_map(group.tabs, (tab) => {
+              const isCurrent = tab.id === activeTab
+              const TabIcon = tab.icon
+              const iconColorClass = ICON_COLORS[tab.id] || 'text-gray-500'
 
-              e.preventDefault()
-              if (!dataLoading) {
-                onTabChange(tab.id as keyof typeof PROJECT_TABS)
-                onMobileClose?.()
-              }
-            }
-
-            const newSearchParams = new URLSearchParams(searchParams.toString())
-            newSearchParams.set('tab', tab.id)
-            const tabUrl: LinkProps['to'] =
-              tab.id === 'settings'
-                ? routes.project_settings.replace(':id', projectId)
-                : { search: newSearchParams.toString() }
-
-            return (
-              <Tooltip
-                key={tab.id}
-                text={tab.label}
-                tooltipNode={
-                  <Link
-                    to={tabUrl}
-                    onClick={handleClick}
-                    className={cn('group flex items-center justify-center rounded-md p-2 transition-colors', {
-                      'bg-gray-100 dark:bg-slate-800': isCurrent,
-                      'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
-                      'cursor-wait': dataLoading && tab.id !== 'settings',
-                    })}
-                    aria-current={isCurrent ? 'page' : undefined}
-                    aria-label={tab.label}
-                  >
-                    <TabIcon className={cn('size-5 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
-                  </Link>
+              const handleClick = (e: React.MouseEvent) => {
+                if (tab.id === 'settings') {
+                  onMobileClose?.()
+                  return // Let the Link handle navigation
                 }
-              />
-            )
-          })}
-        </nav>
+
+                e.preventDefault()
+                if (!dataLoading) {
+                  onTabChange(tab.id as keyof typeof PROJECT_TABS)
+                  onMobileClose?.()
+                }
+              }
+
+              const newSearchParams = new URLSearchParams(
+                searchParams.toString(),
+              )
+              newSearchParams.set('tab', tab.id)
+              const tabUrl: LinkProps['to'] =
+                tab.id === 'settings'
+                  ? routes.project_settings.replace(':id', projectId)
+                  : { search: newSearchParams.toString() }
+
+              return (
+                <Link
+                  key={tab.id}
+                  to={tabUrl}
+                  onClick={handleClick}
+                  className={cn(
+                    'group flex items-center gap-1.5 rounded-md px-2.5 py-2 transition-colors',
+                    {
+                      'bg-gray-100 dark:bg-slate-800': isCurrent,
+                      'hover:bg-gray-100 dark:hover:bg-slate-800/60':
+                        !isCurrent,
+                      'cursor-wait': dataLoading && tab.id !== 'settings',
+                    },
+                  )}
+                  aria-current={isCurrent ? 'page' : undefined}
+                >
+                  <TabIcon
+                    className={cn('size-4 shrink-0', iconColorClass)}
+                    strokeWidth={1.5}
+                    aria-hidden='true'
+                  />
+                  <Text
+                    as='span'
+                    size='sm'
+                    weight='medium'
+                    truncate
+                    className='max-w-full'
+                  >
+                    {tab.label}
+                  </Text>
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
       </div>
     )
-  }
+  },
+)
 
-  return (
-    <div className='mb-1'>
-      <button
-        type='button'
-        onClick={() => {
-          const newValue = !isExpanded
-          setIsExpanded(newValue)
-          setGroupExpandedState(group.id, newValue)
-        }}
-        className='group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800/60'
-      >
-        <Text as='span' size='xs' colour='secondary' weight='semibold' truncate className='max-w-full'>
-          {group.label}
-        </Text>
-        {isExpanded ? (
-          <ChevronDownIcon className='size-3.5 text-gray-400' strokeWidth={2} />
-        ) : (
-          <ChevronRightIcon className='size-3.5 text-gray-400' strokeWidth={2} />
-        )}
-      </button>
-
-      <div
-        className={cn('overflow-hidden transition-all duration-200 ease-in-out', {
-          'max-h-96 opacity-100': isExpanded,
-          'max-h-0 opacity-0': !isExpanded,
-        })}
-      >
-        <nav className='mt-1 flex flex-col gap-0.5 pl-2'>
-          {_map(group.tabs, (tab) => {
-            const isCurrent = tab.id === activeTab
-            const TabIcon = tab.icon
-            const iconColorClass = ICON_COLORS[tab.id] || 'text-gray-500'
-
-            const handleClick = (e: React.MouseEvent) => {
-              if (tab.id === 'settings') {
-                onMobileClose?.()
-                return // Let the Link handle navigation
-              }
-
-              e.preventDefault()
-              if (!dataLoading) {
-                onTabChange(tab.id as keyof typeof PROJECT_TABS)
-                onMobileClose?.()
-              }
-            }
-
-            const newSearchParams = new URLSearchParams(searchParams.toString())
-            newSearchParams.set('tab', tab.id)
-            const tabUrl: LinkProps['to'] =
-              tab.id === 'settings'
-                ? routes.project_settings.replace(':id', projectId)
-                : { search: newSearchParams.toString() }
-
-            return (
-              <Link
-                key={tab.id}
-                to={tabUrl}
-                onClick={handleClick}
-                className={cn('group flex items-center gap-1.5 rounded-md px-2.5 py-2 transition-colors', {
-                  'bg-gray-100 dark:bg-slate-800': isCurrent,
-                  'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
-                  'cursor-wait': dataLoading && tab.id !== 'settings',
-                })}
-                aria-current={isCurrent ? 'page' : undefined}
-              >
-                <TabIcon className={cn('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
-                <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
-                  {tab.label}
-                </Text>
-              </Link>
-            )
-          })}
-        </nav>
-      </div>
-    </div>
-  )
-}
+CollapsibleGroup.displayName = 'CollapsibleGroup'
 
 const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   tabs,
@@ -274,7 +339,10 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   onMobileClose,
   className,
 }) => {
-  const faviconHost = useMemo(() => getFaviconHost(websiteUrl || null), [websiteUrl])
+  const faviconHost = useMemo(
+    () => getFaviconHost(websiteUrl || null),
+    [websiteUrl],
+  )
   const { t } = useTranslation('common')
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -332,16 +400,21 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   )
 
   const askAiTab = useMemo(() => {
-    return tabs.find((tab) => tab.id === PROJECT_TABS.ai)
+    return tabs.find((tab) => PROJECT_TABS.ai && tab.id === PROJECT_TABS.ai)
   }, [tabs])
 
   const tabGroups = useMemo<TabGroup[]>(() => {
     const groups: TabGroup[] = []
 
     const webAnalyticsTabs = tabs.filter((tab) =>
-      [PROJECT_TABS.traffic, PROJECT_TABS.performance, PROJECT_TABS.funnels, PROJECT_TABS.alerts].includes(
-        tab.id as any,
-      ),
+      [
+        PROJECT_TABS.traffic,
+        PROJECT_TABS.performance,
+        PROJECT_TABS.funnels,
+        PROJECT_TABS.alerts,
+      ]
+        .filter(Boolean)
+        .includes(tab.id as any),
     )
     if (webAnalyticsTabs.length > 0) {
       groups.push({
@@ -359,7 +432,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         PROJECT_TABS.goals,
         PROJECT_TABS.experiments,
         PROJECT_TABS.featureFlags,
-      ].includes(tab.id as any),
+      ]
+        .filter(Boolean)
+        .includes(tab.id as any),
     )
     if (productAnalyticsTabs.length > 0) {
       groups.push({
@@ -369,7 +444,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       })
     }
 
-    const securityTabs = tabs.filter((tab) => tab.id === PROJECT_TABS.captcha)
+    const securityTabs = tabs.filter(
+      (tab) => PROJECT_TABS.captcha && tab.id === PROJECT_TABS.captcha,
+    )
     if (securityTabs.length > 0) {
       groups.push({
         id: 'security',
@@ -389,7 +466,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
           ? 'h-screen w-64'
           : cn(
               'transition-[width,height] duration-300 ease-in-out',
-              isScrolled ? 'h-[calc(100vh-1.5rem)]' : 'h-[calc(100vh-60px-1rem)]',
+              isScrolled
+                ? 'h-[calc(100vh-1.5rem)]'
+                : 'h-[calc(100vh-60px-1rem)]',
               isCollapsed ? 'w-14' : 'w-56',
             ),
         className,
@@ -408,11 +487,17 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                   alt={projectName}
                 />
               ) : (
-                <Text as='h2' size='lg' weight='semibold' className='text-center'>
+                <Text
+                  as='h2'
+                  size='lg'
+                  weight='semibold'
+                  className='text-center'
+                >
                   {projectName.charAt(0).toUpperCase()}
                 </Text>
               )
             }
+            disableHoverableContent
           />
         ) : (
           <Tooltip
@@ -429,11 +514,18 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                     aria-hidden='true'
                   />
                 ) : null}
-                <Text as='h2' size='lg' weight='semibold' truncate className='text-left'>
+                <Text
+                  as='h2'
+                  size='lg'
+                  weight='semibold'
+                  truncate
+                  className='text-left'
+                >
                   {projectName}
                 </Text>
               </div>
             }
+            disableHoverableContent
           />
         )}
         {isMobileOpen ? (
@@ -463,7 +555,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                 }
               }
 
-              const newSearchParams = new URLSearchParams(searchParams.toString())
+              const newSearchParams = new URLSearchParams(
+                searchParams.toString(),
+              )
               newSearchParams.set('tab', askAiTab.id)
 
               if (isCollapsed && !isMobileOpen) {
@@ -474,12 +568,16 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                       <Link
                         to={{ search: newSearchParams.toString() }}
                         onClick={handleClick}
-                        className={cn('group flex items-center justify-center rounded-md p-2 transition-colors', {
-                          'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
-                            isCurrent,
-                          'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
-                          'cursor-wait': dataLoading,
-                        })}
+                        className={cn(
+                          'group flex items-center justify-center rounded-md p-2 transition-colors',
+                          {
+                            'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
+                              isCurrent,
+                            'hover:bg-gray-100 dark:hover:bg-slate-800/60':
+                              !isCurrent,
+                            'cursor-wait': dataLoading,
+                          },
+                        )}
                         aria-current={isCurrent ? 'page' : undefined}
                         aria-label={askAiTab.label}
                       >
@@ -490,6 +588,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                         />
                       </Link>
                     }
+                    disableHoverableContent
                   />
                 )
               }
@@ -498,16 +597,30 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                 <Link
                   to={{ search: newSearchParams.toString() }}
                   onClick={handleClick}
-                  className={cn('group flex items-center gap-2 rounded-md px-2.5 py-2 transition-colors', {
-                    'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
-                      isCurrent,
-                    'hover:bg-gray-100 dark:hover:bg-slate-800/60': !isCurrent,
-                    'cursor-wait': dataLoading,
-                  })}
+                  className={cn(
+                    'group flex items-center gap-2 rounded-md px-2.5 py-2 transition-colors',
+                    {
+                      'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
+                        isCurrent,
+                      'hover:bg-gray-100 dark:hover:bg-slate-800/60':
+                        !isCurrent,
+                      'cursor-wait': dataLoading,
+                    },
+                  )}
                   aria-current={isCurrent ? 'page' : undefined}
                 >
-                  <TabIcon className={cn('size-4 shrink-0', iconColorClass)} strokeWidth={1.5} aria-hidden='true' />
-                  <Text as='span' size='sm' weight='medium' truncate className='max-w-full'>
+                  <TabIcon
+                    className={cn('size-4 shrink-0', iconColorClass)}
+                    strokeWidth={1.5}
+                    aria-hidden='true'
+                  />
+                  <Text
+                    as='span'
+                    size='sm'
+                    weight='medium'
+                    truncate
+                    className='max-w-full'
+                  >
                     {askAiTab.label}
                   </Text>
                 </Link>
@@ -544,10 +657,18 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             aria-label={isCollapsed ? t('common.expand') : t('common.collapse')}
           >
             {isCollapsed ? (
-              <PanelLeftOpenIcon className='h-5 w-5 shrink-0' strokeWidth={1.5} aria-hidden='true' />
+              <PanelLeftOpenIcon
+                className='h-5 w-5 shrink-0'
+                strokeWidth={1.5}
+                aria-hidden='true'
+              />
             ) : (
               <>
-                <PanelLeftCloseIcon className='h-5 w-5 shrink-0' strokeWidth={1.5} aria-hidden='true' />
+                <PanelLeftCloseIcon
+                  className='h-5 w-5 shrink-0'
+                  strokeWidth={1.5}
+                  aria-hidden='true'
+                />
                 <span className='truncate'>{t('common.collapse')}</span>
               </>
             )}
@@ -570,7 +691,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
               strokeWidth={1.5}
               aria-hidden='true'
             />
-            {!isCollapsed || isMobileOpen ? <span className='truncate'>{t('common.settings')}</span> : null}
+            {!isCollapsed || isMobileOpen ? (
+              <span className='truncate'>{t('common.settings')}</span>
+            ) : null}
           </Link>
         ) : null}
       </div>
@@ -579,9 +702,15 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
 
   if (isMobileOpen) {
     return (
-      <div className='fixed inset-0 z-50 md:hidden'>
-        <div className='animate-fade-in absolute inset-0 bg-black/50' onClick={onMobileClose} aria-hidden='true' />
-        <div className='animate-slide-in-left relative h-full w-fit'>{sidebarContent}</div>
+      <div className='pointer-events-auto fixed inset-0 z-50 md:hidden'>
+        <div
+          className='animate-fade-in absolute inset-0 bg-black/50'
+          onClick={onMobileClose}
+          aria-hidden='true'
+        />
+        <div className='animate-slide-in-left relative h-full w-fit'>
+          {sidebarContent}
+        </div>
       </div>
     )
   }
@@ -594,11 +723,14 @@ interface MobileSidebarTriggerProps {
   activeTabLabel?: string
 }
 
-export const MobileSidebarTrigger: React.FC<MobileSidebarTriggerProps> = ({ onClick, activeTabLabel }) => {
+export const MobileSidebarTrigger: React.FC<MobileSidebarTriggerProps> = ({
+  onClick,
+  activeTabLabel,
+}) => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='mb-4 flex items-center gap-3 md:hidden'>
+    <div className='relative z-10 mb-4 flex items-center gap-3 md:hidden'>
       <button
         type='button'
         onClick={onClick}
@@ -608,10 +740,29 @@ export const MobileSidebarTrigger: React.FC<MobileSidebarTriggerProps> = ({ onCl
         <MenuIcon className='h-5 w-5' strokeWidth={1.5} />
       </button>
       {activeTabLabel ? (
-        <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>{activeTabLabel}</span>
+        <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
+          {activeTabLabel}
+        </span>
       ) : null}
     </div>
   )
 }
 
-export default ProjectSidebar
+const MemoizedProjectSidebar = memo(ProjectSidebar, (prevProps, nextProps) => {
+  return (
+    prevProps.activeTab === nextProps.activeTab &&
+    prevProps.projectId === nextProps.projectId &&
+    prevProps.projectName === nextProps.projectName &&
+    prevProps.websiteUrl === nextProps.websiteUrl &&
+    prevProps.dataLoading === nextProps.dataLoading &&
+    prevProps.allowedToManage === nextProps.allowedToManage &&
+    prevProps.isMobileOpen === nextProps.isMobileOpen &&
+    prevProps.className === nextProps.className &&
+    prevProps.searchParams.toString() === nextProps.searchParams.toString() &&
+    prevProps.tabs === nextProps.tabs &&
+    prevProps.onTabChange === nextProps.onTabChange &&
+    prevProps.onMobileClose === nextProps.onMobileClose
+  )
+})
+
+export default MemoizedProjectSidebar
