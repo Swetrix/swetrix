@@ -514,16 +514,23 @@ export class UserService {
   }
 
   createUnsubscribeKey(userId: string): string {
-    return encodeURIComponent(
-      CryptoJS.Rabbit.encrypt(userId, EMAIL_ACTION_ENCRYPTION_KEY).toString(),
-    )
+    const base64 = CryptoJS.Rabbit.encrypt(
+      userId,
+      EMAIL_ACTION_ENCRYPTION_KEY,
+    ).toString()
+    // Convert to URL-safe base64 (base64url)
+    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
   }
 
   decryptUnsubscribeKey(token: string): string {
-    const bytes = CryptoJS.Rabbit.decrypt(
-      decodeURIComponent(token),
-      EMAIL_ACTION_ENCRYPTION_KEY,
-    )
+    let base64 = token.replace(/-/g, '+').replace(/_/g, '/')
+
+    const padding = base64.length % 4
+    if (padding) {
+      base64 += '='.repeat(4 - padding)
+    }
+
+    const bytes = CryptoJS.Rabbit.decrypt(base64, EMAIL_ACTION_ENCRYPTION_KEY)
     return bytes.toString(CryptoJS.enc.Utf8)
   }
 
