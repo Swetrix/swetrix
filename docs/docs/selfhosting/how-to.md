@@ -74,7 +74,7 @@ To update Swetrix to the latest version, please refer to the changelog on our [G
 
 If you use reverse proxy like Nginx, please set it up to pass the request IP address as the `x-real-ip` header, otherwise it may cause the problems related to API route rate limiting and analytics sessions. If the `x-real-ip` header is undefined, Swetrix will use `x-forwarded-for` or the request IP address as a backup.
 
-If you are using proxy for your self-hosted Swetrix instance, you should set the `CLIENT_IP_HEADER` environment variable. This will force Swetrix to use header added by proxy to determine the IP address of client.
+If you are using proxy for your self-hosted Swetrix instance, you should set the `CLIENT_IP_HEADER` environment variable. For example, if your proxy is Cloudflare, then you should set `CLIENT_IP_HEADER` to `cf-connecting-ip`.
 
 :::caution
 If you use Cloudflare Tunnel, avoid nested subdomains such as `api.swetrix.example.com` which may not be supported in some Tunnel setups. Prefer a single-label subdomain like `swetrixapi.example.com`, and set `API_URL` to that public URL.
