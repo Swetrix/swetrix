@@ -467,8 +467,8 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
           : cn(
               'transition-[width,height] duration-300 ease-in-out',
               isScrolled
-                ? 'h-[calc(100vh-1.5rem)]'
-                : 'h-[calc(100vh-60px-1rem)]',
+                ? 'h-[calc(100vh-var(--banner-height)-1.5rem)]'
+                : 'h-[calc(100vh-var(--header-total-height)-1rem)]',
               isCollapsed ? 'w-14' : 'w-56',
             ),
         className,

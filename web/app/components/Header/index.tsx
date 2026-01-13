@@ -414,7 +414,7 @@ const TrialBanner = ({ status, rawStatus }: TrialBannerProps) => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='w-full bg-slate-900 text-gray-100 dark:bg-slate-800/70'>
+    <div className='header-banner w-full bg-slate-900 text-gray-100 dark:bg-slate-800/70'>
       <div className='mx-auto max-w-7xl px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
         <span className='font-medium'>{status}</span>
         <span className='mx-1.5'>—</span>
@@ -455,7 +455,7 @@ const DashboardLockedBanner = () => {
 
   return (
     <>
-      <div className='w-full bg-amber-500 text-gray-50'>
+      <div className='header-banner w-full bg-amber-500 text-gray-50'>
         <div className='mx-auto max-w-7xl space-x-2 px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
           <span>{t('dashboard.accountLocked')}</span>
           <button
