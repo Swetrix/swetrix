@@ -127,22 +127,6 @@ const ALLOWED_KEYS = [
   'captchaDifficulty',
 ]
 
-const IP_ADDRESS_HEADERS = [
-  'cloudfront-viewer-address', // Cloudfront
-  'true-client-ip', // CDN
-  'cf-connecting-ip', // Cloudflare
-  'fastly-client-ip', // Fastly
-  'x-nf-client-connection-ip', // Netlify
-  'do-connecting-ip', // Digital Ocean
-  'x-real-ip', // Reverse proxy
-  'x-appengine-user-ip', // Google App Engine
-  'x-forwarded-for',
-  'forwarded',
-  'x-client-ip',
-  'x-cluster-client-ip',
-  'x-forwarded',
-]
-
 const CLICKHOUSE_PROJECT_UPDATABLE_KEYS = [...ALLOWED_KEYS, 'adminId']
 
 const ALLOWED_FUNNEL_KEYS = ['name', 'steps']
