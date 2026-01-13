@@ -6,6 +6,7 @@ import { Link } from 'react-router'
 import { DashboardBlockReason } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 const LockedDashboard = () => {
@@ -43,45 +44,44 @@ const LockedDashboard = () => {
   }, [t, user, project])
 
   return (
-    <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
-      <div className='mx-auto max-w-max'>
-        <main className='sm:flex'>
-          <LockClosedIcon className='mb-2 -ml-1.5 h-12 w-auto text-yellow-400 sm:m-0 sm:h-24 dark:text-yellow-600' />
-          <div className='sm:ml-6'>
-            <div className='sm:border-l sm:border-gray-200 sm:pl-6'>
-              <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
-                {t('project.locked.title')}
-              </h1>
-              <p className='mt-1 max-w-prose text-base whitespace-pre-line text-gray-700 dark:text-gray-300'>
-                {message}
-                {project?.role === 'owner' ? (
-                  <>
-                    <br />
-                    <br />
-                    {t('project.locked.resolve')}
-                  </>
-                ) : null}
-              </p>
-            </div>
-            {project?.role === 'owner' ? (
-              <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
-                <Link
-                  to={routes.billing}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
-                >
-                  {t('project.locked.manageSubscription')}
-                </Link>
-                <Link
-                  to={routes.contact}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
-                >
-                  {t('notFoundPage.support')}
-                </Link>
-              </div>
-            ) : null}
-          </div>
-        </main>
+    <div className='mx-auto w-full max-w-2xl py-16 text-center'>
+      <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800'>
+        <LockClosedIcon className='size-7 text-yellow-500 dark:text-yellow-400' />
       </div>
+      <Text as='h3' size='xl' weight='medium' tracking='tight'>
+        {t('project.locked.title')}
+      </Text>
+      <Text
+        as='p'
+        size='sm'
+        colour='secondary'
+        className='mx-auto mt-2 max-w-md whitespace-pre-line'
+      >
+        {message}
+        {project?.role === 'owner' ? (
+          <>
+            <br />
+            <br />
+            {t('project.locked.resolve')}
+          </>
+        ) : null}
+      </Text>
+      {project?.role === 'owner' ? (
+        <div className='mt-6 flex justify-center gap-3'>
+          <Link
+            to={routes.billing}
+            className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
+          >
+            {t('project.locked.manageSubscription')}
+          </Link>
+          <Link
+            to={routes.contact}
+            className='inline-flex items-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+          >
+            {t('notFoundPage.support')}
+          </Link>
+        </div>
+      ) : null}
     </div>
   )
 }
