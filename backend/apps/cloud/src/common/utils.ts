@@ -333,22 +333,32 @@ const normalise = (raw: unknown): string | null => {
   return null
 }
 
+const getHeader = (headers: any, name: string): string | null | undefined => {
+  if (typeof headers?.get === 'function') {
+    return headers.get(name)
+  }
+  return headers?.[name] ?? headers?.[name.toLowerCase()]
+}
+
 export const getIPFromHeaders = (
   headers: any,
   tryXClientIPAddress?: boolean,
 ) => {
   if (tryXClientIPAddress) {
-    const ip = normalise(headers?.['x-client-ip-address'])
+    const ip = normalise(getHeader(headers, 'x-client-ip-address'))
     if (ip) return ip
   }
 
   const customHeader = process.env.CLIENT_IP_HEADER
 
-  if (customHeader && headers.get(customHeader)) {
-    return normalise(headers.get(customHeader))
+  if (customHeader) {
+    const headerValue = getHeader(headers, customHeader)
+    if (headerValue) {
+      return normalise(headerValue)
+    }
   }
 
-  return normalise(headers?.['x-forwarded-for'])
+  return normalise(getHeader(headers, 'x-forwarded-for'))
 }
 
 export const sumArrays = (source: number[], target: number[]) => {
