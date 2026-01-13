@@ -22,7 +22,6 @@ import {
 } from 'react-router'
 import { toast } from 'sonner'
 
-import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import {
   useLiveVisitorsProxy,
@@ -346,7 +345,6 @@ const Dashboard = () => {
     <>
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
         <EventsRunningOutBanner />
-        <DashboardLockedBanner />
         <div className='flex flex-col'>
           <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
             <div className='mb-4 flex flex-wrap justify-between gap-2'>

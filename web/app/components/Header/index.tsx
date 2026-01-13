@@ -36,7 +36,7 @@ import {
   PuzzleIcon,
   PhoneIcon,
 } from 'lucide-react'
-import { memo, Fragment, useMemo, useState, useEffect } from 'react'
+import { memo, Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
@@ -49,10 +49,12 @@ import {
   DOCS_URL,
   isDisableMarketingPages,
 } from '~/lib/constants'
+import { DashboardBlockReason } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
+import Modal from '~/ui/Modal'
 import routes from '~/utils/routes'
 
 dayjs.extend(utc)
@@ -403,7 +405,97 @@ const Separator = () => (
   </svg>
 )
 
-const TrialBanner = () => {
+interface TrialBannerProps {
+  status: string | null
+  rawStatus: number | null
+}
+
+const TrialBanner = ({ status, rawStatus }: TrialBannerProps) => {
+  const { t } = useTranslation('common')
+
+  return (
+    <div className='w-full bg-slate-900 text-gray-100 dark:bg-slate-800/70'>
+      <div className='mx-auto max-w-7xl px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
+        <span className='font-medium'>{status}</span>
+        <span className='mx-1.5'>—</span>
+        <Link to={routes.billing} className='font-semibold underline'>
+          {t('header.trialBanner.pickAPlan')}
+        </Link>
+        <span className='ml-1.5'>
+          {rawStatus === TRIAL_STATUS_MAPPING.ENDED
+            ? t('header.trialBanner.keepUsingEnded')
+            : t('header.trialBanner.keepUsing')}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+const DashboardLockedBanner = () => {
+  const { t } = useTranslation('common')
+  const { user } = useAuth()
+  const [showMoreInfoModal, setShowMoreInfoModal] = useState(false)
+
+  const dashboardBlockReason = user?.dashboardBlockReason
+
+  const message = useMemo(() => {
+    if (dashboardBlockReason === DashboardBlockReason.exceeding_plan_limits) {
+      return t('project.locked.descExceedingTier')
+    }
+    if (dashboardBlockReason === DashboardBlockReason.trial_ended) {
+      return t('project.locked.descTialEnded')
+    }
+    if (dashboardBlockReason === DashboardBlockReason.payment_failed) {
+      return t('project.locked.descPaymentFailed')
+    }
+    if (dashboardBlockReason === DashboardBlockReason.subscription_cancelled) {
+      return t('project.locked.descSubCancelled')
+    }
+  }, [t, dashboardBlockReason])
+
+  return (
+    <>
+      <div className='w-full bg-amber-500 text-gray-50'>
+        <div className='mx-auto max-w-7xl space-x-2 px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
+          <span>{t('dashboard.accountLocked')}</span>
+          <button
+            type='button'
+            onClick={() => setShowMoreInfoModal(true)}
+            className='rounded-md bg-slate-100 px-2 py-0.5 font-medium text-gray-900'
+          >
+            {t('common.learnMore')}
+          </button>
+        </div>
+      </div>
+      <Modal
+        onClose={() => setShowMoreInfoModal(false)}
+        closeText={t('common.close')}
+        title={t('dashboard.accountLockedTitle')}
+        message={
+          <span>
+            {message}
+            <br />
+            <br />
+            {t('project.locked.resolve')}
+          </span>
+        }
+        type='warning'
+        isOpened={showMoreInfoModal}
+        customButtons={
+          <Link
+            to={routes.billing}
+            onClick={() => setShowMoreInfoModal(false)}
+            className='inline-flex w-full justify-center rounded-md bg-indigo-600 px-4 py-2 text-base font-medium text-white transition-colors hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
+          >
+            {t('main.goToBilling')}
+          </Link>
+        }
+      />
+    </>
+  )
+}
+
+const BannerManager = () => {
   const { t } = useTranslation('common')
   const { user, isAuthenticated } = useAuth()
 
@@ -450,179 +542,24 @@ const TrialBanner = () => {
     ]
   }, [user, t])
 
-  const blackFridayBannerVisible = useMemo(() => {
-    const now = dayjs.utc()
-    const diff = BLACK_FRIDAY_END.diff(now)
+  const trialBannerHidden = useMemo(() => {
+    return (
+      !status ||
+      isSelfhosted ||
+      !isAuthenticated ||
+      !['none', 'trial'].includes(user?.planCode || '')
+    )
+  }, [status, isAuthenticated, user?.planCode])
 
-    return diff > 0
-  }, [])
-
-  if (
-    !status ||
-    isSelfhosted ||
-    !isAuthenticated ||
-    !['none', 'trial'].includes(user?.planCode || '') ||
-    blackFridayBannerVisible
-  ) {
-    return null
+  if (!trialBannerHidden) {
+    return <TrialBanner status={status} rawStatus={rawStatus} />
   }
 
-  return (
-    <div className='w-full bg-slate-900 text-gray-100 dark:bg-slate-900'>
-      <div className='mx-auto max-w-7xl px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
-        <span className='font-medium'>{status}</span>
-        <span className='mx-1.5'>—</span>
-        <Link to={routes.billing} className='font-semibold underline'>
-          {t('header.trialBanner.pickAPlan')}
-        </Link>
-        <span className='ml-1.5'>
-          {rawStatus === TRIAL_STATUS_MAPPING.ENDED
-            ? t('header.trialBanner.keepUsingEnded')
-            : t('header.trialBanner.keepUsing')}
-        </span>
-      </div>
-    </div>
-  )
-}
+  if (user?.dashboardBlockReason) {
+    return <DashboardLockedBanner />
+  }
 
-const BLACK_FRIDAY_END = dayjs.utc('2025-12-03T00:00:00')
-
-const BlackFridayBanner = () => {
-  const { user, isAuthenticated } = useAuth()
-  const [timeLeft, setTimeLeft] = useState<{
-    days: number
-    hours: number
-    minutes: number
-    seconds: number
-  } | null>(null)
-
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = dayjs.utc()
-      const diff = BLACK_FRIDAY_END.diff(now)
-
-      if (diff <= 0) {
-        setTimeLeft(null)
-        return
-      }
-
-      const duration = dayjs.duration(diff)
-      setTimeLeft({
-        days: Math.floor(duration.asDays()),
-        hours: duration.hours(),
-        minutes: duration.minutes(),
-        seconds: duration.seconds(),
-      })
-    }
-
-    calculateTimeLeft()
-    const interval = setInterval(calculateTimeLeft, 1000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  const shouldShow = useMemo(() => {
-    if (isSelfhosted) return false
-    if (!timeLeft) return false
-
-    if (!isAuthenticated) return true
-
-    const eligiblePlans = ['free', 'none', 'trial']
-    return eligiblePlans.includes(user?.planCode || '')
-  }, [isAuthenticated, user, timeLeft])
-
-  if (!shouldShow || !timeLeft) return null
-
-  return (
-    <Link
-      to={routes.billing}
-      className='relative block w-full overflow-hidden bg-gradient-to-r from-slate-950 via-purple-950 to-slate-950'
-    >
-      <div className='absolute inset-0 hidden overflow-hidden sm:block'>
-        <div className='absolute top-1 left-[10%] h-1 w-1 animate-pulse rounded-full bg-yellow-400/60' />
-        <div className='absolute top-3 left-[25%] h-0.5 w-0.5 animate-pulse rounded-full bg-amber-300/50 [animation-delay:200ms]' />
-        <div className='absolute top-1 left-[50%] h-1 w-1 animate-pulse rounded-full bg-orange-400/60 [animation-delay:400ms]' />
-        <div className='absolute top-2 left-[75%] h-0.5 w-0.5 animate-pulse rounded-full bg-yellow-300/50 [animation-delay:600ms]' />
-        <div className='absolute top-1 left-[90%] h-1 w-1 animate-pulse rounded-full bg-amber-400/60 [animation-delay:800ms]' />
-      </div>
-
-      {/* Mobile layout - compact, wraps if needed */}
-      <div className='relative flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-3 py-1.5 sm:hidden'>
-        <span className='flex items-center gap-2 text-sm text-white/90'>
-          Get
-        </span>
-        <span className='rounded bg-gradient-to-r from-amber-500 to-orange-500 px-1.5 py-0.5 text-xs font-bold text-white'>
-          50% OFF
-        </span>
-        <div className='flex items-center gap-2 text-sm text-white/90'>
-          with the code:
-        </div>
-        <code className='rounded bg-black/40 px-1.5 py-0.5 font-mono text-xs font-bold text-amber-400'>
-          BLACKFRIDAY
-        </code>
-        <span className='font-mono text-xs text-white/80'>
-          {String(timeLeft.days).padStart(2, '0')}:
-          {String(timeLeft.hours).padStart(2, '0')}:
-          {String(timeLeft.minutes).padStart(2, '0')}:
-          {String(timeLeft.seconds).padStart(2, '0')}
-        </span>
-      </div>
-
-      {/* Desktop layout - wraps if needed */}
-      <div className='relative mx-auto hidden max-w-7xl flex-wrap items-center justify-center gap-x-6 gap-y-1 px-6 py-2 sm:flex lg:px-8'>
-        <div className='flex items-center gap-2'>
-          <span className='bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 bg-clip-text text-lg font-black tracking-tight text-transparent'>
-            ⚡ BLACK FRIDAY SALE ⚡
-          </span>
-        </div>
-
-        <div className='flex items-center gap-2 text-sm text-white/90'>
-          <span>Get</span>
-          <span className='rounded-md bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-sm font-bold text-white shadow-lg shadow-orange-500/25'>
-            50% OFF
-          </span>
-          <span>your first month</span>
-        </div>
-
-        <div className='flex items-center gap-2 text-sm'>
-          <span className='text-white/70'>Code:</span>
-          <code className='rounded border border-amber-500/30 bg-black/40 px-2 py-0.5 font-mono font-bold text-amber-400'>
-            BLACKFRIDAY
-          </code>
-        </div>
-
-        <div className='flex items-center gap-2'>
-          <span className='text-xs text-white/60'>Ends in:</span>
-          <div className='flex items-center gap-1 font-mono text-sm font-bold'>
-            <span className='rounded bg-white/10 px-1.5 py-0.5 text-white'>
-              {String(timeLeft.days).padStart(2, '0')}
-              <span className='text-xs text-white/60'>d</span>
-            </span>
-            <span className='text-white/40'>:</span>
-            <span className='rounded bg-white/10 px-1.5 py-0.5 text-white'>
-              {String(timeLeft.hours).padStart(2, '0')}
-              <span className='text-xs text-white/60'>h</span>
-            </span>
-            <span className='text-white/40'>:</span>
-            <span className='rounded bg-white/10 px-1.5 py-0.5 text-white'>
-              {String(timeLeft.minutes).padStart(2, '0')}
-              <span className='text-xs text-white/60'>m</span>
-            </span>
-            <span className='text-white/40'>:</span>
-            <span className='rounded bg-white/10 px-1.5 py-0.5 text-white'>
-              {String(timeLeft.seconds).padStart(2, '0')}
-              <span className='text-xs text-white/60'>s</span>
-            </span>
-          </div>
-        </div>
-
-        <span className='group flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-1.5 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition-all hover:shadow-orange-500/40'>
-          Claim offer
-          <ArrowRightIcon className='h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5' />
-        </span>
-      </div>
-    </Link>
-  )
+  return null
 }
 
 const AuthedHeader = ({
@@ -634,7 +571,6 @@ const AuthedHeader = ({
   colourBackground: boolean
   openMenu: () => void
 }) => {
-  const { user } = useAuth()
   const { t } = useTranslation('common')
 
   return (
@@ -653,15 +589,6 @@ const AuthedHeader = ({
             </Link>
 
             <div className='ml-10 hidden gap-4 space-x-1 lg:flex'>
-              {user?.planCode === 'none' ? (
-                <Link
-                  to={routes.billing}
-                  className='underline-animate text-base leading-6 font-semibold text-rose-600 focus:outline-hidden'
-                  key='NoSubscription'
-                >
-                  {t('billing.inactive')}
-                </Link>
-              ) : null}
               {!isSelfhosted && !isDisableMarketingPages ? (
                 <SolutionsMenu />
               ) : null}
@@ -831,8 +758,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
 
   return (
     <Popover>
-      <BlackFridayBanner />
-      <TrialBanner />
+      <BannerManager />
 
       {/* Computer / Laptop / Tablet layout header */}
       {isAuthenticated ? (
@@ -962,18 +888,6 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                       </>
                     )}
                   </Disclosure>
-                ) : null}
-                {!isSelfhosted &&
-                isAuthenticated &&
-                user?.planCode === 'none' ? (
-                  <Link
-                    to={routes.billing}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-rose-600 hover:bg-gray-400/20 dark:hover:bg-slate-700/50'
-                    key='NoSubscription'
-                  >
-                    {t('billing.inactive')}
-                  </Link>
                 ) : null}
                 {!isSelfhosted &&
                 isAuthenticated &&

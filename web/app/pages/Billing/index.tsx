@@ -11,7 +11,6 @@ import { useTranslation, Trans } from 'react-i18next'
 import { useLoaderData, useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import FAQ from '~/components/marketing/FAQ'
 import BillingPricing from '~/components/pricing/BillingPricing'
 import {
@@ -207,8 +206,6 @@ const Billing = () => {
 
   return (
     <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
-      <DashboardLockedBanner />
-
       <div className='mx-auto px-4 pt-12 whitespace-pre-line sm:px-6 md:w-11/12'>
         <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>
           {t('billing.title')}
