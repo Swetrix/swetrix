@@ -7,13 +7,9 @@ export default defineConfig({
   server: {
     port: Number(process.env.PORT) || 3000,
   },
-  optimizeDeps: {
-    include: ['axios-auth-refresh'],
-  },
   ssr: {
     noExternal: [
       'axios',
-      'axios-auth-refresh',
       'd3',
       /^d3-*/,
       'nivo',
@@ -28,9 +24,6 @@ export default defineConfig({
       /^remix-i18next.*/,
       'lucide-react',
     ],
-    optimizeDeps: {
-      include: ['axios-auth-refresh'],
-    },
   },
   plugins: [reactRouter(), tsconfigPaths(), tailwindcss()],
 })
