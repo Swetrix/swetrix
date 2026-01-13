@@ -14,7 +14,7 @@ import _size from 'lodash/size'
 import _round from 'lodash/round'
 import _split from 'lodash/split'
 
-import { redis, isDevelopment, isProxiedByCloudflare } from './constants'
+import { redis, isDevelopment } from './constants'
 
 /*
   Returns a 32-character hash of the provided string using Node.js crypto module.
@@ -313,47 +313,40 @@ export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   }
 }
 
+const normalise = (raw: unknown): string | null => {
+  if (!raw) return null
+  const str = String(raw)
+  const first = str.split(',')[0]?.trim()
+  if (!first) return null
+
+  // Handle bracketed IPv6 like: [::1]:1234
+  const unbracketed = first.replace(/^\[([^\]]+)\](?::\d+)?$/, '$1')
+
+  if (net.isIP(unbracketed)) return unbracketed
+
+  // Handle IPv4 with port like: 203.0.113.1:1234
+  const ipv4PortMatch = unbracketed.match(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/)
+  if (ipv4PortMatch?.[1] && net.isIP(ipv4PortMatch[1])) {
+    return ipv4PortMatch[1]
+  }
+
+  return null
+}
+
 export const getIPFromHeaders = (
   headers: any,
   tryXClientIPAddress?: boolean,
 ) => {
-  const normalise = (raw: unknown): string | null => {
-    if (!raw) return null
-    const str = String(raw)
-    const first = str.split(',')[0]?.trim()
-    if (!first) return null
-
-    // Handle bracketed IPv6 like: [::1]:1234
-    const unbracketed = first.replace(/^\[([^\]]+)\](?::\d+)?$/, '$1')
-
-    if (net.isIP(unbracketed)) return unbracketed
-
-    // Handle IPv4 with port like: 203.0.113.1:1234
-    const ipv4PortMatch = unbracketed.match(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/)
-    if (ipv4PortMatch?.[1] && net.isIP(ipv4PortMatch[1])) {
-      return ipv4PortMatch[1]
-    }
-
-    return null
-  }
-
   if (tryXClientIPAddress) {
     const ip = normalise(headers?.['x-client-ip-address'])
     if (ip) return ip
   }
 
-  if (isProxiedByCloudflare) {
-    const ip = normalise(headers?.['cf-connecting-ip'])
-    if (ip) return ip
+  const customHeader = process.env.CLIENT_IP_HEADER
+
+  if (customHeader && headers.get(customHeader)) {
+    return normalise(headers.get(customHeader))
   }
-
-  // Get IP based on the NGINX configuration
-  // No need to do this if API is behind a load balancer
-  // let ip = headers['x-real-ip']
-
-  // if (ip) {
-  //   return ip
-  // }
 
   return normalise(headers?.['x-forwarded-for'])
 }

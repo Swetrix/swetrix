@@ -26,7 +26,6 @@ const {
   JWT_ACCESS_TOKEN_LIFETIME = 60 * 30,
 } = process.env
 const isDevelopment = process.env.NODE_ENV === 'development'
-const isProxiedByCloudflare = process.env.CLOUDFLARE_PROXY_ENABLED === 'true'
 const PRODUCTION_ORIGIN = process.env.CLIENT_URL || 'https://swetrix.com'
 
 const { TWO_FACTOR_AUTHENTICATION_APP_NAME } = process.env
@@ -203,7 +202,6 @@ export {
   ERROR_COLUMNS,
   PERFORMANCE_COLUMNS,
   sentryIgnoreErrors,
-  isProxiedByCloudflare,
   BLOG_POSTS_PATH,
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,

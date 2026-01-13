@@ -2,6 +2,7 @@ import { NotFoundException, HttpException } from '@nestjs/common'
 import path from 'path'
 import fs from 'fs'
 import crypto from 'crypto'
+import net from 'net'
 import randomstring from 'randomstring'
 import { CityResponse, Reader } from 'maxmind'
 import timezones from 'countries-and-timezones'
@@ -1168,47 +1169,34 @@ const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   }
 }
 
+const normalise = (raw: unknown): string | null => {
+  if (!raw) return null
+  const str = String(raw)
+  const first = str.split(',')[0]?.trim()
+  if (!first) return null
+
+  // Handle bracketed IPv6 like: [::1]:1234
+  const unbracketed = first.replace(/^\[([^\]]+)\](?::\d+)?$/, '$1')
+
+  if (net.isIP(unbracketed)) return unbracketed
+
+  // Handle IPv4 with port like: 203.0.113.1:1234
+  const ipv4PortMatch = unbracketed.match(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/)
+  if (ipv4PortMatch?.[1] && net.isIP(ipv4PortMatch[1])) {
+    return ipv4PortMatch[1]
+  }
+
+  return null
+}
+
 const getIPFromHeaders = (headers: any) => {
   const customHeader = process.env.CLIENT_IP_HEADER
 
-  // only use custom header if not present in IP_ADDRESS_HEADERS
-  // since we might need some extra process based on proxy
-  if (
-    !!customHeader &&
-    !IP_ADDRESS_HEADERS.includes(customHeader) &&
-    headers.get(customHeader)
-  ) {
-    return headers.get(customHeader)
+  if (customHeader && headers.get(customHeader)) {
+    return normalise(headers.get(customHeader))
   }
 
-  const header = IP_ADDRESS_HEADERS.find(name => {
-    return headers.get(name)
-  })
-
-  if (!header) {
-    return null
-  }
-
-  const ip = headers.get(header)
-
-  if (header === 'x-forwarded-for') {
-    return ip.split(',')[0].trim()
-  }
-
-  if (header === 'forwarded') {
-    const match = ip.match(/for=(\[?[0-9a-fA-F:.]+\]?)/)
-
-    if (match) {
-      return match[1]
-    }
-  }
-  if (header === 'cloudfront-viewer-address') {
-    const lastColonIndex = ip.lastIndexOf(':')
-    if (lastColonIndex > 0) {
-      return ip.substring(0, lastColonIndex).replace('[', '').replace(']', '')
-    }
-  }
-  return ip
+  return normalise(headers?.['x-forwarded-for'])
 }
 
 const sumArrays = (source: number[], target: number[]) => {
