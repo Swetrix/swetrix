@@ -69,7 +69,7 @@ async function hydrate() {
       backend: { loadPath: `/locales/{{lng}}.json?cv=${I18N_CACHE_BREAKER}` },
       detection: {
         order: ['htmlTag'],
-        caches: ['cookie'],
+        caches: [],
       },
     })
 
