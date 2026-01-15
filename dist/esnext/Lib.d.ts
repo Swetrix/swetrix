@@ -14,6 +14,11 @@ export interface LibOptions {
     respectDNT?: boolean;
     /** Set a custom URL of the API server (for selfhosted variants of Swetrix). */
     apiURL?: string;
+    /**
+     * Optional profile ID for long-term user tracking.
+     * If set, it will be used for all pageviews and events unless overridden per-call.
+     */
+    profileId?: string;
 }
 export interface TrackEventOptions {
     /** The custom event name. */
@@ -24,6 +29,8 @@ export interface TrackEventOptions {
     meta?: {
         [key: string]: string | number | boolean | null | undefined;
     };
+    /** Optional profile ID for long-term user tracking. Overrides the global profileId if set. */
+    profileId?: string;
 }
 export interface IPageViewPayload {
     lc?: string;
@@ -39,6 +46,8 @@ export interface IPageViewPayload {
     meta?: {
         [key: string]: string | number | boolean | null | undefined;
     };
+    /** Optional profile ID for long-term user tracking. Overrides the global profileId if set. */
+    profileId?: string;
 }
 export interface IErrorEventPayload {
     name: string;
@@ -65,6 +74,28 @@ interface IPerfPayload {
     dom_load: number;
     page_load: number;
     ttfb: number;
+}
+/**
+ * Options for evaluating feature flags.
+ */
+export interface FeatureFlagsOptions {
+    /**
+     * Optional profile ID for long-term user tracking.
+     * If not provided, an anonymous profile ID will be generated server-side based on IP and user agent.
+     * Overrides the global profileId if set.
+     */
+    profileId?: string;
+}
+/**
+ * Options for evaluating experiments.
+ */
+export interface ExperimentOptions {
+    /**
+     * Optional profile ID for long-term user tracking.
+     * If not provided, an anonymous profile ID will be generated server-side based on IP and user agent.
+     * Overrides the global profileId if set.
+     */
+    profileId?: string;
 }
 /**
  * The object returned by `trackPageViews()`, used to stop tracking pages.
@@ -141,6 +172,7 @@ export declare class Lib {
     private perfStatsCollected;
     private activePage;
     private errorListenerExists;
+    private cachedData;
     constructor(projectID: string, options?: LibOptions | undefined);
     captureError(event: ErrorEvent): void;
     trackErrors(options?: ErrorOptions): ErrorActions;
@@ -148,6 +180,122 @@ export declare class Lib {
     track(event: TrackEventOptions): Promise<void>;
     trackPageViews(options?: PageViewsOptions): PageActions;
     getPerformanceStats(): IPerfPayload | {};
+    /**
+     * Fetches all feature flags and experiments for the project.
+     * Results are cached for 5 minutes by default.
+     *
+     * @param options - Options for evaluating feature flags.
+     * @param forceRefresh - If true, bypasses the cache and fetches fresh data.
+     * @returns A promise that resolves to a record of flag keys to boolean values.
+     */
+    getFeatureFlags(options?: FeatureFlagsOptions, forceRefresh?: boolean): Promise<Record<string, boolean>>;
+    /**
+     * Internal method to fetch both feature flags and experiments from the API.
+     */
+    private fetchFlagsAndExperiments;
+    /**
+     * Gets the value of a single feature flag.
+     *
+     * @param key - The feature flag key.
+     * @param options - Options for evaluating the feature flag.
+     * @param defaultValue - Default value to return if the flag is not found. Defaults to false.
+     * @returns A promise that resolves to the boolean value of the flag.
+     */
+    getFeatureFlag(key: string, options?: FeatureFlagsOptions, defaultValue?: boolean): Promise<boolean>;
+    /**
+     * Clears the cached feature flags and experiments, forcing a fresh fetch on the next call.
+     */
+    clearFeatureFlagsCache(): void;
+    /**
+     * Fetches all A/B test experiments for the project.
+     * Results are cached for 5 minutes by default (shared cache with feature flags).
+     *
+     * @param options - Options for evaluating experiments.
+     * @param forceRefresh - If true, bypasses the cache and fetches fresh data.
+     * @returns A promise that resolves to a record of experiment IDs to variant keys.
+     *
+     * @example
+     * ```typescript
+     * const experiments = await getExperiments()
+     * // experiments = { 'exp-123': 'variant-a', 'exp-456': 'control' }
+     * ```
+     */
+    getExperiments(options?: ExperimentOptions, forceRefresh?: boolean): Promise<Record<string, string>>;
+    /**
+     * Gets the variant key for a specific A/B test experiment.
+     *
+     * @param experimentId - The experiment ID.
+     * @param options - Options for evaluating the experiment.
+     * @param defaultVariant - Default variant key to return if the experiment is not found. Defaults to null.
+     * @returns A promise that resolves to the variant key assigned to this user, or defaultVariant if not found.
+     *
+     * @example
+     * ```typescript
+     * const variant = await getExperiment('checkout-redesign')
+     *
+     * if (variant === 'new-checkout') {
+     *   // Show new checkout flow
+     * } else {
+     *   // Show control (original) checkout
+     * }
+     * ```
+     */
+    getExperiment(experimentId: string, options?: ExperimentOptions, defaultVariant?: string | null): Promise<string | null>;
+    /**
+     * Clears the cached experiments (alias for clearFeatureFlagsCache since they share the same cache).
+     */
+    clearExperimentsCache(): void;
+    /**
+     * Gets the anonymous profile ID for the current visitor.
+     * If profileId was set via init options, returns that.
+     * Otherwise, requests server to generate one from IP/UA hash.
+     *
+     * This ID can be used for revenue attribution with payment providers.
+     *
+     * @returns A promise that resolves to the profile ID string, or null on error.
+     *
+     * @example
+     * ```typescript
+     * const profileId = await swetrix.getProfileId()
+     *
+     * // Pass to Paddle Checkout for revenue attribution
+     * Paddle.Checkout.open({
+     *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+     *   customData: {
+     *     swetrix_profile_id: profileId,
+     *     swetrix_session_id: await swetrix.getSessionId()
+     *   }
+     * })
+     * ```
+     */
+    getProfileId(): Promise<string | null>;
+    /**
+     * Gets the current session ID for the visitor.
+     * Session IDs are generated server-side based on IP and user agent.
+     *
+     * This ID can be used for revenue attribution with payment providers.
+     *
+     * @returns A promise that resolves to the session ID string, or null on error.
+     *
+     * @example
+     * ```typescript
+     * const sessionId = await swetrix.getSessionId()
+     *
+     * // Pass to Paddle Checkout for revenue attribution
+     * Paddle.Checkout.open({
+     *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+     *   customData: {
+     *     swetrix_profile_id: await swetrix.getProfileId(),
+     *     swetrix_session_id: sessionId
+     *   }
+     * })
+     * ```
+     */
+    getSessionId(): Promise<string | null>;
+    /**
+     * Gets the API base URL (without /log suffix).
+     */
+    private getApiBase;
     private heartbeat;
     private trackPathChange;
     private trackPage;

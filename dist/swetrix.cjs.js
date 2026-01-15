@@ -4,11 +4,15 @@ const findInSearch = (exp) => {
     const res = location.search.match(exp);
     return (res && res[2]) || undefined;
 };
-const utmSourceRegex = /[?&](ref|source|utm_source)=([^?&]+)/;
-const utmCampaignRegex = /[?&](utm_campaign)=([^?&]+)/;
+const utmSourceRegex = /[?&](ref|source|utm_source|gad_source)=([^?&]+)/;
+const utmCampaignRegex = /[?&](utm_campaign|gad_campaignid)=([^?&]+)/;
 const utmMediumRegex = /[?&](utm_medium)=([^?&]+)/;
 const utmTermRegex = /[?&](utm_term)=([^?&]+)/;
 const utmContentRegex = /[?&](utm_content)=([^?&]+)/;
+const gclidRegex = /[?&](gclid)=([^?&]+)/;
+const getGclid = () => {
+    return findInSearch(gclidRegex) ? '<gclid>' : undefined;
+};
 const isInBrowser = () => {
     return typeof window !== 'undefined';
 };
@@ -33,7 +37,7 @@ const getReferrer = () => {
     return document.referrer || undefined;
 };
 const getUTMSource = () => findInSearch(utmSourceRegex);
-const getUTMMedium = () => findInSearch(utmMediumRegex);
+const getUTMMedium = () => findInSearch(utmMediumRegex) || getGclid();
 const getUTMCampaign = () => findInSearch(utmCampaignRegex);
 const getUTMTerm = () => findInSearch(utmTermRegex);
 const getUTMContent = () => findInSearch(utmContentRegex);
@@ -70,6 +74,9 @@ const defaultActions = {
     stop() { },
 };
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log';
+const DEFAULT_API_BASE = 'https://api.swetrix.com';
+// Default cache duration: 5 minutes
+const DEFAULT_CACHE_DURATION = 5 * 60 * 1000;
 class Lib {
     constructor(projectID, options) {
         this.projectID = projectID;
@@ -80,6 +87,7 @@ class Lib {
         this.perfStatsCollected = false;
         this.activePage = null;
         this.errorListenerExists = false;
+        this.cachedData = null;
         this.trackPathChange = this.trackPathChange.bind(this);
         this.heartbeat = this.heartbeat.bind(this);
         this.captureError = this.captureError.bind(this);
@@ -148,7 +156,7 @@ class Lib {
         this.sendRequest('error', errorPayload);
     }
     async track(event) {
-        var _a, _b;
+        var _a, _b, _c, _d;
         if (!this.canTrack()) {
             return;
         }
@@ -168,6 +176,7 @@ class Lib {
             ca: getUTMCampaign(),
             te: getUTMTerm(),
             co: getUTMContent(),
+            profileId: (_c = event.profileId) !== null && _c !== void 0 ? _c : (_d = this.options) === null || _d === void 0 ? void 0 : _d.profileId,
         };
         await this.sendRequest('custom', data);
     }
@@ -227,14 +236,277 @@ class Lib {
             ttfb: perf.responseStart - perf.requestStart,
         };
     }
-    heartbeat() {
+    /**
+     * Fetches all feature flags and experiments for the project.
+     * Results are cached for 5 minutes by default.
+     *
+     * @param options - Options for evaluating feature flags.
+     * @param forceRefresh - If true, bypasses the cache and fetches fresh data.
+     * @returns A promise that resolves to a record of flag keys to boolean values.
+     */
+    async getFeatureFlags(options, forceRefresh) {
+        var _a, _b, _c, _d;
+        if (!isInBrowser()) {
+            return {};
+        }
+        const requestedProfileId = (_a = options === null || options === void 0 ? void 0 : options.profileId) !== null && _a !== void 0 ? _a : (_b = this.options) === null || _b === void 0 ? void 0 : _b.profileId;
+        // Check cache first - must match profileId and not be expired
+        if (!forceRefresh && this.cachedData) {
+            const now = Date.now();
+            const isSameProfile = this.cachedData.profileId === requestedProfileId;
+            if (isSameProfile && now - this.cachedData.timestamp < DEFAULT_CACHE_DURATION) {
+                return this.cachedData.flags;
+            }
+        }
+        try {
+            await this.fetchFlagsAndExperiments(options);
+            return ((_c = this.cachedData) === null || _c === void 0 ? void 0 : _c.flags) || {};
+        }
+        catch (error) {
+            console.warn('[Swetrix] Error fetching feature flags:', error);
+            return ((_d = this.cachedData) === null || _d === void 0 ? void 0 : _d.flags) || {};
+        }
+    }
+    /**
+     * Internal method to fetch both feature flags and experiments from the API.
+     */
+    async fetchFlagsAndExperiments(options) {
+        var _a, _b, _c, _d;
+        const apiBase = this.getApiBase();
+        const body = {
+            pid: this.projectID,
+        };
+        // Use profileId from options, or fall back to global profileId
+        const profileId = (_a = options === null || options === void 0 ? void 0 : options.profileId) !== null && _a !== void 0 ? _a : (_b = this.options) === null || _b === void 0 ? void 0 : _b.profileId;
+        if (profileId) {
+            body.profileId = profileId;
+        }
+        const response = await fetch(`${apiBase}/feature-flag/evaluate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
+        if (!response.ok) {
+            console.warn('[Swetrix] Failed to fetch feature flags and experiments:', response.status);
+            return;
+        }
+        const data = (await response.json());
+        // Use profileId from options, or fall back to global profileId
+        const cachedProfileId = (_c = options === null || options === void 0 ? void 0 : options.profileId) !== null && _c !== void 0 ? _c : (_d = this.options) === null || _d === void 0 ? void 0 : _d.profileId;
+        // Update cache with both flags and experiments
+        this.cachedData = {
+            flags: data.flags || {},
+            experiments: data.experiments || {},
+            timestamp: Date.now(),
+            profileId: cachedProfileId,
+        };
+    }
+    /**
+     * Gets the value of a single feature flag.
+     *
+     * @param key - The feature flag key.
+     * @param options - Options for evaluating the feature flag.
+     * @param defaultValue - Default value to return if the flag is not found. Defaults to false.
+     * @returns A promise that resolves to the boolean value of the flag.
+     */
+    async getFeatureFlag(key, options, defaultValue = false) {
         var _a;
+        const flags = await this.getFeatureFlags(options);
+        return (_a = flags[key]) !== null && _a !== void 0 ? _a : defaultValue;
+    }
+    /**
+     * Clears the cached feature flags and experiments, forcing a fresh fetch on the next call.
+     */
+    clearFeatureFlagsCache() {
+        this.cachedData = null;
+    }
+    /**
+     * Fetches all A/B test experiments for the project.
+     * Results are cached for 5 minutes by default (shared cache with feature flags).
+     *
+     * @param options - Options for evaluating experiments.
+     * @param forceRefresh - If true, bypasses the cache and fetches fresh data.
+     * @returns A promise that resolves to a record of experiment IDs to variant keys.
+     *
+     * @example
+     * ```typescript
+     * const experiments = await getExperiments()
+     * // experiments = { 'exp-123': 'variant-a', 'exp-456': 'control' }
+     * ```
+     */
+    async getExperiments(options, forceRefresh) {
+        var _a, _b, _c, _d;
+        if (!isInBrowser()) {
+            return {};
+        }
+        const requestedProfileId = (_a = options === null || options === void 0 ? void 0 : options.profileId) !== null && _a !== void 0 ? _a : (_b = this.options) === null || _b === void 0 ? void 0 : _b.profileId;
+        // Check cache first - must match profileId and not be expired
+        if (!forceRefresh && this.cachedData) {
+            const now = Date.now();
+            const isSameProfile = this.cachedData.profileId === requestedProfileId;
+            if (isSameProfile && now - this.cachedData.timestamp < DEFAULT_CACHE_DURATION) {
+                return this.cachedData.experiments;
+            }
+        }
+        try {
+            await this.fetchFlagsAndExperiments(options);
+            return ((_c = this.cachedData) === null || _c === void 0 ? void 0 : _c.experiments) || {};
+        }
+        catch (error) {
+            console.warn('[Swetrix] Error fetching experiments:', error);
+            return ((_d = this.cachedData) === null || _d === void 0 ? void 0 : _d.experiments) || {};
+        }
+    }
+    /**
+     * Gets the variant key for a specific A/B test experiment.
+     *
+     * @param experimentId - The experiment ID.
+     * @param options - Options for evaluating the experiment.
+     * @param defaultVariant - Default variant key to return if the experiment is not found. Defaults to null.
+     * @returns A promise that resolves to the variant key assigned to this user, or defaultVariant if not found.
+     *
+     * @example
+     * ```typescript
+     * const variant = await getExperiment('checkout-redesign')
+     *
+     * if (variant === 'new-checkout') {
+     *   // Show new checkout flow
+     * } else {
+     *   // Show control (original) checkout
+     * }
+     * ```
+     */
+    async getExperiment(experimentId, options, defaultVariant = null) {
+        var _a;
+        const experiments = await this.getExperiments(options);
+        return (_a = experiments[experimentId]) !== null && _a !== void 0 ? _a : defaultVariant;
+    }
+    /**
+     * Clears the cached experiments (alias for clearFeatureFlagsCache since they share the same cache).
+     */
+    clearExperimentsCache() {
+        this.cachedData = null;
+    }
+    /**
+     * Gets the anonymous profile ID for the current visitor.
+     * If profileId was set via init options, returns that.
+     * Otherwise, requests server to generate one from IP/UA hash.
+     *
+     * This ID can be used for revenue attribution with payment providers.
+     *
+     * @returns A promise that resolves to the profile ID string, or null on error.
+     *
+     * @example
+     * ```typescript
+     * const profileId = await swetrix.getProfileId()
+     *
+     * // Pass to Paddle Checkout for revenue attribution
+     * Paddle.Checkout.open({
+     *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+     *   customData: {
+     *     swetrix_profile_id: profileId,
+     *     swetrix_session_id: await swetrix.getSessionId()
+     *   }
+     * })
+     * ```
+     */
+    async getProfileId() {
+        var _a;
+        // If profileId is already set in options, return it
+        if ((_a = this.options) === null || _a === void 0 ? void 0 : _a.profileId) {
+            return this.options.profileId;
+        }
+        if (!isInBrowser()) {
+            return null;
+        }
+        try {
+            const apiBase = this.getApiBase();
+            const response = await fetch(`${apiBase}/log/profile-id`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ pid: this.projectID }),
+            });
+            if (!response.ok) {
+                return null;
+            }
+            const data = (await response.json());
+            return data.profileId;
+        }
+        catch (_b) {
+            return null;
+        }
+    }
+    /**
+     * Gets the current session ID for the visitor.
+     * Session IDs are generated server-side based on IP and user agent.
+     *
+     * This ID can be used for revenue attribution with payment providers.
+     *
+     * @returns A promise that resolves to the session ID string, or null on error.
+     *
+     * @example
+     * ```typescript
+     * const sessionId = await swetrix.getSessionId()
+     *
+     * // Pass to Paddle Checkout for revenue attribution
+     * Paddle.Checkout.open({
+     *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+     *   customData: {
+     *     swetrix_profile_id: await swetrix.getProfileId(),
+     *     swetrix_session_id: sessionId
+     *   }
+     * })
+     * ```
+     */
+    async getSessionId() {
+        if (!isInBrowser()) {
+            return null;
+        }
+        try {
+            const apiBase = this.getApiBase();
+            const response = await fetch(`${apiBase}/log/session-id`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ pid: this.projectID }),
+            });
+            if (!response.ok) {
+                return null;
+            }
+            const data = (await response.json());
+            return data.sessionId;
+        }
+        catch (_a) {
+            return null;
+        }
+    }
+    /**
+     * Gets the API base URL (without /log suffix).
+     */
+    getApiBase() {
+        var _a;
+        if ((_a = this.options) === null || _a === void 0 ? void 0 : _a.apiURL) {
+            // Remove trailing /log if present
+            return this.options.apiURL.replace(/\/log\/?$/, '');
+        }
+        return DEFAULT_API_BASE;
+    }
+    heartbeat() {
+        var _a, _b;
         if (!((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.heartbeatOnBackground) && document.visibilityState === 'hidden') {
             return;
         }
         const data = {
             pid: this.projectID,
         };
+        if ((_b = this.options) === null || _b === void 0 ? void 0 : _b.profileId) {
+            data.profileId = this.options.profileId;
+        }
         this.sendRequest('hb', data);
     }
     // Tracking path changes. If path changes -> calling this.trackPage method
@@ -260,7 +532,7 @@ class Lib {
         this.submitPageView({ pg }, unique, perf, true);
     }
     submitPageView(payload, unique, perf, evokeCallback) {
-        var _a;
+        var _a, _b;
         const privateData = {
             pid: this.projectID,
             perf,
@@ -275,9 +547,10 @@ class Lib {
             ca: getUTMCampaign(),
             te: getUTMTerm(),
             co: getUTMContent(),
+            profileId: (_a = this.options) === null || _a === void 0 ? void 0 : _a.profileId,
             ...payload,
         };
-        if (evokeCallback && ((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.callback)) {
+        if (evokeCallback && ((_b = this.pageViewsOptions) === null || _b === void 0 ? void 0 : _b.callback)) {
             const callbackResult = this.pageViewsOptions.callback(pvPayload);
             if (callbackResult === false) {
                 return;
@@ -407,7 +680,191 @@ function pageview(options) {
         return;
     exports.LIB_INSTANCE.submitPageView(options.payload, Boolean(options.unique), {});
 }
+/**
+ * Fetches all feature flags for the project.
+ * Results are cached for 5 minutes by default.
+ *
+ * @param options - Options for evaluating feature flags (visitorId, attributes).
+ * @param forceRefresh - If true, bypasses the cache and fetches fresh flags.
+ * @returns A promise that resolves to a record of flag keys to boolean values.
+ *
+ * @example
+ * ```typescript
+ * const flags = await getFeatureFlags({
+ *   visitorId: 'user-123',
+ *   attributes: { cc: 'US', dv: 'desktop' }
+ * })
+ *
+ * if (flags['new-checkout']) {
+ *   // Show new checkout flow
+ * }
+ * ```
+ */
+async function getFeatureFlags(options, forceRefresh) {
+    if (!exports.LIB_INSTANCE)
+        return {};
+    return exports.LIB_INSTANCE.getFeatureFlags(options, forceRefresh);
+}
+/**
+ * Gets the value of a single feature flag.
+ *
+ * @param key - The feature flag key.
+ * @param options - Options for evaluating the feature flag (visitorId, attributes).
+ * @param defaultValue - Default value to return if the flag is not found. Defaults to false.
+ * @returns A promise that resolves to the boolean value of the flag.
+ *
+ * @example
+ * ```typescript
+ * const isEnabled = await getFeatureFlag('dark-mode', { visitorId: 'user-123' })
+ *
+ * if (isEnabled) {
+ *   // Enable dark mode
+ * }
+ * ```
+ */
+async function getFeatureFlag(key, options, defaultValue = false) {
+    if (!exports.LIB_INSTANCE)
+        return defaultValue;
+    return exports.LIB_INSTANCE.getFeatureFlag(key, options, defaultValue);
+}
+/**
+ * Clears the cached feature flags, forcing a fresh fetch on the next call.
+ * Useful when you know the user's context has changed significantly.
+ */
+function clearFeatureFlagsCache() {
+    if (!exports.LIB_INSTANCE)
+        return;
+    exports.LIB_INSTANCE.clearFeatureFlagsCache();
+}
+/**
+ * Fetches all A/B test experiments for the project.
+ * Results are cached for 5 minutes by default (shared cache with feature flags).
+ *
+ * @param options - Options for evaluating experiments.
+ * @param forceRefresh - If true, bypasses the cache and fetches fresh data.
+ * @returns A promise that resolves to a record of experiment IDs to variant keys.
+ *
+ * @example
+ * ```typescript
+ * const experiments = await getExperiments()
+ * // experiments = { 'exp-123': 'variant-a', 'exp-456': 'control' }
+ *
+ * // Use the assigned variant
+ * const checkoutVariant = experiments['checkout-experiment-id']
+ * if (checkoutVariant === 'new-checkout') {
+ *   showNewCheckout()
+ * } else {
+ *   showOriginalCheckout()
+ * }
+ * ```
+ */
+async function getExperiments(options, forceRefresh) {
+    if (!exports.LIB_INSTANCE)
+        return {};
+    return exports.LIB_INSTANCE.getExperiments(options, forceRefresh);
+}
+/**
+ * Gets the variant key for a specific A/B test experiment.
+ *
+ * @param experimentId - The experiment ID.
+ * @param options - Options for evaluating the experiment.
+ * @param defaultVariant - Default variant key to return if the experiment is not found. Defaults to null.
+ * @returns A promise that resolves to the variant key assigned to this user, or defaultVariant if not found.
+ *
+ * @example
+ * ```typescript
+ * const variant = await getExperiment('checkout-redesign-experiment-id')
+ *
+ * if (variant === 'new-checkout') {
+ *   // Show new checkout flow
+ *   showNewCheckout()
+ * } else if (variant === 'control') {
+ *   // Show original checkout (control group)
+ *   showOriginalCheckout()
+ * } else {
+ *   // Experiment not running or user not included
+ *   showOriginalCheckout()
+ * }
+ * ```
+ */
+async function getExperiment(experimentId, options, defaultVariant = null) {
+    if (!exports.LIB_INSTANCE)
+        return defaultVariant;
+    return exports.LIB_INSTANCE.getExperiment(experimentId, options, defaultVariant);
+}
+/**
+ * Clears the cached experiments, forcing a fresh fetch on the next call.
+ * This is an alias for clearFeatureFlagsCache since experiments and flags share the same cache.
+ */
+function clearExperimentsCache() {
+    if (!exports.LIB_INSTANCE)
+        return;
+    exports.LIB_INSTANCE.clearExperimentsCache();
+}
+/**
+ * Gets the anonymous profile ID for the current visitor.
+ * If profileId was set via init options, returns that.
+ * Otherwise, requests server to generate one from IP/UA hash.
+ *
+ * This ID can be used for revenue attribution with payment providers like Paddle.
+ *
+ * @returns A promise that resolves to the profile ID string, or null on error.
+ *
+ * @example
+ * ```typescript
+ * const profileId = await getProfileId()
+ *
+ * // Pass to Paddle Checkout for revenue attribution
+ * Paddle.Checkout.open({
+ *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+ *   customData: {
+ *     swetrix_profile_id: profileId,
+ *     swetrix_session_id: await getSessionId()
+ *   }
+ * })
+ * ```
+ */
+async function getProfileId() {
+    if (!exports.LIB_INSTANCE)
+        return null;
+    return exports.LIB_INSTANCE.getProfileId();
+}
+/**
+ * Gets the current session ID for the visitor.
+ * Session IDs are generated server-side based on IP and user agent.
+ *
+ * This ID can be used for revenue attribution with payment providers like Paddle.
+ *
+ * @returns A promise that resolves to the session ID string, or null on error.
+ *
+ * @example
+ * ```typescript
+ * const sessionId = await getSessionId()
+ *
+ * // Pass to Paddle Checkout for revenue attribution
+ * Paddle.Checkout.open({
+ *   items: [{ priceId: 'pri_01234567890', quantity: 1 }],
+ *   customData: {
+ *     swetrix_profile_id: await getProfileId(),
+ *     swetrix_session_id: sessionId
+ *   }
+ * })
+ * ```
+ */
+async function getSessionId() {
+    if (!exports.LIB_INSTANCE)
+        return null;
+    return exports.LIB_INSTANCE.getSessionId();
+}
 
+exports.clearExperimentsCache = clearExperimentsCache;
+exports.clearFeatureFlagsCache = clearFeatureFlagsCache;
+exports.getExperiment = getExperiment;
+exports.getExperiments = getExperiments;
+exports.getFeatureFlag = getFeatureFlag;
+exports.getFeatureFlags = getFeatureFlags;
+exports.getProfileId = getProfileId;
+exports.getSessionId = getSessionId;
 exports.init = init;
 exports.pageview = pageview;
 exports.track = track;

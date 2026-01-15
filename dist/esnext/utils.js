@@ -2,11 +2,15 @@ const findInSearch = (exp) => {
     const res = location.search.match(exp);
     return (res && res[2]) || undefined;
 };
-const utmSourceRegex = /[?&](ref|source|utm_source)=([^?&]+)/;
-const utmCampaignRegex = /[?&](utm_campaign)=([^?&]+)/;
+const utmSourceRegex = /[?&](ref|source|utm_source|gad_source)=([^?&]+)/;
+const utmCampaignRegex = /[?&](utm_campaign|gad_campaignid)=([^?&]+)/;
 const utmMediumRegex = /[?&](utm_medium)=([^?&]+)/;
 const utmTermRegex = /[?&](utm_term)=([^?&]+)/;
 const utmContentRegex = /[?&](utm_content)=([^?&]+)/;
+const gclidRegex = /[?&](gclid)=([^?&]+)/;
+const getGclid = () => {
+    return findInSearch(gclidRegex) ? '<gclid>' : undefined;
+};
 export const isInBrowser = () => {
     return typeof window !== 'undefined';
 };
@@ -31,7 +35,7 @@ export const getReferrer = () => {
     return document.referrer || undefined;
 };
 export const getUTMSource = () => findInSearch(utmSourceRegex);
-export const getUTMMedium = () => findInSearch(utmMediumRegex);
+export const getUTMMedium = () => findInSearch(utmMediumRegex) || getGclid();
 export const getUTMCampaign = () => findInSearch(utmCampaignRegex);
 export const getUTMTerm = () => findInSearch(utmTermRegex);
 export const getUTMContent = () => findInSearch(utmContentRegex);
