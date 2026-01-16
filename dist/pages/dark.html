@@ -1,421 +1,469 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Swetrix Captcha</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<head>
-  <meta charset="utf-8">
-  <title>Swetrix Captcha</title>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style>
-    html {
-      font-family: '-apple-system', 'system-ui', 'BlinkMacSystemFont', 'Inter', 'Cantarell', 'Helvetica Neue', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      height: auto;
-      overflow: auto;
-    }
-
-    #swetrix-captcha {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-
-      /* 300 - 20px (padding) */
-      width: 280px;
-
-      background-color: #0f172a;
-      border: 1px solid #1e293b;
-      border-radius: 4px;
-      height: 64px;
-      -webkit-user-select: none;
-      user-select: none;
-      padding-left: 10px;
-      padding-right: 10px;
-
-      cursor: pointer;
-    }
-
-    #swetrix-captcha:hover {
-      background-color: #1e293b;
-    }
-
-    /* Focus styles for accessibility - only show on keyboard navigation */
-    #swetrix-captcha:focus {
-      outline: none;
-    }
-
-    #swetrix-captcha:focus-visible {
-      outline: 2px solid #60a5fa;
-      outline-offset: 2px;
-    }
-
-    /* Fallback for browsers without :focus-visible support */
-    #swetrix-captcha.keyboard-focus {
-      outline: 2px solid #60a5fa;
-      outline-offset: 2px;
-    }
-
-    /* Progress bar at the top */
-    #progress-bar-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background-color: #1e293b;
-      border-radius: 4px 4px 0 0;
-      overflow: hidden;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    #progress-bar-container.show {
-      opacity: 1;
-    }
-
-    #progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #3b82f6, #60a5fa);
-      transition: width 0.3s ease, opacity 0.3s ease;
-    }
-
-    #progress-bar.indeterminate {
-      width: 30%;
-      animation: indeterminate 1.5s ease-in-out infinite;
-    }
-
-    @keyframes indeterminate {
-      0% {
-        transform: translateX(-100%);
-      }
-      100% {
-        transform: translateX(400%);
-      }
-    }
-
-    #challenge {
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      flex: 1;
-    }
-
-    #action {
-      margin-right: 10px;
-      position: relative;
-      width: 28px;
-      height: 28px;
-    }
-
-    #checkbox {
-      background-color: #111827;
-      border: 1px solid #374151;
-      height: 25px;
-      width: 25px;
-      border-radius: 3px;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      transition: opacity 0.25s ease, transform 0.25s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    #checkbox:hover {
-      border-color: #4b5563;
-    }
-
-    /* Focus indicator for checkbox when parent is focused */
-    #swetrix-captcha:focus-visible #checkbox {
-      border-color: #60a5fa;
-      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
-    }
-
-    #status {
-      font-size: 14px;
-      color: #f9fafb;
-    }
-
-    #status span {
-      transition: opacity 0.2s ease;
-    }
-
-    #status-computing {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    /* Fade out animation for hiding elements */
-    .fade-out {
-      opacity: 0 !important;
-      transform: translate(-50%, -50%) scale(0.8) !important;
-      pointer-events: none;
-    }
-
-    /* Fade in animation for showing elements */
-    .fade-in {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
-
-    #branding {
-      position: absolute;
-      bottom: 4px;
-      right: 10px;
-    }
-
-    #branding a {
-      font-size: 9px;
-      color: #6b7280;
-      text-decoration: none;
-      transition: color 0.2s ease;
-    }
-
-    #branding a:hover {
-      color: #9ca3af;
-      text-decoration: underline;
-    }
-
-    #branding a:focus-visible {
-      outline: 1px solid #60a5fa;
-      outline-offset: 1px;
-    }
-
-    #action svg {
-      width: 28px;
-      height: 28px;
-    }
-
-    #failure > svg {
-      /* bg-red-500 */
-      color: #d6292a;
-    }
-
-    #completed > svg {
-      /* bg-green-600 */
-      color: #16a24c;
-    }
-
-    #completed,
-    #failure {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.8);
-      opacity: 0;
-      transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-
-    #completed.show,
-    #failure.show {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
-
-    /* Checkmark draw animation */
-    #completed.show svg path {
-      stroke-dasharray: 24;
-      stroke-dashoffset: 24;
-      animation: drawCheck 0.4s ease forwards 0.1s;
-    }
-
-    @keyframes drawCheck {
-      to {
-        stroke-dashoffset: 0;
-      }
-    }
-
-    /* Failure shake animation */
-    #failure.show {
-      animation: shake 0.4s ease;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
-      25% { transform: translate(-50%, -50%) scale(1) rotate(-5deg); }
-      75% { transform: translate(-50%, -50%) scale(1) rotate(5deg); }
-    }
-
-    /* Loading indicator - Material Design style spinner */
-    #loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 24px;
-      height: 24px;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-    }
-
-    #loading.show {
-      opacity: 1;
-    }
-
-    #loading svg {
-      width: 24px;
-      height: 24px;
-      animation: rotate 1.4s linear infinite;
-    }
-
-    #loading svg circle {
-      stroke: #60a5fa;
-      stroke-linecap: round;
-      animation: dash 1.4s ease-in-out infinite;
-    }
-
-    @keyframes rotate {
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    @keyframes dash {
-      0% {
-        stroke-dasharray: 1, 150;
-        stroke-dashoffset: 0;
-      }
-      50% {
-        stroke-dasharray: 90, 150;
-        stroke-dashoffset: -35;
-      }
-      100% {
-        stroke-dasharray: 90, 150;
-        stroke-dashoffset: -124;
-      }
-    }
-
-    /* Reduced motion preference */
-    @media (prefers-reduced-motion: reduce) {
-      #checkbox,
-      #completed,
-      #failure,
-      #loading,
-      #status span,
-      #progress-bar,
-      #branding a {
-        transition: none;
+    <style>
+      html {
+        font-family:
+          "-apple-system", "system-ui", "BlinkMacSystemFont", "Inter", "Cantarell",
+          "Helvetica Neue", "Roboto", "Oxygen", "Ubuntu", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
 
-      #loading svg,
-      #loading svg circle,
-      #completed.show svg path,
-      #failure.show,
-      #progress-bar.indeterminate {
-        animation: none;
+      body {
+        margin: 0;
+        padding: 0;
+        height: auto;
+        overflow: auto;
       }
 
-      #progress-bar.indeterminate {
-        width: 100%;
-      }
-
-      /* Show static loading circle when animations are disabled */
-      #loading svg circle {
-        stroke-dasharray: 90, 150;
-        stroke-dashoffset: 0;
-      }
-
-      /* Show checkmark immediately when animations are disabled */
-      #completed.show svg path {
-        stroke-dashoffset: 0;
-      }
-    }
-
-    /* High contrast mode support */
-    @media (forced-colors: active) {
       #swetrix-captcha {
-        border: 2px solid CanvasText;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+
+        /* 300 - 20px (padding) */
+        width: 280px;
+
+        background-color: #0f172a;
+        border: 1px solid #1e293b;
+        border-radius: 4px;
+        height: 64px;
+        -webkit-user-select: none;
+        user-select: none;
+        padding-left: 10px;
+        padding-right: 10px;
+
+        cursor: pointer;
       }
 
-      #checkbox {
-        border: 2px solid CanvasText;
+      #swetrix-captcha:hover {
+        background-color: #1e293b;
+      }
+
+      /* Focus styles for accessibility - only show on keyboard navigation */
+      #swetrix-captcha:focus {
+        outline: none;
+      }
+
+      #swetrix-captcha:focus-visible {
+        outline: 2px solid #60a5fa;
+        outline-offset: 2px;
+      }
+
+      /* Fallback for browsers without :focus-visible support */
+      #swetrix-captcha.keyboard-focus {
+        outline: 2px solid #60a5fa;
+        outline-offset: 2px;
+      }
+
+      /* Progress bar at the top */
+      #progress-bar-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #1e293b;
+        border-radius: 4px 4px 0 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      #progress-bar-container.show {
+        opacity: 1;
       }
 
       #progress-bar {
-        background: Highlight;
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        transition:
+          width 0.3s ease,
+          opacity 0.3s ease;
       }
-    }
-  </style>
-  <script>
-    window.__SWETRIX_CAPTCHA_THEME = 'dark'
-    const urlParams = new URLSearchParams(window.location.search)
-    const pid = urlParams.get('pid')
-    const cid = urlParams.get('cid')
-    const apiUrl = urlParams.get('apiUrl')
 
-    window.__SWETRIX_CAPTCHA_ID = cid
-    window.__SWETRIX_PROJECT_ID = pid
-    if (apiUrl) {
-      window.__SWETRIX_API_URL = apiUrl
-    }
-  </script>
-  <script src="../captcha.js" defer></script>
-</head>
+      #progress-bar.indeterminate {
+        width: 30%;
+        animation: indeterminate 1.5s ease-in-out infinite;
+      }
 
-<body>
-  <div 
-    id="swetrix-captcha" 
-    role="checkbox" 
-    aria-checked="false" 
-    aria-label="Human verification checkbox. Press Enter or Space to verify you are human."
-    tabindex="0"
-  >
-    <!-- Progress bar at the top -->
-    <div id="progress-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Verification progress">
-      <div id="progress-bar"></div>
-    </div>
-    
-    <div id="challenge">
-      <div id="action">
-        <!-- Can contain a checkbox itself / a red cross (with a retry action) / a green check mark -->
-        <div id="checkbox" aria-hidden="true"></div>
-        <div id="failure" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
-            <path d="M12 9v4"/>
-            <path d="M12 17h.01"/>
-          </svg>
+      @keyframes indeterminate {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(400%);
+        }
+      }
+
+      #challenge {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        flex: 1;
+      }
+
+      #action {
+        margin-right: 10px;
+        position: relative;
+        width: 28px;
+        height: 28px;
+      }
+
+      #checkbox {
+        background-color: #111827;
+        border: 1px solid #374151;
+        height: 25px;
+        width: 25px;
+        border-radius: 3px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        transition:
+          opacity 0.25s ease,
+          transform 0.25s ease,
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      #checkbox:hover {
+        border-color: #4b5563;
+      }
+
+      /* Focus indicator for checkbox when parent is focused */
+      #swetrix-captcha:focus-visible #checkbox {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+      }
+
+      #status {
+        font-size: 14px;
+        color: #f9fafb;
+      }
+
+      #status span {
+        transition: opacity 0.2s ease;
+      }
+
+      #status-computing {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* Fade out animation for hiding elements */
+      .fade-out {
+        opacity: 0 !important;
+        transform: translate(-50%, -50%) scale(0.8) !important;
+        pointer-events: none;
+      }
+
+      /* Fade in animation for showing elements */
+      .fade-in {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      #branding {
+        position: absolute;
+        bottom: 4px;
+        right: 10px;
+      }
+
+      #branding a {
+        font-size: 9px;
+        color: #6b7280;
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      #branding a:hover {
+        color: #9ca3af;
+        text-decoration: underline;
+      }
+
+      #branding a:focus-visible {
+        outline: 1px solid #60a5fa;
+        outline-offset: 1px;
+      }
+
+      #action svg {
+        width: 28px;
+        height: 28px;
+      }
+
+      #failure > svg {
+        /* bg-red-500 */
+        color: #d6292a;
+      }
+
+      #completed > svg {
+        /* bg-green-600 */
+        color: #16a24c;
+      }
+
+      #completed,
+      #failure {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+        transition:
+          opacity 0.3s ease,
+          transform 0.3s ease;
+      }
+
+      #completed.show,
+      #failure.show {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      /* Checkmark draw animation */
+      #completed.show svg path {
+        stroke-dasharray: 24;
+        stroke-dashoffset: 24;
+        animation: drawCheck 0.4s ease forwards 0.1s;
+      }
+
+      @keyframes drawCheck {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+
+      /* Failure shake animation */
+      #failure.show {
+        animation: shake 0.4s ease;
+      }
+
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        }
+        25% {
+          transform: translate(-50%, -50%) scale(1) rotate(-5deg);
+        }
+        75% {
+          transform: translate(-50%, -50%) scale(1) rotate(5deg);
+        }
+      }
+
+      /* Loading indicator - Material Design style spinner */
+      #loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 24px;
+        height: 24px;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+      }
+
+      #loading.show {
+        opacity: 1;
+      }
+
+      #loading svg {
+        width: 24px;
+        height: 24px;
+        animation: rotate 1.4s linear infinite;
+      }
+
+      #loading svg circle {
+        stroke: #60a5fa;
+        stroke-linecap: round;
+        animation: dash 1.4s ease-in-out infinite;
+      }
+
+      @keyframes rotate {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes dash {
+        0% {
+          stroke-dasharray: 1, 150;
+          stroke-dashoffset: 0;
+        }
+        50% {
+          stroke-dasharray: 90, 150;
+          stroke-dashoffset: -35;
+        }
+        100% {
+          stroke-dasharray: 90, 150;
+          stroke-dashoffset: -124;
+        }
+      }
+
+      /* Reduced motion preference */
+      @media (prefers-reduced-motion: reduce) {
+        #checkbox,
+        #completed,
+        #failure,
+        #loading,
+        #status span,
+        #progress-bar,
+        #branding a {
+          transition: none;
+        }
+
+        #loading svg,
+        #loading svg circle,
+        #completed.show svg path,
+        #failure.show,
+        #progress-bar.indeterminate {
+          animation: none;
+        }
+
+        #progress-bar.indeterminate {
+          width: 100%;
+        }
+
+        /* Show static loading circle when animations are disabled */
+        #loading svg circle {
+          stroke-dasharray: 90, 150;
+          stroke-dashoffset: 0;
+        }
+
+        /* Show checkmark immediately when animations are disabled */
+        #completed.show svg path {
+          stroke-dashoffset: 0;
+        }
+      }
+
+      /* High contrast mode support */
+      @media (forced-colors: active) {
+        #swetrix-captcha {
+          border: 2px solid CanvasText;
+        }
+
+        #checkbox {
+          border: 2px solid CanvasText;
+        }
+
+        #progress-bar {
+          background: Highlight;
+        }
+      }
+    </style>
+    <script>
+      window.__SWETRIX_CAPTCHA_THEME = "dark";
+      const urlParams = new URLSearchParams(window.location.search);
+      const pid = urlParams.get("pid");
+      const cid = urlParams.get("cid");
+      const apiUrl = urlParams.get("apiUrl");
+      const lang = urlParams.get("lang");
+
+      window.__SWETRIX_CAPTCHA_ID = cid;
+      window.__SWETRIX_PROJECT_ID = pid;
+      if (apiUrl) {
+        window.__SWETRIX_API_URL = apiUrl;
+      }
+      if (lang) {
+        document.documentElement.lang = lang;
+      }
+    </script>
+    <script src="../captcha.js" defer></script>
+  </head>
+
+  <body>
+    <div
+      id="swetrix-captcha"
+      role="checkbox"
+      aria-checked="false"
+      aria-label="Human verification checkbox. Press Enter or Space to verify you are human."
+      tabindex="0"
+    >
+      <!-- Progress bar at the top -->
+      <div
+        id="progress-bar-container"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+        aria-label="Verification progress"
+      >
+        <div id="progress-bar"></div>
+      </div>
+
+      <div id="challenge">
+        <div id="action">
+          <!-- Can contain a checkbox itself / a red cross (with a retry action) / a green check mark -->
+          <div id="checkbox" aria-hidden="true"></div>
+          <div id="failure" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+              <path d="M12 9v4" />
+              <path d="M12 17h.01" />
+            </svg>
+          </div>
+          <div id="completed" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+          </div>
+          <div id="loading" aria-hidden="true">
+            <svg viewBox="0 0 50 50" aria-hidden="true">
+              <circle cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+            </svg>
+          </div>
         </div>
-        <div id="completed" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M20 6 9 17l-5-5"/>
-          </svg>
-        </div>
-        <div id="loading" aria-hidden="true">
-          <svg viewBox="0 0 50 50" aria-hidden="true">
-            <circle cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
-          </svg>
+        <div id="status" aria-live="polite" aria-atomic="true">
+          <span id="status-default">I am human</span>
+          <span id="status-failure" class="hidden">Verification failed, click to retry</span>
+          <span id="status-computing" class="hidden">
+            <span>Verifying...</span>
+          </span>
         </div>
       </div>
-      <div id="status" aria-live="polite" aria-atomic="true">
-        <span id="status-default">I am human</span>
-        <span id="status-failure" class="hidden">Verification failed, click to retry</span>
-        <span id="status-computing" class="hidden">
-          <span>Verifying...</span>
-        </span>
+      <div id="branding">
+        <a
+          href="https://swetrix.com/captcha"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Swetrix Captcha - opens in new window"
+          >Swetrix Captcha</a
+        >
       </div>
-    </div>
-    <div id="branding">
-      <a href="https://swetrix.com/captcha" target="_blank" rel="noopener noreferrer" aria-label="Swetrix Captcha - opens in new window">Swetrix Captcha</a>
-    </div>
-    
-    <!-- Screen reader only live region for status updates -->
-    <div id="sr-status" class="hidden" aria-live="assertive" aria-atomic="true"></div>
-  </div>
-</body>
 
+      <!-- Screen reader only live region for status updates -->
+      <div id="sr-status" class="hidden" aria-live="assertive" aria-atomic="true"></div>
+    </div>
+  </body>
 </html>
