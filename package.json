@@ -1,17 +1,32 @@
 {
   "name": "@swetrix/captcha",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "description": "Swetrix CAPTCHA",
+  "keywords": [
+    "analytics",
+    "metrics",
+    "monitoring",
+    "privacy",
+    "swetrix"
+  ],
+  "homepage": "https://swetrix.com/captcha",
+  "bugs": {
+    "url": "https://github.com/Swetrix/swetrix-captcha/issues"
+  },
+  "license": "MIT",
+  "author": "Swetrix Ltd <contact@swetrix.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Swetrix/swetrix-captcha.git"
+  },
   "type": "module",
-  "captchaloader": "dist/captcha-loader.js",
-  "captcha": "dist/captcha.js",
-  "esnext": "dist/esnext/index.js",
   "typings": "dist/esnext/index.d.ts",
+  "esnext": "dist/esnext/index.js",
   "exports": {
     ".": {
+      "types": "./dist/esnext/index.d.ts",
       "import": "./dist/esnext/index.js",
       "require": "./dist/captcha.cjs.js",
-      "types": "./dist/esnext/index.d.ts",
       "default": "./dist/captcha.js"
     }
   },
@@ -22,32 +37,17 @@
     "start": "rollup -c -w",
     "tsc": "tsc -p tsconfig.esnext.json"
   },
-  "keywords": [
-    "swetrix",
-    "analytics",
-    "monitoring",
-    "metrics",
-    "privacy"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Swetrix/swetrix-captcha.git"
-  },
-  "author": "Swetrix Ltd <contact@swetrix.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Swetrix/swetrix-captcha/issues"
-  },
-  "homepage": "https://swetrix.com/captcha",
   "devDependencies": {
+    "@blaumaus/rollup-plugin-uglify": "^7.0.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.3.0",
     "@types/node": "^22.15.21",
-    "rollup-plugin-copy": "^3.5.0",
-    "tslib": "^2.8.1",
-    "@blaumaus/rollup-plugin-uglify": "^7.0.1",
     "rimraf": "^5.0.7",
     "rollup": "^4.54.0",
+    "rollup-plugin-copy": "^3.5.0",
+    "tslib": "^2.8.1",
     "typescript": "^5.9.3"
-  }
+  },
+  "captcha": "dist/captcha.js",
+  "captchaloader": "dist/captcha-loader.js"
 }
