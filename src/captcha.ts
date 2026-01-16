@@ -1,3 +1,6 @@
+import { getTranslations, normalizeLocale, detectBrowserLocale, type SupportedLocale } from './i18n'
+import { logger } from './logger'
+
 export {}
 
 // @ts-ignore
@@ -51,7 +54,24 @@ interface PowProgress {
 
 let activeAction: ACTION = ACTION.checkbox
 let powWorker: Worker | null = null
-let progressStartTime: number = 0
+
+const getLocaleFromUrl = (): SupportedLocale => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const lang = urlParams.get('lang')
+
+  logger.log('lang', lang)
+
+  if (lang) {
+    return normalizeLocale(lang)
+  }
+
+  return detectBrowserLocale()
+}
+
+const currentLocale = getLocaleFromUrl()
+const t = getTranslations(currentLocale)
+
+logger.log('t:', t)
 
 const sendMessageToLoader = (event: IFRAME_MESSAGE_TYPES, data = {}) => {
   window.parent.postMessage(
@@ -123,28 +143,25 @@ const updateAriaState = (action: ACTION) => {
       captchaComponent.setAttribute('role', 'checkbox')
       captchaComponent.setAttribute('aria-checked', 'false')
       captchaComponent.setAttribute('aria-busy', 'false')
-      captchaComponent.setAttribute(
-        'aria-label',
-        'Human verification checkbox. Press Enter or Space to verify you are human.',
-      )
+      captchaComponent.setAttribute('aria-label', t.ariaCheckbox)
       break
     case ACTION.loading:
       captchaComponent.setAttribute('role', 'status')
       captchaComponent.setAttribute('aria-checked', 'mixed')
       captchaComponent.setAttribute('aria-busy', 'true')
-      captchaComponent.setAttribute('aria-label', 'Verifying that you are human. Please wait.')
+      captchaComponent.setAttribute('aria-label', t.ariaVerifying)
       break
     case ACTION.completed:
       captchaComponent.setAttribute('role', 'checkbox')
       captchaComponent.setAttribute('aria-checked', 'true')
       captchaComponent.setAttribute('aria-busy', 'false')
-      captchaComponent.setAttribute('aria-label', 'Verification successful. You have been verified as human.')
+      captchaComponent.setAttribute('aria-label', t.ariaSuccess)
       break
     case ACTION.failure:
       captchaComponent.setAttribute('role', 'checkbox')
       captchaComponent.setAttribute('aria-checked', 'false')
       captchaComponent.setAttribute('aria-busy', 'false')
-      captchaComponent.setAttribute('aria-label', 'Verification failed. Press Enter or Space to try again.')
+      captchaComponent.setAttribute('aria-label', t.ariaFailed)
       break
   }
 
@@ -153,13 +170,13 @@ const updateAriaState = (action: ACTION) => {
   if (srStatus) {
     switch (action) {
       case ACTION.loading:
-        srStatus.textContent = 'Verification in progress. Please wait.'
+        srStatus.textContent = t.srLoading
         break
       case ACTION.completed:
-        srStatus.textContent = 'Verification successful!'
+        srStatus.textContent = t.srSuccess
         break
       case ACTION.failure:
-        srStatus.textContent = 'Verification failed. Please try again.'
+        srStatus.textContent = t.srFailed
         break
       default:
         srStatus.textContent = ''
@@ -208,7 +225,6 @@ const activateAction = (action: ACTION) => {
     updateProgressBar(0) // Hide progress bar on failure
   } else if (action === 'loading') {
     statusComputing?.classList.remove('hidden')
-    progressStartTime = Date.now()
     updateProgressBar(-1) // Start with indeterminate progress
   } else if (action === 'completed') {
     statusDefault?.classList.remove('hidden')
@@ -255,7 +271,8 @@ const generateChallenge = async (): Promise<PowChallenge | null> => {
     }
 
     return await response.json()
-  } catch (e) {
+  } catch (reason) {
+    logger.error('Failed to generate challenge:', reason)
     sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
     activateAction(ACTION.failure)
     return null
@@ -289,7 +306,8 @@ const verifySolution = async (challenge: string, nonce: number, solution: string
     }
 
     return data.token
-  } catch (e) {
+  } catch (reason) {
+    logger.error('Failed to verify solution:', reason)
     sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
     activateAction(ACTION.failure)
     return null
@@ -325,7 +343,8 @@ const solveChallenge = async (challenge: PowChallenge): Promise<void> => {
 
     try {
       powWorker = new Worker(WORKER_URL)
-    } catch (e) {
+    } catch (reason) {
+      logger.warn('Failed to create worker:', reason)
       // Fallback: solve in main thread if worker fails
       solveInMainThread(challenge).then(resolve).catch(reject)
       return
@@ -348,7 +367,7 @@ const solveChallenge = async (challenge: PowChallenge): Promise<void> => {
 
       if (data.type === 'timeout') {
         // Worker timed out or hit max iterations
-        console.error('PoW worker timeout:', (data as { type: 'timeout'; reason: string }).reason)
+        logger.error('PoW worker timeout:', (data as { type: 'timeout'; reason: string }).reason)
         sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
         activateAction(ACTION.failure)
         powWorker?.terminate()
@@ -377,7 +396,7 @@ const solveChallenge = async (challenge: PowChallenge): Promise<void> => {
       // Handle error message from worker
       if (data.type === 'error') {
         const errorData = data as { type: 'error'; message?: string }
-        console.error('PoW worker error message:', errorData.message || 'Unknown error')
+        logger.error('PoW worker error message:', errorData.message || 'Unknown error')
         sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
         activateAction(ACTION.failure)
         powWorker?.terminate()
@@ -387,7 +406,7 @@ const solveChallenge = async (challenge: PowChallenge): Promise<void> => {
       }
 
       // Fallback for unexpected message types
-      console.warn('PoW worker received unexpected message type:', (data as { type?: unknown }).type, 'Raw data:', data)
+      logger.warn('PoW worker received unexpected message type:', (data as { type?: unknown }).type, 'Raw data:', data)
       sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
       activateAction(ACTION.failure)
       powWorker?.terminate()
@@ -396,7 +415,7 @@ const solveChallenge = async (challenge: PowChallenge): Promise<void> => {
     }
 
     powWorker.onerror = (error) => {
-      console.error('PoW worker error:', error)
+      logger.error('PoW worker error:', error)
       powWorker?.terminate()
       powWorker = null
 
@@ -438,7 +457,7 @@ const solveInMainThread = async (challenge: PowChallenge): Promise<void> => {
     // Check overall timeout
     const elapsedMs = Date.now() - startTime
     if (elapsedMs >= TIMEOUT_MS) {
-      console.error(`PoW main-thread timeout: ${TIMEOUT_MS}ms elapsed after ${nonce} attempts`)
+      logger.error(`PoW main-thread timeout: ${TIMEOUT_MS}ms elapsed after ${nonce} attempts`)
       sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
       activateAction(ACTION.failure)
       return
@@ -469,7 +488,7 @@ const solveInMainThread = async (challenge: PowChallenge): Promise<void> => {
   }
 
   // Max iterations reached without finding solution
-  console.error(`PoW main-thread max iterations reached: ${MAX_ITERATIONS} attempts`)
+  logger.error(`PoW main-thread max iterations reached: ${MAX_ITERATIONS} attempts`)
   sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
   activateAction(ACTION.failure)
 }
@@ -498,9 +517,25 @@ const handleCaptchaActivation = async () => {
   await solveChallenge(challenge)
 }
 
+const applyTranslations = () => {
+  const statusDefault = document.querySelector('#status-default')
+  const statusFailure = document.querySelector('#status-failure')
+  const statusComputing = document.querySelector('#status-computing span')
+  const progressBarContainer = document.querySelector('#progress-bar-container')
+
+  if (statusDefault) statusDefault.textContent = t.iAmHuman
+  if (statusFailure) statusFailure.textContent = t.verificationFailed
+  if (statusComputing) statusComputing.textContent = t.verifying
+  if (progressBarContainer) progressBarContainer.setAttribute('aria-label', t.ariaProgress)
+
+  document.documentElement.lang = currentLocale
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const captchaComponent = document.querySelector('#swetrix-captcha')
   const branding = document.querySelector('#branding')
+
+  applyTranslations()
 
   branding?.addEventListener('click', (e: Event) => {
     e.stopPropagation()

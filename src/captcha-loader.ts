@@ -2,6 +2,9 @@
 const isDevelopment = window.__SWETRIX_CAPTCHA_DEV || false
 
 const CAPTCHA_SELECTOR = '.swecaptcha'
+const SUPPORTED_LOCALES = ['en', 'de', 'fr', 'pl', 'uk'] as const
+type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
+const DEFAULT_LOCALE: SupportedLocale = 'en'
 const LIGHT_CAPTCHA_IFRAME_URL = isDevelopment ? './light.html' : 'https://cdn.swetrixcaptcha.com/pages/light'
 const DARK_CAPTCHA_IFRAME_URL = isDevelopment ? './dark.html' : 'https://cdn.swetrixcaptcha.com/pages/dark'
 const DEFAULT_RESPONSE_INPUT_NAME = 'swetrix-captcha-response'
@@ -40,6 +43,70 @@ const detectPreferredTheme = (): 'light' | 'dark' => {
   }
 
   return 'light'
+}
+
+const isSupportedLocale = (locale: string): locale is SupportedLocale => {
+  return SUPPORTED_LOCALES.includes(locale as SupportedLocale)
+}
+
+const normalizeLocale = (locale: string): SupportedLocale => {
+  const lowered = locale.toLowerCase()
+  const primary = lowered.split('-')[0].split('_')[0]
+
+  if (isSupportedLocale(primary)) {
+    return primary
+  }
+
+  return DEFAULT_LOCALE
+}
+
+const detectBrowserLocale = (): SupportedLocale => {
+  if (typeof navigator === 'undefined') {
+    return DEFAULT_LOCALE
+  }
+
+  const languages = navigator.languages || [navigator.language]
+
+  for (const lang of languages) {
+    const normalized = normalizeLocale(lang)
+    if (normalized !== DEFAULT_LOCALE || lang.toLowerCase().startsWith('en')) {
+      return normalized
+    }
+  }
+
+  return DEFAULT_LOCALE
+}
+
+const findHtmlLangAttribute = (element: Element): string | null => {
+  let current: Element | null = element
+
+  while (current) {
+    const lang = current.getAttribute('lang')
+    if (lang) {
+      return lang
+    }
+    current = current.parentElement
+  }
+
+  return null
+}
+
+const detectLanguage = (container: Element): SupportedLocale => {
+  // First priority: data-lang attribute on the widget element
+  const forcedLang = container.getAttribute('data-lang')
+  console.log('forcedLang', forcedLang)
+  if (forcedLang) {
+    return normalizeLocale(forcedLang)
+  }
+
+  // Second priority: lang attribute on ancestor elements (e.g., <html lang="de">)
+  const ancestorLang = findHtmlLangAttribute(container.parentElement as Element)
+  if (ancestorLang) {
+    return normalizeLocale(ancestorLang)
+  }
+
+  // Fallback: browser language
+  return detectBrowserLocale()
 }
 
 const resolveTheme = (theme: string | null): 'light' | 'dark' => {
@@ -233,6 +300,7 @@ const parseParams = (container: Element): object => {
     pid: container.getAttribute('data-project-id'),
     respName: container.getAttribute('data-response-input-name') || DEFAULT_RESPONSE_INPUT_NAME,
     theme: container.getAttribute('data-theme') || DEFAULT_THEME,
+    lang: detectLanguage(container),
   }
 
   // Optional custom API URL
