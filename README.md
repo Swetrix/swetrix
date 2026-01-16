@@ -31,6 +31,16 @@ See the full documentation at https://docs.swetrix.com/captcha/introduction
 | `data-project-id` | Your project ID | Valid project ID | Required |
 | `data-theme` | Color theme | `auto`, `light`, `dark` | `auto` |
 | `data-response-input-name` | Hidden input name | Any string | `swetrix-captcha-response` |
+| `data-lang` | Force a specific language | `en`, `de`, `fr`, `pl`, `uk` | Auto-detected |
+
+### Language Support
+
+The widget supports **English**, **German**, **French**, **Polish**, and **Ukrainian**.
+
+Language is detected automatically in this order:
+1. `data-lang` attribute on the widget element
+2. `lang` attribute on parent elements (e.g., `<html lang="de">`)
+3. Browser's preferred language
 
 ### Theme Options
 
