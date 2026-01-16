@@ -57,6 +57,7 @@ import {
   createHeadersWithCookies,
   getProjectPasswordCookie,
   createProjectPasswordCookie,
+  hasAuthTokens,
 } from '~/utils/session.server'
 
 export const links: LinksFunction = () => [
@@ -462,11 +463,38 @@ export interface ProjectViewActionData {
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
-  redirectIfNotAuthenticated(request)
-
   const { id: projectId } = params
   const formData = await request.formData()
   const intent = formData.get('intent')?.toString()
+
+  const publicIntents = new Set([
+    'get-project',
+    'check-password',
+    'get-project-views',
+    'get-annotations',
+    'get-funnels',
+    'get-funnel-data',
+    'get-project-goals',
+    'get-goal',
+    'get-goal-stats',
+    'get-goal-chart',
+    'get-project-alerts',
+    'get-alert',
+    'get-project-feature-flags',
+    'get-feature-flag',
+    'get-feature-flag-stats',
+    'get-feature-flag-profiles',
+    'get-project-experiments',
+    'get-experiment',
+    'get-experiment-results',
+    'get-filters',
+    'get-errors-filters',
+    'get-version-filters',
+  ])
+
+  if (!intent || (!publicIntents.has(intent) && !hasAuthTokens(request))) {
+    redirectIfNotAuthenticated(request)
+  }
 
   switch (intent) {
     // Goals
