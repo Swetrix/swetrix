@@ -1,0 +1,68 @@
+## Design Context
+
+### Users
+Website owners, developers, and businesses who value privacy and GDPR compliance. They're switching from complex tools like Google Analytics and want clarity without sacrificing insights. They use Swetrix to understand their website traffic, monitor performance, track errors, and make data-driven decisions—quickly and without friction.
+
+### Brand Personality
+**Trustworthy, modern, approachable.**
+
+The interface should feel reliable and professional without being cold or corporate. Communication is clear and direct. The product respects users' time and intelligence—no dark patterns, no unnecessary complexity.
+
+**Emotional goals**: Users should feel **clarity** (information is easy to find and understand), **delight** (subtle polish and thoughtful details), and **control** (they're in command of their data and the interface).
+
+### Aesthetic Direction
+**Visual tone**: Clean, contemporary, data-focused. Generous whitespace. Subtle depth through shadows and layering rather than heavy borders.
+
+**References**:
+- **Rybbit** — Modern aesthetic, polished feel
+- **Plausible** — Simplicity, ease of use, clarity
+
+**Anti-references** (what to avoid):
+- **Google Analytics** — Overcomplicated, cluttered, overwhelming navigation
+- **Matomo** — Outdated UI, visual noise, enterprise bloat
+
+**Theme**: Full light and dark mode support. Light mode uses warm grays; dark mode uses slate tones. Indigo is the primary accent color.
+
+### Design Principles
+
+1. **Clarity over cleverness** — Every element should have a clear purpose. When in doubt, simplify. Data should be immediately scannable.
+
+2. **Calm confidence** — The interface should feel stable and trustworthy. Avoid jarring transitions, loud colors for non-critical elements, or aggressive CTAs.
+
+3. **Progressive disclosure** — Show essential information first; reveal complexity only when needed. Don't overwhelm users on first contact.
+
+4. **Purposeful motion** — Animations should feel natural and guide attention, not decorate. Respect reduced-motion preferences.
+
+5. **Accessible by default** — Target WCAG AA compliance. Ensure sufficient color contrast, keyboard navigability, and screen reader support.
+
+### Technical Design Tokens (Reference)
+
+**Colors**:
+- Primary/Accent: `indigo-600` (light), `indigo-500` (dark)
+- Backgrounds: `gray-50` (light), `slate-900` (dark)
+- Cards/Surfaces: `white` / `slate-800`
+- Borders: `ring-1 ring-black/5` (light), `ring-white/10` (dark)
+- Danger: `red-500/600`
+- Success: `emerald-500/600`
+- Warning: `amber-500/600`
+
+**Typography**:
+- Font: System stack (`-apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto...`)
+- Rendering: Antialiased
+- Weights: `medium` (body), `semibold` (labels), `bold` (headings)
+
+**Spacing & Layout**:
+- Container max-width: `max-w-7xl`
+- Section padding: `px-4 sm:px-6 lg:px-8`
+- Border radius: `rounded-md` (small), `rounded-lg` (medium), `rounded-xl` (large), `rounded-2xl` (cards)
+
+**Motion**:
+- Default transition: `200ms`
+- Easing: `ease-out` for entrances, `ease-in` for exits
+- Use Framer Motion for complex sequences
+
+**Components**:
+- Buttons: HeadlessUI-based, primary uses `bg-slate-900` (light) / `bg-slate-800` (dark)
+- Inputs: Ring borders with `focus:ring-indigo-500`
+- Cards: Subtle ring borders, optional backdrop blur
+- Modals/Dropdowns: HeadlessUI with fade/slide transitions
