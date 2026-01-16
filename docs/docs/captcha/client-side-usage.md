@@ -43,6 +43,37 @@ You can customise the appearance of the CAPTCHA widget by adding the following a
 | `data-theme`               | string | The theme of the CAPTCHA widget. Possible values: `auto` (default), `light`, `dark`.                                                                                                                                                           |
 | `data-response-input-name` | string | Name of the token input element. Default: `swetrix-captcha-response`.                                                                                                                                                                          |
 | `data-api-url`             | string | The URL of the CAPTCHA API. Default: `https://api.swetrixcaptcha.com/v1/captcha`. If you're self-hosting Swetrix CE, you should put the URL of your API instance here, like `[API_URL]/v1/captcha`. Swetrix Cloud users should leave it as is. |
+| `data-lang`                | string | Force a specific language for the widget (see [Language support](#language-support)). |
+
+### Language support
+
+The CAPTCHA widget supports the following languages:
+
+| Language  | Code |
+| --------- | ---- |
+| English   | `en` |
+| German    | `de` |
+| French    | `fr` |
+| Polish    | `pl` |
+| Ukrainian | `uk` |
+
+#### Automatic language detection
+
+The widget automatically detects the language to use based on the following priority:
+
+1. **Widget `data-lang` attribute**: If the `data-lang` attribute is set on the `.swecaptcha` element, that language is used.
+2. **HTML `lang` attribute**: The widget looks at the first HTML `lang` attribute it finds in its parent elements (e.g., `<html lang="de">`).
+3. **Browser language**: If no `lang` attribute is found above the widget or an unsupported language is requested, the language is determined by the browser's preferred language. This is usually the user's operating system language.
+
+#### Forcing a specific language
+
+To force a specific language, set the `data-lang` attribute on the widget element:
+
+```html
+<div class="swecaptcha" data-project-id="YOUR_PROJECT_ID" data-lang="de"></div>
+```
+
+This will display the widget in German regardless of the page's language or the user's browser settings.
 
 ### Widget sizes
 
