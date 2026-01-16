@@ -10,13 +10,13 @@ You can use Google Tag Manager to add the Swetrix tracking script to your websit
 ## Installation (Swetrix Loader tag)
 
 1. Sign in to your Google Tag Manager account, click on **Tags** and then **New**.
-   <img alt="Creating a new tag" src={useBaseUrl('img/integrations/gtm/gtm-1.png')} />
+   <img alt="Creating a new tag" src={useBaseUrl('img/integrations/google/gt-1.png')} />
 
 2. Under the **Tag Configuration** section, click on "Choose a tag type to begin set-up...".
-   <img alt="Tag Configuration" src={useBaseUrl('img/integrations/gtm/gtm-2.png')} />
+   <img alt="Tag Configuration" src={useBaseUrl('img/integrations/google/gt-2.png')} />
 
 3. Select **Custom HTML**
-   <img alt="Custom HTML" src={useBaseUrl('img/integrations/gtm/gtm-3.png')} />
+   <img alt="Custom HTML" src={useBaseUrl('img/integrations/google/gt-3.png')} />
 
 4. In the HTML input field, paste the following code:
 
@@ -29,7 +29,7 @@ This code is responsible for loading the Swetrix script into your website. We wi
 5. Under **Triggering** section, click on "Choose a trigger to mage this tag fire..." and select **All pages** (or alternatively, you can filter the pages you want Swetrix to be enabled on as well).
 
 6. Give your tag a name, change "Untitled Tag" to something like **Swetrix Loader**. The result should look like this:
-   <img alt="Final result" src={useBaseUrl('img/integrations/gtm/gtm-4.png')} />
+   <img alt="Final result" src={useBaseUrl('img/integrations/google/gt-4.png')} />
 
 7. Click on the **Save** button.
 
@@ -68,7 +68,7 @@ You can also refer to our detailed [tracking script reference](/swetrix-js-refer
 5. Give your tag a name, change "Untitled Tag" to something like **Swetrix Configuration**.
 
 6. Under the **Tag Configuration** section, click on **Advanced Settings** and then **Tag Sequencing**. Click on the **Fire a tag before Swetrix Configuration fires** and select **Swetrix Loader** (the tag we've set up before).
-   <img alt="Configuration tag setup" src={useBaseUrl('img/integrations/gtm/gtm-5.png')} />
+   <img alt="Configuration tag setup" src={useBaseUrl('img/integrations/google/gt-5.png')} />
 
 7. Click on "Don't fire Swetrix Configuration if Swetrix Loader fails or is paused". Setting this up will make sure that Swetrix config will execute after the tracking script has loaded.
 
