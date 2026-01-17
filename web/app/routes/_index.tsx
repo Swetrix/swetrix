@@ -107,7 +107,7 @@ const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
   </span>
 )
 
-const FeedbackDual = () => {
+export const FeedbackDual = () => {
   const { theme } = useTheme()
 
   return (

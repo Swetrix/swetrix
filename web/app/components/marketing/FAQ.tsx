@@ -1,5 +1,6 @@
 import _map from 'lodash/map'
 import { ChevronDownIcon } from 'lucide-react'
+import { useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import sanitizeHtml from 'sanitize-html'
@@ -8,7 +9,11 @@ import { DOCS_URL, PLAN_LIMITS, TRIAL_DAYS, DISCORD_URL } from '~/lib/constants'
 import { cn } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 
-const FAQ = () => {
+interface FAQProps {
+  includeGAQuestions?: boolean
+}
+
+const FAQ = ({ includeGAQuestions = false }: FAQProps) => {
   const { t } = useTranslation('common')
 
   const onLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -27,20 +32,45 @@ const FAQ = () => {
       allowedTags: [],
       allowedAttributes: {},
     })
-  const items = t('main.faq.items', { returnObjects: true }) as {
-    q: string
-    a: string
-  }[]
+
+  const items = useMemo(() => {
+    const regularItems = t('main.faq.items', { returnObjects: true }) as {
+      q: string
+      a: string
+    }[]
+
+    const questions = regularItems.map((item, idx) => ({
+      ...item,
+      i18nKey: `main.faq.items.${idx}`,
+    }))
+
+    if (includeGAQuestions) {
+      const gaItems = t('main.faq.gaItems', { returnObjects: true }) as {
+        q: string
+        a: string
+      }[]
+
+      const gaQuestions = gaItems.map((item, idx) => ({
+        ...item,
+        i18nKey: `main.faq.gaItems.${idx}`,
+      }))
+
+      return [...gaQuestions, ...questions]
+    }
+
+    return questions
+  }, [t, includeGAQuestions])
+
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: items.map((_, idx) => ({
+    mainEntity: items.map((item) => ({
       '@type': 'Question',
-      name: t(`main.faq.items.${idx}.q`),
+      name: t(`${item.i18nKey}.q`),
       acceptedAnswer: {
         '@type': 'Answer',
         text: stripTags(
-          t(`main.faq.items.${idx}.a`, {
+          t(`${item.i18nKey}.a`, {
             ...values,
           }),
         ),
@@ -54,12 +84,12 @@ const FAQ = () => {
         {t('main.faq.title')}
       </h2>
       <div className='mt-8 flex flex-col'>
-        {_map(items, (item: { q: string; a: string }, idx: number) => {
+        {_map(items, (item: { q: string; a: string; i18nKey: string }, idx: number) => {
           const showTopBorder = idx !== 0
 
           return (
             <details
-              key={item.q}
+              key={item.i18nKey}
               className={cn(
                 'group w-full text-left',
                 showTopBorder &&
@@ -68,7 +98,7 @@ const FAQ = () => {
             >
               <summary className='flex w-full cursor-pointer items-center justify-between px-4 py-4'>
                 <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-white'>
-                  <Trans t={t} i18nKey={`main.faq.items.${idx}.q`} />
+                  <Trans t={t} i18nKey={`${item.i18nKey}.q`} />
                 </span>
                 <ChevronDownIcon className='size-4 text-slate-900 transition-transform group-open:rotate-180 dark:text-gray-200' />
               </summary>
@@ -76,7 +106,7 @@ const FAQ = () => {
                 <p className='pb-4 text-sm whitespace-pre-line text-slate-900 dark:text-gray-100'>
                   <Trans
                     t={t}
-                    i18nKey={`main.faq.items.${idx}.a`}
+                    i18nKey={`${item.i18nKey}.a`}
                     values={values}
                     components={{
                       dataPolicyUrl: (

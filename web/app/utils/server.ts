@@ -201,6 +201,12 @@ export const getPageMeta = (
       }
       break
 
+    case routes.gaAlternative:
+      result = {
+        title: t('titles.gaAlternative'),
+      }
+      break
+
     default:
       break
   }

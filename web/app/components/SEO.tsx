@@ -44,22 +44,22 @@ export const SEO = () => {
       {!isBlogPage ? (
         <>
           <title>{title}</title>
-          <meta property='og:title' content='Swetrix' />
+          <meta property='og:title' content={title} />
           <meta
             name='twitter:title'
-            content='Swetrix | Turn traffic into insights'
+            content={title}
           />
           <meta
             name='description'
-            content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative'
+            content='Swetrix is a privacy-first, cookieless Google Analytics alternative with real-time analytics, no sampling, and built-in performance & error monitoring.'
           />
           <meta
             name='twitter:description'
-            content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative'
+            content='Swetrix is a privacy-first, cookieless Google Analytics alternative with real-time analytics, no sampling, and built-in performance & error monitoring.'
           />
           <meta
             property='og:description'
-            content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative'
+            content='Swetrix is a privacy-first, cookieless Google Analytics alternative with real-time analytics, no sampling, and built-in performance & error monitoring.'
           />
           {isMainPage ? (
             <>

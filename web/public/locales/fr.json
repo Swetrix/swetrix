@@ -423,6 +423,129 @@
       }
     ]
   },
+  "gaAlternative": {
+    "hero": {
+      "teams": "{{amount}}+ équipes",
+      "ditched": "ont abandonné Google Analytics",
+      "title": "L’alternative à Google Analytics sans cookies",
+      "subtitle": "Obtenez les informations dont vous avez besoin — en temps réel, précises et faciles à comprendre, sans cookies, sans atteinte à la vie privée et sans tableaux de bord surchargés.",
+      "cta": "Commencer un essai gratuit de {{days}} jours",
+      "features": {
+        "cookieless": "Suivi sans cookies",
+        "privacy": "Respect de la vie privée dès la conception",
+        "realtime": "Tableau de bord en temps réel",
+        "noSampling": "Sans échantillonnage",
+        "ownData": "Vos données vous appartiennent",
+        "openSource": "Open source et auto-hébergeable"
+      },
+      "viewDemo": "Voir la démo en direct"
+    },
+    "comparison": {
+      "title": "Swetrix vs Google Analytics (GA4)",
+      "subtitle": "Google Analytics est puissant, mais il est conçu pour Google. Swetrix est conçu pour vous — épuré, rapide et axé sur la protection de la vie privée.",
+      "table": {
+        "headers": {
+          "whatMatters": "L’essentiel",
+          "swetrix": "Swetrix",
+          "ga": "Google Analytics"
+        },
+        "rows": {
+          "cookieless": {
+            "label": "Suivi sans cookies",
+            "swetrix": "Oui (par défaut)",
+            "ga": "Généralement basé sur des cookies"
+          },
+          "privacy": {
+            "label": "Conçu pour la confidentialité et la conformité",
+            "swetrix": "Priorité à la vie privée",
+            "ga": "Écosystème publicitaire"
+          },
+          "realtime": {
+            "label": "Analyses en temps réel",
+            "swetrix": "Oui",
+            "ga": "Limité"
+          },
+          "noSampling": {
+            "label": "Sans échantillonnage / sans surprises liées aux seuils",
+            "swetrix": "Oui",
+            "ga": "Peut appliquer des seuils / de l’échantillonnage"
+          },
+          "ui": {
+            "label": "Interface simple et pensée pour les humains",
+            "swetrix": "Oui",
+            "ga": "Complexe (courbe d’apprentissage de GA4)"
+          },
+          "publicDashboards": {
+            "label": "Tableaux de bord publics",
+            "swetrix": "Oui",
+            "ga": "Pas aussi simple"
+          },
+          "openSource": {
+            "label": "Open source",
+            "swetrix": "Oui",
+            "ga": "Non"
+          },
+          "selfHosting": {
+            "label": "Option d’auto-hébergement",
+            "swetrix": "Oui",
+            "ga": "Non"
+          },
+          "webVitals": {
+            "label": "Web Vitals + suivi des erreurs intégrés",
+            "swetrix": "Oui",
+            "ga": "Non"
+          }
+        }
+      },
+      "footer": "Vous cherchez un remplacement direct de GA4 sans compromis sur la vie privée ? Swetrix couvre l’essentiel (et plus encore) tout en gardant un suivi léger et éthique."
+    },
+    "whySwitch": {
+      "label": "Pourquoi les équipes changent",
+      "title": "GA4 a été conçu pour Google.<br />Swetrix a été conçu pour <1>vous.</1>",
+      "subtitle": "Arrêtez de vous battre avec les bannières de consentement et des tableaux de bord qui demandent un doctorat. Obtenez rapidement les informations dont vous avez réellement besoin.",
+      "privacy": {
+        "title": "La confidentialité sans le bazar des cookies",
+        "description": "Sans cookies par défaut. Pas de suivi inter-sites. Pour de nombreux sites, cela signifie que vous pouvez supprimer complètement la bannière de cookies tout en conservant des données précises."
+      },
+      "understandable": {
+        "title": "Analyses instantanément compréhensibles",
+        "description": "GA4 peut donner l’impression d’être un produit pour les analystes. Swetrix est conçu pour les humains : pages vues, visiteurs, référents, campagnes UTM et événements personnalisés — exactement là où vous les attendez."
+      },
+      "actionable": {
+        "title": "Des insights actionnables pour le marketing + l’ingénierie",
+        "description": "Le trafic ne raconte que la moitié de l’histoire. Swetrix ajoute le monitoring des performances et le suivi des erreurs, pour repérer les pages lentes et une UX dégradée avant que cela n’affecte le chiffre d’affaires."
+      },
+      "stats": {
+        "size": "taille du script",
+        "accurate": "données précises",
+        "cookies": "cookies"
+      }
+    },
+    "migration": {
+      "label": "Migration rapide",
+      "title": "Passez à Swetrix en moins de 5 minutes",
+      "subtitle": "Aucune configuration complexe, aucun gestionnaire de balises requis. Une seule balise script et c’est terminé.",
+      "steps": {
+        "1": {
+          "title": "Ajoutez une seule balise script",
+          "description": "Pas de cookies, pas de configuration, pas d’acrobaties avec un gestionnaire de balises."
+        },
+        "2": {
+          "title": "Configurez vos événements",
+          "description": "Suivez les conversions avec de simples appels API. Les paramètres UTM fonctionnent automatiquement."
+        },
+        "3": {
+          "title": "C’est en ligne",
+          "description": "Les données en temps réel commencent à arriver immédiatement. Aucun délai, aucun échantillonnage."
+        }
+      },
+      "stats": {
+        "size": "4 Ko compressés (gzip)",
+        "cookies": "Aucun cookie",
+        "privacy": "Respect de la vie privée avant tout"
+      }
+    }
+  },
   "main": {
     "seeLiveDemo": "Voir la démo en ligne",
     "goToBilling": "Accéder à la facturation",
@@ -468,6 +591,16 @@
         {
           "q": "Je veux poser une autre question...",
           "a": "Bien sûr, n’hésitez pas à <contactUsUrl>nous contacter</contactUsUrl> à tout moment."
+        }
+      ],
+      "gaItems": [
+        {
+          "q": "Swetrix est-il un remplaçant de Google Analytics (GA4) ?",
+          "a": "Swetrix couvre l’essentiel de l’analytics web dont la plupart des équipes ont besoin, avec en plus le monitoring des performances et le suivi des erreurs — sans transformer vos utilisateurs en profils publicitaires."
+        },
+        {
+          "q": "Mon site sera-t-il plus rapide qu’avec GA ?",
+          "a": "Swetrix est conçu pour être léger. Un script plus léger et moins d’appels à des services tiers peuvent rendre un site plus rapide, surtout sur des connexions lentes."
         }
       ]
     },
@@ -1458,6 +1591,7 @@
       "organisation": "Organisation",
       "shields": "Boucliers",
       "access": "Paramètres d'accès",
+      "resetSuccess": "Le projet a été réinitialisé",
       "gsc": {
         "connect": "Connectez votre projet à votre compte Google Search Console pour obtenir des statistiques, par exemple les mots-clés utilisés par les internautes pour trouver votre site.",
         "disconnected": "Le projet a été déconnecté de votre compte Google Search Console.",
@@ -1948,7 +2082,8 @@
     "forStartups": "Pour les startups",
     "privacyPolicy": "Politique de confidentialité",
     "cookiePolicy": "Politique relative aux cookies",
-    "termsAndConditions": "Conditions générales"
+    "termsAndConditions": "Conditions générales",
+    "gaAlternative": "Alternative à Google Analytics sans cookies"
   },
   "header": {
     "startForFree": "Commencer gratuitement",

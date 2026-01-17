@@ -42,6 +42,9 @@ const routes = Object.freeze({
   utm_generator: '/tools/utm-generator',
   roi_calculator: '/tools/roi-calculator',
   ctr_calculator: '/tools/ctr-calculator',
+
+  // Marketing pages
+  gaAlternative: '/google-analytics-alternative',
 })
 
 export default routes
