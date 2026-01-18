@@ -729,7 +729,6 @@ const ViewProjectContent = () => {
       const newSearchParams = new URLSearchParams(searchParams.toString())
       newSearchParams.set('tab', key)
       setSearchParams(newSearchParams)
-      trackCustom('DASHBOARD_TAB_CHANGED', { tab: key })
     },
     [dataLoading, searchParams, setSearchParams],
   )
