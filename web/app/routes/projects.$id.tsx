@@ -47,6 +47,8 @@ import {
   MAIN_URL,
   DEFAULT_TIMEZONE,
   PROJECT_TABS,
+  getValidTimeBucket,
+  type Period,
 } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import ViewProject from '~/pages/Project/View'
@@ -249,12 +251,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const tab =
     (url.searchParams.get('tab') as keyof typeof PROJECT_TABS) ||
     PROJECT_TABS.traffic
-  const period = url.searchParams.get('period') || '7d'
-  const timeBucket = url.searchParams.get('timeBucket') || 'day'
+  const period = (url.searchParams.get('period') || '7d') as Period
+  const urlTimeBucket = url.searchParams.get('timeBucket')
   const from = url.searchParams.get('from') || ''
   const to = url.searchParams.get('to') || ''
   const timezone = url.searchParams.get('timezone') || DEFAULT_TIMEZONE
   const filters = parseFiltersFromUrl(url.searchParams)
+
+  // Ensure the time bucket is valid for the selected period
+  const timeBucket = getValidTimeBucket(period, urlTimeBucket)
 
   // Performance-specific params
   const measure = url.searchParams.get('measure') || 'median'

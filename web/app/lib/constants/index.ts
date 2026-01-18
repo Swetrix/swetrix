@@ -74,6 +74,36 @@ export type Period = (typeof VALID_PERIODS)[number]
 
 export type TimeBucket = (typeof VALID_TIME_BUCKETS)[number]
 
+// Maps each period to its valid time buckets (must stay in sync with tbPeriodPairs)
+export const PERIOD_TO_VALID_TIME_BUCKETS: Record<Period, TimeBucket[]> = {
+  '1h': ['minute'],
+  today: ['hour'],
+  yesterday: ['hour'],
+  '1d': ['hour'],
+  '7d': ['hour', 'day'],
+  '4w': ['day'],
+  '3M': ['day', 'month'],
+  '12M': ['day', 'month'],
+  '24M': ['month'],
+  all: ['month', 'year'],
+  custom: ['hour', 'day', 'month'],
+  compare: ['hour', 'day', 'month'],
+}
+
+export const getValidTimeBucket = (
+  period: Period,
+  requestedTimeBucket?: string | null,
+): TimeBucket => {
+  const validBuckets = PERIOD_TO_VALID_TIME_BUCKETS[period] || ['day']
+  if (
+    requestedTimeBucket &&
+    validBuckets.includes(requestedTimeBucket as TimeBucket)
+  ) {
+    return requestedTimeBucket as TimeBucket
+  }
+  return validBuckets[0]
+}
+
 export const tbPeriodPairs = (
   t: typeof i18nextT,
   tbs?: TimeBucket[] | null,
