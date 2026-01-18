@@ -45,10 +45,7 @@ export const SEO = () => {
         <>
           <title>{title}</title>
           <meta property='og:title' content={title} />
-          <meta
-            name='twitter:title'
-            content={title}
-          />
+          <meta name='twitter:title' content={title} />
           <meta
             name='description'
             content='Swetrix is a privacy-first, cookieless Google Analytics alternative with real-time analytics, no sampling, and built-in performance & error monitoring.'

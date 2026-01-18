@@ -47,7 +47,6 @@ export const sitemap: SitemapFunction = () => ({
   exclude: isSelfhosted || isDisableMarketingPages,
 })
 
-
 export async function loader({ request }: LoaderFunctionArgs) {
   if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/login', 302)
@@ -66,9 +65,7 @@ const REVIEWERS = [
   { name: 'Andrii', image: '/assets/small-testimonials/andrii.jpg' },
 ]
 
-const Testimonials = ({ className }: {
-  className?: string
-}) => {
+const Testimonials = ({ className }: { className?: string }) => {
   const { t } = useTranslation('common')
   const { stats } = useLoaderData<typeof loader>()
 
@@ -96,7 +93,11 @@ const Testimonials = ({ className }: {
         ))}
       </div>
       <div className='mt-1 flex flex-col items-center justify-center gap-1 md:items-start'>
-        <div className='relative inline-flex' role='img' aria-label='5 out of 5 stars'>
+        <div
+          className='relative inline-flex'
+          role='img'
+          aria-label='5 out of 5 stars'
+        >
           <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
           <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
           <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
@@ -105,9 +106,13 @@ const Testimonials = ({ className }: {
         </div>
         <div className='text-base text-gray-900/70 dark:text-gray-200'>
           <span className='font-semibold text-gray-900 dark:text-gray-50'>
-            {t('gaAlternative.hero.teams', { amount: stats?.users || '> 1000' })}
+            {t('gaAlternative.hero.teams', {
+              amount: stats?.users || '> 1000',
+            })}
           </span>{' '}
-          <span className='text-gray-700 dark:text-gray-200'>{t('gaAlternative.hero.ditched')}</span>
+          <span className='text-gray-700 dark:text-gray-200'>
+            {t('gaAlternative.hero.ditched')}
+          </span>
         </div>
       </div>
     </div>
@@ -138,8 +143,10 @@ const LiveDemoPreview = () => {
             href={LIVE_DEMO_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
-            aria-label={t('gaAlternative.hero.viewDemo') + ' (opens in a new tab)'}
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+            aria-label={
+              t('gaAlternative.hero.viewDemo') + ' (opens in a new tab)'
+            }
           >
             <ArrowRightIcon className='mr-2 h-4 w-4' />
             {t('gaAlternative.hero.viewDemo')}
@@ -164,8 +171,10 @@ const LiveDemoPreview = () => {
             href={LIVE_DEMO_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
-            aria-label={t('gaAlternative.hero.viewDemo') + ' (opens in a new tab)'}
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+            aria-label={
+              t('gaAlternative.hero.viewDemo') + ' (opens in a new tab)'
+            }
           >
             <ArrowRightIcon className='mr-2 h-4 w-4' />
             {t('gaAlternative.hero.viewDemo')}
@@ -283,7 +292,7 @@ const ComparisonTable = () => {
 
       <div className='mt-10 overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
         <div className='overflow-x-auto'>
-          <table className='min-w-[760px] w-full border-separate border-spacing-0'>
+          <table className='w-full min-w-[760px] border-separate border-spacing-0'>
             <caption className='sr-only'>
               {t('gaAlternative.comparison.title')}
             </caption>
@@ -354,7 +363,9 @@ const WhySwitch = () => {
             <Trans
               i18nKey='gaAlternative.whySwitch.title'
               components={{
-                1: <span className='rounded-md bg-slate-900 px-2 py-0.5 text-white dark:bg-white dark:text-slate-900' />
+                1: (
+                  <span className='rounded-md bg-slate-900 px-2 py-0.5 text-white dark:bg-white dark:text-slate-900' />
+                ),
               }}
             />
           </h2>
@@ -498,13 +509,15 @@ const Migration = () => {
             </div>
             <div className='p-4 font-mono text-sm leading-relaxed'>
               <div className='text-slate-500'>
-                {'<!-- That\'s it. Really. -->'}
+                {"<!-- That's it. Really. -->"}
               </div>
               <div className='mt-2'>
                 <span className='text-pink-400'>{'<script '}</span>
                 <span className='text-purple-400'>src</span>
                 <span className='text-slate-400'>=</span>
-                <span className='text-amber-300'>"https://swetrix.org/swetrix.js"</span>
+                <span className='text-amber-300'>
+                  "https://swetrix.org/swetrix.js"
+                </span>
                 <span className='text-sky-300'> defer</span>
                 <span className='text-pink-400'>{'></script>'}</span>
               </div>

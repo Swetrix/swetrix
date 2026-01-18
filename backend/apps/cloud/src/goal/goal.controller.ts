@@ -240,7 +240,7 @@ export class GoalController {
           type: goalDto.type,
           matchType: goalDto.matchType,
           metadataFiltersExist: !!goalDto.metadataFilters?.length,
-        }
+        },
       })
 
       return {

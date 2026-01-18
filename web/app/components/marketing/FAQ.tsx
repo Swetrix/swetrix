@@ -84,74 +84,77 @@ const FAQ = ({ includeGAQuestions = false }: FAQProps) => {
         {t('main.faq.title')}
       </h2>
       <div className='mt-8 flex flex-col'>
-        {_map(items, (item: { q: string; a: string; i18nKey: string }, idx: number) => {
-          const showTopBorder = idx !== 0
+        {_map(
+          items,
+          (item: { q: string; a: string; i18nKey: string }, idx: number) => {
+            const showTopBorder = idx !== 0
 
-          return (
-            <details
-              key={item.i18nKey}
-              className={cn(
-                'group w-full text-left',
-                showTopBorder &&
-                  'border-t border-gray-200 dark:border-white/10',
-              )}
-            >
-              <summary className='flex w-full cursor-pointer items-center justify-between px-4 py-4'>
-                <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-white'>
-                  <Trans t={t} i18nKey={`${item.i18nKey}.q`} />
-                </span>
-                <ChevronDownIcon className='size-4 text-slate-900 transition-transform group-open:rotate-180 dark:text-gray-200' />
-              </summary>
-              <div className='px-4'>
-                <p className='pb-4 text-sm whitespace-pre-line text-slate-900 dark:text-gray-100'>
-                  <Trans
-                    t={t}
-                    i18nKey={`${item.i18nKey}.a`}
-                    values={values}
-                    components={{
-                      dataPolicyUrl: (
-                        <Link
-                          to={routesPath.dataPolicy}
-                          className='underline decoration-dashed hover:decoration-solid'
-                          aria-label='Data policy'
-                          onClick={onLinkClick}
-                        />
-                      ),
-                      apiDocumentationUrl: (
-                        <a
-                          href={DOCS_URL}
-                          className='underline decoration-dashed hover:decoration-solid'
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          aria-label='API documentation (opens in a new tab)'
-                          onClick={onLinkClick}
-                        />
-                      ),
-                      contactUsUrl: (
-                        <Link
-                          to={routesPath.contact}
-                          className='underline decoration-dashed hover:decoration-solid'
-                          aria-label='Contact us'
-                          onClick={onLinkClick}
-                        />
-                      ),
-                      discordUrl: (
-                        <a
-                          href={DISCORD_URL}
-                          className='underline decoration-dashed hover:decoration-solid'
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          aria-label='Discord (opens in a new tab)'
-                          onClick={onLinkClick}
-                        />
-                      ),
-                    }}
-                  />
-                </p>
-              </div>
-            </details>
-          )
-        })}
+            return (
+              <details
+                key={item.i18nKey}
+                className={cn(
+                  'group w-full text-left',
+                  showTopBorder &&
+                    'border-t border-gray-200 dark:border-white/10',
+                )}
+              >
+                <summary className='flex w-full cursor-pointer items-center justify-between px-4 py-4'>
+                  <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-white'>
+                    <Trans t={t} i18nKey={`${item.i18nKey}.q`} />
+                  </span>
+                  <ChevronDownIcon className='size-4 text-slate-900 transition-transform group-open:rotate-180 dark:text-gray-200' />
+                </summary>
+                <div className='px-4'>
+                  <p className='pb-4 text-sm whitespace-pre-line text-slate-900 dark:text-gray-100'>
+                    <Trans
+                      t={t}
+                      i18nKey={`${item.i18nKey}.a`}
+                      values={values}
+                      components={{
+                        dataPolicyUrl: (
+                          <Link
+                            to={routesPath.dataPolicy}
+                            className='underline decoration-dashed hover:decoration-solid'
+                            aria-label='Data policy'
+                            onClick={onLinkClick}
+                          />
+                        ),
+                        apiDocumentationUrl: (
+                          <a
+                            href={DOCS_URL}
+                            className='underline decoration-dashed hover:decoration-solid'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            aria-label='API documentation (opens in a new tab)'
+                            onClick={onLinkClick}
+                          />
+                        ),
+                        contactUsUrl: (
+                          <Link
+                            to={routesPath.contact}
+                            className='underline decoration-dashed hover:decoration-solid'
+                            aria-label='Contact us'
+                            onClick={onLinkClick}
+                          />
+                        ),
+                        discordUrl: (
+                          <a
+                            href={DISCORD_URL}
+                            className='underline decoration-dashed hover:decoration-solid'
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            aria-label='Discord (opens in a new tab)'
+                            onClick={onLinkClick}
+                          />
+                        ),
+                      }}
+                    />
+                  </p>
+                </div>
+              </details>
+            )
+          },
+        )}
       </div>
       <script
         type='application/ld+json'
