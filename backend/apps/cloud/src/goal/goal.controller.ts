@@ -236,6 +236,11 @@ export class GoalController {
 
       await trackCustom(ip, headers['user-agent'], {
         ev: 'GOAL_CREATED',
+        meta: {
+          type: goalDto.type,
+          matchType: goalDto.matchType,
+          metadataFiltersExist: !!goalDto.metadataFilters?.length,
+        }
       })
 
       return {
