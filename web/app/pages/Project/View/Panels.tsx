@@ -1225,6 +1225,9 @@ const MetadataKeyPanel = ({
     )
   }
 
+  const hasExistingData =
+    mode === 'customEvent' ? !_isEmpty(rawMetadata) : !_isEmpty(valuesData)
+
   const renderContent = () => {
     if (_isEmpty(metadataKeys)) {
       return <PanelEmptyState message={t('project.noParamData')} />
@@ -1234,7 +1237,8 @@ const MetadataKeyPanel = ({
       return <PanelEmptyState message={t('project.selectKey')} />
     }
 
-    if (loading) {
+    // Only show loader on initial load when there's no existing data
+    if (loading && !hasExistingData) {
       return (
         <div className='flex items-center justify-center py-8'>
           <Spin />
