@@ -1270,7 +1270,7 @@ const MetadataKeyPanel = ({
               size='sm'
               weight='medium'
               colour='muted'
-              className='w-1/6 text-right'
+              className='w-1/6 pr-2 text-right'
             >
               {t('project.quantity')}
             </Text>
@@ -1326,7 +1326,7 @@ const MetadataKeyPanel = ({
                       />
                       <div className='ml-2 h-4 w-4 group-hover:hidden' />
                     </div>
-                    <div className='relative z-10 w-1/6 text-right'>
+                    <div className='relative z-10 w-1/6 pr-2 text-right'>
                       <Text size='sm' weight='medium'>
                         {count}
                       </Text>
@@ -1366,7 +1366,7 @@ const MetadataKeyPanel = ({
             size='sm'
             weight='medium'
             colour='muted'
-            className='w-1/6 text-right'
+            className='w-1/6 pr-2 text-right'
           >
             {t('project.quantity')}
           </Text>
@@ -1413,7 +1413,7 @@ const MetadataKeyPanel = ({
                     />
                     <div className='ml-2 h-4 w-4 group-hover:hidden' />
                   </div>
-                  <div className='relative z-10 w-1/6 text-right'>
+                  <div className='relative z-10 w-1/6 pr-2 text-right'>
                     <Text size='sm' weight='medium'>
                       {count}
                     </Text>
