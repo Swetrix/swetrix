@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Text, useApp, useInput } from "ink";
+import { Box, Text, useApp } from "ink";
 import SelectInput from "ink-select-input";
 import { Spinner } from "./Spinner.js";
 import { OrgsCommand } from "../commands/OrgsCommand.js";
@@ -57,19 +57,14 @@ export function App() {
     init();
   }, []);
 
-  useInput((input, key) => {
-    if (key.escape || (input === "q" && view !== "menu")) {
-      if (view === "menu") {
-        exit();
-      } else {
-        setView("menu");
-      }
-    }
-  });
+  const handleExit = () => {
+    exit();
+    setTimeout(() => process.exit(0), 100);
+  };
 
   const handleSelect = (item: { value: string }) => {
     if (item.value === "exit") {
-      exit();
+      handleExit();
       return;
     }
     setView(item.value as View);
@@ -151,11 +146,6 @@ export function App() {
       {view === "users" && <UsersCommand onBack={() => setView("menu")} />}
       {view === "stats" && <StatsCommand onBack={() => setView("menu")} />}
 
-      {view !== "menu" && (
-        <Box marginTop={1}>
-          <Text color="gray">Press ESC or Q to go back</Text>
-        </Box>
-      )}
     </Box>
   );
 }

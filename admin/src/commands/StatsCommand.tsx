@@ -8,19 +8,6 @@ interface StatsCommandProps {
   onBack: () => void
 }
 
-const TABLE_DESCRIPTIONS: Record<string, string> = {
-  analytics: 'Page views & sessions',
-  customEV: 'Custom events',
-  performance: 'Performance metrics',
-  errors: 'Error tracking',
-  captcha: 'CAPTCHA events',
-  sessions: 'Session data',
-  revenue: 'Revenue data',
-  feature_flag_evaluations: 'Feature flags',
-  experiment_exposures: 'Experiments',
-  error_statuses: 'Error statuses',
-}
-
 function formatNumber(num: number): string {
   if (num >= 1_000_000_000) {
     return `${(num / 1_000_000_000).toFixed(2)}B`
@@ -111,12 +98,6 @@ export function StatsCommand({ onBack }: StatsCommandProps) {
             key: 'table', 
             header: 'Table', 
             width: 28,
-          },
-          { 
-            key: 'description', 
-            header: 'Description', 
-            width: 22,
-            render: (t) => TABLE_DESCRIPTIONS[t.table] || ''
           },
           { 
             key: 'rows', 
