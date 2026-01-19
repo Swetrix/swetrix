@@ -214,7 +214,10 @@ export const getPageMeta = (
   // organisation, project_settings, project titles are set dynamically
 
   result.prefixLessTitle = result.title
-  result.title += ` ${TITLE_SUFFIX}`
+
+  if (pathname !== routes.main) {
+    result.title += ` ${TITLE_SUFFIX}`
+  }
 
   return result as GetPageMeta
 }
