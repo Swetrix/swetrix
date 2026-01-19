@@ -6,12 +6,22 @@ import { OrgsCommand } from "../commands/OrgsCommand.js";
 import { ProjectsCommand } from "../commands/ProjectsCommand.js";
 import { UsersCommand } from "../commands/UsersCommand.js";
 import { StatsCommand } from "../commands/StatsCommand.js";
+import { TopProjectsCommand } from "../commands/TopProjectsCommand.js";
+import { LimitsCommand } from "../commands/LimitsCommand.js";
+import { InactiveProjectsCommand } from "../commands/InactiveProjectsCommand.js";
+import { SearchCommand } from "../commands/SearchCommand.js";
+import { RecentActivityCommand } from "../commands/RecentActivityCommand.js";
 import { initializeDatabase, testMySQLConnection } from "../db/mysql.js";
 import { testClickHouseConnection } from "../db/clickhouse.js";
 
-type View = "menu" | "orgs" | "projects" | "users" | "stats";
+type View = "menu" | "orgs" | "projects" | "users" | "stats" | "top" | "limits" | "inactive" | "search" | "recent";
 
 const menuItems = [
+  { label: "🔍 Global Search", value: "search" as const },
+  { label: "📈 Recent Activity", value: "recent" as const },
+  { label: "🔥 Top Projects", value: "top" as const },
+  { label: "⚠️  Users Near Limits", value: "limits" as const },
+  { label: "💀 Inactive Projects", value: "inactive" as const },
   { label: "📊 ClickHouse Stats", value: "stats" as const },
   { label: "🏢 Organizations", value: "orgs" as const },
   { label: "📁 Projects", value: "projects" as const },
@@ -145,6 +155,11 @@ export function App() {
       )}
       {view === "users" && <UsersCommand onBack={() => setView("menu")} />}
       {view === "stats" && <StatsCommand onBack={() => setView("menu")} />}
+      {view === "top" && <TopProjectsCommand onBack={() => setView("menu")} />}
+      {view === "limits" && <LimitsCommand onBack={() => setView("menu")} />}
+      {view === "inactive" && <InactiveProjectsCommand onBack={() => setView("menu")} />}
+      {view === "search" && <SearchCommand onBack={() => setView("menu")} />}
+      {view === "recent" && <RecentActivityCommand onBack={() => setView("menu")} />}
 
     </Box>
   );

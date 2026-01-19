@@ -140,4 +140,60 @@ export async function testClickHouseConnection(): Promise<boolean> {
   }
 }
 
+export interface TopProject {
+  pid: string;
+  eventCount: number;
+}
+
+export async function getTopProjectsByEvents(
+  days: number,
+  limit: number = 20
+): Promise<TopProject[]> {
+  const client = getClient();
+  const database = process.env.CLICKHOUSE_DATABASE || "analytics";
+
+  try {
+    const result = await client.query({
+      query: `
+        SELECT 
+          pid,
+          count() as eventCount
+        FROM ${database}.analytics
+        WHERE created >= now() - INTERVAL ${days} DAY
+        GROUP BY pid
+        ORDER BY eventCount DESC
+        LIMIT ${limit}
+      `,
+      format: "JSONEachRow",
+    });
+    const data = await result.json<TopProject>();
+    return data as unknown as TopProject[];
+  } catch {
+    return [];
+  }
+}
+
+export async function getProjectsWithRecentEvents(
+  days: number
+): Promise<Set<string>> {
+  const client = getClient();
+  const database = process.env.CLICKHOUSE_DATABASE || "analytics";
+
+  try {
+    const result = await client.query({
+      query: `
+        SELECT DISTINCT pid
+        FROM ${database}.analytics
+        WHERE created >= now() - INTERVAL ${days} DAY
+      `,
+      format: "JSONEachRow",
+    });
+    const data = await result.json<{ pid: string }>();
+    const dataArray = data as unknown as { pid: string }[];
+    return new Set(dataArray.map((row) => row.pid));
+  } catch {
+    return new Set();
+  }
+}
+
 export { getClient as clickhouse };
