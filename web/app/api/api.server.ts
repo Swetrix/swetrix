@@ -1064,7 +1064,7 @@ export async function getErrorServer(
 
   return serverFetch<ErrorDetailsResponse>(
     request,
-    `log/error?${queryParams.toString()}`,
+    `log/get-error?${queryParams.toString()}`,
     { headers },
   )
 }
