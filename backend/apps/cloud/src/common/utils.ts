@@ -340,15 +340,7 @@ const getHeader = (headers: any, name: string): string | null | undefined => {
   return headers?.[name] ?? headers?.[name.toLowerCase()]
 }
 
-export const getIPFromHeaders = (
-  headers: any,
-  tryXClientIPAddress?: boolean,
-) => {
-  if (tryXClientIPAddress) {
-    const ip = normalise(getHeader(headers, 'x-client-ip-address'))
-    if (ip) return ip
-  }
-
+export const getIPFromHeaders = (headers: unknown) => {
   const customHeader = process.env.CLIENT_IP_HEADER
 
   if (customHeader) {

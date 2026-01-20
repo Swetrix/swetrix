@@ -1153,7 +1153,7 @@ export class AnalyticsController {
   async logError(@Body() errorDTO: ErrorDto, @Headers() headers, @Ip() reqIP) {
     const { 'user-agent': userAgent, origin } = headers
 
-    const ip = getIPFromHeaders(headers, true) || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     const isBot = await this.analyticsService.isBot(errorDTO.pid, userAgent)
 
@@ -1273,7 +1273,7 @@ export class AnalyticsController {
   ) {
     const { 'user-agent': userAgent, origin } = headers
 
-    const ip = getIPFromHeaders(headers, true) || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     const isBot = await this.analyticsService.isBot(eventsDTO.pid, userAgent)
 
@@ -1383,7 +1383,7 @@ export class AnalyticsController {
   ) {
     const { 'user-agent': userAgent, origin } = headers
     const { pid } = logDTO
-    const ip = getIPFromHeaders(headers, true) || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     const isBot = await this.analyticsService.isBot(logDTO.pid, userAgent)
 
@@ -1426,7 +1426,7 @@ export class AnalyticsController {
   async log(@Body() logDTO: PageviewsDto, @Headers() headers, @Ip() reqIP) {
     const { 'user-agent': userAgent, origin } = headers
 
-    const ip = getIPFromHeaders(headers, true) || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     const isBot = await this.analyticsService.isBot(logDTO.pid, userAgent)
 
@@ -2429,7 +2429,7 @@ export class AnalyticsController {
     const { pid } = dto
 
     try {
-      const ip = getIPFromHeaders(headers, true) || reqIP || ''
+      const ip = getIPFromHeaders(headers) || reqIP || ''
 
       const profileId = await this.analyticsService.generateProfileId(
         pid,
@@ -2460,7 +2460,7 @@ export class AnalyticsController {
     const { pid } = dto
 
     try {
-      const ip = getIPFromHeaders(headers, true) || reqIP || ''
+      const ip = getIPFromHeaders(headers) || reqIP || ''
 
       const { psid } = await this.analyticsService.getSessionId(
         pid,

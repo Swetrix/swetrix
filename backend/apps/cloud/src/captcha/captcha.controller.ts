@@ -57,7 +57,7 @@ export class CaptchaController {
     @Ip() reqIP,
   ): Promise<any> {
     const { pid } = generateDTO
-    const ip = getIPFromHeaders(headers, true) || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     this.logger.log({ pid }, 'POST /captcha/generate')
 
@@ -92,7 +92,7 @@ export class CaptchaController {
 
     this.logger.log({ pid }, 'POST /captcha/verify')
 
-    const ip = getIPFromHeaders(headers, true) || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await checkRateLimit(
       ip,
@@ -166,7 +166,7 @@ export class CaptchaController {
     this.logger.log(validateDTO, 'POST /captcha/validate')
 
     const { token, secret } = validateDTO
-    const ip = getIPFromHeaders(headers, true) || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await checkRateLimit(
       ip,
