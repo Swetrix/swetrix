@@ -2052,7 +2052,6 @@ export async function generateSSOAuthURLServer(
 
 export type {
   SSOHashSuccessResponse,
-  SSOHashLinkingRequiredResponse,
   SSOHashResponse,
 } from '~/lib/models/Auth'
 

@@ -9,12 +9,6 @@ export interface Auth {
 
 export type SSOProvider = 'google' | 'github' | 'openid-connect'
 
-export interface SSOAuthURLResponse {
-  uuid: string
-  auth_url: string
-  expires_in: number
-}
-
 export interface SSOHashSuccessResponse {
   accessToken: string
   refreshToken: string
@@ -22,7 +16,7 @@ export interface SSOHashSuccessResponse {
   totalMonthlyEvents: number
 }
 
-export interface SSOHashLinkingRequiredResponse {
+interface SSOHashLinkingRequiredResponse {
   linkingRequired: true
   email: string
   provider: SSOProvider

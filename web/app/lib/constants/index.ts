@@ -75,7 +75,7 @@ export type Period = (typeof VALID_PERIODS)[number]
 export type TimeBucket = (typeof VALID_TIME_BUCKETS)[number]
 
 // Maps each period to its valid time buckets (must stay in sync with tbPeriodPairs)
-export const PERIOD_TO_VALID_TIME_BUCKETS: Record<Period, TimeBucket[]> = {
+const PERIOD_TO_VALID_TIME_BUCKETS: Record<Period, TimeBucket[]> = {
   '1h': ['minute'],
   today: ['hour'],
   yesterday: ['hour'],
