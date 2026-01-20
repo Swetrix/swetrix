@@ -8,7 +8,7 @@ import { MailerModule } from '../mailer/mailer.module'
 
 @Module({
   imports: [
-    UserModule,
+    forwardRef(() => UserModule),
     AppLoggerModule,
     forwardRef(() => AuthModule),
     MailerModule,
