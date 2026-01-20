@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { TwoFactorAuthService } from './twoFactorAuth.service'
 import { UserModule } from '../user/user.module'
 import { AuthModule } from '../auth/auth.module'
@@ -7,7 +7,12 @@ import { AppLoggerModule } from '../logger/logger.module'
 import { MailerModule } from '../mailer/mailer.module'
 
 @Module({
-  imports: [UserModule, AppLoggerModule, AuthModule, MailerModule],
+  imports: [
+    UserModule,
+    AppLoggerModule,
+    forwardRef(() => AuthModule),
+    MailerModule,
+  ],
   controllers: [TwoFactorAuthController],
   providers: [TwoFactorAuthService],
   exports: [TwoFactorAuthService],

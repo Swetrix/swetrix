@@ -12,10 +12,13 @@ import {
   processSSOTokenServer,
   processGSCTokenServer,
   authMeServer,
+  linkSSOWithPasswordServer,
   type SSOProvider,
   type SSOAuthURLResponse,
   type SSOHashResponse,
+  type SSOHashSuccessResponse,
   type AuthMeResponse,
+  type LinkSSOWithPasswordParams,
 } from '~/api/api.server'
 import { createAuthCookies } from '~/utils/session.server'
 
@@ -28,6 +31,7 @@ interface ProxyRequest {
     | 'processSSOToken'
     | 'processGSCToken'
     | 'authMe'
+    | 'linkSSOWithPassword'
   provider?: SSOProvider
   redirectUrl?: string
   hash?: string
@@ -35,6 +39,10 @@ interface ProxyRequest {
   code?: string
   state?: string
   remember?: boolean
+  email?: string
+  password?: string
+  ssoId?: string | number
+  twoFactorAuthenticationCode?: string
 }
 
 interface ProxyResponse<T> {
@@ -84,24 +92,33 @@ export async function action({ request }: ActionFunctionArgs) {
         )
 
         if (result.data) {
-          const { accessToken, refreshToken } = result.data
-          const cookies = createAuthCookies(
-            { accessToken, refreshToken },
-            body.remember ?? false,
-          )
+          // Only set cookies if this is a success response (not linking required)
+          if ('accessToken' in result.data) {
+            const { accessToken, refreshToken } = result.data
+            const cookies = createAuthCookies(
+              { accessToken, refreshToken },
+              body.remember ?? false,
+            )
 
-          return data<ProxyResponse<SSOHashResponse>>(
-            {
-              data: result.data,
-              error: null,
-            },
-            {
-              headers: cookies.map((cookie) => ['Set-Cookie', cookie]) as [
-                string,
-                string,
-              ][],
-            },
-          )
+            return data<ProxyResponse<SSOHashResponse>>(
+              {
+                data: result.data,
+                error: null,
+              },
+              {
+                headers: cookies.map((cookie) => ['Set-Cookie', cookie]) as [
+                  string,
+                  string,
+                ][],
+              },
+            )
+          }
+
+          // Return linking required response without cookies
+          return data<ProxyResponse<SSOHashResponse>>({
+            data: result.data,
+            error: null,
+          })
         }
 
         return data<ProxyResponse<SSOHashResponse>>({
@@ -206,6 +223,57 @@ export async function action({ request }: ActionFunctionArgs) {
       case 'authMe': {
         const result = await authMeServer(request)
         return data<ProxyResponse<AuthMeResponse>>({
+          data: result.data,
+          error: result.error
+            ? Array.isArray(result.error)
+              ? result.error.join(', ')
+              : result.error
+            : null,
+        })
+      }
+
+      case 'linkSSOWithPassword': {
+        if (!body.email || !body.password || !body.provider || !body.ssoId) {
+          return data<ProxyResponse<null>>(
+            {
+              data: null,
+              error: 'email, password, provider, and ssoId are required',
+            },
+            { status: 400 },
+          )
+        }
+        const params: LinkSSOWithPasswordParams = {
+          email: body.email,
+          password: body.password,
+          provider: body.provider,
+          ssoId: body.ssoId,
+          twoFactorAuthenticationCode: body.twoFactorAuthenticationCode,
+        }
+        const result = await linkSSOWithPasswordServer(request, params)
+
+        if (result.data && 'accessToken' in result.data) {
+          const { accessToken, refreshToken } =
+            result.data as SSOHashSuccessResponse
+          const cookies = createAuthCookies(
+            { accessToken, refreshToken },
+            body.remember ?? false,
+          )
+
+          return data<ProxyResponse<SSOHashResponse>>(
+            {
+              data: result.data,
+              error: null,
+            },
+            {
+              headers: cookies.map((cookie) => ['Set-Cookie', cookie]) as [
+                string,
+                string,
+              ][],
+            },
+          )
+        }
+
+        return data<ProxyResponse<SSOHashResponse>>({
           data: result.data,
           error: result.error
             ? Array.isArray(result.error)

@@ -76,7 +76,6 @@ import { ProjectViewActionData } from '~/routes/projects.$id'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import Loader from '~/ui/Loader'
-import { trackCustom } from '~/utils/analytics'
 import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 

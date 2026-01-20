@@ -768,6 +768,18 @@
       "failedDesc": "An error has occurred while authenticating through a third party service, please try again or contact support.",
       "successDesc": "You are now authenticated through a 3rd party service and can safely close this page if it didn't close automatically."
     },
+    "linkAccount": {
+      "title": "Link your account",
+      "description": "{{email}} is already registered with Swetrix. Would you like to link your {{provider}} account for easier sign-in?",
+      "linkButton": "Link account",
+      "returnToSignIn": "Return to sign in",
+      "unlinkHint": "If you want to use this email with a different account, sign into your existing account to remove it or use the email unlink feature if you don't have access.",
+      "enterPassword": "Enter your password to confirm",
+      "enter2FA": "Enter your 2FA code",
+      "2FARequired": "Your account has two-factor authentication enabled. Please enter your code to continue.",
+      "invalidCredentials": "Invalid password or 2FA code",
+      "linkSuccess": "Account linked successfully! You can now sign in with {{provider}}."
+    },
     "common": {
       "password": "Password",
       "noRemember": "Don't remember me.",

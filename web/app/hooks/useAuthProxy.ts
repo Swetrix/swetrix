@@ -2,10 +2,10 @@ import { useCallback } from 'react'
 
 import type {
   SSOProvider,
-  SSOAuthURLResponse,
   SSOHashResponse,
-  AuthMeResponse,
-} from '~/api/api.server'
+  SSOHashSuccessResponse,
+} from '~/lib/models/Auth'
+import type { SSOAuthURLResponse, AuthMeResponse } from '~/api/api.server'
 
 interface ProxyResponse<T> {
   data: T | null
@@ -152,6 +152,38 @@ export function useAuthProxy() {
     [],
   )
 
+  const linkSSOWithPassword = useCallback(
+    async (
+      email: string,
+      password: string,
+      provider: SSOProvider,
+      ssoId: string | number,
+      twoFactorAuthenticationCode?: string,
+      remember = false,
+    ): Promise<SSOHashSuccessResponse> => {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'linkSSOWithPassword',
+          email,
+          password,
+          provider,
+          ssoId,
+          twoFactorAuthenticationCode,
+          remember,
+        }),
+      })
+      const result =
+        (await response.json()) as ProxyResponse<SSOHashSuccessResponse>
+      if (result.error || !result.data) {
+        throw new Error(result.error || 'Failed to link SSO account')
+      }
+      return result.data
+    },
+    [],
+  )
+
   return {
     generateSSOAuthURL,
     getJWTBySSOHash,
@@ -160,5 +192,6 @@ export function useAuthProxy() {
     processSSOToken,
     processGSCToken,
     authMe,
+    linkSSOWithPassword,
   }
 }

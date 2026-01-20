@@ -24,7 +24,7 @@ import {
   isSelfhosted,
   TRIAL_DAYS,
 } from '~/lib/constants'
-import { SSOProvider } from '~/lib/models/Auth'
+import { SSOProvider, SSOHashSuccessResponse } from '~/lib/models/Auth'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { SignupActionData } from '~/routes/signup'
@@ -172,12 +172,21 @@ const Signup = () => {
         await delay(HASH_CHECK_FREQUENCY)
 
         try {
-          const { user, totalMonthlyEvents } = await getJWTBySSOHash(
-            uuid,
-            provider,
-            true,
-          )
+          const response = await getJWTBySSOHash(uuid, provider, true)
           authWindow.close()
+
+          // Check if linking is required - redirect to sign in
+          if ('linkingRequired' in response && response.linkingRequired) {
+            toast.error(
+              'An account with this email already exists. Please sign in to link your account.',
+            )
+            setIsSsoLoading(false)
+            navigate(routes.signin)
+            return
+          }
+
+          const { user, totalMonthlyEvents } =
+            response as SSOHashSuccessResponse
 
           if (user.isTwoFactorAuthenticationEnabled) {
             setUser(user)

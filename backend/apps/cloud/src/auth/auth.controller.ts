@@ -49,6 +49,7 @@ import {
   SSOLinkDto,
   SSOUnlinkDto,
   SSOProviders,
+  SSOLinkWithPasswordDto,
 } from './dtos'
 import {
   JwtAccessTokenGuard,
@@ -522,5 +523,36 @@ export class AuthController {
     const { provider } = body
 
     await this.authService.unlinkSSOAccount(userId, provider)
+  }
+
+  @ApiOperation({
+    summary: 'Link SSO provider during login with password verification',
+  })
+  @ApiOkResponse({
+    description: 'SSO provider linked and user authenticated',
+    type: LoginResponseDto,
+  })
+  @Public()
+  @Post('sso/link_with_password')
+  @HttpCode(HttpStatus.OK)
+  public async linkSSOWithPassword(
+    @Body() body: SSOLinkWithPasswordDto,
+    @Headers() headers: Record<string, string>,
+    @Ip() requestIp: string,
+  ): Promise<LoginResponseDto> {
+    const ip = getIPFromHeaders(headers) || requestIp || ''
+
+    await checkRateLimit(ip, 'sso-link-password', 10, 1800)
+
+    const { email, password, provider, ssoId, twoFactorAuthenticationCode } =
+      body
+
+    return this.authService.linkSSOAccountWithPassword(
+      email,
+      password,
+      provider,
+      ssoId,
+      twoFactorAuthenticationCode,
+    )
   }
 }

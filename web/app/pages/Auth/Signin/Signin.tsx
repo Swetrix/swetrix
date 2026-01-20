@@ -16,7 +16,7 @@ import GoogleAuth from '~/components/GoogleAuth'
 import OIDCAuth from '~/components/OIDCAuth'
 import { useAuthProxy } from '~/hooks/useAuthProxy'
 import { isSelfhosted, TRIAL_DAYS } from '~/lib/constants'
-import { SSOProvider } from '~/lib/models/Auth'
+import { SSOProvider, SSOHashSuccessResponse } from '~/lib/models/Auth'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { LoginActionData } from '~/routes/login'
@@ -30,6 +30,13 @@ import routes from '~/utils/routes'
 import { MIN_PASSWORD_CHARS } from '~/utils/validator'
 
 const HASH_CHECK_FREQUENCY = 1000
+
+interface LinkingData {
+  email: string
+  provider: SSOProvider
+  ssoId: string | number
+  isTwoFactorAuthenticationEnabled: boolean
+}
 
 const Signin = () => {
   const navigate = useNavigate()
@@ -50,18 +57,30 @@ const Signin = () => {
 
   const [clearedErrors, setClearedErrors] = useState<Set<string>>(new Set())
 
+  // State for SSO account linking flow
+  const [linkingData, setLinkingData] = useState<LinkingData | null>(null)
+  const [linkingPassword, setLinkingPassword] = useState('')
+  const [linking2FACode, setLinking2FACode] = useState('')
+  const [isLinkingLoading, setIsLinkingLoading] = useState(false)
+  const [linkingError, setLinkingError] = useState<string | null>(null)
+
   const { setUser, setTotalMonthlyEvents, setIsAuthenticated } = useAuth()
-  const { generateSSOAuthURL, getJWTBySSOHash } = useAuthProxy()
+  const { generateSSOAuthURL, getJWTBySSOHash, linkSSOWithPassword } =
+    useAuthProxy()
 
   const isFormSubmitting = navigation.state === 'submitting'
   const is2FALoading = twoFAFetcher.state === 'submitting'
-  const isLoading = isFormSubmitting || isSsoLoading || is2FALoading
+  const isLoading =
+    isFormSubmitting || isSsoLoading || is2FALoading || isLinkingLoading
 
   // 2FA is required from URL params, action data, or SSO flow
   const isTwoFARequired =
     searchParams.get('show_2fa_screen') === 'true' ||
     actionData?.requires2FA === true ||
     sso2FARequired
+
+  // Check if we're in the linking flow
+  const isLinkingRequired = linkingData !== null
 
   // Derive 2FA error from fetcher data
   const twoFACodeError = twoFAFetcher.data?.fieldErrors?.twoFACode || null
@@ -175,12 +194,25 @@ const Signin = () => {
         await delay(HASH_CHECK_FREQUENCY)
 
         try {
-          const { user, totalMonthlyEvents } = await getJWTBySSOHash(
-            uuid,
-            provider,
-            !dontRemember,
-          )
+          const response = await getJWTBySSOHash(uuid, provider, !dontRemember)
           authWindow.close()
+
+          // Check if linking is required
+          if ('linkingRequired' in response && response.linkingRequired) {
+            setLinkingData({
+              email: response.email,
+              provider: response.provider as SSOProvider,
+              ssoId: response.ssoId,
+              isTwoFactorAuthenticationEnabled:
+                response.isTwoFactorAuthenticationEnabled,
+            })
+            setIsSsoLoading(false)
+            return
+          }
+
+          // Normal SSO login flow - type is narrowed to SSOHashSuccessResponse
+          const { user, totalMonthlyEvents } =
+            response as SSOHashSuccessResponse
 
           if (user.isTwoFactorAuthenticationEnabled) {
             setUser(user)
@@ -237,11 +269,145 @@ const Signin = () => {
     twoFAFetcher.submit(formData, { method: 'post' })
   }
 
+  const handleLinkAccount = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!linkingData || isLinkingLoading) {
+      return
+    }
+
+    setIsLinkingLoading(true)
+    setLinkingError(null)
+
+    try {
+      const { user, totalMonthlyEvents } = await linkSSOWithPassword(
+        linkingData.email,
+        linkingPassword,
+        linkingData.provider,
+        linkingData.ssoId,
+        linkingData.isTwoFactorAuthenticationEnabled
+          ? linking2FACode
+          : undefined,
+        !dontRemember,
+      )
+
+      setUser(user)
+      setIsAuthenticated(true)
+      setTotalMonthlyEvents(totalMonthlyEvents)
+
+      toast.success(
+        t('auth.linkAccount.linkSuccess', {
+          provider: linkingData.provider === 'google' ? 'Google' : 'Github',
+        }),
+      )
+
+      if (!user.hasCompletedOnboarding) {
+        navigate(routes.onboarding)
+      } else {
+        navigate(routes.dashboard)
+      }
+    } catch (error) {
+      setLinkingError(
+        error instanceof Error
+          ? error.message
+          : t('auth.linkAccount.invalidCredentials'),
+      )
+    } finally {
+      setIsLinkingLoading(false)
+    }
+  }
+
+  const handleCancelLinking = () => {
+    setLinkingData(null)
+    setLinkingPassword('')
+    setLinking2FACode('')
+    setLinkingError(null)
+  }
+
+  const getProviderDisplayName = (provider: SSOProvider) => {
+    if (provider === 'google') return 'Google'
+    if (provider === 'github') return 'Github'
+    return provider
+  }
+
   return (
     <div className='flex min-h-min-footer bg-gray-50 dark:bg-slate-900'>
       <div className='flex w-full flex-col justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:w-3/5 lg:px-12 xl:px-24 dark:bg-slate-900'>
         <div className='mx-auto w-full max-w-md'>
-          {isTwoFARequired ? (
+          {isLinkingRequired && linkingData ? (
+            <>
+              <div className='mb-8'>
+                <Text
+                  as='h1'
+                  size='3xl'
+                  weight='bold'
+                  className='tracking-tight'
+                >
+                  {t('auth.linkAccount.title')}
+                </Text>
+                <Text as='p' colour='muted' className='mt-2'>
+                  {t('auth.linkAccount.description', {
+                    email: linkingData.email,
+                    provider: getProviderDisplayName(linkingData.provider),
+                  })}
+                </Text>
+              </div>
+
+              <form onSubmit={handleLinkAccount} className='space-y-4'>
+                <Input
+                  label={t('auth.linkAccount.enterPassword')}
+                  type='password'
+                  value={linkingPassword}
+                  onChange={(e) => setLinkingPassword(e.target.value)}
+                  disabled={isLinkingLoading}
+                  error={linkingError || undefined}
+                />
+
+                {linkingData.isTwoFactorAuthenticationEnabled && (
+                  <>
+                    <Text as='p' colour='muted' size='sm' className='mt-2'>
+                      {t('auth.linkAccount.2FARequired')}
+                    </Text>
+                    <Input
+                      label={t('auth.linkAccount.enter2FA')}
+                      value={linking2FACode}
+                      placeholder={t('auth.signin.6digitCode')}
+                      onChange={(e) => setLinking2FACode(e.target.value)}
+                      disabled={isLinkingLoading}
+                    />
+                  </>
+                )}
+
+                <div className='flex flex-col gap-3 pt-2'>
+                  <Button
+                    type='submit'
+                    loading={isLinkingLoading}
+                    primary
+                    giant
+                    className='w-full justify-center'
+                  >
+                    {t('auth.linkAccount.linkButton')}
+                  </Button>
+                  <Button
+                    type='button'
+                    onClick={handleCancelLinking}
+                    disabled={isLinkingLoading}
+                    giant
+                    className='w-full justify-center'
+                  >
+                    {t('auth.linkAccount.returnToSignIn')}
+                  </Button>
+                </div>
+
+                <div className='mt-6 border-t border-gray-200 pt-4 dark:border-gray-700'>
+                  <Text as='p' colour='muted' size='sm'>
+                    {t('auth.linkAccount.unlinkHint')}
+                  </Text>
+                </div>
+              </form>
+            </>
+          ) : isTwoFARequired ? (
             <>
               <div className='mb-8'>
                 <Text

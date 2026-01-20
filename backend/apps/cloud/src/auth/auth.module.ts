@@ -7,6 +7,7 @@ import { MailerModule } from '../mailer/mailer.module'
 import { UserModule } from '../user/user.module'
 import { ProjectModule } from '../project/project.module'
 import { TelegramService } from '../integrations/telegram/telegram.service'
+import { TwoFactorAuthModule } from '../twoFactorAuth/twoFactorAuth.module'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import {
@@ -25,6 +26,7 @@ import { Message } from '../integrations/telegram/entities/message.entity'
     MailerModule,
     ActionTokensModule,
     ProjectModule,
+    forwardRef(() => TwoFactorAuthModule),
     TypeOrmModule.forFeature([Message]),
   ],
   controllers: [AuthController],

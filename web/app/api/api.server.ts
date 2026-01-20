@@ -2050,12 +2050,13 @@ export async function generateSSOAuthURLServer(
   })
 }
 
-export interface SSOHashResponse {
-  accessToken: string
-  refreshToken: string
-  user: User
-  totalMonthlyEvents: number
-}
+export type {
+  SSOHashSuccessResponse,
+  SSOHashLinkingRequiredResponse,
+  SSOHashResponse,
+} from '~/lib/models/Auth'
+
+import type { SSOHashSuccessResponse, SSOHashResponse } from '~/lib/models/Auth'
 
 export async function getJWTBySSOHashServer(
   request: Request,
@@ -2095,6 +2096,29 @@ export async function linkBySSOHashServer(
     method: 'POST',
     body: { hash, provider },
   })
+}
+
+export interface LinkSSOWithPasswordParams {
+  email: string
+  password: string
+  provider: SSOProvider
+  ssoId: string | number
+  twoFactorAuthenticationCode?: string
+}
+
+export async function linkSSOWithPasswordServer(
+  request: Request,
+  params: LinkSSOWithPasswordParams,
+): Promise<ServerFetchResult<SSOHashResponse>> {
+  return serverFetch<SSOHashResponse>(
+    request,
+    'v1/auth/sso/link_with_password',
+    {
+      method: 'POST',
+      body: { ...params },
+      skipAuth: true,
+    },
+  )
 }
 
 export async function processSSOTokenServer(

@@ -4,6 +4,8 @@ import {
   InternalServerErrorException,
   BadRequestException,
   ConflictException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
@@ -44,6 +46,7 @@ import {
 } from '../common/constants'
 import { getGeoDetails } from '../common/utils'
 import { TelegramService } from '../integrations/telegram/telegram.service'
+import { TwoFactorAuthService } from '../twoFactorAuth/twoFactorAuth.service'
 import { SSOProviders } from './dtos'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 import { UserGithubDTO } from '../user/dto/user-github.dto'
@@ -84,6 +87,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly projectService: ProjectService,
     private readonly telegramService: TelegramService,
+    @Inject(forwardRef(() => TwoFactorAuthService))
+    private readonly twoFactorAuthService: TwoFactorAuthService,
   ) {
     this.oauth2Client = new OAuth2Client(
       this.configService.get('GOOGLE_OAUTH2_CLIENT_ID'),
@@ -583,12 +588,14 @@ export class AuthService {
     })
 
     if (userWithSameEmail) {
-      console.error(
-        `[ERROR][AuthService -> registerUserGoogle] User with email ${email} already exists`,
-      )
-      throw new BadRequestException(
-        'There is already an account associated with this email address',
-      )
+      return {
+        linkingRequired: true,
+        email,
+        provider: SSOProviders.GOOGLE,
+        ssoId: sub,
+        isTwoFactorAuthenticationEnabled:
+          userWithSameEmail.isTwoFactorAuthenticationEnabled,
+      }
     }
 
     const user = await this.userService.create(query)
@@ -831,6 +838,8 @@ export class AuthService {
     await this.userService.updateUser(userId, {
       googleId: sub,
     })
+
+    await this.sendSocialIdentityLinkedEmail(user.email, 'Google')
   }
 
   async unlinkSSOAccount(userId: string, provider: SSOProviders) {
@@ -983,12 +992,14 @@ export class AuthService {
     })
 
     if (userWithSameEmail) {
-      console.error(
-        `[ERROR][AuthService -> registerUserGithub] User with email ${email} already exists`,
-      )
-      throw new BadRequestException(
-        'There is already an account associated with this email address',
-      )
+      return {
+        linkingRequired: true,
+        email,
+        provider: SSOProviders.GITHUB,
+        ssoId: id,
+        isTwoFactorAuthenticationEnabled:
+          userWithSameEmail.isTwoFactorAuthenticationEnabled,
+      }
     }
 
     const user = await this.userService.create(query)
@@ -1089,6 +1100,8 @@ export class AuthService {
     await this.userService.updateUser(userId, {
       githubId: id,
     })
+
+    await this.sendSocialIdentityLinkedEmail(user.email, 'Github')
   }
 
   async authenticateGithub(
@@ -1127,6 +1140,122 @@ export class AuthService {
     } catch (error) {
       console.error(`[ERROR][AuthService -> authenticateGithub]: ${error}`)
       throw new InternalServerErrorException(error)
+    }
+  }
+
+  async sendSocialIdentityLinkedEmail(email: string, providerName: string) {
+    try {
+      await this.mailerService.sendEmail(
+        email,
+        LetterTemplate.SocialIdentityLinked,
+        { provider: providerName },
+      )
+    } catch (error) {
+      console.error(
+        `[ERROR][AuthService -> sendSocialIdentityLinkedEmail]: ${error}`,
+      )
+    }
+  }
+
+  async linkSSOAccountWithPassword(
+    email: string,
+    password: string,
+    provider: SSOProviders,
+    ssoId: string | number,
+    twoFactorAuthenticationCode?: string,
+  ) {
+    const user = await this.getBasicUser(email, password)
+
+    if (!user) {
+      throw new BadRequestException('Invalid email or password')
+    }
+
+    if (user.isTwoFactorAuthenticationEnabled) {
+      if (!twoFactorAuthenticationCode) {
+        throw new BadRequestException(
+          'Two-factor authentication code is required',
+        )
+      }
+
+      const isRecoveryCodeValid =
+        !!user.twoFactorRecoveryCode &&
+        user.twoFactorRecoveryCode === twoFactorAuthenticationCode
+      const isTotpValid =
+        this.twoFactorAuthService.isTwoFactorAuthenticationCodeValid(
+          twoFactorAuthenticationCode,
+          user,
+        )
+      const isCodeValid = isRecoveryCodeValid || isTotpValid
+
+      if (!isCodeValid) {
+        throw new BadRequestException('Invalid two-factor authentication code')
+      }
+    }
+
+    if (provider === SSOProviders.GOOGLE) {
+      if (user.googleId) {
+        throw new BadRequestException(
+          'This account already has a Google account linked',
+        )
+      }
+
+      const existingUser = await this.userService.findOne({
+        where: { googleId: ssoId as string },
+      })
+
+      if (existingUser) {
+        throw new BadRequestException(
+          'This Google account is already linked to another user',
+        )
+      }
+
+      await this.userService.updateUser(user.id, {
+        googleId: ssoId as string,
+      })
+
+      await this.sendSocialIdentityLinkedEmail(user.email, 'Google')
+    }
+
+    if (provider === SSOProviders.GITHUB) {
+      if (user.githubId) {
+        throw new BadRequestException(
+          'This account already has a Github account linked',
+        )
+      }
+
+      const existingUser = await this.userService.findOne({
+        where: { githubId: ssoId as number },
+      })
+
+      if (existingUser) {
+        throw new BadRequestException(
+          'This Github account is already linked to another user',
+        )
+      }
+
+      await this.userService.updateUser(user.id, {
+        githubId: ssoId as number,
+      })
+
+      await this.sendSocialIdentityLinkedEmail(user.email, 'Github')
+    }
+
+    const jwtTokens = await this.generateJwtTokens(user.id, true)
+
+    const [sharedProjects, organisationMemberships] = await Promise.all([
+      this.getSharedProjectsForUser(user.id),
+      this.userService.getOrganisationsForUser(user.id),
+    ])
+
+    user.sharedProjects = sharedProjects
+    user.organisationMemberships = organisationMemberships
+
+    const totalMonthlyEvents = await this.projectService.getRedisCount(user.id)
+
+    return {
+      ...jwtTokens,
+      user: this.userService.omitSensitiveData(user),
+      totalMonthlyEvents,
     }
   }
 }

@@ -8,3 +8,28 @@ export interface Auth {
 }
 
 export type SSOProvider = 'google' | 'github' | 'openid-connect'
+
+export interface SSOAuthURLResponse {
+  uuid: string
+  auth_url: string
+  expires_in: number
+}
+
+export interface SSOHashSuccessResponse {
+  accessToken: string
+  refreshToken: string
+  user: User
+  totalMonthlyEvents: number
+}
+
+export interface SSOHashLinkingRequiredResponse {
+  linkingRequired: true
+  email: string
+  provider: SSOProvider
+  ssoId: string | number
+  isTwoFactorAuthenticationEnabled: boolean
+}
+
+export type SSOHashResponse =
+  | SSOHashSuccessResponse
+  | SSOHashLinkingRequiredResponse
