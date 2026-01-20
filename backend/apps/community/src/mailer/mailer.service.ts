@@ -170,7 +170,7 @@ export class MailerService {
       const html = template(params)
 
       const message = {
-        from: process.env.FROM_EMAIL || 'noreply@ce.swetrix.org',
+        from: `Swetrix CE <${process.env.FROM_EMAIL || 'noreply@ce.swetrix.org'}>`,
         to: email,
         subject,
         html,

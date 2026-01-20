@@ -160,7 +160,7 @@ export class MailerService {
       const html = template(params)
 
       const message = {
-        from: process.env.FROM_EMAIL,
+        from: `Swetrix <${process.env.FROM_EMAIL}>`,
         to: email,
         subject,
         html,
