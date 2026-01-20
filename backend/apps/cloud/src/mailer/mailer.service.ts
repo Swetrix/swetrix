@@ -109,6 +109,11 @@ const metaInfoJson = {
         '[ACTION REQUIRED] Your Swetrix dashboard has been locked due to a payment issue',
     },
   },
+  [LetterTemplate.SocialIdentityLinked]: {
+    subject: {
+      en: () => 'A social account has been linked to your Swetrix account',
+    },
+  },
 }
 
 interface Params {
