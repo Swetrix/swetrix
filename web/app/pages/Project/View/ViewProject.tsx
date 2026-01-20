@@ -366,7 +366,22 @@ const ViewProjectContent = () => {
     return preferences.period || '7d'
   }, [searchParams, preferences.period])
 
-  const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
+  // Extract compare params from URL early (needed for state initialization)
+  const urlCompareEnabled = searchParams.get('compare') === 'true'
+  const urlCompareFrom = searchParams.get('compareFrom')
+  const urlCompareTo = searchParams.get('compareTo')
+
+  // Initialize dateRangeCompare from URL params if available
+  const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(() => {
+    if (urlCompareFrom && urlCompareTo) {
+      const fromDate = new Date(urlCompareFrom)
+      const toDate = new Date(urlCompareTo)
+      if (!Number.isNaN(fromDate.getTime()) && !Number.isNaN(toDate.getTime())) {
+        return [fromDate, toDate]
+      }
+    }
+    return null
+  })
 
   const dateRange = useMemo<Date[] | null>(() => {
     if (period !== 'custom') {
@@ -541,11 +556,25 @@ const ViewProjectContent = () => {
       period: string
     }[]
   >(tbPeriodPairsCompare(t, undefined, language))
+
+  // Initialize compare state from URL params or localStorage
   const [isActiveCompare, setIsActiveCompare] = useState(
-    getItem(LS_IS_ACTIVE_COMPARE_KEY) === 'true',
+    urlCompareEnabled || getItem(LS_IS_ACTIVE_COMPARE_KEY) === 'true',
   )
+
+  // Determine initial activePeriodCompare based on URL params
+  const getInitialActivePeriodCompare = () => {
+    if (urlCompareFrom && urlCompareTo) {
+      return 'custom'
+    }
+    if (urlCompareEnabled) {
+      return 'previous'
+    }
+    return 'previous'
+  }
+
   const [activePeriodCompare, setActivePeriodCompare] = useState(
-    periodPairsCompare[0].period,
+    getInitialActivePeriodCompare(),
   )
   const maxRangeCompare = useMemo(() => {
     if (!isActiveCompare) {
@@ -560,6 +589,92 @@ const ViewProjectContent = () => {
 
     return findActivePeriod?.countDays || 0
   }, [isActiveCompare, period, dateRange, periodPairs])
+
+  // Sync compare state to URL params for SSR data fetching
+  useEffect(() => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    let shouldUpdate = false
+
+    if (isActiveCompare) {
+      // Set compare=true in URL
+      if (newSearchParams.get('compare') !== 'true') {
+        newSearchParams.set('compare', 'true')
+        shouldUpdate = true
+      }
+
+      // Calculate compare dates
+      let compareFrom: string | null = null
+      let compareTo: string | null = null
+
+      if (activePeriodCompare === 'previous') {
+        // Calculate previous period dates based on current period
+        const currentActivePeriod = _find(periodPairs, (p) => p.period === period)
+
+        if (period === 'custom' && dateRange) {
+          // For custom period, calculate the same duration before the start date
+          const from = dayjs.utc(dateRange[0])
+          const to = dayjs.utc(dateRange[1])
+          const daysDiff = to.diff(from, 'day') + 1
+
+          const prevTo = from.subtract(1, 'day')
+          const prevFrom = prevTo.subtract(daysDiff - 1, 'day')
+
+          compareFrom = prevFrom.format('YYYY-MM-DD')
+          compareTo = prevTo.format('YYYY-MM-DD')
+        } else if (currentActivePeriod?.countDays) {
+          // For preset periods, use countDays to calculate previous period
+          const now = dayjs.utc()
+          const periodDays = currentActivePeriod.countDays
+
+          // Current period: (now - periodDays) to now
+          // Previous period: (now - 2*periodDays) to (now - periodDays - 1)
+          const prevTo = now.subtract(periodDays, 'day').subtract(1, 'day')
+          const prevFrom = prevTo.subtract(periodDays - 1, 'day')
+
+          compareFrom = prevFrom.format('YYYY-MM-DD')
+          compareTo = prevTo.format('YYYY-MM-DD')
+        }
+      } else if (activePeriodCompare === 'custom' && dateRangeCompare) {
+        // Use custom compare date range
+        compareFrom = dayjs.utc(dateRangeCompare[0]).format('YYYY-MM-DD')
+        compareTo = dayjs.utc(dateRangeCompare[1]).format('YYYY-MM-DD')
+      }
+
+      if (compareFrom && compareTo) {
+        if (newSearchParams.get('compareFrom') !== compareFrom) {
+          newSearchParams.set('compareFrom', compareFrom)
+          shouldUpdate = true
+        }
+        if (newSearchParams.get('compareTo') !== compareTo) {
+          newSearchParams.set('compareTo', compareTo)
+          shouldUpdate = true
+        }
+      }
+    } else {
+      // Remove compare params from URL when compare is disabled
+      if (newSearchParams.has('compare')) {
+        newSearchParams.delete('compare')
+        shouldUpdate = true
+      }
+      if (newSearchParams.has('compareFrom')) {
+        newSearchParams.delete('compareFrom')
+        shouldUpdate = true
+      }
+      if (newSearchParams.has('compareTo')) {
+        newSearchParams.delete('compareTo')
+        shouldUpdate = true
+      }
+    }
+
+    if (shouldUpdate) {
+      setSearchParams(newSearchParams)
+    }
+  }, [isActiveCompare, activePeriodCompare, dateRangeCompare, period, dateRange, periodPairs, searchParams, setSearchParams])
+
+  // Persist isActiveCompare to localStorage
+  useEffect(() => {
+    setItem(LS_IS_ACTIVE_COMPARE_KEY, isActiveCompare ? 'true' : 'false')
+  }, [isActiveCompare])
 
   useEffect(() => {
     if (!project) {

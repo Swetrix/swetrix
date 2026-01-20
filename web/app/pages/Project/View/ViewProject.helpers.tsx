@@ -873,108 +873,94 @@ const getSettings = (
           ).join('')}</ul>`
         }
 
-        return `
-        <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
-          ${_map(
-            item,
-            (el: {
-              id: string
-              index: number
-              name: string
-              value: string
-              x: Date
-            }) => {
-              const { id, index, name, value, x } = el
+        // Get dates from first item
+        const firstItem = item[0]
+        const firstIndex = firstItem?.index ?? 0
+        const currentX = firstItem?.x as Date | string | undefined
+        const currentDate = currentX
+          ? (currentX instanceof Date ? currentX : new Date(currentX))
+          : null
+        const compareDate = compareChart?.x?.[firstIndex]
 
-              const xDataValueCompare =
-                timeFormat === TimeFormat['24-hour']
-                  ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
-                      dayjs(compareChart?.x[index]).toDate(),
-                    )
-                  : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
-                      dayjs(compareChart?.x[index]).toDate(),
-                    )
-              const xDataValue =
-                timeFormat === TimeFormat['24-hour']
-                  ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
-                      x as unknown as Date,
-                    )
-                  : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
-                      x as unknown as Date,
-                    )
-              const valueCompare =
-                id === 'sessionDuration'
+        const xDataValue = currentDate
+          ? (timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(currentDate)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(currentDate))
+          : ''
+        const xDataValueCompare = compareDate
+          ? (timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
+                  dayjs(compareDate).toDate(),
+                )
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
+                  dayjs(compareDate).toDate(),
+                ))
+          : ''
+
+        // Filter out compare series items
+        const filteredItems = item.filter(
+          (el: { id: string }) =>
+            el.id !== 'uniqueCompare' &&
+            el.id !== 'totalCompare' &&
+            el.id !== 'bounceCompare' &&
+            el.id !== 'sessionDurationCompare',
+        )
+
+        // Build current period section
+        const currentSection = `
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600'>${xDataValue}</li>
+          ${_map(
+            filteredItems,
+            (el: { id: string; name: string; value: string }) => {
+              const displayValue =
+                el.id === 'sessionDuration'
+                  ? getStringFromTime(getTimeFromSeconds(el.value))
+                  : el.value
+              return `
+              <li class='flex justify-between items-center py-px leading-snug'>
+                <div class='flex items-center min-w-0 mr-4'>
+                  <div class='w-2.5 h-2.5 rounded-xs mr-1.5 shrink-0' style='background-color:${color(el.id)}'></div>
+                  <span class="truncate">${el.name}</span>
+                </div>
+                <span class='font-mono whitespace-nowrap'>${displayValue}</span>
+              </li>`
+            },
+          ).join('')}`
+
+        // Build compare period section
+        const compareSection = xDataValueCompare
+          ? `
+          <li class='font-semibold pb-1 mb-1 mt-3 pt-2 border-t border-b border-gray-200 dark:border-gray-600'>${xDataValueCompare}</li>
+          ${_map(
+            filteredItems,
+            (el: { id: string; index: number; name: string }) => {
+              const compareValue =
+                el.id === 'sessionDuration'
                   ? getStringFromTime(
                       getTimeFromSeconds(
-                        compareChart?.[typesOptionsToTypesCompare?.[id]]?.[
-                          index
+                        compareChart?.[typesOptionsToTypesCompare?.[el.id]]?.[
+                          el.index
                         ],
                       ),
                     )
-                  : compareChart?.[typesOptionsToTypesCompare[id]]?.[index]
-
-              if (
-                id === 'uniqueCompare' ||
-                id === 'totalCompare' ||
-                id === 'bounceCompare' ||
-                id === 'sessionDurationCompare'
-              ) {
-                return ''
-              }
-
-              if (id === 'sessionDuration') {
-                return `
-              <div class='flex justify-between items-center py-px leading-snug'>
-              <div class='flex items-center min-w-0 mr-4'>
-                <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(id)}></div>
-                <span class="truncate">${name}</span>
-              </div>
-            </div>
-            <hr class='border-gray-200 dark:border-gray-600 my-1' />
-            <li class='ml-2 mb-2'>
-              <p class='flex justify-between'>
-                <span class="mr-2">${xDataValue}</span> -
-                <span class='font-mono whitespace-nowrap'>${getStringFromTime(getTimeFromSeconds(value))}</span>
-              </p>
-              ${
-                valueCompare &&
-                Number(
-                  compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index],
-                ) > 0
-                  ? `<p class='flex justify-between'>
-                <span class="mr-2">${xDataValueCompare}</span> -
-                <span class='font-mono whitespace-nowrap'>${valueCompare}</span>
-              </p>`
-                  : ''
-              }
-            </li>
-          `
-              }
-
+                  : compareChart?.[typesOptionsToTypesCompare[el.id]]?.[el.index]
+              if (compareValue === undefined || compareValue === null) return ''
               return `
-            <div class='flex justify-between items-center py-px leading-snug'>
-              <div class='flex items-center min-w-0 mr-4'>
-                <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(id)}></div>
-                <span class="truncate">${name}</span>
-              </div>
-            </div>
-            <hr class='border-gray-200 dark:border-gray-600 my-1' />
-            <li class='ml-2 mb-2'>
-            <p class='flex justify-between'>
-              <span class="mr-2">${xDataValue}</span> - <span class='font-mono whitespace-nowrap'>${value}</span>
-            </p>
-            ${
-              valueCompare
-                ? `<p class='flex justify-between'>
-              <span class="mr-2">${xDataValueCompare}</span> -
-              <span class='font-mono whitespace-nowrap'>${valueCompare}</span>
-            </p>`
-                : ''
-            }
-            </li>
-          `
+              <li class='flex justify-between items-center py-px leading-snug'>
+                <div class='flex items-center min-w-0 mr-4'>
+                  <div class='w-2.5 h-2.5 rounded-xs mr-1.5 shrink-0 opacity-60' style='background-color:${color(el.id)}'></div>
+                  <span class="truncate opacity-75">${el.name}</span>
+                </div>
+                <span class='font-mono whitespace-nowrap opacity-75'>${compareValue}</span>
+              </li>`
             },
-          ).join('')}
+          ).join('')}`
+          : ''
+
+        return `
+        <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+          ${currentSection}
+          ${compareSection}
         </ul>`
       },
     },
@@ -1988,69 +1974,81 @@ const getSettingsPerf = (
         ).join('')}</ul>`
         }
 
+        // Get dates from first item
+        const firstItem = item[0]
+        const firstIndex = firstItem?.index ?? 0
+        const currentX = firstItem?.x as Date | string | undefined
+        const currentDate = currentX
+          ? (currentX instanceof Date ? currentX : new Date(currentX))
+          : null
+        const compareDate = compareChart?.x?.[firstIndex]
+
+        const xDataValue = currentDate
+          ? (timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(currentDate)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(currentDate))
+          : ''
+        const xDataValueCompare = compareDate
+          ? (timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
+                  dayjs(compareDate).toDate(),
+                )
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
+                  dayjs(compareDate).toDate(),
+                ))
+          : ''
+
+        // Filter out compare series items
+        const filteredItems = item.filter(
+          (el: { id: string }) => !_includes(perfomanceChartCompare, el.id),
+        )
+
+        // Build current period section
+        const currentSection = `
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600'>${xDataValue}</li>
+          ${_map(
+            filteredItems,
+            (el: { id: string; name: string; value: string }) => {
+              return `
+              <li class='flex justify-between items-center py-px leading-snug'>
+                <div class='flex items-center min-w-0 mr-4'>
+                  <div class='w-2.5 h-2.5 rounded-xs mr-1.5 shrink-0' style='background-color:${color(el.id)}'></div>
+                  <span class="truncate">${el.name}</span>
+                </div>
+                <span class='font-mono whitespace-nowrap'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
+              </li>`
+            },
+          ).join('')}`
+
+        // Build compare period section
+        const compareSection = xDataValueCompare
+          ? `
+          <li class='font-semibold pb-1 mb-1 mt-3 pt-2 border-t border-b border-gray-200 dark:border-gray-600'>${xDataValueCompare}</li>
+          ${_map(
+            filteredItems,
+            (el: { id: string; index: number; name: string }) => {
+              const compareValue = getValueForTooltipPerfomance(
+                compareChart,
+                el.id,
+                el.index,
+              )
+              if (compareValue === undefined || compareValue === null) return ''
+              return `
+              <li class='flex justify-between items-center py-px leading-snug'>
+                <div class='flex items-center min-w-0 mr-4'>
+                  <div class='w-2.5 h-2.5 rounded-xs mr-1.5 shrink-0 opacity-60' style='background-color:${color(el.id)}'></div>
+                  <span class="truncate opacity-75">${el.name}</span>
+                </div>
+                <span class='font-mono whitespace-nowrap opacity-75'>${getStringFromTime(getTimeFromSeconds(compareValue), true)}</span>
+              </li>`
+            },
+          ).join('')}`
+          : ''
+
         return `
       <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
-        ${_map(
-          item,
-          (el: {
-            id: string
-            index: number
-            name: string
-            value: string
-            x: Date
-          }) => {
-            const { id, index, name, value, x } = el
-
-            const xDataValueCompare =
-              timeFormat === TimeFormat['24-hour']
-                ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
-                    dayjs(compareChart?.x[index]).toDate(),
-                  )
-                : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
-                    dayjs(compareChart?.x[index]).toDate(),
-                  )
-            const xDataValue =
-              timeFormat === TimeFormat['24-hour']
-                ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
-                    x as unknown as Date,
-                  )
-                : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
-                    x as unknown as Date,
-                  )
-            const valueCompare = getValueForTooltipPerfomance(
-              compareChart,
-              id,
-              index,
-            )
-
-            if (_includes(perfomanceChartCompare, id)) {
-              return ''
-            }
-
-            return `
-          <div class='flex justify-between items-center py-px leading-snug'>
-            <div class='flex items-center min-w-0 mr-4'>
-              <div class='w-2.5 h-2.5 rounded-xs mr-1.5 flex-shrink-0' style=background-color:${color(id)}></div>
-              <span class="truncate">${name}</span>
-            </div>
-          </div>
-          <hr class='border-gray-200 dark:border-gray-600 my-1' />
-          <li class='ml-2 mb-2'>
-          <p class='flex justify-between'>
-            <span class="mr-2">${xDataValue}</span> - <span class='font-mono whitespace-nowrap'>${getStringFromTime(getTimeFromSeconds(value), true)}</span>
-          </p>
-          ${
-            valueCompare
-              ? `<p class='flex justify-between'>
-            <span class="mr-2">${xDataValueCompare}</span> -
-            <span class='font-mono whitespace-nowrap'>${getStringFromTime(getTimeFromSeconds(valueCompare), true)}</span>
-          </p>`
-              : ''
-          }
-          </li>
-        `
-          },
-        ).join('')}
+        ${currentSection}
+        ${compareSection}
       </ul>`
       },
     },
