@@ -768,6 +768,18 @@
       "failedDesc": "Une erreur s'est produite lors de l'authentification via un service tiers, veuillez réessayer ou contacter le support.",
       "successDesc": "Vous êtes maintenant authentifié via un service tiers et pouvez fermer cette page en toute sécurité si elle ne s'est pas fermée automatiquement."
     },
+    "linkAccount": {
+      "title": "Liez votre compte",
+      "description": "{{email}} est déjà enregistré(e) sur Swetrix. Souhaitez-vous lier votre compte {{provider}} pour vous connecter plus facilement ?",
+      "linkButton": "Lier le compte",
+      "returnToSignIn": "Retour à la connexion",
+      "unlinkHint": "Si vous souhaitez utiliser cette adresse e-mail avec un autre compte, connectez-vous à votre compte existant pour la supprimer, ou utilisez la fonctionnalité de dissociation de l’e-mail si vous n’y avez pas accès.",
+      "enterPassword": "Saisissez votre mot de passe pour confirmer",
+      "enter2FA": "Saisissez votre code 2FA",
+      "2FARequired": "L’authentification à deux facteurs est activée sur votre compte. Veuillez saisir votre code pour continuer.",
+      "invalidCredentials": "Mot de passe ou code 2FA invalide",
+      "linkSuccess": "Compte lié avec succès ! Vous pouvez maintenant vous connecter avec {{provider}}."
+    },
     "common": {
       "password": "Mot de passe",
       "noRemember": "Ne pas se souvenir de moi.",

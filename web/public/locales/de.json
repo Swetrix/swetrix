@@ -768,6 +768,18 @@
       "failedDesc": "Bei der Authentifizierung über einen Drittdienst ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.",
       "successDesc": "Sie sind jetzt über einen Drittdienst-Dienst authentifiziert und können diese Seite sicher schließen, wenn sie nicht automatisch geschlossen wurde."
     },
+    "linkAccount": {
+      "title": "Verknüpfen Sie Ihr Konto",
+      "description": "{{email}} ist bereits bei Swetrix registriert. Möchten Sie Ihr {{provider}}-Konto verknüpfen, um sich einfacher anzumelden?",
+      "linkButton": "Konto verknüpfen",
+      "returnToSignIn": "Zurück zur Anmeldung",
+      "unlinkHint": "Wenn Sie diese E-Mail-Adresse mit einem anderen Konto verwenden möchten, melden Sie sich bei Ihrem bestehenden Konto an, um sie zu entfernen, oder nutzen Sie die Funktion zum Aufheben der E-Mail-Verknüpfung, wenn Sie keinen Zugriff haben.",
+      "enterPassword": "Geben Sie zur Bestätigung Ihr Passwort ein",
+      "enter2FA": "Geben Sie Ihren 2FA-Code ein",
+      "2FARequired": "Für Ihr Konto ist die Zwei-Faktor-Authentifizierung aktiviert. Bitte geben Sie Ihren Code ein, um fortzufahren.",
+      "invalidCredentials": "Ungültiges Passwort oder 2FA-Code",
+      "linkSuccess": "Konto erfolgreich verknüpft! Sie können sich jetzt mit {{provider}} anmelden."
+    },
     "common": {
       "password": "Passwort",
       "noRemember": "Nicht erinnern",

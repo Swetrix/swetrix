@@ -768,6 +768,18 @@
       "failedDesc": "Wystąpił błąd podczas uwierzytelniania za pośrednictwem usługi zewnętrznej, spróbuj ponownie lub skontaktuj się z pomocą techniczną.",
       "successDesc": "Jesteś teraz uwierzytelniony za pośrednictwem usługi zewnętrznej i możesz bezpiecznie zamknąć tę stronę, jeśli nie zamknęła się automatycznie."
     },
+    "linkAccount": {
+      "title": "Połącz swoje konto",
+      "description": "Adres {{email}} jest już zarejestrowany w Swetrix. Czy chcesz połączyć konto {{provider}}, aby łatwiej się logować?",
+      "linkButton": "Połącz konto",
+      "returnToSignIn": "Wróć do logowania",
+      "unlinkHint": "Jeśli chcesz użyć tego adresu e-mail z innym kontem, zaloguj się na swoje istniejące konto, aby go usunąć, lub skorzystaj z funkcji odłączenia adresu e-mail, jeśli nie masz dostępu.",
+      "enterPassword": "Wpisz hasło, aby potwierdzić",
+      "enter2FA": "Wpisz kod 2FA",
+      "2FARequired": "Na Twoim koncie jest włączone uwierzytelnianie dwuskładnikowe. Wpisz swój kod, aby kontynuować.",
+      "invalidCredentials": "Nieprawidłowe hasło lub kod 2FA",
+      "linkSuccess": "Konto zostało pomyślnie połączone! Teraz możesz logować się za pomocą {{provider}}."
+    },
     "common": {
       "password": "Hasło",
       "noRemember": "Nie pamiętaj mnie.",
