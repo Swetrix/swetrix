@@ -68,6 +68,26 @@ import {
 } from '~/api/api.server'
 import { getProjectPasswordCookie } from '~/utils/session.server'
 
+function formatDateForBackend(dateStr: string | undefined): string | undefined {
+  if (!dateStr) return undefined
+
+  // If already in YYYY-MM-DD format, return as-is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr
+  }
+
+  // Convert ISO 8601 or other formats to YYYY-MM-DD
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) {
+    return dateStr
+  }
+
+  const yyyy = date.getUTCFullYear()
+  const mm = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const dd = String(date.getUTCDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
 interface ProxyRequest {
   action:
     | 'getSessions'
@@ -148,8 +168,8 @@ export async function action({ request }: ActionFunctionArgs) {
   } = {
     timeBucket: params.timeBucket || 'day',
     period: params.period || '7d',
-    from: params.from,
-    to: params.to,
+    from: formatDateForBackend(params.from),
+    to: formatDateForBackend(params.to),
     timezone: params.timezone || 'UTC',
     filters: params.filters || [],
     password: password || undefined,
@@ -199,8 +219,8 @@ export async function action({ request }: ActionFunctionArgs) {
           request,
           body.flagId,
           params.period || '7d',
-          params.from || '',
-          params.to || '',
+          formatDateForBackend(params.from) || '',
+          formatDateForBackend(params.to) || '',
           params.timezone,
         )
         return data<ProxyResponse<FeatureFlagStats>>({
@@ -224,8 +244,8 @@ export async function action({ request }: ActionFunctionArgs) {
           request,
           body.flagId,
           params.period || '7d',
-          params.from || '',
-          params.to || '',
+          formatDateForBackend(params.from) || '',
+          formatDateForBackend(params.to) || '',
           params.timezone,
           params.take || 15,
           params.skip || 0,
@@ -252,8 +272,8 @@ export async function action({ request }: ActionFunctionArgs) {
           request,
           body.goalId,
           params.period || '7d',
-          params.from || '',
-          params.to || '',
+          formatDateForBackend(params.from) || '',
+          formatDateForBackend(params.to) || '',
           params.timezone,
         )
         return data<ProxyResponse<GoalStats>>({
@@ -277,8 +297,8 @@ export async function action({ request }: ActionFunctionArgs) {
           request,
           body.goalId,
           params.period || '7d',
-          params.from || '',
-          params.to || '',
+          formatDateForBackend(params.from) || '',
+          formatDateForBackend(params.to) || '',
           params.timeBucket || 'day',
           params.timezone,
         )
@@ -299,8 +319,8 @@ export async function action({ request }: ActionFunctionArgs) {
           params.timeBucket || 'hour',
           params.period || '3d',
           params.filters || [],
-          params.from || '',
-          params.to || '',
+          formatDateForBackend(params.from) || '',
+          formatDateForBackend(params.to) || '',
           password || undefined,
         )
         return data<ProxyResponse<CaptchaDataResponse>>({
@@ -325,8 +345,8 @@ export async function action({ request }: ActionFunctionArgs) {
           body.experimentId,
           params.period || '7d',
           params.timeBucket || 'day',
-          params.from || '',
-          params.to || '',
+          formatDateForBackend(params.from) || '',
+          formatDateForBackend(params.to) || '',
           params.timezone,
         )
         return data<ProxyResponse<ExperimentResults>>({
@@ -417,8 +437,8 @@ export async function action({ request }: ActionFunctionArgs) {
           projectId,
           params.period || '3d',
           params.filters || [],
-          params.from || '',
-          params.to || '',
+          formatDateForBackend(params.from) || '',
+          formatDateForBackend(params.to) || '',
           params.take || 30,
           params.skip || 0,
           params.timezone || '',
@@ -447,8 +467,8 @@ export async function action({ request }: ActionFunctionArgs) {
           projectId,
           body.profileId,
           params.period || '7d',
-          params.from || '',
-          params.to || '',
+          formatDateForBackend(params.from) || '',
+          formatDateForBackend(params.to) || '',
           params.timezone || '',
           password || undefined,
         )
@@ -475,8 +495,8 @@ export async function action({ request }: ActionFunctionArgs) {
           body.profileId,
           params.period || '3d',
           params.filters || [],
-          params.from || '',
-          params.to || '',
+          formatDateForBackend(params.from) || '',
+          formatDateForBackend(params.to) || '',
           params.take || 30,
           params.skip || 0,
           params.timezone || '',
@@ -592,8 +612,8 @@ export async function action({ request }: ActionFunctionArgs) {
           {
             timeBucket: params.timeBucket,
             period: params.period,
-            from: params.from,
-            to: params.to,
+            from: formatDateForBackend(params.from),
+            to: formatDateForBackend(params.to),
             timezone: params.timezone,
             password: password || undefined,
           },
@@ -622,8 +642,8 @@ export async function action({ request }: ActionFunctionArgs) {
           {
             timeBucket: params.timeBucket,
             period: params.period,
-            from: params.from,
-            to: params.to,
+            from: formatDateForBackend(params.from),
+            to: formatDateForBackend(params.to),
             filters: params.filters,
             timezone: params.timezone,
             password: password || undefined,
@@ -653,8 +673,8 @@ export async function action({ request }: ActionFunctionArgs) {
           {
             timeBucket: params.timeBucket,
             period: params.period,
-            from: params.from,
-            to: params.to,
+            from: formatDateForBackend(params.from),
+            to: formatDateForBackend(params.to),
             take: params.take,
             skip: params.skip,
             password: password || undefined,
@@ -711,8 +731,8 @@ export async function action({ request }: ActionFunctionArgs) {
             timeBucket: params.timeBucket,
             period: params.period,
             filters: params.filters,
-            from: params.from,
-            to: params.to,
+            from: formatDateForBackend(params.from),
+            to: formatDateForBackend(params.to),
             timezone: params.timezone,
             customEvents: body.customEvents,
             password: password || undefined,
@@ -733,8 +753,8 @@ export async function action({ request }: ActionFunctionArgs) {
           timeBucket: params.timeBucket,
           period: params.period,
           filters: params.filters,
-          from: params.from,
-          to: params.to,
+          from: formatDateForBackend(params.from),
+          to: formatDateForBackend(params.to),
           timezone: params.timezone,
           password: password || undefined,
         })
@@ -751,8 +771,8 @@ export async function action({ request }: ActionFunctionArgs) {
       case 'getGSCKeywords': {
         const result = await getGSCKeywordsServer(request, projectId, {
           period: params.period,
-          from: params.from,
-          to: params.to,
+          from: formatDateForBackend(params.from),
+          to: formatDateForBackend(params.to),
           timezone: params.timezone,
           password: password || undefined,
         })
@@ -781,8 +801,8 @@ export async function action({ request }: ActionFunctionArgs) {
       case 'getRevenueData': {
         const result = await getRevenueDataServer(request, projectId, {
           period: params.period || '7d',
-          from: params.from,
-          to: params.to,
+          from: formatDateForBackend(params.from),
+          to: formatDateForBackend(params.to),
           timezone: params.timezone,
           timeBucket: params.timeBucket,
         })
@@ -806,8 +826,8 @@ export async function action({ request }: ActionFunctionArgs) {
         const result = await getOverallStatsServer(request, pids, {
           timeBucket: params.timeBucket || 'day',
           period: params.period || '7d',
-          from: params.from,
-          to: params.to,
+          from: formatDateForBackend(params.from),
+          to: formatDateForBackend(params.to),
           timezone: params.timezone || 'UTC',
           filters: params.filters || [],
           includeChart: true,

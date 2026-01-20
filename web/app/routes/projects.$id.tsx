@@ -62,6 +62,26 @@ import {
   hasAuthTokens,
 } from '~/utils/session.server'
 
+function formatDateForBackend(dateStr: string): string {
+  if (!dateStr) return ''
+
+  // If already in YYYY-MM-DD format, return as-is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr
+  }
+
+  // Convert ISO 8601 or other formats to YYYY-MM-DD
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) {
+    return dateStr
+  }
+
+  const yyyy = date.getUTCFullYear()
+  const mm = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const dd = String(date.getUTCDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: ProjectViewStyle },
 ]
@@ -253,8 +273,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     PROJECT_TABS.traffic
   const period = (url.searchParams.get('period') || '7d') as Period
   const urlTimeBucket = url.searchParams.get('timeBucket')
-  const from = url.searchParams.get('from') || ''
-  const to = url.searchParams.get('to') || ''
+  const from = formatDateForBackend(url.searchParams.get('from') || '')
+  const to = formatDateForBackend(url.searchParams.get('to') || '')
   const timezone = url.searchParams.get('timezone') || DEFAULT_TIMEZONE
   const filters = parseFiltersFromUrl(url.searchParams)
 
@@ -267,8 +287,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   // Traffic compare params
   const compareEnabled = url.searchParams.get('compare') === 'true'
-  const compareFrom = url.searchParams.get('compareFrom') || ''
-  const compareTo = url.searchParams.get('compareTo') || ''
+  const compareFrom = formatDateForBackend(
+    url.searchParams.get('compareFrom') || '',
+  )
+  const compareTo = formatDateForBackend(
+    url.searchParams.get('compareTo') || '',
+  )
 
   // Traffic custom events params
   const customEventsParam = url.searchParams.get('customEvents') || ''
