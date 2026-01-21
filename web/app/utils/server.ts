@@ -207,6 +207,12 @@ export const getPageMeta = (
       }
       break
 
+    case routes.ip_lookup:
+      result = {
+        title: 'Free IP Address Lookup tool - What is my IP address?',
+      }
+      break
+
     default:
       break
   }
