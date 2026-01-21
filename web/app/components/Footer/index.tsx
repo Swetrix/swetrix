@@ -60,6 +60,7 @@ const productionNavigation = {
     { key: 'utm', href: routesPath.utm_generator, internal: true },
     { key: 'ctr', href: routesPath.ctr_calculator, internal: true },
     { key: 'roi', href: routesPath.roi_calculator, internal: true },
+    { name: 'IP Lookup', href: routesPath.ip_lookup, internal: true },
   ],
   company: [
     { key: 'open', href: routesPath.open, internal: true },
@@ -118,6 +119,11 @@ const communityEditionNavigation = {
     {
       key: 'roi',
       href: `https://swetrix.com${routesPath.roi_calculator}`,
+      internal: false,
+    },
+    {
+      name: 'IP Lookup',
+      href: `https://swetrix.com${routesPath.ip_lookup}`,
       internal: false,
     },
   ],
@@ -352,13 +358,16 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                     <li className='mb-4 text-sm font-bold text-white uppercase'>
                       {t('footer.resources')}
                     </li>
-                    {_map(navigation.resources, ({ key, href, internal }) => (
-                      <li key={key} className='mb-2'>
-                        <FooterLink href={href} internal={internal}>
-                          {t(`footer.${key}`)}
-                        </FooterLink>
-                      </li>
-                    ))}
+                    {_map(
+                      navigation.resources,
+                      ({ key, name, href, internal }) => (
+                        <li key={key} className='mb-2'>
+                          <FooterLink href={href} internal={internal}>
+                            {name || t(`footer.${key}`)}
+                          </FooterLink>
+                        </li>
+                      ),
+                    )}
                   </ul>
                 </li>
 

@@ -372,16 +372,21 @@ const ViewProjectContent = () => {
   const urlCompareTo = searchParams.get('compareTo')
 
   // Initialize dateRangeCompare from URL params if available
-  const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(() => {
-    if (urlCompareFrom && urlCompareTo) {
-      const fromDate = new Date(urlCompareFrom)
-      const toDate = new Date(urlCompareTo)
-      if (!Number.isNaN(fromDate.getTime()) && !Number.isNaN(toDate.getTime())) {
-        return [fromDate, toDate]
+  const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(
+    () => {
+      if (urlCompareFrom && urlCompareTo) {
+        const fromDate = new Date(urlCompareFrom)
+        const toDate = new Date(urlCompareTo)
+        if (
+          !Number.isNaN(fromDate.getTime()) &&
+          !Number.isNaN(toDate.getTime())
+        ) {
+          return [fromDate, toDate]
+        }
       }
-    }
-    return null
-  })
+      return null
+    },
+  )
 
   const dateRange = useMemo<Date[] | null>(() => {
     if (period !== 'custom') {
@@ -608,7 +613,10 @@ const ViewProjectContent = () => {
 
       if (activePeriodCompare === 'previous') {
         // Calculate previous period dates based on current period
-        const currentActivePeriod = _find(periodPairs, (p) => p.period === period)
+        const currentActivePeriod = _find(
+          periodPairs,
+          (p) => p.period === period,
+        )
 
         if (period === 'custom' && dateRange) {
           // For custom period, calculate the same duration before the start date
@@ -669,7 +677,16 @@ const ViewProjectContent = () => {
     if (shouldUpdate) {
       setSearchParams(newSearchParams)
     }
-  }, [isActiveCompare, activePeriodCompare, dateRangeCompare, period, dateRange, periodPairs, searchParams, setSearchParams])
+  }, [
+    isActiveCompare,
+    activePeriodCompare,
+    dateRangeCompare,
+    period,
+    dateRange,
+    periodPairs,
+    searchParams,
+    setSearchParams,
+  ])
 
   // Persist isActiveCompare to localStorage
   useEffect(() => {

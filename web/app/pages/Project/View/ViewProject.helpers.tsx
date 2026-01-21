@@ -878,23 +878,25 @@ const getSettings = (
         const firstIndex = firstItem?.index ?? 0
         const currentX = firstItem?.x as Date | string | undefined
         const currentDate = currentX
-          ? (currentX instanceof Date ? currentX : new Date(currentX))
+          ? currentX instanceof Date
+            ? currentX
+            : new Date(currentX)
           : null
         const compareDate = compareChart?.x?.[firstIndex]
 
         const xDataValue = currentDate
-          ? (timeFormat === TimeFormat['24-hour']
-              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(currentDate)
-              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(currentDate))
+          ? timeFormat === TimeFormat['24-hour']
+            ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(currentDate)
+            : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(currentDate)
           : ''
         const xDataValueCompare = compareDate
-          ? (timeFormat === TimeFormat['24-hour']
-              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
-                  dayjs(compareDate).toDate(),
-                )
-              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
-                  dayjs(compareDate).toDate(),
-                ))
+          ? timeFormat === TimeFormat['24-hour']
+            ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
+                dayjs(compareDate).toDate(),
+              )
+            : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
+                dayjs(compareDate).toDate(),
+              )
           : ''
 
         // Filter out compare series items
@@ -943,7 +945,9 @@ const getSettings = (
                         ],
                       ),
                     )
-                  : compareChart?.[typesOptionsToTypesCompare[el.id]]?.[el.index]
+                  : compareChart?.[typesOptionsToTypesCompare[el.id]]?.[
+                      el.index
+                    ]
               if (compareValue === undefined || compareValue === null) return ''
               return `
               <li class='flex justify-between items-center py-px leading-snug'>
@@ -1979,23 +1983,25 @@ const getSettingsPerf = (
         const firstIndex = firstItem?.index ?? 0
         const currentX = firstItem?.x as Date | string | undefined
         const currentDate = currentX
-          ? (currentX instanceof Date ? currentX : new Date(currentX))
+          ? currentX instanceof Date
+            ? currentX
+            : new Date(currentX)
           : null
         const compareDate = compareChart?.x?.[firstIndex]
 
         const xDataValue = currentDate
-          ? (timeFormat === TimeFormat['24-hour']
-              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(currentDate)
-              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(currentDate))
+          ? timeFormat === TimeFormat['24-hour']
+            ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(currentDate)
+            : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(currentDate)
           : ''
         const xDataValueCompare = compareDate
-          ? (timeFormat === TimeFormat['24-hour']
-              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
-                  dayjs(compareDate).toDate(),
-                )
-              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
-                  dayjs(compareDate).toDate(),
-                ))
+          ? timeFormat === TimeFormat['24-hour']
+            ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(
+                dayjs(compareDate).toDate(),
+              )
+            : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(
+                dayjs(compareDate).toDate(),
+              )
           : ''
 
         // Filter out compare series items

@@ -20,6 +20,19 @@ export async function loader() {
 
 const TOOLS = [
   {
+    title: 'IP Lookup',
+    description:
+      'Find detailed geolocation information about any IP address including country, city, coordinates, and timezone',
+    href: '/tools/ip-lookup',
+    color: 'from-cyan-500 to-blue-600',
+    features: [
+      'IP Geolocation',
+      'Country & City',
+      'Timezone Detection',
+      'Interactive Map',
+    ],
+  },
+  {
     title: 'ROI Calculator',
     description:
       'Calculate ROAS, ROI, CAC, and other key metrics to measure your marketing campaign performance',
