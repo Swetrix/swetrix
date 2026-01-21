@@ -519,6 +519,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
     'get-filters',
     'get-errors-filters',
     'get-version-filters',
+    'get-recent-ai-chats',
+    'get-all-ai-chats',
+    'get-ai-chat',
+    'create-ai-chat',
+    'update-ai-chat',
+    'delete-ai-chat',
   ])
 
   if (!intent || (!publicIntents.has(intent) && !hasAuthTokens(request))) {
