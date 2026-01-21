@@ -33,6 +33,7 @@ import { AppController } from './app.controller'
 import { isPrimaryNode, isPrimaryClusterNode } from './common/utils'
 import { OrganisationModule } from './organisation/organisation.module'
 import { RevenueModule } from './revenue/revenue.module'
+import { ToolsModule } from './tools/tools.module'
 
 const modules = [
   SentryModule.forRoot(),
@@ -90,6 +91,7 @@ const modules = [
   HealthModule,
   OrganisationModule,
   RevenueModule,
+  ToolsModule,
 ]
 
 @Module({

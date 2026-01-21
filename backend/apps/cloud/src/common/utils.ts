@@ -313,6 +313,54 @@ export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   }
 }
 
+export interface ExtendedGeoDetails {
+  country: string | null
+  countryName: string | null
+  city: string | null
+  region: string | null
+  regionCode: string | null
+  continentCode: string | null
+  continentName: string | null
+  postalCode: string | null
+  latitude: number | null
+  longitude: number | null
+  timezone: string | null
+}
+
+export const getExtendedGeoDetails = (ip: string): ExtendedGeoDetails => {
+  const data = lookup.get(ip)
+
+  if (!data) {
+    return {
+      country: null,
+      countryName: null,
+      city: null,
+      region: null,
+      regionCode: null,
+      continentCode: null,
+      continentName: null,
+      postalCode: null,
+      latitude: null,
+      longitude: null,
+      timezone: null,
+    }
+  }
+
+  return {
+    country: data.country?.iso_code || null,
+    countryName: data.country?.names?.en || null,
+    city: data.city?.names?.en || null,
+    region: data.subdivisions?.[0]?.names?.en || null,
+    regionCode: data.subdivisions?.[0]?.iso_code || null,
+    continentCode: data.continent?.code || null,
+    continentName: data.continent?.names?.en || null,
+    postalCode: data.postal?.code || null,
+    latitude: data.location?.latitude || null,
+    longitude: data.location?.longitude || null,
+    timezone: data.location?.time_zone || null,
+  }
+}
+
 const normalise = (raw: unknown): string | null => {
   if (!raw) return null
   const str = String(raw)

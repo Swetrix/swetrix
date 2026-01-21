@@ -34,7 +34,7 @@ function getApiUrl(): string {
   return apiUrl.endsWith('/') ? apiUrl : `${apiUrl}/`
 }
 
-function getClientIP(request: Request): string | null {
+export function getClientIP(request: Request): string | null {
   const headers = request.headers
 
   const cfIP = headers.get('cf-connecting-ip')
@@ -2050,10 +2050,7 @@ export async function generateSSOAuthURLServer(
   })
 }
 
-export type {
-  SSOHashSuccessResponse,
-  SSOHashResponse,
-} from '~/lib/models/Auth'
+export type { SSOHashSuccessResponse, SSOHashResponse } from '~/lib/models/Auth'
 
 import type { SSOHashSuccessResponse, SSOHashResponse } from '~/lib/models/Auth'
 
@@ -2373,5 +2370,40 @@ export async function getRevenueDataServer(
   return serverFetch<RevenueDataResponse>(
     request,
     `log/revenue?${queryParams.toString()}`,
+  )
+}
+
+// ============================================================================
+// MARK: Tools API
+// ============================================================================
+
+export interface IpLookupResponse {
+  ip: string
+  country: string | null
+  countryName: string | null
+  city: string | null
+  region: string | null
+  regionCode: string | null
+  continentCode: string | null
+  continentName: string | null
+  postalCode: string | null
+  latitude: number | null
+  longitude: number | null
+  timezone: string | null
+  isInEuropeanUnion: boolean
+  ipVersion: 4 | 6
+}
+
+export async function getIpLookupServer(
+  request: Request,
+  ip: string,
+): Promise<ServerFetchResult<IpLookupResponse>> {
+  const queryParams = new URLSearchParams()
+  queryParams.append('ip', ip)
+
+  return serverFetch<IpLookupResponse>(
+    request,
+    `tools/ip-lookup?${queryParams.toString()}`,
+    { skipAuth: true },
   )
 }
