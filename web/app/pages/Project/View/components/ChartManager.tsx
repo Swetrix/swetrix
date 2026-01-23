@@ -55,12 +55,12 @@ export const ChartManagerProvider = ({
   const destroyChart = useCallback((id: string) => {
     const chart = chartsRef.current.get(id)
     if (chart) {
+      chartsRef.current.delete(id)
       try {
         chart.destroy()
       } catch {
         // ignore destroy errors
       }
-      chartsRef.current.delete(id)
     }
   }, [])
 

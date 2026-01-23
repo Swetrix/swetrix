@@ -1011,7 +1011,13 @@ const getSettings = (
           // - when refunds value is 0, remove stroke to avoid "cap" lines
           const chart = this as any
 
-          if (chart?.$ && chart.$.bar?.bars) {
+          // Guard against accessing chart internals after destruction
+          // This prevents "Cannot read properties of null" errors
+          if (!chart || !chart.$ || !chart.$.bar?.bars) {
+            return
+          }
+
+          try {
             chart.$.bar.bars.each(function (this: SVGPathElement, d: any) {
               const value = Number(d?.value || 0)
 
@@ -1039,6 +1045,8 @@ const getSettings = (
                 }
               }
             })
+          } catch {
+            // Ignore errors during render if chart is being destroyed
           }
         }
       : undefined,
