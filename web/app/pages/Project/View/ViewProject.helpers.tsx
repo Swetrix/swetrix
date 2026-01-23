@@ -1752,17 +1752,10 @@ const getSettingsFunnels = (
         `
 
         return `
-          <div class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[300px] md:max-h-[400px] overflow-y-auto shadow-lg z-50'>
+          <div class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-w-xs md:max-w-sm max-h-[300px] md:max-h-[400px] overflow-y-auto shadow-lg z-50'>
             ${title}
             <div class='border-b border-gray-200 dark:border-gray-600 my-1'></div>
-            <table class='table-fixed w-full'>
-              <thead>
-                <tr>
-                  <th class='w-3/5'></th>
-                  <th class='w-1/5'></th>
-                  <th class='w-1/5'></th>
-                </tr>
-              </thead>
+            <table class='w-auto'>
               <tbody>
                 ${events}
                 ${dropoff}
