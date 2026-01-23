@@ -313,7 +313,7 @@ export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   }
 }
 
-export interface ExtendedGeoDetails {
+interface ExtendedGeoDetails {
   country: string | null
   countryName: string | null
   city: string | null
