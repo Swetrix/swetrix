@@ -186,14 +186,16 @@ function DataRow({
   secondary?: string | null
 }) {
   return (
-    <div className='flex items-baseline justify-between border-b border-gray-100 py-3 last:border-0 dark:border-slate-700/50'>
-      <dt>
+    <div className='flex items-baseline justify-between gap-4 border-b border-gray-100 py-3 last:border-0 dark:border-slate-700/50'>
+      <dt className='shrink-0'>
         <Text size='sm' colour='muted'>
           {label}
         </Text>
       </dt>
-      <dd className='text-right'>
-        <Text weight='medium'>{value || '—'}</Text>
+      <dd className='min-w-0 text-right'>
+        <Text weight='medium' className='wrap-break-word'>
+          {value || '—'}
+        </Text>
         {secondary && (
           <Text size='sm' colour='muted' className='ml-2'>
             {secondary}
@@ -305,27 +307,27 @@ export default function IpLookup() {
 
           {data && (
             <div className='mt-6 space-y-8'>
-              <section className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-                <div className='mb-6 flex items-center gap-4'>
+              <section className='overflow-hidden rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                <div className='mb-6 flex items-start gap-4'>
                   {data.country && (
                     <Flag
-                      className='rounded-xs'
+                      className='shrink-0 rounded-xs'
                       country={data.country}
                       size={40}
                       alt={data.countryName || data.country}
                     />
                   )}
-                  <div>
+                  <div className='min-w-0 flex-1'>
                     <Text
                       as='p'
                       size='2xl'
                       weight='semibold'
-                      className='font-mono'
+                      className='break-all font-mono'
                     >
                       {data.ip}
                     </Text>
                     {formatLocation() && (
-                      <Text as='p' colour='muted' className='mt-0.5'>
+                      <Text as='p' colour='muted' className='mt-0.5 wrap-break-word'>
                         {formatLocation()}
                       </Text>
                     )}
