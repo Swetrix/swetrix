@@ -97,7 +97,7 @@ function buildCookieHeader(
   const {
     maxAge,
     path = '/',
-    sameSite = 'Strict',
+    sameSite = 'Lax',
     secure = isSecureCookie(),
     httpOnly = true,
     domain = getCookieDomain(),
