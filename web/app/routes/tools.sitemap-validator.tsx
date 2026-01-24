@@ -602,6 +602,8 @@ export default function SitemapValidator() {
   const result = fetcher.data?.result
   const apiError = fetcher.data?.error
 
+  const [showAllIssues, setShowAllIssues] = useState(false)
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setInputError(null)
@@ -628,6 +630,11 @@ export default function SitemapValidator() {
   const warningCount =
     result?.issues.filter((i) => i.type === 'warning').length || 0
   const infoCount = result?.issues.filter((i) => i.type === 'info').length || 0
+  const issuesLimit = 50
+  const displayedIssues =
+    result?.issues && !showAllIssues
+      ? result.issues.slice(0, issuesLimit)
+      : result?.issues
 
   const formatBytes = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`
@@ -759,7 +766,7 @@ export default function SitemapValidator() {
                       </div>
 
                       <div className='space-y-2'>
-                        {result.issues.map((issue, index) => (
+                        {displayedIssues?.map((issue, index) => (
                           <div
                             key={index}
                             className={`flex gap-3 rounded-lg p-3 ${
@@ -789,6 +796,21 @@ export default function SitemapValidator() {
                           </div>
                         ))}
                       </div>
+                      {result.issues.length > issuesLimit && (
+                        <div className='mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600 dark:bg-slate-700/40 dark:text-gray-300'>
+                          <span>
+                            Showing {displayedIssues?.length ?? 0} of{' '}
+                            {result.issues.length} issues
+                          </span>
+                          <button
+                            type='button'
+                            className='text-indigo-600 hover:underline dark:text-indigo-400'
+                            onClick={() => setShowAllIssues((prev) => !prev)}
+                          >
+                            {showAllIssues ? 'Show fewer' : 'Show all'}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </section>
