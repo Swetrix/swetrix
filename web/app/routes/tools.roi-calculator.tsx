@@ -9,8 +9,10 @@ import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
 import { isSelfhosted } from '~/lib/constants'
 import Input from '~/ui/Input'
+import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 
 export const sitemap: SitemapFunction = () => ({
@@ -202,16 +204,17 @@ export default function ROICalculator() {
   return (
     <div className='min-h-screen bg-gray-50 dark:bg-slate-900'>
       <main className='mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8'>
-        <div className='mx-auto max-w-6xl'>
-          <div className='text-center'>
-            <h1 className='text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white'>
+        <ToolsNavMobile className='mb-6 xl:hidden' />
+
+        <div className='xl:flex xl:items-start xl:gap-8'>
+          <div className='min-w-0 xl:flex-1'>
+            <Text as='h1' size='4xl' weight='bold' tracking='tight'>
               Marketing ROI Calculator
-            </h1>
-            <p className='mt-4 text-lg text-gray-600 dark:text-gray-400'>
+            </Text>
+            <Text as='p' size='lg' colour='muted' className='mt-4'>
               Calculate ROAS, ROI, CAC, and other key metrics to measure your
               marketing campaign performance
-            </p>
-          </div>
+            </Text>
 
           <div className='mt-12 grid gap-8 lg:grid-cols-3'>
             {/* Input Section */}
@@ -564,7 +567,12 @@ export default function ROICalculator() {
             }}
           />
 
-          <DitchGoogle />
+            <DitchGoogle />
+          </div>
+
+          <aside className='hidden xl:block xl:w-64 xl:shrink-0 xl:sticky xl:top-12 xl:self-start'>
+            <ToolsNav />
+          </aside>
         </div>
       </main>
     </div>

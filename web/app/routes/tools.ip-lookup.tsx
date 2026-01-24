@@ -9,6 +9,7 @@ import { ClientOnly } from 'remix-utils/client-only'
 
 import { getIpLookupServer, getClientIP } from '~/api/api.server'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
 import { isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Flag from '~/ui/Flag'
@@ -259,24 +260,19 @@ export default function IpLookup() {
   return (
     <div className='min-h-screen bg-gray-50 dark:bg-slate-900'>
       <main className='mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8'>
-        <div className='mx-auto max-w-3xl'>
-          <div className='text-center'>
-            <Text
-              as='h1'
-              size='4xl'
-              weight='bold'
-              tracking='tight'
-              className='sm:text-5xl'
-            >
+        <ToolsNavMobile className='mb-6 lg:hidden' />
+
+        <div className='lg:flex lg:items-start lg:gap-8'>
+          <div className='min-w-0 lg:flex-1'>
+            <Text as='h1' size='4xl' weight='bold' tracking='tight'>
               IP Address Lookup
             </Text>
             <Text as='p' size='lg' colour='muted' className='mt-4'>
               Find your IP address and get detailed geolocation data for any
               public IP.
             </Text>
-          </div>
 
-          <div className='mt-10'>
+            <div className='mt-10'>
             <form onSubmit={handleSubmit} className='flex items-start gap-3'>
               <Input
                 type='text'
@@ -608,7 +604,12 @@ export default function IpLookup() {
             }}
           />
 
-          <DitchGoogle />
+            <DitchGoogle />
+          </div>
+
+          <aside className='hidden lg:block lg:w-64 lg:shrink-0 lg:sticky lg:top-12 lg:self-start'>
+            <ToolsNav />
+          </aside>
         </div>
       </main>
     </div>

@@ -13,7 +13,7 @@ import { redirect, useFetcher } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import { ToolsNav } from '~/components/ToolsNav'
+import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
 import { isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
@@ -572,17 +572,17 @@ export default function SitemapValidator() {
   return (
     <div className='min-h-screen bg-gray-50 dark:bg-slate-900'>
       <main className='mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8'>
-        <div className='lg:grid lg:grid-cols-[1fr,220px] lg:gap-8'>
-          <div className='mx-auto max-w-3xl lg:mx-0 lg:max-w-none'>
-            <div>
-              <Text as='h1' size='4xl' weight='bold' tracking='tight'>
-                Sitemap Validator
-              </Text>
-              <Text as='p' size='lg' colour='muted' className='mt-4'>
-                Validate your sitemap.xml file for errors, warnings, and SEO
-                best practices.
-              </Text>
-            </div>
+        <ToolsNavMobile className='mb-6 lg:hidden' />
+
+        <div className='lg:flex lg:items-start lg:gap-8'>
+          <div className='min-w-0 lg:flex-1'>
+            <Text as='h1' size='4xl' weight='bold' tracking='tight'>
+              Sitemap Validator
+            </Text>
+            <Text as='p' size='lg' colour='muted' className='mt-4'>
+              Validate your sitemap.xml file for errors, warnings, and SEO best
+              practices.
+            </Text>
 
           <div className='mt-10'>
             <form onSubmit={handleSubmit} className='flex items-start gap-3'>
@@ -993,10 +993,8 @@ export default function SitemapValidator() {
             <DitchGoogle />
           </div>
 
-          <aside className='hidden lg:block'>
-            <div className='sticky top-8'>
-              <ToolsNav />
-            </div>
+          <aside className='hidden lg:block lg:w-64 lg:shrink-0 lg:sticky lg:top-12 lg:self-start'>
+            <ToolsNav />
           </aside>
         </div>
       </main>
