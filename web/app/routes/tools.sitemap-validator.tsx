@@ -69,7 +69,10 @@ const VALID_CHANGEFREQ = [
   'never',
 ]
 
-function extractEncoding(contentType: string | null, xmlContent: string): string {
+function extractEncoding(
+  contentType: string | null,
+  xmlContent: string,
+): string {
   if (contentType) {
     const match = contentType.match(/charset=([^;]+)/i)
     if (match) return match[1].trim().toUpperCase()
@@ -118,7 +121,10 @@ export async function action({ request }: { request: Request }) {
   }
 
   let normalizedUrl = sitemapUrl.trim()
-  if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+  if (
+    !normalizedUrl.startsWith('http://') &&
+    !normalizedUrl.startsWith('https://')
+  ) {
     normalizedUrl = `https://${normalizedUrl}`
   }
 
@@ -173,7 +179,8 @@ export async function action({ request }: { request: Request }) {
       issues.push({
         type: 'warning',
         message: 'Missing XML declaration',
-        details: 'Sitemap should start with <?xml version="1.0" encoding="UTF-8"?>',
+        details:
+          'Sitemap should start with <?xml version="1.0" encoding="UTF-8"?>',
       })
     }
 
@@ -197,7 +204,9 @@ export async function action({ request }: { request: Request }) {
           urls: [],
           sitemapIndex: false,
           fetchTime,
-          contentLength: contentLength ? parseInt(contentLength, 10) : xmlContent.length,
+          contentLength: contentLength
+            ? parseInt(contentLength, 10)
+            : xmlContent.length,
         } as ValidationResult,
       }
     }
@@ -209,7 +218,8 @@ export async function action({ request }: { request: Request }) {
       issues.push({
         type: 'error',
         message: 'Invalid sitemap root element',
-        details: 'Sitemap must have either <urlset> or <sitemapindex> as root element',
+        details:
+          'Sitemap must have either <urlset> or <sitemapindex> as root element',
       })
 
       return {
@@ -223,7 +233,9 @@ export async function action({ request }: { request: Request }) {
           urls: [],
           sitemapIndex: false,
           fetchTime,
-          contentLength: contentLength ? parseInt(contentLength, 10) : xmlContent.length,
+          contentLength: contentLength
+            ? parseInt(contentLength, 10)
+            : xmlContent.length,
         } as ValidationResult,
       }
     }
@@ -238,7 +250,8 @@ export async function action({ request }: { request: Request }) {
         issues.push({
           type: 'error',
           message: 'Sitemap index contains no sitemaps',
-          details: 'A sitemap index should contain at least one <sitemap> element',
+          details:
+            'A sitemap index should contain at least one <sitemap> element',
         })
       }
 
@@ -249,7 +262,8 @@ export async function action({ request }: { request: Request }) {
           issues.push({
             type: 'error',
             message: `Sitemap #${index + 1} missing <loc> element`,
-            details: 'Each sitemap entry must have a <loc> element with the sitemap URL',
+            details:
+              'Each sitemap entry must have a <loc> element with the sitemap URL',
           })
         } else {
           if (!isValidUrl(loc)) {
@@ -302,8 +316,12 @@ export async function action({ request }: { request: Request }) {
       urlElements.forEach((urlElement, index) => {
         const loc = urlElement.querySelector('loc')?.textContent?.trim()
         const lastmod = urlElement.querySelector('lastmod')?.textContent?.trim()
-        const changefreq = urlElement.querySelector('changefreq')?.textContent?.trim()
-        const priority = urlElement.querySelector('priority')?.textContent?.trim()
+        const changefreq = urlElement
+          .querySelector('changefreq')
+          ?.textContent?.trim()
+        const priority = urlElement
+          .querySelector('priority')
+          ?.textContent?.trim()
 
         if (!loc) {
           issues.push({
@@ -333,7 +351,8 @@ export async function action({ request }: { request: Request }) {
         }
 
         if (lastmod) {
-          const isoDateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}([+-]\d{2}:\d{2}|Z)?)?$/
+          const isoDateRegex =
+            /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}([+-]\d{2}:\d{2}|Z)?)?$/
           if (!isoDateRegex.test(lastmod)) {
             issues.push({
               type: 'warning',
@@ -343,7 +362,10 @@ export async function action({ request }: { request: Request }) {
           }
         }
 
-        if (changefreq && !VALID_CHANGEFREQ.includes(changefreq.toLowerCase())) {
+        if (
+          changefreq &&
+          !VALID_CHANGEFREQ.includes(changefreq.toLowerCase())
+        ) {
           issues.push({
             type: 'warning',
             message: `Invalid changefreq value at URL #${index + 1}`,
@@ -376,7 +398,9 @@ export async function action({ request }: { request: Request }) {
       }
     }
 
-    const fileSizeBytes = contentLength ? parseInt(contentLength, 10) : xmlContent.length
+    const fileSizeBytes = contentLength
+      ? parseInt(contentLength, 10)
+      : xmlContent.length
     const fileSizeMB = fileSizeBytes / (1024 * 1024)
 
     if (fileSizeMB > 50) {
@@ -477,7 +501,7 @@ const FAQ_ITEMS = [
   {
     question: 'How do I submit my sitemap to search engines?',
     answer:
-      'You can submit your sitemap through each search engine\'s webmaster tools: Google Search Console, Bing Webmaster Tools, etc. You can also add a Sitemap directive in your robots.txt file (Sitemap: https://example.com/sitemap.xml) to help search engines discover it automatically.',
+      "You can submit your sitemap through each search engine's webmaster tools: Google Search Console, Bing Webmaster Tools, etc. You can also add a Sitemap directive in your robots.txt file (Sitemap: https://example.com/sitemap.xml) to help search engines discover it automatically.",
   },
   {
     question: 'Should my sitemap use HTTPS?',
@@ -496,9 +520,13 @@ function IssueIcon({ type }: { type: 'error' | 'warning' | 'info' }) {
     case 'error':
       return <XCircleIcon className='h-5 w-5 shrink-0 text-red-500' />
     case 'warning':
-      return <ExclamationTriangleIcon className='h-5 w-5 shrink-0 text-amber-500' />
+      return (
+        <ExclamationTriangleIcon className='h-5 w-5 shrink-0 text-amber-500' />
+      )
     case 'info':
-      return <InformationCircleIcon className='h-5 w-5 shrink-0 text-blue-500' />
+      return (
+        <InformationCircleIcon className='h-5 w-5 shrink-0 text-blue-500' />
+      )
   }
 }
 
@@ -534,7 +562,8 @@ export default function SitemapValidator() {
   const [urlInput, setUrlInput] = useState('')
   const [inputError, setInputError] = useState<string | null>(null)
 
-  const isLoading = fetcher.state === 'submitting' || fetcher.state === 'loading'
+  const isLoading =
+    fetcher.state === 'submitting' || fetcher.state === 'loading'
   const result = fetcher.data?.result
   const apiError = fetcher.data?.error
 
@@ -559,8 +588,10 @@ export default function SitemapValidator() {
 
   const displayError = inputError || apiError
 
-  const errorCount = result?.issues.filter((i) => i.type === 'error').length || 0
-  const warningCount = result?.issues.filter((i) => i.type === 'warning').length || 0
+  const errorCount =
+    result?.issues.filter((i) => i.type === 'error').length || 0
+  const warningCount =
+    result?.issues.filter((i) => i.type === 'warning').length || 0
   const infoCount = result?.issues.filter((i) => i.type === 'info').length || 0
 
   const formatBytes = (bytes: number) => {
@@ -584,416 +615,430 @@ export default function SitemapValidator() {
               practices.
             </Text>
 
-          <div className='mt-10'>
-            <form onSubmit={handleSubmit} className='flex items-start gap-3'>
-              <Input
-                type='text'
-                placeholder='https://example.com/sitemap.xml'
-                value={urlInput}
-                onChange={handleInputChange}
-                error={displayError}
-                className='flex-1'
-              />
-              <Button
-                type='submit'
-                primary
-                regular
-                disabled={isLoading}
-                className='mt-px'
-              >
-                {isLoading ? (
-                  <Spin className='h-4 w-4' />
-                ) : (
-                  <>
-                    <MagnifyingGlassIcon className='mr-1.5 h-4 w-4' />
-                    Validate
-                  </>
-                )}
-              </Button>
-            </form>
-          </div>
-
-          {result && (
-            <div className='mt-8 space-y-6'>
-              <section className='overflow-hidden rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-                <div className='mb-6 flex items-center gap-4'>
-                  {result.isValid ? (
-                    <div className='flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30'>
-                      <CheckCircleIcon className='h-7 w-7 text-emerald-600 dark:text-emerald-400' />
-                    </div>
+            <div className='mt-10'>
+              <form onSubmit={handleSubmit} className='flex items-start gap-3'>
+                <Input
+                  type='text'
+                  placeholder='https://example.com/sitemap.xml'
+                  value={urlInput}
+                  onChange={handleInputChange}
+                  error={displayError}
+                  className='flex-1'
+                />
+                <Button
+                  type='submit'
+                  primary
+                  regular
+                  disabled={isLoading}
+                  className='mt-px'
+                >
+                  {isLoading ? (
+                    <Spin className='h-4 w-4' />
                   ) : (
-                    <div className='flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30'>
-                      <XCircleIcon className='h-7 w-7 text-red-600 dark:text-red-400' />
-                    </div>
+                    <>
+                      <MagnifyingGlassIcon className='mr-1.5 h-4 w-4' />
+                      Validate
+                    </>
                   )}
-                  <div>
-                    <Text as='h2' size='xl' weight='semibold'>
-                      {result.isValid ? 'Sitemap is Valid' : 'Sitemap Has Errors'}
-                    </Text>
-                    <Text colour='muted' className='break-all'>
-                      {result.url}
-                    </Text>
+                </Button>
+              </form>
+            </div>
+
+            {result && (
+              <div className='mt-8 space-y-6'>
+                <section className='overflow-hidden rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                  <div className='mb-6 flex items-center gap-4'>
+                    {result.isValid ? (
+                      <div className='flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30'>
+                        <CheckCircleIcon className='h-7 w-7 text-emerald-600 dark:text-emerald-400' />
+                      </div>
+                    ) : (
+                      <div className='flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30'>
+                        <XCircleIcon className='h-7 w-7 text-red-600 dark:text-red-400' />
+                      </div>
+                    )}
+                    <div>
+                      <Text as='h2' size='xl' weight='semibold'>
+                        {result.isValid
+                          ? 'Sitemap is Valid'
+                          : 'Sitemap Has Errors'}
+                      </Text>
+                      <Text colour='muted' className='break-all'>
+                        {result.url}
+                      </Text>
+                    </div>
                   </div>
-                </div>
 
-                <div className='mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4'>
-                  <StatCard
-                    label={result.sitemapIndex ? 'Sitemaps' : 'URLs'}
-                    value={result.sitemapIndex ? result.sitemaps?.length || 0 : result.urlCount}
-                  />
-                  <StatCard label='Encoding' value={result.encoding || 'Unknown'} />
-                  <StatCard
-                    label='File Size'
-                    value={result.contentLength ? formatBytes(result.contentLength) : 'Unknown'}
-                  />
-                  <StatCard
-                    label='Fetch Time'
-                    value={`${result.fetchTime}ms`}
-                  />
-                </div>
+                  <div className='mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4'>
+                    <StatCard
+                      label={result.sitemapIndex ? 'Sitemaps' : 'URLs'}
+                      value={
+                        result.sitemapIndex
+                          ? result.sitemaps?.length || 0
+                          : result.urlCount
+                      }
+                    />
+                    <StatCard
+                      label='Encoding'
+                      value={result.encoding || 'Unknown'}
+                    />
+                    <StatCard
+                      label='File Size'
+                      value={
+                        result.contentLength
+                          ? formatBytes(result.contentLength)
+                          : 'Unknown'
+                      }
+                    />
+                    <StatCard
+                      label='Fetch Time'
+                      value={`${result.fetchTime}ms`}
+                    />
+                  </div>
 
-                {result.issues.length > 0 && (
-                  <div>
-                    <div className='mb-3 flex flex-wrap items-center gap-4'>
-                      <Text weight='medium'>Validation Results</Text>
-                      <div className='flex gap-3 text-sm'>
-                        {errorCount > 0 && (
-                          <span className='flex items-center gap-1 text-red-600 dark:text-red-400'>
-                            <XCircleIcon className='h-4 w-4' />
-                            {errorCount} error{errorCount !== 1 ? 's' : ''}
-                          </span>
-                        )}
-                        {warningCount > 0 && (
-                          <span className='flex items-center gap-1 text-amber-600 dark:text-amber-400'>
-                            <ExclamationTriangleIcon className='h-4 w-4' />
-                            {warningCount} warning{warningCount !== 1 ? 's' : ''}
-                          </span>
-                        )}
-                        {infoCount > 0 && (
-                          <span className='flex items-center gap-1 text-blue-600 dark:text-blue-400'>
-                            <InformationCircleIcon className='h-4 w-4' />
-                            {infoCount} info
-                          </span>
-                        )}
+                  {result.issues.length > 0 && (
+                    <div>
+                      <div className='mb-3 flex flex-wrap items-center gap-4'>
+                        <Text weight='medium'>Validation Results</Text>
+                        <div className='flex gap-3 text-sm'>
+                          {errorCount > 0 && (
+                            <span className='flex items-center gap-1 text-red-600 dark:text-red-400'>
+                              <XCircleIcon className='h-4 w-4' />
+                              {errorCount} error{errorCount !== 1 ? 's' : ''}
+                            </span>
+                          )}
+                          {warningCount > 0 && (
+                            <span className='flex items-center gap-1 text-amber-600 dark:text-amber-400'>
+                              <ExclamationTriangleIcon className='h-4 w-4' />
+                              {warningCount} warning
+                              {warningCount !== 1 ? 's' : ''}
+                            </span>
+                          )}
+                          {infoCount > 0 && (
+                            <span className='flex items-center gap-1 text-blue-600 dark:text-blue-400'>
+                              <InformationCircleIcon className='h-4 w-4' />
+                              {infoCount} info
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className='space-y-2'>
+                        {result.issues.map((issue, index) => (
+                          <div
+                            key={index}
+                            className={`flex gap-3 rounded-lg p-3 ${
+                              issue.type === 'error'
+                                ? 'bg-red-50 dark:bg-red-900/20'
+                                : issue.type === 'warning'
+                                  ? 'bg-amber-50 dark:bg-amber-900/20'
+                                  : 'bg-blue-50 dark:bg-blue-900/20'
+                            }`}
+                          >
+                            <IssueIcon type={issue.type} />
+                            <div className='min-w-0 flex-1'>
+                              <Text weight='medium' className='text-sm'>
+                                {issue.message}
+                              </Text>
+                              {issue.details && (
+                                <Text
+                                  size='sm'
+                                  colour='muted'
+                                  className='mt-0.5 break-all'
+                                >
+                                  {issue.details}
+                                </Text>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
+                  )}
+                </section>
 
-                    <div className='space-y-2'>
-                      {result.issues.map((issue, index) => (
-                        <div
-                          key={index}
-                          className={`flex gap-3 rounded-lg p-3 ${
-                            issue.type === 'error'
-                              ? 'bg-red-50 dark:bg-red-900/20'
-                              : issue.type === 'warning'
-                                ? 'bg-amber-50 dark:bg-amber-900/20'
-                                : 'bg-blue-50 dark:bg-blue-900/20'
-                          }`}
-                        >
-                          <IssueIcon type={issue.type} />
-                          <div className='min-w-0 flex-1'>
-                            <Text weight='medium' className='text-sm'>
-                              {issue.message}
-                            </Text>
-                            {issue.details && (
-                              <Text
-                                size='sm'
-                                colour='muted'
-                                className='mt-0.5 break-all'
-                              >
-                                {issue.details}
-                              </Text>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                {result.urls.length > 0 && (
+                  <section className='overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                    <div className='border-b border-gray-200 px-6 py-4 dark:border-slate-700'>
+                      <Text weight='medium'>
+                        URL Preview ({result.urls.length} of {result.urlCount})
+                      </Text>
                     </div>
-                  </div>
-                )}
-              </section>
-
-              {result.urls.length > 0 && (
-                <section className='overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-                  <div className='border-b border-gray-200 px-6 py-4 dark:border-slate-700'>
-                    <Text weight='medium'>
-                      URL Preview ({result.urls.length} of {result.urlCount})
-                    </Text>
-                  </div>
-                  <div className='max-h-96 overflow-y-auto'>
-                    <table className='w-full text-left text-sm'>
-                      <thead className='sticky top-0 bg-gray-50 dark:bg-slate-700'>
-                        <tr>
-                          <th className='px-4 py-2 font-medium'>URL</th>
-                          <th className='hidden px-4 py-2 font-medium sm:table-cell'>
-                            Last Modified
-                          </th>
-                          <th className='hidden px-4 py-2 font-medium md:table-cell'>
-                            Priority
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className='divide-y divide-gray-100 dark:divide-slate-700'>
-                        {result.urls.map((url, index) => (
-                          <tr key={index}>
-                            <td className='max-w-xs truncate px-4 py-2'>
-                              <a
-                                href={url.loc}
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                className='text-indigo-600 hover:underline dark:text-indigo-400'
-                              >
-                                {url.loc}
-                              </a>
-                            </td>
-                            <td className='hidden px-4 py-2 text-gray-500 sm:table-cell dark:text-gray-400'>
-                              {url.lastmod || '—'}
-                            </td>
-                            <td className='hidden px-4 py-2 text-gray-500 md:table-cell dark:text-gray-400'>
-                              {url.priority || '—'}
-                            </td>
+                    <div className='max-h-96 overflow-y-auto'>
+                      <table className='w-full text-left text-sm'>
+                        <thead className='sticky top-0 bg-gray-50 dark:bg-slate-700'>
+                          <tr>
+                            <th className='px-4 py-2 font-medium'>URL</th>
+                            <th className='hidden px-4 py-2 font-medium sm:table-cell'>
+                              Last Modified
+                            </th>
+                            <th className='hidden px-4 py-2 font-medium md:table-cell'>
+                              Priority
+                            </th>
                           </tr>
+                        </thead>
+                        <tbody className='divide-y divide-gray-100 dark:divide-slate-700'>
+                          {result.urls.map((url, index) => (
+                            <tr key={index}>
+                              <td className='max-w-xs truncate px-4 py-2'>
+                                <a
+                                  href={url.loc}
+                                  target='_blank'
+                                  rel='noopener noreferrer'
+                                  className='text-indigo-600 hover:underline dark:text-indigo-400'
+                                >
+                                  {url.loc}
+                                </a>
+                              </td>
+                              <td className='hidden px-4 py-2 text-gray-500 sm:table-cell dark:text-gray-400'>
+                                {url.lastmod || '—'}
+                              </td>
+                              <td className='hidden px-4 py-2 text-gray-500 md:table-cell dark:text-gray-400'>
+                                {url.priority || '—'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+                )}
+
+                {result.sitemaps && result.sitemaps.length > 0 && (
+                  <section className='overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                    <div className='border-b border-gray-200 px-6 py-4 dark:border-slate-700'>
+                      <Text weight='medium'>
+                        Referenced Sitemaps ({result.sitemaps.length})
+                      </Text>
+                    </div>
+                    <div className='max-h-64 overflow-y-auto'>
+                      <ul className='divide-y divide-gray-100 dark:divide-slate-700'>
+                        {result.sitemaps.map((sitemap, index) => (
+                          <li key={index} className='px-4 py-3'>
+                            <a
+                              href={sitemap}
+                              target='_blank'
+                              rel='noopener noreferrer'
+                              className='text-sm break-all text-indigo-600 hover:underline dark:text-indigo-400'
+                            >
+                              {sitemap}
+                            </a>
+                          </li>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </section>
-              )}
+                      </ul>
+                    </div>
+                  </section>
+                )}
+              </div>
+            )}
 
-              {result.sitemaps && result.sitemaps.length > 0 && (
-                <section className='overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-                  <div className='border-b border-gray-200 px-6 py-4 dark:border-slate-700'>
-                    <Text weight='medium'>
-                      Referenced Sitemaps ({result.sitemaps.length})
-                    </Text>
-                  </div>
-                  <div className='max-h-64 overflow-y-auto'>
-                    <ul className='divide-y divide-gray-100 dark:divide-slate-700'>
-                      {result.sitemaps.map((sitemap, index) => (
-                        <li key={index} className='px-4 py-3'>
-                          <a
-                            href={sitemap}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className='break-all text-sm text-indigo-600 hover:underline dark:text-indigo-400'
-                          >
-                            {sitemap}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </section>
-              )}
-            </div>
-          )}
+            <section className='mt-20 border-t border-gray-200 pt-16 dark:border-slate-700'>
+              <Text as='h2' size='3xl' weight='bold' tracking='tight'>
+                Free XML Sitemap Validator Tool
+              </Text>
+              <Text
+                as='p'
+                size='lg'
+                colour='muted'
+                className='mt-4 leading-relaxed'
+              >
+                Our free sitemap validator checks your sitemap.xml file for
+                compliance with the sitemap protocol, identifies errors and
+                warnings, and helps ensure search engines can properly crawl and
+                index your website. Simply enter your sitemap URL to get instant
+                validation results with detailed feedback.
+              </Text>
 
-          <section className='mt-20 border-t border-gray-200 pt-16 dark:border-slate-700'>
-            <Text as='h2' size='3xl' weight='bold' tracking='tight'>
-              Free XML Sitemap Validator Tool
-            </Text>
-            <Text
-              as='p'
-              size='lg'
-              colour='muted'
-              className='mt-4 leading-relaxed'
-            >
-              Our free sitemap validator checks your sitemap.xml file for
-              compliance with the sitemap protocol, identifies errors and
-              warnings, and helps ensure search engines can properly crawl and
-              index your website. Simply enter your sitemap URL to get instant
-              validation results with detailed feedback.
-            </Text>
+              <div className='mt-12 grid gap-x-12 gap-y-10 md:grid-cols-2'>
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    What This Validator Checks
+                  </Text>
+                  <ul className='mt-3 space-y-2'>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          XML Structure
+                        </Text>{' '}
+                        - Validates that your sitemap is well-formed XML
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Character Encoding
+                        </Text>{' '}
+                        - Detects and verifies UTF-8 or other encodings
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Required Tags
+                        </Text>{' '}
+                        - Checks for urlset, url, and loc elements
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          URL Validation
+                        </Text>{' '}
+                        - Verifies all URLs are properly formatted
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Duplicate Detection
+                        </Text>{' '}
+                        - Identifies duplicate URL entries
+                      </Text>
+                    </li>
+                  </ul>
+                </div>
 
-            <div className='mt-12 grid gap-x-12 gap-y-10 md:grid-cols-2'>
-              <div>
-                <Text as='h3' size='xl' weight='semibold'>
-                  What This Validator Checks
-                </Text>
-                <ul className='mt-3 space-y-2'>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        XML Structure
-                      </Text>{' '}
-                      - Validates that your sitemap is well-formed XML
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Character Encoding
-                      </Text>{' '}
-                      - Detects and verifies UTF-8 or other encodings
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Required Tags
-                      </Text>{' '}
-                      - Checks for urlset, url, and loc elements
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        URL Validation
-                      </Text>{' '}
-                      - Verifies all URLs are properly formatted
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Duplicate Detection
-                      </Text>{' '}
-                      - Identifies duplicate URL entries
-                    </Text>
-                  </li>
-                </ul>
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    Additional Validations
+                  </Text>
+                  <ul className='mt-3 space-y-2'>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Date Formats
+                        </Text>{' '}
+                        - Validates lastmod dates use W3C format
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Priority Values
+                        </Text>{' '}
+                        - Checks priority is between 0.0 and 1.0
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Change Frequency
+                        </Text>{' '}
+                        - Verifies changefreq uses valid values
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Size Limits
+                        </Text>{' '}
+                        - Warns about file size and URL count limits
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Sitemap Index
+                        </Text>{' '}
+                        - Supports validation of sitemap index files
+                      </Text>
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    Why Sitemaps Matter for SEO
+                  </Text>
+                  <Text as='p' colour='muted' className='mt-3'>
+                    A properly formatted sitemap helps search engines discover
+                    all the important pages on your website. It's especially
+                    valuable for new websites, sites with deep page hierarchies,
+                    or pages that aren't well linked internally. Search engines
+                    use sitemaps to understand your site structure and
+                    prioritize crawling.
+                  </Text>
+                </div>
+
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    Best Practices for Sitemaps
+                  </Text>
+                  <Text as='p' colour='muted' className='mt-3'>
+                    Keep your sitemap updated whenever you add or remove pages.
+                    Only include canonical URLs that return 200 status codes.
+                    Split large sitemaps into multiple files using a sitemap
+                    index. Submit your sitemap to Google Search Console and Bing
+                    Webmaster Tools for faster indexing.
+                  </Text>
+                </div>
               </div>
 
-              <div>
+              <div className='mt-12'>
                 <Text as='h3' size='xl' weight='semibold'>
-                  Additional Validations
-                </Text>
-                <ul className='mt-3 space-y-2'>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Date Formats
-                      </Text>{' '}
-                      - Validates lastmod dates use W3C format
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Priority Values
-                      </Text>{' '}
-                      - Checks priority is between 0.0 and 1.0
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Change Frequency
-                      </Text>{' '}
-                      - Verifies changefreq uses valid values
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Size Limits
-                      </Text>{' '}
-                      - Warns about file size and URL count limits
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Sitemap Index
-                      </Text>{' '}
-                      - Supports validation of sitemap index files
-                    </Text>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <Text as='h3' size='xl' weight='semibold'>
-                  Why Sitemaps Matter for SEO
+                  How to Use This Sitemap Checker
                 </Text>
                 <Text as='p' colour='muted' className='mt-3'>
-                  A properly formatted sitemap helps search engines discover all
-                  the important pages on your website. It's especially valuable
-                  for new websites, sites with deep page hierarchies, or pages
-                  that aren't well linked internally. Search engines use
-                  sitemaps to understand your site structure and prioritize
-                  crawling.
+                  Enter your sitemap URL in the input field above (e.g.,
+                  https://example.com/sitemap.xml) and click "Validate." The
+                  tool will fetch your sitemap, parse the XML, and display
+                  detailed validation results including any errors, warnings,
+                  and informational messages. You'll see statistics about your
+                  sitemap, a preview of the URLs it contains, and specific
+                  guidance on how to fix any issues found.
                 </Text>
               </div>
+            </section>
 
-              <div>
-                <Text as='h3' size='xl' weight='semibold'>
-                  Best Practices for Sitemaps
-                </Text>
-                <Text as='p' colour='muted' className='mt-3'>
-                  Keep your sitemap updated whenever you add or remove pages.
-                  Only include canonical URLs that return 200 status codes.
-                  Split large sitemaps into multiple files using a sitemap
-                  index. Submit your sitemap to Google Search Console and Bing
-                  Webmaster Tools for faster indexing.
-                </Text>
+            <section className='mt-16'>
+              <Text as='h2' size='2xl' weight='bold' className='mb-6'>
+                FAQ
+              </Text>
+
+              <div className='space-y-3'>
+                {FAQ_ITEMS.map((item, index) => (
+                  <details
+                    key={index}
+                    className='group rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-800'
+                  >
+                    <summary className='flex cursor-pointer items-center justify-between px-5 py-4 text-left'>
+                      <Text weight='medium'>{item.question}</Text>
+                      <ChevronDownIcon className='h-5 w-5 shrink-0 text-gray-400 transition-transform group-open:rotate-180' />
+                    </summary>
+                    <div className='border-t border-gray-200 px-5 py-4 dark:border-slate-700'>
+                      <Text as='p' colour='muted'>
+                        {item.answer}
+                      </Text>
+                    </div>
+                  </details>
+                ))}
               </div>
-            </div>
+            </section>
 
-            <div className='mt-12'>
-              <Text as='h3' size='xl' weight='semibold'>
-                How to Use This Sitemap Checker
-              </Text>
-              <Text as='p' colour='muted' className='mt-3'>
-                Enter your sitemap URL in the input field above (e.g.,
-                https://example.com/sitemap.xml) and click "Validate." The tool
-                will fetch your sitemap, parse the XML, and display detailed
-                validation results including any errors, warnings, and
-                informational messages. You'll see statistics about your
-                sitemap, a preview of the URLs it contains, and specific
-                guidance on how to fix any issues found.
-              </Text>
-            </div>
-          </section>
-
-          <section className='mt-16'>
-            <Text as='h2' size='2xl' weight='bold' className='mb-6'>
-              FAQ
-            </Text>
-
-            <div className='space-y-3'>
-              {FAQ_ITEMS.map((item, index) => (
-                <details
-                  key={index}
-                  className='group rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-800'
-                >
-                  <summary className='flex cursor-pointer items-center justify-between px-5 py-4 text-left'>
-                    <Text weight='medium'>{item.question}</Text>
-                    <ChevronDownIcon className='h-5 w-5 shrink-0 text-gray-400 transition-transform group-open:rotate-180' />
-                  </summary>
-                  <div className='border-t border-gray-200 px-5 py-4 dark:border-slate-700'>
-                    <Text as='p' colour='muted'>
-                      {item.answer}
-                    </Text>
-                  </div>
-                </details>
-              ))}
-            </div>
-          </section>
-
-          <script
-            type='application/ld+json'
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'FAQPage',
-                mainEntity: FAQ_ITEMS.map((item) => ({
-                  '@type': 'Question',
-                  name: item.question,
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: item.answer,
-                  },
-                })),
-              })
-                .replace(/</g, '\\u003c')
-                .replace(/\u2028|\u2029/g, ''),
-            }}
-          />
+            <script
+              type='application/ld+json'
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  '@context': 'https://schema.org',
+                  '@type': 'FAQPage',
+                  mainEntity: FAQ_ITEMS.map((item) => ({
+                    '@type': 'Question',
+                    name: item.question,
+                    acceptedAnswer: {
+                      '@type': 'Answer',
+                      text: item.answer,
+                    },
+                  })),
+                })
+                  .replace(/</g, '\\u003c')
+                  .replace(/\u2028|\u2029/g, ''),
+              }}
+            />
 
             <DitchGoogle />
           </div>
 
-          <aside className='hidden lg:block lg:w-64 lg:shrink-0 lg:sticky lg:top-12 lg:self-start'>
+          <aside className='hidden lg:sticky lg:top-12 lg:block lg:w-64 lg:shrink-0 lg:self-start'>
             <ToolsNav />
           </aside>
         </div>

@@ -216,361 +216,361 @@ export default function ROICalculator() {
               marketing campaign performance
             </Text>
 
-          <div className='mt-12 grid gap-8 lg:grid-cols-3'>
-            {/* Input Section */}
-            <div className='lg:col-span-2'>
-              <div className='rounded-xl bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-                <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
-                  Campaign Metrics
-                </h2>
+            <div className='mt-12 grid gap-8 lg:grid-cols-3'>
+              {/* Input Section */}
+              <div className='lg:col-span-2'>
+                <div className='rounded-xl bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                  <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                    Campaign Metrics
+                  </h2>
 
-                <div className='space-y-6'>
-                  <Input
-                    type='text'
-                    placeholder='Q4 Facebook Campaign'
-                    label='Campaign Name (optional)'
-                    value={metrics.campaignName}
-                    onChange={(e) =>
-                      handleMetricChange('campaignName', e.target.value)
-                    }
-                    className='w-full'
-                  />
+                  <div className='space-y-6'>
+                    <Input
+                      type='text'
+                      placeholder='Q4 Facebook Campaign'
+                      label='Campaign Name (optional)'
+                      value={metrics.campaignName}
+                      onChange={(e) =>
+                        handleMetricChange('campaignName', e.target.value)
+                      }
+                      className='w-full'
+                    />
 
-                  <div className='grid gap-6 md:grid-cols-2'>
-                    <div>
-                      <Input
-                        type='number'
-                        placeholder='5000'
-                        label={
-                          <>
-                            Ad Spend ($)
-                            <Tooltip
-                              className='ml-1'
-                              text='Total amount spent on advertising for this campaign'
-                            />
-                          </>
-                        }
-                        value={metrics.adSpend || ''}
-                        onChange={(e) =>
-                          handleMetricChange('adSpend', e.target.value)
-                        }
-                        className='w-full'
-                      />
-                    </div>
+                    <div className='grid gap-6 md:grid-cols-2'>
+                      <div>
+                        <Input
+                          type='number'
+                          placeholder='5000'
+                          label={
+                            <>
+                              Ad Spend ($)
+                              <Tooltip
+                                className='ml-1'
+                                text='Total amount spent on advertising for this campaign'
+                              />
+                            </>
+                          }
+                          value={metrics.adSpend || ''}
+                          onChange={(e) =>
+                            handleMetricChange('adSpend', e.target.value)
+                          }
+                          className='w-full'
+                        />
+                      </div>
 
-                    <div>
-                      <Input
-                        type='number'
-                        placeholder='15000'
-                        label={
-                          <>
-                            Revenue Generated ($)
-                            <Tooltip
-                              className='ml-1'
-                              text='Total revenue attributed to this campaign'
-                            />
-                          </>
-                        }
-                        value={metrics.revenue || ''}
-                        onChange={(e) =>
-                          handleMetricChange('revenue', e.target.value)
-                        }
-                        className='w-full'
-                      />
-                    </div>
+                      <div>
+                        <Input
+                          type='number'
+                          placeholder='15000'
+                          label={
+                            <>
+                              Revenue Generated ($)
+                              <Tooltip
+                                className='ml-1'
+                                text='Total revenue attributed to this campaign'
+                              />
+                            </>
+                          }
+                          value={metrics.revenue || ''}
+                          onChange={(e) =>
+                            handleMetricChange('revenue', e.target.value)
+                          }
+                          className='w-full'
+                        />
+                      </div>
 
-                    <div>
-                      <Input
-                        type='number'
-                        placeholder='150'
-                        label={
-                          <>
-                            Conversions
-                            <Tooltip
-                              className='ml-1'
-                              text='Number of conversions (sales, sign-ups, etc.)'
-                            />
-                          </>
-                        }
-                        value={metrics.conversions || ''}
-                        onChange={(e) =>
-                          handleMetricChange('conversions', e.target.value)
-                        }
-                        className='w-full'
-                      />
-                    </div>
+                      <div>
+                        <Input
+                          type='number'
+                          placeholder='150'
+                          label={
+                            <>
+                              Conversions
+                              <Tooltip
+                                className='ml-1'
+                                text='Number of conversions (sales, sign-ups, etc.)'
+                              />
+                            </>
+                          }
+                          value={metrics.conversions || ''}
+                          onChange={(e) =>
+                            handleMetricChange('conversions', e.target.value)
+                          }
+                          className='w-full'
+                        />
+                      </div>
 
-                    <div>
-                      <Input
-                        type='number'
-                        placeholder='2000'
-                        label={
-                          <>
-                            Clicks
-                            <Tooltip
-                              className='ml-1'
-                              text='Total number of clicks on your ads'
-                            />
-                          </>
-                        }
-                        value={metrics.clicks || ''}
-                        onChange={(e) =>
-                          handleMetricChange('clicks', e.target.value)
-                        }
-                        className='w-full'
-                      />
-                    </div>
+                      <div>
+                        <Input
+                          type='number'
+                          placeholder='2000'
+                          label={
+                            <>
+                              Clicks
+                              <Tooltip
+                                className='ml-1'
+                                text='Total number of clicks on your ads'
+                              />
+                            </>
+                          }
+                          value={metrics.clicks || ''}
+                          onChange={(e) =>
+                            handleMetricChange('clicks', e.target.value)
+                          }
+                          className='w-full'
+                        />
+                      </div>
 
-                    <div>
-                      <Input
-                        type='number'
-                        placeholder='100000'
-                        label={
-                          <>
-                            Impressions
-                            <Tooltip
-                              className='ml-1'
-                              text='Total number of times your ads were shown'
-                            />
-                          </>
-                        }
-                        value={metrics.impressions || ''}
-                        onChange={(e) =>
-                          handleMetricChange('impressions', e.target.value)
-                        }
-                        className='w-full'
-                      />
-                    </div>
+                      <div>
+                        <Input
+                          type='number'
+                          placeholder='100000'
+                          label={
+                            <>
+                              Impressions
+                              <Tooltip
+                                className='ml-1'
+                                text='Total number of times your ads were shown'
+                              />
+                            </>
+                          }
+                          value={metrics.impressions || ''}
+                          onChange={(e) =>
+                            handleMetricChange('impressions', e.target.value)
+                          }
+                          className='w-full'
+                        />
+                      </div>
 
-                    <div>
-                      <Input
-                        type='number'
-                        placeholder='30'
-                        label={
-                          <>
-                            Profit Margin (%)
-                            <Tooltip
-                              className='ml-1'
-                              text='Your average profit margin on products/services'
-                            />
-                          </>
-                        }
-                        value={profitMargin || ''}
-                        onChange={(e) =>
-                          setProfitMargin(parseFloat(e.target.value) || 0)
-                        }
-                        className='w-full'
-                      />
+                      <div>
+                        <Input
+                          type='number'
+                          placeholder='30'
+                          label={
+                            <>
+                              Profit Margin (%)
+                              <Tooltip
+                                className='ml-1'
+                                text='Your average profit margin on products/services'
+                              />
+                            </>
+                          }
+                          value={profitMargin || ''}
+                          onChange={(e) =>
+                            setProfitMargin(parseFloat(e.target.value) || 0)
+                          }
+                          className='w-full'
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Results Section */}
-            <div className='lg:col-span-1'>
-              <div className='sticky top-8 space-y-6'>
-                {/* Primary Metrics */}
-                <div className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-                  <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
-                    Key Performance Metrics
-                  </h3>
+              {/* Results Section */}
+              <div className='lg:col-span-1'>
+                <div className='sticky top-8 space-y-6'>
+                  {/* Primary Metrics */}
+                  <div className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                    <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
+                      Key Performance Metrics
+                    </h3>
 
-                  <div className='space-y-4'>
-                    <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
-                      <div className='flex items-center'>
-                        <TrendingUpIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
-                        <span className='font-medium text-gray-700 dark:text-gray-300'>
-                          ROI
+                    <div className='space-y-4'>
+                      <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
+                        <div className='flex items-center'>
+                          <TrendingUpIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
+                          <span className='font-medium text-gray-700 dark:text-gray-300'>
+                            ROI
+                          </span>
+                        </div>
+                        <span
+                          className={`text-2xl font-bold ${getROIColor(calculated.roi)}`}
+                        >
+                          {formatPercentage(calculated.roi)}
                         </span>
                       </div>
-                      <span
-                        className={`text-2xl font-bold ${getROIColor(calculated.roi)}`}
-                      >
-                        {formatPercentage(calculated.roi)}
-                      </span>
-                    </div>
 
-                    <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
-                      <div className='flex items-center'>
-                        <DollarSignIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
-                        <span className='font-medium text-gray-700 dark:text-gray-300'>
-                          ROAS
+                      <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
+                        <div className='flex items-center'>
+                          <DollarSignIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
+                          <span className='font-medium text-gray-700 dark:text-gray-300'>
+                            ROAS
+                          </span>
+                        </div>
+                        <span
+                          className={`text-2xl font-bold ${getROASColor(calculated.roas)}`}
+                        >
+                          {formatRatio(calculated.roas)}
                         </span>
                       </div>
-                      <span
-                        className={`text-2xl font-bold ${getROASColor(calculated.roas)}`}
-                      >
-                        {formatRatio(calculated.roas)}
-                      </span>
-                    </div>
 
-                    <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
-                      <div className='flex items-center'>
-                        <ShoppingCartIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
-                        <span className='font-medium text-gray-700 dark:text-gray-300'>
-                          Profit
+                      <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
+                        <div className='flex items-center'>
+                          <ShoppingCartIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
+                          <span className='font-medium text-gray-700 dark:text-gray-300'>
+                            Profit
+                          </span>
+                        </div>
+                        <span
+                          className={`text-xl font-bold ${calculated.profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
+                        >
+                          {formatCurrency(calculated.profit)}
                         </span>
                       </div>
-                      <span
-                        className={`text-xl font-bold ${calculated.profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
-                      >
-                        {formatCurrency(calculated.profit)}
-                      </span>
                     </div>
                   </div>
-                </div>
 
-                {/* Secondary Metrics */}
-                <div className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-                  <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
-                    Detailed Metrics
-                  </h3>
+                  {/* Secondary Metrics */}
+                  <div className='rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                    <h3 className='mb-4 text-lg font-semibold text-gray-900 dark:text-white'>
+                      Detailed Metrics
+                    </h3>
 
-                  <div className='space-y-3'>
-                    <div className='flex justify-between'>
-                      <span className='text-sm text-gray-600 dark:text-gray-400'>
-                        CAC
-                      </span>
-                      <span className='font-semibold text-gray-900 dark:text-white'>
-                        {formatCurrency(calculated.cac)}
-                      </span>
-                    </div>
-
-                    <div className='flex justify-between'>
-                      <span className='text-sm text-gray-600 dark:text-gray-400'>
-                        CPC
-                      </span>
-                      <span className='font-semibold text-gray-900 dark:text-white'>
-                        {formatCurrency(calculated.cpc)}
-                      </span>
-                    </div>
-
-                    <div className='flex justify-between'>
-                      <span className='text-sm text-gray-600 dark:text-gray-400'>
-                        CPM
-                      </span>
-                      <span className='font-semibold text-gray-900 dark:text-white'>
-                        {formatCurrency(calculated.cpm)}
-                      </span>
-                    </div>
-
-                    <div className='flex justify-between'>
-                      <span className='text-sm text-gray-600 dark:text-gray-400'>
-                        CTR
-                      </span>
-                      <span className='font-semibold text-gray-900 dark:text-white'>
-                        {formatPercentage(calculated.ctr)}
-                      </span>
-                    </div>
-
-                    <div className='flex justify-between'>
-                      <span className='text-sm text-gray-600 dark:text-gray-400'>
-                        Conversion Rate
-                      </span>
-                      <span className='font-semibold text-gray-900 dark:text-white'>
-                        {formatPercentage(calculated.conversionRate)}
-                      </span>
-                    </div>
-
-                    <div className='border-t pt-3 dark:border-gray-700'>
+                    <div className='space-y-3'>
                       <div className='flex justify-between'>
                         <span className='text-sm text-gray-600 dark:text-gray-400'>
-                          Break-Even ROAS
+                          CAC
                         </span>
                         <span className='font-semibold text-gray-900 dark:text-white'>
-                          {formatRatio(calculated.breakEvenRoas)}
+                          {formatCurrency(calculated.cac)}
                         </span>
                       </div>
 
-                      <div className='mt-2 flex justify-between'>
+                      <div className='flex justify-between'>
                         <span className='text-sm text-gray-600 dark:text-gray-400'>
-                          Margin of Safety
+                          CPC
                         </span>
-                        <span
-                          className={`font-semibold ${calculated.marginOfSafety >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
-                        >
-                          {formatPercentage(calculated.marginOfSafety)}
+                        <span className='font-semibold text-gray-900 dark:text-white'>
+                          {formatCurrency(calculated.cpc)}
                         </span>
+                      </div>
+
+                      <div className='flex justify-between'>
+                        <span className='text-sm text-gray-600 dark:text-gray-400'>
+                          CPM
+                        </span>
+                        <span className='font-semibold text-gray-900 dark:text-white'>
+                          {formatCurrency(calculated.cpm)}
+                        </span>
+                      </div>
+
+                      <div className='flex justify-between'>
+                        <span className='text-sm text-gray-600 dark:text-gray-400'>
+                          CTR
+                        </span>
+                        <span className='font-semibold text-gray-900 dark:text-white'>
+                          {formatPercentage(calculated.ctr)}
+                        </span>
+                      </div>
+
+                      <div className='flex justify-between'>
+                        <span className='text-sm text-gray-600 dark:text-gray-400'>
+                          Conversion Rate
+                        </span>
+                        <span className='font-semibold text-gray-900 dark:text-white'>
+                          {formatPercentage(calculated.conversionRate)}
+                        </span>
+                      </div>
+
+                      <div className='border-t pt-3 dark:border-gray-700'>
+                        <div className='flex justify-between'>
+                          <span className='text-sm text-gray-600 dark:text-gray-400'>
+                            Break-Even ROAS
+                          </span>
+                          <span className='font-semibold text-gray-900 dark:text-white'>
+                            {formatRatio(calculated.breakEvenRoas)}
+                          </span>
+                        </div>
+
+                        <div className='mt-2 flex justify-between'>
+                          <span className='text-sm text-gray-600 dark:text-gray-400'>
+                            Margin of Safety
+                          </span>
+                          <span
+                            className={`font-semibold ${calculated.marginOfSafety >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
+                          >
+                            {formatPercentage(calculated.marginOfSafety)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Performance Indicator */}
-                {metrics.adSpend > 0 ? (
-                  <div className='rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white'>
-                    <h3 className='mb-2 text-lg font-semibold'>
-                      Campaign Performance
-                    </h3>
-                    <p className='text-sm opacity-90'>
-                      {calculated.roas >= 4
-                        ? 'Excellent! Your campaign is highly profitable.'
-                        : calculated.roas >= 2
-                          ? 'Good performance. Consider optimization for better results.'
-                          : calculated.roas >= 1
-                            ? 'Breaking even. Optimization needed to improve profitability.'
-                            : 'Campaign is not profitable. Major adjustments required.'}
-                    </p>
-                  </div>
-                ) : null}
+                  {/* Performance Indicator */}
+                  {metrics.adSpend > 0 ? (
+                    <div className='rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white'>
+                      <h3 className='mb-2 text-lg font-semibold'>
+                        Campaign Performance
+                      </h3>
+                      <p className='text-sm opacity-90'>
+                        {calculated.roas >= 4
+                          ? 'Excellent! Your campaign is highly profitable.'
+                          : calculated.roas >= 2
+                            ? 'Good performance. Consider optimization for better results.'
+                            : calculated.roas >= 1
+                              ? 'Breaking even. Optimization needed to improve profitability.'
+                              : 'Campaign is not profitable. Major adjustments required.'}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* FAQ Section */}
-          <div className='mt-16'>
-            <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
-              Frequently Asked Questions
-            </h2>
+            {/* FAQ Section */}
+            <div className='mt-16'>
+              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+                Frequently Asked Questions
+              </h2>
 
-            <div className='space-y-4'>
-              {FAQ_ITEMS.map((item, index) => (
-                <details
-                  key={index}
-                  className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
-                >
-                  <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
-                    <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
-                      {item.question}
-                    </h3>
-                    <ChevronDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
-                  </summary>
-                  <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
-                    <p className='text-gray-600 dark:text-gray-400'>
-                      {item.answer}
-                    </p>
-                  </div>
-                </details>
-              ))}
+              <div className='space-y-4'>
+                {FAQ_ITEMS.map((item, index) => (
+                  <details
+                    key={index}
+                    className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
+                  >
+                    <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
+                      <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
+                        {item.question}
+                      </h3>
+                      <ChevronDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
+                    </summary>
+                    <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
+                      <p className='text-gray-600 dark:text-gray-400'>
+                        {item.answer}
+                      </p>
+                    </div>
+                  </details>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* FAQ Structured Data */}
-          <script
-            type='application/ld+json'
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'FAQPage',
-                mainEntity: FAQ_ITEMS.map((item) => ({
-                  '@type': 'Question',
-                  name: item.question,
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: item.answer,
-                  },
-                })),
-              })
-                .replace(/</g, '\\u003c')
-                .replace(/\u2028|\u2029/g, ''),
-            }}
-          />
+            {/* FAQ Structured Data */}
+            <script
+              type='application/ld+json'
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  '@context': 'https://schema.org',
+                  '@type': 'FAQPage',
+                  mainEntity: FAQ_ITEMS.map((item) => ({
+                    '@type': 'Question',
+                    name: item.question,
+                    acceptedAnswer: {
+                      '@type': 'Answer',
+                      text: item.answer,
+                    },
+                  })),
+                })
+                  .replace(/</g, '\\u003c')
+                  .replace(/\u2028|\u2029/g, ''),
+              }}
+            />
 
             <DitchGoogle />
           </div>
 
-          <aside className='hidden xl:block xl:w-64 xl:shrink-0 xl:sticky xl:top-12 xl:self-start'>
+          <aside className='hidden xl:sticky xl:top-12 xl:block xl:w-64 xl:shrink-0 xl:self-start'>
             <ToolsNav />
           </aside>
         </div>

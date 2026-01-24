@@ -273,341 +273,347 @@ export default function IpLookup() {
             </Text>
 
             <div className='mt-10'>
-            <form onSubmit={handleSubmit} className='flex items-start gap-3'>
-              <Input
-                type='text'
-                placeholder='Enter IP address (e.g., 8.8.8.8)'
-                value={ipInput}
-                onChange={handleInputChange}
-                error={displayError}
-                className='flex-1'
-              />
-              <Button
-                type='submit'
-                primary
-                regular
-                disabled={isLoading}
-                className='mt-px'
-              >
-                {isLoading ? (
-                  <Spin className='h-4 w-4' />
-                ) : (
-                  <>
-                    <MagnifyingGlassIcon className='mr-1.5 h-4 w-4' />
-                    Lookup
-                  </>
-                )}
-              </Button>
-            </form>
-          </div>
-
-          {data && (
-            <div className='mt-6 space-y-8'>
-              <section className='overflow-hidden rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-                <div className='mb-6 flex items-start gap-4'>
-                  {data.country && (
-                    <Flag
-                      className='shrink-0 rounded-xs'
-                      country={data.country}
-                      size={40}
-                      alt={data.countryName || data.country}
-                    />
+              <form onSubmit={handleSubmit} className='flex items-start gap-3'>
+                <Input
+                  type='text'
+                  placeholder='Enter IP address (e.g., 8.8.8.8)'
+                  value={ipInput}
+                  onChange={handleInputChange}
+                  error={displayError}
+                  className='flex-1'
+                />
+                <Button
+                  type='submit'
+                  primary
+                  regular
+                  disabled={isLoading}
+                  className='mt-px'
+                >
+                  {isLoading ? (
+                    <Spin className='h-4 w-4' />
+                  ) : (
+                    <>
+                      <MagnifyingGlassIcon className='mr-1.5 h-4 w-4' />
+                      Lookup
+                    </>
                   )}
-                  <div className='min-w-0 flex-1'>
-                    <Text
-                      as='p'
-                      size='2xl'
-                      weight='semibold'
-                      className='break-all font-mono'
-                    >
-                      {data.ip}
-                    </Text>
-                    {formatLocation() && (
-                      <Text as='p' colour='muted' className='mt-0.5 wrap-break-word'>
-                        {formatLocation()}
-                      </Text>
-                    )}
-                  </div>
-                </div>
+                </Button>
+              </form>
+            </div>
 
-                <dl>
-                  <DataRow
-                    label='IP Version'
-                    value={data.ipVersion ? `IPv${data.ipVersion}` : null}
-                  />
-                  <DataRow
-                    label='Country'
-                    value={data.countryName}
-                    secondary={data.country}
-                  />
-                  <DataRow
-                    label='Region'
-                    value={data.region}
-                    secondary={data.regionCode}
-                  />
-                  <DataRow label='City' value={data.city} />
-                  <DataRow label='Postal Code' value={data.postalCode} />
-                  <DataRow
-                    label='Continent'
-                    value={data.continentName}
-                    secondary={data.continentCode}
-                  />
-                  <DataRow
-                    label='Coordinates'
-                    value={
-                      hasCoordinates
-                        ? `${data.latitude?.toFixed(4)}, ${data.longitude?.toFixed(4)}`
-                        : null
-                    }
-                  />
-                  <DataRow label='Timezone' value={data.timezone} />
-                  {data.isInEuropeanUnion && (
-                    <DataRow label='EU Member' value='Yes' />
-                  )}
-                </dl>
-              </section>
-
-              {hasCoordinates && (
-                <section className='overflow-hidden rounded-xl ring-1 ring-gray-200 dark:ring-slate-700'>
-                  <ClientOnly
-                    fallback={
-                      <div className='flex h-96 items-center justify-center bg-gray-50 dark:bg-slate-800'>
-                        <Spin />
-                      </div>
-                    }
-                  >
-                    {() => (
-                      <LocationMap
-                        latitude={data.latitude!}
-                        longitude={data.longitude!}
-                        city={data.city}
-                        country={data.countryName}
+            {data && (
+              <div className='mt-6 space-y-8'>
+                <section className='overflow-hidden rounded-xl bg-white p-6 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+                  <div className='mb-6 flex items-start gap-4'>
+                    {data.country && (
+                      <Flag
+                        className='shrink-0 rounded-xs'
+                        country={data.country}
+                        size={40}
+                        alt={data.countryName || data.country}
                       />
                     )}
-                  </ClientOnly>
-                </section>
-              )}
-            </div>
-          )}
-
-          <section className='mt-20 border-t border-gray-200 pt-16 dark:border-slate-700'>
-            <Text as='h2' size='3xl' weight='bold' tracking='tight'>
-              Free IP Address Lookup Tool
-            </Text>
-            <Text
-              as='p'
-              size='lg'
-              colour='muted'
-              className='mt-4 leading-relaxed'
-            >
-              Wondering "what is my IP address?" Our free IP lookup tool
-              instantly shows your public IP address and provides detailed
-              geolocation data including country, city, region, coordinates, and
-              timezone. You can also look up any IPv4 or IPv6 address to find
-              its location and network information.
-            </Text>
-
-            <div className='mt-12 grid gap-x-12 gap-y-10 md:grid-cols-2'>
-              <div>
-                <Text as='h3' size='xl' weight='semibold'>
-                  What is an IP Address?
-                </Text>
-                <Text as='p' colour='muted' className='mt-3'>
-                  An IP (Internet Protocol) address is a unique numerical
-                  identifier assigned to every device connected to the internet.
-                  It works like a mailing address, allowing data to be routed to
-                  and from your device. There are two formats:{' '}
-                  <Text as='span' weight='semibold' colour='inherit'>
-                    IPv4
-                  </Text>{' '}
-                  (e.g., 192.168.1.1) with about 4.3 billion possible addresses,
-                  and{' '}
-                  <Text as='span' weight='semibold' colour='inherit'>
-                    IPv6
-                  </Text>{' '}
-                  (e.g., 2001:0db8:85a3::8a2e:0370:7334) which provides
-                  virtually unlimited addresses.
-                </Text>
-              </div>
-
-              <div>
-                <Text as='h3' size='xl' weight='semibold'>
-                  How IP Geolocation Works
-                </Text>
-                <Text as='p' colour='muted' className='mt-3'>
-                  IP geolocation determines the approximate physical location of
-                  an IP address by analyzing routing information and regional IP
-                  allocations. Our tool uses the DB-IP database to provide
-                  accurate country-level data (95%+ accuracy) and city-level
-                  estimates (50-80% accuracy). The location typically represents
-                  your ISP's network center, not your exact address.
-                </Text>
-              </div>
-
-              <div>
-                <Text as='h3' size='xl' weight='semibold'>
-                  Common Use Cases
-                </Text>
-                <ul className='mt-3 space-y-2'>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Security monitoring
-                      </Text>{' '}
-                      - Identify suspicious login attempts from unusual
-                      locations
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Fraud prevention
-                      </Text>{' '}
-                      - Verify user locations to detect potentially fraudulent
-                      activity
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Content localization
-                      </Text>{' '}
-                      - Serve region-specific content based on visitor location
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Compliance
-                      </Text>{' '}
-                      - Enforce geographic restrictions for regulatory
-                      requirements
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Analytics
-                      </Text>{' '}
-                      - Understand where your website visitors are located
-                    </Text>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <Text as='h3' size='xl' weight='semibold'>
-                  What Data is Included
-                </Text>
-                <ul className='mt-3 space-y-2'>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Geographic location
-                      </Text>{' '}
-                      - Country, region/state, city, and postal code
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Coordinates
-                      </Text>{' '}
-                      - Latitude and longitude for mapping
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        Timezone
-                      </Text>{' '}
-                      - The timezone associated with the IP location
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        IP version
-                      </Text>{' '}
-                      - Whether the address is IPv4 or IPv6
-                    </Text>
-                  </li>
-                  <li>
-                    <Text colour='muted'>
-                      <Text as='span' weight='semibold' colour='inherit'>
-                        EU status
-                      </Text>{' '}
-                      - Whether the IP is located in the European Union
-                    </Text>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className='mt-12'>
-              <Text as='h3' size='xl' weight='semibold'>
-                How to Use This IP Checker
-              </Text>
-              <Text as='p' colour='muted' className='mt-3'>
-                Your IP address is automatically detected when you visit this
-                page. To look up a different IP, simply enter any public IPv4 or
-                IPv6 address in the search box above and click "Lookup." The
-                results will show the geographic location on an interactive map
-                along with detailed network information. This tool is completely
-                free - no registration or limits.
-              </Text>
-            </div>
-          </section>
-
-          <section className='mt-16'>
-            <Text as='h2' size='2xl' weight='bold' className='mb-6'>
-              FAQ
-            </Text>
-
-            <div className='space-y-3'>
-              {FAQ_ITEMS.map((item, index) => (
-                <details
-                  key={index}
-                  className='group rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-800'
-                >
-                  <summary className='flex cursor-pointer items-center justify-between px-5 py-4 text-left'>
-                    <Text weight='medium'>{item.question}</Text>
-                    <ChevronDownIcon className='h-5 w-5 shrink-0 text-gray-400 transition-transform group-open:rotate-180' />
-                  </summary>
-                  <div className='border-t border-gray-200 px-5 py-4 dark:border-slate-700'>
-                    <Text as='p' colour='muted'>
-                      {item.answer}
-                    </Text>
+                    <div className='min-w-0 flex-1'>
+                      <Text
+                        as='p'
+                        size='2xl'
+                        weight='semibold'
+                        className='font-mono break-all'
+                      >
+                        {data.ip}
+                      </Text>
+                      {formatLocation() && (
+                        <Text
+                          as='p'
+                          colour='muted'
+                          className='mt-0.5 wrap-break-word'
+                        >
+                          {formatLocation()}
+                        </Text>
+                      )}
+                    </div>
                   </div>
-                </details>
-              ))}
-            </div>
-          </section>
 
-          <script
-            type='application/ld+json'
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'FAQPage',
-                mainEntity: FAQ_ITEMS.map((item) => ({
-                  '@type': 'Question',
-                  name: item.question,
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: item.answer,
-                  },
-                })),
-              })
-                .replace(/</g, '\\u003c')
-                .replace(/\u2028|\u2029/g, ''),
-            }}
-          />
+                  <dl>
+                    <DataRow
+                      label='IP Version'
+                      value={data.ipVersion ? `IPv${data.ipVersion}` : null}
+                    />
+                    <DataRow
+                      label='Country'
+                      value={data.countryName}
+                      secondary={data.country}
+                    />
+                    <DataRow
+                      label='Region'
+                      value={data.region}
+                      secondary={data.regionCode}
+                    />
+                    <DataRow label='City' value={data.city} />
+                    <DataRow label='Postal Code' value={data.postalCode} />
+                    <DataRow
+                      label='Continent'
+                      value={data.continentName}
+                      secondary={data.continentCode}
+                    />
+                    <DataRow
+                      label='Coordinates'
+                      value={
+                        hasCoordinates
+                          ? `${data.latitude?.toFixed(4)}, ${data.longitude?.toFixed(4)}`
+                          : null
+                      }
+                    />
+                    <DataRow label='Timezone' value={data.timezone} />
+                    {data.isInEuropeanUnion && (
+                      <DataRow label='EU Member' value='Yes' />
+                    )}
+                  </dl>
+                </section>
+
+                {hasCoordinates && (
+                  <section className='overflow-hidden rounded-xl ring-1 ring-gray-200 dark:ring-slate-700'>
+                    <ClientOnly
+                      fallback={
+                        <div className='flex h-96 items-center justify-center bg-gray-50 dark:bg-slate-800'>
+                          <Spin />
+                        </div>
+                      }
+                    >
+                      {() => (
+                        <LocationMap
+                          latitude={data.latitude!}
+                          longitude={data.longitude!}
+                          city={data.city}
+                          country={data.countryName}
+                        />
+                      )}
+                    </ClientOnly>
+                  </section>
+                )}
+              </div>
+            )}
+
+            <section className='mt-20 border-t border-gray-200 pt-16 dark:border-slate-700'>
+              <Text as='h2' size='3xl' weight='bold' tracking='tight'>
+                Free IP Address Lookup Tool
+              </Text>
+              <Text
+                as='p'
+                size='lg'
+                colour='muted'
+                className='mt-4 leading-relaxed'
+              >
+                Wondering "what is my IP address?" Our free IP lookup tool
+                instantly shows your public IP address and provides detailed
+                geolocation data including country, city, region, coordinates,
+                and timezone. You can also look up any IPv4 or IPv6 address to
+                find its location and network information.
+              </Text>
+
+              <div className='mt-12 grid gap-x-12 gap-y-10 md:grid-cols-2'>
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    What is an IP Address?
+                  </Text>
+                  <Text as='p' colour='muted' className='mt-3'>
+                    An IP (Internet Protocol) address is a unique numerical
+                    identifier assigned to every device connected to the
+                    internet. It works like a mailing address, allowing data to
+                    be routed to and from your device. There are two formats:{' '}
+                    <Text as='span' weight='semibold' colour='inherit'>
+                      IPv4
+                    </Text>{' '}
+                    (e.g., 192.168.1.1) with about 4.3 billion possible
+                    addresses, and{' '}
+                    <Text as='span' weight='semibold' colour='inherit'>
+                      IPv6
+                    </Text>{' '}
+                    (e.g., 2001:0db8:85a3::8a2e:0370:7334) which provides
+                    virtually unlimited addresses.
+                  </Text>
+                </div>
+
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    How IP Geolocation Works
+                  </Text>
+                  <Text as='p' colour='muted' className='mt-3'>
+                    IP geolocation determines the approximate physical location
+                    of an IP address by analyzing routing information and
+                    regional IP allocations. Our tool uses the DB-IP database to
+                    provide accurate country-level data (95%+ accuracy) and
+                    city-level estimates (50-80% accuracy). The location
+                    typically represents your ISP's network center, not your
+                    exact address.
+                  </Text>
+                </div>
+
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    Common Use Cases
+                  </Text>
+                  <ul className='mt-3 space-y-2'>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Security monitoring
+                        </Text>{' '}
+                        - Identify suspicious login attempts from unusual
+                        locations
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Fraud prevention
+                        </Text>{' '}
+                        - Verify user locations to detect potentially fraudulent
+                        activity
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Content localization
+                        </Text>{' '}
+                        - Serve region-specific content based on visitor
+                        location
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Compliance
+                        </Text>{' '}
+                        - Enforce geographic restrictions for regulatory
+                        requirements
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Analytics
+                        </Text>{' '}
+                        - Understand where your website visitors are located
+                      </Text>
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <Text as='h3' size='xl' weight='semibold'>
+                    What Data is Included
+                  </Text>
+                  <ul className='mt-3 space-y-2'>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Geographic location
+                        </Text>{' '}
+                        - Country, region/state, city, and postal code
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Coordinates
+                        </Text>{' '}
+                        - Latitude and longitude for mapping
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          Timezone
+                        </Text>{' '}
+                        - The timezone associated with the IP location
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          IP version
+                        </Text>{' '}
+                        - Whether the address is IPv4 or IPv6
+                      </Text>
+                    </li>
+                    <li>
+                      <Text colour='muted'>
+                        <Text as='span' weight='semibold' colour='inherit'>
+                          EU status
+                        </Text>{' '}
+                        - Whether the IP is located in the European Union
+                      </Text>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className='mt-12'>
+                <Text as='h3' size='xl' weight='semibold'>
+                  How to Use This IP Checker
+                </Text>
+                <Text as='p' colour='muted' className='mt-3'>
+                  Your IP address is automatically detected when you visit this
+                  page. To look up a different IP, simply enter any public IPv4
+                  or IPv6 address in the search box above and click "Lookup."
+                  The results will show the geographic location on an
+                  interactive map along with detailed network information. This
+                  tool is completely free - no registration or limits.
+                </Text>
+              </div>
+            </section>
+
+            <section className='mt-16'>
+              <Text as='h2' size='2xl' weight='bold' className='mb-6'>
+                FAQ
+              </Text>
+
+              <div className='space-y-3'>
+                {FAQ_ITEMS.map((item, index) => (
+                  <details
+                    key={index}
+                    className='group rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-800'
+                  >
+                    <summary className='flex cursor-pointer items-center justify-between px-5 py-4 text-left'>
+                      <Text weight='medium'>{item.question}</Text>
+                      <ChevronDownIcon className='h-5 w-5 shrink-0 text-gray-400 transition-transform group-open:rotate-180' />
+                    </summary>
+                    <div className='border-t border-gray-200 px-5 py-4 dark:border-slate-700'>
+                      <Text as='p' colour='muted'>
+                        {item.answer}
+                      </Text>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </section>
+
+            <script
+              type='application/ld+json'
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  '@context': 'https://schema.org',
+                  '@type': 'FAQPage',
+                  mainEntity: FAQ_ITEMS.map((item) => ({
+                    '@type': 'Question',
+                    name: item.question,
+                    acceptedAnswer: {
+                      '@type': 'Answer',
+                      text: item.answer,
+                    },
+                  })),
+                })
+                  .replace(/</g, '\\u003c')
+                  .replace(/\u2028|\u2029/g, ''),
+              }}
+            />
 
             <DitchGoogle />
           </div>
 
-          <aside className='hidden lg:block lg:w-64 lg:shrink-0 lg:sticky lg:top-12 lg:self-start'>
+          <aside className='hidden lg:sticky lg:top-12 lg:block lg:w-64 lg:shrink-0 lg:self-start'>
             <ToolsNav />
           </aside>
         </div>
