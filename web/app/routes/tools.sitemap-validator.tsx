@@ -673,15 +673,14 @@ export default function SitemapValidator() {
                   regular
                   disabled={isLoading}
                   className='mt-px'
+                  loading={isLoading}
                 >
-                  {isLoading ? (
-                    <Spin className='h-4 w-4' />
-                  ) : (
+                  {isLoading ? null : (
                     <>
                       <MagnifyingGlassIcon className='mr-1.5 h-4 w-4' />
-                      Validate
                     </>
                   )}
+                  Validate
                 </Button>
               </form>
             </div>
