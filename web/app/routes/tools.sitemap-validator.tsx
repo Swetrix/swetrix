@@ -8,6 +8,7 @@ import {
   XCircleIcon,
   InformationCircleIcon,
 } from '@heroicons/react/24/solid'
+import { XMLParser, XMLValidator } from 'fast-xml-parser'
 import { useState } from 'react'
 import { redirect, useFetcher } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
@@ -93,20 +94,39 @@ function isValidUrl(url: string): boolean {
   }
 }
 
-function parseXml(xmlString: string): Document | null {
+function parseXml(xmlString: string): Record<string, unknown> | null {
+  const validationResult = XMLValidator.validate(xmlString)
+  if (validationResult !== true) {
+    return null
+  }
+
   try {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(xmlString, 'application/xml')
+    const parser = new XMLParser({
+      ignoreAttributes: true,
+      ignoreDeclaration: true,
+      trimValues: true,
+    })
 
-    const parseError = doc.querySelector('parsererror')
-    if (parseError) {
-      return null
-    }
-
-    return doc
+    return parser.parse(xmlString)
   } catch {
     return null
   }
+}
+
+function normalizeArray<T>(value: T | T[] | undefined): T[] {
+  if (!value) return []
+  return Array.isArray(value) ? value : [value]
+}
+
+function getText(value: unknown): string | undefined {
+  if (typeof value === 'string') return value.trim()
+  if (typeof value === 'number') return String(value)
+  if (value && typeof value === 'object' && '#text' in value) {
+    const textValue = (value as { '#text'?: unknown })['#text']
+    if (typeof textValue === 'string') return textValue.trim()
+    if (typeof textValue === 'number') return String(textValue)
+  }
+  return undefined
 }
 
 export async function action({ request }: { request: Request }) {
@@ -184,9 +204,9 @@ export async function action({ request }: { request: Request }) {
       })
     }
 
-    const doc = parseXml(xmlContent)
+    const parsedXml = parseXml(xmlContent)
 
-    if (!doc) {
+    if (!parsedXml) {
       issues.push({
         type: 'error',
         message: 'Invalid XML structure',
@@ -211,8 +231,9 @@ export async function action({ request }: { request: Request }) {
       }
     }
 
-    const sitemapIndex = doc.querySelector('sitemapindex')
-    const urlset = doc.querySelector('urlset')
+    const sitemapIndex =
+      (parsedXml as { sitemapindex?: unknown }).sitemapindex ?? null
+    const urlset = (parsedXml as { urlset?: unknown }).urlset ?? null
 
     if (!sitemapIndex && !urlset) {
       issues.push({
@@ -242,9 +263,15 @@ export async function action({ request }: { request: Request }) {
 
     let urls: SitemapUrl[] = []
     let sitemaps: string[] = []
+    let urlCount = 0
 
     if (sitemapIndex) {
-      const sitemapElements = doc.querySelectorAll('sitemap')
+      const sitemapElements = normalizeArray(
+        (sitemapIndex as { sitemap?: unknown }).sitemap as
+          | Record<string, unknown>
+          | Record<string, unknown>[]
+          | undefined,
+      )
 
       if (sitemapElements.length === 0) {
         issues.push({
@@ -256,7 +283,9 @@ export async function action({ request }: { request: Request }) {
       }
 
       sitemapElements.forEach((sitemap, index) => {
-        const loc = sitemap.querySelector('loc')?.textContent?.trim()
+        const loc = getText(
+          (sitemap as { loc?: unknown; '#text'?: unknown }).loc,
+        )
 
         if (!loc) {
           issues.push({
@@ -294,8 +323,14 @@ export async function action({ request }: { request: Request }) {
     }
 
     if (urlset) {
-      const urlElements = doc.querySelectorAll('url')
+      const urlElements = normalizeArray(
+        (urlset as { url?: unknown }).url as
+          | Record<string, unknown>
+          | Record<string, unknown>[]
+          | undefined,
+      )
       const seenUrls = new Set<string>()
+      urlCount = urlElements.length
 
       if (urlElements.length === 0) {
         issues.push({
@@ -314,14 +349,14 @@ export async function action({ request }: { request: Request }) {
       }
 
       urlElements.forEach((urlElement, index) => {
-        const loc = urlElement.querySelector('loc')?.textContent?.trim()
-        const lastmod = urlElement.querySelector('lastmod')?.textContent?.trim()
-        const changefreq = urlElement
-          .querySelector('changefreq')
-          ?.textContent?.trim()
-        const priority = urlElement
-          .querySelector('priority')
-          ?.textContent?.trim()
+        const loc = getText((urlElement as { loc?: unknown }).loc)
+        const lastmod = getText((urlElement as { lastmod?: unknown }).lastmod)
+        const changefreq = getText(
+          (urlElement as { changefreq?: unknown }).changefreq,
+        )
+        const priority = getText(
+          (urlElement as { priority?: unknown }).priority,
+        )
 
         if (!loc) {
           issues.push({
@@ -433,7 +468,7 @@ export async function action({ request }: { request: Request }) {
         isValid: !hasErrors,
         url: normalizedUrl,
         encoding,
-        urlCount: urlset ? doc.querySelectorAll('url').length : 0,
+        urlCount,
         issues,
         urls,
         sitemapIndex: !!sitemapIndex,
@@ -737,11 +772,12 @@ export default function SitemapValidator() {
                           >
                             <IssueIcon type={issue.type} />
                             <div className='min-w-0 flex-1'>
-                              <Text weight='medium' className='text-sm'>
+                              <Text as='p' weight='medium' className='text-sm'>
                                 {issue.message}
                               </Text>
                               {issue.details && (
                                 <Text
+                                  as='p'
                                   size='sm'
                                   colour='muted'
                                   className='mt-0.5 break-all'
