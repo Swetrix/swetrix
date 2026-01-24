@@ -36,6 +36,7 @@
     "d3": "^7.9.0",
     "d3-scale": "^4.0.2",
     "dayjs": "^1.11.19",
+    "fast-xml-parser": "^5.3.3",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.29.0",
     "geojson": "^0.5.0",

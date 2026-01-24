@@ -1,12 +1,14 @@
-import { TrendingUpIcon } from 'lucide-react'
+import { ChevronDownIcon, TrendingUpIcon } from 'lucide-react'
 import { useState } from 'react'
 import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
 import { isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
+import { Text } from '~/ui/Text'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.8,
@@ -132,197 +134,191 @@ export default function CTRCalculator() {
   return (
     <div className='min-h-screen bg-gray-50 dark:bg-slate-900'>
       <main className='mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8'>
-        <div className='mx-auto max-w-4xl'>
-          <div className='text-center'>
-            <h1 className='text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white'>
+        <ToolsNavMobile className='mb-6 lg:hidden' />
+
+        <div className='lg:flex lg:items-start lg:gap-8'>
+          <div className='min-w-0 lg:flex-1'>
+            <Text as='h1' size='4xl' weight='bold' tracking='tight'>
               CTR Calculator
-            </h1>
-            <p className='mt-4 text-lg text-gray-600 dark:text-gray-400'>
+            </Text>
+            <Text as='p' size='lg' colour='muted' className='mt-4'>
               Calculate your Click-Through Rate and understand your campaign
               performance instantly
-            </p>
-          </div>
+            </Text>
 
-          <div className='mt-12 rounded-xl bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-            <div className='space-y-6'>
-              <div>
-                <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
-                  Calculate Your CTR
-                </h2>
+            <div className='mt-12 rounded-xl bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+              <div className='space-y-6'>
+                <div>
+                  <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                    Calculate Your CTR
+                  </h2>
 
-                <div className='grid gap-6 md:grid-cols-2'>
-                  <div>
-                    <Input
-                      type='number'
-                      placeholder='Enter number of clicks'
-                      label='Total Clicks'
-                      value={metrics.clicks}
-                      onChange={(e) =>
-                        handleMetricChange('clicks', e.target.value)
-                      }
-                      className='w-full'
-                      min='0'
-                    />
-                    <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
-                      How many times your ad was clicked
-                    </p>
-                  </div>
-
-                  <div>
-                    <Input
-                      type='number'
-                      placeholder='Enter number of impressions'
-                      label='Total Impressions'
-                      value={metrics.impressions}
-                      onChange={(e) =>
-                        handleMetricChange('impressions', e.target.value)
-                      }
-                      className='w-full'
-                      min='1'
-                    />
-                    <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
-                      How many times your ad was shown
-                    </p>
-                  </div>
-                </div>
-
-                <div className='mt-6'>
-                  <Button onClick={reset} regular>
-                    Reset
-                  </Button>
-                </div>
-              </div>
-
-              {result ? (
-                <div className='border-t border-gray-200 pt-6 dark:border-gray-700'>
-                  <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
-                    Results
-                  </h3>
-
-                  <div className='rounded-lg bg-gray-50 p-6 dark:bg-slate-700/50'>
-                    <div className='text-center'>
-                      <div className='text-5xl font-bold text-gray-900 dark:text-white'>
-                        {result.ctr.toFixed(2)}%
-                      </div>
-                      <div className='mt-2 text-lg text-gray-600 dark:text-gray-400'>
-                        Click-Through Rate
-                      </div>
-                      <div
-                        className={`mt-4 text-lg font-semibold ${result.color}`}
-                      >
-                        {result.performance} Performance
-                      </div>
-                    </div>
-
-                    <div className='mt-6 grid gap-4 text-sm md:grid-cols-2'>
-                      <div className='rounded-lg bg-white p-4 dark:bg-slate-800'>
-                        <div className='text-gray-500 dark:text-gray-400'>
-                          Formula Used
-                        </div>
-                        <div className='mt-1 font-mono text-gray-900 dark:text-white'>
-                          CTR = (Clicks ÷ Impressions) × 100
-                        </div>
-                      </div>
-                      <div className='rounded-lg bg-white p-4 dark:bg-slate-800'>
-                        <div className='text-gray-500 dark:text-gray-400'>
-                          Your Calculation
-                        </div>
-                        <div className='mt-1 font-mono text-gray-900 dark:text-white'>
-                          ({metrics.clicks} ÷ {metrics.impressions}) × 100
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className='mt-6 rounded-lg bg-indigo-50 p-4 dark:bg-indigo-900/20'>
-                    <h4 className='flex items-center text-lg font-medium text-indigo-900 dark:text-indigo-300'>
-                      <TrendingUpIcon className='mr-2 h-5 w-5' />
-                      Performance Insights
-                    </h4>
-                    <p className='mt-2 text-sm text-indigo-800 dark:text-indigo-200'>
-                      {result.performance === 'Excellent'
-                        ? 'Outstanding CTR! Your ads are highly engaging and relevant to your audience. Keep up the great work!'
-                        : null}
-                      {result.performance === 'Good'
-                        ? 'Good CTR! Your ads are performing well. Consider A/B testing to push performance even higher.'
-                        : null}
-                      {result.performance === 'Average'
-                        ? "Average CTR. There's room for improvement. Try refining your targeting or ad copy."
-                        : null}
-                      {result.performance === 'Below Average'
-                        ? 'Below average CTR. Consider reviewing your ad relevance, targeting, and creative elements.'
-                        : null}
-                      {result.performance === 'Poor'
-                        ? 'Low CTR indicates your ads may not be resonating with your audience. Consider a comprehensive review of your campaign strategy.'
-                        : null}
-                    </p>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <div className='mt-16'>
-            <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
-              Frequently Asked Questions
-            </h2>
-
-            <div className='space-y-4'>
-              {FAQ_ITEMS.map((item, index) => (
-                <details
-                  key={index}
-                  className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
-                >
-                  <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
-                    <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
-                      {item.question}
-                    </h3>
-                    <svg
-                      className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M19 9l-7 7-7-7'
+                  <div className='grid gap-6 md:grid-cols-2'>
+                    <div>
+                      <Input
+                        type='number'
+                        placeholder='Enter number of clicks'
+                        label='Total Clicks'
+                        value={metrics.clicks}
+                        onChange={(e) =>
+                          handleMetricChange('clicks', e.target.value)
+                        }
+                        className='w-full'
+                        min='0'
                       />
-                    </svg>
-                  </summary>
-                  <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
-                    <p className='text-gray-600 dark:text-gray-400'>
-                      {item.answer}
-                    </p>
+                      <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                        How many times your ad was clicked
+                      </p>
+                    </div>
+
+                    <div>
+                      <Input
+                        type='number'
+                        placeholder='Enter number of impressions'
+                        label='Total Impressions'
+                        value={metrics.impressions}
+                        onChange={(e) =>
+                          handleMetricChange('impressions', e.target.value)
+                        }
+                        className='w-full'
+                        min='1'
+                      />
+                      <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                        How many times your ad was shown
+                      </p>
+                    </div>
                   </div>
-                </details>
-              ))}
+
+                  <div className='mt-6'>
+                    <Button onClick={reset} regular>
+                      Reset
+                    </Button>
+                  </div>
+                </div>
+
+                {result ? (
+                  <div className='border-t border-gray-200 pt-6 dark:border-gray-700'>
+                    <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                      Results
+                    </h3>
+
+                    <div className='rounded-lg bg-gray-50 p-6 dark:bg-slate-700/50'>
+                      <div className='text-center'>
+                        <div className='text-5xl font-bold text-gray-900 dark:text-white'>
+                          {result.ctr.toFixed(2)}%
+                        </div>
+                        <div className='mt-2 text-lg text-gray-600 dark:text-gray-400'>
+                          Click-Through Rate
+                        </div>
+                        <div
+                          className={`mt-4 text-lg font-semibold ${result.color}`}
+                        >
+                          {result.performance} Performance
+                        </div>
+                      </div>
+
+                      <div className='mt-6 grid gap-4 text-sm md:grid-cols-2'>
+                        <div className='rounded-lg bg-white p-4 dark:bg-slate-800'>
+                          <div className='text-gray-500 dark:text-gray-400'>
+                            Formula Used
+                          </div>
+                          <div className='mt-1 font-mono text-gray-900 dark:text-white'>
+                            CTR = (Clicks ÷ Impressions) × 100
+                          </div>
+                        </div>
+                        <div className='rounded-lg bg-white p-4 dark:bg-slate-800'>
+                          <div className='text-gray-500 dark:text-gray-400'>
+                            Your Calculation
+                          </div>
+                          <div className='mt-1 font-mono text-gray-900 dark:text-white'>
+                            ({metrics.clicks} ÷ {metrics.impressions}) × 100
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className='mt-6 rounded-lg bg-indigo-50 p-4 dark:bg-indigo-900/20'>
+                      <h4 className='flex items-center text-lg font-medium text-indigo-900 dark:text-indigo-300'>
+                        <TrendingUpIcon className='mr-2 h-5 w-5' />
+                        Performance Insights
+                      </h4>
+                      <p className='mt-2 text-sm text-indigo-800 dark:text-indigo-200'>
+                        {result.performance === 'Excellent'
+                          ? 'Outstanding CTR! Your ads are highly engaging and relevant to your audience. Keep up the great work!'
+                          : null}
+                        {result.performance === 'Good'
+                          ? 'Good CTR! Your ads are performing well. Consider A/B testing to push performance even higher.'
+                          : null}
+                        {result.performance === 'Average'
+                          ? "Average CTR. There's room for improvement. Try refining your targeting or ad copy."
+                          : null}
+                        {result.performance === 'Below Average'
+                          ? 'Below average CTR. Consider reviewing your ad relevance, targeting, and creative elements.'
+                          : null}
+                        {result.performance === 'Poor'
+                          ? 'Low CTR indicates your ads may not be resonating with your audience. Consider a comprehensive review of your campaign strategy.'
+                          : null}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
             </div>
+
+            <div className='mt-16'>
+              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+                Frequently Asked Questions
+              </h2>
+
+              <div className='space-y-4'>
+                {FAQ_ITEMS.map((item, index) => (
+                  <details
+                    key={index}
+                    className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
+                  >
+                    <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
+                      <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
+                        {item.question}
+                      </h3>
+                      <ChevronDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
+                    </summary>
+                    <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
+                      <p className='text-gray-600 dark:text-gray-400'>
+                        {item.answer}
+                      </p>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </div>
+
+            {/* FAQ Structured Data */}
+            <script
+              type='application/ld+json'
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  '@context': 'https://schema.org',
+                  '@type': 'FAQPage',
+                  mainEntity: FAQ_ITEMS.map((item) => ({
+                    '@type': 'Question',
+                    name: item.question,
+                    acceptedAnswer: {
+                      '@type': 'Answer',
+                      text: item.answer,
+                    },
+                  })),
+                })
+                  .replace(/</g, '\\u003c')
+                  .replace(/\u2028|\u2029/g, ''),
+              }}
+            />
+
+            <DitchGoogle />
           </div>
 
-          {/* FAQ Structured Data */}
-          <script
-            type='application/ld+json'
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'FAQPage',
-                mainEntity: FAQ_ITEMS.map((item) => ({
-                  '@type': 'Question',
-                  name: item.question,
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: item.answer,
-                  },
-                })),
-              })
-                .replace(/</g, '\\u003c')
-                .replace(/\u2028|\u2029/g, ''),
-            }}
-          />
-
-          <DitchGoogle />
+          <aside className='hidden lg:sticky lg:top-12 lg:block lg:w-64 lg:shrink-0 lg:self-start'>
+            <ToolsNav />
+          </aside>
         </div>
       </main>
     </div>

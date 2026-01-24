@@ -4,9 +4,11 @@ import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { ToolsNav, ToolsNavMobile } from '~/components/ToolsNav'
 import { isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
+import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 
 export const sitemap: SitemapFunction = () => ({
@@ -191,234 +193,245 @@ export default function UTMGenerator() {
   return (
     <div className='min-h-screen bg-gray-50 dark:bg-slate-900'>
       <main className='mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8'>
-        <div className='mx-auto max-w-4xl'>
-          <div className='text-center'>
-            <h1 className='text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl dark:text-white'>
+        <ToolsNavMobile className='mb-6 lg:hidden' />
+
+        <div className='lg:flex lg:items-start lg:gap-8'>
+          <div className='min-w-0 lg:flex-1'>
+            <Text as='h1' size='4xl' weight='bold' tracking='tight'>
               UTM Link Generator
-            </h1>
-            <p className='mt-4 text-lg text-gray-600 dark:text-gray-400'>
+            </Text>
+            <Text as='p' size='lg' colour='muted' className='mt-4'>
               Create trackable URLs with UTM parameters to measure your
               marketing campaigns effectively
-            </p>
-          </div>
+            </Text>
 
-          <div className='mt-12 rounded-xl bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
-            <div className='space-y-6'>
-              <div>
-                <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
-                  Build your UTM link
-                </h2>
+            <div className='mt-12 rounded-xl bg-white p-8 ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+              <div className='space-y-6'>
+                <div>
+                  <h2 className='mb-6 text-2xl font-semibold text-gray-900 dark:text-white'>
+                    Build your UTM link
+                  </h2>
 
-                <div className='space-y-6'>
-                  <Input
-                    type='text'
-                    placeholder='https://example.com/page'
-                    label='Your URL address'
-                    value={params.url}
-                    onChange={(e) => handleParamChange('url', e.target.value)}
-                    className='w-full'
-                  />
+                  <div className='space-y-6'>
+                    <Input
+                      type='text'
+                      placeholder='https://example.com/page'
+                      label='Your URL address'
+                      value={params.url}
+                      onChange={(e) => handleParamChange('url', e.target.value)}
+                      className='w-full'
+                    />
 
-                  <div className='grid gap-6 md:grid-cols-2'>
-                    <div>
-                      <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
-                        Campaign parameters
-                      </h3>
+                    <div className='grid gap-6 md:grid-cols-2'>
+                      <div>
+                        <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                          Campaign parameters
+                        </h3>
 
-                      <div className='space-y-4'>
-                        <div>
-                          <Input
-                            type='text'
-                            placeholder={sourceExamples.join(', ')}
-                            label={
-                              <>
-                                Campaign source
-                                <Tooltip
-                                  className='ml-1'
-                                  text='Identifies the source of your traffic (e.g., google, facebook, newsletter)'
-                                />
-                              </>
-                            }
-                            value={params.utm_source}
-                            onChange={(e) =>
-                              handleParamChange('utm_source', e.target.value)
-                            }
-                            className='w-full'
-                          />
-                        </div>
+                        <div className='space-y-4'>
+                          <div>
+                            <Input
+                              type='text'
+                              placeholder={sourceExamples.join(', ')}
+                              label={
+                                <>
+                                  Campaign source
+                                  <Tooltip
+                                    className='ml-1'
+                                    text='Identifies the source of your traffic (e.g., google, facebook, newsletter)'
+                                  />
+                                </>
+                              }
+                              value={params.utm_source}
+                              onChange={(e) =>
+                                handleParamChange('utm_source', e.target.value)
+                              }
+                              className='w-full'
+                            />
+                          </div>
 
-                        <div>
-                          <Input
-                            type='text'
-                            placeholder={mediumExamples.join(', ')}
-                            label={
-                              <>
-                                Campaign medium
-                                <Tooltip
-                                  className='ml-1'
-                                  text='Identifies the marketing medium (e.g., email, cpc, social, referral)'
-                                />
-                              </>
-                            }
-                            value={params.utm_medium}
-                            onChange={(e) =>
-                              handleParamChange('utm_medium', e.target.value)
-                            }
-                            className='w-full'
-                          />
-                        </div>
+                          <div>
+                            <Input
+                              type='text'
+                              placeholder={mediumExamples.join(', ')}
+                              label={
+                                <>
+                                  Campaign medium
+                                  <Tooltip
+                                    className='ml-1'
+                                    text='Identifies the marketing medium (e.g., email, cpc, social, referral)'
+                                  />
+                                </>
+                              }
+                              value={params.utm_medium}
+                              onChange={(e) =>
+                                handleParamChange('utm_medium', e.target.value)
+                              }
+                              className='w-full'
+                            />
+                          </div>
 
-                        <div>
-                          <Input
-                            type='text'
-                            placeholder={campaignExamples.join(', ')}
-                            label={
-                              <>
-                                Campaign name
-                                <Tooltip
-                                  className='ml-1'
-                                  text='Identifies a specific campaign (e.g., spring_sale, product_launch)'
-                                />
-                              </>
-                            }
-                            value={params.utm_campaign}
-                            onChange={(e) =>
-                              handleParamChange('utm_campaign', e.target.value)
-                            }
-                            className='w-full'
-                          />
+                          <div>
+                            <Input
+                              type='text'
+                              placeholder={campaignExamples.join(', ')}
+                              label={
+                                <>
+                                  Campaign name
+                                  <Tooltip
+                                    className='ml-1'
+                                    text='Identifies a specific campaign (e.g., spring_sale, product_launch)'
+                                  />
+                                </>
+                              }
+                              value={params.utm_campaign}
+                              onChange={(e) =>
+                                handleParamChange(
+                                  'utm_campaign',
+                                  e.target.value,
+                                )
+                              }
+                              className='w-full'
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div>
-                      <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
-                        Optional parameters
-                      </h3>
+                      <div>
+                        <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                          Optional parameters
+                        </h3>
 
-                      <div className='space-y-4'>
-                        <div>
-                          <Input
-                            type='text'
-                            placeholder='link, landing page'
-                            label={
-                              <>
-                                Campaign content
-                                <Tooltip
-                                  className='ml-1'
-                                  text='Used to differentiate similar content or links within the same ad'
-                                />
-                              </>
-                            }
-                            value={params.utm_content}
-                            onChange={(e) =>
-                              handleParamChange('utm_content', e.target.value)
-                            }
-                            className='w-full'
-                          />
-                        </div>
+                        <div className='space-y-4'>
+                          <div>
+                            <Input
+                              type='text'
+                              placeholder='link, landing page'
+                              label={
+                                <>
+                                  Campaign content
+                                  <Tooltip
+                                    className='ml-1'
+                                    text='Used to differentiate similar content or links within the same ad'
+                                  />
+                                </>
+                              }
+                              value={params.utm_content}
+                              onChange={(e) =>
+                                handleParamChange('utm_content', e.target.value)
+                              }
+                              className='w-full'
+                            />
+                          </div>
 
-                        <div>
-                          <Input
-                            type='text'
-                            placeholder='free, -30%, registration'
-                            value={params.utm_term}
-                            label={
-                              <>
-                                Campaign term
-                                <Tooltip
-                                  className='ml-1'
-                                  text='Used for paid search to identify keywords for your ad'
-                                />
-                              </>
-                            }
-                            onChange={(e) =>
-                              handleParamChange('utm_term', e.target.value)
-                            }
-                            className='w-full'
-                          />
+                          <div>
+                            <Input
+                              type='text'
+                              placeholder='free, -30%, registration'
+                              value={params.utm_term}
+                              label={
+                                <>
+                                  Campaign term
+                                  <Tooltip
+                                    className='ml-1'
+                                    text='Used for paid search to identify keywords for your ad'
+                                  />
+                                </>
+                              }
+                              onChange={(e) =>
+                                handleParamChange('utm_term', e.target.value)
+                              }
+                              className='w-full'
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className='border-t border-gray-200 pt-6 dark:border-gray-700'>
-                <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
-                  Result
-                </h3>
-                <div className='flex flex-col items-center gap-2 md:flex-row'>
-                  <Input
-                    type='text'
-                    value={generatedURL || 'Your UTM link will appear here...'}
-                    readOnly
-                    className='w-full font-mono text-sm tracking-tight'
-                    disabled={!generatedURL}
-                  />
-                  <Button
-                    onClick={copyToClipboard}
-                    disabled={!generatedURL}
-                    primary
-                    regular
+                <div className='border-t border-gray-200 pt-6 dark:border-gray-700'>
+                  <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
+                    Result
+                  </h3>
+                  <div className='flex flex-col items-center gap-2 md:flex-row'>
+                    <Input
+                      type='text'
+                      value={
+                        generatedURL || 'Your UTM link will appear here...'
+                      }
+                      readOnly
+                      className='w-full font-mono text-sm tracking-tight'
+                      disabled={!generatedURL}
+                    />
+                    <Button
+                      onClick={copyToClipboard}
+                      disabled={!generatedURL}
+                      primary
+                      regular
+                    >
+                      <CopyIcon className='mr-1 h-4 w-4' />
+                      {copied ? 'Copied!' : 'Copy'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className='mt-16'>
+              <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
+                Frequently Asked Questions
+              </h2>
+
+              <div className='space-y-4'>
+                {FAQ_ITEMS.map((item, index) => (
+                  <details
+                    key={index}
+                    className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
                   >
-                    <CopyIcon className='mr-1 h-4 w-4' />
-                    {copied ? 'Copied!' : 'Copy'}
-                  </Button>
-                </div>
+                    <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
+                      <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
+                        {item.question}
+                      </h3>
+                      <ChevronDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
+                    </summary>
+                    <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
+                      <p className='text-gray-600 dark:text-gray-400'>
+                        {item.answer}
+                      </p>
+                    </div>
+                  </details>
+                ))}
               </div>
             </div>
+
+            {/* FAQ Structured Data */}
+            <script
+              type='application/ld+json'
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  '@context': 'https://schema.org',
+                  '@type': 'FAQPage',
+                  mainEntity: FAQ_ITEMS.map((item) => ({
+                    '@type': 'Question',
+                    name: item.question,
+                    acceptedAnswer: {
+                      '@type': 'Answer',
+                      text: item.answer,
+                    },
+                  })),
+                })
+                  .replace(/</g, '\\u003c')
+                  .replace(/\u2028|\u2029/g, ''),
+              }}
+            />
+
+            <DitchGoogle />
           </div>
 
-          <div className='mt-16'>
-            <h2 className='mb-8 text-center text-3xl font-bold text-gray-900 dark:text-white'>
-              Frequently Asked Questions
-            </h2>
-
-            <div className='space-y-4'>
-              {FAQ_ITEMS.map((item, index) => (
-                <details
-                  key={index}
-                  className='group rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-slate-800'
-                >
-                  <summary className='flex w-full cursor-pointer items-center justify-between px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-700/50'>
-                    <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
-                      {item.question}
-                    </h3>
-                    <ChevronDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
-                  </summary>
-                  <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
-                    <p className='text-gray-600 dark:text-gray-400'>
-                      {item.answer}
-                    </p>
-                  </div>
-                </details>
-              ))}
-            </div>
-          </div>
-
-          {/* FAQ Structured Data */}
-          <script
-            type='application/ld+json'
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                '@context': 'https://schema.org',
-                '@type': 'FAQPage',
-                mainEntity: FAQ_ITEMS.map((item) => ({
-                  '@type': 'Question',
-                  name: item.question,
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: item.answer,
-                  },
-                })),
-              })
-                .replace(/</g, '\\u003c')
-                .replace(/\u2028|\u2029/g, ''),
-            }}
-          />
-
-          <DitchGoogle />
+          <aside className='hidden lg:sticky lg:top-12 lg:block lg:w-64 lg:shrink-0 lg:self-start'>
+            <ToolsNav />
+          </aside>
         </div>
       </main>
     </div>
