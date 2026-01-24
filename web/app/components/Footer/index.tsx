@@ -61,6 +61,11 @@ const productionNavigation = {
     { key: 'ctr', href: routesPath.ctr_calculator, internal: true },
     { key: 'roi', href: routesPath.roi_calculator, internal: true },
     { name: 'IP Lookup', href: routesPath.ip_lookup, internal: true },
+    {
+      name: 'Sitemap Validator',
+      href: routesPath.sitemap_validator,
+      internal: true,
+    },
   ],
   company: [
     { key: 'open', href: routesPath.open, internal: true },

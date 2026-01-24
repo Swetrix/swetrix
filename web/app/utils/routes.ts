@@ -43,6 +43,7 @@ const routes = Object.freeze({
   roi_calculator: '/tools/roi-calculator',
   ctr_calculator: '/tools/ctr-calculator',
   ip_lookup: '/tools/ip-lookup',
+  sitemap_validator: '/tools/sitemap-validator',
 
   // Marketing pages
   gaAlternative: '/google-analytics-alternative',

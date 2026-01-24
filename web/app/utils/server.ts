@@ -213,6 +213,30 @@ export const getPageMeta = (
       }
       break
 
+    case routes.sitemap_validator:
+      result = {
+        title: 'Free Sitemap Validator tool - Validate your sitemap.xml',
+      }
+      break
+
+    case routes.roi_calculator:
+      result = {
+        title: 'Free ROI Calculator tool - Calculate your ROI',
+      }
+      break
+
+    case routes.ctr_calculator:
+      result = {
+        title: 'Free CTR Calculator tool - Calculate your CTR',
+      }
+      break
+
+    case routes.utm_generator:
+      result = {
+        title: 'Free UTM Generator tool - Create UTM parameters',
+      }
+      break
+
     default:
       break
   }
