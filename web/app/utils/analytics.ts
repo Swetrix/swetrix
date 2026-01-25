@@ -19,6 +19,7 @@ const REFS_TO_IGNORE = [
   /https:\/\/swetrix.com\/share/i,
   /https:\/\/swetrix.com\/captchas\/(?!new$)[^/]+$/i,
   /https:\/\/swetrix.com\/captchas\/settings/i,
+  /https:\/\/swetrix.com\/organisations\/[^/]+/i,
 ]
 
 const PATHS_REPLACEMENT_MAP = [
@@ -69,6 +70,10 @@ const PATHS_REPLACEMENT_MAP = [
   {
     regex: /\/projects\/([^/]+)\/password/i,
     replacement: '/projects/[id]/password',
+  },
+  {
+    regex: /^\/organisations\/[^/]+/i,
+    replacement: '/organisations/[id]',
   },
 ]
 
