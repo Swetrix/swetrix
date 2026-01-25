@@ -52,31 +52,44 @@ interface ProfileDetailsProps {
   currency?: string
 }
 
+interface ActivityDay {
+  date: string
+  pageviews: number
+  events: number
+}
+
 const ActivityCalendar = ({
   data,
 }: {
-  data: { date: string; count: number }[]
+  data: { date: string; pageviews: number; events: number }[]
 }) => {
   const { t } = useTranslation('common')
 
-  const countMap = useMemo(() => {
-    const map = new Map<string, number>()
-    data.forEach((item) => map.set(item.date, item.count))
+  const dataMap = useMemo(() => {
+    const map = new Map<string, { pageviews: number; events: number }>()
+    data.forEach((item) =>
+      map.set(item.date, { pageviews: item.pageviews, events: item.events }),
+    )
     return map
   }, [data])
 
   const weeks = useMemo(() => {
-    const result: { date: string; count: number }[][] = []
+    const result: ActivityDay[][] = []
     const now = dayjs()
     const startDate = now.subtract(4, 'month').startOf('week')
     const endDate = now.endOf('week')
 
-    let currentWeek: { date: string; count: number }[] = []
+    let currentWeek: ActivityDay[] = []
     let currentDay = startDate
 
     while (currentDay.isBefore(endDate) || currentDay.isSame(endDate, 'day')) {
       const dateStr = currentDay.format('YYYY-MM-DD')
-      currentWeek.push({ date: dateStr, count: countMap.get(dateStr) || 0 })
+      const dayData = dataMap.get(dateStr)
+      currentWeek.push({
+        date: dateStr,
+        pageviews: dayData?.pageviews || 0,
+        events: dayData?.events || 0,
+      })
       if (currentWeek.length === 7) {
         result.push(currentWeek)
         currentWeek = []
@@ -85,7 +98,7 @@ const ActivityCalendar = ({
     }
     if (currentWeek.length > 0) result.push(currentWeek)
     return result
-  }, [countMap])
+  }, [dataMap])
 
   const monthLabels = useMemo(() => {
     const labels: { month: string; weekIndex: number }[] = []
@@ -101,27 +114,35 @@ const ActivityCalendar = ({
     return labels
   }, [weeks])
 
-  const getColor = (count: number) => {
-    if (count === 0) return 'bg-gray-100 dark:bg-slate-700/50'
-    if (count <= 2) return 'bg-emerald-200 dark:bg-emerald-800'
-    if (count <= 5) return 'bg-emerald-300 dark:bg-emerald-700'
-    if (count <= 10) return 'bg-emerald-400 dark:bg-emerald-600'
+  const getColor = (pageviews: number, events: number) => {
+    const total = pageviews + events
+    if (total === 0) return 'bg-gray-100 dark:bg-slate-700/50'
+    if (total <= 2) return 'bg-emerald-200 dark:bg-emerald-800'
+    if (total <= 5) return 'bg-emerald-300 dark:bg-emerald-700'
+    if (total <= 10) return 'bg-emerald-400 dark:bg-emerald-600'
     return 'bg-emerald-500'
   }
 
   const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
-  const TooltipContent = ({
-    day,
-  }: {
-    day: { date: string; count: number }
-  }) => (
-    <div className='text-center'>
-      <div className='font-medium'>{dayjs(day.date).format('MMM D, YYYY')}</div>
-      <div className='text-gray-300'>
-        {day.count} {t('dashboard.pageviews').toLowerCase()}
-      </div>
-    </div>
+  const TooltipContent = ({ day }: { day: ActivityDay }) => (
+    <ul className='min-w-[120px] text-xs'>
+      <li className='mb-1 border-b border-gray-200 pb-1 font-semibold dark:border-gray-600'>
+        {dayjs(day.date).format('MMM D, YYYY')}
+      </li>
+      <li className='flex items-center justify-between py-px leading-snug'>
+        <div className='flex items-center'>
+          <span>{t('dashboard.pageviews')}</span>
+        </div>
+        <span className='ml-4 font-mono'>{day.pageviews}</span>
+      </li>
+      <li className='flex items-center justify-between py-px leading-snug'>
+        <div className='flex items-center'>
+          <span>{t('dashboard.events')}</span>
+        </div>
+        <span className='ml-4 font-mono'>{day.events}</span>
+      </li>
+    </ul>
   )
 
   return (
@@ -158,7 +179,7 @@ const ActivityCalendar = ({
                     <div
                       className={cn(
                         'h-3 w-full rounded-[2px]',
-                        getColor(day.count),
+                        getColor(day.pageviews, day.events),
                       )}
                     />
                   }

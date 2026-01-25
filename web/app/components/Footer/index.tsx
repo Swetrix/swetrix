@@ -60,7 +60,12 @@ const productionNavigation = {
     { key: 'utm', href: routesPath.utm_generator, internal: true },
     { key: 'ctr', href: routesPath.ctr_calculator, internal: true },
     { key: 'roi', href: routesPath.roi_calculator, internal: true },
-    { key: 'ip-lookup', name: 'IP Lookup', href: routesPath.ip_lookup, internal: true },
+    {
+      key: 'ip-lookup',
+      name: 'IP Lookup',
+      href: routesPath.ip_lookup,
+      internal: true,
+    },
     {
       key: 'sitemap-validator',
       name: 'Sitemap Validator',

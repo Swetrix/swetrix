@@ -5202,7 +5202,7 @@ export class AnalyticsService {
     pid: string,
     profileId: string,
     months = 4,
-  ): Promise<{ date: string; count: number }[]> {
+  ): Promise<{ date: string; pageviews: number; events: number }[]> {
     const startDate = dayjs
       .utc()
       .subtract(months, 'month')
@@ -5210,13 +5210,30 @@ export class AnalyticsService {
       .format('YYYY-MM-DD')
 
     const query = `
+      WITH all_activity AS (
+        SELECT
+          toDate(created) AS date,
+          1 AS isPageview,
+          0 AS isEvent
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND created >= {startDate:Date}
+        UNION ALL
+        SELECT
+          toDate(created) AS date,
+          0 AS isPageview,
+          1 AS isEvent
+        FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND created >= {startDate:Date}
+      )
       SELECT
-        toDate(created) AS date,
-        count() AS count
-      FROM analytics
-      WHERE pid = {pid:FixedString(12)}
-        AND profileId = {profileId:String}
-        AND created >= {startDate:Date}
+        date,
+        sum(isPageview) AS pageviews,
+        sum(isEvent) AS events
+      FROM all_activity
       GROUP BY date
       ORDER BY date ASC
     `
@@ -5228,7 +5245,7 @@ export class AnalyticsService {
       })
       .then((resultSet) => resultSet.json())
 
-    return data as { date: string; count: number }[]
+    return data as { date: string; pageviews: number; events: number }[]
   }
 
   async getProfileChartData(
