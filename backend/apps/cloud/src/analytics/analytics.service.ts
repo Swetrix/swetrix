@@ -1240,36 +1240,47 @@ export class AnalyticsService {
     return profileId.startsWith(AnalyticsService.PROFILE_PREFIX_USER)
   }
 
+  private getSessionFirstSeenKey(pid: string, psid: string): string {
+    return `ses:fs:${pid}:${psid}`
+  }
+
   async recordSessionActivity(
     psid: string,
     pid: string,
     profileId: string,
   ): Promise<void> {
     const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+    const cacheKey = this.getSessionFirstSeenKey(pid, psid)
 
     try {
-      const query = `
-        SELECT minOrNull(firstSeen) AS firstSeen
-        FROM sessions
-        WHERE psid = {psid:UInt64}
-          AND pid = {pid:FixedString(12)}
-      `
+      let firstSeen = await redis.get(cacheKey)
 
-      const { data } = await clickhouse
-        .query({
-          query,
-          query_params: { psid, pid },
-        })
-        .then((resultSet) =>
-          resultSet.json<{
-            firstSeen: string | null
-          }>(),
-        )
+      if (!firstSeen) {
+        const query = `
+          SELECT minOrNull(firstSeen) AS firstSeen
+          FROM sessions
+          WHERE psid = {psid:UInt64}
+            AND pid = {pid:FixedString(12)}
+        `
 
-      const existingSession = data[0]
-      const firstSeen = existingSession?.firstSeen
-        ? dayjs.utc(existingSession.firstSeen).format('YYYY-MM-DD HH:mm:ss')
-        : now
+        const { data } = await clickhouse
+          .query({
+            query,
+            query_params: { psid, pid },
+          })
+          .then((resultSet) =>
+            resultSet.json<{
+              firstSeen: string | null
+            }>(),
+          )
+
+        const existingSession = data[0]
+        firstSeen = existingSession?.firstSeen
+          ? dayjs.utc(existingSession.firstSeen).format('YYYY-MM-DD HH:mm:ss')
+          : now
+
+        await redis.set(cacheKey, firstSeen, 'EX', UNIQUE_SESSION_LIFE_TIME)
+      }
 
       await clickhouse.insert({
         table: 'sessions',
@@ -1283,6 +1294,7 @@ export class AnalyticsService {
             lastSeen: now,
           },
         ],
+        clickhouse_settings: { async_insert: 1 },
       })
     } catch (error) {
       console.error('Failed to record session:', error)
