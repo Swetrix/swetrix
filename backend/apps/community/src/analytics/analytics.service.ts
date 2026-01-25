@@ -5564,22 +5564,48 @@ export class AnalyticsService {
     skip = 0,
   ): Promise<object[]> {
     const query = `
-      WITH profile_sessions AS (
+      WITH all_profile_events AS (
         SELECT
           CAST(psid, 'String') AS psidCasted,
           pid,
           profileId,
-          any(cc) AS cc_agg,
-          any(os) AS os_agg,
-          any(br) AS br_agg,
-          min(toTimeZone(created, {timezone:String})) AS sessionStart,
-          max(toTimeZone(created, {timezone:String})) AS lastActivity
+          cc,
+          os,
+          br,
+          toTimeZone(created, {timezone:String}) AS created_tz
         FROM analytics
         WHERE pid = {pid:FixedString(12)}
           AND profileId = {profileId:String}
           AND psid IS NOT NULL
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           ${filtersQuery}
+        UNION ALL
+        SELECT
+          CAST(psid, 'String') AS psidCasted,
+          pid,
+          profileId,
+          cc,
+          os,
+          br,
+          toTimeZone(created, {timezone:String}) AS created_tz
+        FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+          AND profileId = {profileId:String}
+          AND psid IS NOT NULL
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+      ),
+      profile_sessions AS (
+        SELECT
+          psidCasted,
+          pid,
+          profileId,
+          any(cc) AS cc_agg,
+          any(os) AS os_agg,
+          any(br) AS br_agg,
+          min(created_tz) AS sessionStart,
+          max(created_tz) AS lastActivity
+        FROM all_profile_events
         GROUP BY psidCasted, pid, profileId
       ),
       pageview_counts AS (
