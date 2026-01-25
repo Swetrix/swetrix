@@ -155,8 +155,16 @@ export const trackErrors = () => {
   }
 
   Swetrix.trackErrors({
-    callback: ({ message, pg }) => {
+    callback: ({ message, pg, filename }) => {
       if (_includes(message, 'Minified React error')) {
+        return false
+      }
+
+      // 3rd party extension errors
+      if (
+        _includes(filename, 'chrome-extension://') ||
+        _includes(filename, 'moz-extension://')
+      ) {
         return false
       }
 
