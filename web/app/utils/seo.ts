@@ -1,16 +1,16 @@
 import { TITLE_SUFFIX } from '~/lib/constants'
 
-export const getTitle = (title: string) => [
+export const getTitle = (title: string, showSuffix = true) => [
   {
-    title: `${title} ${TITLE_SUFFIX}`,
+    title: `${title} ${showSuffix ? TITLE_SUFFIX : ''}`.trim(),
   },
   {
     property: 'og:title',
-    content: `${title} ${TITLE_SUFFIX}`,
+    content: `${title} ${showSuffix ? TITLE_SUFFIX : ''}`.trim(),
   },
   {
     name: 'twitter:title',
-    content: `${title} ${TITLE_SUFFIX}`,
+    content: `${title} ${showSuffix ? TITLE_SUFFIX : ''}`.trim(),
   },
 ]
 
@@ -29,7 +29,9 @@ export const getDescription = (description: string) => [
   },
 ]
 
-export const getPreviewImage = (imageUrl: string) => [
+export const getPreviewImage = (
+  imageUrl = 'https://swetrix.com/assets/og_image.png?v=1',
+) => [
   {
     property: 'og:image',
     content: imageUrl,

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { redirect, data } from 'react-router'
 
@@ -10,12 +11,17 @@ import Post from '~/pages/Blog/Post'
 import { getPost } from '~/utils/getPosts.server'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
-export const meta: MetaFunction = (loaderData: any) => {
-  const ogImageUrl = getOgImageUrl(loaderData?.data?.title)
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  const title = data?.title || 'Blog'
+  const intro = data?.intro || t('description.blog')
+  const ogImageUrl = getOgImageUrl(title)
 
   return [
-    ...getTitle(loaderData?.data?.title || 'Blog'),
-    ...getDescription(loaderData?.data?.intro || ''),
+    ...getTitle(title),
+    ...getDescription(intro),
     ...getPreviewImage(ogImageUrl),
   ]
 }

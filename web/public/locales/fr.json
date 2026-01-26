@@ -2078,7 +2078,23 @@
     "privacyPolicy": "Politique de confidentialité",
     "cookiePolicy": "Politique relative aux cookies",
     "termsAndConditions": "Conditions générales",
-    "gaAlternative": "Alternative à Google Analytics sans cookies"
+    "gaAlternative": "Alternative à Google Analytics sans cookies",
+    "projectWithPassword": "Analyse du site web – mot de passe requis"
+  },
+  "description": {
+    "default": "Swetrix est une alternative à Google Analytics, respectueuse de la vie privée et sans cookies, avec des analyses en temps réel, sans échantillonnage, et un suivi intégré des performances et des erreurs.",
+    "blog": "Restez informé des dernières analyses, mises à jour produit, études de cas et cas d’usage de Swetrix.",
+    "captcha": "Swetrix Captcha est une alternative aux CAPTCHA traditionnels, respectueuse de la vie privée. Protégez votre site contre les bots et le spam sans agacer vos utilisateurs avec des puzzles.",
+    "contact": "Contactez Swetrix (alternative à Google Analytics, sans cookies et respectueuse de la vie privée) pour obtenir de l’aide, donner votre avis, ou poser vos questions et suggestions.",
+    "errorTracking": "Suivi des erreurs côté utilisateur, respectueux de la vie privée, par Swetrix. Configuration en une ligne, visualisez les erreurs par navigateur/appareil/localisation et corrigez les problèmes plus vite. Essai gratuit de 14 jours – sans carte bancaire.",
+    "login": "Connectez-vous à Swetrix pour consulter vos analyses sans cookies et respectueuses de la vie privée – informations en temps réel, aucun cookie de suivi, sans l’encombrement de GA.",
+    "signup": "Créez votre compte Swetrix et commencez à suivre le trafic de votre site avec des analyses sans cookies et respectueuses de la vie privée – configuration simple, statistiques en temps réel.",
+    "onboarding": "Démarrez avec Swetrix (alternative à Google Analytics, sans cookies et respectueuse de la vie privée) en quelques étapes.",
+    "open": "Indicateurs publics de la startup : découvrez nos principaux indicateurs financiers et opérationnels.",
+    "recovery": "Mot de passe oublié ? Utilisez notre fonctionnalité de récupération de mot de passe pour rétablir l’accès à votre compte.",
+    "performance": "Surveillez la vitesse du site pour les utilisateurs réels avec Swetrix – chargement de page, TTFB, temps DNS/TLS et percentiles. Respectueux de la vie privée et sans cookies. Essai gratuit de 14 jours, sans carte bancaire.",
+    "project": "Consultez les analyses web publiques de {{name}}. Suivi respectueux de la vie privée, propulsé par Swetrix – sans cookies ni suivi utilisateur intrusif.",
+    "projectWithPassword": "Ce projet d’analytique est protégé par mot de passe. Saisissez le mot de passe pour consulter des analyses web respectueuses de la vie privée, propulsées par Swetrix — sans cookies ni suivi utilisateur intrusif."
   },
   "header": {
     "startForFree": "Commencer gratuitement",

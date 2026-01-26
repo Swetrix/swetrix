@@ -1,5 +1,6 @@
 import { CopyIcon, ChevronDownIcon } from 'lucide-react'
 import { useState } from 'react'
+import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
@@ -10,6 +11,17 @@ import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+
+export const meta: MetaFunction = () => {
+  return [
+    ...getTitle('Free UTM Generator tool - Create UTM parameters'),
+    ...getDescription(
+      'Generate trackable UTM links in seconds. Add utm_source, utm_medium, utm_campaign and optional utm_content/utm_term, then copy the final URL to measure marketing campaign performance with clean, consistent parameters.',
+    ),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.8,

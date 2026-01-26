@@ -12,7 +12,7 @@ import {
 
 const getUrlFromLocation = (location: Location) => {
   const { pathname, hash, search } = location
-  const urlObject = new URL(`${MAIN_URL}${pathname}${search}${hash}`)
+  const urlObject = new URL(`${MAIN_URL}${pathname}${search}`)
 
   return urlObject
 }

@@ -693,23 +693,14 @@ const ViewProjectContent = () => {
     setItem(LS_IS_ACTIVE_COMPARE_KEY, isActiveCompare ? 'true' : 'false')
   }, [isActiveCompare])
 
+  // Only update title client-side when showLiveVisitorsInTitle is enabled
   useEffect(() => {
-    if (!project) {
+    if (!project || !user?.showLiveVisitorsInTitle) {
       return
     }
 
-    let pageTitle = user?.showLiveVisitorsInTitle
-      ? `👀 ${liveVisitors} - ${project.name}`
-      : project.name
-
-    if (!pageTitle) {
-      pageTitle = t('titles.main')
-    }
-
-    pageTitle += ` ${TITLE_SUFFIX}`
-
-    document.title = pageTitle
-  }, [project, user, liveVisitors, t])
+    document.title = `👀 ${liveVisitors} - ${project.name} ${TITLE_SUFFIX}`
+  }, [project, user?.showLiveVisitorsInTitle, liveVisitors])
 
   const [showFiltersSearch, setShowFiltersSearch] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
@@ -1333,11 +1324,15 @@ const ViewProjectContent = () => {
           {!isEmbedded ? <Footer /> : null}
         </div>
 
-        {/* Password Modal */}
-        <PasswordRequiredModal
-          isOpen={isPasswordRequired}
-          onSubmit={submitPassword}
-        />
+        {/* Password Modal - wrapped in ClientOnly to prevent SSR hydration mismatch with HeadlessUI portals */}
+        <ClientOnly>
+          {() => (
+            <PasswordRequiredModal
+              isOpen={isPasswordRequired}
+              onSubmit={submitPassword}
+            />
+          )}
+        </ClientOnly>
       </>
     )
   }

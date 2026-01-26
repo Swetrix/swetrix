@@ -2078,7 +2078,23 @@
     "privacyPolicy": "Polityka prywatności",
     "cookiePolicy": "Polityka plików cookie",
     "termsAndConditions": "Regulamin",
-    "gaAlternative": "Alternatywa dla Google Analytics bez plików cookie"
+    "gaAlternative": "Alternatywa dla Google Analytics bez plików cookie",
+    "projectWithPassword": "Analityka strony – wymagane hasło"
+  },
+  "description": {
+    "default": "Swetrix to alternatywa dla Google Analytics, stawiająca prywatność na pierwszym miejscu i niewymagająca plików cookie, z analizą w czasie rzeczywistym, bez próbkowania oraz z wbudowanym monitorowaniem wydajności i błędów.",
+    "blog": "Bądź na bieżąco z najnowszymi analizami, aktualizacjami produktu, studiami przypadków i przykładami zastosowań Swetrix.",
+    "captcha": "Swetrix Captcha to alternatywa dla tradycyjnych CAPTCHA, stawiająca prywatność na pierwszym miejscu. Chroń swoją stronę przed botami i spamem bez irytowania użytkowników zagadkami.",
+    "contact": "Skontaktuj się ze Swetrix (alternatywą dla Google Analytics bez plików cookie i z naciskiem na prywatność), aby uzyskać wsparcie, przekazać opinię lub zadać pytania i zgłosić sugestie.",
+    "errorTracking": "Śledzenie błędów użytkowników końcowych z naciskiem na prywatność od Swetrix. Konfiguracja w jednej linijce, podgląd błędów według przeglądarki/urządzenia/lokalizacji i szybsze naprawianie problemów. 14-dniowy darmowy okres próbny – bez karty.",
+    "login": "Zaloguj się do Swetrix, aby zobaczyć analitykę bez plików cookie i przyjazną prywatności – dane w czasie rzeczywistym, brak śledzących cookie, bez bałaganu GA.",
+    "signup": "Utwórz konto Swetrix i zacznij śledzić ruch na stronie dzięki analityce bez plików cookie i przyjaznej prywatności – prosta konfiguracja, statystyki w czasie rzeczywistym.",
+    "onboarding": "Zacznij korzystać ze Swetrix (alternatywy dla Google Analytics bez plików cookie i z naciskiem na prywatność) w kilku krokach.",
+    "open": "Otwarte metryki startupu: dowiedz się więcej o naszych kluczowych metrykach finansowych i operacyjnych.",
+    "recovery": "Nie pamiętasz hasła? Skorzystaj z funkcji odzyskiwania hasła, aby przywrócić dostęp do konta.",
+    "performance": "Monitoruj szybkość strony dla prawdziwych użytkowników ze Swetrix – czas ładowania strony, TTFB, czasy DNS/TLS i percentyle. Z naciskiem na prywatność i bez plików cookie. Darmowy 14-dniowy okres próbny, bez karty.",
+    "project": "Zobacz publiczną analitykę WWW dla {{name}}. Śledzenie przyjazne prywatności dzięki Swetrix – bez plików cookie i inwazyjnego śledzenia użytkowników.",
+    "projectWithPassword": "Ten projekt analityczny jest chroniony hasłem. Wpisz hasło, aby zobaczyć analitykę WWW przyjazną prywatności dzięki Swetrix — bez plików cookie i inwazyjnego śledzenia użytkowników."
   },
   "header": {
     "startForFree": "Rozpocznij za darmo",

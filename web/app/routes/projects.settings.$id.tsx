@@ -1,14 +1,33 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
+import { useTranslation } from 'react-i18next'
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from 'react-router'
 import { data, redirect } from 'react-router'
 
 import { serverFetch } from '~/api/api.server'
 import { Project } from '~/lib/models/Project'
 import { Subscriber } from '~/lib/models/Subscriber'
 import ProjectSettings from '~/pages/Project/Settings'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   redirectIfNotAuthenticated,
   createHeadersWithCookies,
 } from '~/utils/session.server'
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+  const projectName = data?.project?.name || 'Project'
+  const title = `${t('project.settings.settings')} ${projectName}`
+
+  return [
+    ...getTitle(title),
+    ...getDescription(t('description.default')),
+    ...getPreviewImage(),
+  ]
+}
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   redirectIfNotAuthenticated(request)

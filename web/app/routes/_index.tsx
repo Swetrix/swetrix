@@ -24,7 +24,7 @@ import {
 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import type { LoaderFunctionArgs } from 'react-router'
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { Link, redirect, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
@@ -54,6 +54,18 @@ import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
 import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import routesPath from '~/utils/routes'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+
+export const meta: MetaFunction = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  return [
+    ...getTitle(t('titles.main'), false),
+    ...getDescription(t('description.default')),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,

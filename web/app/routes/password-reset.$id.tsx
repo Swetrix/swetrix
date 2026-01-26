@@ -1,14 +1,31 @@
-import type { ActionFunctionArgs, HeadersFunction } from 'react-router'
+import { useTranslation } from 'react-i18next'
+import type {
+  ActionFunctionArgs,
+  HeadersFunction,
+  MetaFunction,
+} from 'react-router'
 import { data, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
 import CreateNewPassword from '~/pages/Auth/CreateNewPassword'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   isValidPassword,
   MIN_PASSWORD_CHARS,
   MAX_PASSWORD_CHARS,
 } from '~/utils/validator'
+
+export const meta: MetaFunction = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  return [
+    ...getTitle(t('titles.recovery')),
+    ...getDescription(t('description.recovery')),
+    ...getPreviewImage(),
+  ]
+}
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')

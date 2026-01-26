@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next'
 import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
+  type MetaFunction,
   redirect,
   data,
 } from 'react-router'
@@ -11,10 +13,22 @@ import { isSelfhosted } from '~/lib/constants'
 import { Metainfo } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import Billing from '~/pages/Billing'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   redirectIfNotAuthenticated,
   createHeadersWithCookies,
 } from '~/utils/session.server'
+
+export const meta: MetaFunction = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  return [
+    ...getTitle(t('titles.billing')),
+    ...getDescription(t('description.default')),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,

@@ -35,12 +35,7 @@ import { toast } from 'sonner'
 
 import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
-import {
-  isSelfhosted,
-  TITLE_SUFFIX,
-  FILTERS_PANELS_ORDER,
-  isBrowser,
-} from '~/lib/constants'
+import { isSelfhosted, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import { useAuth } from '~/providers/AuthProvider'
 import type { ProjectSettingsActionData } from '~/routes/projects.settings.$id'
@@ -847,10 +842,6 @@ const ProjectSettings = () => {
   }
 
   const title = `${t('project.settings.settings')} ${form.name}`
-
-  useEffect(() => {
-    document.title = `${t('project.settings.settings')} ${form.name} ${TITLE_SUFFIX}`
-  }, [form, t])
 
   const currentTabLabel = useMemo(() => {
     return (tabs.find((t) => t.id === activeTab)?.label as string) || ''

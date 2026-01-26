@@ -1,4 +1,5 @@
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
+import type { MetaFunction } from 'react-router'
 import { Link, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
@@ -6,6 +7,11 @@ import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { TOOLS } from '~/components/ToolsNav'
 import { isSelfhosted } from '~/lib/constants'
 import { Text } from '~/ui/Text'
+import { getPreviewImage, getTitle } from '~/utils/seo'
+
+export const meta: MetaFunction = () => {
+  return [...getTitle('Free Marketing Tools'), ...getPreviewImage()]
+}
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.9,

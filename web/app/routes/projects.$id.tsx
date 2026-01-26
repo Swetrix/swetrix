@@ -2,6 +2,7 @@ import _includes from 'lodash/includes'
 import _some from 'lodash/some'
 import _split from 'lodash/split'
 import _startsWith from 'lodash/startsWith'
+import { useTranslation } from 'react-i18next'
 import {
   type ActionFunctionArgs,
   type LinksFunction,
@@ -54,6 +55,7 @@ import { Project } from '~/lib/models/Project'
 import ViewProject from '~/pages/Project/View'
 import { CurrentProjectProvider } from '~/providers/CurrentProjectProvider'
 import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   redirectIfNotAuthenticated,
   createHeadersWithCookies,
@@ -86,16 +88,33 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: ProjectViewStyle },
 ]
 
-export const meta: MetaFunction = ({ location }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+  const currentDate = new Date()
+  const cacheVersion = `${currentDate.getUTCFullYear()}${currentDate.getUTCMonth()}`
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
   const { pathname } = location
   const pid = _split(pathname, '/')[2]
-  const previewURL = `${API_URL}project/ogimage/${pid}`
-  const canonicalURL = `${MAIN_URL}/projects/${pid}`
+  const previewURL = `${API_URL}project/ogimage/${pid}?cv=${cacheVersion}`
+  if (data?.isPasswordRequired) {
+    return [
+      ...getTitle(t('titles.projectWithPassword')),
+      ...getDescription(t('description.projectWithPassword')),
+      ...getPreviewImage(previewURL),
+    ]
+  }
+
+  const projectName = data?.project?.name || 'Untitled Project'
 
   return [
-    { property: 'og:image', content: previewURL },
-    { property: 'twitter:image', content: previewURL },
-    { tagName: 'link', rel: 'canonical', href: canonicalURL },
+    ...getTitle(projectName),
+    ...getDescription(
+      t('description.project', {
+        name: projectName,
+      }),
+    ),
+    ...getPreviewImage(previewURL),
   ]
 }
 

@@ -382,7 +382,11 @@ export const isDisableMarketingPages =
     ? window.REMIX_ENV?.DISABLE_MARKETING_PAGES
     : process.env.DISABLE_MARKETING_PAGES) === 'true'
 
-export const apiUrlUnprocessed = isSelfhosted ? SELFHOSTED_API_URL : isStaging ? STAGING_API_URL : PRODUCTION_API_URL
+const apiUrlUnprocessed = isSelfhosted
+  ? SELFHOSTED_API_URL
+  : isStaging
+    ? STAGING_API_URL
+    : PRODUCTION_API_URL
 
 export const TITLE_SUFFIX = isSelfhosted
   ? '| Swetrix Community Edition'

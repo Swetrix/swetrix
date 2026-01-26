@@ -1,8 +1,22 @@
+import { useTranslation } from 'react-i18next'
+import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 import ErrorTracking from '~/pages/ErrorTracking'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+
+export const meta: MetaFunction = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  return [
+    ...getTitle(t('titles.errors')),
+    ...getDescription(t('description.errorTracking')),
+    ...getPreviewImage('https://swetrix.com/assets/og_image_errors.png?v=1'),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,

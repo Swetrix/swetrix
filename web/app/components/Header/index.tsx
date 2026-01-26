@@ -500,18 +500,21 @@ const SelfhostedCantReachAPIBanner = () => {
   const { t } = useTranslation('common')
 
   return (
-      <div className='header-banner w-full bg-amber-500 text-gray-50'>
-        <div className='mx-auto max-w-7xl space-x-2 px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
-          <span>{t('ce.cantReachBackend')}</span>
-        </div>
+    <div className='header-banner w-full bg-amber-500 text-gray-50'>
+      <div className='mx-auto max-w-7xl space-x-2 px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
+        <span>{t('ce.cantReachBackend')}</span>
       </div>
+    </div>
   )
 }
 
 const BannerManager = () => {
   const { t } = useTranslation('common')
   const { user, isAuthenticated } = useAuth()
-  const [showSelfhostedCantReachAPIBanner, setShowSelfhostedCantReachAPIBanner] = useState(false)
+  const [
+    showSelfhostedCantReachAPIBanner,
+    setShowSelfhostedCantReachAPIBanner,
+  ] = useState(false)
 
   useEffect(() => {
     const checkApiUrl = async () => {

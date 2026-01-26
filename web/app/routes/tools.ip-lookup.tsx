@@ -3,6 +3,7 @@ import {
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
+import type { MetaFunction } from 'react-router'
 import { redirect, useFetcher, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
@@ -16,6 +17,17 @@ import Flag from '~/ui/Flag'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
 import Spin from '~/ui/icons/Spin'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+
+export const meta: MetaFunction = () => {
+  return [
+    ...getTitle('Free IP Address Lookup tool - What is my IP address?'),
+    ...getDescription(
+      'Find your public IP address instantly and look up any IPv4 or IPv6 for detailed geolocation data—country, region, city, coordinates, timezone, and EU status—plus an interactive map. Free, no registration or limits.',
+    ),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.8,
