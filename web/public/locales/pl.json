@@ -68,24 +68,7 @@
     "failedToLoadUsageInfo": "Nie udało się załadować informacji o użyciu"
   },
   "ce": {
-    "noApiUrl": {
-      "banner": "Nie można połączyć się z backendem — sprawdź konfigurację API_URL",
-      "title": "Nie skonfigurowano API_URL",
-      "intro1": "Używasz Swetrix Community Edition bez ustawionej wartości API_URL. Frontend nie może połączyć się z API.",
-      "intro2": "Ustaw zmienną środowiskową API_URL na adres URL Twojej instancji API. W przypadku self-hostingu są dwa kontenery:",
-      "listFe": "swetrix/swetrix-fe — interfejs frontendu (UI)",
-      "listApi": "swetrix/swetrix-api — API (uwierzytelnianie, przyjmowanie danych)",
-      "examplesTitle": "Przykłady",
-      "exampleLocal": {
-        "label": "Domyślnie lokalnie:",
-        "value": "API_URL=http://localhost:8080"
-      },
-      "exampleSubdomain": {
-        "label": "Z subdomenami:",
-        "value": "API_URL=https://swetrix-api.mydomain.com"
-      },
-      "finalNote": "Skonfiguruj to i uruchom ponownie kontenery."
-    }
+    "cantReachBackend": "Nie można połączyć się z backendem — upewnij się, że BASE_URL jest ustawione na adres URL Twojej instancji Swetrix CE"
   },
   "common": {
     "status": "Status",

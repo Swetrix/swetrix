@@ -36,7 +36,7 @@ import {
   PuzzleIcon,
   PhoneIcon,
 } from 'lucide-react'
-import { memo, Fragment, useMemo, useState } from 'react'
+import { memo, Fragment, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
@@ -48,6 +48,7 @@ import {
   isSelfhosted,
   DOCS_URL,
   isDisableMarketingPages,
+  API_URL,
 } from '~/lib/constants'
 import { DashboardBlockReason } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
@@ -495,9 +496,33 @@ const DashboardLockedBanner = () => {
   )
 }
 
+const SelfhostedCantReachAPIBanner = () => {
+  const { t } = useTranslation('common')
+
+  return (
+      <div className='header-banner w-full bg-amber-500 text-gray-50'>
+        <div className='mx-auto max-w-7xl space-x-2 px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
+          <span>{t('ce.cantReachBackend')}</span>
+        </div>
+      </div>
+  )
+}
+
 const BannerManager = () => {
   const { t } = useTranslation('common')
   const { user, isAuthenticated } = useAuth()
+  const [showSelfhostedCantReachAPIBanner, setShowSelfhostedCantReachAPIBanner] = useState(false)
+
+  useEffect(() => {
+    const checkApiUrl = async () => {
+      const response = await fetch(`${API_URL}ping`)
+      if (!response.ok) {
+        setShowSelfhostedCantReachAPIBanner(true)
+      }
+    }
+
+    checkApiUrl()
+  }, [])
 
   const [rawStatus, status] = useMemo(() => {
     const { trialEndDate } = user || {}
@@ -550,6 +575,10 @@ const BannerManager = () => {
       !['none', 'trial'].includes(user?.planCode || '')
     )
   }, [status, isAuthenticated, user?.planCode])
+
+  if (showSelfhostedCantReachAPIBanner) {
+    return <SelfhostedCantReachAPIBanner />
+  }
 
   if (!trialBannerHidden) {
     return <TrialBanner status={status} rawStatus={rawStatus} />

@@ -68,24 +68,7 @@
     "failedToLoadUsageInfo": "Failed to load usage info"
   },
   "ce": {
-    "noApiUrl": {
-      "banner": "Can't reach backend — check API_URL configuration",
-      "title": "API_URL is not configured",
-      "intro1": "You are running Swetrix Community Edition without API_URL set. The frontend cannot reach the API.",
-      "intro2": "Set the API_URL environment variable to your API instance URL. In self-hosting there are two containers:",
-      "listFe": "swetrix/swetrix-fe — the frontend UI",
-      "listApi": "swetrix/swetrix-api — the API (auth, data ingest)",
-      "examplesTitle": "Examples",
-      "exampleLocal": {
-        "label": "Local default:",
-        "value": "API_URL=http://localhost:8080"
-      },
-      "exampleSubdomain": {
-        "label": "With subdomains:",
-        "value": "API_URL=https://swetrix-api.mydomain.com"
-      },
-      "finalNote": "Please configure it and restart the containers."
-    }
+    "cantReachBackend": "Can't reach backend — make sure BASE_URL is set to your Swetrix CE instance URL"
   },
   "common": {
     "status": "Status",
