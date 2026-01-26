@@ -1,14 +1,28 @@
+import { useTranslation } from 'react-i18next'
 import type {
   ActionFunctionArgs,
   HeadersFunction,
   LoaderFunctionArgs,
+  MetaFunction,
 } from 'react-router'
 import { data, redirect } from 'react-router'
 import { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
 import ForgotPassword from '~/pages/Auth/ForgotPassword'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import { isValidEmail } from '~/utils/validator'
+
+export const meta: MetaFunction = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  return [
+    ...getTitle(t('titles.recovery')),
+    ...getDescription(t('description.recovery')),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,

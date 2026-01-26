@@ -13,7 +13,6 @@ import {
 } from 'react-router'
 import { toast } from 'sonner'
 
-import { TITLE_SUFFIX } from '~/lib/constants'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
 import type {
@@ -177,10 +176,6 @@ const OrganisationSettings = () => {
   }
 
   const title = `${t('project.settings.settings')} ${form.name}`
-
-  useEffect(() => {
-    document.title = `${t('project.settings.settings')} ${form.name} ${TITLE_SUFFIX}`
-  }, [form, t])
 
   if (error) {
     return (

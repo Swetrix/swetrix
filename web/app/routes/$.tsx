@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { data, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
@@ -8,19 +9,25 @@ import NotFound from '~/pages/NotFound'
 import { getPost } from '~/utils/getPosts.server'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
-export const meta: MetaFunction = (loaderData: any) => {
-  if (!loaderData?.data) {
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  if (!data) {
     return [
-      ...getTitle('Page Not Found'),
-      ...getDescription('The page you are looking for does not exist.'),
+      ...getTitle(t('notFoundPage.title')),
+      ...getDescription(t('notFoundPage.description')),
+      ...getPreviewImage(),
     ]
   }
 
-  const ogImageUrl = getOgImageUrl(loaderData?.data?.title)
+  const title = data?.title || 'Blog'
+  const intro = data?.intro || t('description.blog')
+  const ogImageUrl = getOgImageUrl(title)
 
   return [
-    ...getTitle(loaderData?.data?.title || 'Blog'),
-    ...getDescription(loaderData?.data?.intro || ''),
+    ...getTitle(title),
+    ...getDescription(intro),
     ...getPreviewImage(ogImageUrl),
   ]
 }

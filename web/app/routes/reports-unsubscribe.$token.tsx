@@ -1,4 +1,5 @@
-import type { LoaderFunctionArgs } from 'react-router'
+import { useTranslation } from 'react-i18next'
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { redirect, useLoaderData } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
@@ -6,6 +7,18 @@ import { serverFetch } from '~/api/api.server'
 import { isSelfhosted } from '~/lib/constants'
 import StatusPage from '~/ui/StatusPage'
 import routes from '~/utils/routes'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+
+export const meta: MetaFunction = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  return [
+    ...getTitle('Unsubscribe from email reports'),
+    ...getDescription(t('description.default')),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,

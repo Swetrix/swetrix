@@ -1,8 +1,22 @@
+import { useTranslation } from 'react-i18next'
+import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 import Startups from '~/pages/Landings/Startups'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+
+export const meta: MetaFunction = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  return [
+    ...getTitle(t('titles.forStartups')),
+    ...getDescription(t('description.default')),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.9,

@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next'
 import {
   redirect,
   type LoaderFunctionArgs,
+  type MetaFunction,
   useLoaderData,
   LinksFunction,
 } from 'react-router'
@@ -10,6 +12,18 @@ import { getGeneralStats } from '~/api/api.server'
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 import OpenStartup from '~/pages/OpenStartup'
 import Style from '~/styles/ProjectViewStyle.css?url'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+
+export const meta: MetaFunction = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  return [
+    ...getTitle(t('titles.open')),
+    ...getDescription(t('description.open')),
+    ...getPreviewImage(),
+  ]
+}
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: Style }]

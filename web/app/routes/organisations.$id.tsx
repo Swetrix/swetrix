@@ -1,15 +1,34 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
+import { useTranslation } from 'react-i18next'
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from 'react-router'
 import { data, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
-import { isSelfhosted } from '~/lib/constants'
+import { isSelfhosted, TITLE_SUFFIX } from '~/lib/constants'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import OrganisationSettings from '~/pages/Organisations/Settings'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   redirectIfNotAuthenticated,
   createHeadersWithCookies,
 } from '~/utils/session.server'
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+  const orgName = data?.organisation?.name || 'Organisation'
+  const title = `Settings ${orgName} ${TITLE_SUFFIX}`
+
+  return [
+    ...getTitle(title),
+    ...getDescription(t('description.default')),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,

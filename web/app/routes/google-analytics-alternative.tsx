@@ -33,14 +33,18 @@ import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import FAQ from '~/components/marketing/FAQ'
 import { FeedbackDual } from './_index'
 import MarketingPricing from '~/components/pricing/MarketingPricing'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
-export const meta: MetaFunction = () => [
-  {
-    name: 'description',
-    content:
-      'Swetrix is a privacy-first, cookieless Google Analytics alternative with real-time analytics, no sampling, and built-in performance & error monitoring.',
-  },
-]
+export const meta: MetaFunction = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  return [
+    ...getTitle(t('titles.gaAlternative')),
+    ...getDescription(t('description.default')),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.9,

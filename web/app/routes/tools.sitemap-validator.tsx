@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/solid'
 import { XMLParser, XMLValidator } from 'fast-xml-parser'
 import { useState } from 'react'
+import type { MetaFunction } from 'react-router'
 import { redirect, useFetcher } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
@@ -19,7 +20,17 @@ import { isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
-import Spin from '~/ui/icons/Spin'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+
+export const meta: MetaFunction = () => {
+  return [
+    ...getTitle('Free Sitemap Validator tool - Validate your sitemap.xml'),
+    ...getDescription(
+      'Validate your sitemap.xml for errors, warnings, and SEO best practices. Our free XML Sitemap Validator checks sitemap protocol compliance, URL formatting, required tags, lastmod/date formats, and size limits—so search engines can crawl and index your site correctly.',
+    ),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.8,

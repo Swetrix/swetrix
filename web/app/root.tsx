@@ -24,6 +24,7 @@ import {
   isRouteErrorResponse,
   useRouteError,
   useSearchParams,
+  useLocation,
 } from 'react-router'
 import { useChangeLanguage } from 'remix-i18next/react'
 import { ExternalScripts } from 'remix-utils/external-scripts'
@@ -31,13 +32,14 @@ import { ExternalScripts } from 'remix-utils/external-scripts'
 import { getAuthenticatedUser } from '~/api/api.server'
 import { LocaleLinks } from '~/components/LocaleLinks'
 import SelfhostedApiUrlBanner from '~/components/SelfhostedApiUrlBanner'
-import { SEO } from '~/components/SEO'
 import {
   CONTACT_EMAIL,
   LS_THEME_SETTING,
   isSelfhosted,
   I18N_CACHE_BREAKER,
   isDevelopment,
+  MAIN_URL,
+  defaultLanguage,
 } from '~/lib/constants'
 import mainCss from '~/styles/index.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
@@ -300,6 +302,7 @@ const Body = () => {
 
 export default function App() {
   const { locale, url, theme, REMIX_ENV } = useLoaderData<typeof loader>()
+  const { pathname, search, hash } = useLocation()
   const { i18n } = useTranslation('common')
   const [searchParams] = useSearchParams()
 
@@ -310,6 +313,16 @@ export default function App() {
 
   const isEmbedded = searchParams.get('embedded') === 'true'
 
+  const canonicalUrl = (() => {
+    const url = new URL(`${MAIN_URL}${pathname}${search}${hash}`)
+    if (i18n.language === defaultLanguage) {
+      url.searchParams.delete('lng')
+    } else {
+      url.searchParams.set('lng', i18n.language)
+    }
+    return url.toString()
+  })()
+
   return (
     <html
       className={cx('font-sans antialiased', { 'scrollbar-thin': isEmbedded })}
@@ -318,7 +331,19 @@ export default function App() {
     >
       <head>
         <meta charSet='utf-8' />
-        <SEO />
+
+        <link rel='canonical' href={canonicalUrl} />
+        <meta name='theme-color' content='#818cf8' />
+        <meta name='twitter:site' content='@swetrix' />
+        <meta name='twitter:card' content='summary_large_image' />
+        <meta property='og:site_name' content='Swetrix' />
+        <meta property='og:url' content={canonicalUrl} />
+        <meta property='og:type' content='website' />
+        <meta name='language' content={i18n.language.toUpperCase()} />
+        <meta
+          httpEquiv='content-language'
+          content={i18n.language.toUpperCase()}
+        />
         <meta name='google' content='notranslate' />
         <link
           rel='icon'

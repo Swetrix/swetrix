@@ -1,16 +1,30 @@
+import { useTranslation } from 'react-i18next'
 import type {
   ActionFunctionArgs,
   HeadersFunction,
   LoaderFunctionArgs,
+  MetaFunction,
 } from 'react-router'
 import { redirect, data } from 'react-router'
 
 import { getAuthenticatedUser, loginUser, serverFetch } from '~/api/api.server'
 import Signin from '~/pages/Auth/Signin'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   createHeadersWithCookies,
   createAuthCookies,
 } from '~/utils/session.server'
+
+export const meta: MetaFunction = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  return [
+    ...getTitle(t('titles.signin')),
+    ...getDescription(t('description.login')),
+    ...getPreviewImage(),
+  ]
+}
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type {
   ActionFunctionArgs,
   LoaderFunctionArgs,
@@ -10,6 +11,7 @@ import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
 import { Project } from '~/lib/models/Project'
 import { User } from '~/lib/models/User'
 import Onboarding from '~/pages/Onboarding'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   redirectIfNotAuthenticated,
   createHeadersWithCookies,
@@ -20,12 +22,13 @@ export const sitemap: SitemapFunction = () => ({
 })
 
 export const meta: MetaFunction = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
   return [
-    { title: 'Onboarding - Swetrix' },
-    {
-      name: 'description',
-      content: 'Get started with Swetrix analytics in just a few steps.',
-    },
+    ...getTitle(t('onboarding.welcome')),
+    ...getDescription(t('description.onboarding')),
+    ...getPreviewImage(),
   ]
 }
 

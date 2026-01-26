@@ -5,6 +5,7 @@ import {
   ChevronDownIcon,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
@@ -14,6 +15,17 @@ import { isSelfhosted } from '~/lib/constants'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+
+export const meta: MetaFunction = () => {
+  return [
+    ...getTitle('Free ROI Calculator tool - Calculate your ROI'),
+    ...getDescription(
+      'Free Marketing ROI Calculator: quickly calculate ROAS, ROI, profit, CAC, CPC, CPM, CTR, conversion rate, and break-even ROAS to measure and improve your campaign performance.',
+    ),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.8,

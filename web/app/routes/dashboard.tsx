@@ -1,14 +1,31 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router'
+import { useTranslation } from 'react-i18next'
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from 'react-router'
 import { data } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
 import { Project } from '~/lib/models/Project'
 import Dashboard from '~/pages/Dashboard'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 import {
   redirectIfNotAuthenticated,
   createHeadersWithCookies,
 } from '~/utils/session.server'
+
+export const meta: MetaFunction = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation('common')
+
+  return [
+    ...getTitle(t('titles.dashboard')),
+    ...getDescription(t('description.default')),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,

@@ -1,5 +1,6 @@
 import { ChevronDownIcon, TrendingUpIcon } from 'lucide-react'
 import { useState } from 'react'
+import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
@@ -9,6 +10,17 @@ import { isSelfhosted } from '~/lib/constants'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import { Text } from '~/ui/Text'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
+
+export const meta: MetaFunction = () => {
+  return [
+    ...getTitle('Free CTR Calculator tool - Calculate your CTR'),
+    ...getDescription(
+      "Use Swetrix's free CTR Calculator to instantly compute click‑through rate from clicks and impressions, learn what a good CTR looks like, and get tips to improve campaign performance—privacy-first and easy to use.",
+    ),
+    ...getPreviewImage(),
+  ]
+}
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.8,

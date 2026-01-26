@@ -2095,7 +2095,23 @@
     "privacyPolicy": "Privacy Policy",
     "cookiePolicy": "Cookie Policy",
     "termsAndConditions": "Terms and Conditions",
-    "gaAlternative": "Cookieless Google Analytics alternative"
+    "gaAlternative": "Cookieless Google Analytics alternative",
+    "projectWithPassword": "Website analytics - password required"
+  },
+  "description": {
+    "default": "Swetrix is a privacy-first, cookieless Google Analytics alternative with real-time analytics, no sampling, and built-in performance & error monitoring.",
+    "blog": "Stay updated with the latest insights, product updates, case studies, and use cases from Swetrix.",
+    "captcha": "Swetrix Captcha is a privacy-first alternative to traditional CAPTCHAs. Protect your website from bots and spam without annoying your users with puzzles.",
+    "contact": "Contact Swetrix (cookieless & privacy-first Google Analytics alternative) for support, feedback, or any questions and suggestions.",
+    "errorTracking": "Privacy-first end-user error tracking by Swetrix. Set up in one line, see errors by browser/device/location, and fix issues faster. 14-day free trial - no card required.",
+    "login": "Log in to Swetrix to view your cookieless, privacy-friendly analytics - real-time insights, no tracking cookies, no GA clutter.",
+    "singup": "Create your Swetrix account and start tracking website traffic with cookieless, privacy-friendly analytics - simple setup, real-time stats.",
+    "onboarding": "Get started with Swetrix (cookieless & privacy-first Google Analytics alternative) in just a few steps.",
+    "open": "Open startup metrics: learn more about our key financial & operational metrics.",
+    "recovery": "Forgot your password? Use our password recovery functionality to restore access to your account.",
+    "performance": "Monitor real-user website speed with Swetrix - page load, TTFB, DNS/TLS timings and percentiles. Privacy-first and cookieless. Free 14-day trial, no card required.",
+    "project": "View public web analytics for {{name}}. Privacy-friendly tracking powered by Swetrix - no cookies or invasive user tracking.",
+    "projectWithPassword": "This analytics project is password-protected. Enter the password to view privacy-friendly web analytics powered by Swetrix — no cookies or invasive user tracking."
   },
   "header": {
     "startForFree": "Start for free",
