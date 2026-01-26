@@ -313,7 +313,7 @@ export default function App() {
   const isEmbedded = searchParams.get('embedded') === 'true'
 
   const canonicalUrl = (() => {
-    const url = new URL(`${MAIN_URL}${pathname}${search}${hash}`)
+    const url = new URL(`${MAIN_URL}${pathname}${search}`)
     if (i18n.language === defaultLanguage) {
       url.searchParams.delete('lng')
     } else {
