@@ -365,6 +365,9 @@ const STAGING_API_URL = isBrowser
 const PRODUCTION_API_URL = isBrowser
   ? window.REMIX_ENV?.API_URL
   : process.env.API_URL
+const SELFHOSTED_API_URL = isBrowser
+  ? `${window.REMIX_ENV?.BASE_URL}/backend`
+  : `${process.env.BASE_URL}/backend`
 
 export const COOKIE_DOMAIN =
   (isBrowser ? window.REMIX_ENV?.COOKIE_DOMAIN : process.env.COOKIE_DOMAIN) ||
@@ -379,8 +382,7 @@ export const isDisableMarketingPages =
     ? window.REMIX_ENV?.DISABLE_MARKETING_PAGES
     : process.env.DISABLE_MARKETING_PAGES) === 'true'
 
-export const apiUrlUnprocessed =
-  isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
+export const apiUrlUnprocessed = isSelfhosted ? SELFHOSTED_API_URL : isStaging ? STAGING_API_URL : PRODUCTION_API_URL
 
 export const TITLE_SUFFIX = isSelfhosted
   ? '| Swetrix Community Edition'

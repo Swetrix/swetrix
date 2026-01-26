@@ -31,7 +31,6 @@ import { ExternalScripts } from 'remix-utils/external-scripts'
 
 import { getAuthenticatedUser } from '~/api/api.server'
 import { LocaleLinks } from '~/components/LocaleLinks'
-import SelfhostedApiUrlBanner from '~/components/SelfhostedApiUrlBanner'
 import {
   CONTACT_EMAIL,
   LS_THEME_SETTING,
@@ -244,6 +243,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     NODE_ENV: process.env.NODE_ENV,
     API_URL: process.env.API_URL,
     API_STAGING_URL: process.env.API_STAGING_URL,
+    BASE_URL: process.env.BASE_URL,
     SELFHOSTED: process.env.__SELFHOSTED,
     DISABLE_MARKETING_PAGES: process.env.DISABLE_MARKETING_PAGES,
     STAGING: process.env.STAGING,
@@ -285,7 +285,6 @@ const Body = () => {
         'bg-slate-900': theme === 'dark',
       })}
     >
-      <SelfhostedApiUrlBanner />
       <AuthProvider
         initialIsAuthenticated={isAuthed}
         initialUser={user}

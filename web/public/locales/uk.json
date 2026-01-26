@@ -68,24 +68,7 @@
     "failedToLoadUsageInfo": "Не вдалося завантажити інформацію про використання"
   },
   "ce": {
-    "noApiUrl": {
-      "banner": "Не вдається підключитися до бекенду — перевірте конфігурацію API_URL",
-      "title": "API_URL не налаштовано",
-      "intro1": "Ви запускаєте Swetrix Community Edition без встановленої API_URL. Фронтенд не може звернутися до API.",
-      "intro2": "Встановіть змінну середовища API_URL на URL вашого екземпляра API. При самостійному хостингу є два контейнери:",
-      "listFe": "swetrix/swetrix-fe — інтерфейс фронтенду (UI)",
-      "listApi": "swetrix/swetrix-api — API (автентифікація, приймання даних)",
-      "examplesTitle": "Приклади",
-      "exampleLocal": {
-        "label": "Типове локальне значення:",
-        "value": "API_URL=http://localhost:8080"
-      },
-      "exampleSubdomain": {
-        "label": "З піддоменами:",
-        "value": "API_URL=https://swetrix-api.mydomain.com"
-      },
-      "finalNote": "Будь ласка, налаштуйте це та перезапустіть контейнери."
-    }
+    "cantReachBackend": "Не вдається підключитися до бекенду — переконайтеся, що BASE_URL встановлено на URL вашої інсталяції Swetrix CE"
   },
   "common": {
     "status": "Статус",

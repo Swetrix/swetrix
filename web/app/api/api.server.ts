@@ -9,30 +9,11 @@ import {
   AuthTokens,
   isPersistentSession,
 } from '~/utils/session.server'
+import { API_URL } from '~/lib/constants'
 
 // ============================================================================
 // MARK: API utils
 // ============================================================================
-
-function getApiUrl(): string {
-  const isStaging = process.env.STAGING === 'true'
-  const isSelfhosted = Boolean(process.env.__SELFHOSTED)
-
-  let apiUrl: string | undefined
-
-  if (isSelfhosted || !isStaging) {
-    apiUrl = process.env.API_URL
-  } else {
-    apiUrl = process.env.API_STAGING_URL
-  }
-
-  if (!apiUrl) {
-    throw new Error('API_URL environment variable is not set')
-  }
-
-  // Ensure trailing slash
-  return apiUrl.endsWith('/') ? apiUrl : `${apiUrl}/`
-}
 
 export function getClientIP(request: Request): string | null {
   const headers = request.headers
@@ -91,9 +72,8 @@ export async function serverFetch<T = unknown>(
     skipAuth = false,
   } = options
 
-  const apiUrl = getApiUrl()
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
-  const url = `${apiUrl}${cleanEndpoint}`
+  const url = `${API_URL}${cleanEndpoint}`
 
   const fetchHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -224,9 +204,8 @@ export async function streamingServerFetch(
     skipAuth = false,
   } = options
 
-  const apiUrl = getApiUrl()
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
-  const url = `${apiUrl}${cleanEndpoint}`
+  const url = `${API_URL}${cleanEndpoint}`
 
   const fetchHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -300,10 +279,8 @@ async function tryRefreshToken(
     return { success: false, cookies: [] }
   }
 
-  const apiUrl = getApiUrl()
-
   try {
-    const response = await fetch(`${apiUrl}v1/auth/refresh-token`, {
+    const response = await fetch(`${API_URL}v1/auth/refresh-token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
