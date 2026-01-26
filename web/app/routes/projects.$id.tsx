@@ -97,14 +97,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const { pathname } = location
   const pid = _split(pathname, '/')[2]
   const previewURL = `${API_URL}project/ogimage/${pid}?cv=${cacheVersion}`
-  const canonicalURL = `${MAIN_URL}/projects/${pid}`
-
   if (data?.isPasswordRequired) {
     return [
       ...getTitle(t('titles.projectWithPassword')),
       ...getDescription(t('description.projectWithPassword')),
       ...getPreviewImage(previewURL),
-      { tagName: 'link', rel: 'canonical', href: canonicalURL },
     ]
   }
 
@@ -118,7 +115,6 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       }),
     ),
     ...getPreviewImage(previewURL),
-    { tagName: 'link', rel: 'canonical', href: canonicalURL },
   ]
 }
 

@@ -7,7 +7,6 @@ import type {
 import { data, redirect } from 'react-router'
 
 import { serverFetch } from '~/api/api.server'
-import { TITLE_SUFFIX } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
 import { Subscriber } from '~/lib/models/Subscriber'
 import ProjectSettings from '~/pages/Project/Settings'
@@ -21,7 +20,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { t } = useTranslation('common')
   const projectName = data?.project?.name || 'Project'
-  const title = `${t('project.settings.settings')} ${projectName} ${TITLE_SUFFIX}`
+  const title = `${t('project.settings.settings')} ${projectName}`
 
   return [
     ...getTitle(title),

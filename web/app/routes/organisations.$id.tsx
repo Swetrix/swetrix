@@ -8,7 +8,7 @@ import { data, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
-import { isSelfhosted, TITLE_SUFFIX } from '~/lib/constants'
+import { isSelfhosted } from '~/lib/constants'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import OrganisationSettings from '~/pages/Organisations/Settings'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -21,7 +21,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { t } = useTranslation('common')
   const orgName = data?.organisation?.name || 'Organisation'
-  const title = `${t('project.settings.settings')} ${orgName} ${TITLE_SUFFIX}`
+  const title = `${t('project.settings.settings')} ${orgName}`
 
   return [
     ...getTitle(title),
