@@ -5,6 +5,7 @@ const PRODUCTION_ROBOTS = `Sitemap: https://swetrix.com/sitemap.xml
 User-agent: *
 Disallow: /ref
 Disallow: /ref/*
+Disallow: /projects/*
 Disallow: /password-reset/*
 Disallow: /verify/*
 Disallow: /share/*
