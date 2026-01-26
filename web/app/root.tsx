@@ -26,7 +26,6 @@ import {
   useSearchParams,
   useLocation,
 } from 'react-router'
-import { useChangeLanguage } from 'remix-i18next/react'
 import { ExternalScripts } from 'remix-utils/external-scripts'
 
 import { getAuthenticatedUser } from '~/api/api.server'
@@ -301,14 +300,12 @@ const Body = () => {
 
 export default function App() {
   const { locale, url, theme, REMIX_ENV } = useLoaderData<typeof loader>()
-  const { pathname, search, hash } = useLocation()
+  const { pathname, search } = useLocation()
   const { i18n } = useTranslation('common')
   const [searchParams] = useSearchParams()
 
   const urlObject = new URL(url)
   urlObject.searchParams.delete('lng')
-
-  useChangeLanguage(locale)
 
   const isEmbedded = searchParams.get('embedded') === 'true'
 
