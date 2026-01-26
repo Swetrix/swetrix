@@ -332,7 +332,12 @@ export default function App() {
         <meta charSet='utf-8' />
 
         <link rel='canonical' href={canonicalUrl} />
-        <meta name='theme-color' content='#818cf8' />
+        <meta name='theme-color' content='#4f46e5' />
+        <meta
+          name='theme-color'
+          content='#6366f1'
+          media='(prefers-color-scheme: dark)'
+        />
         <meta name='twitter:site' content='@swetrix' />
         <meta name='twitter:card' content='summary_large_image' />
         <meta property='og:site_name' content='Swetrix' />
