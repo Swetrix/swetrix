@@ -21,7 +21,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { t } = useTranslation('common')
   const orgName = data?.organisation?.name || 'Organisation'
-  const title = `Settings ${orgName} ${TITLE_SUFFIX}`
+  const title = `${t('project.settings.settings')} ${orgName} ${TITLE_SUFFIX}`
 
   return [
     ...getTitle(title),
