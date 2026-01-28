@@ -753,10 +753,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                               <button
                                 type='button'
                                 onClick={() =>
-                                  copyToClipboard(
-                                    jsSingleFlagCode,
-                                    'js-single',
-                                  )
+                                  copyToClipboard(jsSingleFlagCode, 'js-single')
                                 }
                                 className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
                               >
@@ -765,7 +762,9 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                                 ) : (
                                   <ClipboardIcon className='size-4' />
                                 )}
-                                {copiedCode === 'js-single' ? 'Copied!' : 'Copy'}
+                                {copiedCode === 'js-single'
+                                  ? 'Copied!'
+                                  : 'Copy'}
                               </button>
                             </div>
                             <pre className='overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-gray-100'>
@@ -781,7 +780,9 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                               </Text>
                               <button
                                 type='button'
-                                onClick={() => copyToClipboard(jsCacheCode, 'js-cache')}
+                                onClick={() =>
+                                  copyToClipboard(jsCacheCode, 'js-cache')
+                                }
                                 className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
                               >
                                 {copiedCode === 'js-cache' ? (
