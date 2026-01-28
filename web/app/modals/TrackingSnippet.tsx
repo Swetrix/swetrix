@@ -21,7 +21,7 @@ export const getSnippet = (pid: string) => {
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     swetrix.init('${pid}', {
-      apiURL: '${API_URL_WITHOUT_TRAILING_SLASH}/log',
+      apiURL: '${API_URL_WITHOUT_TRAILING_SLASH}/v1/log',
     })
     swetrix.trackViews()
   })
