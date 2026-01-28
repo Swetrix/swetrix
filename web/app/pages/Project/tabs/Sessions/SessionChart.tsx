@@ -30,6 +30,17 @@ export const SessionChart = ({
   onZoom,
   className,
 }: SessionChartProps) => {
+  const isTouchDevice = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    const hasTouchEvent = 'ontouchstart' in window
+    const hasMaxTouchPoints =
+      typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0
+    const coarsePointer = window.matchMedia
+      ? window.matchMedia('(pointer: coarse)').matches
+      : false
+    return hasTouchEvent || hasMaxTouchPoints || coarsePointer
+  }, [])
+
   const options: ChartOptions = useMemo(() => {
     // Session inspector chart is always rendered as a line/area chart,
     // regardless of the user's global chart type preference.
@@ -40,12 +51,21 @@ export const SessionChart = ({
       rotateXAxis,
       chartTypes.line,
       onZoom,
+      !isTouchDevice,
     )
-  }, [chart, timeBucket, timeFormat, rotateXAxis, onZoom])
+  }, [chart, timeBucket, timeFormat, rotateXAxis, onZoom, isTouchDevice])
 
   const deps = useMemo(
-    () => [chart, timeBucket, timeFormat, rotateXAxis, dataNames, onZoom],
-    [chart, timeBucket, timeFormat, rotateXAxis, dataNames, onZoom],
+    () => [
+      chart,
+      timeBucket,
+      timeFormat,
+      rotateXAxis,
+      dataNames,
+      onZoom,
+      isTouchDevice,
+    ],
+    [chart, timeBucket, timeFormat, rotateXAxis, dataNames, onZoom, isTouchDevice],
   )
 
   return (

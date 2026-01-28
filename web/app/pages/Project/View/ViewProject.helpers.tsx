@@ -1234,6 +1234,7 @@ const getSettingsSession = (
   rotateXAxis: boolean,
   chartType: string,
   onZoom?: (domain: [Date, Date]) => void,
+  enableZoom: boolean = true,
 ): ChartOptions => {
   const chartData = chartInput || { x: [] } // Default to an empty chart structure if undefined
   const xAxisSize = _size(chartData.x)
@@ -1291,12 +1292,14 @@ const getSettingsSession = (
       colors: dataColors,
       type: chartType === chartTypes.line ? area() : bar(),
     },
-    zoom: {
-      enabled: zoom(),
-      type: 'drag',
-      onzoom: onZoom,
-      resetButton: false, // We render a custom button that also resets pageflow
-    },
+    zoom: enableZoom
+      ? {
+          enabled: zoom(),
+          type: 'drag',
+          onzoom: onZoom,
+          resetButton: false, // We render a custom button that also resets pageflow
+        }
+      : undefined,
     grid: {
       y: {
         show: true,

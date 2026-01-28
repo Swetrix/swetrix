@@ -137,6 +137,17 @@ export const SessionDetailView = ({
     null,
   )
 
+  const isTouchDevice = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    const hasTouchEvent = 'ontouchstart' in window
+    const hasMaxTouchPoints =
+      typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0
+    const coarsePointer = window.matchMedia
+      ? window.matchMedia('(pointer: coarse)').matches
+      : false
+    return hasTouchEvent || hasMaxTouchPoints || coarsePointer
+  }, [])
+
   const sessionDuration = useMemo(() => {
     if (!activeSession?.details) return 0
 
@@ -400,7 +411,7 @@ export const SessionDetailView = ({
                 >
                   {t('project.sessionActivity')}
                 </Text>
-                {zoomedTimeRange ? (
+                {zoomedTimeRange && !isTouchDevice ? (
                   <button
                     onClick={resetZoom}
                     className='rounded border bg-white px-2 py-1 text-xs text-gray-800 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
@@ -415,7 +426,7 @@ export const SessionDetailView = ({
                 timeFormat={timeFormat}
                 rotateXAxis={rotateXAxis}
                 dataNames={dataNames}
-                onZoom={setZoomedTimeRange}
+                onZoom={isTouchDevice ? undefined : setZoomedTimeRange}
                 className='h-[300px] [&_svg]:overflow-visible!'
               />
             </div>
