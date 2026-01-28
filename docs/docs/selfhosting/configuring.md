@@ -13,18 +13,10 @@ The following environment variables are available for configuration:
 
 | Variable  | Default                  | Description                                                                                                                            |
 | --------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `API_URL` | `http://localhost:8080/` | URL of the self-hosted Swetrix API instance. Swetrix frontend will use this variable to connect to the API, so make sure it's correct. |
-
-:::caution
-Swetrix Community Edition is split into two containers: `swetrix` (frontend - the frontend web UI) and `swetrix-api` (backend - the API server, that does auth, data logging, etc.). The `API_URL` variable on the frontend container must point to the _backend_ container, which by default is `http://localhost:8080/`.
-
-So if you're self-hosting on subdomains, you might run swetrix.mydomain.com proxied to port 80 for the frontend user interface (where you log in), and swetrix-api.mydomain.com proxied to port 8080, and set `API_URL=https://swetrix-api.mydomain.com`.
-
-This is the most common issue users encounter when self-hosting Swetrix Community Edition, so please make sure to set it correctly.
-:::
+| `BASE_URL` | `http://localhost:8080/` | Public URL of your Swetrix CE instance. |
 
 :::tip
-The `API_URL` must be publicly reachable from your users' browsers. Do not set it to a Docker network hostname like `http://swetrix-api:8080` or `http://swetrix-api:5005`. Use a public domain or IP that resolves from the internet, for example `https://api.example.com`.
+The `BASE_URL` must be publicly reachable from your users' browsers. Do not set it to a Docker network hostname like `http://swetrix-api:8080` or `http://swetrix-api:5005`. Use a public domain or IP that resolves from the internet, for example `https://statistics.example.com`.
 :::
 
 ## Backend (swetrix-api image)
@@ -65,6 +57,7 @@ Swetrix Community Edition also supports OIDC authentication. To enable it, you n
 | `OIDC_DISCOVERY_URL` |         | URL of the OIDC discovery endpoint, for example `https://example.com/.well-known/openid-configuration`                            |
 | `OIDC_CLIENT_ID`     |         | OIDC client ID                                                                                                                    |
 | `OIDC_CLIENT_SECRET` |         | OIDC client secret                                                                                                                |
+| `OIDC_PROMPT` | `select_account`        | OIDC prompt                                                                                                                |
 
 ## Redis
 
