@@ -2,7 +2,6 @@ import {
   isSelfhosted,
   LOW_EVENTS_WARNING,
   LS_CAPTCHA_VIEW_PREFS_SETTING,
-  LS_VIEW_PREFS_SETTING,
   SHOW_BANNER_AT_PERC,
 } from '~/lib/constants'
 
@@ -33,6 +32,5 @@ export const shouldShowLowEventsBanner = (
  * Called before navigating to /logout route.
  */
 export const clearLocalStorageOnLogout = () => {
-  removeItem(LS_VIEW_PREFS_SETTING)
   removeItem(LS_CAPTCHA_VIEW_PREFS_SETTING)
 }

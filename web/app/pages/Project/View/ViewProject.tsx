@@ -268,8 +268,6 @@ const ViewProjectContent = () => {
   const {
     id,
     project,
-    preferences,
-    updatePreferences,
     allowedToManage,
     liveVisitors,
     isPasswordRequired,
@@ -334,7 +332,6 @@ const ViewProjectContent = () => {
     [CHART_METRICS_MAPPING.cumulativeMode]: false,
     [CHART_METRICS_MAPPING.customEvents]: false,
     [CHART_METRICS_MAPPING.revenue]: false,
-    ...(preferences.metricsVisualisation || {}),
   } as Record<keyof typeof CHART_METRICS_MAPPING, boolean>)
   const [customMetrics, setCustomMetrics] = useState<ProjectViewCustomEvent[]>(
     [],
@@ -363,8 +360,8 @@ const ViewProjectContent = () => {
       return urlPeriod
     }
 
-    return preferences.period || '7d'
-  }, [searchParams, preferences.period])
+    return '7d'
+  }, [searchParams])
 
   // Extract compare params from URL early (needed for state initialization)
   const urlCompareEnabled = searchParams.get('compare') === 'true'
@@ -393,10 +390,6 @@ const ViewProjectContent = () => {
       return null
     }
 
-    let initialDateRange: Date[] | null = preferences.rangeDate
-      ? [new Date(preferences.rangeDate[0]), new Date(preferences.rangeDate[1])]
-      : null
-
     const from = searchParams.get('from')
     const to = searchParams.get('to')
 
@@ -405,12 +398,12 @@ const ViewProjectContent = () => {
       const toDate = new Date(to)
 
       if (fromDate.getDate() && toDate.getDate()) {
-        initialDateRange = [fromDate, toDate]
+        return [fromDate, toDate]
       }
     }
 
-    return initialDateRange
-  }, [period, searchParams, preferences.rangeDate])
+    return null
+  }, [period, searchParams])
 
   const periodPairs = useMemo<TBPeriodPairsProps[]>(() => {
     let tbs = null
@@ -432,20 +425,16 @@ const ViewProjectContent = () => {
   }, [t, language, dateRange])
 
   const timeBucket = useMemo<TimeBucket>(() => {
-    let _timeBucket = preferences.timeBucket || periodPairs[4].tbs[1]
-    const urlTimeBucket = searchParams.get('timeBucket') as TimeBucket
     const currentPeriodPair = _find(periodPairs, (el) => el.period === period)
+    let _timeBucket = currentPeriodPair?.tbs?.[0] || 'day'
+    const urlTimeBucket = searchParams.get('timeBucket') as TimeBucket
 
-    // If the time bucket from preferences is not compatible with the current period, use the first time bucket of the period
-    if (currentPeriodPair && !currentPeriodPair.tbs.includes(urlTimeBucket)) {
-      _timeBucket = currentPeriodPair.tbs[0]
-    }
-
-    // Or use the time bucket from the URL if it's compatible with the current period
-    if (VALID_TIME_BUCKETS.includes(urlTimeBucket)) {
-      if (currentPeriodPair?.tbs?.includes(urlTimeBucket)) {
-        _timeBucket = urlTimeBucket
-      }
+    // Use the time bucket from the URL if it's compatible with the current period
+    if (
+      VALID_TIME_BUCKETS.includes(urlTimeBucket) &&
+      currentPeriodPair?.tbs?.includes(urlTimeBucket)
+    ) {
+      _timeBucket = urlTimeBucket
     }
 
     if (dateRange) {
@@ -466,7 +455,7 @@ const ViewProjectContent = () => {
     }
 
     return _timeBucket
-  }, [searchParams, preferences.timeBucket, periodPairs, period, dateRange])
+  }, [searchParams, periodPairs, period, dateRange])
 
   const activePeriod = useMemo(
     () => _find(periodPairs, (p) => p.period === period),
@@ -928,14 +917,9 @@ const ViewProjectContent = () => {
       newSearchParams.delete('to')
       newSearchParams.set('period', newPeriod)
 
-      updatePreferences({
-        period: newPeriod,
-        rangeDate: undefined,
-      })
-
       setSearchParams(newSearchParams)
     },
-    [period, searchParams, setSearchParams, updatePreferences],
+    [period, searchParams, setSearchParams],
   )
 
   const updateTimebucket = useCallback(
@@ -947,12 +931,8 @@ const ViewProjectContent = () => {
       const newSearchParams = new URLSearchParams(searchParams.toString())
       newSearchParams.set('timeBucket', newTimebucket)
       setSearchParams(newSearchParams)
-
-      updatePreferences({
-        timeBucket: newTimebucket,
-      })
     },
-    [dataLoading, searchParams, setSearchParams, updatePreferences],
+    [dataLoading, searchParams, setSearchParams],
   )
 
   const openSettingsHandler = () => {

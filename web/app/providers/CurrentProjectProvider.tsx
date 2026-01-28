@@ -31,11 +31,7 @@ import type {
 import { getItemJSON } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
-import {
-  getProjectPreferences,
-  setProjectPassword,
-  setProjectPreferences,
-} from '../pages/Project/View/utils/cache'
+import { setProjectPassword } from '../pages/Project/View/utils/cache'
 import { CHART_METRICS_MAPPING } from '../pages/Project/View/ViewProject.helpers'
 
 interface CurrentProjectContextType {
@@ -198,21 +194,12 @@ export type ProjectPreferences = {
   metricsVisualisation?: Record<keyof typeof CHART_METRICS_MAPPING, boolean>
 }
 
-const useProjectPreferences = (id: string) => {
-  const [preferences, setPreferences] = useState<ProjectPreferences>(
-    getProjectPreferences(id) as ProjectPreferences,
-  )
+const useProjectPreferences = () => {
+  const [preferences, setPreferences] = useState<ProjectPreferences>({})
 
-  const updatePreferences = useCallback(
-    (prefs: ProjectPreferences) => {
-      setPreferences((prev) => {
-        const newPrefs = { ...prev, ...prefs }
-        setProjectPreferences(id, newPrefs)
-        return newPrefs
-      })
-    },
-    [id],
-  )
+  const updatePreferences = useCallback((prefs: ProjectPreferences) => {
+    setPreferences((prev) => ({ ...prev, ...prefs }))
+  }, [])
 
   return { preferences, updatePreferences }
 }
@@ -263,7 +250,7 @@ export const CurrentProjectProvider = ({
 }: CurrentProjectProviderProps) => {
   const { project, mergeProject, isPasswordRequired, submitPassword } =
     useProject(id)
-  const { preferences, updatePreferences } = useProjectPreferences(id)
+  const { preferences, updatePreferences } = useProjectPreferences()
   const { liveVisitors, updateLiveVisitors } = useLiveVisitors(project)
 
   return (
