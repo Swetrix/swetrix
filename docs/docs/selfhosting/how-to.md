@@ -17,7 +17,7 @@ To self-host Swetrix you need to have the following:
 - Support for the x86_64 or arm64 CPU architecture on your server
 - At least 2GB of RAM is recommended for the best performance
 
-Most of the cloud providers offer Docker pre-installed on their servers, but in case it's missing, you can install it manually by following the [official Docker installation guide](https://docs.docker.com/get-docker/).
+Most of the cloud providers offer Docker pre-installed on their servers, but in case it's missing, you can install it manually by following the [official Docker installation guide](https://docs.docker.com/engine/install/ubuntu/).
 We've tested self-hosting Swetrix using [Hetzner Cloud](https://hetzner.cloud), but any other cloud provider should work just fine.
 
 ## Installation
