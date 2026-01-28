@@ -31,7 +31,6 @@ import { toast } from 'sonner'
 
 import type { ProjectFeatureFlag, TargetingRule } from '~/api/api.server'
 import { useFiltersProxy } from '~/hooks/useAnalyticsProxy'
-import { API_URL, isSelfhosted } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
@@ -308,39 +307,26 @@ const FeatureFlagSettingsModal = ({
     }
   }
 
-  const jsCode = `// Check if feature is enabled
-const isEnabled = await swetrix.isFeatureEnabled('${key || 'my-feature'}', {
-  userId: 'user-123', // Optional: for consistent rollout
+  const jsAllFlagsCode = `// Fetch all feature flags
+const flags = await swetrix.getFeatureFlags({
+  profileId: 'user-123',
+})
+// flags = { '${key || 'my-feature'}': true/false, ... }`
+
+  const jsSingleFlagCode = `// Fetch a single feature flag
+const isEnabled = await swetrix.getFeatureFlag('${key || 'my-feature'}', {
+  profileId: 'user-123',
 })
 
 if (isEnabled) {
   // Show new feature
-} else {
-  // Show default experience
 }`
 
-  const jsCodeWithAttributes = `// Check with custom attributes
-const isEnabled = await swetrix.isFeatureEnabled('${key || 'my-feature'}', {
-  userId: 'user-123',
-  attributes: {
-    cc: 'US',      // Country code
-    dv: 'desktop', // Device type
-    br: 'Chrome',  // Browser
-  }
-})`
+  const jsCacheCode = `// Clear feature flags cache
+swetrix.clearFeatureFlagsCache()
 
-  const fetchCode = `// Using fetch API directly
-const response = await fetch('${isSelfhosted ? API_URL : 'https://api.swetrix.com/'}v1/feature-flag/evaluate', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    pid: '${projectId}',
-    profileId: 'user-123',
-    attributes: { cc: 'US', dv: 'desktop' }
-  })
-})
-const { flags } = await response.json()
-// flags = { '${key || 'my-feature'}': true/false, ... }`
+// Force refresh on next call
+const flags = await swetrix.getFeatureFlags(undefined, true)`
 
   return (
     <Dialog className='relative z-40' open={isOpen} onClose={onClose}>
@@ -736,78 +722,78 @@ const { flags } = await response.json()
                           <div>
                             <div className='mb-2 flex items-center justify-between'>
                               <Text as='span' size='sm' weight='medium'>
-                                JavaScript SDK
+                                Fetch all flags
                               </Text>
                               <button
                                 type='button'
-                                onClick={() => copyToClipboard(jsCode, 'js')}
+                                onClick={() =>
+                                  copyToClipboard(jsAllFlagsCode, 'js-all')
+                                }
                                 className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
                               >
-                                {copiedCode === 'js' ? (
+                                {copiedCode === 'js-all' ? (
                                   <HeroCheckIcon className='size-4 text-green-500' />
                                 ) : (
                                   <ClipboardIcon className='size-4' />
                                 )}
-                                {copiedCode === 'js' ? 'Copied!' : 'Copy'}
+                                {copiedCode === 'js-all' ? 'Copied!' : 'Copy'}
                               </button>
                             </div>
                             <pre className='overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-gray-100'>
-                              <code>{jsCode}</code>
+                              <code>{jsAllFlagsCode}</code>
                             </pre>
                           </div>
 
-                          {/* With attributes */}
+                          {/* Single flag */}
                           <div>
                             <div className='mb-2 flex items-center justify-between'>
                               <Text as='span' size='sm' weight='medium'>
-                                With custom attributes
+                                Single flag
                               </Text>
                               <button
                                 type='button'
                                 onClick={() =>
                                   copyToClipboard(
-                                    jsCodeWithAttributes,
-                                    'js-attr',
+                                    jsSingleFlagCode,
+                                    'js-single',
                                   )
                                 }
                                 className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
                               >
-                                {copiedCode === 'js-attr' ? (
+                                {copiedCode === 'js-single' ? (
                                   <HeroCheckIcon className='size-4 text-green-500' />
                                 ) : (
                                   <ClipboardIcon className='size-4' />
                                 )}
-                                {copiedCode === 'js-attr' ? 'Copied!' : 'Copy'}
+                                {copiedCode === 'js-single' ? 'Copied!' : 'Copy'}
                               </button>
                             </div>
                             <pre className='overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-gray-100'>
-                              <code>{jsCodeWithAttributes}</code>
+                              <code>{jsSingleFlagCode}</code>
                             </pre>
                           </div>
 
-                          {/* Fetch API */}
+                          {/* Cache control */}
                           <div>
                             <div className='mb-2 flex items-center justify-between'>
                               <Text as='span' size='sm' weight='medium'>
-                                REST API (Fetch)
+                                Cache control
                               </Text>
                               <button
                                 type='button'
-                                onClick={() =>
-                                  copyToClipboard(fetchCode, 'fetch')
-                                }
+                                onClick={() => copyToClipboard(jsCacheCode, 'js-cache')}
                                 className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
                               >
-                                {copiedCode === 'fetch' ? (
+                                {copiedCode === 'js-cache' ? (
                                   <HeroCheckIcon className='size-4 text-green-500' />
                                 ) : (
                                   <ClipboardIcon className='size-4' />
                                 )}
-                                {copiedCode === 'fetch' ? 'Copied!' : 'Copy'}
+                                {copiedCode === 'js-cache' ? 'Copied!' : 'Copy'}
                               </button>
                             </div>
                             <pre className='overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-gray-100'>
-                              <code>{fetchCode}</code>
+                              <code>{jsCacheCode}</code>
                             </pre>
                           </div>
                         </div>
