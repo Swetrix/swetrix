@@ -62,7 +62,6 @@ import type {
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Spin from '~/ui/icons/Spin'
-import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
@@ -74,6 +73,7 @@ import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
 import routes from '~/utils/routes'
 
 import FeatureFlagSettingsModal from './FeatureFlagSettingsModal'
+import { LoaderView } from '../../View/components/LoaderView'
 
 dayjs.extend(relativeTime)
 
@@ -517,7 +517,7 @@ function FeatureFlagsDataResolver({
 
 function FeatureFlagsViewWrapper(props: FeatureFlagsViewProps) {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<LoaderView />}>
       <FeatureFlagsDataResolver>
         {(deferredData) => (
           <FeatureFlagsViewInner {...props} deferredData={deferredData} />

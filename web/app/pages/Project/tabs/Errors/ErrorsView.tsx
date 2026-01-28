@@ -96,6 +96,7 @@ import { Text } from '~/ui/Text'
 import Tooltip from '~/ui/Tooltip'
 import { getRelativeDateIfPossible } from '~/utils/date'
 import { getLocaleDisplayName, nFormatter } from '~/utils/generic'
+import { LoaderView } from '../../View/components/LoaderView'
 
 const InteractiveMap = lazy(
   () => import('~/pages/Project/View/components/InteractiveMap'),
@@ -511,7 +512,7 @@ function ErrorsDataResolver({
 
 function ErrorsViewWrapper() {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<LoaderView />}>
       <ErrorsDataResolver>
         {(deferredData) => <ErrorsViewInner deferredData={deferredData} />}
       </ErrorsDataResolver>

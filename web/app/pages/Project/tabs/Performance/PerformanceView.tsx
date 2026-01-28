@@ -53,9 +53,9 @@ import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import type { ProjectLoaderData } from '~/routes/projects.$id'
 import Dropdown from '~/ui/Dropdown'
-import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+import { LoaderView } from '../../View/components/LoaderView'
 
 const InteractiveMap = lazy(
   () => import('~/pages/Project/View/components/InteractiveMap'),
@@ -90,7 +90,7 @@ function PerfDataResolver({
 
 function PerformanceViewWrapper(props: PerformanceViewProps) {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<LoaderView />}>
       <PerfDataResolver>
         {(deferredData) => (
           <PerformanceViewInner {...props} deferredData={deferredData} />

@@ -37,6 +37,7 @@ import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import StatusPage from '~/ui/StatusPage'
 import routes from '~/utils/routes'
+import { LoaderView } from '../../View/components/LoaderView'
 
 interface SessionsErrorBoundaryState {
   hasError: boolean
@@ -133,7 +134,7 @@ function SessionsDataResolver({
 function SessionsViewWrapper(props: SessionsViewProps) {
   return (
     <SessionsErrorBoundary>
-      <Suspense fallback={<Loader />}>
+      <Suspense fallback={<LoaderView />}>
         <SessionsDataResolver>
           {(deferredData) => (
             <SessionsViewInner {...props} deferredData={deferredData} />

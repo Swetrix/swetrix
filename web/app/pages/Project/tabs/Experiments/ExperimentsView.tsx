@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams, useFetcher } from 'react-router'
+import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
@@ -29,7 +29,6 @@ import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import type { ProjectViewActionData } from '~/routes/projects.$id'
 import Button from '~/ui/Button'
 import Spin from '~/ui/icons/Spin'
-import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
@@ -39,6 +38,7 @@ import routes from '~/utils/routes'
 
 import ExperimentResults from './ExperimentResults'
 import ExperimentSettingsModal from './ExperimentSettingsModal'
+import { LoaderView } from '../../View/components/LoaderView'
 
 dayjs.extend(relativeTime)
 
@@ -384,8 +384,6 @@ const ExperimentsView = ({
   const { id } = useCurrentProject()
   const { experimentsRefreshTrigger } = useRefreshTriggers()
   const { timeBucket } = useViewProjectContext()
-  const [searchParams] = useSearchParams()
-  const isEmbedded = searchParams.get('embedded') === 'true'
   const { t } = useTranslation()
   const listFetcher = useFetcher<ProjectViewActionData>()
   const actionFetcher = useFetcher<ProjectViewActionData>()
@@ -686,16 +684,7 @@ const ExperimentsView = ({
   }
 
   if ((isLoading === null || isLoading) && _isEmpty(experiments)) {
-    return (
-      <div
-        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
-          'min-h-including-header': !isEmbedded,
-          'min-h-screen': isEmbedded,
-        })}
-      >
-        <Loader />
-      </div>
-    )
+    return <LoaderView />
   }
 
   if (viewingResultsId) {

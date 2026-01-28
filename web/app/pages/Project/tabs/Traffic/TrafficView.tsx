@@ -102,6 +102,7 @@ import LoadingBar from '~/ui/LoadingBar'
 import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
 import routes from '~/utils/routes'
+import { LoaderView } from '../../View/components/LoaderView'
 
 const InteractiveMap = lazy(
   () => import('~/pages/Project/View/components/InteractiveMap'),
@@ -227,7 +228,7 @@ function TrafficDataResolver({
 function TrafficViewWrapper(props: TrafficViewProps) {
   return (
     <TrafficErrorBoundary>
-      <Suspense fallback={<Loader />}>
+      <Suspense fallback={<LoaderView />}>
         <TrafficDataResolver>
           {(deferredData) => (
             <TrafficViewInner {...props} deferredData={deferredData} />

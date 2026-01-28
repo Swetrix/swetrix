@@ -40,6 +40,7 @@ import LoadingBar from '~/ui/LoadingBar'
 import { Text } from '~/ui/Text'
 import { nLocaleFormatter } from '~/utils/generic'
 import routes from '~/utils/routes'
+import { LoaderView } from '../../View/components/LoaderView'
 
 interface DeferredFunnelData {
   funnelData: FunnelDataResponse | null
@@ -57,7 +58,7 @@ function FunnelDataResolver({
 
 function FunnelsViewWrapper() {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<LoaderView />}>
       <FunnelDataResolver>
         {(deferredData) => <FunnelsViewInner deferredData={deferredData} />}
       </FunnelDataResolver>

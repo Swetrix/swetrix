@@ -32,10 +32,10 @@ import {
   useCurrentProject,
   useProjectPassword,
 } from '~/providers/CurrentProjectProvider'
-import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 
 import Filters from '../../View/components/Filters'
+import { LoaderView } from '../../View/components/LoaderView'
 
 const mapApiProfileToUI = (apiProfile: ApiProfile): Profile => ({
   profileId: apiProfile.profileId,
@@ -385,7 +385,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
           showLiveVisitors={false}
         />
         {profileLoading && !activeProfile ? (
-          <Loader />
+          <LoaderView />
         ) : (
           <ProfileDetails
             details={activeProfile}
@@ -421,7 +421,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
         }}
       />
       {(profilesLoading === null || profilesLoading) && _isEmpty(profiles) ? (
-        <Loader />
+        <LoaderView />
       ) : null}
       {typeof profilesLoading === 'boolean' &&
       !profilesLoading &&

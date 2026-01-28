@@ -11,7 +11,7 @@ import {
 } from '~/lib/constants'
 
 const getUrlFromLocation = (location: Location) => {
-  const { pathname, hash, search } = location
+  const { pathname, search } = location
   const urlObject = new URL(`${MAIN_URL}${pathname}${search}`)
 
   return urlObject

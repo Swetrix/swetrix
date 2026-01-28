@@ -45,7 +45,6 @@ import {
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import {
   API_URL,
-  MAIN_URL,
   DEFAULT_TIMEZONE,
   PROJECT_TABS,
   getValidTimeBucket,

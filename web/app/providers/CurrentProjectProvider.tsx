@@ -186,7 +186,7 @@ const useProject = (id: string) => {
   return { project, mergeProject, isPasswordRequired, submitPassword }
 }
 
-export type ProjectPreferences = {
+type ProjectPreferences = {
   period?: Period
   timeBucket?: TimeBucket
   rangeDate?: Date[]

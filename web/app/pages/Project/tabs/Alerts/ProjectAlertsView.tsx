@@ -40,7 +40,6 @@ import type {
 } from '~/routes/projects.$id'
 import { Badge, type BadgeProps } from '~/ui/Badge'
 import Button from '~/ui/Button'
-import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
@@ -49,6 +48,7 @@ import { Text } from '~/ui/Text'
 import routes from '~/utils/routes'
 
 import ProjectAlertsSettings from './ProjectAlertsSettings'
+import { LoaderView } from '../../View/components/LoaderView'
 
 const NoNotificationChannelSet = () => {
   const { t } = useTranslation('common')
@@ -275,7 +275,7 @@ function AlertsDataResolver({
 
 function ProjectAlertsWrapper() {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<LoaderView />}>
       <AlertsDataResolver>
         {(deferredData) => <ProjectAlertsInner deferredData={deferredData} />}
       </AlertsDataResolver>

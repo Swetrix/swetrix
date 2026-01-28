@@ -63,7 +63,6 @@ import type {
 import BillboardChart from '~/ui/BillboardChart'
 import Button from '~/ui/Button'
 import Spin from '~/ui/icons/Spin'
-import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
@@ -74,6 +73,7 @@ import { nFormatter } from '~/utils/generic'
 import routes from '~/utils/routes'
 
 import GoalSettingsModal from './GoalSettingsModal'
+import { LoaderView } from '../../View/components/LoaderView'
 
 const DEFAULT_GOALS_TAKE = 20
 
@@ -517,7 +517,7 @@ function GoalsDataResolver({
 
 function GoalsViewWrapper(props: GoalsViewProps) {
   return (
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<LoaderView />}>
       <GoalsDataResolver>
         {(deferredData) => (
           <GoalsViewInner {...props} deferredData={deferredData} />
