@@ -302,6 +302,7 @@ export class AuthService {
       discoveryURL: this.configService.get('OIDC_DISCOVERY_URL'),
       clientID: this.configService.get('OIDC_CLIENT_ID'),
       clientSecret: this.configService.get('OIDC_CLIENT_SECRET'),
+      prompt: this.configService.get('OIDC_PROMPT') || 'select_account',
       scope: 'openid email profile',
     }
   }
@@ -334,7 +335,7 @@ export class AuthService {
       const config = this.getOidcConfig()
 
       return {
-        auth_url: `${discovery.authorization_endpoint}?client_id=${config.clientID}&response_type=code&scope=${encodeURIComponent(config.scope)}&redirect_uri=${encodeURIComponent(redirectUrl)}&state=${uuid}&prompt=select_account`,
+        auth_url: `${discovery.authorization_endpoint}?client_id=${config.clientID}&response_type=code&scope=${encodeURIComponent(config.scope)}&redirect_uri=${encodeURIComponent(redirectUrl)}&state=${uuid}&prompt=${encodeURIComponent(config.prompt)}`,
         uuid,
         expires_in: REDIS_OIDC_SESSION_TIMEOUT * 1000, // milliseconds
       }
