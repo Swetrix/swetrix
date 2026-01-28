@@ -21,7 +21,7 @@ import {
   ChevronDownIcon,
 } from '@heroicons/react/24/outline'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
-import { SiYoutube } from '@icons-pack/react-simple-icons'
+import { SiDiscord, SiGithub, SiYoutube } from '@icons-pack/react-simple-icons'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
@@ -47,6 +47,8 @@ import {
   languageFlag,
   isSelfhosted,
   DOCS_URL,
+  DISCORD_URL,
+  GITHUB_URL,
   isDisableMarketingPages,
   API_URL,
 } from '~/lib/constants'
@@ -406,6 +408,29 @@ const Separator = () => (
   </svg>
 )
 
+const SelfhostedCommunityLinks = () => (
+  <span className='flex items-center gap-2'>
+    <a
+      href={DISCORD_URL}
+      className='inline-flex items-center rounded-md p-1 text-slate-700 transition-colors hover:text-slate-900 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-gray-200 dark:hover:text-white'
+      target='_blank'
+      rel='noreferrer noopener'
+    >
+      <span className='sr-only'>Discord</span>
+      <SiDiscord className='h-5 w-5' aria-hidden='true' />
+    </a>
+    <a
+      href={GITHUB_URL}
+      className='inline-flex items-center rounded-md p-1 text-slate-700 transition-colors hover:text-slate-900 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-gray-200 dark:hover:text-white'
+      target='_blank'
+      rel='noreferrer noopener'
+    >
+      <span className='sr-only'>GitHub</span>
+      <SiGithub className='h-5 w-5' aria-hidden='true' />
+    </a>
+  </span>
+)
+
 interface TrialBannerProps {
   status: string | null
   rawStatus: number | null
@@ -624,6 +649,7 @@ const AuthedHeader = ({
               {!isSelfhosted && !isDisableMarketingPages ? (
                 <SolutionsMenu />
               ) : null}
+              {isSelfhosted ? <SelfhostedCommunityLinks /> : null}
               <a
                 href={DOCS_URL}
                 className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
@@ -703,6 +729,7 @@ const NotAuthedHeader = ({
                     {t('common.pricing')}
                   </Link>
                 ) : null}
+                {isSelfhosted ? <SelfhostedCommunityLinks /> : null}
                 <a
                   href={DOCS_URL}
                   className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
@@ -929,6 +956,11 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   >
                     {t('common.pricing')}
                   </Link>
+                ) : null}
+                {isSelfhosted ? (
+                  <div className='-mx-3 flex items-center gap-3 px-3 py-2'>
+                    <SelfhostedCommunityLinks />
+                  </div>
                 ) : null}
                 <a
                   href={DOCS_URL}
