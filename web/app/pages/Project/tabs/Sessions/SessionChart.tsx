@@ -65,7 +65,15 @@ export const SessionChart = ({
       onZoom,
       isTouchDevice,
     ],
-    [chart, timeBucket, timeFormat, rotateXAxis, dataNames, onZoom, isTouchDevice],
+    [
+      chart,
+      timeBucket,
+      timeFormat,
+      rotateXAxis,
+      dataNames,
+      onZoom,
+      isTouchDevice,
+    ],
   )
 
   return (
