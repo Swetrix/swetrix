@@ -2,6 +2,7 @@ import { XIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { useAuth } from '~/providers/AuthProvider'
 
 import { Badge } from '~/ui/Badge'
 import { trackCustom } from '~/utils/analytics'
@@ -17,6 +18,7 @@ const COOKIE_EXPIRATION = 7 * 24 * 60 * 60
 export default function ExitIntentPopup({
   isStandalone = false,
 }: ExitIntentPopupProps) {
+  const { isAuthenticated } = useAuth()
   const { t } = useTranslation('common')
   const [isVisible, setIsVisible] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
@@ -90,7 +92,7 @@ export default function ExitIntentPopup({
     }
   }
 
-  if (!isVisible || isDismissed || isStandalone) {
+  if (!isVisible || isDismissed || isStandalone || isAuthenticated) {
     return null
   }
 
