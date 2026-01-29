@@ -28,11 +28,8 @@ const CLICKHOUSE_INIT_QUERIES = [
     rg LowCardinality(Nullable(String)),
     rgc LowCardinality(Nullable(String)),
     ct Nullable(String) CODEC(ZSTD(3)),
-    meta Nested
-    (
-      key String CODEC(ZSTD(3)),
-      value String CODEC(ZSTD(3))
-    ),
+    \`meta.key\` Array(String) CODEC(ZSTD(3)),
+    \`meta.value\` Array(String) CODEC(ZSTD(3)),
     created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
@@ -64,11 +61,8 @@ const CLICKHOUSE_INIT_QUERIES = [
     rg LowCardinality(Nullable(String)),
     rgc LowCardinality(Nullable(String)),
     ct Nullable(String) CODEC(ZSTD(3)),
-    meta Nested
-    (
-      key String CODEC(ZSTD(3)),
-      value String CODEC(ZSTD(3))
-    ),
+    \`meta.key\` Array(String) CODEC(ZSTD(3)),
+    \`meta.value\` Array(String) CODEC(ZSTD(3)),
     created DateTime('UTC') CODEC(Delta(4), LZ4)
   )
   ENGINE = MergeTree()
@@ -124,11 +118,8 @@ const CLICKHOUSE_INIT_QUERIES = [
     name String CODEC(ZSTD(3)),
     message Nullable(String) CODEC(ZSTD(3)),
     stackTrace Nullable(String) CODEC(ZSTD(3)),
-    meta Nested
-    (
-      key String CODEC(ZSTD(3)),
-      value String CODEC(ZSTD(3))
-    ),
+    \`meta.key\` Array(String) CODEC(ZSTD(3)),
+    \`meta.value\` Array(String) CODEC(ZSTD(3)),
     lineno Nullable(UInt32),
     colno Nullable(UInt32),
     filename Nullable(String) CODEC(ZSTD(3)),

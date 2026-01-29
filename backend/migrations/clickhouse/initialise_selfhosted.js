@@ -28,7 +28,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     active Int8,
     public Int8,
     isPasswordProtected Int8,
-    botsProtectionLevel String CODEC(ZSTD(3)) DEFAULT 'basic',
+    botsProtectionLevel String DEFAULT 'basic' CODEC(ZSTD(3)),
     passwordHash Nullable(String) CODEC(ZSTD(3)),
     adminId Nullable(String) CODEC(ZSTD(3)),
     websiteUrl Nullable(String) CODEC(ZSTD(3)),
