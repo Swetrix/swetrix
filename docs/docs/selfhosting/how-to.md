@@ -68,7 +68,7 @@ After starting the container you can access the dashboard at `http://{host}:80` 
 
 ## Updating
 
-To update Swetrix to the latest version, please refer to the changelog on our GitHub repository.
+To update Swetrix to the latest version, please refer to the changelog on our GitHub repository (https://github.com/Swetrix/swetrix/releases).
 Usually, Swetrix releases come with database migrations that you'll need to apply manually. So make sure to backup your database before updating and follow the changelog instructions carefully.
 
 ## Reverse proxy & Swetrix v5 routing
@@ -90,22 +90,26 @@ If you use another reverse proxy in front of Swetrix (for example for TLS termin
 
 If you are already using Traefik, you can omit the nginx-proxy service and route requests directly to the Swetrix containers by path.
 swetrix-fe labels:
+```yaml
   - traefik.enable=true
   - traefik.http.routers.swetrix_fe.rule=Host(`analytics.example.com`) && PathPrefix(`/`)
   - traefik.http.routers.swetrix_fe.entrypoints=https
   - traefik.http.routers.swetrix_fe.tls=true
   - traefik.http.routers.swetrix_fe.priority=1
   - traefik.http.services.swetrix_fe.loadbalancer.server.port=3000
+  ```
 
 swetrix-api labels:
+```yaml
   - traefik.enable=true
-  - traefik.http.routers.swetrix_be.rule=Host(`analytics.example.com`) && PathPrefix(`/backend`)
+  - traefik.http.routers.swetrix_be.rule=Host(`analytics.example.com`) && PathPrefix(`/backend/`)
   - traefik.http.routers.swetrix_be.entrypoints=https
   - traefik.http.routers.swetrix_be.tls=true
   - traefik.http.routers.swetrix_be.priority=100
   - traefik.http.middlewares.swetrix_be_strip.stripprefix.prefixes=/backend
   - traefik.http.routers.swetrix_be.middlewares=swetrix_be_strip
-  - traefik.http.services.swetrix_be.loadbalancer.server.port=3001
+  - traefik.http.services.swetrix_be.loadbalancer.server.port=5005
+   ```
 
 ## Client IP headers
 
