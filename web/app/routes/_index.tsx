@@ -437,37 +437,27 @@ const FeatureCard = ({
   title,
   description,
   media,
-}: {
-  title: string
-  description: string
-  media: React.ReactNode
-}) => (
-  <div className='flex h-full flex-col overflow-hidden rounded-xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
-    <div className='relative h-60 overflow-hidden'>{media}</div>
-    <div className='p-6'>
-      <h3 className='text-lg font-semibold text-gray-950 dark:text-white'>
-        {title}
-      </h3>
-      <p className='mt-1 text-sm text-gray-700 dark:text-gray-300'>
-        {description}
-      </p>
-    </div>
-  </div>
-)
-
-const LargeFeatureCard = ({
-  title,
-  description,
-  media,
+  size = 'default',
 }: {
   title: string
   description: React.ReactNode
   media: React.ReactNode
+  size?: 'default' | 'large'
 }) => (
-  <div className='flex h-full flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+  <div
+    className={cn(
+      'flex h-full flex-col overflow-hidden bg-white ring-1 ring-slate-800/60 dark:bg-slate-800/25 dark:ring-white/10',
+      size === 'large' ? 'rounded-2xl' : 'rounded-xl',
+    )}
+  >
     <div className='relative h-60 overflow-hidden'>{media}</div>
     <div className='p-6'>
-      <h3 className='text-xl font-semibold text-gray-950 dark:text-white'>
+      <h3
+        className={cn(
+          'font-semibold text-gray-950 dark:text-white',
+          size === 'large' ? 'text-xl' : 'text-lg',
+        )}
+      >
         {title}
       </h3>
       <div className='mt-1 text-sm text-gray-700 dark:text-gray-300'>
@@ -475,6 +465,10 @@ const LargeFeatureCard = ({
       </div>
     </div>
   </div>
+)
+
+const PreviewFallback = () => (
+  <div className='h-full w-full bg-slate-100 dark:bg-slate-800/40' />
 )
 
 const SdurMetric = () => {
@@ -494,7 +488,7 @@ const SdurMetric = () => {
       classes={{
         value: 'max-md:text-xl md:text-3xl',
         container:
-          'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+          'rounded-md bg-gray-50 dark:bg-slate-800/60 py-1 px-2 max-w-max',
       }}
       label={t('dashboard.sessionDuration')}
       value={duration}
@@ -1630,238 +1624,200 @@ const FeaturesShowcase = () => {
     },
   ]
 
-  return (
-    <section className='relative mx-auto max-w-7xl px-2 py-14 lg:px-8'>
-      <div className='mx-auto w-fit'>
-        <h2 className='text-center text-4xl font-bold text-slate-900 sm:text-5xl dark:text-white'>
-          {t('main.coreFeatures')}
-        </h2>
+  const sessionsMedia = (
+    <div className='relative space-y-2 overflow-hidden p-4 sm:p-6'>
+      <ClientOnly>
+        {() => (
+          <MetricCardSelect
+            classes={{
+              value: 'max-md:text-xl md:text-2xl',
+              container:
+                'rounded-md bg-gray-50 dark:bg-slate-800/60 py-1 px-2 max-w-max',
+            }}
+            values={geoOptions}
+            selectLabel={t('project.geo')}
+            valueMapper={({ value }, index) => {
+              if (index !== 0) return value || 'N/A'
+              if (!value) return t('project.unknownCountry')
+              return (
+                <div className='flex items-center'>
+                  <CCRow size={26} cc={value} language={language} />
+                </div>
+              )
+            }}
+          />
+        )}
+      </ClientOnly>
+
+      <MetricCard
+        classes={{
+          value: 'max-md:text-xl md:text-3xl',
+          container:
+            'rounded-md bg-gray-50 dark:bg-slate-800/60 py-1 px-2 max-w-max',
+        }}
+        label={t('project.mapping.os')}
+        value={deviceInfo.os}
+        valueMapper={(value: keyof typeof OS_LOGO_MAP) => {
+          const logoUrlLight = OS_LOGO_MAP[value]
+          const logoUrlDark =
+            OS_LOGO_MAP_DARK[value as keyof typeof OS_LOGO_MAP_DARK]
+          let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
+          logoUrl ||= logoUrlLight
+
+          if (!logoUrl) {
+            return (
+              <>
+                <GlobeIcon className='size-6' />
+                &nbsp;{value}
+              </>
+            )
+          }
+
+          return (
+            <div className='flex items-center'>
+              <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
+              &nbsp;{value}
+            </div>
+          )
+        }}
+      />
+
+      <MetricCard
+        classes={{
+          value: 'max-md:text-xl md:text-3xl',
+          container:
+            'rounded-md bg-gray-50 dark:bg-slate-800/60 py-1 px-2 max-w-max',
+        }}
+        label={t('project.mapping.br')}
+        value={deviceInfo.browser}
+        valueMapper={(value: keyof typeof BROWSER_LOGO_MAP) => {
+          const logoUrl = BROWSER_LOGO_MAP[value]
+          if (!logoUrl) {
+            return (
+              <>
+                <GlobeIcon className='size-6' />
+                &nbsp;{value}
+              </>
+            )
+          }
+          return (
+            <div className='flex items-center'>
+              <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
+              &nbsp;{value}
+            </div>
+          )
+        }}
+      />
+
+      <SdurMetric />
+
+      <div className='absolute right-0 bottom-0 rotate-12 px-2 py-1 opacity-40'>
+        {['/home', '/product', 'SALE'].map((path, index) => (
+          <div key={path} className='relative pb-8'>
+            {index !== 2 && (
+              <span
+                className='absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
+                aria-hidden='true'
+              />
+            )}
+            <div className='relative flex space-x-3'>
+              <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
+                {path.startsWith('/') ? (
+                  <FileTextIcon
+                    className='h-5 w-5 text-white'
+                    aria-hidden='true'
+                    strokeWidth={1.5}
+                  />
+                ) : (
+                  <MousePointerClickIcon
+                    className='h-5 w-5 text-white'
+                    aria-hidden='true'
+                    strokeWidth={1.5}
+                  />
+                )}
+              </span>
+              <p className='pt-1.5 text-sm text-gray-700 dark:text-gray-300'>
+                <Trans
+                  t={t}
+                  i18nKey={
+                    path.startsWith('/')
+                      ? 'project.pageviewX'
+                      : 'project.eventX'
+                  }
+                  components={{
+                    value: (
+                      <span className='font-medium text-gray-900 dark:text-gray-50' />
+                    ),
+                    span: <span />,
+                  }}
+                  values={{ x: path }}
+                />
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
-      <div className='mt-8 grid grid-cols-1 gap-4 sm:mt-12 lg:grid-cols-2'>
-        <LargeFeatureCard
+    </div>
+  )
+
+  const featureList = (featureKey: string) => (
+    <ul className='mt-2 grid grid-cols-1 gap-2 text-gray-900 sm:grid-cols-2 dark:text-gray-50'>
+      {_map(
+        t(`main.${featureKey}.features`, { returnObjects: true }),
+        (feature: string) => (
+          <li
+            className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50'
+            key={feature}
+          >
+            <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
+            <span>{feature}</span>
+          </li>
+        ),
+      )}
+    </ul>
+  )
+
+  return (
+    <section className='relative mx-auto max-w-7xl px-4 py-14 lg:px-8'>
+      <h2 className='text-center text-4xl font-bold text-slate-900 sm:text-5xl dark:text-white'>
+        {t('main.coreFeatures')}
+      </h2>
+
+      <div className='mt-10 grid grid-cols-1 gap-4 lg:grid-cols-2'>
+        <FeatureCard
+          size='large'
           title={t('main.web.title')}
           description={
             <>
               {t('main.web.description')}
-              <ul className='mt-2 grid grid-cols-1 gap-2 text-gray-900 sm:grid-cols-2 dark:text-gray-50'>
-                {_map(
-                  t('main.web.features', { returnObjects: true }),
-                  (feature: string) => (
-                    <li
-                      className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50'
-                      key={feature}
-                    >
-                      <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
-                      <span>{feature}</span>
-                    </li>
-                  ),
-                )}
-              </ul>
+              {featureList('web')}
             </>
           }
           media={
-            <ClientOnly
-              fallback={
-                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
-              }
-            >
+            <ClientOnly fallback={<PreviewFallback />}>
               {() => <AnalyticsLivePreview />}
             </ClientOnly>
           }
         />
-        <LargeFeatureCard
+        <FeatureCard
+          size='large'
           title={t('main.sessions.title')}
           description={
             <>
               {t('main.sessions.description')}
-              <ul className='mt-2 grid grid-cols-1 gap-2 text-gray-900 sm:grid-cols-2 dark:text-gray-50'>
-                {_map(
-                  t('main.sessions.features', { returnObjects: true }),
-                  (feature: string) => (
-                    <li
-                      className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50'
-                      key={feature}
-                    >
-                      <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
-                      <span>{feature}</span>
-                    </li>
-                  ),
-                )}
-              </ul>
+              {featureList('sessions')}
             </>
           }
-          media={
-            <div className='relative space-y-2 overflow-hidden p-4 sm:p-6'>
-              <ClientOnly>
-                {() => (
-                  <MetricCardSelect
-                    classes={{
-                      value: 'max-md:text-xl md:text-2xl',
-                      container:
-                        'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
-                    }}
-                    values={geoOptions}
-                    selectLabel={t('project.geo')}
-                    valueMapper={({ value }, index) => {
-                      if (index !== 0) {
-                        return value || 'N/A'
-                      }
-
-                      if (!value) {
-                        return t('project.unknownCountry')
-                      }
-
-                      return (
-                        <div className='flex items-center'>
-                          <CCRow size={26} cc={value} language={language} />
-                        </div>
-                      )
-                    }}
-                  />
-                )}
-              </ClientOnly>
-
-              <MetricCard
-                classes={{
-                  value: 'max-md:text-xl md:text-3xl',
-                  container:
-                    'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
-                }}
-                label={t('project.mapping.os')}
-                value={deviceInfo.os}
-                valueMapper={(value: keyof typeof OS_LOGO_MAP) => {
-                  const logoUrlLight = OS_LOGO_MAP[value]
-                  const logoUrlDark =
-                    OS_LOGO_MAP_DARK[value as keyof typeof OS_LOGO_MAP_DARK]
-
-                  let logoUrl = theme === 'dark' ? logoUrlDark : logoUrlLight
-                  logoUrl ||= logoUrlLight
-
-                  if (!logoUrl) {
-                    return (
-                      <>
-                        <GlobeIcon className='size-6' />
-                        &nbsp;
-                        {value}
-                      </>
-                    )
-                  }
-
-                  return (
-                    <div className='flex items-center'>
-                      <img
-                        src={logoUrl}
-                        className='size-6 dark:fill-gray-50'
-                        alt=''
-                      />
-                      &nbsp;
-                      {value}
-                    </div>
-                  )
-                }}
-              />
-
-              <MetricCard
-                classes={{
-                  value: 'max-md:text-xl md:text-3xl',
-                  container:
-                    'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
-                }}
-                label={t('project.mapping.br')}
-                value={deviceInfo.browser}
-                valueMapper={(value: keyof typeof BROWSER_LOGO_MAP) => {
-                  const logoUrl = BROWSER_LOGO_MAP[value]
-
-                  if (!logoUrl) {
-                    return (
-                      <>
-                        <GlobeIcon className='size-6' />
-                        &nbsp;
-                        {value}
-                      </>
-                    )
-                  }
-
-                  return (
-                    <div className='flex items-center'>
-                      <img
-                        src={logoUrl}
-                        className='size-6 dark:fill-gray-50'
-                        alt=''
-                      />
-                      &nbsp;
-                      {value}
-                    </div>
-                  )
-                }}
-              />
-
-              <SdurMetric />
-
-              <div className='absolute right-0 bottom-0 rotate-12 px-2 py-1 opacity-40'>
-                {['/home', '/product', 'SALE'].map((path, index) => (
-                  <div key={path} className='relative pb-8'>
-                    {index !== 2 ? (
-                      <span
-                        className='absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
-                        aria-hidden='true'
-                      />
-                    ) : null}
-                    <div className='relative flex space-x-3'>
-                      <div>
-                        <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
-                          {path.startsWith('/') ? (
-                            <FileTextIcon
-                              className='h-5 w-5 text-white'
-                              aria-hidden='true'
-                              strokeWidth={1.5}
-                            />
-                          ) : (
-                            <MousePointerClickIcon
-                              className='h-5 w-5 text-white'
-                              aria-hidden='true'
-                              strokeWidth={1.5}
-                            />
-                          )}
-                        </span>
-                      </div>
-                      <p className='pt-1.5 text-sm text-gray-700 dark:text-gray-300'>
-                        <Trans
-                          t={t}
-                          i18nKey={
-                            path.startsWith('/')
-                              ? 'project.pageviewX'
-                              : 'project.eventX'
-                          }
-                          components={{
-                            value: (
-                              <span className='font-medium text-gray-900 dark:text-gray-50' />
-                            ),
-                            span: <span />,
-                          }}
-                          values={{
-                            x: path,
-                          }}
-                        />
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          }
+          media={sessionsMedia}
         />
       </div>
-      <div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
+
+      <div className='mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
         <FeatureCard
           title={t('main.performance.title')}
           description={t('main.performance.description')}
           media={
-            <ClientOnly
-              fallback={
-                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
-              }
-            >
+            <ClientOnly fallback={<PreviewFallback />}>
               {() => <PerformancePreview />}
             </ClientOnly>
           }
@@ -1870,11 +1826,7 @@ const FeaturesShowcase = () => {
           title={t('main.errors.title')}
           description={t('main.errors.description')}
           media={
-            <ClientOnly
-              fallback={
-                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
-              }
-            >
+            <ClientOnly fallback={<PreviewFallback />}>
               {() => <ErrorsPreview />}
             </ClientOnly>
           }
@@ -1883,11 +1835,7 @@ const FeaturesShowcase = () => {
           title={t('main.events.title')}
           description={t('main.events.description')}
           media={
-            <ClientOnly
-              fallback={
-                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
-              }
-            >
+            <ClientOnly fallback={<PreviewFallback />}>
               {() => <CustomEventsPreview />}
             </ClientOnly>
           }
@@ -1896,11 +1844,7 @@ const FeaturesShowcase = () => {
           title={t('main.funnels.title')}
           description={t('main.funnels.description')}
           media={
-            <ClientOnly
-              fallback={
-                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
-              }
-            >
+            <ClientOnly fallback={<PreviewFallback />}>
               {() => <FunnelsPreview />}
             </ClientOnly>
           }
@@ -1909,11 +1853,7 @@ const FeaturesShowcase = () => {
           title={t('main.alerts.title')}
           description={t('main.alerts.description')}
           media={
-            <ClientOnly
-              fallback={
-                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
-              }
-            >
+            <ClientOnly fallback={<PreviewFallback />}>
               {() => <AlertsPreview />}
             </ClientOnly>
           }
@@ -1929,45 +1869,29 @@ const FeaturesShowcase = () => {
             />
           }
         />
-      </div>
-
-      {/* Product analytics & experimentation features */}
-      <div className='mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
-        <LargeFeatureCard
+        <FeatureCard
           title={t('main.revenue.title')}
           description={t('main.revenue.description')}
           media={
-            <ClientOnly
-              fallback={
-                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
-              }
-            >
+            <ClientOnly fallback={<PreviewFallback />}>
               {() => <RevenuePreview />}
             </ClientOnly>
           }
         />
-        <LargeFeatureCard
+        <FeatureCard
           title={t('main.featureFlags.title')}
           description={t('main.featureFlags.description')}
           media={
-            <ClientOnly
-              fallback={
-                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
-              }
-            >
+            <ClientOnly fallback={<PreviewFallback />}>
               {() => <FeatureFlagsPreview />}
             </ClientOnly>
           }
         />
-        <LargeFeatureCard
+        <FeatureCard
           title={t('main.experiments.title')}
           description={t('main.experiments.description')}
           media={
-            <ClientOnly
-              fallback={
-                <div className='h-full w-full rounded-lg bg-slate-800/10 ring-1 ring-black/5 dark:bg-slate-800/20 dark:ring-white/10' />
-              }
-            >
+            <ClientOnly fallback={<PreviewFallback />}>
               {() => <ExperimentsPreview />}
             </ClientOnly>
           }
