@@ -22,7 +22,7 @@ import LiveVisitorsDropdown from './LiveVisitorsDropdown'
 import { RefreshStatsButton } from './RefreshStatsButton'
 import TBPeriodSelector from './TBPeriodSelector'
 
-export type ProfileTypeFilter = 'all' | 'anonymous' | 'identified'
+type ProfileTypeFilter = 'all' | 'anonymous' | 'identified'
 
 interface DashboardHeaderProps {
   // Optional props
