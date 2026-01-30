@@ -1,9 +1,9 @@
+import cx from 'clsx'
 import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import _capitalize from 'lodash/capitalize'
 import _isEmpty from 'lodash/isEmpty'
 import {
-  EyeIcon,
-  SparklesIcon,
   ClockIcon,
   CalendarIcon,
   FileTextIcon,
@@ -12,6 +12,8 @@ import {
   TabletIcon,
   GlobeIcon,
   DollarSignIcon,
+  UsersIcon,
+  MousePointerClickIcon,
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -41,6 +43,31 @@ import { getProfileDisplayName, ProfileAvatar } from '~/utils/profileAvatars'
 import CCRow from '../../View/components/CCRow'
 import { SessionChart } from '../Sessions/SessionChart'
 import { Sessions } from '../Sessions/Sessions'
+
+dayjs.extend(relativeTime)
+
+const ONLINE_THRESHOLD_MINUTES = 5
+const RECENTLY_ACTIVE_THRESHOLD_MINUTES = 30
+
+type OnlineStatus = 'online' | 'recently_active' | 'offline'
+
+const getOnlineStatus = (lastSeen: string | undefined): OnlineStatus => {
+  if (!lastSeen) return 'offline'
+
+  const now = dayjs()
+  const lastSeenTime = dayjs(lastSeen)
+  const minutesAgo = now.diff(lastSeenTime, 'minute')
+
+  if (minutesAgo < ONLINE_THRESHOLD_MINUTES) {
+    return 'online'
+  }
+
+  if (minutesAgo < RECENTLY_ACTIVE_THRESHOLD_MINUTES) {
+    return 'recently_active'
+  }
+
+  return 'offline'
+}
 
 interface ProfileDetailsProps {
   details: ProfileDetailsType | null
@@ -127,7 +154,7 @@ const ActivityCalendar = ({
 
   const TooltipContent = ({ day }: { day: ActivityDay }) => (
     <ul className='min-w-[120px] text-xs'>
-      <li className='mb-1 border-b border-gray-200 pb-1 font-semibold dark:border-gray-600'>
+      <li className='mb-1 border-b border-gray-200 pb-1 font-semibold dark:border-slate-600'>
         {dayjs(day.date).format('MMM D, YYYY')}
       </li>
       <li className='flex items-center justify-between py-px leading-snug'>
@@ -147,30 +174,33 @@ const ActivityCalendar = ({
 
   return (
     <div className='w-full'>
-      <div
-        className='mb-1 flex w-full gap-[2px]'
-        style={{ paddingLeft: '18px' }}
-      >
-        {weeks.map((_, weekIdx) => (
-          <div
-            key={weekIdx}
-            className='relative flex-1 text-[10px] text-gray-400'
-          >
-            {monthLabels.find((m) => m.weekIndex === weekIdx)?.month}
-          </div>
-        ))}
+      <div className='mb-1 flex gap-[3px] pl-4'>
+        {weeks.map((week, weekIdx) => {
+          const monthLabel = monthLabels.find((m) => m.weekIndex === weekIdx)
+          return (
+            <div
+              key={weekIdx}
+              className='flex-1 text-[10px] leading-none text-gray-400 dark:text-gray-500'
+            >
+              {monthLabel?.month}
+            </div>
+          )
+        })}
       </div>
-      <div className='flex w-full gap-[2px]'>
-        <div className='flex shrink-0 flex-col gap-[2px] pr-1 text-[9px] text-gray-400'>
+      <div className='flex gap-[3px]'>
+        <div className='flex w-3 shrink-0 flex-col gap-[3px] text-[9px] leading-none text-gray-400 dark:text-gray-500'>
           {dayLabels.map((d, i) => (
-            <div key={i} className='flex h-3 w-3 items-center justify-end'>
+            <div
+              key={i}
+              className='flex aspect-square items-center justify-end'
+            >
               {i % 2 === 1 ? d : ''}
             </div>
           ))}
         </div>
-        <div className='flex flex-1 gap-[2px]'>
+        <div className='flex flex-1 gap-[3px]'>
           {weeks.map((week, weekIdx) => (
-            <div key={weekIdx} className='flex flex-1 flex-col gap-[2px]'>
+            <div key={weekIdx} className='flex flex-1 flex-col gap-[3px]'>
               {week.map((day, dayIdx) => (
                 <Tooltip
                   key={dayIdx}
@@ -178,12 +208,12 @@ const ActivityCalendar = ({
                   tooltipNode={
                     <div
                       className={cn(
-                        'h-3 w-full rounded-[2px]',
+                        'aspect-square w-full rounded-[2px] transition-opacity hover:opacity-80',
                         getColor(day.pageviews, day.events),
                       )}
                     />
                   }
-                  delay={0}
+                  delay={100}
                   disableHoverableContent
                 />
               ))}
@@ -293,8 +323,18 @@ export const ProfileDetails = ({
     return getProfileDisplayName(details.profileId, details.isIdentified)
   }, [details])
 
+  const onlineStatus = useMemo(
+    () => getOnlineStatus(details?.lastSeen),
+    [details?.lastSeen],
+  )
+
+  const lastSeenAgo = useMemo(
+    () => (details?.lastSeen ? dayjs(details.lastSeen).fromNow() : ''),
+    [details?.lastSeen],
+  )
+
   const formatDate = (date: string | undefined) => {
-    if (!date) return 'N/A'
+    if (!date) return '-'
     return dayjs(date).format('MMM D, YYYY')
   }
 
@@ -311,18 +351,31 @@ export const ProfileDetails = ({
 
   const avgDurationStr = details.avgDuration
     ? getStringFromTime(getTimeFromSeconds(details.avgDuration))
-    : 'N/A'
+    : '-'
 
   return (
     <div className='flex flex-col gap-3 lg:flex-row'>
       <div className='space-y-3 lg:w-[380px]'>
-        <div className='rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
           <div className='flex items-center gap-4'>
-            <ProfileAvatar
-              className='-mr-0.75 -mb-0.75'
-              profileId={details.profileId}
-              size={42}
-            />
+            <div className='relative shrink-0'>
+              <ProfileAvatar profileId={details.profileId} size={42} />
+              {onlineStatus !== 'offline' && (
+                <Tooltip
+                  text={t('project.lastSeenAgo', { time: lastSeenAgo })}
+                  className='absolute -right-0.5 -bottom-0.5'
+                  tooltipNode={
+                    <span
+                      className={cx(
+                        'block h-3 w-3 rounded-full ring-2 ring-white dark:ring-slate-800',
+                        onlineStatus === 'online' && 'bg-green-500',
+                        onlineStatus === 'recently_active' && 'bg-yellow-500',
+                      )}
+                    />
+                  }
+                />
+              )}
+            </div>
             <div className='flex flex-col gap-0.5'>
               <Text size='base' weight='bold' colour='primary'>
                 {displayName}
@@ -332,19 +385,19 @@ export const ProfileDetails = ({
               </Text>
             </div>
           </div>
-          <div className='mt-4 grid grid-cols-2 gap-y-5'>
+          <div className='mt-5 grid grid-cols-2 gap-x-4 gap-y-5'>
             <StatItem
-              icon={<FileTextIcon className='h-3.5 w-3.5' />}
+              icon={<UsersIcon className='h-3.5 w-3.5' />}
               label={t('project.sessions')}
               value={details.sessionsCount || 0}
             />
             <StatItem
-              icon={<EyeIcon className='h-3.5 w-3.5' />}
+              icon={<FileTextIcon className='h-3.5 w-3.5' />}
               label={t('dashboard.pageviews')}
               value={details.pageviewsCount || 0}
             />
             <StatItem
-              icon={<SparklesIcon className='h-3.5 w-3.5' />}
+              icon={<MousePointerClickIcon className='h-3.5 w-3.5' />}
               label={t('dashboard.events')}
               value={details.eventsCount || 0}
             />
@@ -365,7 +418,9 @@ export const ProfileDetails = ({
             />
             {details.totalRevenue !== undefined && details.totalRevenue > 0 ? (
               <StatItem
-                icon={<DollarSignIcon className='h-3.5 w-3.5 text-green-500' />}
+                icon={
+                  <DollarSignIcon className='h-3.5 w-3.5 text-emerald-500' />
+                }
                 label={t('dashboard.revenue')}
                 value={new Intl.NumberFormat('en-US', {
                   style: 'currency',
@@ -377,13 +432,13 @@ export const ProfileDetails = ({
           </div>
         </div>
 
-        <div className='rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
           <Text
             as='h3'
             size='xs'
             weight='semibold'
             colour='primary'
-            className='mb-2 uppercase'
+            className='mb-3 uppercase'
             tracking='wide'
           >
             {t('project.locationAndDevice')}
@@ -452,13 +507,13 @@ export const ProfileDetails = ({
           </div>
         </div>
 
-        <div className='rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
           <Text
             as='h3'
             size='xs'
             weight='semibold'
             colour='primary'
-            className='mb-2 uppercase'
+            className='mb-3 uppercase'
             tracking='wide'
           >
             {t('project.activityCalendar')}
@@ -469,13 +524,13 @@ export const ProfileDetails = ({
 
       <div className='flex-1 space-y-3'>
         {details.chart && !_isEmpty(details.chart.x) ? (
-          <div className='max-h-max rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+          <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
             <Text
               as='h3'
               size='xs'
               weight='semibold'
               colour='primary'
-              className='mb-2 uppercase'
+              className='mb-3 uppercase'
               tracking='wide'
             >
               {t('dashboard.pageviews')}
@@ -491,13 +546,13 @@ export const ProfileDetails = ({
           </div>
         ) : null}
 
-        <div className='rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
           <Text
             as='h3'
             size='xs'
             weight='semibold'
             colour='primary'
-            className='mb-2 uppercase'
+            className='mb-3 uppercase'
             tracking='wide'
           >
             {t('project.userSessions')}
@@ -505,9 +560,9 @@ export const ProfileDetails = ({
           {sessionsLoading && sessions.length === 0 ? (
             <Loader />
           ) : sessions.length === 0 ? (
-            <p className='py-4 text-center text-sm text-gray-400'>
+            <Text size='sm' colour='muted' className='py-4 text-center'>
               {t('project.noSessions')}
-            </p>
+            </Text>
           ) : (
             <>
               <Sessions
