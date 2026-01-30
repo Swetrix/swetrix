@@ -68,7 +68,7 @@ After starting the container you can access the dashboard at `http://{host}:80` 
 
 ## Updating
 
-To update Swetrix to the latest version, please refer to the changelog on our GitHub repository (https://github.com/Swetrix/swetrix/releases).
+To update Swetrix to the latest version, please refer to the [changelog on our GitHub repository](https://github.com/Swetrix/swetrix/releases).
 Usually, Swetrix releases come with database migrations that you'll need to apply manually. So make sure to backup your database before updating and follow the changelog instructions carefully.
 
 ## Reverse proxy & Swetrix v5 routing
