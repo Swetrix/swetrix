@@ -81,8 +81,9 @@ The default routing is:
 ### Nginx proxy (default)
 
 The self-hosting repository includes an nginx-proxy service and an nginx/config file. The nginx-proxy container listens on port 80 and forwards:
-/ → swetrix (frontend, port 3000)
-/backend/ → swetrix-api (API, port 5005)
+
+- `/` → `swetrix-fe` (frontend, port 3000)
+- `/backend/` → `swetrix-api` (API, port 5005)
 If you use another reverse proxy in front of Swetrix (for example for TLS termination), keep exposing only the nginx-proxy service and forward traffic to it.
 
 ### Traefik (alternative to nginx-proxy)
