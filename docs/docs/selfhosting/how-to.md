@@ -113,5 +113,5 @@ swetrix-api labels:
 
 ## Client IP headers
 
-If you are using proxy for your self-hosted Swetrix instance, you should set the CLIENT_IP_HEADER environment variable. For example, if your proxy is Cloudflare, then you should set CLIENT_IP_HEADER to cf-connecting-ip.
-If you are using Traefik (or another reverse proxy) and are not behind Cloudflare, CLIENT_IP_HEADER=x-forwarded-for is usually the correct value.
+If you are using proxy for your self-hosted Swetrix instance, you should set the `CLIENT_IP_HEADER` environment variable. For example, if your proxy is Cloudflare, then you should set `CLIENT_IP_HEADER` to `cf-connecting-ip`.
+If you are using Traefik (or another reverse proxy) and are not behind Cloudflare, `CLIENT_IP_HEADER=x-forwarded-for` is usually the correct value.
