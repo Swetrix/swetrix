@@ -58,20 +58,60 @@ docker compose up -d
 ```
 
 After you run this command, the following containers will be started:
-
-- `swetrix-api` - the main API server running on port `8080` by default
-- `swetrix-fe` - the frontend server running on port `80` by default
+- swetrix-fe - the frontend server (internal port 3000)
+- swetrix-api - the main API server (internal port 5005)
+- nginx-proxy - routes requests to the frontend and API (port 80 by default)
 - Redis server for caching
 - Clickhouse server for analytics and transactional data
 
-After starting the container you can access the dashboard at `http://{host}:80`.
+After starting the container you can access the dashboard at `http://{host}:80` (or your configured reverse-proxy domain).
 
 ## Updating
 
-To update Swetrix to the latest version, please refer to the changelog on our [GitHub repository](https://github.com/swetrix/swetrix). Usually, Swetrix releases come with database migrations that you'll need to apply manually. So make sure to backup your database before updating and follow the changelog instructions carefully.
+To update Swetrix to the latest version, please refer to the [changelog on our GitHub repository](https://github.com/Swetrix/swetrix/releases).
+Usually, Swetrix releases come with database migrations that you'll need to apply manually. So make sure to backup your database before updating and follow the changelog instructions carefully.
 
-## Reverse proxy
+## Reverse proxy & Swetrix v5 routing
 
-If you use reverse proxy like Nginx, please set it up to pass the request IP address as the `x-real-ip` header, otherwise it may cause the problems related to API route rate limiting and analytics sessions. If the `x-real-ip` header is undefined, Swetrix will use `x-forwarded-for` or the request IP address as a backup.
+Swetrix v5 routes API requests through the web entrypoint. Instead of exposing 2 different services (web & backend) to the internet, you only expose one (the web endpoint) and route API requests internally.
+The default routing is:
+- Frontend: /
+- API: /backend/ (proxied to swetrix-api)
+
+### Nginx proxy (default)
+
+The self-hosting repository includes an nginx-proxy service and an nginx/config file. The nginx-proxy container listens on port 80 and forwards:
+
+- `/` → `swetrix-fe` (frontend, port 3000)
+- `/backend/` → `swetrix-api` (API, port 5005)
+If you use another reverse proxy in front of Swetrix (for example for TLS termination), keep exposing only the nginx-proxy service and forward traffic to it.
+
+### Traefik (alternative to nginx-proxy)
+
+If you are already using Traefik, you can omit the nginx-proxy service and route requests directly to the Swetrix containers by path.
+swetrix-fe labels:
+```yaml
+  - traefik.enable=true
+  - traefik.http.routers.swetrix_fe.rule=Host(`analytics.example.com`) && PathPrefix(`/`)
+  - traefik.http.routers.swetrix_fe.entrypoints=https
+  - traefik.http.routers.swetrix_fe.tls=true
+  - traefik.http.routers.swetrix_fe.priority=1
+  - traefik.http.services.swetrix_fe.loadbalancer.server.port=3000
+  ```
+
+swetrix-api labels:
+```yaml
+  - traefik.enable=true
+  - traefik.http.routers.swetrix_be.rule=Host(`analytics.example.com`) && PathPrefix(`/backend/`)
+  - traefik.http.routers.swetrix_be.entrypoints=https
+  - traefik.http.routers.swetrix_be.tls=true
+  - traefik.http.routers.swetrix_be.priority=100
+  - traefik.http.middlewares.swetrix_be_strip.stripprefix.prefixes=/backend
+  - traefik.http.routers.swetrix_be.middlewares=swetrix_be_strip
+  - traefik.http.services.swetrix_be.loadbalancer.server.port=5005
+   ```
+
+## Client IP headers
 
 If you are using proxy for your self-hosted Swetrix instance, you should set the `CLIENT_IP_HEADER` environment variable. For example, if your proxy is Cloudflare, then you should set `CLIENT_IP_HEADER` to `cf-connecting-ip`.
+If you are using Traefik (or another reverse proxy) and are not behind Cloudflare, `CLIENT_IP_HEADER=x-forwarded-for` is usually the correct value.
