@@ -861,7 +861,7 @@ const ProjectSettings = () => {
           {title}
         </h2>
 
-        <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+        <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
 
         <div className='mt-6 flex flex-col gap-6 md:flex-row'>
           <div className='md:hidden'>

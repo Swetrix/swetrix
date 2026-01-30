@@ -388,7 +388,7 @@ const UserSettings = () => {
 
   const sharedProjectsSection = (
     <>
-      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+      <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
       <Text as='h3' size='lg' weight='bold' className='mt-2 flex items-center'>
         {t('profileSettings.shared')}
       </Text>
@@ -442,7 +442,7 @@ const UserSettings = () => {
         <Text as='h2' size='3xl' weight='bold' className='mt-2'>
           {t('titles.profileSettings')}
         </Text>
-        <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+        <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
         <div className='mt-6 flex flex-col gap-6 md:flex-row'>
           <div className='md:hidden'>
             <Select
@@ -553,7 +553,7 @@ const UserSettings = () => {
                   {t('profileSettings.update')}
                 </Button>
 
-                <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
 
                 <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                   {t('profileSettings.apiKey')}
@@ -606,14 +606,14 @@ const UserSettings = () => {
                 ) : (
                   <>
                     {/* 2FA setting */}
-                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                    <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
                     <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                       {t('profileSettings.2fa')}
                     </h3>
                     <TwoFA />
 
                     {/* Socialisations setup */}
-                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                    <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
                     <h3
                       id='socialisations'
                       className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'
@@ -626,7 +626,7 @@ const UserSettings = () => {
                     {sharedProjectsSection}
 
                     {/* Organisations setting */}
-                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                    <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
                     <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                       {t('profileSettings.organisations')}
                     </h3>
@@ -679,7 +679,7 @@ const UserSettings = () => {
                       )}
                     </div>
 
-                    <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                    <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
                     {!user?.isActive ? (
                       <div
                         className='mt-4 flex max-w-max cursor-pointer pl-0 text-blue-600 underline hover:text-indigo-800 dark:hover:text-indigo-600'
@@ -738,7 +738,7 @@ const UserSettings = () => {
                   {t('common.save')}
                 </Button>
                 {/* Timeformat selector (12 / 24 hour format) */}
-                <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
                 <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
                   {t('profileSettings.timeFormat')}
                 </h3>
@@ -783,7 +783,7 @@ const UserSettings = () => {
                 </Button>
 
                 {/* UI Settings */}
-                <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
                 <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
                   {t('profileSettings.uiSettings')}
                 </h3>
@@ -846,7 +846,7 @@ const UserSettings = () => {
                   {t('common.save')}
                 </Button>
 
-                <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
                 {/* Integrations setup */}
                 <h3
                   id='integrations'
