@@ -342,7 +342,7 @@ export const ProjectCard = ({
       }}
       onClick={onElementClick}
       className={cx(
-        'group relative cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/25 dark:bg-slate-800/70 dark:hover:bg-slate-700/60',
+        'group relative cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-200/70 dark:border-slate-800/60 dark:bg-slate-800/25 dark:hover:bg-slate-800/60',
         viewMode === 'list'
           ? 'flex items-center justify-between px-6 py-4'
           : 'min-h-[153.1px]',

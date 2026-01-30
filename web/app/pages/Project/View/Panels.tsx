@@ -193,13 +193,13 @@ const PanelContainer = ({
           </div>
         </div>
       ) : null}
-      <div className='relative flex h-[19.6rem] flex-col overflow-auto'>
+      <div className='relative flex h-[19.6rem] flex-col overflow-hidden'>
         {children}
       </div>
       {onDetailsClick ? (
         <div className='mt-2 flex items-center justify-center'>
           <Button
-            className='max-w-max border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-200 hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+            className='max-w-max border border-transparent bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-200 hover:bg-gray-50 dark:text-gray-200 hover:dark:border-slate-700/80 hover:dark:bg-slate-900'
             type='button'
             onClick={onDetailsClick}
           >
@@ -819,7 +819,7 @@ const CustomEvents = ({
 
     return (
       <>
-        <div className='sticky top-0 z-20 mb-1 flex items-center justify-between bg-white px-1 py-1 dark:bg-slate-800/90'>
+        <div className='mb-1 flex items-center justify-between p-1'>
           <Text size='sm' weight='medium' colour='muted' className='w-4/6'>
             {t('project.event')}
           </Text>
@@ -833,7 +833,7 @@ const CustomEvents = ({
           </Text>
         </div>
 
-        <div className='space-y-0.5'>
+        <div className='space-y-0.5 overflow-auto'>
           {_map(
             _orderBy(
               keysToDisplay.map((ev) => ({ key: ev, value: eventsData[ev] })),
@@ -854,7 +854,7 @@ const CustomEvents = ({
               return (
                 <div
                   key={`${ev}-${item.value}`}
-                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800'
+                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800/60'
                   onClick={() => {
                     navigate(link)
                   }}
@@ -1259,7 +1259,7 @@ const MetadataKeyPanel = ({
 
       return (
         <>
-          <div className='sticky top-0 z-20 mb-1 flex items-center justify-between bg-white px-1 py-1 dark:bg-slate-800/90'>
+          <div className='mb-1 flex items-center justify-between p-1'>
             <Text size='sm' weight='medium' colour='muted' className='w-2/6'>
               {t('project.key')}
             </Text>
@@ -1284,7 +1284,7 @@ const MetadataKeyPanel = ({
             </Text>
           </div>
 
-          <div className='space-y-0.5'>
+          <div className='space-y-0.5 overflow-auto'>
             {_map(
               valuesToDisplay as Array<{
                 key: string
@@ -1299,7 +1299,7 @@ const MetadataKeyPanel = ({
                 return (
                   <div
                     key={`${key}-${value}`}
-                    className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800'
+                    className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800/60'
                     onClick={() => {
                       navigate(link)
                     }}
@@ -1358,7 +1358,7 @@ const MetadataKeyPanel = ({
 
     return (
       <>
-        <div className='sticky top-0 z-20 mb-1 flex items-center justify-between bg-white px-1 py-1 dark:bg-slate-800/90'>
+        <div className='mb-1 flex items-center justify-between p-1'>
           <Text size='sm' weight='medium' colour='muted' className='w-4/6'>
             {t('project.value')}
           </Text>
@@ -1380,7 +1380,7 @@ const MetadataKeyPanel = ({
           </Text>
         </div>
 
-        <div className='space-y-0.5'>
+        <div className='space-y-0.5 overflow-auto'>
           {_map(
             valuesToDisplay as Array<{ value: string; count: number }>,
             ({ value, count }) => {
@@ -1391,7 +1391,7 @@ const MetadataKeyPanel = ({
               return (
                 <div
                   key={value}
-                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800'
+                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800/60'
                   onClick={() => {
                     navigate(link)
                   }}
@@ -1673,7 +1673,7 @@ const DetailsTable = ({
           placeholder={t('project.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className='w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
+          className='w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-50'
         />
       </div>
       <div ref={parentRef} className='max-h-[500px] overflow-y-auto'>
@@ -1987,7 +1987,7 @@ const Panel = ({
         <PanelEmptyState message={t('project.noParamData')} />
       ) : (
         <>
-          <div className='sticky top-0 z-20 mb-1 flex items-center justify-between bg-white px-1 py-1 dark:bg-slate-800/90'>
+          <div className='mb-1 flex items-center justify-between p-1'>
             <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>
               {tnMapping[activeTabId as keyof typeof tnMapping]}
             </span>
@@ -1996,7 +1996,7 @@ const Panel = ({
             </span>
           </div>
 
-          <div className='space-y-0.5'>
+          <div className='space-y-0.5 overflow-auto'>
             {_map(entriesToDisplay, (entry) => {
               const { count, name: entryName, ...rest } = entry
               const perc = _round((count / total) * 100, 2)
@@ -2017,7 +2017,7 @@ const Panel = ({
                     className={cx(
                       'relative flex h-8 items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                       {
-                        'group hover:bg-gray-50 hover:dark:bg-slate-800':
+                        'group hover:bg-gray-50 hover:dark:bg-slate-800/60':
                           !hideFilters &&
                           !dataLoading &&
                           (link || hasVersionsForItem),
@@ -2029,9 +2029,9 @@ const Panel = ({
                       className={cx('absolute inset-0 rounded-sm', {
                         'bg-blue-50 dark:bg-blue-900/30':
                           highlightColour === 'blue',
-                        'bg-red-50 dark:bg-red-900/20':
+                        'bg-red-50 dark:bg-slate-500/15':
                           highlightColour === 'red',
-                        'bg-orange-50 dark:bg-orange-400/20':
+                        'bg-orange-50 dark:bg-slate-500/15':
                           highlightColour === 'orange',
                       })}
                       style={{ width: `${perc}%` }}
@@ -2046,7 +2046,7 @@ const Panel = ({
                             e.stopPropagation()
                             toggleExpanded(entryName)
                           }}
-                          className='mr-1 rounded p-0.5 hover:bg-gray-200 dark:hover:bg-slate-600'
+                          className='mr-1 rounded p-0.5 hover:bg-gray-200 dark:hover:bg-slate-700/80'
                           aria-label={
                             isExpanded ? 'Collapse versions' : 'Expand versions'
                           }
@@ -2137,7 +2137,7 @@ const Panel = ({
                             className={cx(
                               'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                               {
-                                'group cursor-pointer hover:bg-gray-50 hover:dark:bg-slate-800':
+                                'group cursor-pointer hover:bg-gray-50 hover:dark:bg-slate-800/60':
                                   !disableRowClick &&
                                   !hideFilters &&
                                   !dataLoading &&
@@ -2147,7 +2147,14 @@ const Panel = ({
                             )}
                           >
                             <div
-                              className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                              className={cx('absolute inset-0 rounded-sm', {
+                                'bg-blue-50 dark:bg-blue-900/10':
+                                  highlightColour === 'blue',
+                                'bg-red-50 dark:bg-slate-600/15':
+                                  highlightColour === 'red',
+                                'bg-orange-50 dark:bg-slate-600/15':
+                                  highlightColour === 'orange',
+                              })}
                               style={{ width: `${versionPerc}%` }}
                             />
 

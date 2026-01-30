@@ -103,6 +103,7 @@ import { getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
 import { groupRefEntries } from '~/utils/referrers'
 import routes from '~/utils/routes'
 import { LoaderView } from '../../View/components/LoaderView'
+import { ChartTypeSwitcher } from '../../View/components/ChartTypeSwitcher'
 
 const InteractiveMap = lazy(
   () => import('~/pages/Project/View/components/InteractiveMap'),
@@ -906,38 +907,6 @@ const TrafficViewInner = ({
     )
   }
 
-  const ChartTypeSwitcher = ({
-    type,
-    onSwitch,
-  }: {
-    type: string
-    onSwitch: (type: 'line' | 'bar') => void
-  }) => {
-    if (type === chartTypes.bar) {
-      return (
-        <button
-          type='button'
-          title={t('project.lineChart')}
-          onClick={() => onSwitch('line')}
-          className='rounded-md border border-transparent bg-gray-50 p-2 text-sm font-medium transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-        >
-          <ChartLineIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
-        </button>
-      )
-    }
-
-    return (
-      <button
-        type='button'
-        title={t('project.barChart')}
-        onClick={() => onSwitch('bar')}
-        className='rounded-md border border-transparent bg-gray-50 p-2 text-sm font-medium transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-      >
-        <ChartColumnBigIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
-      </button>
-    )
-  }
-
   // Fullscreen map view - takes over the entire content area
   if (isMapFullscreen && fullscreenMapRef.current) {
     const countryData = panelsData.data?.cc || []
@@ -985,7 +954,7 @@ const TrafficViewInner = ({
           <Filters className='mb-3' tnMapping={tnMapping} />
         ) : null}
         <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
-          <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
+          <div className='mb-3 flex w-full items-center justify-end gap-1 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
             <Dropdown
               header={t('project.metricVis')}
               items={
@@ -1048,7 +1017,7 @@ const TrafficViewInner = ({
                   />
                 )
               }}
-              buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-900 focus:dark:ring-gray-200'
               selectItemClassName='p-0'
               keyExtractor={(pair) => pair?.id || ''}
               onSelect={(pair, e) => {

@@ -45,10 +45,10 @@ const Input = ({
   const inputElement = (
     <HeadlessInput
       className={cx(
-        'w-full rounded-md border-0 ring-1 ring-inset focus:ring-indigo-500 sm:text-sm dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400',
+        'w-full rounded-md border-0 ring-1 ring-inset focus:ring-slate-900 sm:text-sm dark:bg-slate-900 dark:text-gray-50 dark:placeholder-gray-400 dark:focus:ring-slate-300',
         {
           'text-red-900 placeholder-red-300 ring-red-600': isError,
-          'ring-gray-300 dark:ring-slate-800/50': !isError,
+          'ring-gray-300 dark:ring-slate-700/80': !isError,
           'cursor-text bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400':
             disabled,
           'pr-10': isPassword,

@@ -78,7 +78,7 @@ function Dropdown<T>({
               {
                 'justify-between': aside,
                 'justify-center': !aside,
-                'inline-flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 focus:outline-hidden md:px-4 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700':
+                'inline-flex w-full rounded-md border-0 bg-white px-3 py-2 text-sm font-medium ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden md:px-4 dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-800 dark:focus:ring-slate-300':
                   !headless,
                 'group inline-flex w-full px-3 py-2 text-sm font-medium outline-hidden md:px-4':
                   headless,
@@ -130,7 +130,7 @@ function Dropdown<T>({
               }}
               modal={false}
               className={cn(
-                'z-50 w-40 min-w-max rounded-md bg-gray-50 p-1 ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-800',
+                'z-50 w-40 min-w-max rounded-md bg-white p-1 ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-700/80',
                 menuItemsClassName,
               )}
             >
@@ -153,7 +153,7 @@ function Dropdown<T>({
                   >
                     <span
                       className={cn(
-                        'block cursor-pointer rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700',
+                        'block cursor-pointer rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-slate-800',
                         selectItemClassName,
                       )}
                       role='menuitem'

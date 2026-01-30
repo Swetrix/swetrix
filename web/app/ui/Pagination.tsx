@@ -42,7 +42,7 @@ const Pagination = ({
   return (
     <div
       className={cx(
-        'flex items-center justify-between border-t border-gray-200 py-3 dark:border-gray-700',
+        'flex items-center justify-between border-t border-gray-200 py-3 dark:border-slate-700/80',
         className,
       )}
     >
@@ -58,10 +58,10 @@ const Pagination = ({
           }}
           disabled={page === 1}
           className={cx(
-            'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200',
+            'relative inline-flex items-center rounded-md border-0 bg-white px-4 py-2 text-sm font-medium text-gray-700 ring-1 ring-gray-300 ring-inset dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700/80',
             {
-              'cursor-not-allowed': page === 1,
-              'hover:bg-gray-100 dark:hover:bg-slate-700': page !== 1,
+              'cursor-not-allowed opacity-50': page === 1,
+              'hover:bg-gray-50 dark:hover:bg-slate-800': page !== 1,
             },
           )}
         >
@@ -78,10 +78,10 @@ const Pagination = ({
           }}
           disabled={page === pageAmount}
           className={cx(
-            'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200',
+            'relative ml-3 inline-flex items-center rounded-md border-0 bg-white px-4 py-2 text-sm font-medium text-gray-700 ring-1 ring-gray-300 ring-inset dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700/80',
             {
-              'cursor-not-allowed': page === pageAmount,
-              'hover:bg-gray-100 dark:hover:bg-slate-700': page !== pageAmount,
+              'cursor-not-allowed opacity-50': page === pageAmount,
+              'hover:bg-gray-50 dark:hover:bg-slate-800': page !== pageAmount,
             },
           )}
         >
@@ -130,10 +130,10 @@ const Pagination = ({
               }}
               disabled={page === 1}
               className={cx(
-                'relative inline-flex items-center rounded-l-md border border-gray-300 px-2 py-2 text-gray-400 focus:z-20 dark:border-gray-800',
+                'relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-2 py-2 text-gray-400 focus:z-20 dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-500',
                 {
-                  'cursor-not-allowed': page === 1,
-                  'hover:bg-gray-100 dark:hover:bg-slate-700': page !== 1,
+                  'cursor-not-allowed opacity-50': page === 1,
+                  'hover:bg-gray-50 dark:hover:bg-slate-800': page !== 1,
                 },
               )}
             >
@@ -155,7 +155,7 @@ const Pagination = ({
 
                       setPage(middlePage)
                     }}
-                    className='relative inline-flex items-center border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-200 dark:hover:bg-slate-700'
+                    className='relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
                   >
                     {DOTS}
                   </button>
@@ -168,11 +168,11 @@ const Pagination = ({
                   key={item}
                   onClick={() => setPage(item)}
                   className={cx(
-                    'relative inline-flex items-center border border-gray-300 px-4 py-2 text-sm font-semibold focus:z-20 dark:border-gray-800',
+                    'relative inline-flex items-center border border-gray-300 px-4 py-2 text-sm font-semibold focus:z-20 dark:border-slate-700/80',
                     {
-                      'z-10 bg-slate-800 text-white dark:bg-slate-700':
+                      'z-10 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900':
                         item === page,
-                      'text-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700':
+                      'bg-white text-gray-900 hover:bg-gray-50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800':
                         item !== page,
                     },
                   )}
@@ -192,10 +192,10 @@ const Pagination = ({
               }}
               disabled={page === pageAmount}
               className={cx(
-                'relative inline-flex items-center rounded-r-md border border-gray-300 px-2 py-2 text-gray-400 focus:z-20 dark:border-gray-800',
+                'relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-gray-400 focus:z-20 dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-500',
                 {
-                  'cursor-not-allowed': page === pageAmount,
-                  'hover:bg-gray-100 dark:hover:bg-slate-700':
+                  'cursor-not-allowed opacity-50': page === pageAmount,
+                  'hover:bg-gray-50 dark:hover:bg-slate-800':
                     page !== pageAmount,
                 },
               )}

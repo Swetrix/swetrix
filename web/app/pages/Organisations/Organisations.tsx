@@ -20,6 +20,7 @@ import type {
   OrganisationsActionData,
   OrganisationsLoaderData,
 } from '~/routes/organisations._index'
+import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
@@ -242,14 +243,13 @@ const Organisations = () => {
                   </div>
                 ) : null}
               </div>
-              <button
-                type='button'
-                onClick={onNewOrganisation}
-                className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 p-2 text-center text-sm leading-4 font-medium text-white transition-colors hover:bg-slate-700 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:outline-hidden dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              >
-                <BuildingOffice2Icon className='mr-1 h-5 w-5' />
+              <Button onClick={onNewOrganisation} primary large>
+                <BuildingOffice2Icon
+                  className='mr-1 h-5 w-5'
+                  strokeWidth={1.5}
+                />
                 {t('organisations.new')}
-              </button>
+              </Button>
             </div>
             {isSearchActive ? (
               <div className='mb-2 flex w-full items-center sm:hidden'>
@@ -278,7 +278,7 @@ const Organisations = () => {
               {_isEmpty(organisations) ? (
                 <NoOrganisations onClick={onNewOrganisation} />
               ) : (
-                <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
+                <div className='grid grid-cols-1 gap-3 lg:grid-cols-3'>
                   {_map(organisations, (organisation) => (
                     <OrganisationCard
                       key={organisation.id}

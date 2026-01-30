@@ -163,20 +163,31 @@ const Modal = ({
                 <button
                   type='button'
                   className={cn(
-                    'inline-flex w-full justify-center rounded-md px-4 py-2 text-base font-medium text-white transition-colors sm:ml-3 sm:w-auto sm:text-sm',
+                    'inline-flex w-full justify-center rounded-md px-4 py-2 text-base font-medium transition-colors sm:ml-3 sm:w-auto sm:text-sm',
                     {
-                      'bg-indigo-600': submitType === 'regular',
-                      'bg-red-600': submitType === 'danger',
-                      'cursor-not-allowed opacity-70': submitDisabled,
-                      'hover:bg-indigo-700':
+                      'bg-slate-900 text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white':
                         submitType === 'regular' && !submitDisabled,
-                      'hover:bg-red-700':
+                      'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900':
+                        submitType === 'regular' && submitDisabled,
+                      'bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500':
                         submitType === 'danger' && !submitDisabled,
+                      'bg-red-600 text-white dark:bg-red-600':
+                        submitType === 'danger' && submitDisabled,
+                      'cursor-not-allowed opacity-70': submitDisabled,
                     },
                   )}
                   onClick={onSubmit}
                 >
-                  {isLoading ? <Spin alwaysLight /> : null}
+                  {isLoading ? (
+                    <Spin
+                      alwaysLight={submitType === 'danger'}
+                      className={
+                        submitType === 'regular'
+                          ? 'text-white dark:text-slate-900'
+                          : undefined
+                      }
+                    />
+                  ) : null}
                   {submitText}
                 </button>
               ) : null}

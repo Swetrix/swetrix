@@ -50,6 +50,7 @@ import { NoProjects } from './NoProjects'
 import { PeriodSelector } from './PeriodSelector'
 import { ProjectCard } from './ProjectCard'
 import { SortSelector, SORT_OPTIONS } from './SortSelector'
+import Button from '~/ui/Button'
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
 
@@ -408,7 +409,7 @@ const Dashboard = () => {
                         id='project-search'
                         onChange={onSearch}
                         value={search}
-                        className='block h-7 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 sm:pl-10 dark:bg-slate-900 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200'
+                        className='block h-7 w-full rounded-lg border-none bg-white p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 ring-inset focus:ring-slate-900 sm:pl-10 dark:bg-slate-900 dark:text-gray-50 dark:placeholder-gray-400 dark:ring-slate-700/80 dark:focus:ring-slate-300'
                         placeholder={t('project.search')}
                       />
                     </div>
@@ -450,14 +451,10 @@ const Dashboard = () => {
                     </button>
                   ) : null}
                 </div>
-                <button
-                  type='button'
-                  onClick={onNewProject}
-                  className='ml-3 inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 p-2 text-center text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-                >
+                <Button onClick={onNewProject} primary large>
                   <FolderPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                   {t('dashboard.newProject')}
-                </button>
+                </Button>
               </div>
             </div>
             {isSearchActive ? (

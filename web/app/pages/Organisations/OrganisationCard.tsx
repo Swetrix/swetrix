@@ -101,9 +101,9 @@ export const OrganisationCard = ({ organisation }: OrganisationCardProps) => {
 
   const isViewer = membership?.role === 'viewer'
   const cardClassName = cx(
-    'min-h-[153.1px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/25 dark:bg-slate-800/70',
+    'min-h-[153.1px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/60 dark:bg-slate-800/25',
     {
-      'cursor-pointer hover:bg-gray-200/70 dark:hover:bg-slate-700/60':
+      'cursor-pointer hover:bg-gray-200/70 dark:hover:bg-slate-800/60':
         !isViewer,
     },
   )

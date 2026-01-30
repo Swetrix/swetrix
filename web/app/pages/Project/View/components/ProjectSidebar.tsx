@@ -76,7 +76,7 @@ const ICON_COLORS: Record<string, string> = {
   // CAPTCHA
   captcha: 'text-emerald-500',
   // Settings
-  settings: 'text-gray-500',
+  misc: 'text-gray-900 dark:text-gray-50',
 }
 
 interface Tab {
@@ -474,7 +474,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         className,
       )}
     >
-      <div className='sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 dark:border-slate-800/60 dark:bg-slate-800/25'>
+      <div className='sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 px-4 py-2 dark:border-slate-800/60'>
         {isCollapsed && !isMobileOpen ? (
           <Tooltip
             text={projectName}
@@ -644,28 +644,28 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         ))}
       </div>
 
-      <div className='sticky bottom-0 flex flex-col gap-0.5 border-t border-gray-200 bg-white px-2 py-2 dark:border-slate-800/60 dark:bg-slate-800/25'>
+      <div className='sticky bottom-0 flex flex-col gap-0.5 border-t border-gray-200 px-2 py-2 dark:border-slate-800/60'>
         {!isMobileOpen ? (
           <button
             type='button'
             onClick={toggleCollapsed}
             className={cn(
-              'group flex w-full items-center rounded-md px-2.5 py-2 text-sm font-medium transition-colors',
-              'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800/60 dark:hover:text-gray-200',
+              'group flex w-full items-center rounded-md px-2.5 py-2 text-sm font-medium tracking-normal transition-colors',
+              'text-gray-900 hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-slate-800/60',
               isCollapsed ? 'justify-center' : 'gap-2.5',
             )}
             aria-label={isCollapsed ? t('common.expand') : t('common.collapse')}
           >
             {isCollapsed ? (
               <PanelLeftOpenIcon
-                className='h-5 w-5 shrink-0'
+                className={cn('h-5 w-5 shrink-0', ICON_COLORS.misc)}
                 strokeWidth={1.5}
                 aria-hidden='true'
               />
             ) : (
               <>
                 <PanelLeftCloseIcon
-                  className='h-5 w-5 shrink-0'
+                  className={cn('h-5 w-5 shrink-0', ICON_COLORS.misc)}
                   strokeWidth={1.5}
                   aria-hidden='true'
                 />
@@ -680,14 +680,14 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             to={routes.project_settings.replace(':id', projectId)}
             onClick={onMobileClose}
             className={cn(
-              'group flex w-full items-center rounded-md px-2.5 py-2 text-sm font-medium transition-colors',
-              'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800/60 dark:hover:text-gray-200',
+              'group flex w-full items-center rounded-md px-2.5 py-2 text-sm font-medium tracking-normal transition-colors',
+              'text-gray-900 hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-slate-800/60',
               isCollapsed && !isMobileOpen ? 'justify-center' : 'gap-2.5',
             )}
             aria-label={t('common.settings')}
           >
             <SettingsIcon
-              className={cn('h-5 w-5 shrink-0', ICON_COLORS.settings)}
+              className={cn('h-5 w-5 shrink-0', ICON_COLORS.misc)}
               strokeWidth={1.5}
               aria-hidden='true'
             />

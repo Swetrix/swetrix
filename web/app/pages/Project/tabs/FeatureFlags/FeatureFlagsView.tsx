@@ -210,11 +210,11 @@ const FeatureFlagRow = ({
 
   return (
     <>
-      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/25 dark:bg-slate-800/70'>
+      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/60 dark:bg-slate-800/25'>
         {/* Main row - clickable to expand */}
         <div
           onClick={() => onToggleExpand(flag.id)}
-          className='flex cursor-pointer justify-between gap-x-6 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:hover:bg-slate-700/60'
+          className='flex cursor-pointer justify-between gap-x-6 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:hover:bg-slate-800/60'
         >
           <div className='flex min-w-0 gap-x-4'>
             <div className='min-w-0 flex-auto'>
@@ -997,7 +997,7 @@ const FeatureFlagsViewInner = ({
                   placeholder={t('featureFlags.filterFlags')}
                   value={filterQuery}
                   onChange={handleSearchChange}
-                  className='w-full rounded-lg border border-gray-300 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-inset focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400'
+                  className='w-full rounded-lg border-0 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-1 ring-gray-300 ring-inset focus:ring-slate-900 focus:outline-none sm:w-64 dark:bg-slate-900 dark:text-gray-50 dark:placeholder-gray-400 dark:ring-slate-700/80 dark:focus:ring-slate-300'
                 />
               </div>
               <Button onClick={handleNewFlag} primary regular>

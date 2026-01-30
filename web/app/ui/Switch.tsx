@@ -39,9 +39,9 @@ export const Switch = ({
           }
         }}
         className={cx(
-          'relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75',
+          'relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 dark:focus-visible:ring-slate-300 dark:focus-visible:ring-offset-slate-900',
           {
-            'bg-slate-900 dark:bg-slate-500': checked,
+            'bg-slate-900 dark:bg-slate-200': checked,
             'bg-gray-300 dark:bg-slate-600': !checked,
             'cursor-not-allowed opacity-50': disabled,
           },
@@ -50,10 +50,12 @@ export const Switch = ({
         <span
           aria-hidden='true'
           className={cx(
-            'pointer-events-none inline-block size-3 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out',
+            'pointer-events-none inline-block size-3 transform rounded-full shadow-lg ring-0 transition duration-200 ease-in-out',
             {
               'translate-x-3': checked,
               'translate-x-0': !checked,
+              'bg-white dark:bg-slate-900': checked,
+              'bg-white': !checked,
             },
           )}
         />

@@ -305,14 +305,14 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                     leaveTo='transform opacity-0 scale-95'
                   >
                     <DisclosurePanel
-                      className='absolute right-0 z-50 w-full min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
+                      className='absolute right-0 z-50 w-full min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-700/80'
                       static
                     >
                       {_map(whitelist, (lng) => (
                         <DisclosureButton
                           key={lng}
                           as='span'
-                          className='block cursor-pointer rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
+                          className='block cursor-pointer rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800'
                           onClick={() => changeLanguage(lng)}
                         >
                           <div className='flex'>

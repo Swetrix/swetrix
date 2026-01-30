@@ -56,6 +56,7 @@ import Dropdown from '~/ui/Dropdown'
 import LoadingBar from '~/ui/LoadingBar'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import { LoaderView } from '../../View/components/LoaderView'
+import { ChartTypeSwitcher } from '../../View/components/ChartTypeSwitcher'
 
 const InteractiveMap = lazy(
   () => import('~/pages/Project/View/components/InteractiveMap'),
@@ -365,62 +366,6 @@ const PerformanceViewInner = ({
     )
   }
 
-  const ChartTypeSwitcher = ({
-    type,
-    onSwitch,
-  }: {
-    type: string
-    onSwitch: (type: 'line' | 'bar') => void
-  }) => {
-    if (type === chartTypes.bar) {
-      return (
-        <button
-          type='button'
-          title={t('project.lineChart')}
-          onClick={() => onSwitch('line')}
-          className='rounded-md border border-transparent bg-gray-50 p-2 text-sm font-medium transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-        >
-          <svg
-            className='h-5 w-5 text-gray-700 dark:text-gray-50'
-            fill='none'
-            viewBox='0 0 24 24'
-            strokeWidth='1.5'
-            stroke='currentColor'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              d='M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z'
-            />
-          </svg>
-        </button>
-      )
-    }
-
-    return (
-      <button
-        type='button'
-        title={t('project.barChart')}
-        onClick={() => onSwitch('bar')}
-        className='rounded-md border border-transparent bg-gray-50 p-2 text-sm font-medium transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-      >
-        <svg
-          className='h-5 w-5 text-gray-700 dark:text-gray-50'
-          fill='none'
-          viewBox='0 0 24 24'
-          strokeWidth='1.5'
-          stroke='currentColor'
-        >
-          <path
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            d='M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z'
-          />
-        </svg>
-      </button>
-    )
-  }
-
   // Fullscreen map view - takes over the entire content area
   if (isMapFullscreen && fullscreenMapRef.current) {
     const countryData = panelsData.data?.cc || []
@@ -468,7 +413,7 @@ const PerformanceViewInner = ({
           <Filters className='mb-3' tnMapping={tnMapping} />
         ) : null}
         <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
-          <div className='mb-3 flex w-full items-center justify-end gap-2 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
+          <div className='mb-3 flex w-full items-center justify-end gap-1.5 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
             <Dropdown
               items={chartMetrics}
               className='xs:min-w-0'
@@ -485,7 +430,7 @@ const PerformanceViewInner = ({
               onSelect={({ id: pairID }) => {
                 setActiveChartMetrics(pairID)
               }}
-              buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-900 focus:dark:ring-gray-200'
               chevron='mini'
               headless
             />
@@ -508,7 +453,7 @@ const PerformanceViewInner = ({
               onSelect={({ id: pairID }) => {
                 setActiveMeasure(pairID)
               }}
-              buttonClassName='!px-2 bg-gray-50 rounded-md border border-transparent hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-900 focus:dark:ring-gray-200'
               chevron='mini'
               headless
             />
