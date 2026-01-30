@@ -245,52 +245,6 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
   )
 }
 
-interface ProfilesFilterProps {
-  profileType: 'all' | 'anonymous' | 'identified'
-  onProfileTypeChange: (type: 'all' | 'anonymous' | 'identified') => void
-}
-
-export const ProfilesFilter: React.FC<ProfilesFilterProps> = ({
-  profileType,
-  onProfileTypeChange,
-}) => {
-  const { t } = useTranslation('common')
-
-  const filterButtonClass = (isActive: boolean) =>
-    cx(
-      'rounded-md border px-3 py-1.5 text-sm font-medium transition-colors',
-      isActive
-        ? 'border-slate-900 bg-slate-900 text-gray-50 dark:border-slate-700 dark:bg-slate-800'
-        : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-white dark:border-slate-700/50 dark:bg-slate-800/50 dark:text-gray-300 dark:hover:border-slate-600 dark:hover:bg-slate-700',
-    )
-
-  return (
-    <div className='mb-4 flex items-center gap-2'>
-      <button
-        type='button'
-        onClick={() => onProfileTypeChange('all')}
-        className={filterButtonClass(profileType === 'all')}
-      >
-        {t('project.allUsers')}
-      </button>
-      <button
-        type='button'
-        onClick={() => onProfileTypeChange('anonymous')}
-        className={filterButtonClass(profileType === 'anonymous')}
-      >
-        {t('project.anonymous')}
-      </button>
-      <button
-        type='button'
-        onClick={() => onProfileTypeChange('identified')}
-        className={filterButtonClass(profileType === 'identified')}
-      >
-        {t('project.identified')}
-      </button>
-    </div>
-  )
-}
-
 export const Profiles: React.FC<UsersProps> = ({ profiles, timeFormat }) => {
   return (
     <ClientOnly
@@ -301,7 +255,7 @@ export const Profiles: React.FC<UsersProps> = ({ profiles, timeFormat }) => {
       }
     >
       {() => (
-        <ul className='mt-4'>
+        <ul>
           {_map(profiles, (profile) => (
             <ProfileRow
               key={profile.profileId}

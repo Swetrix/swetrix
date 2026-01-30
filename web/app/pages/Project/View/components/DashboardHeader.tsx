@@ -1,7 +1,7 @@
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import _find from 'lodash/find'
-import { SearchIcon } from 'lucide-react'
+import { SearchIcon, UsersIcon } from 'lucide-react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
@@ -22,6 +22,8 @@ import LiveVisitorsDropdown from './LiveVisitorsDropdown'
 import { RefreshStatsButton } from './RefreshStatsButton'
 import TBPeriodSelector from './TBPeriodSelector'
 
+export type ProfileTypeFilter = 'all' | 'anonymous' | 'identified'
+
 interface DashboardHeaderProps {
   // Optional props
   showLiveVisitors?: boolean
@@ -41,6 +43,10 @@ interface DashboardHeaderProps {
 
   // Right side content (for segments/export dropdowns or action buttons)
   rightContent?: React.ReactNode
+
+  // Profile type filter (for Profiles view)
+  profileTypeFilter?: ProfileTypeFilter
+  onProfileTypeFilterChange?: (type: ProfileTypeFilter) => void
 }
 
 const DashboardHeader = ({
@@ -55,6 +61,8 @@ const DashboardHeader = ({
   onBack,
   leftContent,
   rightContent,
+  profileTypeFilter,
+  onProfileTypeFilterChange,
 }: DashboardHeaderProps) => {
   const { isLoading: authLoading } = useAuth()
   const {
@@ -142,6 +150,35 @@ const DashboardHeader = ({
         ) : null}
         {leftContent}
         {showLiveVisitors ? <LiveVisitorsDropdown /> : null}
+        {profileTypeFilter && onProfileTypeFilterChange ? (
+          <Dropdown
+            items={
+              [
+                { value: 'all', label: t('project.allUsers') },
+                { value: 'anonymous', label: t('project.anonymous') },
+                { value: 'identified', label: t('project.identified') },
+              ] as const
+            }
+            title={
+              <span className='flex items-center'>
+                <UsersIcon className='mr-1.5 h-4 w-4' />
+                {profileTypeFilter === 'all'
+                  ? t('project.allUsers')
+                  : profileTypeFilter === 'anonymous'
+                    ? t('project.anonymous')
+                    : t('project.identified')}
+              </span>
+            }
+            labelExtractor={(item) => item.label}
+            keyExtractor={(item) => item.value}
+            onSelect={(item) => {
+              onProfileTypeFilterChange(item.value as ProfileTypeFilter)
+            }}
+            buttonClassName='rounded-md border border-gray-50/0 p-2 text-sm font-medium text-gray-700 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+            chevron='mini'
+            headless
+          />
+        ) : null}
       </div>
       <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
         {showRefreshButton ? (

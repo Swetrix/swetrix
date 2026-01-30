@@ -18,10 +18,7 @@ import {
 } from '~/lib/models/Project'
 import NoProfiles from '~/pages/Project/tabs/Profiles/components/NoProfiles'
 import { ProfileDetails } from '~/pages/Project/tabs/Profiles/ProfileDetails'
-import {
-  Profiles,
-  ProfilesFilter,
-} from '~/pages/Project/tabs/Profiles/Profiles'
+import { Profiles } from '~/pages/Project/tabs/Profiles/Profiles'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import {
   useViewProjectContext,
@@ -408,18 +405,18 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
   // Profiles list view
   return (
     <>
-      <DashboardHeader showLiveVisitors />
-      {profilesLoading && !_isEmpty(profiles) ? <LoadingBar /> : null}
-      {!_isEmpty(profiles) ? (
-        <Filters className='mb-3' tnMapping={tnMapping} />
-      ) : null}
-      <ProfilesFilter
-        profileType={profileTypeFilter}
-        onProfileTypeChange={(type) => {
+      <DashboardHeader
+        showLiveVisitors
+        profileTypeFilter={profileTypeFilter}
+        onProfileTypeFilterChange={(type) => {
           setProfileTypeFilter(type)
           setProfilesSkip(0)
         }}
       />
+      {profilesLoading && !_isEmpty(profiles) ? <LoadingBar /> : null}
+      {!_isEmpty(profiles) ? (
+        <Filters className='mb-3' tnMapping={tnMapping} />
+      ) : null}
       {(profilesLoading === null || profilesLoading) && _isEmpty(profiles) ? (
         <LoaderView />
       ) : null}
