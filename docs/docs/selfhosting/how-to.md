@@ -64,8 +64,7 @@ After you run this command, the following containers will be started:
 - Redis server for caching
 - Clickhouse server for analytics and transactional data
 
-After starting the container you can access the dashboard at `http://{host}:80`.
-After starting the container you can access the dashboard at http://{host}:80 (or your configured reverse proxy domain).
+After starting the container you can access the dashboard at `http://{host}:80` (or your configured reverse-proxy domain).
 
 ## Updating
 
