@@ -1,6 +1,6 @@
 import cx from 'clsx'
 import _map from 'lodash/map'
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
 import { memo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
@@ -138,7 +138,7 @@ const Pagination = ({
               )}
             >
               <span className='sr-only'>{t('project.prev')}</span>
-              <ChevronLeftIcon className='h-5 w-5' aria-hidden='true' />
+              <CaretLeftIcon className='h-5 w-5' aria-hidden='true' />
             </button>
             {_map(paginationRange, (item, index) => {
               if (item === DOTS) {
@@ -201,7 +201,7 @@ const Pagination = ({
               )}
             >
               <span className='sr-only'>{t('project.next')}</span>
-              <ChevronRightIcon className='h-5 w-5' aria-hidden='true' />
+              <CaretRightIcon className='h-5 w-5' aria-hidden='true' />
             </button>
           </nav>
         </div>

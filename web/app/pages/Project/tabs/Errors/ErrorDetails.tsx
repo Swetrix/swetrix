@@ -1,18 +1,16 @@
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ClipboardIcon,
-  CheckIcon,
-} from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
 import {
   FileCodeIcon,
-  CalendarIcon,
+  CalendarDotsIcon,
   HashIcon,
-  ExternalLinkIcon,
+  ArrowSquareOutIcon,
   UsersIcon,
-  ActivityIcon,
-} from 'lucide-react'
+  PulseIcon,
+  CaretDownIcon,
+  CaretUpIcon,
+  ClipboardIcon,
+  CheckIcon,
+} from '@phosphor-icons/react'
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
@@ -152,10 +150,7 @@ const SessionRow = ({ session }: SessionRowProps) => {
           </Text>
         </div>
       </div>
-      <ExternalLinkIcon
-        className='mt-0.5 size-4 shrink-0 text-gray-400 transition-colors group-hover:text-gray-600 dark:group-hover:text-gray-300'
-        strokeWidth={1.5}
-      />
+      <ArrowSquareOutIcon className='mt-0.5 size-4 shrink-0 text-gray-400 transition-colors group-hover:text-gray-600 dark:group-hover:text-gray-300' />
     </Link>
   )
 }
@@ -415,10 +410,7 @@ export const ErrorDetails = ({
         {details.filename ? (
           <div className='flex items-center gap-2'>
             <div className='flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 font-mono text-xs text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
-              <FileCodeIcon
-                className='size-3.5 text-gray-500'
-                strokeWidth={1.5}
-              />
+              <FileCodeIcon className='size-3.5 text-gray-500' />
               <span className='break-all'>{fileLocation}</span>
               <button
                 type='button'
@@ -449,12 +441,12 @@ export const ErrorDetails = ({
           value={details.users || 0}
         />
         <StatItem
-          icon={<CalendarIcon className='size-4' />}
+          icon={<CalendarDotsIcon className='size-4' />}
           label={t('dashboard.firstSeen')}
           value={firstSeen || '-'}
         />
         <StatItem
-          icon={<ActivityIcon className='size-4' />}
+          icon={<PulseIcon className='size-4' />}
           label={t('dashboard.lastSeen')}
           value={lastSeen || '-'}
         />
@@ -501,12 +493,12 @@ export const ErrorDetails = ({
                 >
                   {isStackTraceExpanded ? (
                     <>
-                      <ChevronUpIcon className='mr-1 size-4' />
+                      <CaretUpIcon className='mr-1 size-4' />
                       {t('project.showLess')}
                     </>
                   ) : (
                     <>
-                      <ChevronDownIcon className='mr-1 size-4' />
+                      <CaretDownIcon className='mr-1 size-4' />
                       {stackHiddenCount > 0
                         ? t('project.showMore', { count: stackHiddenCount })
                         : t('project.showMore', { count: 0 })}

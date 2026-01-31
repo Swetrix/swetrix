@@ -1,4 +1,4 @@
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
+import { ArrowRightIcon } from '@phosphor-icons/react'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 

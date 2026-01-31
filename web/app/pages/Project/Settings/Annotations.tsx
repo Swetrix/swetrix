@@ -1,7 +1,7 @@
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { PencilIcon, Trash2Icon, PlusIcon } from 'lucide-react'
+import { PencilIcon, TrashIcon, PlusIcon } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
@@ -252,7 +252,7 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
                             className='rounded p-1.5 text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300'
                             title={t('common.delete')}
                           >
-                            <Trash2Icon className='h-4 w-4' />
+                            <TrashIcon className='h-4 w-4' />
                           </button>
                         </div>
                       </td>

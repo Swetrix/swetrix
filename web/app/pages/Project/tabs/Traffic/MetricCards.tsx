@@ -1,4 +1,4 @@
-import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { CaretDownIcon, XIcon } from '@phosphor-icons/react'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _isNumber from 'lodash/isNumber'
@@ -168,7 +168,7 @@ export const MetricCardSelect = ({
           >
             <Text size='sm' weight='bold'>
               {values[selected].label}{' '}
-              <ChevronDownIcon
+              <CaretDownIcon
                 className={cx(
                   'inline h-4 w-4 transform transition-transform duration-200',
                   show ? 'rotate-180' : 'rotate-0',
@@ -194,7 +194,7 @@ export const MetricCardSelect = ({
                   type='button'
                   onClick={() => setShow(!show)}
                 >
-                  <XMarkIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
+                  <XIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
                 </button>
               </div>
               <div className='scrollbar-thin max-h-[200px] overflow-x-hidden overflow-y-auto p-1'>

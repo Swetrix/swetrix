@@ -3,7 +3,7 @@ import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
-import { FilterIcon } from 'lucide-react'
+import { FunnelIcon } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -432,7 +432,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
     <>
       <div className='mt-5 rounded-xl bg-gray-700 p-5'>
         <div className='flex items-center text-gray-50'>
-          <FilterIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+          <FunnelIcon className='mr-2 h-8 w-8' />
           <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
         </div>
         <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>

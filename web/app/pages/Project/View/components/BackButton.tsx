@@ -1,4 +1,4 @@
-import { ChevronLeftIcon } from 'lucide-react'
+import { CaretLeftIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
@@ -36,7 +36,7 @@ export const BackButton = ({
 
   const content = (
     <>
-      <ChevronLeftIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+      <CaretLeftIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
       <span className='text-sm font-medium text-gray-700 dark:text-gray-50'>
         {backLabel}
       </span>

@@ -1,4 +1,4 @@
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
+import { ArrowRightIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router'

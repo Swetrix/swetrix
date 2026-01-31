@@ -1,8 +1,8 @@
 import {
-  ChevronUpDownIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-} from '@heroicons/react/24/outline'
+  CaretUpDownIcon,
+  CaretUpIcon,
+  CaretDownIcon,
+} from '@phosphor-icons/react'
 import cx from 'clsx'
 
 interface SortProps {
@@ -13,14 +13,14 @@ interface SortProps {
 
 const Sort = ({ sortByAscend, sortByDescend, className }: SortProps) => {
   if (sortByAscend) {
-    return <ChevronUpIcon className={cx(className, 'h-4 w-4')} />
+    return <CaretUpIcon className={cx(className, 'h-4 w-4')} />
   }
 
   if (sortByDescend) {
-    return <ChevronDownIcon className={cx(className, 'h-4 w-4')} />
+    return <CaretDownIcon className={cx(className, 'h-4 w-4')} />
   }
 
-  return <ChevronUpDownIcon className={cx(className, 'h-4 w-4')} />
+  return <CaretUpDownIcon className={cx(className, 'h-4 w-4')} />
 }
 
 export default Sort

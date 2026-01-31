@@ -1,9 +1,9 @@
 import {
-  InformationCircleIcon,
+  InfoIcon,
   MagnifyingGlassIcon,
   FolderPlusIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline'
+  XIcon,
+} from '@phosphor-icons/react'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -172,9 +172,7 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
               text={t('organisations.projectOwnedBy', {
                 email: project.admin.email,
               })}
-              tooltipNode={
-                <InformationCircleIcon className='size-5 text-gray-400' />
-              }
+              tooltipNode={<InfoIcon className='size-5 text-gray-400' />}
             />
           ) : null}
 
@@ -266,7 +264,7 @@ export const Projects = ({ organisation }: ProjectsProps) => {
         <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
           {t('organisations.projects')}
           {isSearchActive ? (
-            <XMarkIcon
+            <XIcon
               className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
               onClick={() => {
                 setSearch('')

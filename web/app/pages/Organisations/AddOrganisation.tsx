@@ -1,4 +1,4 @@
-import { BuildingOffice2Icon } from '@heroicons/react/24/outline'
+import { BuildingOfficeIcon } from '@phosphor-icons/react'
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
 
@@ -25,7 +25,7 @@ export const AddOrganisation = ({
       )}
     >
       <div>
-        <BuildingOffice2Icon
+        <BuildingOfficeIcon
           className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
           strokeWidth={1}
         />

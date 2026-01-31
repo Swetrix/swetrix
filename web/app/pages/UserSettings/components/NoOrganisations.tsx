@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { BuildingOfficeIcon } from '@heroicons/react/24/outline'
+import { BuildingOfficeIcon } from '@phosphor-icons/react'
 
 import { Text } from '~/ui/Text'
 

@@ -1,4 +1,4 @@
-import { CopyIcon, ChevronDownIcon } from 'lucide-react'
+import { CopyIcon, CaretDownIcon } from '@phosphor-icons/react'
 import { useState } from 'react'
 import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
@@ -405,7 +405,7 @@ export default function UTMGenerator() {
                       <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
                         {item.question}
                       </h3>
-                      <ChevronDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
+                      <CaretDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
                     </summary>
                     <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
                       <p className='text-gray-600 dark:text-gray-400'>

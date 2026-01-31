@@ -6,20 +6,20 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import {
   FlagIcon,
-  Trash2Icon,
+  TrashIcon,
   PencilIcon,
   PlusIcon,
-  SearchIcon,
+  MagnifyingGlassIcon,
   ToggleLeftIcon,
   ToggleRightIcon,
   PercentIcon,
   UsersIcon,
-  ActivityIcon,
-  ChevronDownIcon,
-  DownloadIcon,
+  PulseIcon,
+  CaretDownIcon,
+  DownloadSimpleIcon,
   CheckIcon,
   XIcon,
-} from 'lucide-react'
+} from '@phosphor-icons/react'
 import {
   useState,
   useEffect,
@@ -156,9 +156,9 @@ const FeatureFlagProfileRow = ({
             )}
           >
             {profile.lastResult ? (
-              <CheckIcon className='mr-1 size-3' strokeWidth={2} />
+              <CheckIcon className='mr-1 size-3' />
             ) : (
-              <XIcon className='mr-1 size-3' strokeWidth={2} />
+              <XIcon className='mr-1 size-3' />
             )}
             {profile.lastResult ? 'true' : 'false'}
           </span>
@@ -225,10 +225,7 @@ const FeatureFlagRow = ({
                   truncate
                   className='flex items-center gap-x-1.5'
                 >
-                  <FlagIcon
-                    className='size-4 text-indigo-500'
-                    strokeWidth={1.5}
-                  />
+                  <FlagIcon className='size-4 text-indigo-500' />
                   <span>{flag.key}</span>
                 </Text>
                 {/* Status badge */}
@@ -280,7 +277,7 @@ const FeatureFlagRow = ({
                 ) : stats ? (
                   <>
                     <span className='flex items-center gap-1'>
-                      <ActivityIcon className='size-3' />
+                      <PulseIcon className='size-3' />
                       {nFormatter(stats.evaluations, 1)}{' '}
                       {t('featureFlags.evaluations').toLowerCase()}
                     </span>
@@ -364,9 +361,9 @@ const FeatureFlagRow = ({
                 )}
               >
                 {flag.enabled ? (
-                  <ToggleRightIcon className='size-5' strokeWidth={1.5} />
+                  <ToggleRightIcon className='size-5' />
                 ) : (
-                  <ToggleLeftIcon className='size-5' strokeWidth={1.5} />
+                  <ToggleLeftIcon className='size-5' />
                 )}
               </button>
               <button
@@ -379,7 +376,7 @@ const FeatureFlagRow = ({
                 aria-label={t('common.edit')}
                 className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               >
-                <PencilIcon className='size-4' strokeWidth={1.5} />
+                <PencilIcon className='size-4' />
               </button>
               <button
                 type='button'
@@ -391,16 +388,15 @@ const FeatureFlagRow = ({
                 aria-label={t('common.delete')}
                 className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               >
-                <Trash2Icon className='size-4' strokeWidth={1.5} />
+                <TrashIcon className='size-4' />
               </button>
-              <ChevronDownIcon
+              <CaretDownIcon
                 className={cx(
                   'size-5 text-gray-500 transition-transform dark:text-gray-400',
                   {
                     'rotate-180': isExpanded,
                   },
                 )}
-                strokeWidth={1.5}
               />
             </div>
           </div>
@@ -460,10 +456,7 @@ const FeatureFlagRow = ({
                     {profilesLoading ? (
                       <Spin className='mr-2 size-5' />
                     ) : (
-                      <DownloadIcon
-                        className='mr-2 h-5 w-5'
-                        strokeWidth={1.5}
-                      />
+                      <DownloadSimpleIcon className='mr-2 h-5 w-5' />
                     )}
                     {t('featureFlags.loadMore')}
                   </button>
@@ -968,7 +961,7 @@ const FeatureFlagsViewInner = ({
         {_isEmpty(flags) && !filterQuery ? (
           <div className='mt-5 rounded-lg bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
-              <FlagIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+              <FlagIcon className='mr-2 h-8 w-8' />
               <p className='text-3xl font-bold'>{t('featureFlags.title')}</p>
             </div>
             <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
@@ -988,10 +981,7 @@ const FeatureFlagsViewInner = ({
             {/* Header with filter and add button */}
             <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
               <div className='relative'>
-                <SearchIcon
-                  className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400'
-                  strokeWidth={1.5}
-                />
+                <MagnifyingGlassIcon className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400' />
                 <input
                   type='text'
                   placeholder={t('featureFlags.filterFlags')}
@@ -1001,7 +991,7 @@ const FeatureFlagsViewInner = ({
                 />
               </div>
               <Button onClick={handleNewFlag} primary regular>
-                <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
+                <PlusIcon className='mr-1.5 size-4' />
                 {t('featureFlags.addFlag')}
               </Button>
             </div>

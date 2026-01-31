@@ -1,9 +1,9 @@
 import {
-  TrendingUpIcon,
-  DollarSignIcon,
+  TrendUpIcon,
+  CurrencyDollarIcon,
   ShoppingCartIcon,
-  ChevronDownIcon,
-} from 'lucide-react'
+  CaretDownIcon,
+} from '@phosphor-icons/react'
 import { useState, useEffect } from 'react'
 import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
@@ -391,7 +391,7 @@ export default function ROICalculator() {
                     <div className='space-y-4'>
                       <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
                         <div className='flex items-center'>
-                          <TrendingUpIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
+                          <TrendUpIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
                           <span className='font-medium text-gray-700 dark:text-gray-300'>
                             ROI
                           </span>
@@ -405,7 +405,7 @@ export default function ROICalculator() {
 
                       <div className='flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-700/50'>
                         <div className='flex items-center'>
-                          <DollarSignIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
+                          <CurrencyDollarIcon className='mr-2 h-5 w-5 text-gray-500 dark:text-gray-400' />
                           <span className='font-medium text-gray-700 dark:text-gray-300'>
                             ROAS
                           </span>
@@ -546,7 +546,7 @@ export default function ROICalculator() {
                       <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
                         {item.question}
                       </h3>
-                      <ChevronDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
+                      <CaretDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
                     </summary>
                     <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
                       <p className='text-gray-600 dark:text-gray-400'>

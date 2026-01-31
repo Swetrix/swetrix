@@ -1,7 +1,7 @@
 import cx from 'clsx'
 import _clamp from 'lodash/clamp'
 import _isEmpty from 'lodash/isEmpty'
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
 import React, {
   memo,
   useEffect,
@@ -365,7 +365,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     onClick={handlePrevMonth}
                     aria-label='Previous month'
                   >
-                    <ChevronLeftIcon className='size-5' />
+                    <CaretLeftIcon className='size-5' />
                   </button>
                   <div className='flex items-center gap-2'>
                     <div className='relative'>
@@ -427,7 +427,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     onClick={handleNextMonth}
                     aria-label='Next month'
                   >
-                    <ChevronRightIcon className='size-5' />
+                    <CaretRightIcon className='size-5' />
                   </button>
                 </div>
                 <div className='mt-2 grid grid-cols-7 gap-1 text-center text-xs text-gray-500 dark:text-gray-300'>
@@ -523,7 +523,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     onClick={handlePrevMonth}
                     aria-label='Previous month'
                   >
-                    <ChevronLeftIcon className='size-5' />
+                    <CaretLeftIcon className='size-5' />
                   </button>
                   <div className='flex items-center gap-2'>
                     <div className='relative'>
@@ -585,7 +585,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     onClick={handleNextMonth}
                     aria-label='Next month'
                   >
-                    <ChevronRightIcon className='size-5' />
+                    <CaretRightIcon className='size-5' />
                   </button>
                 </div>
                 <div className='mt-2 grid grid-cols-7 gap-1 text-center text-xs text-gray-500 dark:text-gray-300'>

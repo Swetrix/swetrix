@@ -14,14 +14,6 @@ import {
   DisclosurePanel,
   PopoverBackdrop,
 } from '@headlessui/react'
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import {
-  Bars3Icon,
-  XMarkIcon,
-  ChevronDownIcon,
-} from '@heroicons/react/24/outline'
-import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
-import { SiDiscord, SiGithub, SiYoutube } from '@icons-pack/react-simple-icons'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
@@ -31,11 +23,20 @@ import _map from 'lodash/map'
 import _startsWith from 'lodash/startsWith'
 import {
   GaugeIcon,
-  ChartPieIcon,
-  BugIcon,
-  PuzzleIcon,
-  PhoneIcon,
-} from 'lucide-react'
+  WarningIcon,
+  ShieldCheckIcon,
+  ArrowRightIcon,
+  ListIcon,
+  XIcon,
+  CaretDownIcon,
+  MoonIcon,
+  SunIcon,
+  GithubLogoIcon,
+  YoutubeLogoIcon,
+  DiscordLogoIcon,
+  EnvelopeIcon,
+  ChartBarIcon,
+} from '@phosphor-icons/react'
 import { memo, Fragment, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -59,6 +60,7 @@ import Flag from '~/ui/Flag'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 import Modal from '~/ui/Modal'
 import routes from '~/utils/routes'
+import { cn } from '~/utils/generic'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
@@ -77,25 +79,29 @@ const getSolutions = (t: typeof i18nextT) => [
     name: t('header.solutions.analytics.title'),
     description: t('header.solutions.analytics.desc'),
     link: routes.main,
-    icon: ChartPieIcon,
+    icon: ChartBarIcon,
+    className: 'text-indigo-500 dark:text-indigo-400',
   },
   {
     name: t('header.solutions.performance.title'),
     description: t('header.solutions.performance.desc'),
     link: routes.performance,
     icon: GaugeIcon,
+    className: 'text-amber-500 dark:text-amber-400',
   },
   {
     name: t('header.solutions.errors.title'),
     description: t('header.solutions.errors.desc'),
     link: routes.errorTracking,
-    icon: BugIcon,
+    icon: WarningIcon,
+    className: 'text-red-500 dark:text-red-400',
   },
   {
     name: t('header.solutions.captcha.title'),
     description: t('header.solutions.captcha.desc'),
     link: routes.captchaLanding,
-    icon: PuzzleIcon,
+    icon: ShieldCheckIcon,
+    className: 'text-emerald-500 dark:text-emerald-400',
   },
 ]
 
@@ -103,9 +109,15 @@ const getCallsToAction = (t: typeof i18nextT) => [
   {
     name: t('header.watchDemo'),
     link: 'https://www.youtube.com/watch?v=XBp38fZREIE',
-    icon: SiYoutube,
+    icon: YoutubeLogoIcon,
+    className: 'text-red-500 dark:text-red-400',
   },
-  { name: t('header.contactSales'), link: routes.contact, icon: PhoneIcon },
+  {
+    name: t('header.contactSales'),
+    link: routes.contact,
+    icon: EnvelopeIcon,
+    className: 'text-blue-500 dark:text-blue-400',
+  },
 ]
 
 const SolutionsMenu = () => {
@@ -119,7 +131,7 @@ const SolutionsMenu = () => {
         <>
           <PopoverButton className='underline-animate inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'>
             <span>{t('header.solutions.title')}</span>
-            <ChevronDownIcon
+            <CaretDownIcon
               className={cx('h-3 w-3 stroke-2 transition-transform', {
                 'rotate-180': open,
               })}
@@ -146,9 +158,12 @@ const SolutionsMenu = () => {
                       className='group relative flex gap-x-2 rounded-lg p-2 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50'
                     >
                       <item.icon
-                        className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300'
+                        className={cn(
+                          'mt-1 h-5 w-5 text-gray-600 dark:text-gray-300',
+                          item.className,
+                        )}
                         aria-hidden='true'
-                        strokeWidth={1.5}
+                        weight='duotone'
                       />
                       <div>
                         {_startsWith(item.link, '/') ? (
@@ -188,9 +203,12 @@ const SolutionsMenu = () => {
                           className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                         >
                           <item.icon
-                            className='h-5 w-5 flex-none text-gray-600 dark:text-gray-300'
+                            className={cn(
+                              'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
+                              item.className,
+                            )}
                             aria-hidden='true'
-                            strokeWidth={1.5}
+                            weight='duotone'
                           />
                           {item.name}
                         </Link>
@@ -206,9 +224,12 @@ const SolutionsMenu = () => {
                         className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                       >
                         <item.icon
-                          className='h-5 w-5 flex-none text-gray-600 dark:text-gray-300'
+                          className={cn(
+                            'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
+                            item.className,
+                          )}
                           aria-hidden='true'
-                          strokeWidth={1.5}
+                          weight='duotone'
                         />
                         {item.name}
                       </a>
@@ -238,7 +259,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
           <div>
             <MenuButton className='underline-animate flex items-center justify-center text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'>
               <span>{t('common.account')}</span>
-              <ChevronDownIcon
+              <CaretDownIcon
                 className={cx(
                   'ml-1 h-4 w-4 transform-gpu stroke-2 transition-transform',
                   {
@@ -285,7 +306,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                       />
                       {languages[language]}
                     </div>
-                    <ChevronDownIcon
+                    <CaretDownIcon
                       className={cx(
                         open ? 'rotate-180' : '',
                         '-mr-1 ml-2 h-5 w-5 transform-gpu stroke-2 transition-transform',
@@ -408,28 +429,38 @@ const Separator = () => (
   </svg>
 )
 
-const SelfhostedCommunityLinks = () => (
-  <span className='flex items-center gap-2'>
-    <a
-      href={DISCORD_URL}
-      className='inline-flex items-center rounded-md p-1 text-slate-700 transition-colors hover:text-slate-900 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-gray-200 dark:hover:text-white'
-      target='_blank'
-      rel='noreferrer noopener'
-    >
-      <span className='sr-only'>Discord</span>
-      <SiDiscord className='h-5 w-5' aria-hidden='true' />
-    </a>
-    <a
-      href={GITHUB_URL}
-      className='inline-flex items-center rounded-md p-1 text-slate-700 transition-colors hover:text-slate-900 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-gray-200 dark:hover:text-white'
-      target='_blank'
-      rel='noreferrer noopener'
-    >
-      <span className='sr-only'>GitHub</span>
-      <SiGithub className='h-5 w-5' aria-hidden='true' />
-    </a>
-  </span>
-)
+const CommunityLinks = () => {
+  return (
+    <span className='flex items-center gap-2'>
+      <a
+        href={DISCORD_URL}
+        className='inline-flex items-center rounded-md p-1 text-indigo-600 transition-colors hover:text-indigo-500 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-indigo-400 dark:hover:text-indigo-100'
+        target='_blank'
+        rel='noreferrer noopener'
+      >
+        <span className='sr-only'>Discord</span>
+        <DiscordLogoIcon
+          className='h-5 w-5'
+          aria-hidden='true'
+          weight='duotone'
+        />
+      </a>
+      <a
+        href={GITHUB_URL}
+        className='inline-flex items-center rounded-md p-1 text-slate-700 transition-colors hover:text-slate-500 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-gray-200 dark:hover:text-white'
+        target='_blank'
+        rel='noreferrer noopener'
+      >
+        <span className='sr-only'>GitHub</span>
+        <GithubLogoIcon
+          className='h-5 w-5'
+          aria-hidden='true'
+          weight='duotone'
+        />
+      </a>
+    </span>
+  )
+}
 
 interface TrialBannerProps {
   status: string | null
@@ -649,7 +680,6 @@ const AuthedHeader = ({
               {!isSelfhosted && !isDisableMarketingPages ? (
                 <SolutionsMenu />
               ) : null}
-              {isSelfhosted ? <SelfhostedCommunityLinks /> : null}
               <a
                 href={DOCS_URL}
                 className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
@@ -666,7 +696,8 @@ const AuthedHeader = ({
               </Link>
             </div>
           </div>
-          <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
+          <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-2'>
+            <CommunityLinks />
             <ProfileMenu logoutHandler={logoutHandler} />
           </div>
           <div className='flex items-center justify-center space-x-3 lg:hidden'>
@@ -676,7 +707,7 @@ const AuthedHeader = ({
               className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
             >
               <span className='sr-only'>{t('common.openMenu')}</span>
-              <Bars3Icon className='h-8 w-8 flex-none' aria-hidden='true' />
+              <ListIcon className='h-8 w-8 flex-none' aria-hidden='true' />
             </button>
           </div>
         </div>
@@ -729,7 +760,7 @@ const NotAuthedHeader = ({
                     {t('common.pricing')}
                   </Link>
                 ) : null}
-                {isSelfhosted ? <SelfhostedCommunityLinks /> : null}
+                <CommunityLinks />
                 <a
                   href={DOCS_URL}
                   className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
@@ -768,7 +799,7 @@ const NotAuthedHeader = ({
               className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
             >
               <span className='sr-only'>{t('common.openMenu')}</span>
-              <Bars3Icon className='h-8 w-8 flex-none' aria-hidden='true' />
+              <ListIcon className='h-8 w-8 flex-none' aria-hidden='true' />
             </button>
           </div>
         </div>
@@ -855,20 +886,48 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                 className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
               >
                 <span className='sr-only'>{t('common.close')}</span>
-                <XMarkIcon className='h-8 w-8 flex-none' aria-hidden='true' />
+                <XIcon className='h-8 w-8 flex-none' aria-hidden='true' />
               </button>
             </div>
           </div>
           <div className='mt-6 flow-root'>
             <div className='-my-6 divide-y divide-gray-500/10'>
-              <div className='space-y-2 py-6'>
+              <div className='space-y-2 py-3'>
+                <a
+                  href={DISCORD_URL}
+                  className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                  target='_blank'
+                  rel='noreferrer noopener'
+                >
+                  <DiscordLogoIcon
+                    className='h-5 w-5 text-indigo-600 dark:text-indigo-400'
+                    aria-hidden='true'
+                    weight='duotone'
+                  />
+                  <span>Discord</span>
+                </a>
+                <a
+                  href={GITHUB_URL}
+                  className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                  target='_blank'
+                  rel='noreferrer noopener'
+                >
+                  <GithubLogoIcon
+                    className='h-5 w-5 text-slate-700 dark:text-gray-200'
+                    aria-hidden='true'
+                    weight='duotone'
+                  />
+                  <span>GitHub</span>
+                </a>
+              </div>
+              <div className='space-y-2 py-3'>
                 {!isSelfhosted ? (
                   <Disclosure as='div' className='-mx-3'>
                     {({ open }) => (
                       <>
                         <DisclosureButton className='flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'>
                           {t('header.solutions.title')}
-                          <ChevronDownIcon
+                          <CaretDownIcon
                             className={cx(
                               open ? 'rotate-180' : '',
                               'h-5 w-5 flex-none',
@@ -957,11 +1016,6 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     {t('common.pricing')}
                   </Link>
                 ) : null}
-                {isSelfhosted ? (
-                  <div className='-mx-3 flex items-center gap-3 px-3 py-2'>
-                    <SelfhostedCommunityLinks />
-                  </div>
-                ) : null}
                 <a
                   href={DOCS_URL}
                   onClick={() => setMobileMenuOpen(false)}
@@ -981,7 +1035,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   </Link>
                 ) : null}
               </div>
-              <div className='space-y-2 py-6'>
+              <div className='space-y-2 py-3'>
                 {isAuthenticated ? (
                   <>
                     <Link

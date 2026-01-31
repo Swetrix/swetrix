@@ -1,4 +1,4 @@
-import { LockClosedIcon } from '@heroicons/react/24/outline'
+import { LockIcon } from '@phosphor-icons/react'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import { useState, useEffect, useCallback, FormEvent } from 'react'
@@ -81,7 +81,7 @@ const PasswordRequiredModal = ({
         <form onSubmit={handleSubmit} className='space-y-4'>
           <div className='flex flex-col items-center text-center'>
             <div className='mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30'>
-              <LockClosedIcon className='h-6 w-6 text-amber-600 dark:text-amber-400' />
+              <LockIcon className='h-6 w-6 text-amber-600 dark:text-amber-400' />
             </div>
             <h3 className='mt-4 text-lg font-semibold text-gray-900 dark:text-gray-50'>
               {t('titles.passwordProtected')}

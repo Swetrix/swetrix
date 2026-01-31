@@ -6,7 +6,7 @@ import {
   ComboboxOptions,
   ComboboxOption,
 } from '@headlessui/react'
-import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
+import { CheckIcon, CaretUpDownIcon } from '@phosphor-icons/react'
 import cx from 'clsx'
 import _filter from 'lodash/filter'
 import _includes from 'lodash/includes'
@@ -67,7 +67,7 @@ const Combobox = ({
             placeholder={placeholder}
           />
           <ComboboxButton className='absolute inset-y-0 right-0 flex items-center pr-2'>
-            <ChevronUpDownIcon
+            <CaretUpDownIcon
               className='h-5 w-5 text-gray-400'
               aria-hidden='true'
             />

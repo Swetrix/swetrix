@@ -1,4 +1,4 @@
-import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid'
+import { CheckIcon, XIcon } from '@phosphor-icons/react'
 import cx from 'clsx'
 import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
@@ -131,7 +131,7 @@ export const ComparisonTable = ({ className }: ComparisonTableProps) => {
                             />
                           ) : null}
                           {!COMPETITOR_FEATURE_TABLE[service][key] ? (
-                            <XMarkIcon
+                            <XIcon
                               className='h-5 w-5 shrink-0 text-red-600 dark:text-red-500'
                               aria-label={t('common.no')}
                             />

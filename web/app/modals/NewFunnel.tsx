@@ -1,6 +1,6 @@
 import _every from 'lodash/every'
 import _map from 'lodash/map'
-import { Trash2Icon } from 'lucide-react'
+import { TrashIcon } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -173,7 +173,7 @@ const NewFunnel = ({
                   }}
                   aria-label='Remove step'
                 >
-                  <Trash2Icon className='size-5' strokeWidth={1.5} />
+                  <TrashIcon className='size-5' />
                 </button>
               ) : null}
             </div>

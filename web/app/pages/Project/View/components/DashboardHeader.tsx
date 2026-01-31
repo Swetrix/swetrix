@@ -1,7 +1,7 @@
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import _find from 'lodash/find'
-import { SearchIcon, UsersIcon } from 'lucide-react'
+import { MagnifyingGlassIcon, UsersIcon } from '@phosphor-icons/react'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
@@ -203,7 +203,7 @@ const DashboardHeader = ({
                 },
               )}
             >
-              <SearchIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+              <MagnifyingGlassIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
             </button>
           </div>
         ) : null}

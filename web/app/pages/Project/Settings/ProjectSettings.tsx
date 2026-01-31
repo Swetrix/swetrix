@@ -10,18 +10,18 @@ import _replace from 'lodash/replace'
 import _size from 'lodash/size'
 import _toUpper from 'lodash/toUpper'
 import {
-  Settings2Icon,
+  SlidersHorizontalIcon,
   ShieldIcon,
   LockIcon,
-  UserRoundIcon,
-  MailIcon,
-  TriangleAlertIcon,
-  ChevronLeftIcon,
-  PuzzleIcon,
-  StickyNoteIcon,
+  UserCircleIcon,
+  EnvelopeIcon,
+  WarningOctagonIcon,
+  CaretLeftIcon,
+  PuzzlePieceIcon,
+  NoteIcon,
   ShieldCheckIcon,
-  DollarSignIcon,
-} from 'lucide-react'
+  CurrencyDollarIcon,
+} from '@phosphor-icons/react'
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
@@ -361,7 +361,7 @@ const ProjectSettings = () => {
         {
           id: 'general',
           label: t('project.settings.tabs.general'),
-          icon: Settings2Icon,
+          icon: SlidersHorizontalIcon,
           visible: true,
         },
         {
@@ -385,37 +385,37 @@ const ProjectSettings = () => {
         {
           id: 'integrations',
           label: t('project.settings.tabs.integrations'),
-          icon: PuzzleIcon,
+          icon: PuzzlePieceIcon,
           visible: !isSelfhosted,
         },
         {
           id: 'revenue',
           label: t('project.settings.tabs.revenue'),
-          icon: DollarSignIcon,
+          icon: CurrencyDollarIcon,
           visible: !isSelfhosted,
         },
         {
           id: 'emails',
           label: t('project.settings.tabs.emails'),
-          icon: MailIcon,
+          icon: EnvelopeIcon,
           visible: !isSelfhosted,
         },
         {
           id: 'people',
           label: t('project.settings.tabs.people'),
-          icon: UserRoundIcon,
+          icon: UserCircleIcon,
           visible: true,
         },
         {
           id: 'annotations',
           label: t('project.settings.tabs.annotations'),
-          icon: StickyNoteIcon,
+          icon: NoteIcon,
           visible: true,
         },
         {
           id: 'danger',
           label: t('project.settings.tabs.danger'),
-          icon: TriangleAlertIcon,
+          icon: WarningOctagonIcon,
           visible: project?.role === 'owner',
         },
       ].filter((tab) => tab.visible),
@@ -854,7 +854,7 @@ const ProjectSettings = () => {
           to={_replace(routes.project, ':id', id)}
           className='flex max-w-max items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
         >
-          <ChevronLeftIcon className='mr-1 size-3' strokeWidth={1.5} />
+          <CaretLeftIcon className='mr-1 size-3' />
           {t('project.backToStats')}
         </Link>
         <h2 className='mt-1 text-3xl font-bold text-gray-900 dark:text-gray-50'>
@@ -873,7 +873,7 @@ const ProjectSettings = () => {
               labelExtractor={(item) => item.label}
               iconExtractor={(item) => {
                 const Icon = item.icon
-                return <Icon className='h-4 w-4' strokeWidth={1.5} />
+                return <Icon className='h-4 w-4' />
               }}
               onSelect={(item: any) =>
                 setActiveTab(item.id as typeof activeTab)
@@ -910,7 +910,6 @@ const ProjectSettings = () => {
                         'text-gray-500 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300':
                           !isCurrent,
                       })}
-                      strokeWidth={1.5}
                     />
                     <span>{tab.label}</span>
                   </button>

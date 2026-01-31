@@ -1,4 +1,4 @@
-import { ChevronDownIcon, TrendingUpIcon } from 'lucide-react'
+import { CaretDownIcon, TrendUpIcon } from '@phosphor-icons/react'
 import { useState } from 'react'
 import type { MetaFunction } from 'react-router'
 import { redirect } from 'react-router'
@@ -251,7 +251,7 @@ export default function CTRCalculator() {
 
                     <div className='mt-6 rounded-lg bg-indigo-50 p-4 dark:bg-indigo-900/20'>
                       <h4 className='flex items-center text-lg font-medium text-indigo-900 dark:text-indigo-300'>
-                        <TrendingUpIcon className='mr-2 h-5 w-5' />
+                        <TrendUpIcon className='mr-2 h-5 w-5' />
                         Performance Insights
                       </h4>
                       <p className='mt-2 text-sm text-indigo-800 dark:text-indigo-200'>
@@ -292,7 +292,7 @@ export default function CTRCalculator() {
                       <h3 className='text-lg font-medium text-gray-900 dark:text-white'>
                         {item.question}
                       </h3>
-                      <ChevronDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
+                      <CaretDownIcon className='h-5 w-5 text-gray-500 transition-transform group-open:rotate-180' />
                     </summary>
                     <div className='border-t border-gray-200 px-6 py-4 dark:border-gray-700'>
                       <p className='text-gray-600 dark:text-gray-400'>

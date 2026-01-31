@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation } from '@docusaurus/router'
-import { ThumbsUpIcon, ThumbsDownIcon } from 'lucide-react'
+import { ThumbsUpIcon, ThumbsDownIcon } from '@phosphor-icons/react'
 import Link from '@docusaurus/Link'
 
 const FEEDBACK_TTL_DAYS = 7

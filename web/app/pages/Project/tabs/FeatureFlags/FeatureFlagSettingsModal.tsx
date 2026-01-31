@@ -9,21 +9,18 @@ import {
   ListboxOptions,
   Transition,
 } from '@headlessui/react'
-import {
-  XMarkIcon,
-  ClipboardIcon,
-  CheckIcon as HeroCheckIcon,
-} from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _map from 'lodash/map'
 import {
-  Trash2Icon,
+  TrashIcon,
   PlusIcon,
   CodeIcon,
-  ChevronDownIcon,
-  ChevronsUpDownIcon,
+  CaretDownIcon,
+  CaretUpDownIcon,
   CheckIcon,
-} from 'lucide-react'
+  XIcon,
+  ClipboardIcon,
+} from '@phosphor-icons/react'
 import { useState, useEffect, useCallback, Fragment, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
@@ -359,7 +356,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                       onClick={onClose}
                       className='rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-slate-800 dark:hover:text-gray-300'
                     >
-                      <XMarkIcon className='h-5 w-5' />
+                      <XIcon className='h-5 w-5' />
                     </button>
                   </div>
 
@@ -473,7 +470,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                                         )?.label || t('common.select')}
                                       </span>
                                       <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
-                                        <ChevronsUpDownIcon className='h-4 w-4 text-gray-400' />
+                                        <CaretUpDownIcon className='h-4 w-4 text-gray-400' />
                                       </span>
                                     </ListboxButton>
                                     <Transition
@@ -556,7 +553,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                                           : t('featureFlags.is')}
                                       </span>
                                       <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
-                                        <ChevronsUpDownIcon className='h-4 w-4 text-gray-400' />
+                                        <CaretUpDownIcon className='h-4 w-4 text-gray-400' />
                                       </span>
                                     </ListboxButton>
                                     <Transition
@@ -667,7 +664,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                                 onClick={() => removeTargetingRule(index)}
                                 className='rounded-md p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-gray-300'
                               >
-                                <Trash2Icon className='h-4 w-4' />
+                                <TrashIcon className='h-4 w-4' />
                               </button>
                             </div>
                           ))}
@@ -702,7 +699,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                             {t('featureFlags.howToImplement')}
                           </Text>
                         </div>
-                        <ChevronDownIcon
+                        <CaretDownIcon
                           className={cx(
                             'size-5 text-gray-500 transition-transform',
                             {
@@ -732,7 +729,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                                 className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
                               >
                                 {copiedCode === 'js-all' ? (
-                                  <HeroCheckIcon className='size-4 text-green-500' />
+                                  <CheckIcon className='size-4 text-green-500' />
                                 ) : (
                                   <ClipboardIcon className='size-4' />
                                 )}
@@ -758,7 +755,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                                 className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
                               >
                                 {copiedCode === 'js-single' ? (
-                                  <HeroCheckIcon className='size-4 text-green-500' />
+                                  <CheckIcon className='size-4 text-green-500' />
                                 ) : (
                                   <ClipboardIcon className='size-4' />
                                 )}
@@ -786,7 +783,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                                 className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700'
                               >
                                 {copiedCode === 'js-cache' ? (
-                                  <HeroCheckIcon className='size-4 text-green-500' />
+                                  <CheckIcon className='size-4 text-green-500' />
                                 ) : (
                                   <ClipboardIcon className='size-4' />
                                 )}

@@ -9,11 +9,11 @@ import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import {
   CheckIcon,
-  ChevronsUpDownIcon,
+  CaretUpDownIcon,
   PlusIcon,
   SlidersHorizontalIcon,
-  Trash2Icon,
-} from 'lucide-react'
+  TrashIcon,
+} from '@phosphor-icons/react'
 import { useState, useEffect, useCallback, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
@@ -425,7 +425,7 @@ const SearchFilters = ({
                             : t('project.selectColumn')}
                         </span>
                         <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
-                          <ChevronsUpDownIcon className='h-4 w-4 text-gray-400' />
+                          <CaretUpDownIcon className='h-4 w-4 text-gray-400' />
                         </span>
                       </ListboxButton>
                       <Transition
@@ -499,7 +499,7 @@ const SearchFilters = ({
                           )}
                         </span>
                         <span className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2'>
-                          <ChevronsUpDownIcon className='h-4 w-4 text-gray-400' />
+                          <CaretUpDownIcon className='h-4 w-4 text-gray-400' />
                         </span>
                       </ListboxButton>
                       <Transition
@@ -574,7 +574,7 @@ const SearchFilters = ({
                   className='rounded-md p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-gray-300'
                   title={t('project.removeFilter')}
                 >
-                  <Trash2Icon className='h-5 w-5' />
+                  <TrashIcon className='h-5 w-5' />
                 </button>
               </div>
             ))}

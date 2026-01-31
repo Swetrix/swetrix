@@ -1,5 +1,5 @@
 import cx from 'clsx'
-import { KeyRoundIcon } from 'lucide-react'
+import { KeyIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 
 import Button from '~/ui/Button'
@@ -24,7 +24,7 @@ const OIDCAuth = ({ onClick, className, disabled }: OIDCAuthProps) => {
       regular
       disabled={disabled}
     >
-      <KeyRoundIcon className='mr-2 size-5' />
+      <KeyIcon className='mr-2 size-5' />
       {t('auth.common.oidc')}
     </Button>
   )

@@ -1,11 +1,11 @@
 import {
-  GlobeAltIcon,
+  GlobeIcon,
   CalculatorIcon,
-  CursorArrowRaysIcon,
+  CursorClickIcon,
   LinkIcon,
-  DocumentMagnifyingGlassIcon,
-  ChevronDownIcon,
-} from '@heroicons/react/24/outline'
+  FileMagnifyingGlassIcon,
+  CaretDownIcon,
+} from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router'
 
@@ -17,7 +17,7 @@ export const TOOLS = [
     title: 'IP Lookup',
     description: 'Find your IP address and geolocation data',
     href: '/tools/ip-lookup',
-    icon: GlobeAltIcon,
+    icon: GlobeIcon,
   },
   {
     id: 'roi-calculator',
@@ -31,7 +31,7 @@ export const TOOLS = [
     title: 'CTR Calculator',
     description: 'Calculate your Click-Through Rate',
     href: '/tools/ctr-calculator',
-    icon: CursorArrowRaysIcon,
+    icon: CursorClickIcon,
   },
   {
     id: 'utm-generator',
@@ -45,7 +45,7 @@ export const TOOLS = [
     title: 'Sitemap Validator',
     description: 'Validate your sitemap.xml for errors',
     href: '/tools/sitemap-validator',
-    icon: DocumentMagnifyingGlassIcon,
+    icon: FileMagnifyingGlassIcon,
   },
 ] as const
 
@@ -141,7 +141,7 @@ export function ToolsNavMobile({ className }: ToolsNavProps) {
             </p>
           </div>
         </div>
-        <ChevronDownIcon
+        <CaretDownIcon
           className={cn(
             'h-5 w-5 shrink-0 text-gray-400 transition-transform',
             isOpen && 'rotate-180',

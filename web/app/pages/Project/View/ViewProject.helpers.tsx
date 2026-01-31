@@ -1,4 +1,3 @@
-import { LanguageIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'
 import type { ChartOptions, GridLineOptions } from 'billboard.js'
 import { area, areaSpline, spline, bar, line, zoom } from 'billboard.js'
 import * as d3 from 'd3'
@@ -24,22 +23,24 @@ import _sum from 'lodash/sum'
 import _toNumber from 'lodash/toNumber'
 import _toString from 'lodash/toString'
 import {
-  CircleQuestionMark,
+  QuestionMarkIcon,
   GlobeIcon,
   CompassIcon,
   CpuIcon,
   FileTextIcon,
-  Gamepad2Icon,
+  GameControllerIcon,
   MapPinIcon,
-  MonitorCog,
+  MonitorPlayIcon,
   MonitorIcon,
   ShareIcon,
-  SmartphoneIcon,
-  TabletIcon,
-  TabletSmartphoneIcon,
-  TvIcon,
+  DeviceMobileIcon,
+  DeviceTabletIcon,
+  DevicesIcon,
+  TelevisionIcon,
   WatchIcon,
-} from 'lucide-react'
+  TranslateIcon,
+  ArrowCircleRightIcon,
+} from '@phosphor-icons/react'
 
 import {
   TimeFormat,
@@ -2141,24 +2142,24 @@ const typeNameMapping = (t: typeof i18next.t) => ({
 
 const iconClassName = 'w-5 h-5'
 const panelIconMapping = {
-  cc: <MapPinIcon className={iconClassName} strokeWidth={1.5} />,
-  pg: <FileTextIcon className={iconClassName} strokeWidth={1.5} />,
-  lc: <LanguageIcon className={iconClassName} />,
-  ref: <ArrowRightCircleIcon className={iconClassName} />,
-  dv: <TabletSmartphoneIcon className={iconClassName} strokeWidth={1.5} />,
-  br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
-  os: <MonitorCog className={iconClassName} strokeWidth={1.5} />,
-  so: <ShareIcon className={iconClassName} strokeWidth={1.5} />,
+  cc: <MapPinIcon className={iconClassName} />,
+  pg: <FileTextIcon className={iconClassName} />,
+  lc: <TranslateIcon className={iconClassName} />,
+  ref: <ArrowCircleRightIcon className={iconClassName} />,
+  dv: <DevicesIcon className={iconClassName} />,
+  br: <CompassIcon className={iconClassName} />,
+  os: <MonitorPlayIcon className={iconClassName} />,
+  so: <ShareIcon className={iconClassName} />,
 }
 
 export const deviceIconMapping = {
-  desktop: <MonitorIcon className='size-5' strokeWidth={1.5} />,
-  mobile: <SmartphoneIcon className='size-5' strokeWidth={1.5} />,
-  tablet: <TabletIcon className='size-5' strokeWidth={1.5} />,
-  smarttv: <TvIcon className='size-5' strokeWidth={1.5} />,
-  console: <Gamepad2Icon className='size-5' strokeWidth={1.5} />,
-  wearable: <WatchIcon className='size-5' strokeWidth={1.5} />,
-  embedded: <CpuIcon className='size-5' strokeWidth={1.5} />,
+  desktop: <MonitorIcon className='size-5' />,
+  mobile: <DeviceMobileIcon className='size-5' />,
+  tablet: <DeviceTabletIcon className='size-5' />,
+  smarttv: <TelevisionIcon className='size-5' />,
+  console: <GameControllerIcon className='size-5' />,
+  wearable: <WatchIcon className='size-5' />,
+  embedded: <CpuIcon className='size-5' />,
 }
 
 // This function return date using the same format as the backend
@@ -2211,7 +2212,7 @@ export const getDeviceRowMapper = (
       if (entryName === null) {
         return (
           <>
-            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            <GlobeIcon className='h-5 w-5' />
             &nbsp;
             <span className='italic'>{t('common.unknown')}</span>
           </>
@@ -2221,7 +2222,7 @@ export const getDeviceRowMapper = (
       if (!logoUrl) {
         return (
           <>
-            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            <GlobeIcon className='h-5 w-5' />
             &nbsp;
             {displayName}
           </>
@@ -2255,7 +2256,7 @@ export const getDeviceRowMapper = (
       if (entryName === null) {
         return (
           <>
-            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            <GlobeIcon className='h-5 w-5' />
             &nbsp;
             <span className='italic'>{t('common.unknown')}</span>
           </>
@@ -2265,7 +2266,7 @@ export const getDeviceRowMapper = (
       if (!logoUrl) {
         return (
           <>
-            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            <GlobeIcon className='h-5 w-5' />
             &nbsp;
             {displayName}
           </>
@@ -2291,7 +2292,7 @@ export const getDeviceRowMapper = (
       if (entryName === null) {
         return (
           <>
-            <CircleQuestionMark className='h-5 w-5' strokeWidth={1.5} />
+            <QuestionMarkIcon className='h-5 w-5' />
             &nbsp;
             <span className='italic'>{t('common.unknown')}</span>
           </>

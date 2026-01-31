@@ -2,7 +2,7 @@ import { Transition } from '@headlessui/react'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
-import { ChevronRightIcon } from 'lucide-react'
+import { CaretRightIcon } from '@phosphor-icons/react'
 import React, { memo, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -137,7 +137,7 @@ const CustomEventsSubmenu: React.FC<CustomEventsSubmenuProps> = ({
       >
         <div className='flex items-center justify-between'>
           <span>{label}</span>
-          <ChevronRightIcon className='size-4 text-gray-500 dark:text-gray-400' />
+          <CaretRightIcon className='size-4 text-gray-500 dark:text-gray-400' />
         </div>
       </div>
 

@@ -1,4 +1,3 @@
-import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
@@ -6,10 +5,11 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import _map from 'lodash/map'
 import {
   FileTextIcon,
-  BugIcon,
-  MousePointerClickIcon,
-  CalendarIcon,
-} from 'lucide-react'
+  WarningIcon,
+  CursorClickIcon,
+  CalendarDotsIcon,
+  CaretRightIcon,
+} from '@phosphor-icons/react'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
@@ -255,8 +255,7 @@ const Session = ({
                 className='mr-2 flex items-center'
                 title={t('dashboard.pageviews')}
               >
-                <FileTextIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
-                {session.pageviews}
+                <FileTextIcon className='mr-1 size-4' /> {session.pageviews}
               </span>
               {session.revenue != null && session.revenue !== 0 ? (
                 <span
@@ -276,10 +275,7 @@ const Session = ({
                   className='mr-2 flex items-center'
                   title={t('dashboard.events')}
                 >
-                  <MousePointerClickIcon
-                    className='mr-1 size-4'
-                    strokeWidth={1.5}
-                  />{' '}
+                  <CursorClickIcon className='mr-1 size-4' />{' '}
                   {session.customEvents}
                 </span>
               ) : null}
@@ -288,8 +284,7 @@ const Session = ({
                   className='flex items-center text-red-400'
                   title={t('dashboard.errors')}
                 >
-                  <BugIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
-                  {session.errors}
+                  <WarningIcon className='mr-1 size-4' /> {session.errors}
                 </span>
               ) : null}
             </p>
@@ -302,8 +297,7 @@ const Session = ({
                 className='flex items-center'
                 title={t('dashboard.xPageviews', { x: session.pageviews })}
               >
-                <FileTextIcon className='mr-1 size-5' strokeWidth={1.5} />{' '}
-                {session.pageviews}
+                <FileTextIcon className='mr-1 size-5' /> {session.pageviews}
               </span>
               {session.revenue != null && session.revenue !== 0 ? (
                 <span
@@ -325,10 +319,7 @@ const Session = ({
                     x: session.customEvents,
                   })}
                 >
-                  <MousePointerClickIcon
-                    className='mr-1 size-5'
-                    strokeWidth={1.5}
-                  />{' '}
+                  <CursorClickIcon className='mr-1 size-5' />{' '}
                   {session.customEvents}
                 </span>
               ) : null}
@@ -337,17 +328,16 @@ const Session = ({
                   className='flex items-center text-red-500'
                   title={t('dashboard.xErrors', { x: session.errors })}
                 >
-                  <BugIcon className='mr-1 size-5' strokeWidth={1.5} />{' '}
-                  {session.errors}
+                  <WarningIcon className='mr-1 size-5' /> {session.errors}
                 </span>
               ) : null}
             </div>
             <p className='mt-1 flex items-center text-xs leading-5 text-gray-500 dark:text-gray-400'>
-              <CalendarIcon className='mr-1 size-3' strokeWidth={1.5} />
+              <CalendarDotsIcon className='mr-1 size-3' />
               {dateLineString}
             </p>
           </div>
-          <ChevronRightIcon
+          <CaretRightIcon
             className='h-5 w-5 flex-none text-gray-400'
             aria-hidden='true'
           />
