@@ -146,8 +146,8 @@ const TabHeader = ({ tab }: { tab: TabConfig }) => {
   return (
     <div className='mb-6'>
       <div className='flex items-start gap-4'>
-        <div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gray-100 ring-1 ring-black/5 dark:bg-slate-800/50 dark:ring-white/10'>
-          <Icon className={cx('h-6 w-6', iconColorClass)} weight='duotone' />
+        <div className='flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-gray-200 p-2 dark:border-slate-700'>
+          <Icon className={cx('h-full w-full', iconColorClass)} weight='duotone' />
         </div>
         <div>
           <Text as='h2' size='lg' weight='semibold'>
