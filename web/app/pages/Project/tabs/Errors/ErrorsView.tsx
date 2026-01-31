@@ -8,7 +8,6 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import {
-  BugIcon,
   PercentIcon,
   UsersIcon,
   MonitorIcon,
@@ -1277,7 +1276,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
 
             <div className='grid w-full grid-cols-2 gap-2 lg:w-[35%]'>
               <StatCard
-                icon={<BugIcon className='text-red-600' />}
+                icon={<WarningIcon className='text-red-600' />}
                 value={nFormatter(overview?.stats?.totalErrors || 0, 1)}
                 label={t('project.totalErrors')}
               />

@@ -5,7 +5,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import _map from 'lodash/map'
 import {
   FileTextIcon,
-  BugIcon,
+  WarningIcon,
   CursorClickIcon,
   CalendarDotsIcon,
   CaretRightIcon,
@@ -284,7 +284,7 @@ const Session = ({
                   className='flex items-center text-red-400'
                   title={t('dashboard.errors')}
                 >
-                  <BugIcon className='mr-1 size-4' /> {session.errors}
+                  <WarningIcon className='mr-1 size-4' /> {session.errors}
                 </span>
               ) : null}
             </p>
@@ -328,7 +328,7 @@ const Session = ({
                   className='flex items-center text-red-500'
                   title={t('dashboard.xErrors', { x: session.errors })}
                 >
-                  <BugIcon className='mr-1 size-5' /> {session.errors}
+                  <WarningIcon className='mr-1 size-5' /> {session.errors}
                 </span>
               ) : null}
             </div>

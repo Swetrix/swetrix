@@ -8,7 +8,7 @@ import _replace from 'lodash/replace'
 import {
   MoonIcon,
   SunIcon,
-  BugIcon,
+  WarningIcon,
   GaugeIcon,
   UserIcon,
   BellRingingIcon,
@@ -724,7 +724,7 @@ const ViewProjectContent = () => {
       {
         id: PROJECT_TABS.errors,
         label: t('dashboard.errors'),
-        icon: BugIcon,
+        icon: WarningIcon,
       },
       {
         id: PROJECT_TABS.funnels,

@@ -5,7 +5,7 @@ import _size from 'lodash/size'
 import _toUpper from 'lodash/toUpper'
 import _truncate from 'lodash/truncate'
 import {
-  BugIcon,
+  WarningIcon,
   CaretDownIcon,
   CircleIcon,
   CurrencyDollarIcon,
@@ -203,7 +203,10 @@ const PageflowItem = ({
                 />
               ) : null}
               {type === 'error' ? (
-                <BugIcon className='h-5 w-5 text-white' aria-hidden='true' />
+                <WarningIcon
+                  className='h-5 w-5 text-white'
+                  aria-hidden='true'
+                />
               ) : null}
               {type === 'sale' ? (
                 <CurrencyDollarIcon

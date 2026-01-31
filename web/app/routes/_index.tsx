@@ -11,7 +11,7 @@ import {
   GaugeIcon,
   GithubLogoIcon,
   BellRingingIcon,
-  BugIcon,
+  WarningIcon,
   CaretUpIcon,
   CaretDownIcon,
   ToggleRightIcon,
@@ -1215,7 +1215,7 @@ const AlertsPreview = () => {
       return (
         <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
           <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
-            <BugIcon className='size-4 text-rose-600 dark:text-rose-400' />
+            <WarningIcon className='size-4 text-rose-600 dark:text-rose-400' />
             <span className='text-sm'>
               Error alert <span className='font-semibold'>Unique error</span>{' '}
               triggered!

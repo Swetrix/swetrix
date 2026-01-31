@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import _map from 'lodash/map'
 import {
-  BugIcon,
+  WarningIcon,
   FileTextIcon,
   CursorClickIcon,
   UsersIcon,
@@ -178,7 +178,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                   className='flex items-center text-red-400'
                   title={t('dashboard.errors')}
                 >
-                  <BugIcon className='mr-1 size-4' /> {profile.errorsCount}
+                  <WarningIcon className='mr-1 size-4' /> {profile.errorsCount}
                 </span>
               ) : null}
             </p>
@@ -216,7 +216,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                   className='flex items-center text-red-500'
                   title={t('dashboard.xErrors', { x: profile.errorsCount })}
                 >
-                  <BugIcon className='mr-1 size-5' /> {profile.errorsCount}
+                  <WarningIcon className='mr-1 size-5' /> {profile.errorsCount}
                 </span>
               ) : null}
             </div>
