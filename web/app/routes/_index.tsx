@@ -446,7 +446,7 @@ const FeatureCard = ({
 }) => (
   <div
     className={cn(
-      'flex h-full flex-col overflow-hidden bg-white ring-1 ring-slate-800/60 dark:bg-slate-800/25 dark:ring-white/10',
+      'flex h-full flex-col overflow-hidden bg-white ring-1 ring-gray-200 dark:ring-slate-800/60 dark:bg-slate-800/25 dark:ring-white/10',
       size === 'large' ? 'rounded-2xl' : 'rounded-xl',
     )}
   >
