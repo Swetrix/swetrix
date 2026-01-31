@@ -5,7 +5,6 @@ import _debounce from 'lodash/debounce'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import {
-  FlagIcon,
   TrashIcon,
   PencilIcon,
   PlusIcon,
@@ -225,7 +224,7 @@ const FeatureFlagRow = ({
                   truncate
                   className='flex items-center gap-x-1.5'
                 >
-                  <FlagIcon className='size-4 text-indigo-500' />
+                  <ToggleRightIcon className='size-4 text-indigo-500' />
                   <span>{flag.key}</span>
                 </Text>
                 {/* Status badge */}
@@ -245,7 +244,6 @@ const FeatureFlagRow = ({
                 <span className='inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'>
                   {flag.flagType === 'rollout' ? (
                     <>
-                      <PercentIcon className='size-3' />
                       {flag.rolloutPercentage}%
                     </>
                   ) : (
@@ -961,7 +959,7 @@ const FeatureFlagsViewInner = ({
         {_isEmpty(flags) && !filterQuery ? (
           <div className='mt-5 rounded-lg bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
-              <FlagIcon className='mr-2 h-8 w-8' />
+              <ToggleRightIcon className='mr-2 h-8 w-8' />
               <p className='text-3xl font-bold'>{t('featureFlags.title')}</p>
             </div>
             <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>

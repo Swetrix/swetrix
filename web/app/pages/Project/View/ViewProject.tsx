@@ -18,10 +18,10 @@ import {
   TargetIcon,
   ShieldCheckIcon,
   SparkleIcon,
-  FlagIcon,
   FlaskIcon,
   IdentificationCardIcon,
   UserListIcon,
+  ToggleRightIcon,
 } from '@phosphor-icons/react'
 import React, {
   useState,
@@ -739,7 +739,7 @@ const ViewProjectContent = () => {
       {
         id: PROJECT_TABS.featureFlags,
         label: t('dashboard.featureFlags'),
-        icon: FlagIcon,
+        icon: ToggleRightIcon,
       },
       {
         id: PROJECT_TABS.captcha,
