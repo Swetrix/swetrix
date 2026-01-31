@@ -227,14 +227,9 @@ const TwoFA = () => {
   }
 
   return (
-      <Button
-        onClick={_generate2FA}
-        loading={isLoading}
-        primary
-        large
-      >
-        {t('profileSettings.2faEnableBtn')}
-      </Button>
+    <Button onClick={_generate2FA} loading={isLoading} primary large>
+      {t('profileSettings.2faEnableBtn')}
+    </Button>
   )
 }
 

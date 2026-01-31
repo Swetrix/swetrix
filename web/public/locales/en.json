@@ -1622,15 +1622,25 @@
       },
       "tabs": {
         "general": "General",
+        "generalDesc": "Configure your project name and basic settings.",
         "access": "Access",
+        "accessDesc": "Control who can view and access your project.",
         "shields": "Shields",
+        "shieldsDesc": "Protect your analytics from bots and unwanted traffic.",
         "captcha": "CAPTCHA",
+        "captchaDesc": "Add human verification to protect your forms.",
         "emails": "Emails",
+        "emailsDesc": "Configure email reports and notification preferences.",
         "people": "People",
+        "peopleDesc": "Manage team members and their permissions.",
         "annotations": "Annotations",
+        "annotationsDesc": "Add notes to mark important events on your charts.",
         "danger": "Danger zone",
+        "dangerDesc": "Destructive actions that cannot be undone.",
         "integrations": "Integrations",
-        "revenue": "Revenue"
+        "integrationsDesc": "Connect external services to enrich your analytics.",
+        "revenue": "Revenue",
+        "revenueDesc": "Track revenue and attribute sales to campaigns."
       },
       "revenue": {
         "title": "Revenue Tracking",

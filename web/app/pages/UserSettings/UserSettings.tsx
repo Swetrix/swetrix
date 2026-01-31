@@ -42,6 +42,7 @@ import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
+import { TabHeader } from '~/ui/TabHeader'
 import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
 import Flag from '~/ui/Flag'
@@ -132,35 +133,17 @@ const getTabs = (t: typeof i18next.t): TabConfig[] => {
   ]
 }
 
-const TabHeader = ({ tab }: { tab: TabConfig }) => {
-  const Icon = tab.icon
-  const iconColorClass =
-    tab.id === TAB_MAPPING.ACCOUNT
-      ? 'text-blue-500'
-      : tab.id === TAB_MAPPING.COMMUNICATIONS
-        ? 'text-emerald-500'
-        : tab.id === TAB_MAPPING.INTERFACE
-          ? 'text-purple-500'
-          : 'text-amber-500'
-
-  return (
-    <div className='mb-6'>
-      <div className='flex items-start gap-4'>
-        <div className='flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-gray-200 p-2 dark:border-slate-700'>
-          <Icon className={cx('h-full w-full', iconColorClass)} weight='duotone' />
-        </div>
-        <div>
-          <Text as='h2' size='lg' weight='semibold'>
-            {tab.label}
-          </Text>
-          <Text as='p' size='sm' colour='muted'>
-            {tab.description}
-          </Text>
-        </div>
-      </div>
-      <hr className='mt-6 border-gray-200 dark:border-slate-700/80' />
-    </div>
-  )
+const getTabIconColor = (tabId: string): string => {
+  switch (tabId) {
+    case TAB_MAPPING.ACCOUNT:
+      return 'text-blue-500'
+    case TAB_MAPPING.COMMUNICATIONS:
+      return 'text-emerald-500'
+    case TAB_MAPPING.INTERFACE:
+      return 'text-purple-500'
+    default:
+      return 'text-amber-500'
+  }
 }
 
 interface SettingsSectionProps {
@@ -483,7 +466,6 @@ const UserSettings = () => {
     setShowPasswordFields((prev) => !prev)
   }
 
-
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 dark:bg-slate-900'>
       <form
@@ -513,7 +495,7 @@ const UserSettings = () => {
           </div>
 
           <aside className='hidden w-56 shrink-0 md:block'>
-            <nav className='flex flex-col space-y-1' aria-label='Sidebar'>
+            <nav className='flex flex-col space-y-0.5' aria-label='Sidebar'>
               {_map(tabs, (tab) => {
                 const isCurrent = tab.id === activeTab
                 const Icon = tab.icon
@@ -535,10 +517,9 @@ const UserSettings = () => {
                     aria-current={isCurrent ? 'page' : undefined}
                   >
                     <Icon
-                      className={cx('mr-2 h-5 w-5 shrink-0 transition-colors', {
+                      className={cx('mr-2 size-4 shrink-0 transition-colors', {
                         'text-gray-900 dark:text-gray-50': isCurrent,
-                        'text-gray-500 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300':
-                          !isCurrent,
+                        'text-gray-600 dark:text-gray-300': !isCurrent,
                       })}
                     />
                     <span>{tab.label}</span>
@@ -551,7 +532,12 @@ const UserSettings = () => {
           <section className='flex-1'>
             {activeTab === TAB_MAPPING.ACCOUNT && activeTabConfig ? (
               <>
-                <TabHeader tab={activeTabConfig} />
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                />
 
                 {/* Change email address */}
                 <SettingsSection
@@ -886,7 +872,12 @@ const UserSettings = () => {
 
             {activeTab === TAB_MAPPING.INTERFACE && activeTabConfig ? (
               <>
-                <TabHeader tab={activeTabConfig} />
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                />
 
                 {/* Timezone preference */}
                 <SettingsSection
@@ -972,7 +963,12 @@ const UserSettings = () => {
             !isSelfhosted &&
             activeTabConfig ? (
               <>
-                <TabHeader tab={activeTabConfig} />
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                />
 
                 {/* Email reports frequency */}
                 <SettingsSection
@@ -1023,7 +1019,9 @@ const UserSettings = () => {
                   isLast={!user?.isTelegramChatIdConfirmed}
                 >
                   <div id='integrations'>
-                    <Integrations handleIntegrationSave={handleIntegrationSave} />
+                    <Integrations
+                      handleIntegrationSave={handleIntegrationSave}
+                    />
                   </div>
                 </SettingsSection>
 
@@ -1050,7 +1048,12 @@ const UserSettings = () => {
 
             {activeTab === TAB_MAPPING.LANGUAGE && activeTabConfig ? (
               <>
-                <TabHeader tab={activeTabConfig} />
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                />
 
                 <SettingsSection
                   title={t('profileSettings.changeLanguage')}

@@ -46,6 +46,7 @@ import GoogleGSVG from '~/ui/icons/GoogleG'
 import GoogleSearchConsoleSVG from '~/ui/icons/GoogleSearchConsole'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
+import { TabHeader } from '~/ui/TabHeader'
 import Modal from '~/ui/Modal'
 import MultiSelect from '~/ui/MultiSelect'
 import Select from '~/ui/Select'
@@ -361,61 +362,81 @@ const ProjectSettings = () => {
         {
           id: 'general',
           label: t('project.settings.tabs.general'),
+          description: t('project.settings.tabs.generalDesc'),
           icon: SlidersHorizontalIcon,
+          iconColor: 'text-blue-500',
           visible: true,
         },
         {
           id: 'access',
           label: t('project.settings.tabs.access'),
+          description: t('project.settings.tabs.accessDesc'),
           icon: LockIcon,
+          iconColor: 'text-amber-500',
           visible: true,
         },
         {
           id: 'shields',
           label: t('project.settings.tabs.shields'),
+          description: t('project.settings.tabs.shieldsDesc'),
           icon: ShieldIcon,
+          iconColor: 'text-emerald-500',
           visible: true,
         },
         {
           id: 'captcha',
           label: t('project.settings.tabs.captcha'),
+          description: t('project.settings.tabs.captchaDesc'),
           icon: ShieldCheckIcon,
+          iconColor: 'text-teal-500',
           visible: true,
         },
         {
           id: 'integrations',
           label: t('project.settings.tabs.integrations'),
+          description: t('project.settings.tabs.integrationsDesc'),
           icon: PuzzlePieceIcon,
+          iconColor: 'text-purple-500',
           visible: !isSelfhosted,
         },
         {
           id: 'revenue',
           label: t('project.settings.tabs.revenue'),
+          description: t('project.settings.tabs.revenueDesc'),
           icon: CurrencyDollarIcon,
+          iconColor: 'text-green-500',
           visible: !isSelfhosted,
         },
         {
           id: 'emails',
           label: t('project.settings.tabs.emails'),
+          description: t('project.settings.tabs.emailsDesc'),
           icon: EnvelopeIcon,
+          iconColor: 'text-sky-500',
           visible: !isSelfhosted,
         },
         {
           id: 'people',
           label: t('project.settings.tabs.people'),
+          description: t('project.settings.tabs.peopleDesc'),
           icon: UserCircleIcon,
+          iconColor: 'text-indigo-500',
           visible: true,
         },
         {
           id: 'annotations',
           label: t('project.settings.tabs.annotations'),
+          description: t('project.settings.tabs.annotationsDesc'),
           icon: NoteIcon,
+          iconColor: 'text-orange-500',
           visible: true,
         },
         {
           id: 'danger',
           label: t('project.settings.tabs.danger'),
+          description: t('project.settings.tabs.dangerDesc'),
           icon: WarningOctagonIcon,
+          iconColor: 'text-red-500',
           visible: project?.role === 'owner',
         },
       ].filter((tab) => tab.visible),
@@ -433,6 +454,11 @@ const ProjectSettings = () => {
     newSearchParams.set('tab', tab)
     setSearchParams(newSearchParams)
   }
+
+  const activeTabConfig = useMemo(
+    () => tabs.find((tab) => tab.id === activeTab),
+    [tabs, activeTab],
+  )
 
   // Google Search Console integration state
   const [gscConnected, setGscConnected] = useState<boolean | null>(null)
@@ -883,7 +909,7 @@ const ProjectSettings = () => {
           </div>
 
           <aside className='hidden w-56 shrink-0 md:block'>
-            <nav className='flex flex-col space-y-1' aria-label='Sidebar'>
+            <nav className='flex flex-col space-y-0.5' aria-label='Sidebar'>
               {_map(tabs, (tab) => {
                 const isCurrent = tab.id === activeTab
                 const Icon = tab.icon
@@ -905,10 +931,9 @@ const ProjectSettings = () => {
                     aria-current={isCurrent ? 'page' : undefined}
                   >
                     <Icon
-                      className={cx('mr-2 h-5 w-5 shrink-0 transition-colors', {
+                      className={cx('mr-2 size-4 shrink-0 transition-colors', {
                         'text-gray-900 dark:text-gray-50': isCurrent,
-                        'text-gray-500 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300':
-                          !isCurrent,
+                        'text-gray-600 dark:text-gray-300': !isCurrent,
                       })}
                     />
                     <span>{tab.label}</span>
@@ -919,8 +944,15 @@ const ProjectSettings = () => {
           </aside>
 
           <section className='flex-1'>
-            {['general', 'shields', 'access'].includes(activeTab) ? (
+            {['general', 'shields', 'access'].includes(activeTab) &&
+            activeTabConfig ? (
               <form onSubmit={handleSubmit}>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
                 {activeTab === 'general' ? (
                   <General
                     form={form}
@@ -973,21 +1005,53 @@ const ProjectSettings = () => {
               </form>
             ) : null}
 
-            {activeTab === 'emails' && !isSelfhosted ? (
-              <Emails projectId={id} />
+            {activeTab === 'emails' && !isSelfhosted && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <Emails projectId={id} />
+              </>
             ) : null}
-            {activeTab === 'people' ? <People project={project} /> : null}
-            {activeTab === 'annotations' ? (
-              <Annotations
-                projectId={id}
-                allowedToManage={
-                  project?.role === 'owner' || project?.role === 'admin'
-                }
-              />
+            {activeTab === 'people' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <People project={project} />
+              </>
+            ) : null}
+            {activeTab === 'annotations' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <Annotations
+                  projectId={id}
+                  allowedToManage={
+                    project?.role === 'owner' || project?.role === 'admin'
+                  }
+                />
+              </>
             ) : null}
 
-            {activeTab === 'integrations' ? (
+            {activeTab === 'integrations' && activeTabConfig ? (
               <div>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
                 <div className='rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
                   <h3 className='mb-2 flex items-center gap-2 text-lg font-medium text-gray-900 dark:text-gray-50'>
                     <GoogleSearchConsoleSVG className='size-6' />
@@ -1137,8 +1201,14 @@ const ProjectSettings = () => {
               </div>
             ) : null}
 
-            {activeTab === 'captcha' ? (
+            {activeTab === 'captcha' && activeTabConfig ? (
               <div>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
                 <div className='rounded-lg border border-gray-200 p-4 dark:border-slate-800'>
                   <h3 className='mb-2 text-lg font-medium text-gray-900 dark:text-gray-50'>
                     {t('project.settings.captcha.title')}
@@ -1276,16 +1346,34 @@ const ProjectSettings = () => {
               </div>
             ) : null}
 
-            {activeTab === 'revenue' ? <Revenue projectId={id} /> : null}
+            {activeTab === 'revenue' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <Revenue projectId={id} />
+              </>
+            ) : null}
 
-            {activeTab === 'danger' ? (
-              <DangerZone
-                setShowTransfer={setShowTransfer}
-                setShowReset={setShowReset}
-                setShowDelete={setShowDelete}
-                isDeleting={isDeleting}
-                setResetting={isResetting}
-              />
+            {activeTab === 'danger' && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={activeTabConfig.iconColor}
+                />
+                <DangerZone
+                  setShowTransfer={setShowTransfer}
+                  setShowReset={setShowReset}
+                  setShowDelete={setShowDelete}
+                  isDeleting={isDeleting}
+                  setResetting={isResetting}
+                />
+              </>
             ) : null}
           </section>
         </div>

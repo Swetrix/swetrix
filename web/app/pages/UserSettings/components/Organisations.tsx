@@ -92,12 +92,8 @@ const Organisations = ({ membership }: OrganisationsProps) => {
           ? dayjs(created).locale(language).format('MMMM D, YYYY')
           : dayjs(created).locale(language).format('D MMMM, YYYY')}
       </td>
-      <td
-        className={cx('px-4 py-3 text-right text-sm whitespace-nowrap', {
-          hidden: role === 'owner',
-        })}
-      >
-        {confirmed ? (
+      <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
+        {role === 'owner' ? null : confirmed ? (
           <Button onClick={() => setShowDeleteModal(true)} danger small>
             {t('common.quit')}
           </Button>
