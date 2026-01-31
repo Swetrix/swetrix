@@ -1,4 +1,8 @@
-import { WarningIcon, CaretDownIcon, CaretUpIcon } from '@phosphor-icons/react'
+import {
+  WarningOctagonIcon,
+  CaretDownIcon,
+  CaretUpIcon,
+} from '@phosphor-icons/react'
 import BillboardCss from 'billboard.js/dist/billboard.min.css?url'
 import cx from 'clsx'
 import _replace from 'lodash/replace'
@@ -135,7 +139,7 @@ export function ErrorBoundary() {
         >
           <div className='mx-auto flex w-full max-w-7xl flex-grow flex-col justify-center px-4 sm:px-6 lg:px-8'>
             <div className='flex shrink-0 justify-center'>
-              <WarningIcon className='h-24 w-auto text-yellow-400 dark:text-yellow-600' />
+              <WarningOctagonIcon className='h-24 w-auto text-yellow-400 dark:text-yellow-600' />
             </div>
             <div className='py-8'>
               <div className='text-center'>

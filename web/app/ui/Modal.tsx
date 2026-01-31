@@ -6,7 +6,7 @@ import {
 } from '@headlessui/react'
 import {
   CheckIcon,
-  WarningIcon,
+  WarningOctagonIcon,
   InfoIcon,
   UsersIcon,
   XIcon,
@@ -93,7 +93,7 @@ const Modal = ({
               ) : null}
               {type === 'error' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mr-3 sm:h-10 sm:w-10'>
-                  <WarningIcon
+                  <WarningOctagonIcon
                     className='h-6 w-6 text-red-600'
                     aria-hidden='true'
                   />
@@ -109,7 +109,7 @@ const Modal = ({
               ) : null}
               {type === 'warning' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mr-3 sm:h-10 sm:w-10'>
-                  <WarningIcon
+                  <WarningOctagonIcon
                     className='h-6 w-6 text-amber-600'
                     aria-hidden='true'
                   />

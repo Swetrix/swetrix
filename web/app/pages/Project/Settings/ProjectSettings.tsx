@@ -15,7 +15,7 @@ import {
   LockIcon,
   UserCircleIcon,
   EnvelopeIcon,
-  WarningIcon,
+  WarningOctagonIcon,
   CaretLeftIcon,
   PuzzlePieceIcon,
   NoteIcon,
@@ -415,7 +415,7 @@ const ProjectSettings = () => {
         {
           id: 'danger',
           label: t('project.settings.tabs.danger'),
-          icon: WarningIcon,
+          icon: WarningOctagonIcon,
           visible: project?.role === 'owner',
         },
       ].filter((tab) => tab.visible),

@@ -9,11 +9,11 @@ import {
   TrashIcon,
   BellRingingIcon,
   WarningIcon,
+  WarningOctagonIcon,
   PlusIcon,
   EyeIcon,
   CursorClickIcon,
   UsersIcon,
-  BugIcon,
   FileTextIcon,
   BellSlashIcon,
 } from '@phosphor-icons/react'
@@ -55,7 +55,7 @@ const NoNotificationChannelSet = () => {
 
   return (
     <div className='mb-4 flex items-center gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 dark:border-yellow-500/20 dark:bg-yellow-500/10'>
-      <WarningIcon className='size-5 shrink-0 text-yellow-600 dark:text-yellow-500' />
+      <WarningOctagonIcon className='size-5 shrink-0 text-yellow-600 dark:text-yellow-500' />
       <p className='flex-1 text-sm text-yellow-800 dark:text-yellow-200'>
         {t('alert.noNotificationChannel')}
       </p>
@@ -97,7 +97,7 @@ const METRIC_ICON_MAPPING: Record<
     icon: CursorClickIcon,
     className: 'text-green-500',
   },
-  [QUERY_METRIC.ERRORS]: { icon: BugIcon, className: 'text-red-500' },
+  [QUERY_METRIC.ERRORS]: { icon: WarningIcon, className: 'text-red-500' },
 }
 
 interface AlertRowProps {

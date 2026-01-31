@@ -2,7 +2,7 @@ import {
   CaretDownIcon,
   MagnifyingGlassIcon,
   CheckCircleIcon,
-  WarningIcon,
+  WarningOctagonIcon,
   XCircleIcon,
   InfoIcon,
 } from '@phosphor-icons/react'
@@ -564,7 +564,7 @@ function IssueIcon({ type }: { type: 'error' | 'warning' | 'info' }) {
     case 'error':
       return <XCircleIcon className='h-5 w-5 shrink-0 text-red-500' />
     case 'warning':
-      return <WarningIcon className='h-5 w-5 shrink-0 text-amber-500' />
+      return <WarningOctagonIcon className='h-5 w-5 shrink-0 text-amber-500' />
     case 'info':
       return <InfoIcon className='h-5 w-5 shrink-0 text-blue-500' />
   }
@@ -755,7 +755,7 @@ export default function SitemapValidator() {
                           )}
                           {warningCount > 0 && (
                             <span className='flex items-center gap-1 text-amber-600 dark:text-amber-400'>
-                              <WarningIcon className='h-4 w-4' />
+                              <WarningOctagonIcon className='h-4 w-4' />
                               {warningCount} warning
                               {warningCount !== 1 ? 's' : ''}
                             </span>

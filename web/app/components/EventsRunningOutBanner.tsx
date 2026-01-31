@@ -1,4 +1,4 @@
-import { WarningIcon, XIcon } from '@phosphor-icons/react'
+import { WarningOctagonIcon, XIcon } from '@phosphor-icons/react'
 import { memo, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -48,7 +48,7 @@ const EventsRunningOutBanner = () => {
           <div className='flex flex-wrap items-center justify-between'>
             <div className='flex flex-1 items-center'>
               <span className='flex rounded-lg bg-yellow-600 p-2'>
-                <WarningIcon
+                <WarningOctagonIcon
                   className='h-6 w-6 text-white'
                   aria-hidden='true'
                 />

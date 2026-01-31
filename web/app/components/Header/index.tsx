@@ -23,8 +23,7 @@ import _map from 'lodash/map'
 import _startsWith from 'lodash/startsWith'
 import {
   GaugeIcon,
-  ChartPieIcon,
-  BugIcon,
+  WarningIcon,
   ShieldCheckIcon,
   ArrowRightIcon,
   ListIcon,
@@ -94,7 +93,7 @@ const getSolutions = (t: typeof i18nextT) => [
     name: t('header.solutions.errors.title'),
     description: t('header.solutions.errors.desc'),
     link: routes.errorTracking,
-    icon: BugIcon,
+    icon: WarningIcon,
     className: 'text-red-500 dark:text-red-400',
   },
   {

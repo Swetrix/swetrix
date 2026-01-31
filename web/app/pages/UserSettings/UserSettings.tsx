@@ -13,7 +13,7 @@ import {
   MonitorIcon,
   UserIcon,
   EnvelopeIcon,
-  WarningIcon,
+  WarningOctagonIcon,
   CaretDownIcon,
 } from '@phosphor-icons/react'
 import React, { useState, useEffect, memo, useMemo, useRef } from 'react'
@@ -712,7 +712,7 @@ const UserSettings = () => {
                     semiDanger
                   >
                     <>
-                      <WarningIcon className='mr-1 h-5 w-5' />
+                      <WarningOctagonIcon className='mr-1 h-5 w-5' />
                       {t('profileSettings.delete')}
                     </>
                   </Button>

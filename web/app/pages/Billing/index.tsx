@@ -1,4 +1,4 @@
-import { WarningIcon, InfoIcon } from '@phosphor-icons/react'
+import { WarningOctagonIcon, InfoIcon } from '@phosphor-icons/react'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import utc from 'dayjs/plugin/utc'
@@ -300,7 +300,7 @@ const Billing = () => {
             <div className='mt-5 max-w-prose rounded-md bg-red-50 p-4 dark:bg-red-600/20'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <WarningIcon
+                  <WarningOctagonIcon
                     aria-hidden='true'
                     className='h-5 w-5 text-red-400 dark:text-red-100'
                   />
@@ -368,7 +368,7 @@ const Billing = () => {
                 <div className='mb-4 rounded-md bg-amber-50 p-4 dark:bg-amber-600/30'>
                   <div className='flex'>
                     <div className='shrink-0'>
-                      <WarningIcon
+                      <WarningOctagonIcon
                         aria-hidden='true'
                         className='h-5 w-5 text-amber-400 dark:text-amber-100'
                       />
