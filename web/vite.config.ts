@@ -21,8 +21,7 @@ export default defineConfig({
       'marked',
       'billboard.js',
       /^remix-utils.*/,
-      /^remix-i18next.*/,
-      'lucide-react',
+      /^remix-i18next.*/
     ],
   },
   plugins: [reactRouter(), tsconfigPaths(), tailwindcss()],

@@ -1,6 +1,6 @@
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import { DownloadIcon } from 'lucide-react'
+import { DownloadSimpleIcon } from '@phosphor-icons/react'
 import {
   Component,
   useState,
@@ -413,7 +413,7 @@ const SessionsViewInner = ({
             {sessionsLoading ? (
               <Spin className='mr-2 size-5' />
             ) : (
-              <DownloadIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
+              <DownloadSimpleIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
             )}
             {t('project.loadMore')}
           </button>

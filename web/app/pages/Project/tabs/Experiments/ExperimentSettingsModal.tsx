@@ -10,11 +10,11 @@ import _map from 'lodash/map'
 import _sum from 'lodash/sum'
 import {
   PlusIcon,
-  Trash2Icon,
-  ChevronDownIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
-} from 'lucide-react'
+  TrashIcon,
+  CaretDownIcon,
+  TrendUpIcon,
+  TrendDownIcon,
+} from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
@@ -664,7 +664,7 @@ const ExperimentSettingsModal = ({
                                 onClick={() => handleRemoveVariant(index)}
                                 className='rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-red-500 dark:hover:bg-slate-600'
                               >
-                                <Trash2Icon className='size-4' />
+                                <TrashIcon className='size-4' />
                               </button>
                             ) : null}
                           </div>
@@ -743,7 +743,7 @@ const ExperimentSettingsModal = ({
                                   : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-400 dark:hover:bg-slate-700',
                               )}
                             >
-                              <TrendingUpIcon className='size-4' />
+                              <TrendUpIcon className='size-4' />
                               <span className='hidden sm:inline'>Increase</span>
                             </button>
                             <button
@@ -756,7 +756,7 @@ const ExperimentSettingsModal = ({
                                   : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-400 dark:hover:bg-slate-700',
                               )}
                             >
-                              <TrendingDownIcon className='size-4' />
+                              <TrendDownIcon className='size-4' />
                               <span className='hidden sm:inline'>Decrease</span>
                             </button>
                           </div>
@@ -784,7 +784,7 @@ const ExperimentSettingsModal = ({
                         <Text size='sm' weight='medium' colour='muted'>
                           Advanced settings
                         </Text>
-                        <ChevronDownIcon
+                        <CaretDownIcon
                           className={cx(
                             'size-4 text-gray-400 transition-transform',
                             showAdvanced && 'rotate-180',

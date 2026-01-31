@@ -1,4 +1,4 @@
-import { RotateCw } from 'lucide-react'
+import { ArrowClockwise as RotateCw } from '@phosphor-icons/react'
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 

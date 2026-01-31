@@ -6,7 +6,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _toLower from 'lodash/toLower'
-import { MailPlusIcon, Trash2Icon } from 'lucide-react'
+import { EnvelopeSimpleIcon, TrashIcon } from '@phosphor-icons/react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useParams } from 'react-router'
@@ -281,7 +281,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
               small
               onClick={onRemove}
             >
-              <Trash2Icon className='h-4 w-4' strokeWidth={1.5} />
+              <TrashIcon className='h-4 w-4' strokeWidth={1.5} />
             </Button>
           </div>
         )}
@@ -518,7 +518,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
           onClick={() => setShowModal(true)}
         >
           <>
-            <MailPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
+            <EnvelopeSimpleIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             {t('project.emails.add')}
           </>
         </Button>

@@ -22,7 +22,7 @@ import _slice from 'lodash/slice'
 import _sortBy from 'lodash/sortBy'
 import _sum from 'lodash/sum'
 import _toPairs from 'lodash/toPairs'
-import { FilterIcon, ScanIcon } from 'lucide-react'
+import { FunnelIcon, ScanIcon } from '@phosphor-icons/react'
 import React, {
   memo,
   useState,
@@ -365,7 +365,7 @@ const KVTable = ({
           >
             <td className='flex w-2/5 items-center py-1 pl-2 text-left sm:w-4/6'>
               {event}
-              <FilterIcon
+              <FunnelIcon
                 className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
                 strokeWidth={1.5}
               />
@@ -766,7 +766,7 @@ const CustomEvents = ({
                     )}
                   </button>
                   <span className='pl-2'>{ev}</span>
-                  <FilterIcon
+                  <FunnelIcon
                     className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block peer-hover:hidden dark:text-gray-300'
                     strokeWidth={1.5}
                   />
@@ -870,7 +870,7 @@ const CustomEvents = ({
                     <Text size='sm' truncate>
                       {ev}
                     </Text>
-                    <FilterIcon
+                    <FunnelIcon
                       className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
                       strokeWidth={1.5}
                     />
@@ -1159,7 +1159,7 @@ const MetadataKeyPanel = ({
                     </td>
                     <td className='flex items-center py-1 text-left'>
                       <span className='truncate'>{value}</span>
-                      <FilterIcon
+                      <FunnelIcon
                         className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
                         strokeWidth={1.5}
                       />
@@ -1209,7 +1209,7 @@ const MetadataKeyPanel = ({
                 >
                   <td className='flex items-center py-1 pl-2 text-left'>
                     <span className='truncate'>{value}</span>
-                    <FilterIcon
+                    <FunnelIcon
                       className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
                       strokeWidth={1.5}
                     />
@@ -1320,7 +1320,7 @@ const MetadataKeyPanel = ({
                       <Text size='sm' truncate>
                         {value}
                       </Text>
-                      <FilterIcon
+                      <FunnelIcon
                         className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
                         strokeWidth={1.5}
                       />
@@ -1407,7 +1407,7 @@ const MetadataKeyPanel = ({
                     <Text size='sm' truncate>
                       {value}
                     </Text>
-                    <FilterIcon
+                    <FunnelIcon
                       className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
                       strokeWidth={1.5}
                     />
@@ -1839,7 +1839,7 @@ const DetailsTable = ({
                     </span>
                     {!disableRowClick ? (
                       <>
-                        <FilterIcon
+                        <FunnelIcon
                           className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
                           strokeWidth={1.5}
                         />

@@ -1,5 +1,8 @@
-import { ArrowLeftRight, RotateCcw, Trash2Icon } from 'lucide-react'
-import React from 'react'
+import {
+  ArrowsLeftRightIcon,
+  ArrowCounterClockwiseIcon,
+  TrashIcon,
+} from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 
 import Button from '~/ui/Button'
@@ -30,7 +33,7 @@ const DangerZone = ({
       <div className='mt-4 space-y-3'>
         <div className='rounded-md border border-gray-200 p-3 dark:border-gray-800'>
           <div className='flex items-start'>
-            <ArrowLeftRight className='mt-0.5 h-5 w-5 text-red-700 dark:text-red-500' />
+            <ArrowsLeftRightIcon className='mt-0.5 h-5 w-5 text-red-700 dark:text-red-500' />
             <div className='ml-3 flex-1'>
               <div className='text-sm font-medium text-gray-900 dark:text-gray-50'>
                 {t('project.settings.transfer')}
@@ -53,7 +56,7 @@ const DangerZone = ({
 
         <div className='rounded-md border border-gray-200 p-3 dark:border-gray-800'>
           <div className='flex items-start'>
-            <RotateCcw className='mt-0.5 h-5 w-5 text-red-700 dark:text-red-500' />
+            <ArrowCounterClockwiseIcon className='mt-0.5 h-5 w-5 text-red-700 dark:text-red-500' />
             <div className='ml-3 flex-1'>
               <div className='text-sm font-medium text-gray-900 dark:text-gray-50'>
                 {t('project.settings.reset')}
@@ -77,7 +80,7 @@ const DangerZone = ({
 
         <div className='rounded-md border border-gray-200 p-3 dark:border-gray-800'>
           <div className='flex items-start'>
-            <Trash2Icon
+            <TrashIcon
               className='mt-0.5 h-5 w-5 text-red-700 dark:text-red-500'
               strokeWidth={1.5}
             />

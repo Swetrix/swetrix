@@ -6,9 +6,9 @@ import _map from 'lodash/map'
 import {
   CompassIcon,
   MapPinIcon,
-  MonitorCog,
-  TabletSmartphoneIcon,
-} from 'lucide-react'
+  MonitorIcon,
+  DevicesIcon,
+} from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useContext, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
@@ -47,9 +47,9 @@ const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
 const iconClassName = 'w-6 h-6'
 const panelIconMapping: Record<string, React.ReactNode> = {
   cc: <MapPinIcon className={iconClassName} strokeWidth={1.5} />,
-  dv: <TabletSmartphoneIcon className={iconClassName} strokeWidth={1.5} />,
+  dv: <DevicesIcon className={iconClassName} strokeWidth={1.5} />,
   br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
-  os: <MonitorCog className={iconClassName} strokeWidth={1.5} />,
+  os: <MonitorIcon className={iconClassName} strokeWidth={1.5} />,
 }
 
 export const captchaTypeNameMapping = (t: any) => ({

@@ -2,7 +2,7 @@ import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
-import { EyeIcon, PercentIcon } from 'lucide-react'
+import { EyeIcon, PercentIcon } from '@phosphor-icons/react'
 import {
   useState,
   useEffect,

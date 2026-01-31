@@ -12,13 +12,13 @@ import {
   TargetIcon,
   InfoIcon,
   PencilIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
-  FlaskConicalIcon,
+  TrendUpIcon,
+  TrendDownIcon,
+  FlaskIcon,
   PercentIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from 'lucide-react'
+  CaretDownIcon,
+  CaretUpIcon,
+} from '@phosphor-icons/react'
 import { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -624,9 +624,9 @@ const MetricsTable = memo(
                         {variant.improvement !== 0 ? (
                           <>
                             {isPositive ? (
-                              <TrendingUpIcon className='size-4' />
+                              <TrendUpIcon className='size-4' />
                             ) : (
-                              <TrendingDownIcon className='size-4' />
+                              <TrendDownIcon className='size-4' />
                             )}
                             {isPositive ? '+' : ''}
                             {variant.improvement.toFixed(2)}%
@@ -702,9 +702,9 @@ const CollapsibleSection = memo(
             {title}
           </Text>
           {isOpen ? (
-            <ChevronUpIcon className='size-4 text-gray-500' />
+            <CaretUpIcon className='size-4 text-gray-500' />
           ) : (
-            <ChevronDownIcon className='size-4 text-gray-500' />
+            <CaretDownIcon className='size-4 text-gray-500' />
           )}
         </button>
         {isOpen ? (
@@ -875,10 +875,7 @@ const ExperimentResults = ({
         }
         leftContent={
           <div className='flex items-center gap-2'>
-            <FlaskConicalIcon
-              className='size-5 text-purple-500'
-              strokeWidth={1.5}
-            />
+            <FlaskIcon className='size-5 text-purple-500' strokeWidth={1.5} />
             <Text as='h2' size='xl' weight='bold' truncate>
               {experiment.name}
             </Text>
@@ -1005,12 +1002,7 @@ const ExperimentResults = ({
               label={t('experiments.totalConversions')}
             />
             <StatCard
-              icon={
-                <FlaskConicalIcon
-                  className='text-purple-600'
-                  strokeWidth={1.5}
-                />
-              }
+              icon={<FlaskIcon className='text-purple-600' strokeWidth={1.5} />}
               value={results.variants.length}
               label={t('experiments.variantsCount')}
             />

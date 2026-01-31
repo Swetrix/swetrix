@@ -4,7 +4,7 @@ import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _startsWith from 'lodash/startsWith'
 import _truncate from 'lodash/truncate'
-import { FilterIcon } from 'lucide-react'
+import { FunnelIcon } from '@phosphor-icons/react'
 import { memo, MouseEvent, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
@@ -305,7 +305,7 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
       )}
     >
       <div className='flex min-w-0 flex-1 items-center gap-1'>
-        <FilterIcon
+        <FunnelIcon
           className='size-5 shrink-0 text-gray-500 dark:text-gray-400'
           strokeWidth={1.5}
         />

@@ -1,4 +1,4 @@
-import { InfoIcon } from 'lucide-react'
+import { InfoIcon } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 

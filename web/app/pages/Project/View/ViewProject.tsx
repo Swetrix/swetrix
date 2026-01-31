@@ -11,18 +11,18 @@ import {
   BugIcon,
   GaugeIcon,
   UserIcon,
-  BellRingIcon,
-  ChartNoAxesColumnIcon,
-  FilterIcon,
-  SettingsIcon,
+  BellRingingIcon,
+  ChartBarIcon,
+  FunnelIcon,
+  GearIcon,
   KeyboardIcon,
   TargetIcon,
-  PuzzleIcon,
-  SparklesIcon,
+  ShieldCheckIcon,
+  SparkleIcon,
   FlagIcon,
-  FlaskConicalIcon,
-  FileUser,
-} from 'lucide-react'
+  FlaskIcon,
+  IdentificationCardIcon,
+} from '@phosphor-icons/react'
 import React, {
   useState,
   useEffect,
@@ -704,7 +704,7 @@ const ViewProjectContent = () => {
       {
         id: PROJECT_TABS.traffic,
         label: t('dashboard.traffic'),
-        icon: ChartNoAxesColumnIcon,
+        icon: ChartBarIcon,
       },
       {
         id: PROJECT_TABS.performance,
@@ -719,7 +719,7 @@ const ViewProjectContent = () => {
       {
         id: PROJECT_TABS.sessions,
         label: t('dashboard.sessions'),
-        icon: FileUser,
+        icon: IdentificationCardIcon,
       },
       {
         id: PROJECT_TABS.errors,
@@ -729,7 +729,7 @@ const ViewProjectContent = () => {
       {
         id: PROJECT_TABS.funnels,
         label: t('dashboard.funnels'),
-        icon: FilterIcon,
+        icon: FunnelIcon,
       },
       {
         id: PROJECT_TABS.goals,
@@ -744,7 +744,7 @@ const ViewProjectContent = () => {
       {
         id: PROJECT_TABS.captcha,
         label: t('common.captcha'),
-        icon: PuzzleIcon,
+        icon: ShieldCheckIcon,
       },
     ]
 
@@ -753,7 +753,7 @@ const ViewProjectContent = () => {
           {
             id: 'settings',
             label: t('common.settings'),
-            icon: SettingsIcon,
+            icon: GearIcon,
           },
         ]
       : []
@@ -767,17 +767,17 @@ const ViewProjectContent = () => {
       {
         id: PROJECT_TABS.ai,
         label: t('dashboard.askAi'),
-        icon: SparklesIcon,
+        icon: SparkleIcon,
       },
       {
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
-        icon: BellRingIcon,
+        icon: BellRingingIcon,
       },
       {
         id: PROJECT_TABS.experiments,
         label: t('dashboard.experiments'),
-        icon: FlaskConicalIcon,
+        icon: FlaskIcon,
       },
       ...adminTabs,
     ].filter((x) => !!x)

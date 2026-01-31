@@ -7,12 +7,12 @@ import {
 import _map from 'lodash/map'
 import {
   FileCodeIcon,
-  CalendarIcon,
+  CalendarDotsIcon,
   HashIcon,
-  ExternalLinkIcon,
+  ArrowSquareOutIcon,
   UsersIcon,
-  ActivityIcon,
-} from 'lucide-react'
+  PulseIcon,
+} from '@phosphor-icons/react'
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
@@ -152,7 +152,7 @@ const SessionRow = ({ session }: SessionRowProps) => {
           </Text>
         </div>
       </div>
-      <ExternalLinkIcon
+      <ArrowSquareOutIcon
         className='mt-0.5 size-4 shrink-0 text-gray-400 transition-colors group-hover:text-gray-600 dark:group-hover:text-gray-300'
         strokeWidth={1.5}
       />
@@ -449,12 +449,12 @@ export const ErrorDetails = ({
           value={details.users || 0}
         />
         <StatItem
-          icon={<CalendarIcon className='size-4' />}
+          icon={<CalendarDotsIcon className='size-4' />}
           label={t('dashboard.firstSeen')}
           value={firstSeen || '-'}
         />
         <StatItem
-          icon={<ActivityIcon className='size-4' />}
+          icon={<PulseIcon className='size-4' />}
           label={t('dashboard.lastSeen')}
           value={lastSeen || '-'}
         />

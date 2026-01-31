@@ -5,7 +5,6 @@ import {
   MenuItem,
   Transition,
 } from '@headlessui/react'
-import { ChevronDownIcon as ChevronDownIconMini } from '@heroicons/react/20/solid'
 import { ChevronDownIcon } from '@heroicons/react/24/solid'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -101,7 +100,7 @@ function Dropdown<T>({
               />
             ) : null}
             {chevron === 'mini' ? (
-              <ChevronDownIconMini
+              <ChevronDownIcon
                 className={cn(
                   'ml-1 h-5 w-5 transform-gpu transition-transform',
                   {

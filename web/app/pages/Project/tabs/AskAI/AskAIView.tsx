@@ -2,24 +2,24 @@ import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import {
-  SendIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  Loader2Icon,
+  PaperPlaneIcon,
+  CaretDownIcon,
+  CaretRightIcon,
+  SpinnerGapIcon,
   StopCircleIcon,
-  AlertCircleIcon,
+  WarningCircleIcon,
   ArrowDownIcon,
   ArrowLeftIcon,
-  BarChart3Icon,
+  ChartBarIcon,
   TargetIcon,
   GitBranchIcon,
   InfoIcon,
   CheckIcon,
-  MessageSquareIcon,
+  ChatIcon,
   TrashIcon,
   XIcon,
   LinkIcon,
-} from 'lucide-react'
+} from '@phosphor-icons/react'
 import { marked } from 'marked'
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -150,7 +150,7 @@ const getToolInfo = (
       label: t('project.askAi.tools.getProjectInfo'),
       icon: InfoIcon,
     },
-    getData: { label: t('project.askAi.tools.getData'), icon: BarChart3Icon },
+    getData: { label: t('project.askAi.tools.getData'), icon: ChartBarIcon },
     getGoalStats: {
       label: t('project.askAi.tools.getGoalStats'),
       icon: TargetIcon,
@@ -167,7 +167,7 @@ const getAvailableTools = (t: any) => [
   {
     id: 'getData',
     label: t('project.askAi.tools.queryData'),
-    icon: BarChart3Icon,
+    icon: ChartBarIcon,
   },
   {
     id: 'getGoalStats',
@@ -222,7 +222,7 @@ const AICapabilitiesTooltip = () => {
         </p>
         <ul className='space-y-1 text-gray-300'>
           <li className='flex items-start gap-1.5'>
-            <BarChart3Icon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <ChartBarIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
             <span>
               <strong className='text-white'>
                 {t('project.askAi.capabilities.queryAnalytics')}
@@ -246,7 +246,7 @@ const AICapabilitiesTooltip = () => {
             </span>
           </li>
           <li className='flex items-start gap-1.5'>
-            <BarChart3Icon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <ChartBarIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
             <span>
               <strong className='text-white'>
                 {t('project.askAi.capabilities.performanceMetrics')}
@@ -254,7 +254,7 @@ const AICapabilitiesTooltip = () => {
             </span>
           </li>
           <li className='flex items-start gap-1.5'>
-            <AlertCircleIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
+            <WarningCircleIcon className='mt-0.5 h-3.5 w-3.5 shrink-0 text-green-400' />
             <span>
               <strong className='text-white'>
                 {t('project.askAi.capabilities.errorTracking')}
@@ -298,7 +298,7 @@ const ThinkingIndicator = () => {
   const { t } = useTranslation('common')
   return (
     <div className='flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400'>
-      <Loader2Icon className='h-4 w-4 animate-spin' />
+      <SpinnerGapIcon className='h-4 w-4 animate-spin' />
       <span>{t('project.askAi.thinking')}</span>
     </div>
   )
@@ -331,7 +331,7 @@ const ThoughtProcess = ({
       >
         <span className='flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 dark:border-gray-600'>
           {isActivelyThinking ? (
-            <Loader2Icon className='h-3 w-3 animate-spin' />
+            <SpinnerGapIcon className='h-3 w-3 animate-spin' />
           ) : (
             <svg
               className='h-3 w-3'
@@ -352,9 +352,9 @@ const ThoughtProcess = ({
         </span>
         {!isActivelyThinking ? (
           isExpanded ? (
-            <ChevronDownIcon className='h-3.5 w-3.5' />
+            <CaretDownIcon className='h-3.5 w-3.5' />
           ) : (
-            <ChevronRightIcon className='h-3.5 w-3.5' />
+            <CaretRightIcon className='h-3.5 w-3.5' />
           )
         ) : null}
       </button>
@@ -383,7 +383,7 @@ const ToolCallBadge = ({
       <Icon className='h-3.5 w-3.5' />
       <span>{label}</span>
       {isLoading ? (
-        <Loader2Icon className='h-3 w-3 animate-spin text-gray-500' />
+        <SpinnerGapIcon className='h-3 w-3 animate-spin text-gray-500' />
       ) : (
         <CheckIcon className='h-3 w-3 text-green-600 dark:text-green-400' />
       )}
@@ -1139,7 +1139,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       {error ? (
         <div className='mx-auto w-full max-w-3xl px-4 pt-4'>
           <div className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/20'>
-            <AlertCircleIcon className='h-5 w-5 shrink-0 text-red-500' />
+            <WarningCircleIcon className='h-5 w-5 shrink-0 text-red-500' />
             <p className='flex-1 text-sm text-red-700 dark:text-red-400'>
               {error}
             </p>
@@ -1225,7 +1225,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                             disabled={!input.trim() || isLoading}
                             className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
                           >
-                            <SendIcon className='h-3.5 w-3.5' />
+                            <PaperPlaneIcon className='h-3.5 w-3.5' />
                           </button>
                         </div>
                       </form>
@@ -1304,7 +1304,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                         disabled={!input.trim()}
                         className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
                       >
-                        <SendIcon className='h-3.5 w-3.5' />
+                        <PaperPlaneIcon className='h-3.5 w-3.5' />
                       </button>
                     )}
                   </div>
@@ -1390,7 +1390,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                       onClick={() => handleOpenChat(chat.id)}
                       className='flex flex-1 items-center gap-3 overflow-hidden text-left'
                     >
-                      <MessageSquareIcon className='h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500' />
+                      <ChatIcon className='h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500' />
                       <div className='overflow-hidden'>
                         <span className='block truncate text-sm text-gray-900 dark:text-white'>
                           {chat.name || t('project.askAi.newChat')}
@@ -1421,7 +1421,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     className='flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
                   >
                     {isLoadingChats ? (
-                      <Loader2Icon className='h-4 w-4 animate-spin' />
+                      <SpinnerGapIcon className='h-4 w-4 animate-spin' />
                     ) : null}
                     {t('project.askAi.loadMore')}
                   </button>
@@ -1430,7 +1430,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             )}
             {isLoadingChats && _isEmpty(allChats) ? (
               <div className='flex items-center justify-center py-8'>
-                <Loader2Icon className='h-6 w-6 animate-spin text-gray-400' />
+                <SpinnerGapIcon className='h-6 w-6 animate-spin text-gray-400' />
               </div>
             ) : null}
           </div>

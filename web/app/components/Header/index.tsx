@@ -33,9 +33,9 @@ import {
   GaugeIcon,
   ChartPieIcon,
   BugIcon,
-  PuzzleIcon,
+  ShieldCheckIcon,
   PhoneIcon,
-} from 'lucide-react'
+} from '@phosphor-icons/react'
 import { memo, Fragment, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -95,7 +95,7 @@ const getSolutions = (t: typeof i18nextT) => [
     name: t('header.solutions.captcha.title'),
     description: t('header.solutions.captcha.desc'),
     link: routes.captchaLanding,
-    icon: PuzzleIcon,
+    icon: ShieldCheckIcon,
   },
 ]
 

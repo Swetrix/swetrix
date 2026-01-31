@@ -6,34 +6,34 @@ import _toLower from 'lodash/toLower'
 import {
   BuildingIcon,
   CheckIcon,
-  ChevronsUpDownIcon,
-  CircleQuestionMark,
+  CaretUpDownIcon,
+  QuestionMarkIcon,
   CompassIcon,
   CpuIcon,
   FileIcon,
   FileTextIcon,
-  Gamepad2Icon,
+  GameControllerIcon,
   GlobeIcon,
-  LanguagesIcon,
+  TranslateIcon,
   LinkIcon,
-  LogInIcon,
-  LogOutIcon,
-  MapIcon,
+  SignInIcon,
+  SignOutIcon,
+  MapTrifoldIcon,
   MapPinIcon,
   MegaphoneIcon,
-  MonitorCogIcon,
+  MonitorPlayIcon,
   MonitorIcon,
   PlusIcon,
   RadioIcon,
-  ServerIcon,
+  HardDrivesIcon,
   ShareIcon,
-  SmartphoneIcon,
-  TabletIcon,
-  TabletSmartphoneIcon,
+  DeviceMobileIcon,
+  DeviceTabletIcon,
+  DevicesIcon,
   TagIcon,
-  TvIcon,
+  TelevisionIcon,
   WatchIcon,
-} from 'lucide-react'
+} from '@phosphor-icons/react'
 import {
   useState,
   useEffect,
@@ -58,32 +58,32 @@ const ITEM_HEIGHT = 36
 // Icon mapping for filter categories
 export const filterCategoryIcons: Record<string, ReactNode> = {
   cc: <MapPinIcon className='size-4' strokeWidth={1.5} />,
-  rg: <MapIcon className='size-4' strokeWidth={1.5} />,
+  rg: <MapTrifoldIcon className='size-4' strokeWidth={1.5} />,
   ct: <BuildingIcon className='size-4' strokeWidth={1.5} />,
   pg: <FileTextIcon className='size-4' strokeWidth={1.5} />,
-  entryPage: <LogInIcon className='size-4' strokeWidth={1.5} />,
-  exitPage: <LogOutIcon className='size-4' strokeWidth={1.5} />,
-  host: <ServerIcon className='size-4' strokeWidth={1.5} />,
+  entryPage: <SignInIcon className='size-4' strokeWidth={1.5} />,
+  exitPage: <SignOutIcon className='size-4' strokeWidth={1.5} />,
+  host: <HardDrivesIcon className='size-4' strokeWidth={1.5} />,
   br: <CompassIcon className='size-4' strokeWidth={1.5} />,
   brv: <CompassIcon className='size-4' strokeWidth={1.5} />,
-  os: <MonitorCogIcon className='size-4' strokeWidth={1.5} />,
-  osv: <MonitorCogIcon className='size-4' strokeWidth={1.5} />,
+  os: <MonitorPlayIcon className='size-4' strokeWidth={1.5} />,
+  osv: <MonitorPlayIcon className='size-4' strokeWidth={1.5} />,
   ref: <LinkIcon className='size-4' strokeWidth={1.5} />,
   so: <ShareIcon className='size-4' strokeWidth={1.5} />,
   me: <RadioIcon className='size-4' strokeWidth={1.5} />,
   ca: <MegaphoneIcon className='size-4' strokeWidth={1.5} />,
   te: <TagIcon className='size-4' strokeWidth={1.5} />,
   co: <FileIcon className='size-4' strokeWidth={1.5} />,
-  lc: <LanguagesIcon className='size-4' strokeWidth={1.5} />,
-  dv: <TabletSmartphoneIcon className='size-4' strokeWidth={1.5} />,
+  lc: <TranslateIcon className='size-4' strokeWidth={1.5} />,
+  dv: <DevicesIcon className='size-4' strokeWidth={1.5} />,
 }
 
 const deviceIconMapping: Record<string, ReactNode> = {
   desktop: <MonitorIcon className='size-4' strokeWidth={1.5} />,
-  mobile: <SmartphoneIcon className='size-4' strokeWidth={1.5} />,
-  tablet: <TabletIcon className='size-4' strokeWidth={1.5} />,
-  smarttv: <TvIcon className='size-4' strokeWidth={1.5} />,
-  console: <Gamepad2Icon className='size-4' strokeWidth={1.5} />,
+  mobile: <DeviceMobileIcon className='size-4' strokeWidth={1.5} />,
+  tablet: <DeviceTabletIcon className='size-4' strokeWidth={1.5} />,
+  smarttv: <TelevisionIcon className='size-4' strokeWidth={1.5} />,
+  console: <GameControllerIcon className='size-4' strokeWidth={1.5} />,
   wearable: <WatchIcon className='size-4' strokeWidth={1.5} />,
   embedded: <CpuIcon className='size-4' strokeWidth={1.5} />,
 }
@@ -253,7 +253,7 @@ const FilterValueInput = ({
           return <span className='shrink-0'>{icon}</span>
         }
         return (
-          <CircleQuestionMark className='size-4 shrink-0' strokeWidth={1.5} />
+          <QuestionMarkIcon className='size-4 shrink-0' strokeWidth={1.5} />
         )
       }
 
@@ -367,7 +367,7 @@ const FilterValueInput = ({
           {isLoading ? (
             <Spin className='size-4' />
           ) : (
-            <ChevronsUpDownIcon className='h-4 w-4 text-gray-400' />
+            <CaretUpDownIcon className='h-4 w-4 text-gray-400' />
           )}
         </span>
       </div>

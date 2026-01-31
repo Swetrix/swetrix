@@ -1,13 +1,13 @@
 import _map from 'lodash/map'
 import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  PanelLeftCloseIcon,
-  PanelLeftOpenIcon,
-  SettingsIcon,
+  CaretDownIcon,
+  CaretRightIcon,
+  SidebarSimpleIcon,
+  SidebarIcon,
+  GearIcon,
   XIcon,
-  MenuIcon,
-} from 'lucide-react'
+  ListIcon,
+} from '@phosphor-icons/react'
 import React, {
   useState,
   useMemo,
@@ -82,7 +82,7 @@ const ICON_COLORS: Record<string, string> = {
 interface Tab {
   id: ProjectTabKey
   label: string
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
+  icon: React.ComponentType<{ className?: string; weight?: string }>
 }
 
 interface TabGroup {
@@ -198,7 +198,7 @@ const CollapsibleGroup: React.FC<{
                     >
                       <TabIcon
                         className={cn('size-5 shrink-0', iconColorClass)}
-                        strokeWidth={1.5}
+                        weight='duotone'
                         aria-hidden='true'
                       />
                     </Link>
@@ -234,15 +234,9 @@ const CollapsibleGroup: React.FC<{
             {group.label}
           </Text>
           {isExpanded ? (
-            <ChevronDownIcon
-              className='size-3.5 text-gray-400'
-              strokeWidth={2}
-            />
+            <CaretDownIcon className='size-3.5 text-gray-400' />
           ) : (
-            <ChevronRightIcon
-              className='size-3.5 text-gray-400'
-              strokeWidth={2}
-            />
+            <CaretRightIcon className='size-3.5 text-gray-400' />
           )}
         </button>
 
@@ -301,7 +295,7 @@ const CollapsibleGroup: React.FC<{
                 >
                   <TabIcon
                     className={cn('size-4 shrink-0', iconColorClass)}
-                    strokeWidth={1.5}
+                    weight='duotone'
                     aria-hidden='true'
                   />
                   <Text
@@ -583,7 +577,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                       >
                         <TabIcon
                           className={cn('size-5 shrink-0', iconColorClass)}
-                          strokeWidth={1.5}
+                          weight='duotone'
                           aria-hidden='true'
                         />
                       </Link>
@@ -611,7 +605,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                 >
                   <TabIcon
                     className={cn('size-4 shrink-0', iconColorClass)}
-                    strokeWidth={1.5}
+                    weight='duotone'
                     aria-hidden='true'
                   />
                   <Text
@@ -657,16 +651,16 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             aria-label={isCollapsed ? t('common.expand') : t('common.collapse')}
           >
             {isCollapsed ? (
-              <PanelLeftOpenIcon
+              <SidebarIcon
                 className={cn('h-5 w-5 shrink-0', ICON_COLORS.misc)}
-                strokeWidth={1.5}
+                weight='duotone'
                 aria-hidden='true'
               />
             ) : (
               <>
-                <PanelLeftCloseIcon
+                <SidebarSimpleIcon
                   className={cn('h-5 w-5 shrink-0', ICON_COLORS.misc)}
-                  strokeWidth={1.5}
+                  weight='duotone'
                   aria-hidden='true'
                 />
                 <span className='truncate'>{t('common.collapse')}</span>
@@ -686,9 +680,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             )}
             aria-label={t('common.settings')}
           >
-            <SettingsIcon
+            <GearIcon
               className={cn('h-5 w-5 shrink-0', ICON_COLORS.misc)}
-              strokeWidth={1.5}
+              weight='duotone'
               aria-hidden='true'
             />
             {!isCollapsed || isMobileOpen ? (
@@ -737,7 +731,7 @@ export const MobileSidebarTrigger: React.FC<MobileSidebarTriggerProps> = ({
         className='flex items-center justify-center rounded-md border border-gray-300 p-2 text-gray-700 transition-all ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
         aria-label={t('common.openMenu')}
       >
-        <MenuIcon className='h-5 w-5' strokeWidth={1.5} />
+        <ListIcon className='h-5 w-5' />
       </button>
       {activeTabLabel ? (
         <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>

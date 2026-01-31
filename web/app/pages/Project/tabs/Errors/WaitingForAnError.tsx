@@ -1,4 +1,4 @@
-import { BugIcon } from 'lucide-react'
+import { BugIcon } from '@phosphor-icons/react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router'
 

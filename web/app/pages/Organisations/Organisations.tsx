@@ -2,7 +2,7 @@ import { BuildingOffice2Icon } from '@heroicons/react/24/outline'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { SearchIcon, XIcon } from 'lucide-react'
+import { MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -211,7 +211,7 @@ const Organisations = () => {
                       }}
                       aria-label={t('project.search')}
                     >
-                      <SearchIcon
+                      <MagnifyingGlassIcon
                         className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50'
                         strokeWidth={1.5}
                       />
@@ -225,7 +225,7 @@ const Organisations = () => {
                     </label>
                     <div className='relative w-full'>
                       <div className='pointer-events-none absolute inset-y-0 left-0 hidden items-center sm:flex'>
-                        <SearchIcon
+                        <MagnifyingGlassIcon
                           className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
                           strokeWidth={1.5}
                         />
@@ -258,7 +258,7 @@ const Organisations = () => {
                 </label>
                 <div className='relative w-full'>
                   <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center'>
-                    <SearchIcon
+                    <MagnifyingGlassIcon
                       className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
                       strokeWidth={1.5}
                     />

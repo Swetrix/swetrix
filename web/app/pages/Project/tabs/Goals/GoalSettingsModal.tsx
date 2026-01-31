@@ -6,7 +6,7 @@ import {
 } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
-import { Trash2Icon, PlusIcon } from 'lucide-react'
+import { TrashIcon, PlusIcon } from '@phosphor-icons/react'
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
@@ -328,7 +328,7 @@ const GoalSettingsModal = ({
                                 onClick={() => removeMetadataFilter(index)}
                                 className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
                               >
-                                <Trash2Icon className='h-4 w-4' />
+                                <TrashIcon className='h-4 w-4' />
                               </button>
                             </div>
                           ))}

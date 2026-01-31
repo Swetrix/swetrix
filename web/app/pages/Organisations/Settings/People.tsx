@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
-import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
+import { TrashIcon, UserCirclePlusIcon } from '@phosphor-icons/react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
@@ -153,7 +153,7 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
               small
               onClick={() => onRemove(member)}
             >
-              <Trash2Icon className='h-4 w-4' strokeWidth={1.5} />
+              <TrashIcon className='h-4 w-4' strokeWidth={1.5} />
             </Button>
           </div>
         )}
@@ -310,7 +310,7 @@ const People = ({ organisation }: PeopleProps) => {
           onClick={() => setShowModal(true)}
         >
           <>
-            <UserRoundPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
+            <UserCirclePlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             {t('project.settings.invite')}
           </>
         </Button>

@@ -1,4 +1,4 @@
-import { ChevronLeftIcon } from 'lucide-react'
+import { CaretLeftIcon } from '@phosphor-icons/react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLoaderData, useLocation } from 'react-router'
@@ -57,7 +57,7 @@ export default function PostSlug() {
                   to='/blog'
                   className='underline-animate group mt-10 mb-6 flex max-w-max items-center text-sm leading-6 font-semibold text-slate-700 uppercase hover:text-slate-900 dark:text-slate-200 dark:hover:text-white'
                 >
-                  <ChevronLeftIcon className='mr-2 size-4 text-slate-500 dark:text-slate-400' />
+                  <CaretLeftIcon className='mr-2 size-4 text-slate-500 dark:text-slate-400' />
                   {t('common.allPosts')}
                 </Link>
               )}

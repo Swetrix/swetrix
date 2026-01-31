@@ -6,10 +6,10 @@ import _map from 'lodash/map'
 import {
   BugIcon,
   FileTextIcon,
-  MousePointerClickIcon,
+  CursorClickIcon,
   UsersIcon,
-  CalendarIcon,
-} from 'lucide-react'
+  CalendarDotsIcon,
+} from '@phosphor-icons/react'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
@@ -170,10 +170,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                   className='mr-2 flex items-center'
                   title={t('dashboard.events')}
                 >
-                  <MousePointerClickIcon
-                    className='mr-1 size-4'
-                    strokeWidth={1.5}
-                  />{' '}
+                  <CursorClickIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
                   {profile.eventsCount}
                 </span>
               ) : null}
@@ -213,10 +210,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                     x: profile.eventsCount,
                   })}
                 >
-                  <MousePointerClickIcon
-                    className='mr-1 size-5'
-                    strokeWidth={1.5}
-                  />{' '}
+                  <CursorClickIcon className='mr-1 size-5' strokeWidth={1.5} />{' '}
                   {profile.eventsCount}
                 </span>
               ) : null}
@@ -231,7 +225,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
               ) : null}
             </div>
             <p className='mt-1 flex items-center text-xs leading-5 text-gray-500 dark:text-gray-400'>
-              <CalendarIcon className='mr-1 size-3' strokeWidth={1.5} />
+              <CalendarDotsIcon className='mr-1 size-3' strokeWidth={1.5} />
               {lastSeenText}
             </p>
           </div>

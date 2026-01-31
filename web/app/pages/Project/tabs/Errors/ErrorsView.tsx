@@ -12,10 +12,10 @@ import {
   PercentIcon,
   UsersIcon,
   MonitorIcon,
-  ChevronRightIcon,
-  AlertTriangleIcon,
+  CaretRightIcon,
+  WarningIcon,
   UserIcon,
-} from 'lucide-react'
+} from '@phosphor-icons/react'
 import {
   useState,
   useEffect,
@@ -451,7 +451,7 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
                 className='flex items-center'
                 title={t('dashboard.xOccurrences', { x: error.count })}
               >
-                <AlertTriangleIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                <WarningIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
                 {error.count}
               </span>
               <span
@@ -471,7 +471,7 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
             </div>
             <Badge label={status.label} colour={status.colour} />
           </div>
-          <ChevronRightIcon className='h-5 w-5 flex-none text-gray-400' />
+          <CaretRightIcon className='h-5 w-5 flex-none text-gray-400' />
         </div>
       </li>
     </Link>

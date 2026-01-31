@@ -1,5 +1,5 @@
 import _map from 'lodash/map'
-import { ChevronDownIcon } from 'lucide-react'
+import { CaretDownIcon } from '@phosphor-icons/react'
 import { useMemo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -102,7 +102,7 @@ const FAQ = ({ includeGAQuestions = false }: FAQProps) => {
                   <span className='text-base font-medium text-slate-900 group-hover:underline dark:text-white'>
                     <Trans t={t} i18nKey={`${item.i18nKey}.q`} />
                   </span>
-                  <ChevronDownIcon className='size-4 text-slate-900 transition-transform group-open:rotate-180 dark:text-gray-200' />
+                  <CaretDownIcon className='size-4 text-slate-900 transition-transform group-open:rotate-180 dark:text-gray-200' />
                 </summary>
                 <div className='px-4'>
                   <p className='pb-4 text-sm whitespace-pre-line text-slate-900 dark:text-gray-100'>

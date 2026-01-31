@@ -1,6 +1,10 @@
 import cx from 'clsx'
 import _map from 'lodash/map'
-import { Settings2Icon, Trash2Icon, FunnelPlusIcon } from 'lucide-react'
+import {
+  SlidersHorizontalIcon,
+  TrashIcon,
+  FunnelSimpleIcon,
+} from '@phosphor-icons/react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
@@ -68,7 +72,7 @@ const FunnelCard = ({
               aria-label={t('common.settings')}
               className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
             >
-              <Settings2Icon className='size-5' strokeWidth={1.5} />
+              <SlidersHorizontalIcon className='size-5' strokeWidth={1.5} />
             </button>
             {allowedToManage ? (
               <button
@@ -86,7 +90,7 @@ const FunnelCard = ({
                   },
                 )}
               >
-                <Trash2Icon className='size-5' strokeWidth={1.5} />
+                <TrashIcon className='size-5' strokeWidth={1.5} />
               </button>
             ) : null}
           </div>
@@ -109,7 +113,7 @@ const AddFunnel = ({ openFunnelSettings }: AddFunnelProps) => {
       className='group flex h-auto min-h-[120px] cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 transition-colors hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
     >
       <div>
-        <FunnelPlusIcon
+        <FunnelSimpleIcon
           className='mx-auto h-12 w-12 text-gray-400 transition-colors group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400'
           strokeWidth={1}
         />

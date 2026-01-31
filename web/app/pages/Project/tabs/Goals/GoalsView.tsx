@@ -9,14 +9,14 @@ import _map from 'lodash/map'
 import _size from 'lodash/size'
 import {
   TargetIcon,
-  Trash2Icon,
+  TrashIcon,
   PencilIcon,
   PlusIcon,
-  SearchIcon,
+  MagnifyingGlassIcon,
   FileTextIcon,
-  MousePointerClickIcon,
-  ChevronDownIcon,
-} from 'lucide-react'
+  CursorClickIcon,
+  CaretDownIcon,
+} from '@phosphor-icons/react'
 import {
   useState,
   useEffect,
@@ -339,7 +339,7 @@ const GoalRow = ({
                     strokeWidth={1.5}
                   />
                 ) : (
-                  <MousePointerClickIcon
+                  <CursorClickIcon
                     className='size-4 text-amber-500'
                     strokeWidth={1.5}
                   />
@@ -439,9 +439,9 @@ const GoalRow = ({
                 aria-label={t('common.delete')}
                 className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               >
-                <Trash2Icon className='size-4' strokeWidth={1.5} />
+                <TrashIcon className='size-4' strokeWidth={1.5} />
               </button>
-              <ChevronDownIcon
+              <CaretDownIcon
                 className={cx(
                   'size-5 text-gray-500 transition-transform dark:text-gray-400',
                   {
@@ -876,7 +876,7 @@ const GoalsViewInner = ({
             {/* Header with filter and add button */}
             <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
               <div className='relative'>
-                <SearchIcon
+                <MagnifyingGlassIcon
                   className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400'
                   strokeWidth={1.5}
                 />

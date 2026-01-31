@@ -6,17 +6,17 @@ import _reduce from 'lodash/reduce'
 import _values from 'lodash/values'
 import {
   PencilIcon,
-  Trash2Icon,
-  BellRingIcon,
-  TriangleAlertIcon,
+  TrashIcon,
+  BellRingingIcon,
+  WarningIcon,
   PlusIcon,
   EyeIcon,
-  MousePointerClickIcon,
+  CursorClickIcon,
   UsersIcon,
   BugIcon,
   FileTextIcon,
-  BellOffIcon,
-} from 'lucide-react'
+  BellSlashIcon,
+} from '@phosphor-icons/react'
 import { useMemo, useState, useEffect, useRef, Suspense, use } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -55,7 +55,7 @@ const NoNotificationChannelSet = () => {
 
   return (
     <div className='mb-4 flex items-center gap-3 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 dark:border-yellow-500/20 dark:bg-yellow-500/10'>
-      <TriangleAlertIcon
+      <WarningIcon
         className='size-5 shrink-0 text-yellow-600 dark:text-yellow-500'
         strokeWidth={1.5}
       />
@@ -97,7 +97,7 @@ const METRIC_ICON_MAPPING: Record<
   },
   [QUERY_METRIC.ONLINE_USERS]: { icon: UsersIcon, className: 'text-sky-500' },
   [QUERY_METRIC.CUSTOM_EVENTS]: {
-    icon: MousePointerClickIcon,
+    icon: CursorClickIcon,
     className: 'text-green-500',
   },
   [QUERY_METRIC.ERRORS]: { icon: BugIcon, className: 'text-red-500' },
@@ -179,7 +179,7 @@ const AlertRow = ({
                 </Text>
                 {!active ? (
                   <span className='inline-flex items-center gap-1 rounded-md bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500 dark:bg-slate-700 dark:text-gray-400'>
-                    <BellOffIcon className='size-3' strokeWidth={1.5} />
+                    <BellSlashIcon className='size-3' strokeWidth={1.5} />
                     {t('alert.disabled')}
                   </span>
                 ) : null}
@@ -238,7 +238,7 @@ const AlertRow = ({
                 aria-label={t('common.delete')}
                 className='rounded-md border border-transparent p-1.5 text-gray-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 hover:dark:border-red-500/30 dark:hover:bg-red-500/10 dark:hover:text-red-400'
               >
-                <Trash2Icon className='size-4' strokeWidth={1.5} />
+                <TrashIcon className='size-4' strokeWidth={1.5} />
               </button>
             </div>
           </div>
@@ -461,7 +461,7 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
     return (
       <div className='mt-5 rounded-lg bg-gray-700 p-5'>
         <div className='flex items-center text-gray-50'>
-          <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+          <BellRingingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
           <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
         </div>
         <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
@@ -517,7 +517,7 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
         {_isEmpty(alerts) ? (
           <div className='mt-5 rounded-lg bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
-              <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+              <BellRingingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
               <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
             </div>
             <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>

@@ -9,8 +9,8 @@ import {
   GaugeIcon,
   GlobeIcon,
   ShieldCheckIcon,
-  ZapIcon,
-} from 'lucide-react'
+  LightningIcon,
+} from '@phosphor-icons/react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { Link, redirect, useLoaderData } from 'react-router'
@@ -406,7 +406,7 @@ const WhySwitch = () => {
 
             <div className='lg:pl-8'>
               <h3 className='flex items-center gap-2.5 text-lg font-semibold text-slate-900 dark:text-white'>
-                <ZapIcon className='size-5 text-amber-500 dark:text-amber-400' />
+                <LightningIcon className='size-5 text-amber-500 dark:text-amber-400' />
                 {t('gaAlternative.whySwitch.actionable.title')}
               </h3>
               <p className='mt-2 text-sm leading-relaxed text-slate-600 lg:pl-7 dark:text-slate-400'>

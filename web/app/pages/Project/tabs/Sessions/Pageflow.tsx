@@ -6,14 +6,14 @@ import _toUpper from 'lodash/toUpper'
 import _truncate from 'lodash/truncate'
 import {
   BugIcon,
-  ChevronDownIcon,
+  CaretDownIcon,
   CircleIcon,
-  DollarSignIcon,
+  CurrencyDollarIcon,
   FileTextIcon,
-  MousePointerClickIcon,
-  RotateCcwIcon,
+  CursorClickIcon,
+  ArrowCounterClockwiseIcon,
   TagIcon,
-} from 'lucide-react'
+} from '@phosphor-icons/react'
 import React, { useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
@@ -198,7 +198,7 @@ const PageflowItem = ({
                 />
               ) : null}
               {type === 'event' ? (
-                <MousePointerClickIcon
+                <CursorClickIcon
                   className='h-5 w-5 text-white'
                   aria-hidden='true'
                   strokeWidth={1.5}
@@ -212,14 +212,14 @@ const PageflowItem = ({
                 />
               ) : null}
               {type === 'sale' ? (
-                <DollarSignIcon
+                <CurrencyDollarIcon
                   className='h-5 w-5 text-white'
                   aria-hidden='true'
                   strokeWidth={1.5}
                 />
               ) : null}
               {type === 'refund' ? (
-                <RotateCcwIcon
+                <ArrowCounterClockwiseIcon
                   className='h-5 w-5 text-white'
                   aria-hidden='true'
                   strokeWidth={1.5}
@@ -309,7 +309,7 @@ const PageflowItem = ({
                   </span>
                 ) : null}
                 {hasMetadata ? (
-                  <ChevronDownIcon
+                  <CaretDownIcon
                     className={cn(
                       'ml-1 h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 dark:text-gray-500',
                       isExpanded && 'rotate-180',

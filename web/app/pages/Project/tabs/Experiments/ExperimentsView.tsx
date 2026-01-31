@@ -5,16 +5,16 @@ import _debounce from 'lodash/debounce'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import {
-  FlaskConicalIcon,
-  Trash2Icon,
+  FlaskIcon,
+  TrashIcon,
   PencilIcon,
   PlusIcon,
   PlayIcon,
   PauseIcon,
   CheckCircleIcon,
-  BarChart3Icon,
-  SearchIcon,
-} from 'lucide-react'
+  ChartBarIcon,
+  MagnifyingGlassIcon,
+} from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
@@ -173,7 +173,7 @@ const ExperimentRow = ({
                   truncate
                   className='flex items-center gap-x-1.5'
                 >
-                  <FlaskConicalIcon
+                  <FlaskIcon
                     className='size-4 text-purple-500'
                     strokeWidth={1.5}
                   />
@@ -261,7 +261,7 @@ const ExperimentRow = ({
                   ghost
                   small
                 >
-                  <BarChart3Icon className='mr-1 size-4' strokeWidth={1.5} />
+                  <ChartBarIcon className='mr-1 size-4' strokeWidth={1.5} />
                   {t('experiments.results')}
                 </Button>
               </>
@@ -294,7 +294,7 @@ const ExperimentRow = ({
             ) : null}
             {experiment.status === 'completed' ? (
               <Button onClick={() => onViewResults(experiment.id)} ghost small>
-                <BarChart3Icon className='mr-1 size-4' strokeWidth={1.5} />
+                <ChartBarIcon className='mr-1 size-4' strokeWidth={1.5} />
                 {t('experiments.viewResults')}
               </Button>
             ) : null}
@@ -329,7 +329,7 @@ const ExperimentRow = ({
                 aria-label={t('common.delete')}
                 className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               >
-                <Trash2Icon className='size-4' strokeWidth={1.5} />
+                <TrashIcon className='size-4' strokeWidth={1.5} />
               </button>
             </div>
           </div>
@@ -710,7 +710,7 @@ const ExperimentsView = ({
         {_isEmpty(experiments) && !filterQuery ? (
           <div className='mt-5 rounded-lg bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
-              <FlaskConicalIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+              <FlaskIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
               <p className='text-3xl font-bold'>{t('experiments.title')}</p>
             </div>
             <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
@@ -729,7 +729,7 @@ const ExperimentsView = ({
           <>
             <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
               <div className='relative'>
-                <SearchIcon
+                <MagnifyingGlassIcon
                   className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400'
                   strokeWidth={1.5}
                 />

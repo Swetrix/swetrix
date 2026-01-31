@@ -1,7 +1,7 @@
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _size from 'lodash/size'
-import { Trash2Icon } from 'lucide-react'
+import { TrashIcon } from '@phosphor-icons/react'
 import React, { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -251,7 +251,7 @@ const OrganisationSettings = () => {
                 danger
                 semiSmall
               >
-                <Trash2Icon className='mr-1 h-5 w-5' strokeWidth={1.5} />
+                <TrashIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                 {t('organisations.delete')}
               </Button>
             </div>

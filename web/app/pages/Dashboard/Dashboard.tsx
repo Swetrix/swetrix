@@ -4,12 +4,12 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import {
-  StretchHorizontalIcon,
-  LayoutGridIcon,
-  SearchIcon,
+  RowsIcon,
+  SquaresFourIcon,
+  MagnifyingGlassIcon,
   XIcon,
   FolderPlusIcon,
-} from 'lucide-react'
+} from '@phosphor-icons/react'
 import React, { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -384,7 +384,7 @@ const Dashboard = () => {
                       }}
                       aria-label={t('project.search')}
                     >
-                      <SearchIcon
+                      <MagnifyingGlassIcon
                         className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50'
                         strokeWidth={1.5}
                       />
@@ -398,7 +398,7 @@ const Dashboard = () => {
                     </label>
                     <div className='relative w-full'>
                       <div className='pointer-events-none absolute inset-y-0 left-0 hidden items-center sm:flex'>
-                        <SearchIcon
+                        <MagnifyingGlassIcon
                           className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
                           strokeWidth={1.5}
                         />
@@ -435,7 +435,7 @@ const Dashboard = () => {
                       onClick={() => handleViewModeChange(DASHBOARD_VIEW.LIST)}
                       className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
                     >
-                      <StretchHorizontalIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+                      <RowsIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                     </button>
                   ) : null}
                   {viewMode === DASHBOARD_VIEW.LIST ? (
@@ -447,7 +447,7 @@ const Dashboard = () => {
                       }}
                       className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
                     >
-                      <LayoutGridIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+                      <SquaresFourIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                     </button>
                   ) : null}
                 </div>
@@ -464,7 +464,7 @@ const Dashboard = () => {
                 </label>
                 <div className='relative w-full'>
                   <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center'>
-                    <SearchIcon
+                    <MagnifyingGlassIcon
                       className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
                       strokeWidth={1.5}
                     />

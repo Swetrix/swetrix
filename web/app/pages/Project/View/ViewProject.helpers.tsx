@@ -24,22 +24,22 @@ import _sum from 'lodash/sum'
 import _toNumber from 'lodash/toNumber'
 import _toString from 'lodash/toString'
 import {
-  CircleQuestionMark,
+  QuestionMarkIcon,
   GlobeIcon,
   CompassIcon,
   CpuIcon,
   FileTextIcon,
-  Gamepad2Icon,
+  GameControllerIcon,
   MapPinIcon,
-  MonitorCog,
+  MonitorPlayIcon,
   MonitorIcon,
   ShareIcon,
-  SmartphoneIcon,
-  TabletIcon,
-  TabletSmartphoneIcon,
-  TvIcon,
+  DeviceMobileIcon,
+  DeviceTabletIcon,
+  DevicesIcon,
+  TelevisionIcon,
   WatchIcon,
-} from 'lucide-react'
+} from '@phosphor-icons/react'
 
 import {
   TimeFormat,
@@ -2145,18 +2145,18 @@ const panelIconMapping = {
   pg: <FileTextIcon className={iconClassName} strokeWidth={1.5} />,
   lc: <LanguageIcon className={iconClassName} />,
   ref: <ArrowRightCircleIcon className={iconClassName} />,
-  dv: <TabletSmartphoneIcon className={iconClassName} strokeWidth={1.5} />,
+  dv: <DevicesIcon className={iconClassName} strokeWidth={1.5} />,
   br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
-  os: <MonitorCog className={iconClassName} strokeWidth={1.5} />,
+  os: <MonitorPlayIcon className={iconClassName} strokeWidth={1.5} />,
   so: <ShareIcon className={iconClassName} strokeWidth={1.5} />,
 }
 
 export const deviceIconMapping = {
   desktop: <MonitorIcon className='size-5' strokeWidth={1.5} />,
-  mobile: <SmartphoneIcon className='size-5' strokeWidth={1.5} />,
-  tablet: <TabletIcon className='size-5' strokeWidth={1.5} />,
-  smarttv: <TvIcon className='size-5' strokeWidth={1.5} />,
-  console: <Gamepad2Icon className='size-5' strokeWidth={1.5} />,
+  mobile: <DeviceMobileIcon className='size-5' strokeWidth={1.5} />,
+  tablet: <DeviceTabletIcon className='size-5' strokeWidth={1.5} />,
+  smarttv: <TelevisionIcon className='size-5' strokeWidth={1.5} />,
+  console: <GameControllerIcon className='size-5' strokeWidth={1.5} />,
   wearable: <WatchIcon className='size-5' strokeWidth={1.5} />,
   embedded: <CpuIcon className='size-5' strokeWidth={1.5} />,
 }
@@ -2291,7 +2291,7 @@ export const getDeviceRowMapper = (
       if (entryName === null) {
         return (
           <>
-            <CircleQuestionMark className='h-5 w-5' strokeWidth={1.5} />
+            <QuestionMarkIcon className='h-5 w-5' strokeWidth={1.5} />
             &nbsp;
             <span className='italic'>{t('common.unknown')}</span>
           </>

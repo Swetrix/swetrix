@@ -1,5 +1,5 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
-import { CircleHelpIcon } from 'lucide-react'
+import { QuestionIcon } from '@phosphor-icons/react'
 import React, { forwardRef, memo } from 'react'
 
 import { cn } from '~/utils/generic'
@@ -55,7 +55,7 @@ const Tooltip = ({
     <TooltipRoot>
       <TooltipTrigger className={className}>
         {tooltipNode || (
-          <CircleHelpIcon
+          <QuestionIcon
             className='size-4.5 fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800'
             strokeWidth={1.5}
           />

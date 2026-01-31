@@ -1,9 +1,9 @@
 import {
-  BarChart3Icon,
-  MousePointerClickIcon,
+  ChartBarIcon,
+  CursorClickIcon,
   ShieldCheckIcon,
-  SparklesIcon,
-} from 'lucide-react'
+  SparkleIcon,
+} from '@phosphor-icons/react'
 import React, { useState, useEffect, memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import {
@@ -40,10 +40,10 @@ import { MIN_PASSWORD_CHARS } from '~/utils/validator'
 const HASH_CHECK_FREQUENCY = 1000
 
 const featureIcons = [
-  BarChart3Icon,
-  MousePointerClickIcon,
+  ChartBarIcon,
+  CursorClickIcon,
   ShieldCheckIcon,
-  SparklesIcon,
+  SparkleIcon,
 ]
 
 const featureKeys = [

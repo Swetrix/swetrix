@@ -1,14 +1,14 @@
 import { EnvelopeIcon } from '@heroicons/react/24/outline'
-import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid'
+import { CheckCircleIcon } from '@heroicons/react/24/solid'
 import type { TFunction } from 'i18next'
 import {
-  ChevronRightIcon,
-  LaptopMinimalIcon,
+  CaretRightIcon,
+  LaptopIcon,
   RocketIcon,
   CodeIcon,
-  MailCheckIcon,
-  SparklesIcon,
-} from 'lucide-react'
+  EnvelopeOpenIcon,
+  SparkleIcon,
+} from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link, useNavigate, useFetcher, useLoaderData } from 'react-router'
@@ -37,10 +37,10 @@ import routes from '~/utils/routes'
 const MAX_PROJECT_NAME_LENGTH = 50
 
 const STEP_ICONS = {
-  confirm_email: MailCheckIcon,
+  confirm_email: EnvelopeOpenIcon,
   create_project: RocketIcon,
   setup_tracking: CodeIcon,
-  waiting_for_events: SparklesIcon,
+  waiting_for_events: SparkleIcon,
 }
 
 const getOnboardingSteps = (t: TFunction) => [
@@ -328,7 +328,7 @@ const Onboarding = () => {
                         )}
                       >
                         {status === 'complete' ? (
-                          <CheckCircleIconSolid className='size-5 text-green-600 dark:text-green-400' />
+                          <CheckCircleIcon className='size-5 text-green-600 dark:text-green-400' />
                         ) : StepIcon ? (
                           <StepIcon
                             className={cn(
@@ -382,7 +382,7 @@ const Onboarding = () => {
                 className='flex w-full items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200'
               >
                 {t('onboarding.skipOnboarding')}
-                <ChevronRightIcon className='size-3.5' strokeWidth={2} />
+                <CaretRightIcon className='size-3.5' strokeWidth={2} />
               </button>
             </div>
           ) : null}
@@ -416,7 +416,7 @@ const Onboarding = () => {
                 className='mt-3 flex w-full items-center justify-center gap-1 text-sm text-gray-500 dark:text-gray-400'
               >
                 {t('onboarding.skipOnboarding')}
-                <ChevronRightIcon className='size-3.5' strokeWidth={2} />
+                <CaretRightIcon className='size-3.5' strokeWidth={2} />
               </button>
             ) : null}
           </div>
@@ -567,7 +567,7 @@ const Onboarding = () => {
                 <div className='mt-8 rounded-lg border border-gray-200 bg-gray-50 p-5 dark:border-slate-700/60 dark:bg-slate-800/50'>
                   <div className='flex items-center gap-3'>
                     <div className='flex size-11 items-center justify-center rounded-lg bg-white dark:bg-slate-700'>
-                      <LaptopMinimalIcon
+                      <LaptopIcon
                         className='size-5 text-gray-700 dark:text-gray-200'
                         strokeWidth={1.5}
                       />
@@ -649,7 +649,7 @@ const Onboarding = () => {
                   )}
                 >
                   {hasEvents ? (
-                    <CheckCircleIconSolid className='size-8 text-green-600 dark:text-green-400' />
+                    <CheckCircleIcon className='size-8 text-green-600 dark:text-green-400' />
                   ) : (
                     <PulsatingCircle type='giant' />
                   )}

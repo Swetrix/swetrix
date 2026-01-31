@@ -5,12 +5,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _some from 'lodash/some'
-import {
-  BanIcon,
-  ChartColumnBigIcon,
-  ChartLineIcon,
-  EyeIcon,
-} from 'lucide-react'
+import { ProhibitIcon, EyeIcon } from '@phosphor-icons/react'
 import React, {
   useState,
   useEffect,
@@ -988,7 +983,10 @@ const TrafficViewInner = ({
                   if (_isEmpty(panelsData.customs)) {
                     return (
                       <span className='flex cursor-not-allowed items-center p-2'>
-                        <BanIcon className='mr-2 h-4 w-4' strokeWidth={1.5} />
+                        <ProhibitIcon
+                          className='mr-2 h-4 w-4'
+                          strokeWidth={1.5}
+                        />
                         {label}
                       </span>
                     )

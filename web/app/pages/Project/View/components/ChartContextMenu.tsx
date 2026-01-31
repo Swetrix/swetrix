@@ -1,5 +1,5 @@
 import cx from 'clsx'
-import { PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react'
+import { PencilIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -94,7 +94,7 @@ export const ChartContextMenu = ({
         },
         {
           label: t('project.deleteAnnotation'),
-          icon: Trash2Icon,
+          icon: TrashIcon,
           onClick: onDeleteAnnotation,
           danger: true,
         },

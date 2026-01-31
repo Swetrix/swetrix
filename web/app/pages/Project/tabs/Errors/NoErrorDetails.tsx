@@ -1,4 +1,4 @@
-import { BugIcon } from 'lucide-react'
+import { BugIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 
 const NoErrorDetails = () => {

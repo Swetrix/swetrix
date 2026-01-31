@@ -4,11 +4,11 @@ import _isNumber from 'lodash/isNumber'
 import _replace from 'lodash/replace'
 import _size from 'lodash/size'
 import {
-  Settings2Icon,
-  PinIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-} from 'lucide-react'
+  SlidersHorizontalIcon,
+  PushPinIcon,
+  CaretUpIcon,
+  CaretDownIcon,
+} from '@phosphor-icons/react'
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useFetcher, useNavigate } from 'react-router'
@@ -102,12 +102,12 @@ const MiniCard = ({ labelTKey, total, percChange, hasData }: MiniCardProps) => {
               >
                 {statsDidGrowUp ? (
                   <>
-                    <ChevronUpIcon className='size-3.5 shrink-0 text-green-500' />
+                    <CaretUpIcon className='size-3.5 shrink-0 text-green-500' />
                     <span className='sr-only'>{t('dashboard.inc')}</span>
                   </>
                 ) : (
                   <>
-                    <ChevronDownIcon className='size-3.5 shrink-0 text-slate-500 dark:text-slate-400' />
+                    <CaretDownIcon className='size-3.5 shrink-0 text-slate-500 dark:text-slate-400' />
                     <span className='sr-only'>{t('dashboard.dec')}</span>
                   </>
                 )}
@@ -398,7 +398,7 @@ export const ProjectCard = ({
                 localIsPinned ? t('dashboard.unpin') : t('dashboard.pin')
               }
             >
-              <PinIcon
+              <PushPinIcon
                 className={cx(
                   'size-5 transition-transform',
                   localIsPinned && 'rotate-30',
@@ -417,7 +417,7 @@ export const ProjectCard = ({
                 }}
                 aria-label={`${t('project.settings.settings')} ${name}`}
               >
-                <Settings2Icon className='size-5' strokeWidth={1.5} />
+                <SlidersHorizontalIcon className='size-5' strokeWidth={1.5} />
               </button>
             ) : null}
           </div>

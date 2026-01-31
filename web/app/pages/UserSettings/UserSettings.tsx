@@ -13,7 +13,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
+import { ChatTextIcon, MonitorIcon, UserIcon } from '@phosphor-icons/react'
 import React, { useState, useEffect, memo, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useFetcher } from 'react-router'
@@ -70,7 +70,7 @@ const getTabs = (t: typeof i18next.t) => {
       {
         id: TAB_MAPPING.ACCOUNT,
         label: t('profileSettings.account'),
-        icon: UserRoundIcon,
+        icon: UserIcon,
       },
       {
         id: TAB_MAPPING.INTERFACE,
@@ -84,12 +84,12 @@ const getTabs = (t: typeof i18next.t) => {
     {
       id: TAB_MAPPING.ACCOUNT,
       label: t('profileSettings.account'),
-      icon: UserRoundIcon,
+      icon: UserIcon,
     },
     {
       id: TAB_MAPPING.COMMUNICATIONS,
       label: t('profileSettings.communications'),
-      icon: MessageSquareTextIcon,
+      icon: ChatTextIcon,
     },
     {
       id: TAB_MAPPING.INTERFACE,
