@@ -26,7 +26,6 @@ import {
   ChartPieIcon,
   BugIcon,
   ShieldCheckIcon,
-  PhoneIcon,
   ArrowRightIcon,
   ListIcon,
   XIcon,
@@ -36,6 +35,8 @@ import {
   GithubLogoIcon,
   YoutubeLogoIcon,
   DiscordLogoIcon,
+  EnvelopeIcon,
+  ChartBarIcon,
 } from '@phosphor-icons/react'
 import { memo, Fragment, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -60,6 +61,7 @@ import Flag from '~/ui/Flag'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 import Modal from '~/ui/Modal'
 import routes from '~/utils/routes'
+import { cn } from '~/utils/generic'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
@@ -78,25 +80,29 @@ const getSolutions = (t: typeof i18nextT) => [
     name: t('header.solutions.analytics.title'),
     description: t('header.solutions.analytics.desc'),
     link: routes.main,
-    icon: ChartPieIcon,
+    icon: ChartBarIcon,
+    className: 'text-indigo-500 dark:text-indigo-400',
   },
   {
     name: t('header.solutions.performance.title'),
     description: t('header.solutions.performance.desc'),
     link: routes.performance,
     icon: GaugeIcon,
+    className: 'text-amber-500 dark:text-amber-400',
   },
   {
     name: t('header.solutions.errors.title'),
     description: t('header.solutions.errors.desc'),
     link: routes.errorTracking,
     icon: BugIcon,
+    className: 'text-red-500 dark:text-red-400',
   },
   {
     name: t('header.solutions.captcha.title'),
     description: t('header.solutions.captcha.desc'),
     link: routes.captchaLanding,
     icon: ShieldCheckIcon,
+    className: 'text-emerald-500 dark:text-emerald-400',
   },
 ]
 
@@ -105,8 +111,14 @@ const getCallsToAction = (t: typeof i18nextT) => [
     name: t('header.watchDemo'),
     link: 'https://www.youtube.com/watch?v=XBp38fZREIE',
     icon: YoutubeLogoIcon,
+    className: 'text-red-500 dark:text-red-400',
   },
-  { name: t('header.contactSales'), link: routes.contact, icon: PhoneIcon },
+  {
+    name: t('header.contactSales'),
+    link: routes.contact,
+    icon: EnvelopeIcon,
+    className: 'text-blue-500 dark:text-blue-400',
+  },
 ]
 
 const SolutionsMenu = () => {
@@ -147,8 +159,12 @@ const SolutionsMenu = () => {
                       className='group relative flex gap-x-2 rounded-lg p-2 transition-colors hover:bg-gray-400/20 dark:hover:bg-slate-700/50'
                     >
                       <item.icon
-                        className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300'
+                        className={cn(
+                          'mt-1 h-5 w-5 text-gray-600 dark:text-gray-300',
+                          item.className,
+                        )}
                         aria-hidden='true'
+                        weight='duotone'
                       />
                       <div>
                         {_startsWith(item.link, '/') ? (
@@ -188,8 +204,12 @@ const SolutionsMenu = () => {
                           className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                         >
                           <item.icon
-                            className='h-5 w-5 flex-none text-gray-600 dark:text-gray-300'
+                            className={cn(
+                              'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
+                              item.className,
+                            )}
                             aria-hidden='true'
+                            weight='duotone'
                           />
                           {item.name}
                         </Link>
@@ -205,8 +225,12 @@ const SolutionsMenu = () => {
                         className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                       >
                         <item.icon
-                          className='h-5 w-5 flex-none text-gray-600 dark:text-gray-300'
+                          className={cn(
+                            'h-5 w-5 flex-none text-gray-600 dark:text-gray-300',
+                            item.className,
+                          )}
                           aria-hidden='true'
+                          weight='duotone'
                         />
                         {item.name}
                       </a>
