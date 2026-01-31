@@ -67,10 +67,7 @@ const MarketingPricing = ({
                           amount: 50,
                         })}
                         tooltipNode={
-                          <QuestionIcon
-                            className='size-4 stroke-gray-50'
-                            strokeWidth={1.5}
-                          />
+                          <QuestionIcon className='size-4 stroke-gray-50' />
                         }
                       />
                     </div>

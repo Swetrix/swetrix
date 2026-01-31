@@ -854,7 +854,7 @@ const ProjectSettings = () => {
           to={_replace(routes.project, ':id', id)}
           className='flex max-w-max items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
         >
-          <CaretLeftIcon className='mr-1 size-3' strokeWidth={1.5} />
+          <CaretLeftIcon className='mr-1 size-3' />
           {t('project.backToStats')}
         </Link>
         <h2 className='mt-1 text-3xl font-bold text-gray-900 dark:text-gray-50'>
@@ -873,7 +873,7 @@ const ProjectSettings = () => {
               labelExtractor={(item) => item.label}
               iconExtractor={(item) => {
                 const Icon = item.icon
-                return <Icon className='h-4 w-4' strokeWidth={1.5} />
+                return <Icon className='h-4 w-4' />
               }}
               onSelect={(item: any) =>
                 setActiveTab(item.id as typeof activeTab)
@@ -910,7 +910,6 @@ const ProjectSettings = () => {
                         'text-gray-500 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300':
                           !isCurrent,
                       })}
-                      strokeWidth={1.5}
                     />
                     <span>{tab.label}</span>
                   </button>

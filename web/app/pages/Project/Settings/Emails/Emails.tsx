@@ -285,7 +285,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
               small
               onClick={onRemove}
             >
-              <TrashIcon className='h-4 w-4' strokeWidth={1.5} />
+              <TrashIcon className='h-4 w-4' />
             </Button>
           </div>
         )}
@@ -522,7 +522,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
           onClick={() => setShowModal(true)}
         >
           <>
-            <EnvelopeSimpleIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
+            <EnvelopeSimpleIcon className='mr-1 h-5 w-5' />
             {t('project.emails.add')}
           </>
         </Button>

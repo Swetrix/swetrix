@@ -194,35 +194,27 @@ const PageflowItem = ({
                 <FileTextIcon
                   className='h-5 w-5 text-white'
                   aria-hidden='true'
-                  strokeWidth={1.5}
                 />
               ) : null}
               {type === 'event' ? (
                 <CursorClickIcon
                   className='h-5 w-5 text-white'
                   aria-hidden='true'
-                  strokeWidth={1.5}
                 />
               ) : null}
               {type === 'error' ? (
-                <BugIcon
-                  className='h-5 w-5 text-white'
-                  aria-hidden='true'
-                  strokeWidth={1.5}
-                />
+                <BugIcon className='h-5 w-5 text-white' aria-hidden='true' />
               ) : null}
               {type === 'sale' ? (
                 <CurrencyDollarIcon
                   className='h-5 w-5 text-white'
                   aria-hidden='true'
-                  strokeWidth={1.5}
                 />
               ) : null}
               {type === 'refund' ? (
                 <ArrowCounterClockwiseIcon
                   className='h-5 w-5 text-white'
                   aria-hidden='true'
-                  strokeWidth={1.5}
                 />
               ) : null}
             </span>

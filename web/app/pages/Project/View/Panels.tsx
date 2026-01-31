@@ -368,10 +368,7 @@ const KVTable = ({
           >
             <td className='flex w-2/5 items-center py-1 pl-2 text-left sm:w-4/6'>
               {event}
-              <FunnelIcon
-                className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                strokeWidth={1.5}
-              />
+              <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
               <div className='ml-2 h-4 w-4 group-hover:hidden' />
             </td>
             <td className='w-[30%] py-1 text-right sm:w-1/6'>
@@ -769,10 +766,7 @@ const CustomEvents = ({
                     )}
                   </button>
                   <span className='pl-2'>{ev}</span>
-                  <FunnelIcon
-                    className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block peer-hover:hidden dark:text-gray-300'
-                    strokeWidth={1.5}
-                  />
+                  <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block peer-hover:hidden dark:text-gray-300' />
                   <div className='ml-2 h-4 w-4 group-hover:hidden peer-hover:block' />
                 </td>
                 <td className='w-[40%] py-1 pr-2 text-right sm:w-2/6'>
@@ -873,10 +867,7 @@ const CustomEvents = ({
                     <Text size='sm' truncate>
                       {ev}
                     </Text>
-                    <FunnelIcon
-                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                      strokeWidth={1.5}
-                    />
+                    <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
                     <div className='ml-2 h-4 w-4 group-hover:hidden' />
                   </div>
                   <div className='relative z-10 flex w-2/6 items-center justify-end text-right'>
@@ -1162,10 +1153,7 @@ const MetadataKeyPanel = ({
                     </td>
                     <td className='flex items-center py-1 text-left'>
                       <span className='truncate'>{value}</span>
-                      <FunnelIcon
-                        className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                        strokeWidth={1.5}
-                      />
+                      <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
                     </td>
                     <td className='py-1 text-right'>{count}</td>
                     <td className='py-1 pr-2 text-right'>{perc}%</td>
@@ -1212,10 +1200,7 @@ const MetadataKeyPanel = ({
                 >
                   <td className='flex items-center py-1 pl-2 text-left'>
                     <span className='truncate'>{value}</span>
-                    <FunnelIcon
-                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                      strokeWidth={1.5}
-                    />
+                    <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
                   </td>
                   <td className='py-1 text-right'>{count}</td>
                   <td className='py-1 pr-2 text-right'>{perc}%</td>
@@ -1323,10 +1308,7 @@ const MetadataKeyPanel = ({
                       <Text size='sm' truncate>
                         {value}
                       </Text>
-                      <FunnelIcon
-                        className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                        strokeWidth={1.5}
-                      />
+                      <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
                       <div className='ml-2 h-4 w-4 group-hover:hidden' />
                     </div>
                     <div className='relative z-10 w-1/6 pr-2 text-right'>
@@ -1410,10 +1392,7 @@ const MetadataKeyPanel = ({
                     <Text size='sm' truncate>
                       {value}
                     </Text>
-                    <FunnelIcon
-                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                      strokeWidth={1.5}
-                    />
+                    <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
                     <div className='ml-2 h-4 w-4 group-hover:hidden' />
                   </div>
                   <div className='relative z-10 w-1/6 pr-2 text-right'>
@@ -1842,10 +1821,7 @@ const DetailsTable = ({
                     </span>
                     {!disableRowClick ? (
                       <>
-                        <FunnelIcon
-                          className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                          strokeWidth={1.5}
-                        />
+                        <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
                         <div className='ml-2 h-4 w-4 group-hover:hidden' />
                       </>
                     ) : null}

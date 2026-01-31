@@ -453,7 +453,7 @@ const UserSettings = () => {
               labelExtractor={(item) => item.label}
               iconExtractor={(item) => {
                 const Icon = item.icon
-                return <Icon className='h-4 w-4' strokeWidth={1.5} />
+                return <Icon className='h-4 w-4' />
               }}
               onSelect={(item) => {
                 setActiveTab(item.id)
@@ -492,7 +492,6 @@ const UserSettings = () => {
                         'text-gray-500 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300':
                           !isCurrent,
                       })}
-                      strokeWidth={1.5}
                     />
                     <span>{tab.label}</span>
                   </button>

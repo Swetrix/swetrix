@@ -150,10 +150,7 @@ const SessionRow = ({ session }: SessionRowProps) => {
           </Text>
         </div>
       </div>
-      <ArrowSquareOutIcon
-        className='mt-0.5 size-4 shrink-0 text-gray-400 transition-colors group-hover:text-gray-600 dark:group-hover:text-gray-300'
-        strokeWidth={1.5}
-      />
+      <ArrowSquareOutIcon className='mt-0.5 size-4 shrink-0 text-gray-400 transition-colors group-hover:text-gray-600 dark:group-hover:text-gray-300' />
     </Link>
   )
 }
@@ -413,10 +410,7 @@ export const ErrorDetails = ({
         {details.filename ? (
           <div className='flex items-center gap-2'>
             <div className='flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 font-mono text-xs text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
-              <FileCodeIcon
-                className='size-3.5 text-gray-500'
-                strokeWidth={1.5}
-              />
+              <FileCodeIcon className='size-3.5 text-gray-500' />
               <span className='break-all'>{fileLocation}</span>
               <button
                 type='button'

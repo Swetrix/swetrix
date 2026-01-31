@@ -57,35 +57,35 @@ const ITEM_HEIGHT = 36
 
 // Icon mapping for filter categories
 export const filterCategoryIcons: Record<string, ReactNode> = {
-  cc: <MapPinIcon className='size-4' strokeWidth={1.5} />,
-  rg: <MapTrifoldIcon className='size-4' strokeWidth={1.5} />,
-  ct: <BuildingIcon className='size-4' strokeWidth={1.5} />,
-  pg: <FileTextIcon className='size-4' strokeWidth={1.5} />,
-  entryPage: <SignInIcon className='size-4' strokeWidth={1.5} />,
-  exitPage: <SignOutIcon className='size-4' strokeWidth={1.5} />,
-  host: <HardDrivesIcon className='size-4' strokeWidth={1.5} />,
-  br: <CompassIcon className='size-4' strokeWidth={1.5} />,
-  brv: <CompassIcon className='size-4' strokeWidth={1.5} />,
-  os: <MonitorPlayIcon className='size-4' strokeWidth={1.5} />,
-  osv: <MonitorPlayIcon className='size-4' strokeWidth={1.5} />,
-  ref: <LinkIcon className='size-4' strokeWidth={1.5} />,
-  so: <ShareIcon className='size-4' strokeWidth={1.5} />,
-  me: <RadioIcon className='size-4' strokeWidth={1.5} />,
-  ca: <MegaphoneIcon className='size-4' strokeWidth={1.5} />,
-  te: <TagIcon className='size-4' strokeWidth={1.5} />,
-  co: <FileIcon className='size-4' strokeWidth={1.5} />,
-  lc: <TranslateIcon className='size-4' strokeWidth={1.5} />,
-  dv: <DevicesIcon className='size-4' strokeWidth={1.5} />,
+  cc: <MapPinIcon className='size-4' />,
+  rg: <MapTrifoldIcon className='size-4' />,
+  ct: <BuildingIcon className='size-4' />,
+  pg: <FileTextIcon className='size-4' />,
+  entryPage: <SignInIcon className='size-4' />,
+  exitPage: <SignOutIcon className='size-4' />,
+  host: <HardDrivesIcon className='size-4' />,
+  br: <CompassIcon className='size-4' />,
+  brv: <CompassIcon className='size-4' />,
+  os: <MonitorPlayIcon className='size-4' />,
+  osv: <MonitorPlayIcon className='size-4' />,
+  ref: <LinkIcon className='size-4' />,
+  so: <ShareIcon className='size-4' />,
+  me: <RadioIcon className='size-4' />,
+  ca: <MegaphoneIcon className='size-4' />,
+  te: <TagIcon className='size-4' />,
+  co: <FileIcon className='size-4' />,
+  lc: <TranslateIcon className='size-4' />,
+  dv: <DevicesIcon className='size-4' />,
 }
 
 const deviceIconMapping: Record<string, ReactNode> = {
-  desktop: <MonitorIcon className='size-4' strokeWidth={1.5} />,
-  mobile: <DeviceMobileIcon className='size-4' strokeWidth={1.5} />,
-  tablet: <DeviceTabletIcon className='size-4' strokeWidth={1.5} />,
-  smarttv: <TelevisionIcon className='size-4' strokeWidth={1.5} />,
-  console: <GameControllerIcon className='size-4' strokeWidth={1.5} />,
-  wearable: <WatchIcon className='size-4' strokeWidth={1.5} />,
-  embedded: <CpuIcon className='size-4' strokeWidth={1.5} />,
+  desktop: <MonitorIcon className='size-4' />,
+  mobile: <DeviceMobileIcon className='size-4' />,
+  tablet: <DeviceTabletIcon className='size-4' />,
+  smarttv: <TelevisionIcon className='size-4' />,
+  console: <GameControllerIcon className='size-4' />,
+  wearable: <WatchIcon className='size-4' />,
+  embedded: <CpuIcon className='size-4' />,
 }
 
 // Special separator for combined version values (e.g., "Chrome|||120.5")
@@ -187,7 +187,7 @@ const FilterValueInput = ({
         if (logoUrl) {
           return <img src={logoUrl} className='size-4 shrink-0' alt='' />
         }
-        return <GlobeIcon className='size-4 shrink-0' strokeWidth={1.5} />
+        return <GlobeIcon className='size-4 shrink-0' />
       }
 
       // For browser versions, show browser icon
@@ -200,7 +200,7 @@ const FilterValueInput = ({
             return <img src={logoUrl} className='size-4 shrink-0' alt='' />
           }
         }
-        return <GlobeIcon className='size-4 shrink-0' strokeWidth={1.5} />
+        return <GlobeIcon className='size-4 shrink-0' />
       }
 
       if (column === 'os') {
@@ -220,7 +220,7 @@ const FilterValueInput = ({
             />
           )
         }
-        return <GlobeIcon className='size-4 shrink-0' strokeWidth={1.5} />
+        return <GlobeIcon className='size-4 shrink-0' />
       }
 
       // For OS versions, show OS icon
@@ -244,7 +244,7 @@ const FilterValueInput = ({
             )
           }
         }
-        return <GlobeIcon className='size-4 shrink-0' strokeWidth={1.5} />
+        return <GlobeIcon className='size-4 shrink-0' />
       }
 
       if (column === 'dv') {
@@ -252,9 +252,7 @@ const FilterValueInput = ({
         if (icon) {
           return <span className='shrink-0'>{icon}</span>
         }
-        return (
-          <QuestionMarkIcon className='size-4 shrink-0' strokeWidth={1.5} />
-        )
+        return <QuestionMarkIcon className='size-4 shrink-0' />
       }
 
       return null

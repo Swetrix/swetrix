@@ -46,10 +46,10 @@ const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
 
 const iconClassName = 'w-6 h-6'
 const panelIconMapping: Record<string, React.ReactNode> = {
-  cc: <MapPinIcon className={iconClassName} strokeWidth={1.5} />,
-  dv: <DevicesIcon className={iconClassName} strokeWidth={1.5} />,
-  br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
-  os: <MonitorIcon className={iconClassName} strokeWidth={1.5} />,
+  cc: <MapPinIcon className={iconClassName} />,
+  dv: <DevicesIcon className={iconClassName} />,
+  br: <CompassIcon className={iconClassName} />,
+  os: <MonitorIcon className={iconClassName} />,
 }
 
 export const captchaTypeNameMapping = (t: any) => ({

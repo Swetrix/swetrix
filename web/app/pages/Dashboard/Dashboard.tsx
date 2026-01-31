@@ -367,10 +367,7 @@ const Dashboard = () => {
                       }}
                       aria-label={t('common.close')}
                     >
-                      <XIcon
-                        className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50'
-                        strokeWidth={1.5}
-                      />
+                      <XIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
                     </button>
                   ) : (
                     <button
@@ -384,10 +381,7 @@ const Dashboard = () => {
                       }}
                       aria-label={t('project.search')}
                     >
-                      <MagnifyingGlassIcon
-                        className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50'
-                        strokeWidth={1.5}
-                      />
+                      <MagnifyingGlassIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
                     </button>
                   )}
                 </Text>
@@ -398,10 +392,7 @@ const Dashboard = () => {
                     </label>
                     <div className='relative w-full'>
                       <div className='pointer-events-none absolute inset-y-0 left-0 hidden items-center sm:flex'>
-                        <MagnifyingGlassIcon
-                          className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
-                          strokeWidth={1.5}
-                        />
+                        <MagnifyingGlassIcon className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50' />
                       </div>
                       <input
                         ref={searchInputRef}
@@ -452,7 +443,7 @@ const Dashboard = () => {
                   ) : null}
                 </div>
                 <Button onClick={onNewProject} primary large>
-                  <FolderPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
+                  <FolderPlusIcon className='mr-1 h-5 w-5' />
                   {t('dashboard.newProject')}
                 </Button>
               </div>
@@ -464,10 +455,7 @@ const Dashboard = () => {
                 </label>
                 <div className='relative w-full'>
                   <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center'>
-                    <MagnifyingGlassIcon
-                      className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
-                      strokeWidth={1.5}
-                    />
+                    <MagnifyingGlassIcon className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50' />
                   </div>
                   <input
                     id='project-search'

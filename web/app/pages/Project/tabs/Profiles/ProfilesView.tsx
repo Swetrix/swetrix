@@ -440,7 +440,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
             },
           )}
         >
-          <DownloadSimpleIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
+          <DownloadSimpleIcon className='mr-2 h-5 w-5' />
           {t('project.loadMore')}
         </button>
       ) : null}

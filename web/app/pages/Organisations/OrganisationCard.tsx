@@ -121,7 +121,7 @@ export const OrganisationCard = ({ organisation }: OrganisationCardProps) => {
               aria-label={`${t('project.settings.settings')} ${name}`}
               className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
             >
-              <SlidersHorizontalIcon className='size-5' strokeWidth={1.5} />
+              <SlidersHorizontalIcon className='size-5' />
             </div>
           )}
         </div>

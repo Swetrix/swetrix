@@ -334,15 +334,9 @@ const GoalRow = ({
                 className='flex items-center gap-x-1.5'
               >
                 {goal.type === 'pageview' ? (
-                  <FileTextIcon
-                    className='size-4 text-blue-500'
-                    strokeWidth={1.5}
-                  />
+                  <FileTextIcon className='size-4 text-blue-500' />
                 ) : (
-                  <CursorClickIcon
-                    className='size-4 text-amber-500'
-                    strokeWidth={1.5}
-                  />
+                  <CursorClickIcon className='size-4 text-amber-500' />
                 )}
                 <span>{goal.name}</span>
               </Text>
@@ -427,7 +421,7 @@ const GoalRow = ({
                 aria-label={t('common.edit')}
                 className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               >
-                <PencilIcon className='size-4' strokeWidth={1.5} />
+                <PencilIcon className='size-4' />
               </button>
               <button
                 type='button'
@@ -439,7 +433,7 @@ const GoalRow = ({
                 aria-label={t('common.delete')}
                 className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               >
-                <TrashIcon className='size-4' strokeWidth={1.5} />
+                <TrashIcon className='size-4' />
               </button>
               <CaretDownIcon
                 className={cx(
@@ -448,7 +442,6 @@ const GoalRow = ({
                     'rotate-180': isExpanded,
                   },
                 )}
-                strokeWidth={1.5}
               />
             </div>
           </div>
@@ -856,7 +849,7 @@ const GoalsViewInner = ({
         {_isEmpty(goals) && !filterQuery ? (
           <div className='mt-5 rounded-lg bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
-              <TargetIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+              <TargetIcon className='mr-2 h-8 w-8' />
               <p className='text-3xl font-bold'>{t('goals.title')}</p>
             </div>
             <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
@@ -876,10 +869,7 @@ const GoalsViewInner = ({
             {/* Header with filter and add button */}
             <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
               <div className='relative'>
-                <MagnifyingGlassIcon
-                  className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400'
-                  strokeWidth={1.5}
-                />
+                <MagnifyingGlassIcon className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400' />
                 <input
                   type='text'
                   placeholder={t('goals.filterGoals')}
@@ -889,7 +879,7 @@ const GoalsViewInner = ({
                 />
               </div>
               <Button onClick={handleNewGoal} primary regular>
-                <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
+                <PlusIcon className='mr-1.5 size-4' />
                 {t('goals.addGoal')}
               </Button>
             </div>

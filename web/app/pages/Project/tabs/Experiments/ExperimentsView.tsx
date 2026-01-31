@@ -173,10 +173,7 @@ const ExperimentRow = ({
                   truncate
                   className='flex items-center gap-x-1.5'
                 >
-                  <FlaskIcon
-                    className='size-4 text-purple-500'
-                    strokeWidth={1.5}
-                  />
+                  <FlaskIcon className='size-4 text-purple-500' />
                   <span>{experiment.name}</span>
                 </Text>
                 {/* Status badge */}
@@ -236,7 +233,7 @@ const ExperimentRow = ({
                 {actionLoading ? (
                   <Spin className='size-4' />
                 ) : (
-                  <PlayIcon className='mr-1 size-4' strokeWidth={1.5} />
+                  <PlayIcon className='mr-1 size-4' />
                 )}
                 {t('experiments.start')}
               </Button>
@@ -252,7 +249,7 @@ const ExperimentRow = ({
                   {actionLoading ? (
                     <Spin className='size-4' />
                   ) : (
-                    <PauseIcon className='mr-1 size-4' strokeWidth={1.5} />
+                    <PauseIcon className='mr-1 size-4' />
                   )}
                   {t('experiments.pause')}
                 </Button>
@@ -261,7 +258,7 @@ const ExperimentRow = ({
                   ghost
                   small
                 >
-                  <ChartBarIcon className='mr-1 size-4' strokeWidth={1.5} />
+                  <ChartBarIcon className='mr-1 size-4' />
                   {t('experiments.results')}
                 </Button>
               </>
@@ -277,7 +274,7 @@ const ExperimentRow = ({
                   {actionLoading ? (
                     <Spin className='size-4' />
                   ) : (
-                    <PlayIcon className='mr-1 size-4' strokeWidth={1.5} />
+                    <PlayIcon className='mr-1 size-4' />
                   )}
                   {t('experiments.resume')}
                 </Button>
@@ -287,14 +284,14 @@ const ExperimentRow = ({
                   ghost
                   small
                 >
-                  <CheckCircleIcon className='mr-1 size-4' strokeWidth={1.5} />
+                  <CheckCircleIcon className='mr-1 size-4' />
                   {t('experiments.complete')}
                 </Button>
               </>
             ) : null}
             {experiment.status === 'completed' ? (
               <Button onClick={() => onViewResults(experiment.id)} ghost small>
-                <ChartBarIcon className='mr-1 size-4' strokeWidth={1.5} />
+                <ChartBarIcon className='mr-1 size-4' />
                 {t('experiments.viewResults')}
               </Button>
             ) : null}
@@ -321,7 +318,7 @@ const ExperimentRow = ({
                     'cursor-not-allowed opacity-50 hover:border-transparent hover:bg-transparent',
                 )}
               >
-                <PencilIcon className='size-4' strokeWidth={1.5} />
+                <PencilIcon className='size-4' />
               </button>
               <button
                 type='button'
@@ -329,7 +326,7 @@ const ExperimentRow = ({
                 aria-label={t('common.delete')}
                 className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
               >
-                <TrashIcon className='size-4' strokeWidth={1.5} />
+                <TrashIcon className='size-4' />
               </button>
             </div>
           </div>
@@ -710,7 +707,7 @@ const ExperimentsView = ({
         {_isEmpty(experiments) && !filterQuery ? (
           <div className='mt-5 rounded-lg bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
-              <FlaskIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+              <FlaskIcon className='mr-2 h-8 w-8' />
               <p className='text-3xl font-bold'>{t('experiments.title')}</p>
             </div>
             <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>
@@ -729,10 +726,7 @@ const ExperimentsView = ({
           <>
             <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
               <div className='relative'>
-                <MagnifyingGlassIcon
-                  className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400'
-                  strokeWidth={1.5}
-                />
+                <MagnifyingGlassIcon className='absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400' />
                 <input
                   type='text'
                   placeholder={t('experiments.filterExperiments')}
@@ -742,7 +736,7 @@ const ExperimentsView = ({
                 />
               </div>
               <Button onClick={handleNewExperiment} primary regular>
-                <PlusIcon className='mr-1.5 size-4' strokeWidth={2} />
+                <PlusIcon className='mr-1.5 size-4' />
                 {t('experiments.create')}
               </Button>
             </div>

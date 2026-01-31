@@ -338,7 +338,6 @@ const Onboarding = () => {
                               status === 'upcoming' &&
                                 'text-gray-400 dark:text-gray-500',
                             )}
-                            strokeWidth={1.5}
                           />
                         ) : null}
                       </div>
@@ -382,7 +381,7 @@ const Onboarding = () => {
                 className='flex w-full items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200'
               >
                 {t('onboarding.skipOnboarding')}
-                <CaretRightIcon className='size-3.5' strokeWidth={2} />
+                <CaretRightIcon className='size-3.5' />
               </button>
             </div>
           ) : null}
@@ -416,7 +415,7 @@ const Onboarding = () => {
                 className='mt-3 flex w-full items-center justify-center gap-1 text-sm text-gray-500 dark:text-gray-400'
               >
                 {t('onboarding.skipOnboarding')}
-                <CaretRightIcon className='size-3.5' strokeWidth={2} />
+                <CaretRightIcon className='size-3.5' />
               </button>
             ) : null}
           </div>
@@ -481,10 +480,7 @@ const Onboarding = () => {
             {currentStep === 1 ? (
               <form onSubmit={handleCreateProject} className='p-6 md:p-8'>
                 <div className='mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20'>
-                  <RocketIcon
-                    className='size-8 text-indigo-600 dark:text-indigo-400'
-                    strokeWidth={1.5}
-                  />
+                  <RocketIcon className='size-8 text-indigo-600 dark:text-indigo-400' />
                 </div>
                 <Text
                   as='h1'
@@ -529,10 +525,7 @@ const Onboarding = () => {
             {currentStep === 2 && project ? (
               <div className='p-6 md:p-8'>
                 <div className='mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20'>
-                  <CodeIcon
-                    className='size-8 text-indigo-600 dark:text-indigo-400'
-                    strokeWidth={1.5}
-                  />
+                  <CodeIcon className='size-8 text-indigo-600 dark:text-indigo-400' />
                 </div>
                 <Text
                   as='h1'
@@ -567,10 +560,7 @@ const Onboarding = () => {
                 <div className='mt-8 rounded-lg border border-gray-200 bg-gray-50 p-5 dark:border-slate-700/60 dark:bg-slate-800/50'>
                   <div className='flex items-center gap-3'>
                     <div className='flex size-11 items-center justify-center rounded-lg bg-white dark:bg-slate-700'>
-                      <LaptopIcon
-                        className='size-5 text-gray-700 dark:text-gray-200'
-                        strokeWidth={1.5}
-                      />
+                      <LaptopIcon className='size-5 text-gray-700 dark:text-gray-200' />
                     </div>
                     <div>
                       <Text as='h3' size='sm' weight='semibold'>

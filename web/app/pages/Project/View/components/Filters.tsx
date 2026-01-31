@@ -304,10 +304,7 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
       )}
     >
       <div className='flex min-w-0 flex-1 items-center gap-1'>
-        <FunnelIcon
-          className='size-5 shrink-0 text-gray-500 dark:text-gray-400'
-          strokeWidth={1.5}
-        />
+        <FunnelIcon className='size-5 shrink-0 text-gray-500 dark:text-gray-400' />
         <div className='flex flex-wrap'>
           {_map(filters, (props) => {
             const { column, filter } = props

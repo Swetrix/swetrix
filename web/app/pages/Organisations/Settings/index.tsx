@@ -251,7 +251,7 @@ const OrganisationSettings = () => {
                 danger
                 semiSmall
               >
-                <TrashIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
+                <TrashIcon className='mr-1 h-5 w-5' />
                 {t('organisations.delete')}
               </Button>
             </div>

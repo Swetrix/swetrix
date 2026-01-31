@@ -55,10 +55,7 @@ const Tooltip = ({
     <TooltipRoot>
       <TooltipTrigger className={className}>
         {tooltipNode || (
-          <QuestionIcon
-            className='size-4.5 fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800'
-            strokeWidth={1.5}
-          />
+          <QuestionIcon className='size-4.5 fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800' />
         )}
       </TooltipTrigger>
       <TooltipContent

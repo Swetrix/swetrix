@@ -432,7 +432,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
     <>
       <div className='mt-5 rounded-xl bg-gray-700 p-5'>
         <div className='flex items-center text-gray-50'>
-          <FunnelIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
+          <FunnelIcon className='mr-2 h-8 w-8' />
           <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
         </div>
         <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>

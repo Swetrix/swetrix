@@ -80,10 +80,7 @@ const DangerZone = ({
 
         <div className='rounded-md border border-gray-200 p-3 dark:border-gray-800'>
           <div className='flex items-start'>
-            <TrashIcon
-              className='mt-0.5 h-5 w-5 text-red-700 dark:text-red-500'
-              strokeWidth={1.5}
-            />
+            <TrashIcon className='mt-0.5 h-5 w-5 text-red-700 dark:text-red-500' />
             <div className='ml-3 flex-1'>
               <div className='text-sm font-medium text-gray-900 dark:text-gray-50'>
                 {t('project.settings.delete')}

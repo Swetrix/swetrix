@@ -867,7 +867,7 @@ const ExperimentResults = ({
                 ghost
                 small
               >
-                <PencilIcon className='mr-1 size-4' strokeWidth={1.5} />
+                <PencilIcon className='mr-1 size-4' />
                 {t('common.edit')}
               </Button>
             }
@@ -875,7 +875,7 @@ const ExperimentResults = ({
         }
         leftContent={
           <div className='flex items-center gap-2'>
-            <FlaskIcon className='size-5 text-purple-500' strokeWidth={1.5} />
+            <FlaskIcon className='size-5 text-purple-500' />
             <Text as='h2' size='xl' weight='bold' truncate>
               {experiment.name}
             </Text>
@@ -898,7 +898,7 @@ const ExperimentResults = ({
             </div>
             {goal?.name ? (
               <div className='inline-flex max-w-[240px] items-center gap-1.5 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'>
-                <TargetIcon className='size-3.5' strokeWidth={1.5} />
+                <TargetIcon className='size-3.5' />
                 <Text
                   as='span'
                   size='xs'
@@ -948,10 +948,7 @@ const ExperimentResults = ({
         {results.totalExposures === 0 ? (
           <div className='flex items-start gap-4 rounded-lg border border-yellow-300 bg-yellow-50 p-4 dark:border-yellow-700 dark:bg-yellow-900/20'>
             <div className='flex size-12 shrink-0 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/40'>
-              <InfoIcon
-                className='size-6 text-yellow-700 dark:text-yellow-300'
-                strokeWidth={1.5}
-              />
+              <InfoIcon className='size-6 text-yellow-700 dark:text-yellow-300' />
             </div>
             <div className='min-w-0 flex-1'>
               <Text
@@ -967,7 +964,7 @@ const ExperimentResults = ({
               </Text>
               {goal?.name ? (
                 <div className='mt-2 flex items-center gap-2 text-yellow-900/80 dark:text-yellow-100/80'>
-                  <TargetIcon className='size-4' strokeWidth={1.5} />
+                  <TargetIcon className='size-4' />
                   <Text as='p' size='sm'>
                     {t('experiments.goal')}:{' '}
                     <Text as='span' size='sm' weight='medium'>
@@ -991,25 +988,23 @@ const ExperimentResults = ({
 
           <div className='grid w-full grid-cols-2 gap-3 lg:w-[35%]'>
             <StatCard
-              icon={<UsersIcon className='text-blue-600' strokeWidth={1.5} />}
+              icon={<UsersIcon className='text-blue-600' />}
               value={nFormatter(results.totalExposures, 1)}
               label={t('experiments.totalExposures')}
             />
             <StatCard
-              icon={<TargetIcon className='text-green-600' strokeWidth={1.5} />}
+              icon={<TargetIcon className='text-green-600' />}
               value={nFormatter(results.totalConversions, 1)}
               subValue={`(${overallConversionRate}%)`}
               label={t('experiments.totalConversions')}
             />
             <StatCard
-              icon={<FlaskIcon className='text-purple-600' strokeWidth={1.5} />}
+              icon={<FlaskIcon className='text-purple-600' />}
               value={results.variants.length}
               label={t('experiments.variantsCount')}
             />
             <StatCard
-              icon={
-                <PercentIcon className='text-amber-600' strokeWidth={1.5} />
-              }
+              icon={<PercentIcon className='text-amber-600' />}
               value={`${results.confidenceLevel}%`}
               label={t('experiments.confidenceLevel')}
             />

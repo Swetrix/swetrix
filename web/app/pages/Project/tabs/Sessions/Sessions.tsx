@@ -255,8 +255,7 @@ const Session = ({
                 className='mr-2 flex items-center'
                 title={t('dashboard.pageviews')}
               >
-                <FileTextIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
-                {session.pageviews}
+                <FileTextIcon className='mr-1 size-4' /> {session.pageviews}
               </span>
               {session.revenue != null && session.revenue !== 0 ? (
                 <span
@@ -276,7 +275,7 @@ const Session = ({
                   className='mr-2 flex items-center'
                   title={t('dashboard.events')}
                 >
-                  <CursorClickIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                  <CursorClickIcon className='mr-1 size-4' />{' '}
                   {session.customEvents}
                 </span>
               ) : null}
@@ -285,8 +284,7 @@ const Session = ({
                   className='flex items-center text-red-400'
                   title={t('dashboard.errors')}
                 >
-                  <BugIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
-                  {session.errors}
+                  <BugIcon className='mr-1 size-4' /> {session.errors}
                 </span>
               ) : null}
             </p>
@@ -299,8 +297,7 @@ const Session = ({
                 className='flex items-center'
                 title={t('dashboard.xPageviews', { x: session.pageviews })}
               >
-                <FileTextIcon className='mr-1 size-5' strokeWidth={1.5} />{' '}
-                {session.pageviews}
+                <FileTextIcon className='mr-1 size-5' /> {session.pageviews}
               </span>
               {session.revenue != null && session.revenue !== 0 ? (
                 <span
@@ -322,7 +319,7 @@ const Session = ({
                     x: session.customEvents,
                   })}
                 >
-                  <CursorClickIcon className='mr-1 size-5' strokeWidth={1.5} />{' '}
+                  <CursorClickIcon className='mr-1 size-5' />{' '}
                   {session.customEvents}
                 </span>
               ) : null}
@@ -331,13 +328,12 @@ const Session = ({
                   className='flex items-center text-red-500'
                   title={t('dashboard.xErrors', { x: session.errors })}
                 >
-                  <BugIcon className='mr-1 size-5' strokeWidth={1.5} />{' '}
-                  {session.errors}
+                  <BugIcon className='mr-1 size-5' /> {session.errors}
                 </span>
               ) : null}
             </div>
             <p className='mt-1 flex items-center text-xs leading-5 text-gray-500 dark:text-gray-400'>
-              <CalendarDotsIcon className='mr-1 size-3' strokeWidth={1.5} />
+              <CalendarDotsIcon className='mr-1 size-3' />
               {dateLineString}
             </p>
           </div>

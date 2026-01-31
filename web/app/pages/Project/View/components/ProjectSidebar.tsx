@@ -529,7 +529,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             className='ml-2 rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200'
             aria-label={t('common.close')}
           >
-            <XIcon className='h-5 w-5' strokeWidth={1.5} />
+            <XIcon className='h-5 w-5' />
           </button>
         ) : null}
       </div>

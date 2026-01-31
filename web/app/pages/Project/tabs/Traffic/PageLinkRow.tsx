@@ -42,10 +42,7 @@ const PageLinkRow = ({ pagePath, websiteUrl }: PageLinkRowProps) => {
           aria-label={`Open ${pagePath} (opens in a new tab)`}
           className='ml-1 shrink-0 rounded-md p-1 text-gray-800 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700'
         >
-          <ArrowSquareOutIcon
-            className='size-3.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100'
-            strokeWidth={2}
-          />
+          <ArrowSquareOutIcon className='size-3.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100' />
         </a>
       ) : null}
     </div>

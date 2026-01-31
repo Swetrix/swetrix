@@ -149,7 +149,6 @@ const SolutionsMenu = () => {
                       <item.icon
                         className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300'
                         aria-hidden='true'
-                        strokeWidth={1.5}
                       />
                       <div>
                         {_startsWith(item.link, '/') ? (
@@ -191,7 +190,6 @@ const SolutionsMenu = () => {
                           <item.icon
                             className='h-5 w-5 flex-none text-gray-600 dark:text-gray-300'
                             aria-hidden='true'
-                            strokeWidth={1.5}
                           />
                           {item.name}
                         </Link>
@@ -209,7 +207,6 @@ const SolutionsMenu = () => {
                         <item.icon
                           className='h-5 w-5 flex-none text-gray-600 dark:text-gray-300'
                           aria-hidden='true'
-                          strokeWidth={1.5}
                         />
                         {item.name}
                       </a>

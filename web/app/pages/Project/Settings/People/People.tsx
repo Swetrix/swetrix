@@ -163,7 +163,7 @@ const TableUserRow = ({
               small
               onClick={onRemove}
             >
-              <TrashIcon className='h-4 w-4' strokeWidth={1.5} />
+              <TrashIcon className='h-4 w-4' />
             </Button>
           </div>
         )}
@@ -325,7 +325,7 @@ const People = ({ project }: PeopleProps) => {
           onClick={() => setShowModal(true)}
         >
           <>
-            <UserCirclePlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
+            <UserCirclePlusIcon className='mr-1 h-5 w-5' />
             {t('project.settings.invite')}
           </>
         </Button>

@@ -2142,24 +2142,24 @@ const typeNameMapping = (t: typeof i18next.t) => ({
 
 const iconClassName = 'w-5 h-5'
 const panelIconMapping = {
-  cc: <MapPinIcon className={iconClassName} strokeWidth={1.5} />,
-  pg: <FileTextIcon className={iconClassName} strokeWidth={1.5} />,
+  cc: <MapPinIcon className={iconClassName} />,
+  pg: <FileTextIcon className={iconClassName} />,
   lc: <TranslateIcon className={iconClassName} />,
   ref: <ArrowCircleRightIcon className={iconClassName} />,
-  dv: <DevicesIcon className={iconClassName} strokeWidth={1.5} />,
-  br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
-  os: <MonitorPlayIcon className={iconClassName} strokeWidth={1.5} />,
-  so: <ShareIcon className={iconClassName} strokeWidth={1.5} />,
+  dv: <DevicesIcon className={iconClassName} />,
+  br: <CompassIcon className={iconClassName} />,
+  os: <MonitorPlayIcon className={iconClassName} />,
+  so: <ShareIcon className={iconClassName} />,
 }
 
 export const deviceIconMapping = {
-  desktop: <MonitorIcon className='size-5' strokeWidth={1.5} />,
-  mobile: <DeviceMobileIcon className='size-5' strokeWidth={1.5} />,
-  tablet: <DeviceTabletIcon className='size-5' strokeWidth={1.5} />,
-  smarttv: <TelevisionIcon className='size-5' strokeWidth={1.5} />,
-  console: <GameControllerIcon className='size-5' strokeWidth={1.5} />,
-  wearable: <WatchIcon className='size-5' strokeWidth={1.5} />,
-  embedded: <CpuIcon className='size-5' strokeWidth={1.5} />,
+  desktop: <MonitorIcon className='size-5' />,
+  mobile: <DeviceMobileIcon className='size-5' />,
+  tablet: <DeviceTabletIcon className='size-5' />,
+  smarttv: <TelevisionIcon className='size-5' />,
+  console: <GameControllerIcon className='size-5' />,
+  wearable: <WatchIcon className='size-5' />,
+  embedded: <CpuIcon className='size-5' />,
 }
 
 // This function return date using the same format as the backend
@@ -2212,7 +2212,7 @@ export const getDeviceRowMapper = (
       if (entryName === null) {
         return (
           <>
-            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            <GlobeIcon className='h-5 w-5' />
             &nbsp;
             <span className='italic'>{t('common.unknown')}</span>
           </>
@@ -2222,7 +2222,7 @@ export const getDeviceRowMapper = (
       if (!logoUrl) {
         return (
           <>
-            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            <GlobeIcon className='h-5 w-5' />
             &nbsp;
             {displayName}
           </>
@@ -2256,7 +2256,7 @@ export const getDeviceRowMapper = (
       if (entryName === null) {
         return (
           <>
-            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            <GlobeIcon className='h-5 w-5' />
             &nbsp;
             <span className='italic'>{t('common.unknown')}</span>
           </>
@@ -2266,7 +2266,7 @@ export const getDeviceRowMapper = (
       if (!logoUrl) {
         return (
           <>
-            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            <GlobeIcon className='h-5 w-5' />
             &nbsp;
             {displayName}
           </>
@@ -2292,7 +2292,7 @@ export const getDeviceRowMapper = (
       if (entryName === null) {
         return (
           <>
-            <QuestionMarkIcon className='h-5 w-5' strokeWidth={1.5} />
+            <QuestionMarkIcon className='h-5 w-5' />
             &nbsp;
             <span className='italic'>{t('common.unknown')}</span>
           </>

@@ -370,10 +370,7 @@ const BillingPricing = ({
                         tooltipNode={
                           <span className='flex items-center gap-1'>
                             {t('pricing.legacy')}
-                            <QuestionIcon
-                              className='size-4 stroke-yellow-800 dark:stroke-yellow-500'
-                              strokeWidth={1.5}
-                            />
+                            <QuestionIcon className='size-4 stroke-yellow-800 dark:stroke-yellow-500' />
                           </span>
                         }
                       />

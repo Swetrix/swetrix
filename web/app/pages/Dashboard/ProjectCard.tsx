@@ -403,7 +403,6 @@ export const ProjectCard = ({
                   'size-5 transition-transform',
                   localIsPinned && 'rotate-30',
                 )}
-                strokeWidth={1.5}
               />
             </button>
             {project.isAccessConfirmed && role !== 'viewer' ? (
@@ -417,7 +416,7 @@ export const ProjectCard = ({
                 }}
                 aria-label={`${t('project.settings.settings')} ${name}`}
               >
-                <SlidersHorizontalIcon className='size-5' strokeWidth={1.5} />
+                <SlidersHorizontalIcon className='size-5' />
               </button>
             ) : null}
           </div>

@@ -446,7 +446,7 @@ const FeatureCard = ({
 }) => (
   <div
     className={cn(
-      'flex h-full flex-col overflow-hidden bg-white ring-1 ring-gray-200 dark:ring-slate-800/60 dark:bg-slate-800/25 dark:ring-white/10',
+      'flex h-full flex-col overflow-hidden bg-white ring-1 ring-gray-200 dark:bg-slate-800/25 dark:ring-slate-800/60 dark:ring-white/10',
       size === 'large' ? 'rounded-2xl' : 'rounded-xl',
     )}
   >
@@ -977,7 +977,6 @@ const PerformancePreview = () => {
                 d={toPath(s.values)}
                 fill='none'
                 stroke={s.color}
-                strokeWidth={1.5}
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
                 transition={{ duration: 1.1 }}
@@ -1726,13 +1725,11 @@ const FeaturesShowcase = () => {
                   <FileTextIcon
                     className='h-5 w-5 text-white'
                     aria-hidden='true'
-                    strokeWidth={1.5}
                   />
                 ) : (
                   <CursorClickIcon
                     className='h-5 w-5 text-white'
                     aria-hidden='true'
-                    strokeWidth={1.5}
                   />
                 )}
               </span>
@@ -1769,7 +1766,7 @@ const FeaturesShowcase = () => {
             className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50'
             key={feature}
           >
-            <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
+            <CheckIcon className='h-4 w-4' />
             <span>{feature}</span>
           </li>
         ),

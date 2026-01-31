@@ -983,10 +983,7 @@ const TrafficViewInner = ({
                   if (_isEmpty(panelsData.customs)) {
                     return (
                       <span className='flex cursor-not-allowed items-center p-2'>
-                        <ProhibitIcon
-                          className='mr-2 h-4 w-4'
-                          strokeWidth={1.5}
-                        />
+                        <ProhibitIcon className='mr-2 h-4 w-4' />
                         {label}
                       </span>
                     )
