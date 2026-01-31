@@ -1128,10 +1128,10 @@ const UserSettings = () => {
                           type='button'
                           onClick={() => changeLanguage(lng)}
                           className={cx(
-                            'flex flex-col items-center justify-center rounded-lg border px-4 py-6 transition-all',
+                            'flex flex-col items-center justify-center rounded-lg px-4 py-6 ring-1 ring-inset transition-all',
                             isSelected
-                              ? 'border-indigo-500 bg-indigo-500/10 ring-1 ring-indigo-500'
-                              : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-700',
+                              ? 'bg-gray-100 ring-gray-300 dark:bg-slate-800 dark:ring-slate-600'
+                              : 'ring-gray-200 hover:bg-gray-50 hover:ring-gray-300 dark:ring-slate-700 dark:hover:bg-slate-800/50 dark:hover:ring-slate-600',
                           )}
                         >
                           <Flag
@@ -1143,13 +1143,9 @@ const UserSettings = () => {
                           <Text
                             as='span'
                             size='sm'
-                            weight='medium'
+                            weight={isSelected ? 'semibold' : 'medium'}
                             colour='inherit'
-                            className={cx(
-                              isSelected
-                                ? 'text-indigo-600 dark:text-indigo-400'
-                                : 'text-gray-900 dark:text-gray-100',
-                            )}
+                            className='text-gray-900 dark:text-gray-100'
                           >
                             {languages[lng]}
                           </Text>
