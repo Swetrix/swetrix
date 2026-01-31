@@ -1,4 +1,4 @@
-import { SiGithub } from '@icons-pack/react-simple-icons'
+import { GithubLogoIcon } from '@phosphor-icons/react'
 import {
   CheckIcon,
   CookieIcon,
@@ -244,7 +244,7 @@ const Hero = () => {
                 <span>{t('gaAlternative.hero.features.ownData')}</span>
               </div>
               <div className='flex items-center gap-3 text-sm'>
-                <SiGithub className='size-5' />
+                <GithubLogoIcon className='size-5' />
                 <span>{t('gaAlternative.hero.features.openSource')}</span>
               </div>
             </div>
@@ -380,7 +380,10 @@ const WhySwitch = () => {
           {/* Primary benefit - visually distinct */}
           <div className='mt-10 border-l-2 border-indigo-500 pl-6'>
             <div className='flex items-center gap-2'>
-              <ShieldCheckIcon className='size-5 text-indigo-600 dark:text-indigo-400' />
+              <ShieldCheckIcon
+                className='size-5 text-indigo-600 dark:text-indigo-400'
+                weight='duotone'
+              />
               <h3 className='text-lg font-semibold text-slate-900 dark:text-white'>
                 {t('gaAlternative.whySwitch.privacy.title')}
               </h3>
@@ -396,7 +399,10 @@ const WhySwitch = () => {
           <div className='space-y-10'>
             <div>
               <h3 className='flex items-center gap-2.5 text-lg font-semibold text-slate-900 dark:text-white'>
-                <GlobeIcon className='size-5 text-indigo-600 dark:text-indigo-400' />
+                <GlobeIcon
+                  className='size-5 text-indigo-600 dark:text-indigo-400'
+                  weight='duotone'
+                />
                 {t('gaAlternative.whySwitch.understandable.title')}
               </h3>
               <p className='mt-2 text-sm leading-relaxed text-slate-600 lg:pl-7 dark:text-slate-400'>
@@ -406,7 +412,10 @@ const WhySwitch = () => {
 
             <div className='lg:pl-8'>
               <h3 className='flex items-center gap-2.5 text-lg font-semibold text-slate-900 dark:text-white'>
-                <LightningIcon className='size-5 text-amber-500 dark:text-amber-400' />
+                <LightningIcon
+                  className='size-5 text-amber-500 dark:text-amber-400'
+                  weight='duotone'
+                />
                 {t('gaAlternative.whySwitch.actionable.title')}
               </h3>
               <p className='mt-2 text-sm leading-relaxed text-slate-600 lg:pl-7 dark:text-slate-400'>

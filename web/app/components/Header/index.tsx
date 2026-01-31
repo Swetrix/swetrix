@@ -14,7 +14,6 @@ import {
   DisclosurePanel,
   PopoverBackdrop,
 } from '@headlessui/react'
-import { SiDiscord, SiGithub, SiYoutube } from '@icons-pack/react-simple-icons'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
@@ -34,6 +33,9 @@ import {
   CaretDownIcon,
   MoonIcon,
   SunIcon,
+  GithubLogoIcon,
+  YoutubeLogoIcon,
+  DiscordLogoIcon,
 } from '@phosphor-icons/react'
 import { memo, Fragment, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -102,7 +104,7 @@ const getCallsToAction = (t: typeof i18nextT) => [
   {
     name: t('header.watchDemo'),
     link: 'https://www.youtube.com/watch?v=XBp38fZREIE',
-    icon: SiYoutube,
+    icon: YoutubeLogoIcon,
   },
   { name: t('header.contactSales'), link: routes.contact, icon: PhoneIcon },
 ]
@@ -407,28 +409,38 @@ const Separator = () => (
   </svg>
 )
 
-const SelfhostedCommunityLinks = () => (
-  <span className='flex items-center gap-2'>
-    <a
-      href={DISCORD_URL}
-      className='inline-flex items-center rounded-md p-1 text-slate-700 transition-colors hover:text-slate-900 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-gray-200 dark:hover:text-white'
-      target='_blank'
-      rel='noreferrer noopener'
-    >
-      <span className='sr-only'>Discord</span>
-      <SiDiscord className='h-5 w-5' aria-hidden='true' />
-    </a>
-    <a
-      href={GITHUB_URL}
-      className='inline-flex items-center rounded-md p-1 text-slate-700 transition-colors hover:text-slate-900 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-gray-200 dark:hover:text-white'
-      target='_blank'
-      rel='noreferrer noopener'
-    >
-      <span className='sr-only'>GitHub</span>
-      <SiGithub className='h-5 w-5' aria-hidden='true' />
-    </a>
-  </span>
-)
+const CommunityLinks = () => {
+  return (
+    <span className='flex items-center gap-2'>
+      <a
+        href={DISCORD_URL}
+        className='inline-flex items-center rounded-md p-1 text-indigo-600 transition-colors hover:text-indigo-500 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-indigo-400 dark:hover:text-indigo-100'
+        target='_blank'
+        rel='noreferrer noopener'
+      >
+        <span className='sr-only'>Discord</span>
+        <DiscordLogoIcon
+          className='h-5 w-5'
+          aria-hidden='true'
+          weight='duotone'
+        />
+      </a>
+      <a
+        href={GITHUB_URL}
+        className='inline-flex items-center rounded-md p-1 text-slate-700 transition-colors hover:text-slate-500 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500/60 dark:text-gray-200 dark:hover:text-white'
+        target='_blank'
+        rel='noreferrer noopener'
+      >
+        <span className='sr-only'>GitHub</span>
+        <GithubLogoIcon
+          className='h-5 w-5'
+          aria-hidden='true'
+          weight='duotone'
+        />
+      </a>
+    </span>
+  )
+}
 
 interface TrialBannerProps {
   status: string | null
@@ -648,7 +660,6 @@ const AuthedHeader = ({
               {!isSelfhosted && !isDisableMarketingPages ? (
                 <SolutionsMenu />
               ) : null}
-              {isSelfhosted ? <SelfhostedCommunityLinks /> : null}
               <a
                 href={DOCS_URL}
                 className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
@@ -665,7 +676,8 @@ const AuthedHeader = ({
               </Link>
             </div>
           </div>
-          <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
+          <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-2'>
+            <CommunityLinks />
             <ProfileMenu logoutHandler={logoutHandler} />
           </div>
           <div className='flex items-center justify-center space-x-3 lg:hidden'>
@@ -728,7 +740,7 @@ const NotAuthedHeader = ({
                     {t('common.pricing')}
                   </Link>
                 ) : null}
-                {isSelfhosted ? <SelfhostedCommunityLinks /> : null}
+                <CommunityLinks />
                 <a
                   href={DOCS_URL}
                   className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
@@ -860,7 +872,35 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
           </div>
           <div className='mt-6 flow-root'>
             <div className='-my-6 divide-y divide-gray-500/10'>
-              <div className='space-y-2 py-6'>
+              <div className='space-y-2 py-3'>
+                <a
+                  href={DISCORD_URL}
+                  className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                  target='_blank'
+                  rel='noreferrer noopener'
+                >
+                  <DiscordLogoIcon
+                    className='h-5 w-5 text-indigo-600 dark:text-indigo-400'
+                    aria-hidden='true'
+                    weight='duotone'
+                  />
+                  <span>Discord</span>
+                </a>
+                <a
+                  href={GITHUB_URL}
+                  className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                  target='_blank'
+                  rel='noreferrer noopener'
+                >
+                  <GithubLogoIcon
+                    className='h-5 w-5 text-slate-700 dark:text-gray-200'
+                    aria-hidden='true'
+                    weight='duotone'
+                  />
+                  <span>GitHub</span>
+                </a>
+              </div>
+              <div className='space-y-2 py-3'>
                 {!isSelfhosted ? (
                   <Disclosure as='div' className='-mx-3'>
                     {({ open }) => (
@@ -956,11 +996,6 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     {t('common.pricing')}
                   </Link>
                 ) : null}
-                {isSelfhosted ? (
-                  <div className='-mx-3 flex items-center gap-3 px-3 py-2'>
-                    <SelfhostedCommunityLinks />
-                  </div>
-                ) : null}
                 <a
                   href={DOCS_URL}
                   onClick={() => setMobileMenuOpen(false)}
@@ -980,7 +1015,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   </Link>
                 ) : null}
               </div>
-              <div className='space-y-2 py-6'>
+              <div className='space-y-2 py-3'>
                 {isAuthenticated ? (
                   <>
                     <Link

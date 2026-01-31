@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
-    "@icons-pack/react-simple-icons": "^13.8.0",
     "@nivo/sankey": "^0.99.0",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-tooltip": "^1.2.8",

@@ -1,5 +1,4 @@
-import { MoonIcon, SunIcon } from '@phosphor-icons/react'
-import { SiGithub } from '@icons-pack/react-simple-icons'
+import { MoonIcon, SunIcon, GithubLogoIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import React, { memo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -487,9 +486,9 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                   href={GITHUB_URL}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
+                  className='inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50'
                 >
-                  <SiGithub className='mr-2 h-4 w-4' />
+                  <GithubLogoIcon className='mr-1 h-4 w-4' weight='duotone' />
                   <span>{t('footer.starOnGithub')}</span>
                 </a>
               </div>

@@ -1,4 +1,3 @@
-import { SiGithub } from '@icons-pack/react-simple-icons'
 import { motion, AnimatePresence } from 'framer-motion'
 import _map from 'lodash/map'
 import {
@@ -10,6 +9,7 @@ import {
   CursorClickIcon,
   GlobeIcon,
   GaugeIcon,
+  GithubLogoIcon,
   BellRingingIcon,
   BugIcon,
   CaretUpIcon,
@@ -403,7 +403,7 @@ const Hero = () => {
                 <span>{t('main.heroBenefits.cookieless')}</span>
               </div>
               <div className='flex items-center gap-3 text-sm'>
-                <SiGithub className='size-5' />
+                <GithubLogoIcon className='size-5' />
                 <span>{t('main.heroBenefits.openSource')}</span>
               </div>
               <div className='flex items-center gap-3 text-sm'>
