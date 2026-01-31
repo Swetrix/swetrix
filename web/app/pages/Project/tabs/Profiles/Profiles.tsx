@@ -6,7 +6,7 @@ import {
   WarningIcon,
   FileTextIcon,
   CursorClickIcon,
-  UsersIcon,
+  UserListIcon,
   CalendarDotsIcon,
   CaretRightIcon,
 } from '@phosphor-icons/react'
@@ -155,7 +155,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                 className='mr-2 flex items-center'
                 title={t('project.sessions')}
               >
-                <UsersIcon className='mr-1 size-4' /> {profile.sessionsCount}
+                <UserListIcon className='mr-1 size-4' /> {profile.sessionsCount}
               </span>
               <span
                 className='mr-2 flex items-center'
@@ -191,7 +191,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                 className='flex items-center'
                 title={t('project.xSessions', { x: profile.sessionsCount })}
               >
-                <UsersIcon className='mr-1 size-5' /> {profile.sessionsCount}
+                <UserListIcon className='mr-1 size-5' /> {profile.sessionsCount}
               </span>
               <span
                 className='flex items-center'

@@ -12,7 +12,7 @@ import {
   DeviceTabletIcon,
   GlobeIcon,
   CurrencyDollarIcon,
-  UsersIcon,
+  UserListIcon,
   CursorClickIcon,
 } from '@phosphor-icons/react'
 import { useMemo } from 'react'
@@ -387,7 +387,7 @@ export const ProfileDetails = ({
           </div>
           <div className='mt-5 grid grid-cols-2 gap-x-4 gap-y-5'>
             <StatItem
-              icon={<UsersIcon className='h-3.5 w-3.5' />}
+              icon={<UserListIcon className='h-3.5 w-3.5' />}
               label={t('project.sessions')}
               value={details.sessionsCount || 0}
             />

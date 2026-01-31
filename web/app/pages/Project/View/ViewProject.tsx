@@ -10,7 +10,6 @@ import {
   SunIcon,
   WarningIcon,
   GaugeIcon,
-  UserIcon,
   BellRingingIcon,
   ChartBarIcon,
   FunnelIcon,
@@ -22,6 +21,7 @@ import {
   FlagIcon,
   FlaskIcon,
   IdentificationCardIcon,
+  UserListIcon,
 } from '@phosphor-icons/react'
 import React, {
   useState,
@@ -714,12 +714,12 @@ const ViewProjectContent = () => {
       {
         id: PROJECT_TABS.profiles,
         label: t('dashboard.profiles'),
-        icon: UserIcon,
+        icon: IdentificationCardIcon,
       },
       {
         id: PROJECT_TABS.sessions,
         label: t('dashboard.sessions'),
-        icon: IdentificationCardIcon,
+        icon: UserListIcon,
       },
       {
         id: PROJECT_TABS.errors,
