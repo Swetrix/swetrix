@@ -6,11 +6,11 @@ import {
 } from '@headlessui/react'
 import {
   CheckIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-  UserGroupIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline'
+  WarningIcon,
+  InfoIcon,
+  UsersIcon,
+  XIcon,
+} from '@phosphor-icons/react'
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -93,7 +93,7 @@ const Modal = ({
               ) : null}
               {type === 'error' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mr-3 sm:h-10 sm:w-10'>
-                  <ExclamationTriangleIcon
+                  <WarningIcon
                     className='h-6 w-6 text-red-600'
                     aria-hidden='true'
                   />
@@ -101,7 +101,7 @@ const Modal = ({
               ) : null}
               {type === 'info' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-center sm:mr-3 sm:h-10 sm:w-10'>
-                  <InformationCircleIcon
+                  <InfoIcon
                     className='h-6 w-6 text-blue-600'
                     aria-hidden='true'
                   />
@@ -109,7 +109,7 @@ const Modal = ({
               ) : null}
               {type === 'warning' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mr-3 sm:h-10 sm:w-10'>
-                  <ExclamationTriangleIcon
+                  <WarningIcon
                     className='h-6 w-6 text-amber-600'
                     aria-hidden='true'
                   />
@@ -117,7 +117,7 @@ const Modal = ({
               ) : null}
               {type === 'confirmed' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
-                  <UserGroupIcon
+                  <UsersIcon
                     className='h-6 w-6 text-green-600'
                     aria-hidden='true'
                   />
@@ -147,7 +147,7 @@ const Modal = ({
                         aria-label={t('common.close')}
                         className='rounded-md p-1.5 text-gray-800 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
                       >
-                        <XMarkIcon className='size-5' />
+                        <XIcon className='size-5' />
                       </button>
                     ) : null}
                   </DialogTitle>

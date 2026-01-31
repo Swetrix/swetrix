@@ -4,10 +4,9 @@ import {
   PopoverPanel,
   Transition,
 } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import cx from 'clsx'
 import _map from 'lodash/map'
-import { ArrowsDownUpIcon } from '@phosphor-icons/react'
+import { ArrowsDownUpIcon, CaretDownIcon } from '@phosphor-icons/react'
 import { Fragment, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -75,7 +74,7 @@ export const SortSelector = ({
           <PopoverButton className='group inline-flex w-full rounded-md border border-transparent bg-gray-50 p-2 text-sm font-medium text-gray-700 outline-hidden transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'>
             <ArrowsDownUpIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             <span>{sortLabel}</span>
-            <ChevronDownIcon
+            <CaretDownIcon
               className={cx(
                 'ml-2 h-5 w-5 transform-gpu text-gray-700 transition ease-in-out group-hover:text-gray-500 dark:text-gray-50',
                 {

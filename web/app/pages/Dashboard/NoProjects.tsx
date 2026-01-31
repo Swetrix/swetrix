@@ -1,5 +1,4 @@
-import { FolderPlusIcon } from '@heroicons/react/24/outline'
-import { FolderSimpleIcon } from '@phosphor-icons/react'
+import { FolderSimpleIcon, FolderPlusIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 
 import { Text } from '~/ui/Text'

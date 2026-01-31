@@ -1,6 +1,5 @@
-import { FunnelIcon } from '@heroicons/react/24/outline'
 import _isEmpty from 'lodash/isEmpty'
-import { UserIcon } from '@phosphor-icons/react'
+import { UserIcon, FunnelIcon } from '@phosphor-icons/react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 

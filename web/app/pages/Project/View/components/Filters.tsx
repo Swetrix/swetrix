@@ -1,10 +1,9 @@
-import { XMarkIcon } from '@heroicons/react/24/outline'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _startsWith from 'lodash/startsWith'
 import _truncate from 'lodash/truncate'
-import { FunnelIcon } from '@phosphor-icons/react'
+import { FunnelIcon, XIcon } from '@phosphor-icons/react'
 import { memo, MouseEvent, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
@@ -336,7 +335,7 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
           'cursor-wait': dataLoading,
         })}
       >
-        <XMarkIcon className='size-5 cursor-pointer rounded-md stroke-2 p-0.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-700 dark:hover:text-gray-200' />
+        <XIcon className='size-5 cursor-pointer rounded-md stroke-2 p-0.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-700 dark:hover:text-gray-200' />
       </Link>
     </div>
   )

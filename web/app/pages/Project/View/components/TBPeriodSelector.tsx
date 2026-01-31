@@ -4,11 +4,10 @@ import {
   PopoverPanel,
   Transition,
 } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import cx from 'clsx'
 import _includes from 'lodash/includes'
 import _map from 'lodash/map'
-import { CalendarDotsIcon } from '@phosphor-icons/react'
+import { CalendarDotsIcon, CaretDownIcon } from '@phosphor-icons/react'
 import React, { memo, Fragment, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -64,7 +63,7 @@ const TBPeriodSelector = ({
           <PopoverButton className='group inline-flex w-full rounded-md border border-gray-50/0 p-2 text-sm font-medium text-gray-700 outline-hidden transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'>
             <CalendarDotsIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             <span>{title}</span>
-            <ChevronDownIcon
+            <CaretDownIcon
               className={cx(
                 'ml-2 h-5 w-5 transform-gpu text-gray-700 transition ease-in-out group-hover:text-gray-500 dark:text-gray-50',
                 {

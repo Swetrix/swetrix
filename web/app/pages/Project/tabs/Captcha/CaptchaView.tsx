@@ -1,4 +1,3 @@
-import { GlobeAltIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
@@ -8,6 +7,7 @@ import {
   MapPinIcon,
   MonitorIcon,
   DevicesIcon,
+  GlobeIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useContext, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -327,7 +327,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                       if (!logoUrl) {
                         return (
                           <>
-                            <GlobeAltIcon className='h-5 w-5' />
+                            <GlobeIcon className='h-5 w-5' />
                             &nbsp;
                             {entryName}
                           </>
@@ -370,7 +370,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                       if (!logoUrl) {
                         return (
                           <>
-                            <GlobeAltIcon className='h-5 w-5' />
+                            <GlobeIcon className='h-5 w-5' />
                             &nbsp;
                             {entryName}
                           </>

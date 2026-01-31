@@ -1,4 +1,3 @@
-import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
@@ -9,6 +8,7 @@ import {
   BugIcon,
   CursorClickIcon,
   CalendarDotsIcon,
+  CaretRightIcon,
 } from '@phosphor-icons/react'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -341,7 +341,7 @@ const Session = ({
               {dateLineString}
             </p>
           </div>
-          <ChevronRightIcon
+          <CaretRightIcon
             className='h-5 w-5 flex-none text-gray-400'
             aria-hidden='true'
           />

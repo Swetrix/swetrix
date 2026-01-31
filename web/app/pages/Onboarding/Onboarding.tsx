@@ -1,5 +1,3 @@
-import { EnvelopeIcon } from '@heroicons/react/24/outline'
-import { CheckCircleIcon } from '@heroicons/react/24/solid'
 import type { TFunction } from 'i18next'
 import {
   CaretRightIcon,
@@ -8,6 +6,8 @@ import {
   CodeIcon,
   EnvelopeOpenIcon,
   SparkleIcon,
+  EnvelopeIcon,
+  CheckCircleIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Trans, useTranslation } from 'react-i18next'

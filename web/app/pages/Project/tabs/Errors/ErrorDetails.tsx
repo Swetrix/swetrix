@@ -1,9 +1,3 @@
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ClipboardIcon,
-  CheckIcon,
-} from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
 import {
   FileCodeIcon,
@@ -12,6 +6,10 @@ import {
   ArrowSquareOutIcon,
   UsersIcon,
   PulseIcon,
+  CaretDownIcon,
+  CaretUpIcon,
+  ClipboardIcon,
+  CheckIcon,
 } from '@phosphor-icons/react'
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -501,12 +499,12 @@ export const ErrorDetails = ({
                 >
                   {isStackTraceExpanded ? (
                     <>
-                      <ChevronUpIcon className='mr-1 size-4' />
+                      <CaretUpIcon className='mr-1 size-4' />
                       {t('project.showLess')}
                     </>
                   ) : (
                     <>
-                      <ChevronDownIcon className='mr-1 size-4' />
+                      <CaretDownIcon className='mr-1 size-4' />
                       {stackHiddenCount > 0
                         ? t('project.showMore', { count: stackHiddenCount })
                         : t('project.showMore', { count: 0 })}

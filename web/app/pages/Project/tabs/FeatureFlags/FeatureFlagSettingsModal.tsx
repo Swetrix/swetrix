@@ -9,7 +9,6 @@ import {
   ListboxOptions,
   Transition,
 } from '@headlessui/react'
-import { XMarkIcon, ClipboardIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _map from 'lodash/map'
 import {
@@ -19,6 +18,8 @@ import {
   CaretDownIcon,
   CaretUpDownIcon,
   CheckIcon,
+  XIcon,
+  ClipboardIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useCallback, Fragment, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -355,7 +356,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                       onClick={onClose}
                       className='rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-slate-800 dark:hover:text-gray-300'
                     >
-                      <XMarkIcon className='h-5 w-5' />
+                      <XIcon className='h-5 w-5' />
                     </button>
                   </div>
 

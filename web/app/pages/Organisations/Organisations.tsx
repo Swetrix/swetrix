@@ -1,8 +1,11 @@
-import { BuildingOffice2Icon } from '@heroicons/react/24/outline'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react'
+import {
+  MagnifyingGlassIcon,
+  XIcon,
+  BuildingOfficeIcon,
+} from '@phosphor-icons/react'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -244,7 +247,7 @@ const Organisations = () => {
                 ) : null}
               </div>
               <Button onClick={onNewOrganisation} primary large>
-                <BuildingOffice2Icon
+                <BuildingOfficeIcon
                   className='mr-1 h-5 w-5'
                   strokeWidth={1.5}
                 />

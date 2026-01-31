@@ -4,9 +4,8 @@ import {
   DialogPanel,
   DialogTitle,
 } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
-import { TrashIcon, PlusIcon } from '@phosphor-icons/react'
+import { TrashIcon, PlusIcon, XIcon } from '@phosphor-icons/react'
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
@@ -198,7 +197,7 @@ const GoalSettingsModal = ({
                       onClick={onClose}
                       className='rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-slate-800 dark:hover:text-gray-300'
                     >
-                      <XMarkIcon className='h-5 w-5' />
+                      <XIcon className='h-5 w-5' />
                     </button>
                   </div>
 

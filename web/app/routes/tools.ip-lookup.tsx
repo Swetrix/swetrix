@@ -1,7 +1,4 @@
-import {
-  ChevronDownIcon,
-  MagnifyingGlassIcon,
-} from '@heroicons/react/24/outline'
+import { CaretDownIcon, MagnifyingGlassIcon } from '@phosphor-icons/react'
 import { useState, useEffect } from 'react'
 import type { MetaFunction } from 'react-router'
 import { redirect, useFetcher, useLoaderData } from 'react-router'
@@ -589,7 +586,7 @@ export default function IpLookup() {
                   >
                     <summary className='flex cursor-pointer items-center justify-between px-5 py-4 text-left'>
                       <Text weight='medium'>{item.question}</Text>
-                      <ChevronDownIcon className='h-5 w-5 shrink-0 text-gray-400 transition-transform group-open:rotate-180' />
+                      <CaretDownIcon className='h-5 w-5 shrink-0 text-gray-400 transition-transform group-open:rotate-180' />
                     </summary>
                     <div className='border-t border-gray-200 px-5 py-4 dark:border-slate-700'>
                       <Text as='p' colour='muted'>

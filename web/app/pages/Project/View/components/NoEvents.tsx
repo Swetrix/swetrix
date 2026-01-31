@@ -1,4 +1,4 @@
-import { FunnelIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
+import { FunnelIcon, CalendarIcon } from '@phosphor-icons/react'
 import _isEmpty from 'lodash/isEmpty'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -27,7 +27,7 @@ const NoEvents = ({ filters }: NoEventsProps) => {
           {hasFilters ? (
             <FunnelIcon className='size-7 text-gray-700 dark:text-gray-200' />
           ) : (
-            <CalendarDaysIcon className='size-7 text-gray-700 dark:text-gray-200' />
+            <CalendarIcon className='size-7 text-gray-700 dark:text-gray-200' />
           )}
         </div>
         <Text as='h3' size='xl' weight='medium' className='tracking-tight'>

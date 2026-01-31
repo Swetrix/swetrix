@@ -1,4 +1,4 @@
-import { ArrowsPointingOutIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ArrowsOutIcon, XIcon } from '@phosphor-icons/react'
 import cx from 'clsx'
 import { scalePow, scaleThreshold } from 'd3-scale'
 import { Feature, GeoJsonObject } from 'geojson'
@@ -453,7 +453,7 @@ const InteractiveMapCore = ({
             title='Fullscreen'
             className='rounded-md border border-gray-300 bg-gray-50 p-1.5 text-gray-700 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
           >
-            <ArrowsPointingOutIcon className='size-4' />
+            <ArrowsOutIcon className='size-4' />
           </button>
         </div>
       ) : null}
@@ -467,7 +467,7 @@ const InteractiveMapCore = ({
               onClick={() => onFullscreenToggle(false)}
               className='pointer-events-auto flex items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
             >
-              <XMarkIcon className='mr-1.5 h-4 w-4' />
+              <XIcon className='mr-1.5 h-4 w-4' />
               {t('common.close')}
             </button>
           </div>

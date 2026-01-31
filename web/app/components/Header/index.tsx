@@ -14,13 +14,6 @@ import {
   DisclosurePanel,
   PopoverBackdrop,
 } from '@headlessui/react'
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import {
-  Bars3Icon,
-  XMarkIcon,
-  ChevronDownIcon,
-} from '@heroicons/react/24/outline'
-import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import { SiDiscord, SiGithub, SiYoutube } from '@icons-pack/react-simple-icons'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -35,6 +28,12 @@ import {
   BugIcon,
   ShieldCheckIcon,
   PhoneIcon,
+  ArrowRightIcon,
+  ListIcon,
+  XIcon,
+  CaretDownIcon,
+  MoonIcon,
+  SunIcon,
 } from '@phosphor-icons/react'
 import { memo, Fragment, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -119,7 +118,7 @@ const SolutionsMenu = () => {
         <>
           <PopoverButton className='underline-animate inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'>
             <span>{t('header.solutions.title')}</span>
-            <ChevronDownIcon
+            <CaretDownIcon
               className={cx('h-3 w-3 stroke-2 transition-transform', {
                 'rotate-180': open,
               })}
@@ -238,7 +237,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
           <div>
             <MenuButton className='underline-animate flex items-center justify-center text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'>
               <span>{t('common.account')}</span>
-              <ChevronDownIcon
+              <CaretDownIcon
                 className={cx(
                   'ml-1 h-4 w-4 transform-gpu stroke-2 transition-transform',
                   {
@@ -285,7 +284,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                       />
                       {languages[language]}
                     </div>
-                    <ChevronDownIcon
+                    <CaretDownIcon
                       className={cx(
                         open ? 'rotate-180' : '',
                         '-mr-1 ml-2 h-5 w-5 transform-gpu stroke-2 transition-transform',
@@ -676,7 +675,7 @@ const AuthedHeader = ({
               className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
             >
               <span className='sr-only'>{t('common.openMenu')}</span>
-              <Bars3Icon className='h-8 w-8 flex-none' aria-hidden='true' />
+              <ListIcon className='h-8 w-8 flex-none' aria-hidden='true' />
             </button>
           </div>
         </div>
@@ -768,7 +767,7 @@ const NotAuthedHeader = ({
               className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
             >
               <span className='sr-only'>{t('common.openMenu')}</span>
-              <Bars3Icon className='h-8 w-8 flex-none' aria-hidden='true' />
+              <ListIcon className='h-8 w-8 flex-none' aria-hidden='true' />
             </button>
           </div>
         </div>
@@ -855,7 +854,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                 className='rounded-md p-1 text-slate-700 transition-colors hover:bg-gray-400/20 hover:text-slate-600 dark:text-gray-200 dark:hover:bg-slate-700/50 dark:hover:text-gray-300'
               >
                 <span className='sr-only'>{t('common.close')}</span>
-                <XMarkIcon className='h-8 w-8 flex-none' aria-hidden='true' />
+                <XIcon className='h-8 w-8 flex-none' aria-hidden='true' />
               </button>
             </div>
           </div>
@@ -868,7 +867,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                       <>
                         <DisclosureButton className='flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'>
                           {t('header.solutions.title')}
-                          <ChevronDownIcon
+                          <CaretDownIcon
                             className={cx(
                               open ? 'rotate-180' : '',
                               'h-5 w-5 flex-none',

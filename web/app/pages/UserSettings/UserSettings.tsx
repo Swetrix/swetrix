@@ -1,8 +1,3 @@
-import {
-  EnvelopeIcon,
-  ExclamationTriangleIcon,
-  ChevronDownIcon,
-} from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -13,7 +8,14 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { ChatTextIcon, MonitorIcon, UserIcon } from '@phosphor-icons/react'
+import {
+  ChatTextIcon,
+  MonitorIcon,
+  UserIcon,
+  EnvelopeIcon,
+  WarningIcon,
+  CaretDownIcon,
+} from '@phosphor-icons/react'
 import React, { useState, useEffect, memo, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useFetcher } from 'react-router'
@@ -516,7 +518,7 @@ const UserSettings = () => {
                   className='mt-2 flex max-w-max cursor-pointer items-center text-sm text-gray-900 hover:underline dark:text-gray-50'
                 >
                   {t('auth.common.changePassword')}
-                  <ChevronDownIcon
+                  <CaretDownIcon
                     className={cx('ml-2 size-3', {
                       'rotate-180': showPasswordFields,
                     })}
@@ -711,7 +713,7 @@ const UserSettings = () => {
                     semiDanger
                   >
                     <>
-                      <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
+                      <WarningIcon className='mr-1 h-5 w-5' />
                       {t('profileSettings.delete')}
                     </>
                   </Button>

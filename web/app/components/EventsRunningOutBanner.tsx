@@ -1,4 +1,4 @@
-import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { WarningIcon, XIcon } from '@phosphor-icons/react'
 import { memo, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -48,7 +48,7 @@ const EventsRunningOutBanner = () => {
           <div className='flex flex-wrap items-center justify-between'>
             <div className='flex flex-1 items-center'>
               <span className='flex rounded-lg bg-yellow-600 p-2'>
-                <ExclamationTriangleIcon
+                <WarningIcon
                   className='h-6 w-6 text-white'
                   aria-hidden='true'
                 />
@@ -79,7 +79,7 @@ const EventsRunningOutBanner = () => {
                 className='-mr-1 flex rounded-md p-2 hover:bg-yellow-500 focus:ring-2 focus:ring-white focus:outline-hidden sm:-mr-2'
               >
                 <span className='sr-only'>{t('common.close')}</span>
-                <XMarkIcon className='h-6 w-6 text-black' aria-hidden='true' />
+                <XIcon className='h-6 w-6 text-black' aria-hidden='true' />
               </button>
             </div>
           </div>

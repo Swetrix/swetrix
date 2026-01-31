@@ -1,7 +1,4 @@
-import {
-  ExclamationTriangleIcon,
-  XCircleIcon,
-} from '@heroicons/react/24/outline'
+import { WarningIcon, XCircleIcon } from '@phosphor-icons/react'
 import _findKey from 'lodash/findKey'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
@@ -406,7 +403,7 @@ const ProjectAlertsSettings = ({
 
         {!authLoading && !isIntegrationLinked ? (
           <div className='mt-2 flex items-center rounded-sm bg-blue-50 px-5 py-3 text-base whitespace-pre-wrap dark:bg-slate-800 dark:text-gray-50'>
-            <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
+            <WarningIcon className='mr-1 h-5 w-5' />
             <Trans
               t={t}
               i18nKey='alert.noIntegration'
@@ -593,7 +590,7 @@ const ProjectAlertsSettings = ({
           <div className='mt-5 flex items-center justify-between'>
             <Button onClick={() => setShowModal(true)} danger semiSmall>
               <>
-                <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
+                <WarningIcon className='mr-1 h-5 w-5' />
                 {t('alert.delete')}
               </>
             </Button>

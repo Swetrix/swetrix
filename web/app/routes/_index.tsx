@@ -1,5 +1,3 @@
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { StarIcon } from '@heroicons/react/24/solid'
 import { SiGithub } from '@icons-pack/react-simple-icons'
 import { motion, AnimatePresence } from 'framer-motion'
 import _map from 'lodash/map'
@@ -21,6 +19,8 @@ import {
   TrendUpIcon,
   TargetIcon,
   CurrencyDollarIcon,
+  ArrowRightIcon,
+  StarIcon,
 } from '@phosphor-icons/react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'

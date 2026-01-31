@@ -1,4 +1,3 @@
-import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -9,6 +8,7 @@ import {
   CursorClickIcon,
   UsersIcon,
   CalendarDotsIcon,
+  CaretRightIcon,
 } from '@phosphor-icons/react'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -229,7 +229,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
               {lastSeenText}
             </p>
           </div>
-          <ChevronRightIcon
+          <CaretRightIcon
             className='h-5 w-5 flex-none text-gray-400'
             aria-hidden='true'
           />

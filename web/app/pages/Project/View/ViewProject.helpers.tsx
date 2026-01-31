@@ -1,4 +1,3 @@
-import { LanguageIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'
 import type { ChartOptions, GridLineOptions } from 'billboard.js'
 import { area, areaSpline, spline, bar, line, zoom } from 'billboard.js'
 import * as d3 from 'd3'
@@ -39,6 +38,8 @@ import {
   DevicesIcon,
   TelevisionIcon,
   WatchIcon,
+  TranslateIcon,
+  ArrowCircleRightIcon,
 } from '@phosphor-icons/react'
 
 import {
@@ -2143,8 +2144,8 @@ const iconClassName = 'w-5 h-5'
 const panelIconMapping = {
   cc: <MapPinIcon className={iconClassName} strokeWidth={1.5} />,
   pg: <FileTextIcon className={iconClassName} strokeWidth={1.5} />,
-  lc: <LanguageIcon className={iconClassName} />,
-  ref: <ArrowRightCircleIcon className={iconClassName} />,
+  lc: <TranslateIcon className={iconClassName} />,
+  ref: <ArrowCircleRightIcon className={iconClassName} />,
   dv: <DevicesIcon className={iconClassName} strokeWidth={1.5} />,
   br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
   os: <MonitorPlayIcon className={iconClassName} strokeWidth={1.5} />,

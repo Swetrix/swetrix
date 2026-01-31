@@ -1,5 +1,8 @@
-import { CheckCircleIcon } from '@heroicons/react/24/solid'
-import { ArrowUpRightIcon, ArrowSquareOutIcon } from '@phosphor-icons/react'
+import {
+  ArrowUpRightIcon,
+  ArrowSquareOutIcon,
+  CheckCircleIcon,
+} from '@phosphor-icons/react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'

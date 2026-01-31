@@ -1,4 +1,4 @@
-import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
+import { MoonIcon, SunIcon } from '@phosphor-icons/react'
 import { SiGithub } from '@icons-pack/react-simple-icons'
 import _map from 'lodash/map'
 import React, { memo } from 'react'

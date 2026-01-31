@@ -1,4 +1,4 @@
-import { ScaleIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { ScalesIcon, XIcon } from '@phosphor-icons/react'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import { memo, useMemo } from 'react'
@@ -89,7 +89,7 @@ const CustomMetrics = ({
   return (
     <div className='mt-2 flex items-center justify-between rounded-md border border-gray-300 bg-slate-200 p-1 dark:border-slate-800/50 dark:bg-slate-800/25'>
       <div className='flex items-center'>
-        <ScaleIcon className='box-content size-6 shrink-0 px-1 text-gray-700 dark:text-gray-200' />
+        <ScalesIcon className='box-content size-6 shrink-0 px-1 text-gray-700 dark:text-gray-200' />
         <div className='flex flex-wrap'>
           {_map(metrics, (metric) => (
             <CustomMetric
@@ -102,7 +102,7 @@ const CustomMetrics = ({
           ))}
         </div>
       </div>
-      <XMarkIcon
+      <XIcon
         className='box-content size-6 shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300'
         onClick={resetMetrics}
       />

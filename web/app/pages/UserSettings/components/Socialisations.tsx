@@ -1,4 +1,4 @@
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
+import { CheckCircleIcon, XCircleIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

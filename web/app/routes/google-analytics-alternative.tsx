@@ -1,6 +1,3 @@
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { StarIcon } from '@heroicons/react/24/solid'
-import { XMarkIcon } from '@heroicons/react/24/outline'
 import { SiGithub } from '@icons-pack/react-simple-icons'
 import {
   CheckIcon,
@@ -10,6 +7,9 @@ import {
   GlobeIcon,
   ShieldCheckIcon,
   LightningIcon,
+  ArrowRightIcon,
+  StarIcon,
+  XIcon,
 } from '@phosphor-icons/react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
@@ -335,7 +335,7 @@ const ComparisonTable = () => {
                   </td>
                   <td className='px-6 py-4 text-sm text-slate-700 dark:text-gray-200'>
                     <span className='inline-flex items-center gap-2'>
-                      <XMarkIcon className='size-4 text-rose-600 dark:text-rose-400' />
+                      <XIcon className='size-4 text-rose-600 dark:text-rose-400' />
                       {t(`gaAlternative.comparison.table.rows.${key}.ga`)}
                     </span>
                   </td>

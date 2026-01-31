@@ -1,8 +1,4 @@
-import {
-  CheckCircleIcon,
-  XCircleIcon,
-  InformationCircleIcon,
-} from '@heroicons/react/24/solid'
+import { CheckCircleIcon, XCircleIcon, InfoIcon } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -53,7 +49,7 @@ const iconMap: Record<StatusType, ReactNode> = {
     />
   ),
   info: (
-    <InformationCircleIcon
+    <InfoIcon
       className='size-8 text-amber-500 dark:text-amber-400'
       aria-hidden='true'
     />

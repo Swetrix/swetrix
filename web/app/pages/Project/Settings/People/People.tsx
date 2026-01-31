@@ -1,10 +1,14 @@
-import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
-import { TrashIcon, UserCirclePlusIcon } from '@phosphor-icons/react'
+import {
+  TrashIcon,
+  UserCirclePlusIcon,
+  CaretDownIcon,
+  CheckIcon,
+} from '@phosphor-icons/react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useRevalidator } from 'react-router'
@@ -101,7 +105,7 @@ const TableUserRow = ({
               className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`project.settings.roles.${role}.name`)}
-              <ChevronDownIcon
+              <CaretDownIcon
                 style={{ transform: open ? 'rotate(180deg)' : '' }}
                 className='ml-0.5 h-4 w-4 pt-px'
               />

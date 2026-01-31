@@ -4,7 +4,6 @@ import {
   DialogPanel,
   DialogTitle,
 } from '@headlessui/react'
-import { XMarkIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _map from 'lodash/map'
 import _sum from 'lodash/sum'
@@ -14,6 +13,7 @@ import {
   CaretDownIcon,
   TrendUpIcon,
   TrendDownIcon,
+  XIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -455,7 +455,7 @@ const ExperimentSettingsModal = ({
                       onClick={onClose}
                       className='rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-slate-800 dark:hover:text-gray-300'
                     >
-                      <XMarkIcon className='size-5' />
+                      <XIcon className='size-5' />
                     </button>
                   </div>
 

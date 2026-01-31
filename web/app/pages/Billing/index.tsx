@@ -1,7 +1,4 @@
-import {
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-} from '@heroicons/react/24/outline'
+import { WarningIcon, InfoIcon } from '@phosphor-icons/react'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import utc from 'dayjs/plugin/utc'
@@ -230,7 +227,7 @@ const Billing = () => {
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <InformationCircleIcon
+                  <InfoIcon
                     aria-hidden='true'
                     className='h-5 w-5 text-blue-400 dark:text-blue-100'
                   />
@@ -254,7 +251,7 @@ const Billing = () => {
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <InformationCircleIcon
+                  <InfoIcon
                     aria-hidden='true'
                     className='h-5 w-5 text-blue-400 dark:text-blue-100'
                   />
@@ -283,7 +280,7 @@ const Billing = () => {
             <div className='mt-5 max-w-prose rounded-md bg-amber-400/10 p-4 dark:bg-amber-600/20'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <InformationCircleIcon
+                  <InfoIcon
                     aria-hidden='true'
                     className='h-5 w-5 text-amber-400 dark:text-amber-50'
                   />
@@ -303,7 +300,7 @@ const Billing = () => {
             <div className='mt-5 max-w-prose rounded-md bg-red-50 p-4 dark:bg-red-600/20'>
               <div className='flex'>
                 <div className='shrink-0'>
-                  <ExclamationTriangleIcon
+                  <WarningIcon
                     aria-hidden='true'
                     className='h-5 w-5 text-red-400 dark:text-red-100'
                   />
@@ -371,7 +368,7 @@ const Billing = () => {
                 <div className='mb-4 rounded-md bg-amber-50 p-4 dark:bg-amber-600/30'>
                   <div className='flex'>
                     <div className='shrink-0'>
-                      <ExclamationTriangleIcon
+                      <WarningIcon
                         aria-hidden='true'
                         className='h-5 w-5 text-amber-400 dark:text-amber-100'
                       />

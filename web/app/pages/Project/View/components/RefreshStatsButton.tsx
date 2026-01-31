@@ -1,4 +1,4 @@
-import { ArrowClockwise as RotateCw } from '@phosphor-icons/react'
+import { ArrowClockwiseIcon } from '@phosphor-icons/react'
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -98,7 +98,7 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
       )}
     >
       <div className='relative h-5 w-5'>
-        <RotateCw
+        <ArrowClockwiseIcon
           className={cn(
             'absolute inset-0 h-5 w-5 text-gray-400/80 dark:text-slate-600',
             {
@@ -110,15 +110,15 @@ export const RefreshStatsButton = ({ onRefresh }: RefreshStatsButtonProps) => {
           <div
             className='absolute inset-0'
             style={{
-              maskImage: `conic-gradient(from 80deg, black ${progress}%, transparent ${progress}%)`,
-              WebkitMaskImage: `conic-gradient(from 80deg, black ${progress}%, transparent ${progress}%)`,
+              maskImage: `conic-gradient(from 100deg, black ${progress}%, transparent ${progress}%)`,
+              WebkitMaskImage: `conic-gradient(from 100deg, black ${progress}%, transparent ${progress}%)`,
             }}
           >
-            <RotateCw className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+            <ArrowClockwiseIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
           </div>
         ) : null}
         {showSpinner ? (
-          <RotateCw className='absolute inset-0 h-5 w-5 animate-spin text-gray-700 dark:text-gray-50' />
+          <ArrowClockwiseIcon className='absolute inset-0 h-5 w-5 animate-spin text-gray-700 dark:text-gray-50' />
         ) : null}
       </div>
       <div className='pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs whitespace-nowrap text-white opacity-0 transition-opacity group-hover:opacity-100 dark:bg-slate-700'>
