@@ -227,12 +227,7 @@ const TwoFA = () => {
   }
 
   return (
-    <>
-      <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-        {t('profileSettings.2faEnable')}
-      </p>
       <Button
-        className='mt-4'
         onClick={_generate2FA}
         loading={isLoading}
         primary
@@ -240,7 +235,6 @@ const TwoFA = () => {
       >
         {t('profileSettings.2faEnableBtn')}
       </Button>
-    </>
   )
 }
 

@@ -172,10 +172,6 @@ const Socialisations = () => {
   }
 
   return (
-    <>
-      <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-        {t('profileSettings.socialisationsDesc')}
-      </p>
       <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-900'>
         <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
           <thead className='bg-gray-50 dark:bg-slate-800'>
@@ -280,7 +276,6 @@ const Socialisations = () => {
           </tbody>
         </table>
       </div>
-    </>
   )
 }
 
