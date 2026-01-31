@@ -67,7 +67,7 @@ const ICON_COLORS: Record<string, string> = {
   funnels: 'text-teal-500',
   alerts: 'text-cyan-500',
   // Product Analytics
-  profiles: 'text-indigo-500',
+  profiles: 'text-fuchsia-500',
   sessions: 'text-indigo-500',
   errors: 'text-red-500',
   goals: 'text-purple-500',
