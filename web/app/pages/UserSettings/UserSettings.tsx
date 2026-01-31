@@ -150,12 +150,12 @@ const TabHeader = ({ tab }: { tab: TabConfig }) => {
           <Icon className={cx('h-6 w-6', iconColorClass)} weight='duotone' />
         </div>
         <div>
-          <h2 className='text-lg font-semibold text-gray-900 dark:text-white'>
+          <Text as='h2' size='lg' weight='semibold'>
             {tab.label}
-          </h2>
-          <p className='text-sm text-gray-600 dark:text-gray-400'>
+          </Text>
+          <Text as='p' size='sm' colour='muted'>
             {tab.description}
-          </p>
+          </Text>
         </div>
       </div>
       <hr className='mt-6 border-gray-200 dark:border-slate-700/80' />
@@ -177,13 +177,13 @@ const SettingsSection = ({
   isLast,
 }: SettingsSectionProps) => (
   <div className={cx({ 'pb-6': !isLast })}>
-    <h3 className='text-base font-semibold text-gray-900 dark:text-white'>
+    <Text as='h3' size='base' weight='semibold'>
       {title}
-    </h3>
+    </Text>
     {description && (
-      <p className='mt-1 text-sm text-gray-600 dark:text-gray-400'>
+      <Text as='p' size='sm' colour='muted' className='mt-1'>
         {description}
-      </p>
+      </Text>
     )}
     <div className='mt-4'>{children}</div>
     {!isLast && (
@@ -560,12 +560,12 @@ const UserSettings = () => {
                 >
                   <div className='max-w-md'>
                     <div className='mb-4'>
-                      <p className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>
+                      <Text as='p' size='sm' weight='medium' colour='secondary'>
                         {t('profileSettings.currentEmail')}
-                      </p>
-                      <p className='mt-1 text-sm font-semibold text-gray-900 dark:text-white'>
+                      </Text>
+                      <Text as='p' size='sm' weight='semibold' className='mt-1'>
                         {user?.email}
-                      </p>
+                      </Text>
                     </div>
                     <Input
                       name='email'
@@ -639,9 +639,9 @@ const UserSettings = () => {
                 >
                   {user?.apiKey ? (
                     <>
-                      <p className='mb-3 text-sm text-amber-600 dark:text-amber-400'>
+                      <Text as='p' size='sm' colour='warning' className='mb-3'>
                         {t('profileSettings.apiKeyWarning')}
-                      </p>
+                      </Text>
                       <div className='max-w-md'>
                         <Input
                           label={t('profileSettings.apiKey')}
@@ -661,9 +661,9 @@ const UserSettings = () => {
                     </>
                   ) : (
                     <>
-                      <p className='mb-3 text-sm text-gray-600 dark:text-gray-400'>
+                      <Text as='p' size='sm' colour='muted' className='mb-3'>
                         {t('profileSettings.noApiKey')}
-                      </p>
+                      </Text>
                       <Button onClick={onApiKeyGenerate} primary large>
                         {t('profileSettings.addApiKeyBtn')}
                       </Button>
@@ -1078,16 +1078,19 @@ const UserSettings = () => {
                             alt={languages[lng]}
                             className='mb-3'
                           />
-                          <span
+                          <Text
+                            as='span'
+                            size='sm'
+                            weight='medium'
+                            colour='inherit'
                             className={cx(
-                              'text-sm font-medium',
                               isSelected
                                 ? 'text-indigo-600 dark:text-indigo-400'
                                 : 'text-gray-900 dark:text-gray-100',
                             )}
                           >
                             {languages[lng]}
-                          </span>
+                          </Text>
                         </button>
                       )
                     })}
