@@ -775,11 +775,11 @@ const CustomEventsPreview = () => {
                   )}
                 >
                   {ev.name === 'pageview' ? (
-                    <FileTextIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
+                    <FileTextIcon className='size-4 text-indigo-600 dark:text-indigo-500' />
                   ) : ev.name === 'goal_reached' ? (
-                    <TargetIcon className='size-4 text-emerald-600 dark:text-emerald-400' />
+                    <TargetIcon className='size-4 text-emerald-600 dark:text-emerald-500' />
                   ) : (
-                    <CursorClickIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
+                    <CursorClickIcon className='size-4 text-indigo-600 dark:text-indigo-500' />
                   )}
                 </span>
                 <div>

@@ -86,7 +86,7 @@ const Modal = ({
               {type === 'success' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <CheckIcon
-                    className='h-6 w-6 text-green-600'
+                    className='h-6 w-6 text-green-600 dark:text-green-500'
                     aria-hidden='true'
                   />
                 </div>
@@ -94,7 +94,7 @@ const Modal = ({
               {type === 'error' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <WarningOctagonIcon
-                    className='h-6 w-6 text-red-600'
+                    className='h-6 w-6 text-red-600 dark:text-red-500'
                     aria-hidden='true'
                   />
                 </div>
@@ -102,7 +102,7 @@ const Modal = ({
               {type === 'info' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-center sm:mr-3 sm:h-10 sm:w-10'>
                   <InfoIcon
-                    className='h-6 w-6 text-blue-600'
+                    className='h-6 w-6 text-blue-600 dark:text-blue-500'
                     aria-hidden='true'
                   />
                 </div>
@@ -110,7 +110,7 @@ const Modal = ({
               {type === 'warning' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <WarningOctagonIcon
-                    className='h-6 w-6 text-amber-600'
+                    className='h-6 w-6 text-amber-600 dark:text-amber-500'
                     aria-hidden='true'
                   />
                 </div>
@@ -118,7 +118,7 @@ const Modal = ({
               {type === 'confirmed' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <UsersIcon
-                    className='h-6 w-6 text-green-600'
+                    className='h-6 w-6 text-green-600 dark:text-green-500'
                     aria-hidden='true'
                   />
                 </div>

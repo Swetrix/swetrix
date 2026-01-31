@@ -103,7 +103,7 @@ const CustomMetrics = ({
         </div>
       </div>
       <XIcon
-        className='box-content size-6 shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300'
+        className='box-content size-6 shrink-0 cursor-pointer px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300'
         onClick={resetMetrics}
       />
     </div>

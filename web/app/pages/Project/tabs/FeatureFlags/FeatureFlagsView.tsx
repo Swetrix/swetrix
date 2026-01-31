@@ -224,7 +224,7 @@ const FeatureFlagRow = ({
                   truncate
                   className='flex items-center gap-x-1.5'
                 >
-                  <ToggleRightIcon className='size-4 text-indigo-500' />
+                  <ToggleRightIcon className='size-4 text-indigo-600 dark:text-indigo-500' />
                   <span>{flag.key}</span>
                 </Text>
                 {/* Status badge */}

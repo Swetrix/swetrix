@@ -132,7 +132,7 @@ const SolutionsMenu = () => {
           <PopoverButton className='underline-animate inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'>
             <span>{t('header.solutions.title')}</span>
             <CaretDownIcon
-              className={cx('h-3 w-3 stroke-2 transition-transform', {
+              className={cx('size-3 transition-transform', {
                 'rotate-180': open,
               })}
               aria-hidden='true'
@@ -261,7 +261,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <span>{t('common.account')}</span>
               <CaretDownIcon
                 className={cx(
-                  'ml-1 h-4 w-4 transform-gpu stroke-2 transition-transform',
+                  'ml-1 size-4 transform-gpu transition-transform',
                   {
                     'rotate-180': open,
                   },
@@ -309,7 +309,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                     <CaretDownIcon
                       className={cx(
                         open ? 'rotate-180' : '',
-                        '-mr-1 ml-2 h-5 w-5 transform-gpu stroke-2 transition-transform',
+                        '-mr-1 ml-2 size-5 transform-gpu transition-transform',
                       )}
                       aria-hidden='true'
                     />
@@ -787,7 +787,7 @@ const NotAuthedHeader = ({
                   className='underline-animate flex items-center text-base leading-6 font-semibold text-slate-800 dark:text-white'
                 >
                   {isSelfhosted ? t('header.signUp') : t('header.startForFree')}
-                  <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-4 stroke-2' />
+                  <ArrowRightIcon className='mt-[1px] ml-1 size-4' />
                 </Link>
               </>
             ) : null}
