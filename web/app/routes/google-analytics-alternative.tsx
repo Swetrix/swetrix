@@ -102,11 +102,11 @@ const Testimonials = ({ className }: { className?: string }) => {
           role='img'
           aria-label='5 out of 5 stars'
         >
-          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
-          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
-          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
-          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
-          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
+          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' weight='fill' />
         </div>
         <div className='text-base text-gray-900/70 dark:text-gray-200'>
           <span className='font-semibold text-gray-900 dark:text-gray-50'>

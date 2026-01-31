@@ -268,11 +268,11 @@ const Testimonials = ({
       </div>
       <div className='mt-1 flex flex-col items-center justify-center gap-1 md:items-start'>
         <div className='relative inline-flex'>
-          <StarIcon className='size-5 text-yellow-500' />
-          <StarIcon className='size-5 text-yellow-500' />
-          <StarIcon className='size-5 text-yellow-500' />
-          <StarIcon className='size-5 text-yellow-500' />
-          <StarIcon className='size-5 text-yellow-500' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
         </div>
         <div className='text-base text-gray-900/70 dark:text-gray-200'>
           <Trans
