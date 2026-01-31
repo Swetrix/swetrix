@@ -36,7 +36,7 @@ type Tracking = 'tight' | 'normal' | 'wide'
 
 interface TextProps {
   children: React.ReactNode
-  as?: TextElement
+  as?: TextElement | 'button'
   size?: TextSize
   weight?: TextWeight
   colour?: TextColour

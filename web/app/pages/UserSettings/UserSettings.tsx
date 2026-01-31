@@ -199,6 +199,9 @@ const UserSettings = () => {
     timeFormat: user?.timeFormat || TimeFormat['12-hour'],
   }))
   const [showPasswordFields, setShowPasswordFields] = useState(false)
+  const [showEmailFields, setShowEmailFields] = useState(false)
+  const [emailBeenSubmitted, setEmailBeenSubmitted] = useState(false)
+  const [passwordBeenSubmitted, setPasswordBeenSubmitted] = useState(false)
   const [timezone, setTimezone] = useState(
     () => user?.timezone || DEFAULT_TIMEZONE,
   )
@@ -208,7 +211,6 @@ const UserSettings = () => {
   const [reportFrequency, setReportFrequency] = useState(
     () => user?.reportFrequency,
   )
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const translatedFrequencies = useMemo(
@@ -317,20 +319,29 @@ const UserSettings = () => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
+    if (target.name === 'email') {
+      setEmailBeenSubmitted(false)
+    }
+
+    if (target.name === 'password' || target.name === 'repeat') {
+      setPasswordBeenSubmitted(false)
+    }
+
     setForm((prevForm) => ({
       ...prevForm,
       [target.name]: value,
     }))
   }
 
-  const submitProfileUpdate = (additionalData?: Record<string, unknown>) => {
-    setBeenSubmitted(true)
-
-    if (!validated) return
+  const submitProfileUpdate = (
+    additionalData?: Record<string, unknown>,
+    skipValidation = false,
+  ) => {
+    if (!skipValidation && !validated) return
 
     const formData = new FormData()
     formData.set('intent', 'update-profile')
-    if (form.email) formData.set('email', form.email)
+    formData.set('email', form.email || user?.email || '')
     if (form.password) formData.set('password', form.password)
     if (form.repeat) formData.set('repeat', form.repeat)
     if (additionalData?.timezone)
@@ -344,7 +355,6 @@ const UserSettings = () => {
     if (additionalData?.reportFrequency)
       formData.set('reportFrequency', additionalData.reportFrequency as string)
 
-    passwordChangedRef.current = !!form.password
     fetcher.submit(formData, { method: 'post' })
   }
 
@@ -356,7 +366,9 @@ const UserSettings = () => {
       e.preventDefault()
       e.stopPropagation()
     }
-    setBeenSubmitted(true)
+
+    if (form.email) setEmailBeenSubmitted(true)
+    if (form.password || form.repeat) setPasswordBeenSubmitted(true)
 
     if (validated) {
       // User is about to change their password, let's warn him if
@@ -367,6 +379,22 @@ const UserSettings = () => {
 
       submitProfileUpdate()
     }
+  }
+
+  const handleEmailSubmit = () => {
+    setEmailBeenSubmitted(true)
+
+    if (!form.email || errors.email) return
+
+    submitProfileUpdate(undefined, true)
+  }
+
+  const handlePasswordSubmit = () => {
+    setPasswordBeenSubmitted(true)
+
+    if (errors.password || errors.repeat) return
+
+    setIsPasswordChangeModalOpened(true)
   }
 
   const handleTimezoneSave = () => {
@@ -407,8 +435,6 @@ const UserSettings = () => {
     data: Record<string, unknown>,
     callback: (isSuccess: boolean) => void = () => {},
   ) => {
-    setBeenSubmitted(true)
-
     if (validated) {
       submitProfileUpdate(data)
       callback(true)
@@ -463,7 +489,17 @@ const UserSettings = () => {
       password: '',
       repeat: '',
     }))
+    setPasswordBeenSubmitted(false)
     setShowPasswordFields((prev) => !prev)
+  }
+
+  const toggleShowEmailFields = () => {
+    setForm((prev) => ({
+      ...prev,
+      email: '',
+    }))
+    setEmailBeenSubmitted(false)
+    setShowEmailFields((prev) => !prev)
   }
 
   return (
@@ -553,18 +589,38 @@ const UserSettings = () => {
                         {user?.email}
                       </Text>
                     </div>
-                    <Input
-                      name='email'
-                      type='email'
-                      label={t('profileSettings.newEmail')}
-                      value={form.email}
-                      placeholder={t('auth.common.email')}
-                      onChange={handleInput}
-                      error={beenSubmitted && form.email ? errors.email : null}
-                    />
-                    <Button className='mt-4' type='submit' primary large>
-                      {t('profileSettings.changeEmailBtn')}
-                    </Button>
+                    <Text
+                      size='sm'
+                      weight='medium'
+                      colour='primary'
+                      className='mb-2 flex cursor-pointer items-center'
+                      onClick={toggleShowEmailFields}
+                    >
+                      {showEmailFields
+                        ? t('common.cancel')
+                        : t('profileSettings.changeEmailBtn')}
+                      <CaretDownIcon
+                        className={cx('ml-2 size-3 transition-transform', {
+                          'rotate-180': showEmailFields,
+                        })}
+                      />
+                    </Text>
+                    {showEmailFields ? (
+                      <div className='mt-4 space-y-4'>
+                        <Input
+                          name='email'
+                          type='email'
+                          label={t('profileSettings.newEmail')}
+                          value={form.email}
+                          placeholder={t('auth.common.email')}
+                          onChange={handleInput}
+                          error={emailBeenSubmitted ? errors.email : null}
+                        />
+                        <Button onClick={handleEmailSubmit} primary large>
+                          {t('profileSettings.update')}
+                        </Button>
+                      </div>
+                    ) : null}
                   </div>
                 </SettingsSection>
 
@@ -574,9 +630,12 @@ const UserSettings = () => {
                   description={t('profileSettings.changePasswordDesc')}
                 >
                   <div className='max-w-md'>
-                    <span
+                    <Text
+                      size='sm'
+                      weight='medium'
+                      colour='primary'
+                      className='mb-2 flex cursor-pointer items-center'
                       onClick={toggleShowPasswordFields}
-                      className='flex max-w-max cursor-pointer items-center text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
                     >
                       {showPasswordFields
                         ? t('common.cancel')
@@ -586,7 +645,7 @@ const UserSettings = () => {
                           'rotate-180': showPasswordFields,
                         })}
                       />
-                    </span>
+                    </Text>
                     {showPasswordFields ? (
                       <div className='mt-4 space-y-4'>
                         <Input
@@ -599,7 +658,7 @@ const UserSettings = () => {
                           value={form.password}
                           placeholder={t('auth.common.password')}
                           onChange={handleInput}
-                          error={beenSubmitted ? errors.password : null}
+                          error={passwordBeenSubmitted ? errors.password : null}
                         />
                         <Input
                           name='repeat'
@@ -608,9 +667,9 @@ const UserSettings = () => {
                           value={form.repeat}
                           placeholder={t('auth.common.repeat')}
                           onChange={handleInput}
-                          error={beenSubmitted ? errors.repeat : null}
+                          error={passwordBeenSubmitted ? errors.repeat : null}
                         />
-                        <Button type='submit' primary large>
+                        <Button onClick={handlePasswordSubmit} primary large>
                           {t('profileSettings.update')}
                         </Button>
                       </div>
@@ -1161,7 +1220,8 @@ const UserSettings = () => {
         }}
         onSubmit={() => {
           setIsPasswordChangeModalOpened(false)
-          handleSubmit(null, true)
+          passwordChangedRef.current = true
+          submitProfileUpdate(undefined, true)
         }}
         closeText={t('common.cancel')}
         submitText={t('common.continue')}
