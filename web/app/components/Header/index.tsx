@@ -36,6 +36,16 @@ import {
   DiscordLogoIcon,
   EnvelopeIcon,
   ChartBarIcon,
+  LifebuoyIcon,
+  CreditCardIcon,
+  GearIcon,
+  BuildingsIcon,
+  SignOutIcon,
+  SignInIcon,
+  UserPlusIcon,
+  SquaresFourIcon,
+  TagIcon,
+  BookOpenIcon,
 } from '@phosphor-icons/react'
 import { memo, Fragment, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -361,8 +371,9 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                   href={CONTACT_US_URL}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
+                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
                 >
+                  <LifebuoyIcon className='h-4 w-4' />
                   {t('footer.support')}
                 </a>
               </MenuItem>
@@ -370,8 +381,9 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <MenuItem>
                 <Link
                   to={routes.contact}
-                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
+                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
                 >
+                  <LifebuoyIcon className='h-4 w-4' />
                   {t('footer.support')}
                 </Link>
               </MenuItem>
@@ -380,8 +392,9 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <MenuItem>
                 <Link
                   to={routes.billing}
-                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
+                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
                 >
+                  <CreditCardIcon className='h-4 w-4' />
                   {t('common.billing')}
                 </Link>
               </MenuItem>
@@ -392,8 +405,9 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             <MenuItem>
               <Link
                 to={routes.user_settings}
-                className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
+                className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
               >
+                <GearIcon className='h-4 w-4' />
                 {t('common.accountSettings')}
               </Link>
             </MenuItem>
@@ -401,8 +415,9 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <MenuItem>
                 <Link
                   to={routes.organisations}
-                  className='block rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
+                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
                 >
+                  <BuildingsIcon className='h-4 w-4' />
                   {t('organisations.organisations')}
                 </Link>
               </MenuItem>
@@ -410,9 +425,10 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             <MenuItem>
               <button
                 type='button'
-                className='w-full rounded-md p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
+                className='flex w-full items-center gap-2 rounded-md p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
                 onClick={logoutHandler}
               >
+                <SignOutIcon className='h-4 w-4' />
                 {t('common.logout')}
               </button>
             </MenuItem>
@@ -998,9 +1014,10 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                    className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                     key='Billing'
                   >
+                    <CreditCardIcon className='h-5 w-5' />
                     {t('common.billing')}
                   </Link>
                 ) : null}
@@ -1010,27 +1027,30 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                   <Link
                     to={`${routes.main}#pricing`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                    className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                     key='Pricing'
                   >
+                    <TagIcon className='h-5 w-5' />
                     {t('common.pricing')}
                   </Link>
                 ) : null}
                 <a
                   href={DOCS_URL}
                   onClick={() => setMobileMenuOpen(false)}
-                  className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                  className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                   target='_blank'
                   rel='noreferrer noopener'
                 >
+                  <BookOpenIcon className='h-5 w-5' />
                   {t('common.docs')}
                 </a>
                 {isAuthenticated ? (
                   <Link
                     to={routes.dashboard}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                    className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                   >
+                    <SquaresFourIcon className='h-5 w-5' />
                     {t('common.dashboard')}
                   </Link>
                 ) : null}
@@ -1041,23 +1061,26 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     <Link
                       to={routes.user_settings}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                      className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                     >
+                      <GearIcon className='h-5 w-5' />
                       {t('common.accountSettings')}
                     </Link>
                     {!isSelfhosted ? (
                       <Link
                         to={routes.organisations}
                         onClick={() => setMobileMenuOpen(false)}
-                        className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                        className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                       >
+                        <BuildingsIcon className='h-5 w-5' />
                         {t('organisations.organisations')}
                       </Link>
                     ) : null}
                     <span
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                      className='-mx-3 flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                       onClick={logoutHandler}
                     >
+                      <SignOutIcon className='h-5 w-5' />
                       {t('common.logout')}
                     </span>
                   </>
@@ -1066,16 +1089,18 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                     <Link
                       to={routes.signin}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                      className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                     >
+                      <SignInIcon className='h-5 w-5' />
                       {t('auth.common.signin')}
                     </Link>
                     <Link
                       to={routes.signup}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
+                      className='-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 transition-colors hover:bg-gray-400/20 dark:text-gray-50 dark:hover:bg-slate-700/50'
                       aria-label={t('titles.signup')}
                     >
+                      <UserPlusIcon className='h-5 w-5' />
                       {isSelfhosted
                         ? t('header.signUp')
                         : t('header.startForFree')}
