@@ -1,9 +1,8 @@
-import { Label, Radio, RadioGroup } from '@headlessui/react'
-import cx from 'clsx'
 import dayjs from 'dayjs'
 import _includes from 'lodash/includes'
 import _isNil from 'lodash/isNil'
 import _map from 'lodash/map'
+import _round from 'lodash/round'
 import { QuestionIcon } from '@phosphor-icons/react'
 import React, { memo, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -22,11 +21,12 @@ import {
 import { Metainfo, DEFAULT_METAINFO } from '~/lib/models/Metainfo'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import type { BillingActionData } from '~/routes/billing'
+import type { UserSettingsActionData } from '~/routes/user-settings'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
+import { Switch } from '~/ui/Switch'
 import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
@@ -50,8 +50,8 @@ const BillingPricing = ({
   const { isAuthenticated, user, loadUser } = useAuth()
   const { theme } = useTheme()
 
-  const previewFetcher = useFetcher<BillingActionData>()
-  const changePlanFetcher = useFetcher<BillingActionData>()
+  const previewFetcher = useFetcher<UserSettingsActionData>()
+  const changePlanFetcher = useFetcher<UserSettingsActionData>()
 
   const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
   const [
@@ -174,7 +174,7 @@ const BillingPricing = ({
     setIsNewPlanConfirmationModalOpened(true)
     previewFetcher.submit(
       { intent: 'preview-subscription-update', planId: String(planId) },
-      { method: 'POST', action: '/billing' },
+      { method: 'POST', action: '/user-settings' },
     )
   }
 
@@ -230,7 +230,7 @@ const BillingPricing = ({
   const updateSubscription = () => {
     changePlanFetcher.submit(
       { intent: 'change-subscription-plan', planId: String(newPlanId) },
-      { method: 'POST', action: '/billing' },
+      { method: 'POST', action: '/user-settings' },
     )
   }
 
@@ -292,48 +292,53 @@ const BillingPricing = ({
     return validCodes.map((code) => PLAN_LIMITS[code])
   }, [PLAN_CODES_ARRAY])
 
+  const yearlyDiscount = useMemo(() => {
+    const firstTier = tiers[0]
+    if (!firstTier) return 0
+
+    const monthlyPrice = firstTier.price[currencyCode]?.monthly ?? 0
+    const yearlyPrice = firstTier.price[currencyCode]?.yearly ?? 0
+
+    if (monthlyPrice === 0) return 0
+
+    const annualCostIfMonthly = monthlyPrice * 12
+    const savings = annualCostIfMonthly - yearlyPrice
+    const discountPercentage = (savings / annualCostIfMonthly) * 100
+
+    return _round(discountPercentage, 0)
+  }, [tiers, currencyCode])
+
   return (
     <>
       <div className='rounded-xl border border-gray-200 p-4 sm:p-6 dark:border-white/10'>
-        <div className='mb-3 flex justify-between'>
+        <div className='mb-3 flex items-center justify-between'>
           <h2 className='text-2xl font-bold text-black dark:text-gray-50'>
             {t('common.billing')}
           </h2>
-          <RadioGroup
-            value={billingFrequency}
-            onChange={setBillingFrequency}
-            className='grid grid-cols-2 gap-x-1 rounded-md p-1 text-center text-xs leading-5 font-semibold ring-1 ring-gray-200 dark:ring-white/20'
+          <button
+            type='button'
+            onClick={() =>
+              setBillingFrequency(
+                billingFrequency === BillingFrequency.yearly
+                  ? BillingFrequency.monthly
+                  : BillingFrequency.yearly,
+              )
+            }
+            className='flex cursor-pointer items-center gap-2 rounded-lg bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700'
           >
-            <Label className='sr-only'>{t('pricing.frequency')}</Label>
-            <Radio
-              key={BillingFrequency.monthly}
-              value={BillingFrequency.monthly}
-              className={({ checked }) =>
-                cx(
-                  checked
-                    ? 'bg-slate-900 text-gray-50 dark:bg-white/90 dark:text-slate-900'
-                    : 'text-slate-700 hover:bg-slate-200 dark:text-gray-200 dark:hover:bg-white/30 dark:hover:text-white',
-                  'flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-all',
-                )
-              }
-            >
-              <span>{t('pricing.monthlyBilling')}</span>
-            </Radio>
-            <Radio
-              key={BillingFrequency.yearly}
-              value={BillingFrequency.yearly}
-              className={({ checked }) =>
-                cx(
-                  checked
-                    ? 'bg-slate-900 text-gray-50 dark:bg-white/90 dark:text-slate-900'
-                    : 'text-slate-700 hover:bg-slate-200 dark:text-gray-200 dark:hover:bg-white/30 dark:hover:text-white',
-                  'flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-all',
-                )
-              }
-            >
-              <span>{t('pricing.yearlyBilling')}</span>
-            </Radio>
-          </RadioGroup>
+            <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
+              {t('pricing.billedYearly')}
+            </span>
+            {yearlyDiscount > 0 ? (
+              <span className='rounded-md bg-emerald-100 px-1.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400'>
+                -{yearlyDiscount} %
+              </span>
+            ) : null}
+            <Switch
+              checked={billingFrequency === BillingFrequency.yearly}
+              onChange={() => {}}
+            />
+          </button>
         </div>
 
         <div className='space-y-2'>

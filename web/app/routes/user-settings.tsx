@@ -8,6 +8,9 @@ import { data } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { serverFetch } from '~/api/api.server'
+import { isSelfhosted } from '~/lib/constants'
+import { Metainfo } from '~/lib/models/Metainfo'
+import { UsageInfo } from '~/lib/models/Usageinfo'
 import { User } from '~/lib/models/User'
 import UserSettings from '~/pages/UserSettings'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -38,9 +41,35 @@ export const sitemap: SitemapFunction = () => ({
   exclude: true,
 })
 
+export interface UserSettingsLoaderData {
+  metainfo: Metainfo | null
+  usageInfo: UsageInfo | null
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
   redirectIfNotAuthenticated(request)
-  return null
+
+  if (isSelfhosted) {
+    return data<UserSettingsLoaderData>({
+      metainfo: null,
+      usageInfo: null,
+    })
+  }
+
+  const [metainfoResult, usageInfoResult] = await Promise.all([
+    serverFetch<Metainfo>(request, 'user/metainfo'),
+    serverFetch<UsageInfo>(request, 'user/usageinfo'),
+  ])
+
+  const cookies = [...metainfoResult.cookies, ...usageInfoResult.cookies]
+
+  return data<UserSettingsLoaderData>(
+    {
+      metainfo: metainfoResult.data,
+      usageInfo: usageInfoResult.data,
+    },
+    { headers: createHeadersWithCookies(cookies) },
+  )
 }
 
 export interface UserSettingsActionData {
@@ -59,6 +88,7 @@ export interface UserSettingsActionData {
     otpauthUrl?: string
     twoFactorRecoveryCode?: string
   }
+  data?: unknown
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -437,6 +467,64 @@ export async function action({ request }: ActionFunctionArgs) {
 
       return data<UserSettingsActionData>(
         { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'preview-subscription-update': {
+      const planId = Number(formData.get('planId'))
+
+      const result = await serverFetch(request, 'user/preview-plan', {
+        method: 'POST',
+        body: { planId },
+      })
+
+      if (result.error) {
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'change-subscription-plan': {
+      const planId = Number(formData.get('planId'))
+
+      const result = await serverFetch(request, 'user/change-plan', {
+        method: 'POST',
+        body: { planId },
+      })
+
+      if (result.error) {
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true, data: result.data },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'get-metainfo': {
+      const result = await serverFetch<Metainfo>(request, 'user/metainfo')
+
+      if (result.error) {
+        return data<UserSettingsActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<UserSettingsActionData>(
+        { intent, success: true, data: result.data },
         { headers: createHeadersWithCookies(result.cookies) },
       )
     }
