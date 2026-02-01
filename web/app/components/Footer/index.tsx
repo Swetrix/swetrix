@@ -268,7 +268,7 @@ const community: NavItem[] = [
     iconColor: 'text-indigo-400',
   },
   {
-    name: 'X',
+    name: 'Twitter / X',
     href: TWITTER_URL,
     icon: XLogoIcon,
     iconColor: 'text-gray-300',
