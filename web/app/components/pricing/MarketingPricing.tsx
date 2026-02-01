@@ -179,7 +179,13 @@ const MarketingPricing = ({
                 ) : null}
                 <Switch
                   checked={billingFrequency === BillingFrequency.yearly}
-                  onChange={() => {}}
+                  onChange={() =>
+                    setBillingFrequency(
+                      billingFrequency === BillingFrequency.yearly
+                        ? BillingFrequency.monthly
+                        : BillingFrequency.yearly,
+                    )
+                  }
                 />
               </button>
             </div>
