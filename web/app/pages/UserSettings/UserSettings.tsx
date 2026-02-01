@@ -290,10 +290,14 @@ const UserSettings = () => {
   const isTrial = planCode === 'trial'
   const isNoSub = planCode === 'none'
 
-  const totalUsage = maxEventsCount
-    ? _round((usageInfo.total / maxEventsCount) * 100, 2)
-    : 0
-  const remainingUsage = _round(100 - totalUsage, 2)
+  const totalUsage = (() => {
+    if (maxEventsCount === 0) {
+      return usageInfo.total > 0 ? 100 : 0
+    }
+    const raw = _round((usageInfo.total / maxEventsCount) * 100, 2)
+    return Math.min(100, Math.max(0, raw))
+  })()
+  const remainingUsage = _round(Math.max(0, 100 - totalUsage), 2)
 
   useEffect(() => {
     loadScript(PADDLE_JS_URL)
@@ -1419,35 +1423,54 @@ const UserSettings = () => {
                           className='w-full'
                           progress={[
                             {
-                              value:
-                                usageInfo.traffic === 0
-                                  ? 0
-                                  : (usageInfo.traffic / maxEventsCount) * 100,
+                              value: Math.min(
+                                100,
+                                Math.max(
+                                  0,
+                                  usageInfo.traffic === 0 || maxEventsCount === 0
+                                    ? 0
+                                    : (usageInfo.traffic / maxEventsCount) * 100,
+                                ),
+                              ),
                               lightColour: '#2563eb',
                               darkColour: '#1d4ed8',
                             },
                             {
-                              value:
-                                usageInfo.customEvents === 0
-                                  ? 0
-                                  : (usageInfo.customEvents / maxEventsCount) *
-                                    100,
+                              value: Math.min(
+                                100,
+                                Math.max(
+                                  0,
+                                  usageInfo.customEvents === 0 || maxEventsCount === 0
+                                    ? 0
+                                    : (usageInfo.customEvents / maxEventsCount) * 100,
+                                ),
+                              ),
                               lightColour: '#c026d3',
                               darkColour: '#a21caf',
                             },
                             {
-                              value:
-                                usageInfo.captcha === 0
-                                  ? 0
-                                  : (usageInfo.captcha / maxEventsCount) * 100,
+                              value: Math.min(
+                                100,
+                                Math.max(
+                                  0,
+                                  usageInfo.captcha === 0 || maxEventsCount === 0
+                                    ? 0
+                                    : (usageInfo.captcha / maxEventsCount) * 100,
+                                ),
+                              ),
                               lightColour: '#65a30d',
                               darkColour: '#4d7c0f',
                             },
                             {
-                              value:
-                                usageInfo.errors === 0
-                                  ? 0
-                                  : (usageInfo.errors / maxEventsCount) * 100,
+                              value: Math.min(
+                                100,
+                                Math.max(
+                                  0,
+                                  usageInfo.errors === 0 || maxEventsCount === 0
+                                    ? 0
+                                    : (usageInfo.errors / maxEventsCount) * 100,
+                                ),
+                              ),
                               lightColour: '#dc2626',
                               darkColour: '#b91c1c',
                             },
