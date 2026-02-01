@@ -1,7 +1,6 @@
 import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _reduce from 'lodash/reduce'
-import { useTranslation } from 'react-i18next'
 import spacetime from 'spacetime'
 import soft from 'timezone-soft'
 
@@ -53,7 +52,6 @@ interface TimezoneSelectProps {
 }
 
 const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
-  const { t } = useTranslation('common')
   const labelExtractor = (option: { label: string }) => option?.label
   const keyExtractor = (option: { value: string }) => option?.value
 

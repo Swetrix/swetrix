@@ -11,7 +11,6 @@ import {
   MagnifyingGlassIcon,
   ToggleLeftIcon,
   ToggleRightIcon,
-  PercentIcon,
   UsersIcon,
   PulseIcon,
   CaretDownIcon,

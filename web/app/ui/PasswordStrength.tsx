@@ -36,10 +36,7 @@ const calculateStrength = (password: string): StrengthLevel => {
   return 'strong'
 }
 
-export const PasswordStrength = ({
-  password,
-  className,
-}: PasswordStrengthProps) => {
+const PasswordStrength = ({ password, className }: PasswordStrengthProps) => {
   const { t } = useTranslation('common')
 
   const strength = useMemo(() => calculateStrength(password), [password])

@@ -63,7 +63,7 @@ const variantConfig: Record<
   },
 }
 
-export const Alert = ({ variant, title, children, className }: AlertProps) => {
+const Alert = ({ variant, title, children, className }: AlertProps) => {
   const {
     icon: Icon,
     containerClass,

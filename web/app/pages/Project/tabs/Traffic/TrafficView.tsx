@@ -40,7 +40,7 @@ import {
   useRevenueProxy,
 } from '~/hooks/useAnalyticsProxy'
 import { useAnnotations } from '~/hooks/useAnnotations'
-import { TRAFFIC_PANELS_ORDER, chartTypes, isSelfhosted } from '~/lib/constants'
+import { TRAFFIC_PANELS_ORDER, isSelfhosted } from '~/lib/constants'
 import { CountryEntry, Entry } from '~/lib/models/Entry'
 import { OverallObject } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'

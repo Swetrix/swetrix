@@ -1,4 +1,3 @@
-import { GithubLogoIcon } from '@phosphor-icons/react'
 import {
   CheckIcon,
   CookieIcon,
@@ -10,6 +9,7 @@ import {
   ArrowRightIcon,
   StarIcon,
   XIcon,
+  GithubLogoIcon,
 } from '@phosphor-icons/react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'

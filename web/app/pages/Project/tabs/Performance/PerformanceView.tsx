@@ -26,7 +26,7 @@ import type {
   PerformanceOverallObject,
 } from '~/api/api.server'
 import { useAnnotations } from '~/hooks/useAnnotations'
-import { PERFORMANCE_PANELS_ORDER, chartTypes } from '~/lib/constants'
+import { PERFORMANCE_PANELS_ORDER } from '~/lib/constants'
 import { CountryEntry } from '~/lib/models/Entry'
 import { OverallPerformanceObject } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'
