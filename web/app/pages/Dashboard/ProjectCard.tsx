@@ -399,10 +399,8 @@ export const ProjectCard = ({
               }
             >
               <PushPinIcon
-                className={cx(
-                  'size-5 transition-transform',
-                  localIsPinned && 'rotate-30',
-                )}
+                className='size-5 transition-transform'
+                weight={localIsPinned ? 'duotone' : 'regular'}
               />
             </button>
             {project.isAccessConfirmed && role !== 'viewer' ? (
