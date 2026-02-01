@@ -5,16 +5,16 @@ import _capitalize from 'lodash/capitalize'
 import _isEmpty from 'lodash/isEmpty'
 import {
   ClockIcon,
-  CalendarIcon,
+  CalendarDotsIcon,
   FileTextIcon,
   MonitorIcon,
-  SmartphoneIcon,
-  TabletIcon,
+  DeviceMobileIcon,
+  DeviceTabletIcon,
   GlobeIcon,
-  DollarSignIcon,
-  UsersIcon,
-  MousePointerClickIcon,
-} from 'lucide-react'
+  CurrencyDollarIcon,
+  UserListIcon,
+  CursorClickIcon,
+} from '@phosphor-icons/react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -274,8 +274,8 @@ const InfoRow = ({
 
 const DeviceIcon = ({ device }: { device: string | null }) => {
   const deviceLower = device?.toLowerCase() || ''
-  if (deviceLower === 'mobile') return <SmartphoneIcon className='h-4 w-4' />
-  if (deviceLower === 'tablet') return <TabletIcon className='h-4 w-4' />
+  if (deviceLower === 'mobile') return <DeviceMobileIcon className='h-4 w-4' />
+  if (deviceLower === 'tablet') return <DeviceTabletIcon className='h-4 w-4' />
   return <MonitorIcon className='h-4 w-4' />
 }
 
@@ -387,7 +387,7 @@ export const ProfileDetails = ({
           </div>
           <div className='mt-5 grid grid-cols-2 gap-x-4 gap-y-5'>
             <StatItem
-              icon={<UsersIcon className='h-3.5 w-3.5' />}
+              icon={<UserListIcon className='h-3.5 w-3.5' />}
               label={t('project.sessions')}
               value={details.sessionsCount || 0}
             />
@@ -397,7 +397,7 @@ export const ProfileDetails = ({
               value={details.pageviewsCount || 0}
             />
             <StatItem
-              icon={<MousePointerClickIcon className='h-3.5 w-3.5' />}
+              icon={<CursorClickIcon className='h-3.5 w-3.5' />}
               label={t('dashboard.events')}
               value={details.eventsCount || 0}
             />
@@ -407,19 +407,19 @@ export const ProfileDetails = ({
               value={avgDurationStr}
             />
             <StatItem
-              icon={<CalendarIcon className='h-3.5 w-3.5' />}
+              icon={<CalendarDotsIcon className='h-3.5 w-3.5' />}
               label={t('project.firstSeen')}
               value={formatDate(details.firstSeen)}
             />
             <StatItem
-              icon={<CalendarIcon className='h-3.5 w-3.5' />}
+              icon={<CalendarDotsIcon className='h-3.5 w-3.5' />}
               label={t('project.lastSeen')}
               value={formatDate(details.lastSeen)}
             />
             {details.totalRevenue !== undefined && details.totalRevenue > 0 ? (
               <StatItem
                 icon={
-                  <DollarSignIcon className='h-3.5 w-3.5 text-emerald-500' />
+                  <CurrencyDollarIcon className='h-3.5 w-3.5 text-emerald-500' />
                 }
                 label={t('dashboard.revenue')}
                 value={new Intl.NumberFormat('en-US', {

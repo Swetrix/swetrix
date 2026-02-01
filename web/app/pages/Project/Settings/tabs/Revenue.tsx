@@ -1,5 +1,8 @@
-import { CheckCircleIcon } from '@heroicons/react/24/solid'
-import { ArrowUpRightIcon, ExternalLinkIcon } from 'lucide-react'
+import {
+  ArrowUpRightIcon,
+  ArrowSquareOutIcon,
+  CheckCircleIcon,
+} from '@phosphor-icons/react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
@@ -385,7 +388,7 @@ const Revenue = ({ projectId }: Props) => {
           rel='noreferrer noopener'
           className='inline-flex items-center text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400'
         >
-          <ExternalLinkIcon className='mr-1.5 h-4 w-4' />
+          <ArrowSquareOutIcon className='mr-1.5 h-4 w-4' />
           {t('project.settings.revenue.learnMore')}
         </a>
       </div>

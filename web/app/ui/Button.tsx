@@ -81,7 +81,7 @@ const Button = ({
       className,
     )}
   >
-    {loading ? <Spin alwaysLight /> : null}
+    {loading ? <Spin inherit /> : null}
     {text || children}
   </HeadlessButton>
 )

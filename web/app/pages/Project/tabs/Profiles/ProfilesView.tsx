@@ -1,6 +1,6 @@
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import { DownloadIcon } from 'lucide-react'
+import { DownloadSimpleIcon } from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
@@ -440,7 +440,7 @@ const ProfilesView = ({ tnMapping }: ProfilesViewProps) => {
             },
           )}
         >
-          <DownloadIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
+          <DownloadSimpleIcon className='mr-2 h-5 w-5' />
           {t('project.loadMore')}
         </button>
       ) : null}

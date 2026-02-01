@@ -1,13 +1,11 @@
 import {
-  ChevronDownIcon,
+  CaretDownIcon,
   MagnifyingGlassIcon,
-} from '@heroicons/react/24/outline'
-import {
   CheckCircleIcon,
-  ExclamationTriangleIcon,
+  WarningOctagonIcon,
   XCircleIcon,
-  InformationCircleIcon,
-} from '@heroicons/react/24/solid'
+  InfoIcon,
+} from '@phosphor-icons/react'
 import { XMLParser, XMLValidator } from 'fast-xml-parser'
 import { useState } from 'react'
 import type { MetaFunction } from 'react-router'
@@ -566,13 +564,9 @@ function IssueIcon({ type }: { type: 'error' | 'warning' | 'info' }) {
     case 'error':
       return <XCircleIcon className='h-5 w-5 shrink-0 text-red-500' />
     case 'warning':
-      return (
-        <ExclamationTriangleIcon className='h-5 w-5 shrink-0 text-amber-500' />
-      )
+      return <WarningOctagonIcon className='h-5 w-5 shrink-0 text-amber-500' />
     case 'info':
-      return (
-        <InformationCircleIcon className='h-5 w-5 shrink-0 text-blue-500' />
-      )
+      return <InfoIcon className='h-5 w-5 shrink-0 text-blue-500' />
   }
 }
 
@@ -761,14 +755,14 @@ export default function SitemapValidator() {
                           )}
                           {warningCount > 0 && (
                             <span className='flex items-center gap-1 text-amber-600 dark:text-amber-400'>
-                              <ExclamationTriangleIcon className='h-4 w-4' />
+                              <WarningOctagonIcon className='h-4 w-4' />
                               {warningCount} warning
                               {warningCount !== 1 ? 's' : ''}
                             </span>
                           )}
                           {infoCount > 0 && (
                             <span className='flex items-center gap-1 text-blue-600 dark:text-blue-400'>
-                              <InformationCircleIcon className='h-4 w-4' />
+                              <InfoIcon className='h-4 w-4' />
                               {infoCount} info
                             </span>
                           )}
@@ -1071,7 +1065,7 @@ export default function SitemapValidator() {
                   >
                     <summary className='flex cursor-pointer items-center justify-between px-5 py-4 text-left'>
                       <Text weight='medium'>{item.question}</Text>
-                      <ChevronDownIcon className='h-5 w-5 shrink-0 text-gray-400 transition-transform group-open:rotate-180' />
+                      <CaretDownIcon className='h-5 w-5 shrink-0 text-gray-400 transition-transform group-open:rotate-180' />
                     </summary>
                     <div className='border-t border-gray-200 px-5 py-4 dark:border-slate-700'>
                       <Text as='p' colour='muted'>

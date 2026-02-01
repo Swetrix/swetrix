@@ -1,7 +1,3 @@
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { StarIcon } from '@heroicons/react/24/solid'
-import { XMarkIcon } from '@heroicons/react/24/outline'
-import { SiGithub } from '@icons-pack/react-simple-icons'
 import {
   CheckIcon,
   CookieIcon,
@@ -9,8 +5,12 @@ import {
   GaugeIcon,
   GlobeIcon,
   ShieldCheckIcon,
-  ZapIcon,
-} from 'lucide-react'
+  LightningIcon,
+  ArrowRightIcon,
+  StarIcon,
+  XIcon,
+  GithubLogoIcon,
+} from '@phosphor-icons/react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { Link, redirect, useLoaderData } from 'react-router'
@@ -102,11 +102,31 @@ const Testimonials = ({ className }: { className?: string }) => {
           role='img'
           aria-label='5 out of 5 stars'
         >
-          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
-          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
-          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
-          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
-          <StarIcon className='size-5 text-yellow-500' aria-hidden='true' />
+          <StarIcon
+            className='size-5 text-yellow-500'
+            aria-hidden='true'
+            weight='fill'
+          />
+          <StarIcon
+            className='size-5 text-yellow-500'
+            aria-hidden='true'
+            weight='fill'
+          />
+          <StarIcon
+            className='size-5 text-yellow-500'
+            aria-hidden='true'
+            weight='fill'
+          />
+          <StarIcon
+            className='size-5 text-yellow-500'
+            aria-hidden='true'
+            weight='fill'
+          />
+          <StarIcon
+            className='size-5 text-yellow-500'
+            aria-hidden='true'
+            weight='fill'
+          />
         </div>
         <div className='text-base text-gray-900/70 dark:text-gray-200'>
           <span className='font-semibold text-gray-900 dark:text-gray-50'>
@@ -244,7 +264,7 @@ const Hero = () => {
                 <span>{t('gaAlternative.hero.features.ownData')}</span>
               </div>
               <div className='flex items-center gap-3 text-sm'>
-                <SiGithub className='size-5' />
+                <GithubLogoIcon className='size-5' />
                 <span>{t('gaAlternative.hero.features.openSource')}</span>
               </div>
             </div>
@@ -335,7 +355,7 @@ const ComparisonTable = () => {
                   </td>
                   <td className='px-6 py-4 text-sm text-slate-700 dark:text-gray-200'>
                     <span className='inline-flex items-center gap-2'>
-                      <XMarkIcon className='size-4 text-rose-600 dark:text-rose-400' />
+                      <XIcon className='size-4 text-rose-600 dark:text-rose-400' />
                       {t(`gaAlternative.comparison.table.rows.${key}.ga`)}
                     </span>
                   </td>
@@ -380,7 +400,10 @@ const WhySwitch = () => {
           {/* Primary benefit - visually distinct */}
           <div className='mt-10 border-l-2 border-indigo-500 pl-6'>
             <div className='flex items-center gap-2'>
-              <ShieldCheckIcon className='size-5 text-indigo-600 dark:text-indigo-400' />
+              <ShieldCheckIcon
+                className='size-5 text-indigo-600 dark:text-indigo-400'
+                weight='duotone'
+              />
               <h3 className='text-lg font-semibold text-slate-900 dark:text-white'>
                 {t('gaAlternative.whySwitch.privacy.title')}
               </h3>
@@ -396,7 +419,10 @@ const WhySwitch = () => {
           <div className='space-y-10'>
             <div>
               <h3 className='flex items-center gap-2.5 text-lg font-semibold text-slate-900 dark:text-white'>
-                <GlobeIcon className='size-5 text-indigo-600 dark:text-indigo-400' />
+                <GlobeIcon
+                  className='size-5 text-indigo-600 dark:text-indigo-400'
+                  weight='duotone'
+                />
                 {t('gaAlternative.whySwitch.understandable.title')}
               </h3>
               <p className='mt-2 text-sm leading-relaxed text-slate-600 lg:pl-7 dark:text-slate-400'>
@@ -406,7 +432,10 @@ const WhySwitch = () => {
 
             <div className='lg:pl-8'>
               <h3 className='flex items-center gap-2.5 text-lg font-semibold text-slate-900 dark:text-white'>
-                <ZapIcon className='size-5 text-amber-500 dark:text-amber-400' />
+                <LightningIcon
+                  className='size-5 text-amber-500 dark:text-amber-400'
+                  weight='duotone'
+                />
                 {t('gaAlternative.whySwitch.actionable.title')}
               </h3>
               <p className='mt-2 text-sm leading-relaxed text-slate-600 lg:pl-7 dark:text-slate-400'>

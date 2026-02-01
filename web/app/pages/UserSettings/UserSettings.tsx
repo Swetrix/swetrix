@@ -1,8 +1,3 @@
-import {
-  EnvelopeIcon,
-  ExclamationTriangleIcon,
-  ChevronDownIcon,
-} from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -13,10 +8,19 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
+import {
+  ChatTextIcon,
+  MonitorIcon,
+  UserIcon,
+  EnvelopeIcon,
+  WarningOctagonIcon,
+  TranslateIcon,
+  LockIcon,
+  CaretDownIcon,
+} from '@phosphor-icons/react'
 import React, { useState, useEffect, memo, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useFetcher } from 'react-router'
+import { useNavigate, useFetcher, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import {
@@ -25,18 +29,26 @@ import {
   CONFIRMATION_TIMEOUT,
   TimeFormat,
   isSelfhosted,
+  whitelist,
+  languages,
+  languageFlag,
 } from '~/lib/constants'
+import { changeLanguage } from '~/i18n'
 import { User } from '~/lib/models/User'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
 import type { UserSettingsActionData } from '~/routes/user-settings'
+import Alert from '~/ui/Alert'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
+import PasswordStrength from '~/ui/PasswordStrength'
 import Select from '~/ui/Select'
+import { TabHeader } from '~/ui/TabHeader'
 import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
+import Flag from '~/ui/Flag'
 import TimezonePicker from '~/ui/TimezonePicker'
 import { getCookie, setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
@@ -60,22 +72,47 @@ const timeFormatArray = _map(TimeFormat, (key) => key)
 
 const TAB_MAPPING = {
   ACCOUNT: 'account',
+  PASSWORD_AUTH: 'password-auth',
   INTERFACE: 'interface',
   COMMUNICATIONS: 'communications',
+  LANGUAGE: 'language',
 }
 
-const getTabs = (t: typeof i18next.t) => {
+type SettingsTab = (typeof TAB_MAPPING)[keyof typeof TAB_MAPPING]
+
+interface TabConfig {
+  id: string
+  label: string
+  icon: React.ElementType
+  description: string
+}
+
+const getTabs = (t: typeof i18next.t): TabConfig[] => {
   if (isSelfhosted) {
     return [
       {
         id: TAB_MAPPING.ACCOUNT,
         label: t('profileSettings.account'),
-        icon: UserRoundIcon,
+        icon: UserIcon,
+        description: t('profileSettings.accountDesc'),
+      },
+      {
+        id: TAB_MAPPING.PASSWORD_AUTH,
+        label: t('profileSettings.passwordAuth'),
+        icon: LockIcon,
+        description: t('profileSettings.passwordAuthDesc'),
       },
       {
         id: TAB_MAPPING.INTERFACE,
         label: t('profileSettings.interfaceSettings'),
         icon: MonitorIcon,
+        description: t('profileSettings.interfaceDesc'),
+      },
+      {
+        id: TAB_MAPPING.LANGUAGE,
+        label: t('profileSettings.language'),
+        icon: TranslateIcon,
+        description: t('profileSettings.languageDesc'),
       },
     ]
   }
@@ -84,20 +121,79 @@ const getTabs = (t: typeof i18next.t) => {
     {
       id: TAB_MAPPING.ACCOUNT,
       label: t('profileSettings.account'),
-      icon: UserRoundIcon,
+      icon: UserIcon,
+      description: t('profileSettings.accountDesc'),
+    },
+    {
+      id: TAB_MAPPING.PASSWORD_AUTH,
+      label: t('profileSettings.passwordAuth'),
+      icon: LockIcon,
+      description: t('profileSettings.passwordAuthDesc'),
     },
     {
       id: TAB_MAPPING.COMMUNICATIONS,
       label: t('profileSettings.communications'),
-      icon: MessageSquareTextIcon,
+      icon: ChatTextIcon,
+      description: t('profileSettings.communicationsDesc'),
     },
     {
       id: TAB_MAPPING.INTERFACE,
       label: t('profileSettings.interfaceSettings'),
       icon: MonitorIcon,
+      description: t('profileSettings.interfaceDesc'),
+    },
+    {
+      id: TAB_MAPPING.LANGUAGE,
+      label: t('profileSettings.language'),
+      icon: TranslateIcon,
+      description: t('profileSettings.languageDesc'),
     },
   ]
 }
+
+const getTabIconColor = (tabId: string): string => {
+  switch (tabId) {
+    case TAB_MAPPING.ACCOUNT:
+      return 'text-blue-500'
+    case TAB_MAPPING.PASSWORD_AUTH:
+      return 'text-indigo-500'
+    case TAB_MAPPING.COMMUNICATIONS:
+      return 'text-emerald-500'
+    case TAB_MAPPING.INTERFACE:
+      return 'text-purple-500'
+    default:
+      return 'text-amber-500'
+  }
+}
+
+interface SettingsSectionProps {
+  title: string
+  description?: string
+  children: React.ReactNode
+  isLast?: boolean
+}
+
+const SettingsSection = ({
+  title,
+  description,
+  children,
+  isLast,
+}: SettingsSectionProps) => (
+  <div className={cx({ 'pb-6': !isLast })}>
+    <Text as='h3' size='base' weight='semibold'>
+      {title}
+    </Text>
+    {description && (
+      <Text as='p' size='sm' colour='muted' className='mt-1'>
+        {description}
+      </Text>
+    )}
+    <div className='mt-4'>{children}</div>
+    {!isLast && (
+      <hr className='mt-6 border-gray-200 dark:border-slate-700/80' />
+    )}
+  </div>
+)
 
 interface Form extends Partial<User> {
   repeat: string
@@ -109,17 +205,36 @@ const UserSettings = () => {
   const { user, logout, mergeUser } = useAuth()
 
   const navigate = useNavigate()
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const fetcher = useFetcher<UserSettingsActionData>()
 
-  const [activeTab, setActiveTab] = useState(TAB_MAPPING.ACCOUNT)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const tabs = getTabs(t)
+
+  const activeTab = useMemo<SettingsTab>(() => {
+    const tab = searchParams.get('tab') as SettingsTab
+    const allowed = new Set(tabs.map((t) => t.id as SettingsTab))
+    return allowed.has(tab) ? tab : TAB_MAPPING.ACCOUNT
+  }, [searchParams, tabs])
+
+  const setActiveTab = (tab: SettingsTab) => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.set('tab', tab)
+    setSearchParams(newSearchParams)
+  }
   const [form, setForm] = useState<Form>(() => ({
-    email: user?.email || '',
+    email: '',
     password: '',
     repeat: '',
     timeFormat: user?.timeFormat || TimeFormat['12-hour'],
   }))
-  const [showPasswordFields, setShowPasswordFields] = useState(false)
+  const [showEmailFields, setShowEmailFields] = useState(false)
+  const [emailBeenSubmitted, setEmailBeenSubmitted] = useState(false)
+  const [passwordBeenSubmitted, setPasswordBeenSubmitted] = useState(false)
   const [timezone, setTimezone] = useState(
     () => user?.timezone || DEFAULT_TIMEZONE,
   )
@@ -129,7 +244,6 @@ const UserSettings = () => {
   const [reportFrequency, setReportFrequency] = useState(
     () => user?.reportFrequency,
   )
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const translatedFrequencies = useMemo(
@@ -148,11 +262,11 @@ const UserSettings = () => {
 
   const isSubmitting = fetcher.state === 'submitting'
 
-  const tabs = getTabs(t)
-  const activeTabLabel = useMemo(
-    () => _find(tabs, (tab) => tab.id === activeTab)?.label,
+  const activeTabConfig = useMemo(
+    () => _find(tabs, (tab) => tab.id === activeTab),
     [tabs, activeTab],
   )
+  const activeTabLabel = activeTabConfig?.label
 
   useEffect(() => {
     if (fetcher.state !== 'idle' || !fetcher.data) return
@@ -214,7 +328,7 @@ const UserSettings = () => {
   const errors = useMemo(() => {
     const allErrors: Record<string, string> = {}
 
-    if (!isValidEmail(form.email)) {
+    if (form.email && !isValidEmail(form.email)) {
       allErrors.email = t('auth.common.badEmailError')
     }
 
@@ -237,20 +351,29 @@ const UserSettings = () => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
+    if (target.name === 'email') {
+      setEmailBeenSubmitted(false)
+    }
+
+    if (target.name === 'password' || target.name === 'repeat') {
+      setPasswordBeenSubmitted(false)
+    }
+
     setForm((prevForm) => ({
       ...prevForm,
       [target.name]: value,
     }))
   }
 
-  const submitProfileUpdate = (additionalData?: Record<string, unknown>) => {
-    setBeenSubmitted(true)
-
-    if (!validated) return
+  const submitProfileUpdate = (
+    additionalData?: Record<string, unknown>,
+    skipValidation = false,
+  ) => {
+    if (!skipValidation && !validated) return
 
     const formData = new FormData()
     formData.set('intent', 'update-profile')
-    if (form.email) formData.set('email', form.email)
+    formData.set('email', form.email || user?.email || '')
     if (form.password) formData.set('password', form.password)
     if (form.repeat) formData.set('repeat', form.repeat)
     if (additionalData?.timezone)
@@ -264,7 +387,6 @@ const UserSettings = () => {
     if (additionalData?.reportFrequency)
       formData.set('reportFrequency', additionalData.reportFrequency as string)
 
-    passwordChangedRef.current = !!form.password
     fetcher.submit(formData, { method: 'post' })
   }
 
@@ -276,7 +398,9 @@ const UserSettings = () => {
       e.preventDefault()
       e.stopPropagation()
     }
-    setBeenSubmitted(true)
+
+    if (form.email) setEmailBeenSubmitted(true)
+    if (form.password || form.repeat) setPasswordBeenSubmitted(true)
 
     if (validated) {
       // User is about to change their password, let's warn him if
@@ -287,6 +411,22 @@ const UserSettings = () => {
 
       submitProfileUpdate()
     }
+  }
+
+  const handleEmailSubmit = () => {
+    setEmailBeenSubmitted(true)
+
+    if (!form.email || errors.email) return
+
+    submitProfileUpdate(undefined, true)
+  }
+
+  const handlePasswordSubmit = () => {
+    setPasswordBeenSubmitted(true)
+
+    if (errors.password || errors.repeat) return
+
+    setIsPasswordChangeModalOpened(true)
   }
 
   const handleTimezoneSave = () => {
@@ -327,8 +467,6 @@ const UserSettings = () => {
     data: Record<string, unknown>,
     callback: (isSuccess: boolean) => void = () => {},
   ) => {
-    setBeenSubmitted(true)
-
     if (validated) {
       submitProfileUpdate(data)
       callback(true)
@@ -377,61 +515,14 @@ const UserSettings = () => {
     submitProfileUpdate({ timeFormat: form.timeFormat })
   }
 
-  const toggleShowPasswordFields = () => {
+  const toggleShowEmailFields = () => {
     setForm((prev) => ({
       ...prev,
-      password: '',
-      repeat: '',
+      email: '',
     }))
-    setShowPasswordFields((prev) => !prev)
+    setEmailBeenSubmitted(false)
+    setShowEmailFields((prev) => !prev)
   }
-
-  const sharedProjectsSection = (
-    <>
-      <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
-      <Text as='h3' size='lg' weight='bold' className='mt-2 flex items-center'>
-        {t('profileSettings.shared')}
-      </Text>
-      <div>
-        {!_isEmpty(user?.sharedProjects) ? (
-          <div className='mt-3 overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
-            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-              <thead className='bg-gray-50 dark:bg-slate-800'>
-                <tr>
-                  <th
-                    scope='col'
-                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
-                  >
-                    {t('profileSettings.sharedTable.project')}
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
-                  >
-                    {t('profileSettings.sharedTable.role')}
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
-                  >
-                    {t('profileSettings.sharedTable.joinedOn')}
-                  </th>
-                  <th scope='col' />
-                </tr>
-              </thead>
-              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
-                {_map(user?.sharedProjects, (item) => (
-                  <ProjectList key={item.id} item={item} />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <NoSharedProjects />
-        )}
-      </div>
-    </>
-  )
 
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 dark:bg-slate-900'>
@@ -442,7 +533,6 @@ const UserSettings = () => {
         <Text as='h2' size='3xl' weight='bold' className='mt-2'>
           {t('titles.profileSettings')}
         </Text>
-        <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
         <div className='mt-6 flex flex-col gap-6 md:flex-row'>
           <div className='md:hidden'>
             <Select
@@ -451,7 +541,7 @@ const UserSettings = () => {
               labelExtractor={(item) => item.label}
               iconExtractor={(item) => {
                 const Icon = item.icon
-                return <Icon className='h-4 w-4' strokeWidth={1.5} />
+                return <Icon className='h-4 w-4' />
               }}
               onSelect={(item) => {
                 setActiveTab(item.id)
@@ -463,7 +553,7 @@ const UserSettings = () => {
           </div>
 
           <aside className='hidden w-56 shrink-0 md:block'>
-            <nav className='flex flex-col space-y-1' aria-label='Sidebar'>
+            <nav className='flex flex-col space-y-0.5' aria-label='Sidebar'>
               {_map(tabs, (tab) => {
                 const isCurrent = tab.id === activeTab
                 const Icon = tab.icon
@@ -485,14 +575,12 @@ const UserSettings = () => {
                     aria-current={isCurrent ? 'page' : undefined}
                   >
                     <Icon
-                      className={cx('mr-2 h-5 w-5 shrink-0 transition-colors', {
+                      className={cx('mr-2 size-4 shrink-0 transition-colors', {
                         'text-gray-900 dark:text-gray-50': isCurrent,
-                        'text-gray-500 group-hover:text-gray-600 dark:text-gray-400 dark:group-hover:text-gray-300':
-                          !isCurrent,
+                        'text-gray-600 dark:text-gray-300': !isCurrent,
                       })}
-                      strokeWidth={1.5}
                     />
-                    <span>{tab.label}</span>
+                    <span className='truncate'>{tab.label}</span>
                   </button>
                 )
               })}
@@ -500,139 +588,210 @@ const UserSettings = () => {
           </aside>
 
           <section className='flex-1'>
-            {activeTab === TAB_MAPPING.ACCOUNT ? (
+            {activeTab === TAB_MAPPING.ACCOUNT && activeTabConfig ? (
               <>
-                <Input
-                  name='email'
-                  type='email'
-                  label={t('auth.common.email')}
-                  value={form.email}
-                  placeholder='you@example.com'
-                  onChange={handleInput}
-                  error={beenSubmitted ? errors.email : null}
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={getTabIconColor(activeTabConfig.id)}
                 />
-                <span
-                  onClick={toggleShowPasswordFields}
-                  className='mt-2 flex max-w-max cursor-pointer items-center text-sm text-gray-900 hover:underline dark:text-gray-50'
+
+                {/* Change email address */}
+                <SettingsSection
+                  title={t('profileSettings.changeEmail')}
+                  description={t('profileSettings.changeEmailDesc')}
                 >
-                  {t('auth.common.changePassword')}
-                  <ChevronDownIcon
-                    className={cx('ml-2 size-3', {
-                      'rotate-180': showPasswordFields,
-                    })}
-                  />
-                </span>
-                {showPasswordFields ? (
-                  <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6'>
-                    <Input
-                      name='password'
-                      type='password'
-                      label={t('auth.common.password')}
-                      hint={t('auth.common.hint', {
-                        amount: MIN_PASSWORD_CHARS,
-                      })}
-                      value={form.password}
-                      placeholder={t('auth.common.password')}
-                      className='sm:col-span-3'
-                      onChange={handleInput}
-                      error={beenSubmitted ? errors.password : null}
-                    />
-                    <Input
-                      name='repeat'
-                      type='password'
-                      label={t('auth.common.repeat')}
-                      value={form.repeat}
-                      placeholder={t('auth.common.repeat')}
-                      className='sm:col-span-3'
-                      onChange={handleInput}
-                      error={beenSubmitted ? errors.repeat : null}
-                    />
-                  </div>
-                ) : null}
-                <Button className='mt-4' type='submit' primary large>
-                  {t('profileSettings.update')}
-                </Button>
-
-                <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
-
-                <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.apiKey')}
-                </h3>
-                {user?.apiKey ? (
-                  <>
-                    <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                      {t('profileSettings.apiKeyWarning')}
-                    </p>
-                    <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-                      <Input
-                        label={t('profileSettings.apiKey')}
-                        name='apiKey'
-                        className='mt-4'
-                        value={user.apiKey}
-                        disabled
-                      />
+                  <div className='max-w-md'>
+                    <div className='mb-4'>
+                      <Text as='p' size='sm' weight='medium' colour='secondary'>
+                        {t('profileSettings.currentEmail')}
+                      </Text>
+                      <Text as='p' size='sm' weight='semibold' className='mt-1'>
+                        {user?.email}
+                      </Text>
                     </div>
-                  </>
-                ) : (
-                  <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                    {t('profileSettings.noApiKey')}
-                  </p>
-                )}
-                {user?.apiKey ? (
-                  <Button
-                    className='mt-4'
-                    onClick={() => setShowAPIDeleteModal(true)}
-                    danger
-                    large
-                  >
-                    {t('profileSettings.deleteApiKeyBtn')}
-                  </Button>
-                ) : (
-                  <Button
-                    className='mt-4'
-                    onClick={onApiKeyGenerate}
-                    primary
-                    large
-                  >
-                    {t('profileSettings.addApiKeyBtn')}
-                  </Button>
-                )}
+                    <Text
+                      size='sm'
+                      weight='medium'
+                      colour='primary'
+                      className='mb-2 flex cursor-pointer items-center'
+                      onClick={toggleShowEmailFields}
+                    >
+                      {showEmailFields
+                        ? t('common.cancel')
+                        : t('profileSettings.changeEmailBtn')}
+                      <CaretDownIcon
+                        className={cx('ml-2 size-3 transition-transform', {
+                          'rotate-180': showEmailFields,
+                        })}
+                      />
+                    </Text>
+                    {showEmailFields ? (
+                      <div className='mt-4 space-y-4'>
+                        <Input
+                          name='email'
+                          type='email'
+                          label={t('profileSettings.newEmail')}
+                          value={form.email}
+                          placeholder={t('auth.common.email')}
+                          onChange={handleInput}
+                          error={emailBeenSubmitted ? errors.email : null}
+                        />
+                        <Button onClick={handleEmailSubmit} primary large>
+                          {t('profileSettings.update')}
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+                </SettingsSection>
+
+                {/* API Key */}
+                <SettingsSection
+                  title={t('profileSettings.apiKey')}
+                  description={t('profileSettings.apiKeyDesc')}
+                >
+                  {user?.apiKey ? (
+                    <>
+                      <Text as='p' size='sm' colour='warning' className='mb-3'>
+                        {t('profileSettings.apiKeyWarning')}
+                      </Text>
+                      <div className='max-w-md'>
+                        <Input
+                          label={t('profileSettings.apiKey')}
+                          name='apiKey'
+                          value={user.apiKey}
+                          disabled
+                        />
+                      </div>
+                      <Button
+                        className='mt-4'
+                        onClick={() => setShowAPIDeleteModal(true)}
+                        danger
+                        large
+                      >
+                        {t('profileSettings.deleteApiKeyBtn')}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Text as='p' size='sm' colour='muted' className='mb-3'>
+                        {t('profileSettings.noApiKey')}
+                      </Text>
+                      <Button onClick={onApiKeyGenerate} primary large>
+                        {t('profileSettings.addApiKeyBtn')}
+                      </Button>
+                    </>
+                  )}
+                </SettingsSection>
 
                 {isSelfhosted ? (
                   <>
                     {/* Shared projects setting */}
-                    {sharedProjectsSection}
+                    <SettingsSection
+                      title={t('profileSettings.shared')}
+                      description={t('profileSettings.sharedDesc')}
+                    >
+                      {!_isEmpty(user?.sharedProjects) ? (
+                        <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
+                          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
+                            <thead className='bg-gray-50 dark:bg-slate-800'>
+                              <tr>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('profileSettings.sharedTable.project')}
+                                </th>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('profileSettings.sharedTable.role')}
+                                </th>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('profileSettings.sharedTable.joinedOn')}
+                                </th>
+                                <th scope='col' />
+                              </tr>
+                            </thead>
+                            <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+                              {_map(user?.sharedProjects, (item) => (
+                                <ProjectList key={item.id} item={item} />
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <NoSharedProjects />
+                      )}
+                    </SettingsSection>
                   </>
                 ) : (
                   <>
-                    {/* 2FA setting */}
-                    <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
-                    <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-                      {t('profileSettings.2fa')}
-                    </h3>
-                    <TwoFA />
-
                     {/* Socialisations setup */}
-                    <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
-                    <h3
-                      id='socialisations'
-                      className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'
+                    <SettingsSection
+                      title={t('profileSettings.socialisations')}
+                      description={t('profileSettings.socialisationsDesc')}
                     >
-                      {t('profileSettings.socialisations')}
-                    </h3>
-                    <Socialisations />
+                      <div id='socialisations'>
+                        <Socialisations />
+                      </div>
+                    </SettingsSection>
 
                     {/* Shared projects setting */}
-                    {sharedProjectsSection}
+                    <SettingsSection
+                      title={t('profileSettings.shared')}
+                      description={t('profileSettings.sharedDesc')}
+                    >
+                      {!_isEmpty(user?.sharedProjects) ? (
+                        <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
+                          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
+                            <thead className='bg-gray-50 dark:bg-slate-800'>
+                              <tr>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('profileSettings.sharedTable.project')}
+                                </th>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('profileSettings.sharedTable.role')}
+                                </th>
+                                <th
+                                  scope='col'
+                                  className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                                >
+                                  {t('profileSettings.sharedTable.joinedOn')}
+                                </th>
+                                <th scope='col' />
+                              </tr>
+                            </thead>
+                            <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+                              {_map(user?.sharedProjects, (item) => (
+                                <ProjectList key={item.id} item={item} />
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <NoSharedProjects />
+                      )}
+                    </SettingsSection>
 
                     {/* Organisations setting */}
-                    <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
-                    <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-                      {t('profileSettings.organisations')}
-                    </h3>
-                    <div>
+                    <SettingsSection
+                      title={t('profileSettings.organisations')}
+                      description={t('profileSettings.organisationsDesc')}
+                    >
                       {!_isEmpty(user?.organisationMemberships) ? (
-                        <div className='mt-3 overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
+                        <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
                           <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
                             <thead className='bg-gray-50 dark:bg-slate-800'>
                               <tr>
@@ -677,76 +836,158 @@ const UserSettings = () => {
                       ) : (
                         <NoOrganisations />
                       )}
-                    </div>
+                    </SettingsSection>
 
-                    <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
                     {!user?.isActive ? (
-                      <div
-                        className='mt-4 flex max-w-max cursor-pointer pl-0 text-blue-600 underline hover:text-indigo-800 dark:hover:text-indigo-600'
-                        onClick={onEmailConfirm}
+                      <SettingsSection
+                        title={t('profileSettings.confirmEmail')}
+                        description={t('profileSettings.confirmEmailDesc')}
                       >
-                        <EnvelopeIcon className='mt-0.5 mr-2 h-6 w-6 text-blue-500' />
-                        {t('profileSettings.noLink')}
-                      </div>
+                        <button
+                          type='button'
+                          className='flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300'
+                          onClick={onEmailConfirm}
+                        >
+                          <EnvelopeIcon className='mr-2 h-5 w-5' />
+                          {t('profileSettings.noLink')}
+                        </button>
+                      </SettingsSection>
                     ) : null}
                   </>
                 )}
-                <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-end'>
-                  <Button
-                    onClick={() => {
-                      logout(true)
-                    }}
-                    semiSmall
-                    semiDanger
-                  >
-                    <>
-                      {/* We need this div for the button to match the height of the button after it */}
-                      <div className='h-5' />
-                      {t('profileSettings.logoutAll')}
-                    </>
-                  </Button>
+
+                {/* Danger zone */}
+                <SettingsSection
+                  title={t('profileSettings.dangerZone')}
+                  description={t('profileSettings.dangerZoneDesc')}
+                  isLast
+                >
                   <Button
                     onClick={() => setShowModal(true)}
                     semiSmall
                     semiDanger
                   >
                     <>
-                      <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
+                      <WarningOctagonIcon className='mr-1 h-5 w-5' />
                       {t('profileSettings.delete')}
                     </>
                   </Button>
-                </div>
+                </SettingsSection>
               </>
             ) : null}
 
-            {activeTab === TAB_MAPPING.INTERFACE ? (
+            {activeTab === TAB_MAPPING.PASSWORD_AUTH && activeTabConfig ? (
               <>
-                <h3 className='flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.timezone')}
-                </h3>
-                <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-                  <div>
-                    <TimezonePicker value={timezone} onChange={setTimezone} />
-                  </div>
-                </div>
-                <Button
-                  className='mt-4'
-                  onClick={handleTimezoneSave}
-                  primary
-                  large
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                />
+
+                {/* Change password */}
+                <SettingsSection
+                  title={t('profileSettings.changePassword')}
+                  description={t('profileSettings.changePasswordDesc')}
                 >
-                  {t('common.save')}
-                </Button>
-                {/* Timeformat selector (12 / 24 hour format) */}
-                <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
-                <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.timeFormat')}
-                </h3>
-                <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-                  <div>
+                  <div className='max-w-md space-y-4'>
+                    <Input
+                      name='password'
+                      type='password'
+                      label={t('profileSettings.newPassword')}
+                      value={form.password}
+                      placeholder={t('auth.common.password')}
+                      onChange={handleInput}
+                      error={passwordBeenSubmitted ? errors.password : null}
+                    />
+                    <PasswordStrength password={form.password} />
+                    <Input
+                      name='repeat'
+                      type='password'
+                      label={t('profileSettings.repeatPassword')}
+                      value={form.repeat}
+                      placeholder={t('auth.common.repeat')}
+                      onChange={handleInput}
+                      error={passwordBeenSubmitted ? errors.repeat : null}
+                    />
+                    <Button
+                      onClick={handlePasswordSubmit}
+                      disabled={!form.password || !form.repeat}
+                      primary
+                      large
+                    >
+                      {t('profileSettings.updatePassword')}
+                    </Button>
+                  </div>
+                </SettingsSection>
+
+                {/* 2FA setting */}
+                {!isSelfhosted ? (
+                  <SettingsSection
+                    title={t('profileSettings.2fa')}
+                    description={t('profileSettings.2faSectionDesc')}
+                  >
+                    <TwoFA />
+                  </SettingsSection>
+                ) : null}
+
+                {/* Logout from all devices */}
+                <SettingsSection
+                  title={t('profileSettings.logoutAllTitle')}
+                  description={t('profileSettings.logoutAllDesc')}
+                  isLast
+                >
+                  <Alert variant='warning' className='mb-4'>
+                    {t('profileSettings.logoutAllWarning')}
+                  </Alert>
+                  <Button
+                    onClick={() => {
+                      logout(true)
+                    }}
+                    semiDanger
+                    large
+                  >
+                    {t('profileSettings.logoutAll')}
+                  </Button>
+                </SettingsSection>
+              </>
+            ) : null}
+
+            {activeTab === TAB_MAPPING.INTERFACE && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                />
+
+                {/* Timezone preference */}
+                <SettingsSection
+                  title={t('profileSettings.timezone')}
+                  description={t('profileSettings.timezoneDesc')}
+                >
+                  <div className='max-w-md'>
+                    <TimezonePicker value={timezone} onChange={setTimezone} />
+                    <Button
+                      className='mt-4'
+                      onClick={handleTimezoneSave}
+                      primary
+                      large
+                    >
+                      {t('common.save')}
+                    </Button>
+                  </div>
+                </SettingsSection>
+
+                {/* Time format selector */}
+                <SettingsSection
+                  title={t('profileSettings.timeFormat')}
+                  description={t('profileSettings.selectTimeFormat')}
+                >
+                  <div className='max-w-md'>
                     <Select
                       title={t(`profileSettings.${form.timeFormat}`)}
-                      label={t('profileSettings.selectTimeFormat')}
                       className='w-full'
                       items={translatedTimeFormat}
                       onSelect={(f) =>
@@ -771,48 +1012,56 @@ const UserSettings = () => {
                         ]
                       }
                     />
+                    <Button
+                      className='mt-4'
+                      onClick={setAsyncTimeFormat}
+                      primary
+                      large
+                    >
+                      {t('common.save')}
+                    </Button>
                   </div>
-                </div>
-                <Button
-                  className='mt-4'
-                  onClick={setAsyncTimeFormat}
-                  primary
-                  large
-                >
-                  {t('common.save')}
-                </Button>
+                </SettingsSection>
 
                 {/* UI Settings */}
-                <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
-                <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.uiSettings')}
-                </h3>
-                <Checkbox
-                  checked={user?.showLiveVisitorsInTitle}
-                  onChange={handleShowLiveVisitorsSave}
-                  disabled={
-                    fetcher.formData?.get('intent') === 'toggle-live-visitors'
-                  }
-                  name='active'
-                  classes={{
-                    label: 'mt-4',
-                  }}
-                  label={t('profileSettings.showVisitorsInTitle')}
-                />
+                <SettingsSection
+                  title={t('profileSettings.uiSettings')}
+                  description={t('profileSettings.uiSettingsDesc')}
+                  isLast
+                >
+                  <Checkbox
+                    checked={user?.showLiveVisitorsInTitle}
+                    onChange={handleShowLiveVisitorsSave}
+                    disabled={
+                      fetcher.formData?.get('intent') === 'toggle-live-visitors'
+                    }
+                    name='active'
+                    label={t('profileSettings.showVisitorsInTitle')}
+                  />
+                </SettingsSection>
               </>
             ) : null}
 
-            {activeTab === TAB_MAPPING.COMMUNICATIONS && !isSelfhosted ? (
+            {activeTab === TAB_MAPPING.COMMUNICATIONS &&
+            !isSelfhosted &&
+            activeTabConfig ? (
               <>
-                {/* Email reports frequency selector (e.g. monthly, weekly, etc.) */}
-                <h3 className='text-lg font-bold text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.email')}
-                </h3>
-                <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-                  <div>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                />
+
+                {/* Email reports frequency */}
+                <SettingsSection
+                  title={t('profileSettings.email')}
+                  description={t('profileSettings.frequency')}
+                >
+                  <div className='max-w-md'>
                     <Select
                       title={t(`profileSettings.${reportFrequency}`)}
-                      label={t('profileSettings.frequency')}
+                      label={t('profileSettings.email')}
                       className='w-full'
                       items={translatedFrequencies}
                       onSelect={(f) =>
@@ -835,41 +1084,100 @@ const UserSettings = () => {
                         ]
                       }
                     />
+                    <Button
+                      className='mt-4'
+                      onClick={handleReportSave}
+                      primary
+                      large
+                    >
+                      {t('common.save')}
+                    </Button>
                   </div>
-                </div>
-                <Button
-                  className='mt-4'
-                  onClick={handleReportSave}
-                  primary
-                  large
-                >
-                  {t('common.save')}
-                </Button>
+                </SettingsSection>
 
-                <hr className='mt-5 border-gray-200 dark:border-slate-700/80' />
                 {/* Integrations setup */}
-                <h3
-                  id='integrations'
-                  className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'
+                <SettingsSection
+                  title={t('profileSettings.integrations')}
+                  description={t('profileSettings.integrationsDesc')}
+                  isLast={!user?.isTelegramChatIdConfirmed}
                 >
-                  {t('profileSettings.integrations')}
-                </h3>
-                <Integrations handleIntegrationSave={handleIntegrationSave} />
+                  <div id='integrations'>
+                    <Integrations
+                      handleIntegrationSave={handleIntegrationSave}
+                    />
+                  </div>
+                </SettingsSection>
+
                 {user?.isTelegramChatIdConfirmed ? (
-                  <Checkbox
-                    checked={user?.receiveLoginNotifications}
-                    onChange={handleReceiveLoginNotifications}
-                    disabled={
-                      fetcher.formData?.get('intent') ===
-                      'toggle-login-notifications'
-                    }
-                    name='receiveLoginNotifications'
-                    classes={{
-                      label: 'mt-4',
-                    }}
-                    label={t('profileSettings.receiveLoginNotifications')}
-                  />
+                  <SettingsSection
+                    title={t('profileSettings.notifications')}
+                    description={t('profileSettings.notificationsDesc')}
+                    isLast
+                  >
+                    <Checkbox
+                      checked={user?.receiveLoginNotifications}
+                      onChange={handleReceiveLoginNotifications}
+                      disabled={
+                        fetcher.formData?.get('intent') ===
+                        'toggle-login-notifications'
+                      }
+                      name='receiveLoginNotifications'
+                      label={t('profileSettings.receiveLoginNotifications')}
+                    />
+                  </SettingsSection>
                 ) : null}
+              </>
+            ) : null}
+
+            {activeTab === TAB_MAPPING.LANGUAGE && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                />
+
+                <SettingsSection
+                  title={t('profileSettings.changeLanguage')}
+                  isLast
+                >
+                  <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'>
+                    {_map(whitelist, (lng) => {
+                      const isSelected = language === lng
+
+                      return (
+                        <button
+                          key={lng}
+                          type='button'
+                          onClick={() => changeLanguage(lng)}
+                          className={cx(
+                            'flex flex-col items-center justify-center rounded-lg px-4 py-6 ring-1 transition-all ring-inset',
+                            isSelected
+                              ? 'bg-gray-100 ring-gray-300 dark:bg-slate-800 dark:ring-slate-600'
+                              : 'ring-gray-200 hover:bg-gray-50 hover:ring-gray-300 dark:ring-slate-700 dark:hover:bg-slate-800/50 dark:hover:ring-slate-600',
+                          )}
+                        >
+                          <Flag
+                            country={languageFlag[lng]}
+                            size={32}
+                            alt={languages[lng]}
+                            className='mb-3'
+                          />
+                          <Text
+                            as='span'
+                            size='sm'
+                            weight={isSelected ? 'semibold' : 'medium'}
+                            colour='inherit'
+                            className='text-gray-900 dark:text-gray-100'
+                          >
+                            {languages[lng]}
+                          </Text>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </SettingsSection>
               </>
             ) : null}
           </section>
@@ -932,7 +1240,8 @@ const UserSettings = () => {
         }}
         onSubmit={() => {
           setIsPasswordChangeModalOpened(false)
-          handleSubmit(null, true)
+          passwordChangedRef.current = true
+          submitProfileUpdate(undefined, true)
         }}
         closeText={t('common.cancel')}
         submitText={t('common.continue')}

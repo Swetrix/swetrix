@@ -6,12 +6,12 @@ import _truncate from 'lodash/truncate'
 import {
   GlobeIcon,
   MonitorIcon,
-  SmartphoneIcon,
-  TabletIcon,
+  DeviceMobileIcon,
+  DeviceTabletIcon,
   ClockIcon,
   LinkIcon,
   UserIcon,
-} from 'lucide-react'
+} from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -90,8 +90,8 @@ const InfoRow = ({
 
 const DeviceIcon = ({ device }: { device: string | null }) => {
   const deviceLower = device?.toLowerCase() || ''
-  if (deviceLower === 'mobile') return <SmartphoneIcon className='h-4 w-4' />
-  if (deviceLower === 'tablet') return <TabletIcon className='h-4 w-4' />
+  if (deviceLower === 'mobile') return <DeviceMobileIcon className='h-4 w-4' />
+  if (deviceLower === 'tablet') return <DeviceTabletIcon className='h-4 w-4' />
   return <MonitorIcon className='h-4 w-4' />
 }
 

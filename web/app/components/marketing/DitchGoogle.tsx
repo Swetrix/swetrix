@@ -1,5 +1,4 @@
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { CheckIcon } from 'lucide-react'
+import { ArrowRightIcon, CheckIcon } from '@phosphor-icons/react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 

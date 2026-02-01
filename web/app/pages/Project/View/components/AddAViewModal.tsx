@@ -1,4 +1,4 @@
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { XIcon } from '@phosphor-icons/react'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _isEmpty from 'lodash/isEmpty'
@@ -105,7 +105,7 @@ const EditMetric = ({
               onClick={onDelete}
               aria-label='Delete custom event'
             >
-              <XMarkIcon className='size-5' />
+              <XIcon className='size-5' />
             </button>
           </p>
         }

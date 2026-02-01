@@ -1,10 +1,10 @@
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import {
-  CodeBracketIcon,
+  ArrowRightIcon,
+  BracketsCurlyIcon,
   PuzzlePieceIcon,
-  CursorArrowRaysIcon,
+  CursorClickIcon,
   EyeSlashIcon,
-} from '@heroicons/react/24/outline'
+} from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -38,7 +38,7 @@ const features = [
   {
     titleKey: 'captchaPage.features.opensource.title',
     descKey: 'captchaPage.features.opensource.desc',
-    icon: CodeBracketIcon,
+    icon: BracketsCurlyIcon,
   },
   {
     titleKey: 'captchaPage.features.customisable.title',
@@ -48,7 +48,7 @@ const features = [
   {
     titleKey: 'captchaPage.features.easy.title',
     descKey: 'captchaPage.features.easy.desc',
-    icon: CursorArrowRaysIcon,
+    icon: CursorClickIcon,
   },
 ]
 

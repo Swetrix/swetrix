@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import _includes from 'lodash/includes'
 import _isNil from 'lodash/isNil'
 import _map from 'lodash/map'
-import { CircleHelpIcon } from 'lucide-react'
+import { QuestionIcon } from '@phosphor-icons/react'
 import React, { memo, useEffect, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
@@ -370,10 +370,7 @@ const BillingPricing = ({
                         tooltipNode={
                           <span className='flex items-center gap-1'>
                             {t('pricing.legacy')}
-                            <CircleHelpIcon
-                              className='size-4 stroke-yellow-800 dark:stroke-yellow-500'
-                              strokeWidth={1.5}
-                            />
+                            <QuestionIcon className='size-4 stroke-yellow-800 dark:stroke-yellow-500' />
                           </span>
                         }
                       />

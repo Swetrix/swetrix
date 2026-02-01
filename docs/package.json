@@ -22,7 +22,7 @@
     "@node-rs/jieba": "^1.7.0",
     "autoprefixer": "^10.4.14",
     "clsx": "^2.1.0",
-    "lucide-react": "^0.544.0",
+    "@phosphor-icons/react": "^2.1.10",
     "postcss": "^8.4.23",
     "prism-react-renderer": "^2.3.0",
     "prismjs": "^1.29.0",

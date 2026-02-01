@@ -1,4 +1,4 @@
-import { FolderPlusIcon } from '@heroicons/react/24/outline'
+import { FolderPlusIcon } from '@phosphor-icons/react'
 import cx from 'clsx'
 import React from 'react'
 import { useTranslation } from 'react-i18next'

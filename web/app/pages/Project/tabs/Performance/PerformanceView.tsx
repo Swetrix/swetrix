@@ -2,7 +2,7 @@ import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
-import { EyeIcon, PercentIcon } from 'lucide-react'
+import { EyeIcon, PercentIcon } from '@phosphor-icons/react'
 import {
   useState,
   useEffect,
@@ -26,7 +26,7 @@ import type {
   PerformanceOverallObject,
 } from '~/api/api.server'
 import { useAnnotations } from '~/hooks/useAnnotations'
-import { PERFORMANCE_PANELS_ORDER, chartTypes } from '~/lib/constants'
+import { PERFORMANCE_PANELS_ORDER } from '~/lib/constants'
 import { CountryEntry } from '~/lib/models/Entry'
 import { OverallPerformanceObject } from '~/lib/models/Project'
 import AnnotationModal from '~/modals/AnnotationModal'

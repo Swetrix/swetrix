@@ -1,4 +1,3 @@
-import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import _filter from 'lodash/filter'
@@ -6,7 +5,12 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _toLower from 'lodash/toLower'
-import { MailPlusIcon, Trash2Icon } from 'lucide-react'
+import {
+  EnvelopeSimpleIcon,
+  TrashIcon,
+  CaretDownIcon,
+  CheckIcon,
+} from '@phosphor-icons/react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useParams } from 'react-router'
@@ -226,7 +230,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
               className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`profileSettings.${_toLower(reportFrequency)}`)}
-              <ChevronDownIcon
+              <CaretDownIcon
                 style={{ transform: open ? 'rotate(180deg)' : '' }}
                 className='ml-0.5 h-4 w-4 pt-px'
               />
@@ -281,7 +285,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
               small
               onClick={onRemove}
             >
-              <Trash2Icon className='h-4 w-4' strokeWidth={1.5} />
+              <TrashIcon className='h-4 w-4' />
             </Button>
           </div>
         )}
@@ -518,7 +522,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
           onClick={() => setShowModal(true)}
         >
           <>
-            <MailPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
+            <EnvelopeSimpleIcon className='mr-1 h-5 w-5' />
             {t('project.emails.add')}
           </>
         </Button>

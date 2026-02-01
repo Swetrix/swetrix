@@ -1,4 +1,4 @@
-import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { CaretDownIcon, XIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -68,7 +68,7 @@ const LiveVisitorsDropdown = () => {
               amount: liveVisitors,
             })}{' '}
           </span>
-          <ChevronDownIcon
+          <CaretDownIcon
             className={cn(
               'ml-1 inline h-4 w-4 transition-transform duration-150 ease-out',
               {
@@ -100,7 +100,7 @@ const LiveVisitorsDropdown = () => {
                 type='button'
                 onClick={() => setIsDropdownVisible(false)}
               >
-                <XMarkIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
+                <XIcon className='h-5 w-5 cursor-pointer rounded-md text-gray-900 dark:text-gray-50' />
               </button>
             </div>
             <div className='scrollbar-thin max-h-[200px] overflow-y-auto px-2'>

@@ -1,27 +1,27 @@
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { StarIcon } from '@heroicons/react/24/solid'
-import { SiGithub } from '@icons-pack/react-simple-icons'
 import { motion, AnimatePresence } from 'framer-motion'
 import _map from 'lodash/map'
 import {
   CheckIcon,
   CookieIcon,
-  ServerIcon,
+  HardDrivesIcon,
   DatabaseIcon,
   FileTextIcon,
-  MousePointerClickIcon,
+  CursorClickIcon,
   GlobeIcon,
   GaugeIcon,
-  BellRingIcon,
-  BugIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
+  GithubLogoIcon,
+  BellRingingIcon,
+  WarningIcon,
+  CaretUpIcon,
+  CaretDownIcon,
   ToggleRightIcon,
-  FlaskConicalIcon,
-  TrendingUpIcon,
+  FlaskIcon,
+  TrendUpIcon,
   TargetIcon,
-  DollarSignIcon,
-} from 'lucide-react'
+  CurrencyDollarIcon,
+  ArrowRightIcon,
+  StarIcon,
+} from '@phosphor-icons/react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
@@ -268,11 +268,11 @@ const Testimonials = ({
       </div>
       <div className='mt-1 flex flex-col items-center justify-center gap-1 md:items-start'>
         <div className='relative inline-flex'>
-          <StarIcon className='size-5 text-yellow-500' />
-          <StarIcon className='size-5 text-yellow-500' />
-          <StarIcon className='size-5 text-yellow-500' />
-          <StarIcon className='size-5 text-yellow-500' />
-          <StarIcon className='size-5 text-yellow-500' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
+          <StarIcon className='size-5 text-yellow-500' weight='fill' />
         </div>
         <div className='text-base text-gray-900/70 dark:text-gray-200'>
           <Trans
@@ -403,7 +403,7 @@ const Hero = () => {
                 <span>{t('main.heroBenefits.cookieless')}</span>
               </div>
               <div className='flex items-center gap-3 text-sm'>
-                <SiGithub className='size-5' />
+                <GithubLogoIcon className='size-5' />
                 <span>{t('main.heroBenefits.openSource')}</span>
               </div>
               <div className='flex items-center gap-3 text-sm'>
@@ -411,7 +411,7 @@ const Hero = () => {
                 <span>{t('main.heroBenefits.dataOwnership')}</span>
               </div>
               <div className='flex items-center gap-3 text-sm'>
-                <ServerIcon className='size-5' />
+                <HardDrivesIcon className='size-5' />
                 <span>{t('main.heroBenefits.selfHostable')}</span>
               </div>
             </div>
@@ -446,7 +446,7 @@ const FeatureCard = ({
 }) => (
   <div
     className={cn(
-      'flex h-full flex-col overflow-hidden bg-white ring-1 ring-gray-200 dark:ring-slate-800/60 dark:bg-slate-800/25 dark:ring-white/10',
+      'flex h-full flex-col overflow-hidden bg-white ring-1 ring-gray-200 dark:bg-slate-800/25 dark:ring-slate-800/60 dark:ring-white/10',
       size === 'large' ? 'rounded-2xl' : 'rounded-xl',
     )}
   >
@@ -775,11 +775,11 @@ const CustomEventsPreview = () => {
                   )}
                 >
                   {ev.name === 'pageview' ? (
-                    <FileTextIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
+                    <FileTextIcon className='size-4 text-indigo-600 dark:text-indigo-500' />
                   ) : ev.name === 'goal_reached' ? (
-                    <TargetIcon className='size-4 text-emerald-600 dark:text-emerald-400' />
+                    <TargetIcon className='size-4 text-emerald-600 dark:text-emerald-500' />
                   ) : (
-                    <MousePointerClickIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
+                    <CursorClickIcon className='size-4 text-indigo-600 dark:text-indigo-500' />
                   )}
                 </span>
                 <div>
@@ -927,12 +927,12 @@ const PerformancePreview = () => {
           >
             {isUp ? (
               <>
-                <ChevronUpIcon className='h-4 w-4 shrink-0' />
+                <CaretUpIcon className='h-4 w-4 shrink-0' />
                 {`${pct}%`}
               </>
             ) : (
               <>
-                <ChevronDownIcon className='h-4 w-4 shrink-0' />
+                <CaretDownIcon className='h-4 w-4 shrink-0' />
                 {`${pct}%`}
               </>
             )}
@@ -977,7 +977,6 @@ const PerformancePreview = () => {
                 d={toPath(s.values)}
                 fill='none'
                 stroke={s.color}
-                strokeWidth={1.5}
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
                 transition={{ duration: 1.1 }}
@@ -1216,7 +1215,7 @@ const AlertsPreview = () => {
       return (
         <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
           <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
-            <BugIcon className='size-4 text-rose-600 dark:text-rose-400' />
+            <WarningIcon className='size-4 text-rose-600 dark:text-rose-400' />
             <span className='text-sm'>
               Error alert <span className='font-semibold'>Unique error</span>{' '}
               triggered!
@@ -1243,7 +1242,7 @@ const AlertsPreview = () => {
       return (
         <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
           <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
-            <BellRingIcon className='size-4 text-amber-600 dark:text-amber-400' />
+            <BellRingingIcon className='size-4 text-amber-600 dark:text-amber-400' />
             <span className='text-sm'>
               Alert <span className='font-semibold'>Online &gt;= 10</span> got
               triggered!
@@ -1263,7 +1262,7 @@ const AlertsPreview = () => {
     return (
       <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
         <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
-          <BellRingIcon className='size-4 text-amber-600 dark:text-amber-400' />
+          <BellRingingIcon className='size-4 text-amber-600 dark:text-amber-400' />
           <span className='text-sm'>
             Alert <span className='font-semibold'>No traffic</span> got
             triggered!
@@ -1332,7 +1331,7 @@ const RevenuePreview = () => {
       <div className='mb-4 flex items-center justify-between rounded-xl bg-white p-4 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
         <div>
           <div className='flex items-center gap-1.5 text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-gray-400'>
-            <DollarSignIcon className='size-3' />
+            <CurrencyDollarIcon className='size-3' />
             Total Revenue
           </div>
           <motion.div
@@ -1345,7 +1344,7 @@ const RevenuePreview = () => {
           </motion.div>
         </div>
         <div className='flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'>
-          <TrendingUpIcon className='size-3.5' />
+          <TrendUpIcon className='size-3.5' />
           +14.2%
         </div>
       </div>
@@ -1518,7 +1517,7 @@ const ExperimentsPreview = () => {
     <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 dark:from-slate-800 dark:to-slate-900'>
       <div className='mb-3 flex items-center justify-between'>
         <div className='flex items-center gap-2'>
-          <FlaskConicalIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
+          <FlaskIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
           <span className='text-sm font-medium text-slate-900 dark:text-white'>
             Checkout Flow Test
           </span>
@@ -1570,7 +1569,7 @@ const ExperimentsPreview = () => {
                   {v.name}
                 </span>
                 {i === winnerIdx ? (
-                  <TrendingUpIcon className='size-3 text-emerald-600 dark:text-emerald-400' />
+                  <TrendUpIcon className='size-3 text-emerald-600 dark:text-emerald-400' />
                 ) : null}
               </div>
               <div className='mt-1 text-slate-600 dark:text-gray-300'>
@@ -1726,13 +1725,11 @@ const FeaturesShowcase = () => {
                   <FileTextIcon
                     className='h-5 w-5 text-white'
                     aria-hidden='true'
-                    strokeWidth={1.5}
                   />
                 ) : (
-                  <MousePointerClickIcon
+                  <CursorClickIcon
                     className='h-5 w-5 text-white'
                     aria-hidden='true'
-                    strokeWidth={1.5}
                   />
                 )}
               </span>
@@ -1769,7 +1766,7 @@ const FeaturesShowcase = () => {
             className='flex items-center gap-2 text-sm text-gray-900 dark:text-gray-50'
             key={feature}
           >
-            <CheckIcon className='h-4 w-4' strokeWidth={1.5} />
+            <CheckIcon className='h-4 w-4' />
             <span>{feature}</span>
           </li>
         ),

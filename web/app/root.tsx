@@ -1,8 +1,8 @@
 import {
-  ExclamationTriangleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-} from '@heroicons/react/24/outline'
+  WarningOctagonIcon,
+  CaretDownIcon,
+  CaretUpIcon,
+} from '@phosphor-icons/react'
 import BillboardCss from 'billboard.js/dist/billboard.min.css?url'
 import cx from 'clsx'
 import _replace from 'lodash/replace'
@@ -139,7 +139,7 @@ export function ErrorBoundary() {
         >
           <div className='mx-auto flex w-full max-w-7xl flex-grow flex-col justify-center px-4 sm:px-6 lg:px-8'>
             <div className='flex shrink-0 justify-center'>
-              <ExclamationTriangleIcon className='h-24 w-auto text-yellow-400 dark:text-yellow-600' />
+              <WarningOctagonIcon className='h-24 w-auto text-yellow-400 dark:text-yellow-600' />
             </div>
             <div className='py-8'>
               <div className='text-center'>
@@ -170,12 +170,12 @@ export function ErrorBoundary() {
                         {crashStackShown ? (
                           <>
                             Hide crash stack
-                            <ChevronUpIcon className='ml-2 h-4 w-4' />
+                            <CaretUpIcon className='ml-2 h-4 w-4' />
                           </>
                         ) : (
                           <>
                             Show crash stack
-                            <ChevronDownIcon className='ml-2 h-4 w-4' />
+                            <CaretDownIcon className='ml-2 h-4 w-4' />
                           </>
                         )}
                       </span>

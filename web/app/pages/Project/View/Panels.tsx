@@ -1,9 +1,3 @@
-import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
-import { ChevronRightIcon, CircleStackIcon } from '@heroicons/react/24/outline'
-import {
-  ArrowLongRightIcon,
-  ArrowLongLeftIcon,
-} from '@heroicons/react/24/solid'
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
 import type { ChartOptions } from 'billboard.js'
 import cx from 'clsx'
@@ -22,7 +16,16 @@ import _slice from 'lodash/slice'
 import _sortBy from 'lodash/sortBy'
 import _sum from 'lodash/sum'
 import _toPairs from 'lodash/toPairs'
-import { FilterIcon, ScanIcon } from 'lucide-react'
+import {
+  FunnelIcon,
+  ScanIcon,
+  CaretUpIcon,
+  CaretDownIcon,
+  CaretRightIcon,
+  StackIcon,
+  ArrowLineRightIcon,
+  ArrowLineLeftIcon,
+} from '@phosphor-icons/react'
 import React, {
   memo,
   useState,
@@ -62,7 +65,7 @@ const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
 const PanelEmptyState = ({ message }: { message: string }) => (
   <div className='flex flex-col items-center justify-center py-8 text-center'>
     <div className='mb-3 flex size-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800'>
-      <CircleStackIcon className='size-5 text-gray-400 dark:text-slate-500' />
+      <StackIcon className='size-5 text-gray-400 dark:text-slate-500' />
     </div>
     <Text as='p' size='sm' colour='secondary'>
       {message}
@@ -365,10 +368,7 @@ const KVTable = ({
           >
             <td className='flex w-2/5 items-center py-1 pl-2 text-left sm:w-4/6'>
               {event}
-              <FilterIcon
-                className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                strokeWidth={1.5}
-              />
+              <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
               <div className='ml-2 h-4 w-4 group-hover:hidden' />
             </td>
             <td className='w-[30%] py-1 text-right sm:w-1/6'>
@@ -760,16 +760,13 @@ const CustomEvents = ({
                     {loadingEvents[ev] ? (
                       <Spin className='m-0.5!' />
                     ) : activeEvents[ev] ? (
-                      <ChevronUpIcon className='size-5 text-gray-500 dark:text-gray-300' />
+                      <CaretUpIcon className='size-5 text-gray-500 dark:text-gray-300' />
                     ) : (
-                      <ChevronDownIcon className='size-5 text-gray-500 dark:text-gray-300' />
+                      <CaretDownIcon className='size-5 text-gray-500 dark:text-gray-300' />
                     )}
                   </button>
                   <span className='pl-2'>{ev}</span>
-                  <FilterIcon
-                    className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block peer-hover:hidden dark:text-gray-300'
-                    strokeWidth={1.5}
-                  />
+                  <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block peer-hover:hidden dark:text-gray-300' />
                   <div className='ml-2 h-4 w-4 group-hover:hidden peer-hover:block' />
                 </td>
                 <td className='w-[40%] py-1 pr-2 text-right sm:w-2/6'>
@@ -870,10 +867,7 @@ const CustomEvents = ({
                     <Text size='sm' truncate>
                       {ev}
                     </Text>
-                    <FilterIcon
-                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                      strokeWidth={1.5}
-                    />
+                    <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
                     <div className='ml-2 h-4 w-4 group-hover:hidden' />
                   </div>
                   <div className='relative z-10 flex w-2/6 items-center justify-end text-right'>
@@ -1159,10 +1153,7 @@ const MetadataKeyPanel = ({
                     </td>
                     <td className='flex items-center py-1 text-left'>
                       <span className='truncate'>{value}</span>
-                      <FilterIcon
-                        className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                        strokeWidth={1.5}
-                      />
+                      <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
                     </td>
                     <td className='py-1 text-right'>{count}</td>
                     <td className='py-1 pr-2 text-right'>{perc}%</td>
@@ -1209,10 +1200,7 @@ const MetadataKeyPanel = ({
                 >
                   <td className='flex items-center py-1 pl-2 text-left'>
                     <span className='truncate'>{value}</span>
-                    <FilterIcon
-                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                      strokeWidth={1.5}
-                    />
+                    <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
                   </td>
                   <td className='py-1 text-right'>{count}</td>
                   <td className='py-1 pr-2 text-right'>{perc}%</td>
@@ -1320,10 +1308,7 @@ const MetadataKeyPanel = ({
                       <Text size='sm' truncate>
                         {value}
                       </Text>
-                      <FilterIcon
-                        className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                        strokeWidth={1.5}
-                      />
+                      <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
                       <div className='ml-2 h-4 w-4 group-hover:hidden' />
                     </div>
                     <div className='relative z-10 w-1/6 pr-2 text-right'>
@@ -1407,10 +1392,7 @@ const MetadataKeyPanel = ({
                     <Text size='sm' truncate>
                       {value}
                     </Text>
-                    <FilterIcon
-                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                      strokeWidth={1.5}
-                    />
+                    <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
                     <div className='ml-2 h-4 w-4 group-hover:hidden' />
                   </div>
                   <div className='relative z-10 w-1/6 pr-2 text-right'>
@@ -1839,10 +1821,7 @@ const DetailsTable = ({
                     </span>
                     {!disableRowClick ? (
                       <>
-                        <FilterIcon
-                          className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
-                          strokeWidth={1.5}
-                        />
+                        <FunnelIcon className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300' />
                         <div className='ml-2 h-4 w-4 group-hover:hidden' />
                       </>
                     ) : null}
@@ -2051,7 +2030,7 @@ const Panel = ({
                             isExpanded ? 'Collapse versions' : 'Expand versions'
                           }
                         >
-                          <ChevronRightIcon
+                          <CaretRightIcon
                             className={cx(
                               'h-4 w-4 text-gray-500 transition-transform dark:text-gray-400',
                               {
@@ -2451,7 +2430,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                   disabled={!canGoPrev()}
                   focus={false}
                 >
-                  <ArrowLongLeftIcon className='h-5 w-5' />
+                  <ArrowLineLeftIcon className='h-5 w-5' />
                 </Button>
                 <Button
                   className={cx(
@@ -2466,7 +2445,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                   type='button'
                   focus={false}
                 >
-                  <ArrowLongRightIcon className='h-5 w-5' />
+                  <ArrowLineRightIcon className='h-5 w-5' />
                 </Button>
               </div>
             </div>

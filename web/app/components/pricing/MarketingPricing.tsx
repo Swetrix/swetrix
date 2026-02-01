@@ -1,8 +1,7 @@
 import { Label, Radio, RadioGroup } from '@headlessui/react'
-import { CheckIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 import _map from 'lodash/map'
-import { ArrowRightIcon, CircleHelpIcon } from 'lucide-react'
+import { ArrowRightIcon, QuestionIcon, CheckIcon } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -68,10 +67,7 @@ const MarketingPricing = ({
                           amount: 50,
                         })}
                         tooltipNode={
-                          <CircleHelpIcon
-                            className='size-4 stroke-gray-50'
-                            strokeWidth={1.5}
-                          />
+                          <QuestionIcon className='size-4 stroke-gray-50' />
                         }
                       />
                     </div>

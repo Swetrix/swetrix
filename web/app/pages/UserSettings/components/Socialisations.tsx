@@ -1,4 +1,4 @@
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
+import { CheckCircleIcon, XCircleIcon } from '@phosphor-icons/react'
 import _map from 'lodash/map'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -172,115 +172,110 @@ const Socialisations = () => {
   }
 
   return (
-    <>
-      <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-        {t('profileSettings.socialisationsDesc')}
-      </p>
-      <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-900'>
-        <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-          <thead className='bg-gray-50 dark:bg-slate-800'>
-            <tr>
-              <th
-                scope='col'
-                className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+    <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-900'>
+      <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
+        <thead className='bg-gray-50 dark:bg-slate-800'>
+          <tr>
+            <th
+              scope='col'
+              className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+            >
+              {t('common.name')}
+            </th>
+            <th
+              scope='col'
+              className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+            >
+              {t('common.status')}
+            </th>
+            <th scope='col' className='px-4 py-3' />
+          </tr>
+        </thead>
+        <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+          {_map(AVAILABLE_SSO_PROVIDERS, ({ name, key, icons }) => {
+            const [connected, unlinkable] = getStatusByUser(user, key)
+            const { Light, Dark } = icons
+            const status = connected ? 'connected' : 'notConnected'
+
+            return (
+              <tr
+                key={key}
+                className='hover:bg-gray-50 dark:hover:bg-slate-800/50'
               >
-                {t('common.name')}
-              </th>
-              <th
-                scope='col'
-                className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
-              >
-                {t('common.status')}
-              </th>
-              <th scope='col' className='px-4 py-3' />
-            </tr>
-          </thead>
-          <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
-            {_map(AVAILABLE_SSO_PROVIDERS, ({ name, key, icons }) => {
-              const [connected, unlinkable] = getStatusByUser(user, key)
-              const { Light, Dark } = icons
-              const status = connected ? 'connected' : 'notConnected'
-
-              return (
-                <tr
-                  key={key}
-                  className='hover:bg-gray-50 dark:hover:bg-slate-800/50'
-                >
-                  <td className='px-4 py-3 text-sm text-gray-900 dark:text-gray-100'>
-                    <div className='flex items-center gap-3'>
-                      <div className='hidden shrink-0 sm:block'>
-                        {theme === 'dark' ? (
-                          <Light className='h-9 w-9 rounded-md' />
-                        ) : (
-                          <Dark className='h-9 w-9 rounded-md' />
-                        )}
-                      </div>
-                      <span className='font-medium'>{name}</span>
+                <td className='px-4 py-3 text-sm text-gray-900 dark:text-gray-100'>
+                  <div className='flex items-center gap-3'>
+                    <div className='hidden shrink-0 sm:block'>
+                      {theme === 'dark' ? (
+                        <Light className='h-9 w-9 rounded-md' />
+                      ) : (
+                        <Dark className='h-9 w-9 rounded-md' />
+                      )}
                     </div>
-                  </td>
-                  <td className='px-4 py-3 text-sm text-gray-700 dark:text-gray-300'>
-                    <div className='flex items-center'>
-                      {status === 'notConnected' ? (
-                        <XCircleIcon
-                          className='mr-1.5 h-5 w-5 shrink-0 text-red-400'
-                          aria-hidden='true'
-                        />
-                      ) : null}
-                      {status === 'connected' ? (
-                        <CheckCircleIcon
-                          className='mr-1.5 h-5 w-5 shrink-0 text-green-400'
-                          aria-hidden='true'
-                        />
-                      ) : null}
-                      {t(`common.${status}`)}
-                    </div>
-                  </td>
-                  <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
-                    <div className='flex items-center justify-end gap-2'>
-                      {connected && !unlinkable ? (
-                        <Button
-                          onClick={() =>
-                            toast.error(
-                              t('profileSettings.cantUnlinkSocialisation'),
-                            )
-                          }
-                          small
-                          danger
-                        >
-                          {t('common.unlink')}
-                        </Button>
-                      ) : null}
+                    <span className='font-medium'>{name}</span>
+                  </div>
+                </td>
+                <td className='px-4 py-3 text-sm text-gray-700 dark:text-gray-300'>
+                  <div className='flex items-center'>
+                    {status === 'notConnected' ? (
+                      <XCircleIcon
+                        className='mr-1.5 h-5 w-5 shrink-0 text-red-400'
+                        aria-hidden='true'
+                      />
+                    ) : null}
+                    {status === 'connected' ? (
+                      <CheckCircleIcon
+                        className='mr-1.5 h-5 w-5 shrink-0 text-green-400'
+                        aria-hidden='true'
+                      />
+                    ) : null}
+                    {t(`common.${status}`)}
+                  </div>
+                </td>
+                <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
+                  <div className='flex items-center justify-end gap-2'>
+                    {connected && !unlinkable ? (
+                      <Button
+                        onClick={() =>
+                          toast.error(
+                            t('profileSettings.cantUnlinkSocialisation'),
+                          )
+                        }
+                        small
+                        danger
+                      >
+                        {t('common.unlink')}
+                      </Button>
+                    ) : null}
 
-                      {connected && unlinkable ? (
-                        <Button
-                          onClick={() => onUnlinkSSO(key)}
-                          loading={isUnlinking}
-                          small
-                          danger
-                        >
-                          {t('common.unlink')}
-                        </Button>
-                      ) : null}
+                    {connected && unlinkable ? (
+                      <Button
+                        onClick={() => onUnlinkSSO(key)}
+                        loading={isUnlinking}
+                        small
+                        danger
+                      >
+                        {t('common.unlink')}
+                      </Button>
+                    ) : null}
 
-                      {!connected ? (
-                        <Button
-                          onClick={() => linkSSO(key)}
-                          loading={isLoading}
-                          small
-                          primary
-                        >
-                          {t('common.link')}
-                        </Button>
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-    </>
+                    {!connected ? (
+                      <Button
+                        onClick={() => linkSSO(key)}
+                        loading={isLoading}
+                        small
+                        primary
+                      >
+                        {t('common.link')}
+                      </Button>
+                    ) : null}
+                  </div>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
   )
 }
 

@@ -1,4 +1,4 @@
-import { SquareArrowOutUpRightIcon } from 'lucide-react'
+import { ArrowSquareOutIcon } from '@phosphor-icons/react'
 import { useTranslation, Trans } from 'react-i18next'
 
 import {
@@ -23,10 +23,7 @@ const Panel = ({ href, title, description }: PanelProps) => (
     rel='noopener noreferrer'
     className='relative block rounded-2xl border border-gray-300/80 bg-gray-100 p-10 transition-colors hover:bg-gray-200 dark:border-slate-900/80 dark:bg-slate-800/80 dark:hover:bg-slate-800'
   >
-    <SquareArrowOutUpRightIcon
-      className='absolute top-5 right-5 h-5 w-5 text-gray-900 dark:text-gray-100'
-      strokeWidth={1.5}
-    />
+    <ArrowSquareOutIcon className='absolute top-5 right-5 h-5 w-5 text-gray-900 dark:text-gray-100' />
     <h3 className='text-lg leading-7 font-semibold text-gray-900 dark:text-gray-100'>
       {title}
     </h3>

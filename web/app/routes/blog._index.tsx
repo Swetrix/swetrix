@@ -1,7 +1,7 @@
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import { ChevronRightIcon } from 'lucide-react'
+import { CaretRightIcon } from '@phosphor-icons/react'
 import { useTranslation } from 'react-i18next'
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router'
 import { redirect, Link, useLoaderData } from 'react-router'
@@ -98,7 +98,7 @@ export default function Posts() {
                     to={post.slug}
                   >
                     <span className='relative'>Read more</span>
-                    <ChevronRightIcon className='relative mt-px ml-0.5 size-4 overflow-visible' />
+                    <CaretRightIcon className='relative mt-px ml-0.5 size-4 overflow-visible' />
                   </Link>
                 </article>
               )

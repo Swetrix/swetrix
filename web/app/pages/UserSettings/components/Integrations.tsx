@@ -1,8 +1,4 @@
-import {
-  CheckCircleIcon,
-  XCircleIcon,
-  ClockIcon,
-} from '@heroicons/react/24/solid'
+import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@phosphor-icons/react'
 import type i18next from 'i18next'
 import _map from 'lodash/map'
 import React, { useState, memo, useEffect } from 'react'

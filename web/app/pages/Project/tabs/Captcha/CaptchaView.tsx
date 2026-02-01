@@ -1,4 +1,3 @@
-import { GlobeAltIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
@@ -6,9 +5,10 @@ import _map from 'lodash/map'
 import {
   CompassIcon,
   MapPinIcon,
-  MonitorCog,
-  TabletSmartphoneIcon,
-} from 'lucide-react'
+  MonitorIcon,
+  DevicesIcon,
+  GlobeIcon,
+} from '@phosphor-icons/react'
 import { useState, useEffect, useMemo, useContext, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
@@ -46,10 +46,10 @@ const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
 
 const iconClassName = 'w-6 h-6'
 const panelIconMapping: Record<string, React.ReactNode> = {
-  cc: <MapPinIcon className={iconClassName} strokeWidth={1.5} />,
-  dv: <TabletSmartphoneIcon className={iconClassName} strokeWidth={1.5} />,
-  br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
-  os: <MonitorCog className={iconClassName} strokeWidth={1.5} />,
+  cc: <MapPinIcon className={iconClassName} />,
+  dv: <DevicesIcon className={iconClassName} />,
+  br: <CompassIcon className={iconClassName} />,
+  os: <MonitorIcon className={iconClassName} />,
 }
 
 export const captchaTypeNameMapping = (t: any) => ({
@@ -327,7 +327,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                       if (!logoUrl) {
                         return (
                           <>
-                            <GlobeAltIcon className='h-5 w-5' />
+                            <GlobeIcon className='h-5 w-5' />
                             &nbsp;
                             {entryName}
                           </>
@@ -370,7 +370,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
                       if (!logoUrl) {
                         return (
                           <>
-                            <GlobeAltIcon className='h-5 w-5' />
+                            <GlobeIcon className='h-5 w-5' />
                             &nbsp;
                             {entryName}
                           </>

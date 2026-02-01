@@ -2,11 +2,11 @@ import cx from 'clsx'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import {
-  BookmarkIcon,
-  DownloadIcon,
+  BookmarkSimpleIcon,
+  DownloadSimpleIcon,
   PencilIcon,
-  Trash2Icon,
-} from 'lucide-react'
+  TrashIcon,
+} from '@phosphor-icons/react'
 import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams, useFetcher } from 'react-router'
@@ -110,7 +110,7 @@ const TrafficHeaderActions = ({
           ],
           (x) => !!x,
         )}
-        title={[<BookmarkIcon key='bookmark-icon' className='h-5 w-5' />]}
+        title={[<BookmarkSimpleIcon key='bookmark-icon' className='h-5 w-5' />]}
         labelExtractor={(item, close) => {
           // @ts-expect-error
           if (item.createView) {
@@ -164,7 +164,7 @@ const TrafficHeaderActions = ({
                         },
                       )}
                     >
-                      <Trash2Icon className='size-3' />
+                      <TrashIcon className='size-3' />
                     </button>
                   </deleteFetcher.Form>
                 </div>
@@ -205,7 +205,7 @@ const TrafficHeaderActions = ({
       <Dropdown
         header={t('project.exportData')}
         items={exportTypes}
-        title={[<DownloadIcon key='download-icon' className='h-5 w-5' />]}
+        title={[<DownloadSimpleIcon key='download-icon' className='h-5 w-5' />]}
         labelExtractor={(item) => item.label}
         keyExtractor={(item) => item.label}
         onSelect={(item) => {

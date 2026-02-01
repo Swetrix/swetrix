@@ -1,15 +1,15 @@
-import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import _map from 'lodash/map'
 import {
-  BugIcon,
+  WarningIcon,
   FileTextIcon,
-  MousePointerClickIcon,
-  UsersIcon,
-  CalendarIcon,
-} from 'lucide-react'
+  CursorClickIcon,
+  UserListIcon,
+  CalendarDotsIcon,
+  CaretRightIcon,
+} from '@phosphor-icons/react'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
@@ -155,14 +155,13 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                 className='mr-2 flex items-center'
                 title={t('project.sessions')}
               >
-                <UsersIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
-                {profile.sessionsCount}
+                <UserListIcon className='mr-1 size-4' /> {profile.sessionsCount}
               </span>
               <span
                 className='mr-2 flex items-center'
                 title={t('dashboard.pageviews')}
               >
-                <FileTextIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
+                <FileTextIcon className='mr-1 size-4' />{' '}
                 {profile.pageviewsCount}
               </span>
               {profile.eventsCount > 0 ? (
@@ -170,10 +169,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                   className='mr-2 flex items-center'
                   title={t('dashboard.events')}
                 >
-                  <MousePointerClickIcon
-                    className='mr-1 size-4'
-                    strokeWidth={1.5}
-                  />{' '}
+                  <CursorClickIcon className='mr-1 size-4' />{' '}
                   {profile.eventsCount}
                 </span>
               ) : null}
@@ -182,8 +178,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                   className='flex items-center text-red-400'
                   title={t('dashboard.errors')}
                 >
-                  <BugIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
-                  {profile.errorsCount}
+                  <WarningIcon className='mr-1 size-4' /> {profile.errorsCount}
                 </span>
               ) : null}
             </p>
@@ -196,14 +191,13 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                 className='flex items-center'
                 title={t('project.xSessions', { x: profile.sessionsCount })}
               >
-                <UsersIcon className='mr-1 size-5' strokeWidth={1.5} />{' '}
-                {profile.sessionsCount}
+                <UserListIcon className='mr-1 size-5' /> {profile.sessionsCount}
               </span>
               <span
                 className='flex items-center'
                 title={t('dashboard.xPageviews', { x: profile.pageviewsCount })}
               >
-                <FileTextIcon className='mr-1 size-5' strokeWidth={1.5} />{' '}
+                <FileTextIcon className='mr-1 size-5' />{' '}
                 {profile.pageviewsCount}
               </span>
               {profile.eventsCount > 0 ? (
@@ -213,10 +207,7 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                     x: profile.eventsCount,
                   })}
                 >
-                  <MousePointerClickIcon
-                    className='mr-1 size-5'
-                    strokeWidth={1.5}
-                  />{' '}
+                  <CursorClickIcon className='mr-1 size-5' />{' '}
                   {profile.eventsCount}
                 </span>
               ) : null}
@@ -225,17 +216,16 @@ const ProfileRow = ({ profile, timeFormat }: ProfileRowProps) => {
                   className='flex items-center text-red-500'
                   title={t('dashboard.xErrors', { x: profile.errorsCount })}
                 >
-                  <BugIcon className='mr-1 size-5' strokeWidth={1.5} />{' '}
-                  {profile.errorsCount}
+                  <WarningIcon className='mr-1 size-5' /> {profile.errorsCount}
                 </span>
               ) : null}
             </div>
             <p className='mt-1 flex items-center text-xs leading-5 text-gray-500 dark:text-gray-400'>
-              <CalendarIcon className='mr-1 size-3' strokeWidth={1.5} />
+              <CalendarDotsIcon className='mr-1 size-3' />
               {lastSeenText}
             </p>
           </div>
-          <ChevronRightIcon
+          <CaretRightIcon
             className='h-5 w-5 flex-none text-gray-400'
             aria-hidden='true'
           />

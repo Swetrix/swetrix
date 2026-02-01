@@ -1,4 +1,4 @@
-import { ExternalLinkIcon, LinkIcon } from 'lucide-react'
+import { ArrowSquareOutIcon, LinkIcon } from '@phosphor-icons/react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -32,7 +32,7 @@ const RefRow = ({ rowName }: { rowName: string | null }) => {
   if (rowName === null) {
     return (
       <div className='scrollbar-thin hover-always-overflow flex items-center'>
-        <LinkIcon className='float-left mr-1.5 size-5' strokeWidth={1.5} />
+        <LinkIcon className='float-left mr-1.5 size-5' />
         <span className='italic'>{t('project.directNone')}</span>
       </div>
     )
@@ -61,10 +61,7 @@ const RefRow = ({ rowName }: { rowName: string | null }) => {
           aria-label={`${rowName} (opens in a new tab)`}
           className='ml-1 shrink-0 rounded-md p-1 text-gray-800 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700'
         >
-          <ExternalLinkIcon
-            className='size-3.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100'
-            strokeWidth={2}
-          />
+          <ArrowSquareOutIcon className='size-3.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100' />
         </a>
       ) : null}
     </div>

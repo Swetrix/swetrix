@@ -8,14 +8,13 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import {
-  BugIcon,
   PercentIcon,
   UsersIcon,
   MonitorIcon,
-  ChevronRightIcon,
-  AlertTriangleIcon,
+  CaretRightIcon,
+  WarningIcon,
   UserIcon,
-} from 'lucide-react'
+} from '@phosphor-icons/react'
 import {
   useState,
   useEffect,
@@ -431,15 +430,13 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
                 className='mr-3 flex items-center'
                 title={t('project.affectedUsers')}
               >
-                <UserIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
-                {error.users}
+                <UserIcon className='mr-1 size-4' /> {error.users}
               </span>
               <span
                 className='flex items-center'
                 title={t('project.affectedSessions')}
               >
-                <MonitorIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
-                {error.sessions}
+                <MonitorIcon className='mr-1 size-4' /> {error.sessions}
               </span>
             </p>
           </div>
@@ -451,27 +448,24 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
                 className='flex items-center'
                 title={t('dashboard.xOccurrences', { x: error.count })}
               >
-                <AlertTriangleIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
-                {error.count}
+                <WarningIcon className='mr-1 size-4' /> {error.count}
               </span>
               <span
                 className='flex items-center'
                 title={t('project.xAffectedUsers', { x: error.users })}
               >
-                <UserIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
-                {error.users}
+                <UserIcon className='mr-1 size-4' /> {error.users}
               </span>
               <span
                 className='flex items-center'
                 title={t('project.xAffectedSessions', { x: error.sessions })}
               >
-                <MonitorIcon className='mr-1 size-4' strokeWidth={1.5} />{' '}
-                {error.sessions}
+                <MonitorIcon className='mr-1 size-4' /> {error.sessions}
               </span>
             </div>
             <Badge label={status.label} colour={status.colour} />
           </div>
-          <ChevronRightIcon className='h-5 w-5 flex-none text-gray-400' />
+          <CaretRightIcon className='h-5 w-5 flex-none text-gray-400' />
         </div>
       </li>
     </Link>
@@ -1282,26 +1276,22 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
 
             <div className='grid w-full grid-cols-2 gap-2 lg:w-[35%]'>
               <StatCard
-                icon={<BugIcon className='text-red-600' strokeWidth={1.5} />}
+                icon={<WarningIcon className='text-red-600' />}
                 value={nFormatter(overview?.stats?.totalErrors || 0, 1)}
                 label={t('project.totalErrors')}
               />
               <StatCard
-                icon={
-                  <PercentIcon className='text-orange-600' strokeWidth={1.5} />
-                }
+                icon={<PercentIcon className='text-orange-600' />}
                 value={`${overview?.stats?.errorRate || 0}%`}
                 label={t('project.errorRate')}
               />
               <StatCard
-                icon={<UsersIcon className='text-blue-600' strokeWidth={1.5} />}
+                icon={<UsersIcon className='text-blue-600' />}
                 value={nFormatter(overview?.stats?.affectedUsers || 0, 1)}
                 label={t('project.affectedUsers')}
               />
               <StatCard
-                icon={
-                  <MonitorIcon className='text-purple-600' strokeWidth={1.5} />
-                }
+                icon={<MonitorIcon className='text-purple-600' />}
                 value={nFormatter(overview?.stats?.affectedSessions || 0, 1)}
                 label={t('project.affectedSessions')}
               />
