@@ -776,7 +776,6 @@ const NotAuthedHeader = ({
                     {t('common.pricing')}
                   </Link>
                 ) : null}
-                <CommunityLinks />
                 <a
                   href={DOCS_URL}
                   className='underline-animate text-base leading-6 font-semibold text-slate-800 focus:outline-hidden dark:text-white'
@@ -785,6 +784,7 @@ const NotAuthedHeader = ({
                 >
                   {t('common.docs')}
                 </a>
+                <CommunityLinks />
               </div>
             ) : null}
           </div>
