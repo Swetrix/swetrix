@@ -360,7 +360,6 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     setIsCollapsed((prev) => {
       const newValue = !prev
       localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(newValue))
-      trackCustom('SIDEBAR_COLLAPSED', { collapsed: newValue })
       return newValue
     })
   }, [])
