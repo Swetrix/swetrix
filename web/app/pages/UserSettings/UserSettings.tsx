@@ -1431,9 +1431,11 @@ const UserSettings = () => {
                                 100,
                                 Math.max(
                                   0,
-                                  usageInfo.traffic === 0 || maxEventsCount === 0
+                                  usageInfo.traffic === 0 ||
+                                    maxEventsCount === 0
                                     ? 0
-                                    : (usageInfo.traffic / maxEventsCount) * 100,
+                                    : (usageInfo.traffic / maxEventsCount) *
+                                        100,
                                 ),
                               ),
                               lightColour: '#2563eb',
@@ -1444,9 +1446,12 @@ const UserSettings = () => {
                                 100,
                                 Math.max(
                                   0,
-                                  usageInfo.customEvents === 0 || maxEventsCount === 0
+                                  usageInfo.customEvents === 0 ||
+                                    maxEventsCount === 0
                                     ? 0
-                                    : (usageInfo.customEvents / maxEventsCount) * 100,
+                                    : (usageInfo.customEvents /
+                                        maxEventsCount) *
+                                        100,
                                 ),
                               ),
                               lightColour: '#c026d3',
@@ -1457,9 +1462,11 @@ const UserSettings = () => {
                                 100,
                                 Math.max(
                                   0,
-                                  usageInfo.captcha === 0 || maxEventsCount === 0
+                                  usageInfo.captcha === 0 ||
+                                    maxEventsCount === 0
                                     ? 0
-                                    : (usageInfo.captcha / maxEventsCount) * 100,
+                                    : (usageInfo.captcha / maxEventsCount) *
+                                        100,
                                 ),
                               ),
                               lightColour: '#65a30d',
