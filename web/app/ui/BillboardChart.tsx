@@ -140,7 +140,12 @@ const BillboardChart = ({
         // ignore destroy errors
       }
 
-      isDestroyingRef.current = false
+      // Keep isDestroyingRef true until next tick to catch any queued resize events
+      // from billboard.js's internal handlers that may fire after destroy
+      queueMicrotask(() => {
+        isDestroyingRef.current = false
+      })
+
       if (onReady) onReady(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
