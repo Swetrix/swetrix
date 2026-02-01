@@ -17,10 +17,17 @@ import {
   TranslateIcon,
   LockIcon,
   CaretDownIcon,
+  CreditCardIcon,
 } from '@phosphor-icons/react'
+import _round from 'lodash/round'
 import React, { useState, useEffect, memo, useMemo, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useNavigate, useFetcher, useSearchParams } from 'react-router'
+import { useTranslation, Trans } from 'react-i18next'
+import {
+  useNavigate,
+  useFetcher,
+  useSearchParams,
+  useLoaderData,
+} from 'react-router'
 import { toast } from 'sonner'
 
 import {
@@ -32,17 +39,30 @@ import {
   whitelist,
   languages,
   languageFlag,
+  PADDLE_JS_URL,
+  PADDLE_VENDOR_ID,
+  CONTACT_EMAIL,
+  paddleLanguageMapping,
 } from '~/lib/constants'
+import BillingPricing from '~/components/pricing/BillingPricing'
 import { changeLanguage } from '~/i18n'
+import { DEFAULT_METAINFO } from '~/lib/models/Metainfo'
+import { UsageInfo } from '~/lib/models/Usageinfo'
 import { User } from '~/lib/models/User'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
-import type { UserSettingsActionData } from '~/routes/user-settings'
+import { useTheme } from '~/providers/ThemeProvider'
+import type {
+  UserSettingsActionData,
+  UserSettingsLoaderData,
+} from '~/routes/user-settings'
 import Alert from '~/ui/Alert'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
+import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
+import MultiProgress from '~/ui/MultiProgress'
 import PasswordStrength from '~/ui/PasswordStrength'
 import Select from '~/ui/Select'
 import { TabHeader } from '~/ui/TabHeader'
@@ -50,6 +70,7 @@ import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
 import Flag from '~/ui/Flag'
 import TimezonePicker from '~/ui/TimezonePicker'
+import { loadScript } from '~/utils/generic'
 import { getCookie, setCookie } from '~/utils/cookie'
 import routes from '~/utils/routes'
 import {
@@ -73,6 +94,7 @@ const timeFormatArray = _map(TimeFormat, (key) => key)
 const TAB_MAPPING = {
   ACCOUNT: 'account',
   PASSWORD_AUTH: 'password-auth',
+  BILLING: 'billing',
   INTERFACE: 'interface',
   COMMUNICATIONS: 'communications',
   LANGUAGE: 'language',
@@ -131,6 +153,12 @@ const getTabs = (t: typeof i18next.t): TabConfig[] => {
       description: t('profileSettings.passwordAuthDesc'),
     },
     {
+      id: TAB_MAPPING.BILLING,
+      label: t('profileSettings.billingTab'),
+      icon: CreditCardIcon,
+      description: t('profileSettings.billingTabDesc'),
+    },
+    {
       id: TAB_MAPPING.COMMUNICATIONS,
       label: t('profileSettings.communications'),
       icon: ChatTextIcon,
@@ -157,13 +185,27 @@ const getTabIconColor = (tabId: string): string => {
       return 'text-blue-500'
     case TAB_MAPPING.PASSWORD_AUTH:
       return 'text-indigo-500'
-    case TAB_MAPPING.COMMUNICATIONS:
+    case TAB_MAPPING.BILLING:
       return 'text-emerald-500'
+    case TAB_MAPPING.COMMUNICATIONS:
+      return 'text-teal-500'
     case TAB_MAPPING.INTERFACE:
       return 'text-purple-500'
     default:
       return 'text-amber-500'
   }
+}
+
+const DEFAULT_USAGE_INFO: UsageInfo = {
+  total: 0,
+  traffic: 0,
+  errors: 0,
+  customEvents: 0,
+  captcha: 0,
+  trafficPerc: 0,
+  errorsPerc: 0,
+  customEventsPerc: 0,
+  captchaPerc: 0,
 }
 
 interface SettingsSectionProps {
@@ -202,7 +244,9 @@ interface Form extends Partial<User> {
 }
 
 const UserSettings = () => {
-  const { user, logout, mergeUser } = useAuth()
+  const { user, logout, mergeUser, isLoading: authLoading } = useAuth()
+  const loaderData = useLoaderData<UserSettingsLoaderData>()
+  const { theme } = useTheme()
 
   const navigate = useNavigate()
   const {
@@ -210,8 +254,164 @@ const UserSettings = () => {
     i18n: { language },
   } = useTranslation('common')
   const fetcher = useFetcher<UserSettingsActionData>()
+  const metainfoFetcher = useFetcher<UserSettingsActionData>()
 
   const [searchParams, setSearchParams] = useSearchParams()
+
+  const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
+  const [lastEvent, setLastEvent] = useState<{ event: string } | null>(null)
+
+  const metainfo = useMemo(() => {
+    if (metainfoFetcher.data?.success && metainfoFetcher.data.data) {
+      return metainfoFetcher.data.data as typeof DEFAULT_METAINFO
+    }
+    return loaderData?.metainfo ?? DEFAULT_METAINFO
+  }, [loaderData?.metainfo, metainfoFetcher.data])
+
+  const usageInfo = useMemo(
+    () => loaderData?.usageInfo ?? DEFAULT_USAGE_INFO,
+    [loaderData?.usageInfo],
+  )
+
+  const isBillingLoading = !loaderData
+
+  const {
+    nextBillDate,
+    planCode,
+    subUpdateURL,
+    trialEndDate,
+    timeFormat: userTimeFormat,
+    cancellationEffectiveDate,
+    subCancelURL,
+    maxEventsCount = 0,
+  } = user || {}
+
+  const isSubscriber = !['none', 'trial', 'free'].includes(planCode || '')
+  const isTrial = planCode === 'trial'
+  const isNoSub = planCode === 'none'
+
+  const totalUsage = (() => {
+    if (maxEventsCount === 0) {
+      return usageInfo.total > 0 ? 100 : 0
+    }
+    const raw = _round((usageInfo.total / maxEventsCount) * 100, 2)
+    return Math.min(100, Math.max(0, raw))
+  })()
+  const remainingUsage = _round(Math.max(0, 100 - totalUsage), 2)
+
+  useEffect(() => {
+    loadScript(PADDLE_JS_URL)
+
+    const interval = setInterval(paddleSetup, 200)
+
+    function paddleSetup() {
+      if ((window as any)?.Paddle) {
+        ;(window as any).Paddle.Setup({
+          vendor: PADDLE_VENDOR_ID,
+          eventCallback: setLastEvent,
+        })
+        clearInterval(interval)
+      }
+    }
+
+    return () => {
+      clearInterval(interval)
+    }
+  }, [])
+
+  const isTrialEnded = (() => {
+    if (!trialEndDate) {
+      return false
+    }
+
+    const now = dayjs.utc()
+    const future = dayjs.utc(trialEndDate)
+    const diff = future.diff(now)
+
+    return diff < 0
+  })()
+
+  const trialEndsOnMessage = (() => {
+    if (!trialEndDate || !isTrial) {
+      return null
+    }
+
+    if (isTrialEnded) {
+      return t('pricing.trialEnded')
+    }
+
+    let date
+
+    if (language === 'en') {
+      if (userTimeFormat === '12-hour') {
+        date = dayjs(trialEndDate).locale(language).format('MMMM D, h:mm A')
+      } else {
+        date = dayjs(trialEndDate).locale(language).format('MMMM D, HH:mm')
+      }
+    } else if (userTimeFormat === '12-hour') {
+      date = dayjs(trialEndDate).locale(language).format('D MMMM, h:mm A')
+    } else {
+      date = dayjs(trialEndDate).locale(language).format('D MMMM, HH:mm')
+    }
+
+    return t('billing.trialEnds', {
+      date,
+    })
+  })()
+
+  const onSubscriptionCancel = () => {
+    if (!subCancelURL) {
+      toast.error(t('apiNotifications.somethingWentWrong'))
+      return
+    }
+
+    if (!(window as any).Paddle) {
+      window.location.replace(subCancelURL)
+      return
+    }
+
+    ;(window as any).Paddle.Checkout.open({
+      override: subCancelURL,
+      method: 'inline',
+      frameTarget: 'checkout-container',
+      frameInitialHeight: 416,
+      frameStyle:
+        'width:100%; min-width:312px; background-color: #f9fafb; border: none; border-radius: 10px; margin-top: 10px;',
+      locale: paddleLanguageMapping[language] || language,
+      displayModeTheme: theme,
+      country: metainfo.country,
+    })
+    setTimeout(() => {
+      document.querySelector('#checkout-container')?.scrollIntoView()
+    }, 500)
+  }
+
+  const onUpdatePaymentDetails = () => {
+    if (!subUpdateURL) {
+      toast.error(t('apiNotifications.somethingWentWrong'))
+      return
+    }
+
+    if (!(window as any).Paddle) {
+      window.location.replace(subUpdateURL)
+      return
+    }
+
+    ;(window as any).Paddle.Checkout.open({
+      override: subUpdateURL,
+      method: 'inline',
+      frameTarget: 'checkout-container',
+      frameInitialHeight: 416,
+      frameStyle:
+        'width:100%; min-width:312px; background-color: #f9fafb; border: none; border-radius: 10px; margin-top: 10px;',
+      locale: paddleLanguageMapping[language] || language,
+      displayModeTheme: theme,
+      country: metainfo.country,
+    })
+    setTimeout(() => {
+      document.querySelector('#checkout-container')?.scrollIntoView()
+    }, 500)
+  }
 
   const tabs = getTabs(t)
 
@@ -1042,6 +1242,329 @@ const UserSettings = () => {
               </>
             ) : null}
 
+            {activeTab === TAB_MAPPING.BILLING &&
+            !isSelfhosted &&
+            activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                />
+
+                {isBillingLoading || authLoading ? (
+                  <div className='flex justify-center py-12'>
+                    <Loader />
+                  </div>
+                ) : (
+                  <>
+                    {/* Trial info alert */}
+                    {isTrial && trialEndsOnMessage ? (
+                      <Alert
+                        variant='info'
+                        title={t('profileSettings.trialActive')}
+                        className='mb-6'
+                      >
+                        {trialEndsOnMessage} {t('billing.trialDescription')}
+                      </Alert>
+                    ) : null}
+
+                    {/* Subscription cancelled alert */}
+                    {cancellationEffectiveDate ? (
+                      <Alert
+                        variant='warning'
+                        title={t('billing.subscriptionCancelled')}
+                        className='mb-6'
+                      >
+                        {t('billing.subscriptionCancelledDescription', {
+                          date:
+                            language === 'en'
+                              ? dayjs(cancellationEffectiveDate)
+                                  .locale(language)
+                                  .format('MMMM D, YYYY')
+                              : dayjs(cancellationEffectiveDate)
+                                  .locale(language)
+                                  .format('D MMMM, YYYY'),
+                        })}
+                      </Alert>
+                    ) : null}
+
+                    {/* No active subscription alert */}
+                    {isNoSub ? (
+                      <Alert
+                        variant='error'
+                        title={t('billing.noActiveSubscription')}
+                        className='mb-6'
+                      >
+                        {t('billing.noActiveSubscriptionDescription')}
+                      </Alert>
+                    ) : null}
+
+                    {/* Next bill date info */}
+                    {isSubscriber && nextBillDate ? (
+                      <Alert
+                        variant='info'
+                        title={t('profileSettings.nextBilling')}
+                        className='mb-6'
+                      >
+                        {t('billing.nextBillDateIs', {
+                          date:
+                            language === 'en'
+                              ? dayjs(nextBillDate)
+                                  .locale(language)
+                                  .format('MMMM D, YYYY')
+                              : dayjs(nextBillDate)
+                                  .locale(language)
+                                  .format('D MMMM, YYYY'),
+                        })}
+                      </Alert>
+                    ) : null}
+
+                    {/* Plan Usage Section */}
+                    <SettingsSection
+                      title={t('billing.planUsage')}
+                      description={t('billing.planUsageDesc')}
+                    >
+                      {totalUsage >= 80 ? (
+                        <Alert variant='warning' className='mb-4'>
+                          {totalUsage >= 90
+                            ? t('billing.usageWarningCritical', {
+                                percentage: totalUsage,
+                              })
+                            : t('billing.usageWarningHigh', {
+                                percentage: totalUsage,
+                              })}
+                        </Alert>
+                      ) : null}
+
+                      <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+                        <Text
+                          as='p'
+                          size='sm'
+                          colour='secondary'
+                          className='mb-4'
+                        >
+                          {t('billing.usageOverview', {
+                            tracked: (usageInfo.total || 0).toLocaleString(),
+                            trackedPerc: totalUsage || 0,
+                            maxEvents: (maxEventsCount || 0).toLocaleString(),
+                          })}
+                        </Text>
+
+                        <div className='mb-4 grid grid-cols-2 gap-3'>
+                          <div className='flex items-center'>
+                            <div className='size-2 rounded-full bg-blue-600 dark:bg-blue-500' />
+                            <Text
+                              as='span'
+                              size='sm'
+                              colour='secondary'
+                              className='ml-2'
+                            >
+                              {t('billing.pageviews', {
+                                quantity: usageInfo.traffic || 0,
+                                percentage: usageInfo.trafficPerc || 0,
+                              })}
+                            </Text>
+                          </div>
+                          <div className='flex items-center'>
+                            <div className='size-2 rounded-full bg-fuchsia-600 dark:bg-fuchsia-500' />
+                            <Text
+                              as='span'
+                              size='sm'
+                              colour='secondary'
+                              className='ml-2'
+                            >
+                              {t('billing.customEvents', {
+                                quantity: usageInfo.customEvents || 0,
+                                percentage: usageInfo.customEventsPerc || 0,
+                              })}
+                            </Text>
+                          </div>
+                          <div className='flex items-center'>
+                            <div className='size-2 rounded-full bg-lime-600 dark:bg-lime-500' />
+                            <Text
+                              as='span'
+                              size='sm'
+                              colour='secondary'
+                              className='ml-2'
+                            >
+                              {t('billing.captcha', {
+                                quantity: usageInfo.captcha || 0,
+                                percentage: usageInfo.captchaPerc || 0,
+                              })}
+                            </Text>
+                          </div>
+                          <div className='flex items-center'>
+                            <div className='size-2 rounded-full bg-red-600 dark:bg-red-500' />
+                            <Text
+                              as='span'
+                              size='sm'
+                              colour='secondary'
+                              className='ml-2'
+                            >
+                              {t('billing.errors', {
+                                quantity: usageInfo.errors || 0,
+                                percentage: usageInfo.errorsPerc || 0,
+                              })}
+                            </Text>
+                          </div>
+                        </div>
+
+                        <Text
+                          as='p'
+                          size='base'
+                          weight='semibold'
+                          className='mb-2'
+                        >
+                          {t('billing.xofy', {
+                            x: (usageInfo.total || 0).toLocaleString(),
+                            y: (maxEventsCount || 0).toLocaleString(),
+                          })}
+                        </Text>
+
+                        <MultiProgress
+                          className='w-full'
+                          progress={[
+                            {
+                              value: Math.min(
+                                100,
+                                Math.max(
+                                  0,
+                                  usageInfo.traffic === 0 ||
+                                    maxEventsCount === 0
+                                    ? 0
+                                    : (usageInfo.traffic / maxEventsCount) *
+                                        100,
+                                ),
+                              ),
+                              lightColour: '#2563eb',
+                              darkColour: '#1d4ed8',
+                            },
+                            {
+                              value: Math.min(
+                                100,
+                                Math.max(
+                                  0,
+                                  usageInfo.customEvents === 0 ||
+                                    maxEventsCount === 0
+                                    ? 0
+                                    : (usageInfo.customEvents /
+                                        maxEventsCount) *
+                                        100,
+                                ),
+                              ),
+                              lightColour: '#c026d3',
+                              darkColour: '#a21caf',
+                            },
+                            {
+                              value: Math.min(
+                                100,
+                                Math.max(
+                                  0,
+                                  usageInfo.captcha === 0 ||
+                                    maxEventsCount === 0
+                                    ? 0
+                                    : (usageInfo.captcha / maxEventsCount) *
+                                        100,
+                                ),
+                              ),
+                              lightColour: '#65a30d',
+                              darkColour: '#4d7c0f',
+                            },
+                            {
+                              value: Math.min(
+                                100,
+                                Math.max(
+                                  0,
+                                  usageInfo.errors === 0 || maxEventsCount === 0
+                                    ? 0
+                                    : (usageInfo.errors / maxEventsCount) * 100,
+                                ),
+                              ),
+                              lightColour: '#dc2626',
+                              darkColour: '#b91c1c',
+                            },
+                          ]}
+                        />
+
+                        <div className='mt-2 flex items-center justify-between'>
+                          <Text as='p' size='sm' colour='muted'>
+                            {t('billing.xPercentUsed', {
+                              percentage: totalUsage,
+                            })}
+                          </Text>
+                          <Text as='p' size='sm' colour='muted'>
+                            {t('billing.xPercentRemaining', {
+                              percentage: remainingUsage,
+                            })}
+                          </Text>
+                        </div>
+
+                        <Text as='p' size='sm' colour='muted' className='mt-3'>
+                          {t('billing.resetDate', {
+                            days: Math.ceil(
+                              (new Date(
+                                new Date().getFullYear(),
+                                new Date().getMonth() + 1,
+                                1,
+                              ).getTime() -
+                                new Date().getTime()) /
+                                (1000 * 60 * 60 * 24),
+                            ),
+                          })}
+                        </Text>
+                      </div>
+                    </SettingsSection>
+
+                    {/* Subscription Plans Section */}
+                    <SettingsSection
+                      title={t('billing.subscription')}
+                      description={
+                        isSubscriber
+                          ? t('billing.changePlan')
+                          : t('billing.selectPlan')
+                      }
+                    >
+                      <Text as='p' size='sm' colour='muted' className='mb-4'>
+                        {t('billing.membersNotification')}
+                      </Text>
+
+                      <BillingPricing
+                        lastEvent={lastEvent}
+                        metainfo={metainfo}
+                      />
+
+                      <div className='mt-4 flex flex-wrap gap-3'>
+                        {subUpdateURL && !cancellationEffectiveDate ? (
+                          <Button
+                            onClick={onUpdatePaymentDetails}
+                            type='button'
+                            primary
+                            large
+                          >
+                            {t('billing.update')}
+                          </Button>
+                        ) : null}
+                        {subCancelURL && !cancellationEffectiveDate ? (
+                          <Button
+                            onClick={() => setIsCancelSubModalOpened(true)}
+                            type='button'
+                            semiDanger
+                            large
+                          >
+                            {t('billing.cancelSub')}
+                          </Button>
+                        ) : null}
+                      </div>
+
+                      <div id='checkout-container' className='mt-4' />
+                    </SettingsSection>
+                  </>
+                )}
+              </>
+            ) : null}
+
             {activeTab === TAB_MAPPING.COMMUNICATIONS &&
             !isSelfhosted &&
             activeTabConfig ? (
@@ -1249,6 +1772,30 @@ const UserSettings = () => {
         title={t('profileSettings.passwordChangeWarningModal.title')}
         message={t('profileSettings.passwordChangeWarningModal.body')}
         isOpened={isPasswordChangeModalOpened}
+      />
+      <Modal
+        onClose={() => {
+          setIsCancelSubModalOpened(false)
+        }}
+        onSubmit={() => {
+          setIsCancelSubModalOpened(false)
+          onSubscriptionCancel()
+        }}
+        submitText={t('common.yes')}
+        closeText={t('common.no')}
+        title={t('pricing.cancelTitle')}
+        submitType='danger'
+        type='error'
+        message={
+          <Trans
+            t={t}
+            i18nKey='pricing.cancelDesc'
+            values={{
+              email: CONTACT_EMAIL,
+            }}
+          />
+        }
+        isOpened={isCancelSubModalOpened}
       />
     </div>
   )

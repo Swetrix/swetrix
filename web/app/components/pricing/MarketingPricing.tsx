@@ -1,8 +1,7 @@
-import { Label, Radio, RadioGroup } from '@headlessui/react'
-import cx from 'clsx'
 import _map from 'lodash/map'
+import _round from 'lodash/round'
 import { ArrowRightIcon, QuestionIcon, CheckIcon } from '@phosphor-icons/react'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
@@ -15,6 +14,7 @@ import {
 } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { useAuth } from '~/providers/AuthProvider'
+import { Switch } from '~/ui/Switch'
 import Tooltip from '~/ui/Tooltip'
 import routes from '~/utils/routes'
 
@@ -39,6 +39,22 @@ const MarketingPricing = ({
   const plans = STANDARD_PLANS.map(
     (code) => PLAN_LIMITS[code as keyof typeof PLAN_LIMITS],
   )
+
+  const yearlyDiscount = useMemo(() => {
+    const firstPlan = plans[0]
+    if (!firstPlan) return 0
+
+    const monthlyPrice = firstPlan.price[currencyCode]?.monthly ?? 0
+    const yearlyPrice = firstPlan.price[currencyCode]?.yearly ?? 0
+
+    if (monthlyPrice === 0) return 0
+
+    const annualCostIfMonthly = monthlyPrice * 12
+    const savings = annualCostIfMonthly - yearlyPrice
+    const discountPercentage = (savings / annualCostIfMonthly) * 100
+
+    return _round(discountPercentage, 0)
+  }, [plans, currencyCode])
 
   return (
     <section id='pricing' className='relative p-2'>
@@ -142,41 +158,36 @@ const MarketingPricing = ({
 
           <div className='col-span-12 lg:col-span-7'>
             <div className='mb-3 flex justify-end'>
-              <RadioGroup
-                value={billingFrequency}
-                onChange={setBillingFrequency}
-                className='grid grid-cols-2 gap-x-1 rounded-md p-1 text-center text-xs leading-5 font-semibold ring-1 ring-white/20'
+              <button
+                type='button'
+                onClick={() =>
+                  setBillingFrequency(
+                    billingFrequency === BillingFrequency.yearly
+                      ? BillingFrequency.monthly
+                      : BillingFrequency.yearly,
+                  )
+                }
+                className='flex cursor-pointer items-center gap-2 rounded-lg bg-white/10 px-3 py-2 transition-colors hover:bg-white/20'
               >
-                <Label className='sr-only'>{t('pricing.frequency')}</Label>
-                <Radio
-                  key={BillingFrequency.monthly}
-                  value={BillingFrequency.monthly}
-                  className={({ checked }) =>
-                    cx(
-                      checked
-                        ? 'bg-white/90 text-slate-900'
-                        : 'text-gray-200 hover:bg-white/30 hover:text-white',
-                      'flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-all',
+                <span className='text-sm font-medium text-gray-100'>
+                  {t('pricing.billedYearly')}
+                </span>
+                {yearlyDiscount > 0 ? (
+                  <span className='rounded-md bg-emerald-500/20 px-1.5 py-0.5 text-xs font-semibold text-emerald-300'>
+                    -{yearlyDiscount} %
+                  </span>
+                ) : null}
+                <Switch
+                  checked={billingFrequency === BillingFrequency.yearly}
+                  onChange={() =>
+                    setBillingFrequency(
+                      billingFrequency === BillingFrequency.yearly
+                        ? BillingFrequency.monthly
+                        : BillingFrequency.yearly,
                     )
                   }
-                >
-                  <span>{t('pricing.monthlyBilling')}</span>
-                </Radio>
-                <Radio
-                  key={BillingFrequency.yearly}
-                  value={BillingFrequency.yearly}
-                  className={({ checked }) =>
-                    cx(
-                      checked
-                        ? 'bg-white/90 text-slate-900'
-                        : 'text-gray-200 hover:bg-white/30 hover:text-white',
-                      'flex cursor-pointer items-center justify-center rounded-md px-2.5 py-1 transition-all',
-                    )
-                  }
-                >
-                  <span>{t('pricing.yearlyBilling')}</span>
-                </Radio>
-              </RadioGroup>
+                />
+              </button>
             </div>
             <div className='space-y-3'>
               {_map(plans, (tier) => (
