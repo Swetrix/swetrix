@@ -14,12 +14,13 @@ import {
   UserIcon,
   EnvelopeIcon,
   WarningOctagonIcon,
-  CaretDownIcon,
   TranslateIcon,
+  LockIcon,
+  CaretDownIcon,
 } from '@phosphor-icons/react'
 import React, { useState, useEffect, memo, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useFetcher } from 'react-router'
+import { useNavigate, useFetcher, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import {
@@ -37,10 +38,12 @@ import { User } from '~/lib/models/User'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
 import type { UserSettingsActionData } from '~/routes/user-settings'
+import Alert from '~/ui/Alert'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
+import PasswordStrength from '~/ui/PasswordStrength'
 import Select from '~/ui/Select'
 import { TabHeader } from '~/ui/TabHeader'
 import { Text } from '~/ui/Text'
@@ -69,10 +72,13 @@ const timeFormatArray = _map(TimeFormat, (key) => key)
 
 const TAB_MAPPING = {
   ACCOUNT: 'account',
+  PASSWORD_AUTH: 'password-auth',
   INTERFACE: 'interface',
   COMMUNICATIONS: 'communications',
   LANGUAGE: 'language',
 }
+
+type SettingsTab = (typeof TAB_MAPPING)[keyof typeof TAB_MAPPING]
 
 interface TabConfig {
   id: string
@@ -89,6 +95,12 @@ const getTabs = (t: typeof i18next.t): TabConfig[] => {
         label: t('profileSettings.account'),
         icon: UserIcon,
         description: t('profileSettings.accountDesc'),
+      },
+      {
+        id: TAB_MAPPING.PASSWORD_AUTH,
+        label: t('profileSettings.passwordAuth'),
+        icon: LockIcon,
+        description: t('profileSettings.passwordAuthDesc'),
       },
       {
         id: TAB_MAPPING.INTERFACE,
@@ -111,6 +123,12 @@ const getTabs = (t: typeof i18next.t): TabConfig[] => {
       label: t('profileSettings.account'),
       icon: UserIcon,
       description: t('profileSettings.accountDesc'),
+    },
+    {
+      id: TAB_MAPPING.PASSWORD_AUTH,
+      label: t('profileSettings.passwordAuth'),
+      icon: LockIcon,
+      description: t('profileSettings.passwordAuthDesc'),
     },
     {
       id: TAB_MAPPING.COMMUNICATIONS,
@@ -137,6 +155,8 @@ const getTabIconColor = (tabId: string): string => {
   switch (tabId) {
     case TAB_MAPPING.ACCOUNT:
       return 'text-blue-500'
+    case TAB_MAPPING.PASSWORD_AUTH:
+      return 'text-indigo-500'
     case TAB_MAPPING.COMMUNICATIONS:
       return 'text-emerald-500'
     case TAB_MAPPING.INTERFACE:
@@ -191,14 +211,27 @@ const UserSettings = () => {
   } = useTranslation('common')
   const fetcher = useFetcher<UserSettingsActionData>()
 
-  const [activeTab, setActiveTab] = useState(TAB_MAPPING.ACCOUNT)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const tabs = getTabs(t)
+
+  const activeTab = useMemo<SettingsTab>(() => {
+    const tab = searchParams.get('tab') as SettingsTab
+    const allowed = new Set(tabs.map((t) => t.id as SettingsTab))
+    return allowed.has(tab) ? tab : TAB_MAPPING.ACCOUNT
+  }, [searchParams, tabs])
+
+  const setActiveTab = (tab: SettingsTab) => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.set('tab', tab)
+    setSearchParams(newSearchParams)
+  }
   const [form, setForm] = useState<Form>(() => ({
     email: '',
     password: '',
     repeat: '',
     timeFormat: user?.timeFormat || TimeFormat['12-hour'],
   }))
-  const [showPasswordFields, setShowPasswordFields] = useState(false)
   const [showEmailFields, setShowEmailFields] = useState(false)
   const [emailBeenSubmitted, setEmailBeenSubmitted] = useState(false)
   const [passwordBeenSubmitted, setPasswordBeenSubmitted] = useState(false)
@@ -229,7 +262,6 @@ const UserSettings = () => {
 
   const isSubmitting = fetcher.state === 'submitting'
 
-  const tabs = getTabs(t)
   const activeTabConfig = useMemo(
     () => _find(tabs, (tab) => tab.id === activeTab),
     [tabs, activeTab],
@@ -483,16 +515,6 @@ const UserSettings = () => {
     submitProfileUpdate({ timeFormat: form.timeFormat })
   }
 
-  const toggleShowPasswordFields = () => {
-    setForm((prev) => ({
-      ...prev,
-      password: '',
-      repeat: '',
-    }))
-    setPasswordBeenSubmitted(false)
-    setShowPasswordFields((prev) => !prev)
-  }
-
   const toggleShowEmailFields = () => {
     setForm((prev) => ({
       ...prev,
@@ -558,7 +580,7 @@ const UserSettings = () => {
                         'text-gray-600 dark:text-gray-300': !isCurrent,
                       })}
                     />
-                    <span>{tab.label}</span>
+                    <span className='truncate'>{tab.label}</span>
                   </button>
                 )
               })}
@@ -617,59 +639,6 @@ const UserSettings = () => {
                           error={emailBeenSubmitted ? errors.email : null}
                         />
                         <Button onClick={handleEmailSubmit} primary large>
-                          {t('profileSettings.update')}
-                        </Button>
-                      </div>
-                    ) : null}
-                  </div>
-                </SettingsSection>
-
-                {/* Change password */}
-                <SettingsSection
-                  title={t('profileSettings.changePassword')}
-                  description={t('profileSettings.changePasswordDesc')}
-                >
-                  <div className='max-w-md'>
-                    <Text
-                      size='sm'
-                      weight='medium'
-                      colour='primary'
-                      className='mb-2 flex cursor-pointer items-center'
-                      onClick={toggleShowPasswordFields}
-                    >
-                      {showPasswordFields
-                        ? t('common.cancel')
-                        : t('auth.common.changePassword')}
-                      <CaretDownIcon
-                        className={cx('ml-2 size-3 transition-transform', {
-                          'rotate-180': showPasswordFields,
-                        })}
-                      />
-                    </Text>
-                    {showPasswordFields ? (
-                      <div className='mt-4 space-y-4'>
-                        <Input
-                          name='password'
-                          type='password'
-                          label={t('auth.common.password')}
-                          hint={t('auth.common.hint', {
-                            amount: MIN_PASSWORD_CHARS,
-                          })}
-                          value={form.password}
-                          placeholder={t('auth.common.password')}
-                          onChange={handleInput}
-                          error={passwordBeenSubmitted ? errors.password : null}
-                        />
-                        <Input
-                          name='repeat'
-                          type='password'
-                          label={t('auth.common.repeat')}
-                          value={form.repeat}
-                          placeholder={t('auth.common.repeat')}
-                          onChange={handleInput}
-                          error={passwordBeenSubmitted ? errors.repeat : null}
-                        />
-                        <Button onClick={handlePasswordSubmit} primary large>
                           {t('profileSettings.update')}
                         </Button>
                       </div>
@@ -763,14 +732,6 @@ const UserSettings = () => {
                   </>
                 ) : (
                   <>
-                    {/* 2FA setting */}
-                    <SettingsSection
-                      title={t('profileSettings.2fa')}
-                      description={t('profileSettings.2faSectionDesc')}
-                    >
-                      <TwoFA />
-                    </SettingsSection>
-
                     {/* Socialisations setup */}
                     <SettingsSection
                       title={t('profileSettings.socialisations')}
@@ -901,30 +862,93 @@ const UserSettings = () => {
                   description={t('profileSettings.dangerZoneDesc')}
                   isLast
                 >
-                  <div className='flex flex-wrap gap-2'>
+                  <Button
+                    onClick={() => setShowModal(true)}
+                    semiSmall
+                    semiDanger
+                  >
+                    <>
+                      <WarningOctagonIcon className='mr-1 h-5 w-5' />
+                      {t('profileSettings.delete')}
+                    </>
+                  </Button>
+                </SettingsSection>
+              </>
+            ) : null}
+
+            {activeTab === TAB_MAPPING.PASSWORD_AUTH && activeTabConfig ? (
+              <>
+                <TabHeader
+                  icon={activeTabConfig.icon}
+                  label={activeTabConfig.label}
+                  description={activeTabConfig.description}
+                  iconColorClass={getTabIconColor(activeTabConfig.id)}
+                />
+
+                {/* Change password */}
+                <SettingsSection
+                  title={t('profileSettings.changePassword')}
+                  description={t('profileSettings.changePasswordDesc')}
+                >
+                  <div className='max-w-md space-y-4'>
+                    <Input
+                      name='password'
+                      type='password'
+                      label={t('profileSettings.newPassword')}
+                      value={form.password}
+                      placeholder={t('auth.common.password')}
+                      onChange={handleInput}
+                      error={passwordBeenSubmitted ? errors.password : null}
+                    />
+                    <PasswordStrength password={form.password} />
+                    <Input
+                      name='repeat'
+                      type='password'
+                      label={t('profileSettings.repeatPassword')}
+                      value={form.repeat}
+                      placeholder={t('auth.common.repeat')}
+                      onChange={handleInput}
+                      error={passwordBeenSubmitted ? errors.repeat : null}
+                    />
                     <Button
-                      onClick={() => {
-                        logout(true)
-                      }}
-                      semiSmall
-                      semiDanger
+                      onClick={handlePasswordSubmit}
+                      disabled={!form.password || !form.repeat}
+                      primary
+                      large
                     >
-                      <>
-                        <div className='h-5' />
-                        {t('profileSettings.logoutAll')}
-                      </>
-                    </Button>
-                    <Button
-                      onClick={() => setShowModal(true)}
-                      semiSmall
-                      semiDanger
-                    >
-                      <>
-                        <WarningOctagonIcon className='mr-1 h-5 w-5' />
-                        {t('profileSettings.delete')}
-                      </>
+                      {t('profileSettings.updatePassword')}
                     </Button>
                   </div>
+                </SettingsSection>
+
+                {/* 2FA setting */}
+                {!isSelfhosted ? (
+                  <SettingsSection
+                    title={t('profileSettings.2fa')}
+                    description={t('profileSettings.2faSectionDesc')}
+                  >
+                    <TwoFA />
+                  </SettingsSection>
+                ) : null}
+
+                {/* Logout from all devices */}
+                <SettingsSection
+                  title={t('profileSettings.logoutAllTitle')}
+                  description={t('profileSettings.logoutAllDesc')}
+                  isLast
+                >
+                  <Alert variant='warning' className='mb-4'>
+                    {t('profileSettings.logoutAllWarning')}
+                  </Alert>
+                  <Button
+                    onClick={() => {
+                      logout(true)
+                    }}
+                    semiDanger
+                    large
+                  >
+                    {t('profileSettings.logoutAll')}
+                  </Button>
                 </SettingsSection>
               </>
             ) : null}
@@ -1128,7 +1152,7 @@ const UserSettings = () => {
                           type='button'
                           onClick={() => changeLanguage(lng)}
                           className={cx(
-                            'flex flex-col items-center justify-center rounded-lg px-4 py-6 ring-1 ring-inset transition-all',
+                            'flex flex-col items-center justify-center rounded-lg px-4 py-6 ring-1 transition-all ring-inset',
                             isSelected
                               ? 'bg-gray-100 ring-gray-300 dark:bg-slate-800 dark:ring-slate-600'
                               : 'ring-gray-200 hover:bg-gray-50 hover:ring-gray-300 dark:ring-slate-700 dark:hover:bg-slate-800/50 dark:hover:ring-slate-600',

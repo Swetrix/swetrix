@@ -936,7 +936,7 @@ const ProjectSettings = () => {
                         'text-gray-600 dark:text-gray-300': !isCurrent,
                       })}
                     />
-                    <span>{tab.label}</span>
+                    <span className='truncate'>{tab.label}</span>
                   </button>
                 )
               })}

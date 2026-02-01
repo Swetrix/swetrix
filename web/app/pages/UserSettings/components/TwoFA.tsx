@@ -1,13 +1,13 @@
-import cx from 'clsx'
-import _isNull from 'lodash/isNull'
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import QRCode from 'react-qr-code'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
+import { LockIcon } from '@phosphor-icons/react'
 
 import { useAuth } from '~/providers/AuthProvider'
 import type { UserSettingsActionData } from '~/routes/user-settings'
+import Alert from '~/ui/Alert'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 
@@ -30,7 +30,6 @@ const TwoFA = () => {
   const isLoading =
     fetcher.state === 'submitting' || fetcher.state === 'loading'
 
-  // Handle fetcher responses
   useEffect(() => {
     if (fetcher.data?.success) {
       const { intent, twoFAData } = fetcher.data
@@ -121,11 +120,14 @@ const TwoFA = () => {
   if (twoFARecovery) {
     return (
       <div className='max-w-prose'>
-        <p className='text-base text-gray-900 dark:text-gray-50'>
+        <Alert variant='warning' className='mb-4'>
+          {t('profileSettings.2faRecoveryWarning')}
+        </Alert>
+        <p className='mb-4 text-base text-gray-900 dark:text-gray-50'>
           {t('profileSettings.2faRecoveryNote')}
         </p>
-        <Input className='mt-4' value={twoFARecovery} />
-        <Button onClick={recoverySaved} primary large>
+        <Input className='mt-4' value={twoFARecovery} disabled />
+        <Button className='mt-4' onClick={recoverySaved} primary large>
           {t('profileSettings.2faRecoverySaved')}
         </Button>
       </div>
@@ -139,7 +141,7 @@ const TwoFA = () => {
           <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
             {t('profileSettings.2faDisableHint')}
           </p>
-          <div className='mt-4 flex items-center'>
+          <div className='mt-4 flex items-end gap-2'>
             <Input
               label={t('profileSettings.enter2faToDisable')}
               value={twoFACode}
@@ -151,10 +153,7 @@ const TwoFA = () => {
               disabled={isLoading}
             />
             <Button
-              className={cx('ml-2', {
-                'mt-4': _isNull(twoFACodeError),
-                'mb-1': !_isNull(twoFACodeError),
-              })}
+              className={twoFACodeError ? 'mb-5' : ''}
               onClick={_disable2FA}
               loading={isLoading}
               danger
@@ -169,6 +168,9 @@ const TwoFA = () => {
 
     return (
       <>
+        <Alert variant='success' className='mb-4'>
+          {t('profileSettings.2faEnabledSuccess')}
+        </Alert>
         <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
           {t('profileSettings.2faEnabled')}
         </p>
@@ -193,12 +195,16 @@ const TwoFA = () => {
         <div className='mt-4 w-max bg-white p-4'>
           <QRCode value={twoFAConfigData?.otpauthUrl || ''} />
         </div>
-        <p className='mt-2 text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
-          {t('profileSettings.2faQRAlt', {
-            key: twoFAConfigData?.secret || '',
-          })}
-        </p>
-        <div className='mt-4 flex items-center'>
+
+        <Alert variant='info' className='mt-4 max-w-prose'>
+          <p className='font-medium'>{t('profileSettings.2faQRTitle')}</p>
+          <p className='mt-1'>{t('profileSettings.2faQRHint')}</p>
+          <code className='mt-2 block rounded bg-sky-100 p-2 font-mono text-sm dark:bg-sky-900/50'>
+            {twoFAConfigData?.secret || ''}
+          </code>
+        </Alert>
+
+        <div className='mt-4 flex items-end gap-2'>
           <Input
             label={t('profileSettings.enter2faToEnable')}
             value={twoFACode}
@@ -210,10 +216,7 @@ const TwoFA = () => {
             disabled={isLoading}
           />
           <Button
-            className={cx('ml-2', {
-              'xs:mt-4 mt-8': _isNull(twoFACodeError),
-              'mb-1': !_isNull(twoFACodeError),
-            })}
+            className={twoFACodeError ? 'mb-5' : ''}
             onClick={_enable2FA}
             loading={isLoading}
             primary
@@ -227,9 +230,19 @@ const TwoFA = () => {
   }
 
   return (
-    <Button onClick={_generate2FA} loading={isLoading} primary large>
-      {t('profileSettings.2faEnableBtn')}
-    </Button>
+    <>
+      <Alert
+        variant='tip'
+        title={t('profileSettings.securityRecommendation')}
+        className='mb-4'
+      >
+        {t('profileSettings.2faSecurityRecommendation')}
+      </Alert>
+      <Button onClick={_generate2FA} loading={isLoading} primary large>
+        <LockIcon className='mr-2 size-4' weight='duotone' />
+        {t('profileSettings.2faEnableBtn')}
+      </Button>
+    </>
   )
 }
 
