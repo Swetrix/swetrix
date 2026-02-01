@@ -313,6 +313,10 @@ const UserSettings = () => {
         clearInterval(interval)
       }
     }
+
+    return () => {
+      clearInterval(interval)
+    }
   }, [])
 
   const isTrialEnded = (() => {
