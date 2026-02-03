@@ -454,11 +454,11 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   const sidebarContent = (
     <aside
       className={cn(
-        'sticky top-2 flex shrink-0 flex-col self-start overflow-hidden border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-800/25',
+        'sticky top-2 flex shrink-0 flex-col self-start overflow-hidden border border-gray-200 bg-white dark:border-slate-800/60',
         isMobileOpen
-          ? 'h-screen w-64'
+          ? 'h-screen w-64 dark:bg-slate-900'
           : cn(
-              'rounded-lg transition-[width,height] duration-300 ease-in-out',
+              'rounded-lg transition-[width,height] duration-300 ease-in-out dark:bg-slate-800/25',
               isScrolled
                 ? 'h-[calc(100vh-var(--banner-height)-1.5rem)]'
                 : 'h-[calc(100vh-var(--header-total-height)-1rem)]',
