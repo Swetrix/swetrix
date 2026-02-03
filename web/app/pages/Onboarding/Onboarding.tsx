@@ -48,6 +48,7 @@ import routes from '~/utils/routes'
 
 const MAX_PROJECT_NAME_LENGTH = 50
 const ANIMATION_DURATION = 0.4
+const EXIT_DURATION = 0.15
 const EASE_OUT_QUART = [0.25, 1, 0.5, 1] as const
 
 interface Project {
@@ -93,17 +94,31 @@ const slideVariants = {
   center: {
     x: 0,
     opacity: 1,
+    transition: {
+      duration: ANIMATION_DURATION,
+      ease: EASE_OUT_QUART,
+    },
   },
   exit: (direction: number) => ({
     x: direction < 0 ? 40 : -40,
     opacity: 0,
+    transition: {
+      duration: EXIT_DURATION,
+      ease: EASE_OUT_QUART,
+    },
   }),
 }
 
 const reducedMotionVariants = {
   enter: { opacity: 0 },
-  center: { opacity: 1 },
-  exit: { opacity: 0 },
+  center: {
+    opacity: 1,
+    transition: { duration: 0.1 },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.05 },
+  },
 }
 
 const ProgressBar = ({
@@ -122,7 +137,7 @@ const ProgressBar = ({
         initial={{ width: 0 }}
         animate={{ width: `${progress}%` }}
         transition={{
-          duration: 0.3,
+          duration: ANIMATION_DURATION,
           ease: EASE_OUT_QUART,
         }}
       />
@@ -610,14 +625,6 @@ const Onboarding = () => {
                     initial='enter'
                     animate='center'
                     exit='exit'
-                    transition={{
-                      x: {
-                        type: 'tween',
-                        duration: prefersReducedMotion ? 0.1 : 0.3,
-                        ease: EASE_OUT_QUART,
-                      },
-                      opacity: { duration: prefersReducedMotion ? 0.1 : 0.2 },
-                    }}
                     className='px-6 py-6 md:px-10'
                   >
                     {currentStep === 'language' && (
