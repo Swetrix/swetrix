@@ -27,6 +27,7 @@ import { Entry } from '~/lib/models/Entry'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
 import Spin from '~/ui/icons/Spin'
+import { MapLoader } from './MapLoader'
 import {
   getTimeFromSeconds,
   getStringFromTime,
@@ -507,13 +508,8 @@ const InteractiveMapCore = ({
       ) : null}
 
       {dataLoading || isGeoDataLoading ? (
-        <div className='absolute inset-0 z-10 flex items-center justify-center rounded-md bg-slate-900/20 backdrop-blur-sm'>
-          <div className='flex flex-col items-center gap-2'>
-            <Spin />
-            <span className='text-sm text-slate-900 dark:text-gray-50'>
-              {t('project.loadingMapData')}
-            </span>
-          </div>
+        <div className='absolute inset-0 z-10'>
+          <MapLoader />
         </div>
       ) : null}
 
@@ -621,21 +617,8 @@ const InteractiveMap = ({
   onFullscreenToggle,
   isFullscreen,
 }: InteractiveMapProps) => {
-  const { t } = useTranslation('common')
-
   return (
-    <ClientOnly
-      fallback={
-        <div className='relative flex h-full w-full items-center justify-center'>
-          <div className='flex flex-col items-center gap-2'>
-            <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent'></div>
-            <span className='text-sm text-neutral-600 dark:text-neutral-300'>
-              {t('project.loadingMapData')}
-            </span>
-          </div>
-        </div>
-      }
-    >
+    <ClientOnly fallback={<MapLoader />}>
       {() => (
         <InteractiveMapCore
           data={data}
