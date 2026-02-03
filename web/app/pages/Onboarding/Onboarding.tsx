@@ -8,8 +8,6 @@ import {
   CodeIcon,
   EnvelopeIcon,
   CheckCircleIcon,
-  SparkleIcon,
-  GlobeIcon,
   ClockIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -40,6 +38,7 @@ import Flag from '~/ui/Flag'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
+import Alert from '~/ui/Alert'
 import { Text } from '~/ui/Text'
 import Textarea from '~/ui/Textarea'
 import { trackCustom } from '~/utils/analytics'
@@ -755,18 +754,9 @@ const Onboarding = () => {
 
                         <FeatureVisualization type='traffic' />
 
-                        <div className='mt-6 rounded-xl bg-indigo-50 p-4 dark:bg-indigo-900/20'>
-                          <div className='flex items-center gap-2'>
-                            <GlobeIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
-                            <Text
-                              as='span'
-                              size='sm'
-                              className='text-indigo-700 dark:text-indigo-300'
-                            >
-                              {t('onboarding.features.traffic.tip')}
-                            </Text>
-                          </div>
-                        </div>
+                        <Alert variant='info' className='mt-6'>
+                          {t('onboarding.features.traffic.tip')}
+                        </Alert>
                       </div>
                     )}
 
@@ -790,18 +780,9 @@ const Onboarding = () => {
 
                         <FeatureVisualization type='errors' />
 
-                        <div className='mt-6 rounded-xl bg-rose-50 p-4 dark:bg-rose-900/20'>
-                          <div className='flex items-center gap-2'>
-                            <BugIcon className='size-4 text-rose-600 dark:text-rose-400' />
-                            <Text
-                              as='span'
-                              size='sm'
-                              className='text-rose-700 dark:text-rose-300'
-                            >
-                              {t('onboarding.features.errors.tip')}
-                            </Text>
-                          </div>
-                        </div>
+                        <Alert variant='error' className='mt-6'>
+                          {t('onboarding.features.errors.tip')}
+                        </Alert>
                       </div>
                     )}
 
@@ -825,18 +806,9 @@ const Onboarding = () => {
 
                         <FeatureVisualization type='sessions' />
 
-                        <div className='mt-6 rounded-xl bg-emerald-50 p-4 dark:bg-emerald-900/20'>
-                          <div className='flex items-center gap-2'>
-                            <UsersThreeIcon className='size-4 text-emerald-600 dark:text-emerald-400' />
-                            <Text
-                              as='span'
-                              size='sm'
-                              className='text-emerald-700 dark:text-emerald-300'
-                            >
-                              {t('onboarding.features.sessions.tip')}
-                            </Text>
-                          </div>
-                        </div>
+                        <Alert variant='tip' className='mt-6'>
+                          {t('onboarding.features.sessions.tip')}
+                        </Alert>
                       </div>
                     )}
 
