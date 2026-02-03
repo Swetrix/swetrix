@@ -692,27 +692,34 @@ const Onboarding = () => {
                           {t('onboarding.welcomeScreen.subtitle')}
                         </Text>
 
-                        <div className='relative overflow-hidden rounded-xl'>
-                          <img
-                            src={
-                              theme === 'dark'
-                                ? '/assets/screenshot_dark.png'
-                                : '/assets/screenshot_light.png'
-                            }
-                            alt='Swetrix Dashboard'
-                            className='w-full'
-                          />
-                          <div className='pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-linear-to-t from-white to-transparent dark:from-slate-800' />
-                        </div>
-
-                        <div className='mt-6 rounded-xl bg-indigo-50 p-4 dark:bg-indigo-900/20'>
-                          <div className='flex items-start gap-3'>
-                            <SparkleIcon className='mt-0.5 size-5 shrink-0 text-indigo-600 dark:text-indigo-400' />
-                            <div>
-                              <Text as='h3' size='sm' weight='semibold'>
+                        <div className='rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-slate-700/70 dark:bg-slate-800/80'>
+                          <div className='relative overflow-hidden rounded-2xl'>
+                            <div className='p-3'>
+                              <div className='rounded-2xl bg-white shadow-[0_24px_60px_rgba(15,23,42,0.12)] ring-1 ring-black/5 dark:bg-slate-800 dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)] dark:ring-white/10'>
+                                <div className='overflow-hidden rounded-xl'>
+                                  <img
+                                    src={
+                                      theme === 'dark'
+                                        ? '/assets/screenshot_dark.png'
+                                        : '/assets/screenshot_light.png'
+                                    }
+                                    alt='Swetrix Dashboard'
+                                    className='w-full'
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            <div className='pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-white via-white/95 to-transparent dark:from-slate-800 dark:via-slate-800/95' />
+                            <div className='absolute inset-x-0 bottom-0 px-6 pb-8 pt-4 text-center'>
+                              <Text as='h3' size='2xl' weight='bold' tracking='tight'>
                                 {t('onboarding.welcomeScreen.featureTitle')}
                               </Text>
-                              <Text as='p' size='sm' colour='secondary'>
+                              <Text
+                                as='p'
+                                size='sm'
+                                colour='secondary'
+                                className='mx-auto mt-2 max-w-md'
+                              >
                                 {t('onboarding.welcomeScreen.featureDesc')}
                               </Text>
                             </div>
