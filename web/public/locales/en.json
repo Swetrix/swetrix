@@ -112,6 +112,9 @@
     "notConnected": "Not connected",
     "connected": "Connected",
     "goBack": "Go back",
+    "back": "Back",
+    "next": "Next",
+    "skip": "Skip",
     "accept": "Accept",
     "reject": "Reject",
     "delete": "Delete",
@@ -2073,19 +2076,50 @@
     "title": "Get started",
     "skipOnboarding": "Skip onboarding",
     "finishOnboarding": "Finish onboarding",
+    "selectLanguage": {
+      "title": "Select your language",
+      "subtitle": "What is your preferred language?"
+    },
+    "welcomeScreen": {
+      "title": "Welcome to Swetrix!",
+      "subtitle": "Privacy-first, cookieless analytics that give you the insights you need without compromising your users' privacy.",
+      "featureTitle": "A studio for your data",
+      "featureDesc": "A place to understand your traffic, track errors, and make data-driven decisions."
+    },
+    "features": {
+      "feature": "Feature",
+      "traffic": {
+        "title": "Traffic Analytics",
+        "desc": "Understand your website traffic with real-time analytics. See where your visitors come from, what pages they view, and how they interact with your site.",
+        "tip": "Track visitors from 200+ countries with no cookies required."
+      },
+      "errors": {
+        "title": "Error Tracking",
+        "desc": "Catch and fix bugs before your users notice them. Get detailed error reports with stack traces, browser info, and user context.",
+        "tip": "Receive instant alerts when new errors occur."
+      },
+      "sessions": {
+        "title": "User Sessions",
+        "desc": "See exactly how users navigate through your site. Understand user journeys, identify drop-off points, and optimise the experience.",
+        "tip": "View real-time sessions as they happen."
+      }
+    },
     "confirm": {
       "navTitle": "Confirm your email",
       "navDesc": "Check your inbox and click the confirmation link.",
       "title": "Check your inbox",
       "linkSent": "We've sent an account confirmation link to {{email}}, please click the link to confirm your email address.",
       "spam": "Can't see the email? Please check your spam folder.",
-      "wrongEmail": "Wrong email? <url>Create a new account.</url>"
+      "wrongEmail": "Wrong email? <url>Create a new account.</url>",
+      "verifyTitle": "Please verify your email address",
+      "checkVerification": "I've verified my email"
     },
     "createProject": {
       "navTitle": "Create a project",
       "navDesc": "Add a website to start tracking analytics.",
       "title": "Let's set up your first project",
-      "desc": "Create a project to start tracking your website's analytics. Enter a name for it to continue."
+      "desc": "Create a project to start tracking your website's analytics. Enter a name for it to continue.",
+      "placeholder": "My awesome website"
     },
     "installTracking": {
       "navTitle": "Install tracking script",
@@ -2106,9 +2140,9 @@
       "onTheXProject": "On the {{project}} project",
       "onYourProject": "On your project",
       "perfect": "Perfect!",
-      "perfectDesc": "We're receiving data 🎉",
+      "perfectDesc": "We're receiving data!",
       "waitingForAnEvent": "We're waiting for your first event! If your integration is set up correctly, you should see it within 1 minute.",
-      "eventReceived": "We've received your first event! Your integration works correctly. Welcome to Swetrix :)"
+      "eventReceived": "We've received your first event! Your integration works correctly. Welcome to Swetrix!"
     }
   },
   "titles": {
