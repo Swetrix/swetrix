@@ -586,7 +586,7 @@ const Onboarding = () => {
   }
 
   return (
-    <div className='flex h-screen flex-col overflow-hidden bg-gray-200 p-2 sm:p-2.5 dark:bg-slate-950'>
+    <div className='flex h-screen flex-col overflow-hidden bg-gray-50 p-2 sm:p-2.5 dark:bg-slate-900'>
       <div className='flex h-full w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
         <div className='flex h-full max-h-[min(92%,50rem)] min-h-0 w-full max-w-3xl flex-col'>
           <div className='relative mx-auto min-h-0 w-full max-w-5xl flex-1 overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
