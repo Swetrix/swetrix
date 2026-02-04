@@ -716,8 +716,13 @@ const Onboarding = () => {
                               </div>
                             </div>
                             <div className='pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-white via-white/95 to-transparent dark:from-slate-800 dark:via-slate-800/95' />
-                            <div className='absolute inset-x-0 bottom-0 px-6 pb-8 pt-4 text-center'>
-                              <Text as='h3' size='2xl' weight='bold' tracking='tight'>
+                            <div className='absolute inset-x-0 bottom-0 px-6 pt-4 pb-8 text-center'>
+                              <Text
+                                as='h3'
+                                size='2xl'
+                                weight='bold'
+                                tracking='tight'
+                              >
                                 {t('onboarding.welcomeScreen.featureTitle')}
                               </Text>
                               <Text
@@ -748,15 +753,15 @@ const Onboarding = () => {
                         >
                           {t('onboarding.features.traffic.title')}
                         </Text>
-                        <Text as='p' colour='secondary' className='max-w-md'>
+                        <Text as='p' colour='secondary'>
                           {t('onboarding.features.traffic.desc')}
                         </Text>
 
-                        <FeatureVisualization type='traffic' />
-
-                        <Alert variant='info' className='mt-6'>
+                        <Alert variant='info' className='mt-4'>
                           {t('onboarding.features.traffic.tip')}
                         </Alert>
+
+                        <FeatureVisualization type='traffic' />
                       </div>
                     )}
 
@@ -774,15 +779,15 @@ const Onboarding = () => {
                         >
                           {t('onboarding.features.errors.title')}
                         </Text>
-                        <Text as='p' colour='secondary' className='max-w-md'>
+                        <Text as='p' colour='secondary'>
                           {t('onboarding.features.errors.desc')}
                         </Text>
 
-                        <FeatureVisualization type='errors' />
-
-                        <Alert variant='error' className='mt-6'>
+                        <Alert variant='error' className='mt-4'>
                           {t('onboarding.features.errors.tip')}
                         </Alert>
+
+                        <FeatureVisualization type='errors' />
                       </div>
                     )}
 
@@ -800,15 +805,15 @@ const Onboarding = () => {
                         >
                           {t('onboarding.features.sessions.title')}
                         </Text>
-                        <Text as='p' colour='secondary' className='max-w-md'>
+                        <Text as='p' colour='secondary'>
                           {t('onboarding.features.sessions.desc')}
                         </Text>
 
-                        <FeatureVisualization type='sessions' />
-
-                        <Alert variant='tip' className='mt-6'>
+                        <Alert variant='tip' className='mt-4'>
                           {t('onboarding.features.sessions.tip')}
                         </Alert>
+
+                        <FeatureVisualization type='sessions' />
                       </div>
                     )}
 
