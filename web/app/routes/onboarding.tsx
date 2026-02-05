@@ -8,6 +8,7 @@ import { data } from 'react-router'
 import { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
+import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Project } from '~/lib/models/Project'
 import { User } from '~/lib/models/User'
 import Onboarding from '~/pages/Onboarding'
@@ -34,14 +35,41 @@ export const meta: MetaFunction = () => {
 
 export interface OnboardingLoaderData {
   project: Project | null
+  deviceInfo: {
+    browser: string | null
+    os: string | null
+  }
+  metainfo: Metainfo
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
   redirectIfNotAuthenticated(request)
 
+  const userAgent = request.headers.get('user-agent')
+  let deviceInfo: { browser: string | null; os: string | null } = {
+    browser: 'Chrome',
+    os: 'Windows',
+  }
+
+  if (userAgent) {
+    const { UAParser } = await import('@ua-parser-js/pro-business')
+    const parser = new UAParser(userAgent)
+
+    deviceInfo = {
+      browser: parser.getBrowser().name || null,
+      os: parser.getOS().name || null,
+    }
+  }
+
   const authResult = await getAuthenticatedUser(request)
   const user = authResult?.user
   const cookies: string[] = authResult?.cookies || []
+
+  const metainfoResult = await serverFetch<Metainfo>(request, 'user/metainfo', {
+    skipAuth: true,
+  })
+  const metainfo = metainfoResult.data ?? DEFAULT_METAINFO
+  const allCookies = [...cookies, ...metainfoResult.cookies]
 
   if (
     user?.user?.onboardingStep === 'setup_tracking' ||
@@ -53,26 +81,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }>(request, '/project?take=1&skip=0')
 
     const project = projectsResult.data?.results?.[0] || null
-    const allCookies = [...cookies, ...projectsResult.cookies]
+    const finalCookies = [...allCookies, ...projectsResult.cookies]
 
-    const loaderData: OnboardingLoaderData = { project }
+    const loaderData: OnboardingLoaderData = { project, deviceInfo, metainfo }
 
-    if (allCookies.length > 0) {
+    if (finalCookies.length > 0) {
       return data(loaderData, {
-        headers: createHeadersWithCookies(allCookies),
+        headers: createHeadersWithCookies(finalCookies),
       })
     }
 
     return loaderData
   }
 
-  if (cookies.length > 0) {
-    return data({ project: null } as OnboardingLoaderData, {
-      headers: createHeadersWithCookies(cookies),
-    })
+  if (allCookies.length > 0) {
+    return data(
+      { project: null, deviceInfo, metainfo } as OnboardingLoaderData,
+      {
+        headers: createHeadersWithCookies(allCookies),
+      },
+    )
   }
 
-  return { project: null } as OnboardingLoaderData
+  return { project: null, deviceInfo, metainfo } as OnboardingLoaderData
 }
 
 export interface OnboardingActionData {
@@ -177,6 +208,24 @@ export async function action({ request }: ActionFunctionArgs) {
     case 'delete-account': {
       const result = await serverFetch(request, 'user', {
         method: 'DELETE',
+      })
+
+      if (result.error) {
+        return data<OnboardingActionData>(
+          { intent, error: result.error as string },
+          { status: 400 },
+        )
+      }
+
+      return data<OnboardingActionData>(
+        { intent, success: true },
+        { headers: createHeadersWithCookies(result.cookies) },
+      )
+    }
+
+    case 'confirm-email': {
+      const result = await serverFetch(request, 'user/confirm_email', {
+        method: 'POST',
       })
 
       if (result.error) {

@@ -1740,7 +1740,6 @@
           "basic": "Basic: we detect bots based on their user agent (Googlebot, Bingbot, curl, etc.)"
         }
       },
-      "verify": "Please, verify your email address first",
       "updated": "The project's settings were updated",
       "created": "The project has been created",
       "pxCharsError": "Project name cannot be longer than {{amount}} characters.",
@@ -2087,7 +2086,6 @@
       "featureDesc": "A place to understand your traffic, track errors, and make data-driven decisions."
     },
     "features": {
-      "feature": "Feature",
       "traffic": {
         "title": "Traffic Analytics",
         "desc": "Understand your website traffic with real-time analytics. See where your visitors come from, what pages they view, and how they interact with your site.",
@@ -2107,11 +2105,18 @@
     "confirm": {
       "navTitle": "Confirm your email",
       "navDesc": "Check your inbox and click the confirmation link.",
-      "title": "Check your inbox",
-      "linkSent": "We've sent an account confirmation link to {{email}}, please click the link to confirm your email address.",
+      "title": "One step left and you're ready to go! 🚀",
+      "emailVerification": "Email Verification",
+      "verifyTitle": "Please verify your email address",
+      "linkSent": "We sent an email to <email>{{email}}</email>. Please confirm your email address to continue.",
+      "didNotReceive": "Did not receive an email?",
+      "resend": "Resend",
+      "emailResent": "Requested",
+      "troubleOrChange": "Do you have trouble or want to change your email address?",
+      "logoutAndRegister": "Logout and register again",
+      "letsGo": "Let's go!",
       "spam": "Can't see the email? Please check your spam folder.",
       "wrongEmail": "Wrong email? <url>Create a new account.</url>",
-      "verifyTitle": "Please verify your email address",
       "checkVerification": "I've verified my email"
     },
     "createProject": {

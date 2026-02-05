@@ -1,14 +1,14 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import _map from 'lodash/map'
 import {
-  ChartLineUpIcon,
   BugIcon,
-  UsersThreeIcon,
-  RocketIcon,
   CodeIcon,
-  EnvelopeIcon,
   CheckCircleIcon,
+  UserIcon,
+  CursorClickIcon,
+  FileTextIcon,
   ClockIcon,
+  FolderPlusIcon,
 } from '@phosphor-icons/react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
@@ -17,13 +17,18 @@ import { toast } from 'sonner'
 
 import { useAuthProxy } from '~/hooks/useAuthProxy'
 import {
+  BROWSER_LOGO_MAP,
+  CONFIRMATION_TIMEOUT,
   DOCS_URL,
   INTEGRATIONS_URL,
   isSelfhosted,
   whitelist,
   languages,
   languageFlag,
+  OS_LOGO_MAP,
+  OS_LOGO_MAP_DARK,
 } from '~/lib/constants'
+import { getCookie, setCookie } from '~/utils/cookie'
 import { changeLanguage } from '~/i18n'
 import { getSnippet } from '~/modals/TrackingSnippet'
 import { useAuth } from '~/providers/AuthProvider'
@@ -132,7 +137,7 @@ const ProgressBar = ({
   return (
     <div className='h-1 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700/50'>
       <motion.div
-        className='h-full rounded-full bg-indigo-500'
+        className='h-full rounded-full bg-blue-400 dark:bg-blue-600/60'
         initial={{ width: 0 }}
         animate={{ width: `${progress}%` }}
         transition={{
@@ -144,256 +149,253 @@ const ProgressBar = ({
   )
 }
 
+const IconNode = ({
+  children,
+  label,
+  className,
+}: {
+  children: React.ReactNode
+  label: string
+  className?: string
+}) => (
+  <div className={cn('flex flex-col items-center gap-2', className)}>
+    <div className='flex size-14 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+      {children}
+    </div>
+    <Text as='span' size='sm' weight='medium' colour='secondary'>
+      {label}
+    </Text>
+  </div>
+)
+
 const FeatureVisualization = ({
   type,
+  deviceInfo,
+  country,
 }: {
   type: 'traffic' | 'errors' | 'sessions'
+  deviceInfo?: { browser: string | null; os: string | null }
+  country?: string | null
 }) => {
+  const { theme } = useTheme()
+
+  const browserLogo =
+    BROWSER_LOGO_MAP[
+      (deviceInfo?.browser as keyof typeof BROWSER_LOGO_MAP) || 'Chrome'
+    ] || BROWSER_LOGO_MAP.Chrome
+
+  const osKey = (deviceInfo?.os || 'Windows') as keyof typeof OS_LOGO_MAP
+  const osLogoLight = OS_LOGO_MAP[osKey] || OS_LOGO_MAP.Windows
+  const osLogoDark =
+    OS_LOGO_MAP_DARK[osKey as keyof typeof OS_LOGO_MAP_DARK] || osLogoLight
+  const osLogo = theme === 'dark' ? osLogoDark : osLogoLight
+
   if (type === 'traffic') {
     return (
-      <div className='relative mx-auto mt-8 w-full max-w-lg'>
-        <div className='overflow-hidden rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
-          <div className='mb-4 flex items-center justify-between'>
-            <div className='flex items-center gap-2'>
-              <div className='flex size-8 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30'>
-                <ChartLineUpIcon className='size-4 text-indigo-600 dark:text-indigo-400' />
-              </div>
-              <Text as='span' size='sm' weight='medium'>
-                Page Views
-              </Text>
-            </div>
-            <Badge label='+24%' colour='green' />
+      <div className='relative mt-12 w-full max-w-md'>
+        <svg
+          className='absolute inset-0 size-full'
+          viewBox='0 0 400 260'
+          fill='none'
+          preserveAspectRatio='xMidYMid meet'
+        >
+          <line
+            x1='200'
+            y1='115'
+            x2='70'
+            y2='28'
+            className='stroke-gray-200 dark:stroke-slate-700'
+            strokeWidth='1.5'
+          />
+          <line
+            x1='200'
+            y1='115'
+            x2='330'
+            y2='28'
+            className='stroke-gray-200 dark:stroke-slate-700'
+            strokeWidth='1.5'
+          />
+          <line
+            x1='200'
+            y1='115'
+            x2='70'
+            y2='205'
+            className='stroke-gray-200 dark:stroke-slate-700'
+            strokeWidth='1.5'
+          />
+        </svg>
+
+        <div className='relative grid grid-cols-3 gap-4'>
+          <div className='flex justify-center pt-0'>
+            <IconNode label={country || 'US'}>
+              <Flag country={country || 'US'} size={28} />
+            </IconNode>
           </div>
-          <div className='flex items-end gap-1'>
-            {[40, 55, 35, 65, 45, 80, 60, 90, 70, 95, 85, 100].map(
-              (height, i) => (
-                <motion.div
-                  key={i}
-                  className='flex-1 rounded-t bg-indigo-500'
-                  initial={{ height: 0 }}
-                  animate={{ height: `${height}px` }}
-                  transition={{
-                    delay: i * 0.04,
-                    duration: 0.4,
-                    ease: EASE_OUT_QUART,
-                  }}
-                />
-              ),
-            )}
-          </div>
-          <div className='mt-4 grid grid-cols-3 gap-4'>
-            <div className='rounded-lg bg-gray-50 p-3 dark:bg-slate-700/50'>
-              <Text as='span' size='xs' colour='muted' className='block'>
-                Visitors
-              </Text>
-              <Text as='span' size='lg' weight='semibold'>
-                12.4K
-              </Text>
-            </div>
-            <div className='rounded-lg bg-gray-50 p-3 dark:bg-slate-700/50'>
-              <Text as='span' size='xs' colour='muted' className='block'>
-                Bounce Rate
-              </Text>
-              <Text as='span' size='lg' weight='semibold'>
-                42%
-              </Text>
-            </div>
-            <div className='rounded-lg bg-gray-50 p-3 dark:bg-slate-700/50'>
-              <Text as='span' size='xs' colour='muted' className='block'>
-                Avg. Time
-              </Text>
-              <Text as='span' size='lg' weight='semibold'>
-                2:34
-              </Text>
-            </div>
+          <div />
+          <div className='flex justify-center pt-0'>
+            <IconNode label={deviceInfo?.browser || 'Chrome'}>
+              <img src={browserLogo} alt='Browser' className='size-7' />
+            </IconNode>
           </div>
         </div>
-        <div className='absolute -right-2 -bottom-2 -z-10 size-full rounded-xl bg-indigo-100 dark:bg-indigo-900/30' />
+
+        <div className='relative mt-4 flex justify-center'>
+          <IconNode label='Visitor'>
+            <UserIcon
+                className='size-8 text-indigo-600 dark:text-indigo-200'
+                weight='duotone'
+              />
+          </IconNode>
+        </div>
+
+        <div className='relative mt-4 grid grid-cols-3 gap-4'>
+          <div className='flex justify-center'>
+            <IconNode label={deviceInfo?.os || 'Windows'}>
+              <img src={osLogo} alt='OS' className='size-7' />
+            </IconNode>
+          </div>
+          <div />
+          <div />
+        </div>
       </div>
     )
   }
 
   if (type === 'errors') {
     return (
-      <div className='relative mx-auto mt-8 w-full max-w-lg'>
-        <div className='overflow-hidden rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
-          <div className='mb-4 flex items-center justify-between'>
-            <div className='flex items-center gap-2'>
-              <div className='flex size-8 items-center justify-center rounded-lg bg-rose-100 dark:bg-rose-900/30'>
-                <BugIcon className='size-4 text-rose-600 dark:text-rose-400' />
-              </div>
-              <Text as='span' size='sm' weight='medium'>
-                Error Tracking
-              </Text>
-            </div>
-            <Badge label='3 new' colour='red' />
+      <div className='ml-8 mt-12 w-full max-w-sm'>
+        <div className='flex flex-col gap-6'>
+          <div className='flex size-20 items-center justify-center rounded-2xl bg-rose-50 ring-1 ring-inset ring-rose-200 dark:bg-rose-900/20 dark:ring-rose-800'>
+            <BugIcon
+              className='size-10 text-rose-500 dark:text-rose-400'
+              weight='duotone'
+            />
           </div>
-          <div className='space-y-3'>
-            {[
-              {
-                type: 'TypeError',
-                message: "Cannot read property 'map' of undefined",
-                count: 23,
-              },
-              {
-                type: 'ReferenceError',
-                message: 'window is not defined',
-                count: 12,
-              },
-              {
-                type: 'NetworkError',
-                message: 'Failed to fetch /api/data',
-                count: 8,
-              },
-            ].map((error, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  delay: i * 0.08,
-                  duration: 0.3,
-                  ease: EASE_OUT_QUART,
-                }}
-                className='flex items-start gap-3 rounded-lg bg-rose-50 p-3 dark:bg-rose-900/20'
-              >
-                <div className='mt-0.5 size-2 shrink-0 rounded-full bg-rose-500' />
-                <div className='min-w-0 flex-1'>
-                  <Text
-                    as='span'
-                    size='xs'
-                    weight='semibold'
-                    className='text-rose-700 dark:text-rose-300'
-                  >
-                    {error.type}
-                  </Text>
-                  <Text as='p' size='xs' colour='muted' className='truncate'>
-                    {error.message}
-                  </Text>
-                </div>
-                <Badge label={String(error.count)} colour='slate' />
-              </motion.div>
-            ))}
+
+          <div className='w-full space-y-2'>
+            <div className='flex items-center gap-3 rounded-lg bg-gray-50 p-4 ring-1 ring-gray-100 dark:bg-slate-900 dark:ring-slate-800'>
+              <div className='size-2 shrink-0 rounded-full bg-rose-500' />
+              <div className='flex-1'>
+                <div className='h-2.5 w-24 rounded bg-gray-200 dark:bg-slate-800' />
+              </div>
+              <div className='h-2 w-8 rounded bg-gray-200 dark:bg-slate-800' />
+            </div>
+
+            <div className='flex items-center gap-3 rounded-lg bg-gray-50 p-4 ring-1 ring-gray-100 dark:bg-slate-900 dark:ring-slate-800'>
+              <div className='size-2 shrink-0 rounded-full bg-amber-500' />
+              <div className='flex-1'>
+                <div className='h-2.5 w-32 rounded bg-gray-200 dark:bg-slate-800' />
+              </div>
+              <div className='h-2 w-6 rounded bg-gray-200 dark:bg-slate-800' />
+            </div>
+
+            <div className='flex items-center gap-3 rounded-lg bg-gray-50 p-4 ring-1 ring-gray-100 dark:bg-slate-900 dark:ring-slate-800'>
+              <div className='size-2 shrink-0 rounded-full bg-rose-500' />
+              <div className='flex-1'>
+                <div className='h-2.5 w-20 rounded bg-gray-200 dark:bg-slate-800' />
+              </div>
+              <div className='h-2 w-10 rounded bg-gray-200 dark:bg-slate-800' />
+            </div>
           </div>
         </div>
-        <div className='absolute -right-2 -bottom-2 -z-10 size-full rounded-xl bg-rose-100 dark:bg-rose-900/30' />
       </div>
     )
   }
 
   return (
-    <div className='relative mx-auto mt-8 w-full max-w-lg'>
-      <div className='overflow-hidden rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
-        <div className='mb-4 flex items-center justify-between'>
-          <div className='flex items-center gap-2'>
-            <div className='flex size-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30'>
-              <UsersThreeIcon className='size-4 text-emerald-600 dark:text-emerald-400' />
-            </div>
-            <Text as='span' size='sm' weight='medium'>
-              User Sessions
-            </Text>
-          </div>
-          <div className='flex items-center gap-1 text-emerald-600 dark:text-emerald-400'>
-            <PulsatingCircle type='small' />
-            <Text as='span' size='xs' weight='medium'>
-              12 online
-            </Text>
-          </div>
-        </div>
-        <div className='space-y-3'>
-          {[
-            {
-              country: 'US',
-              pages: 5,
-              duration: '4:23',
-              device: 'Desktop',
-            },
-            {
-              country: 'DE',
-              pages: 3,
-              duration: '2:15',
-              device: 'Mobile',
-            },
-            {
-              country: 'GB',
-              pages: 8,
-              duration: '6:42',
-              device: 'Desktop',
-            },
-          ].map((session, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                delay: i * 0.08,
-                duration: 0.3,
-                ease: EASE_OUT_QUART,
-              }}
-              className='flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-slate-700/50'
-            >
-              <Flag country={session.country} size={20} />
-              <div className='flex-1'>
-                <div className='flex items-center gap-2'>
-                  <Text as='span' size='xs' weight='medium'>
-                    {session.pages} pages
-                  </Text>
-                  <Text as='span' size='xs' colour='muted'>
-                    •
-                  </Text>
-                  <Text as='span' size='xs' colour='muted'>
-                    {session.device}
-                  </Text>
-                </div>
-              </div>
-              <div className='flex items-center gap-1 text-gray-500 dark:text-gray-400'>
-                <ClockIcon className='size-3' />
-                <Text as='span' size='xs'>
-                  {session.duration}
+    <div className='ml-8 mt-12 w-full max-w-md'>
+      <div className='relative'>
+        <div className='absolute top-2.5 left-2.5 bottom-2.5 w-px bg-gray-200 dark:bg-slate-700' />
+
+        <div className='space-y-4'>
+          <div className='flex items-center gap-4'>
+            <CursorClickIcon
+              className='relative z-10 size-5 shrink-0 text-amber-500 bg-white dark:bg-slate-900'
+              weight='duotone'
+            />
+            <div className='min-w-0 flex-1'>
+              <div className='flex items-baseline gap-2'>
+                <Text as='span' size='sm' weight='medium' colour='muted'>
+                  Event
+                </Text>
+                <Text as='span' size='sm' weight='semibold'>
+                  SIGNUP_CLICK
                 </Text>
               </div>
-            </motion.div>
-          ))}
+              <div className='flex items-center gap-1.5 mt-0.5'>
+                <ClockIcon className='size-3.5 text-gray-400 dark:text-slate-500' />
+                <Text as='span' size='xs' colour='muted'>
+                  1s
+                </Text>
+              </div>
+            </div>
+          </div>
+
+          <div className='flex items-center gap-4'>
+            <FileTextIcon
+              className='relative z-10 size-5 shrink-0 text-sky-500 bg-white dark:bg-slate-900'
+              weight='duotone'
+            />
+            <div className='min-w-0 flex-1'>
+              <div className='flex items-baseline gap-2'>
+                <Text as='span' size='sm' weight='medium' colour='muted'>
+                  Pageview
+                </Text>
+                <Text as='span' size='sm' weight='semibold'>
+                  /pricing
+                </Text>
+              </div>
+              <div className='flex items-center gap-1.5 mt-0.5'>
+                <ClockIcon className='size-3.5 text-gray-400 dark:text-slate-500' />
+                <Text as='span' size='xs' colour='muted'>
+                  12s
+                </Text>
+              </div>
+            </div>
+          </div>
+
+          <div className='flex items-center gap-4'>
+            <FileTextIcon
+              className='relative z-10 size-5 shrink-0 text-emerald-500 bg-white dark:bg-slate-900'
+              weight='duotone'
+            />
+            <div className='min-w-0 flex-1'>
+              <div className='flex items-baseline gap-2'>
+                <Text as='span' size='sm' weight='medium' colour='muted'>
+                  Pageview
+                </Text>
+                <Text as='span' size='sm' weight='semibold'>
+                  /checkout
+                </Text>
+              </div>
+              <div className='flex items-center gap-1.5 mt-0.5'>
+                <ClockIcon className='size-3.5 text-gray-400 dark:text-slate-500' />
+                <Text as='span' size='xs' colour='muted'>
+                  5s
+                </Text>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div className='absolute -right-2 -bottom-2 -z-10 size-full rounded-xl bg-emerald-100 dark:bg-emerald-900/30' />
     </div>
   )
 }
 
-const ProjectVisualization = () => {
+const ProjectVisualisation = () => {
   return (
-    <div className='relative mx-auto mb-8 w-full max-w-md'>
-      <div className='overflow-hidden rounded-xl bg-white p-6 shadow-lg ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
-        <div className='flex items-center gap-4'>
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.15, duration: 0.4, ease: EASE_OUT_QUART }}
-            className='flex size-14 items-center justify-center rounded-xl bg-indigo-500'
-          >
-            <RocketIcon className='size-7 text-white' weight='fill' />
-          </motion.div>
-          <div className='flex-1 space-y-2'>
-            <motion.div
-              initial={{ scaleX: 0, originX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ delay: 0.25, duration: 0.4, ease: EASE_OUT_QUART }}
-              className='h-4 w-3/4 rounded bg-gray-200 dark:bg-slate-600'
-            />
-            <motion.div
-              initial={{ scaleX: 0, originX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ delay: 0.35, duration: 0.4, ease: EASE_OUT_QUART }}
-              className='h-3 w-full rounded bg-gray-100 dark:bg-slate-700'
-            />
-            <motion.div
-              initial={{ scaleX: 0, originX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ delay: 0.45, duration: 0.4, ease: EASE_OUT_QUART }}
-              className='h-3 w-3/5 rounded bg-gray-100 dark:bg-slate-700'
-            />
-          </div>
+    <div className='mb-8 w-full rounded-xl p-6 ring-1 ring-gray-200 dark:ring-slate-800'>
+      <div className='flex items-start gap-5'>
+        <div className='flex size-20 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-800'>
+          <FolderPlusIcon
+            className='size-10 text-indigo-500'
+            weight='duotone'
+          />
+        </div>
+        <div className='min-w-0 flex-1 space-y-2 pt-1'>
+          <div className='h-5 w-48 rounded bg-gray-200 dark:bg-slate-800' />
+          <div className='h-3 w-full rounded bg-gray-100 dark:bg-slate-800/50' />
+          <div className='h-3 w-3/4 rounded bg-gray-100 dark:bg-slate-800/50' />
         </div>
       </div>
     </div>
@@ -404,7 +406,8 @@ const Onboarding = () => {
   const { t, i18n } = useTranslation('common')
   const { theme } = useTheme()
   const prefersReducedMotion = useReducedMotion()
-  const loaderData = useLoaderData<OnboardingLoaderData>()
+  const { project: loaderProject, deviceInfo, metainfo } =
+    useLoaderData<OnboardingLoaderData>()
   const { user, loadUser, logout } = useAuth()
   const { authMe } = useAuthProxy()
   const navigate = useNavigate()
@@ -414,7 +417,7 @@ const Onboarding = () => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [direction, setDirection] = useState(0)
   const [projectName, setProjectName] = useState('')
-  const [project, setProject] = useState<Project | null>(loaderData.project)
+  const [project, setProject] = useState<Project | null>(loaderProject)
   const [isWaitingForEvents, setIsWaitingForEvents] = useState(false)
   const [hasEvents, setHasEvents] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language)
@@ -423,6 +426,9 @@ const Onboarding = () => {
     name?: string
   }>({})
   const [isCheckingVerification, setIsCheckingVerification] = useState(false)
+  const [hasResentEmail, setHasResentEmail] = useState(
+    () => !!getCookie(CONFIRMATION_TIMEOUT),
+  )
 
   const currentStep = STEPS[currentStepIndex]
   const isLoading =
@@ -452,6 +458,10 @@ const Onboarding = () => {
       } else if (intent === 'delete-account') {
         logout()
         navigate(routes.main)
+      } else if (intent === 'confirm-email') {
+        setCookie(CONFIRMATION_TIMEOUT, true, 600)
+        setHasResentEmail(true)
+        toast.success(t('profileSettings.confSent'))
       }
     } else if (fetcher.data?.error) {
       toast.error(fetcher.data.error)
@@ -583,27 +593,30 @@ const Onboarding = () => {
     fetcher.submit(formData, { method: 'post' })
   }
 
-  const handleSkipTracking = () => {
-    if (isSelfhosted) {
-      handleCompleteOnboarding(true)
-    } else {
-      goNext()
+  const handleResendEmail = () => {
+    if (getCookie(CONFIRMATION_TIMEOUT)) {
+      toast.error(t('profileSettings.confTimeout'))
+      return
     }
+
+    const formData = new FormData()
+    formData.set('intent', 'confirm-email')
+    fetcher.submit(formData, { method: 'post' })
   }
 
   if (!user) {
     return (
-      <div className='flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-900'>
+      <div className='flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-950'>
         <Loader />
       </div>
     )
   }
 
   return (
-    <div className='flex h-screen flex-col overflow-hidden bg-gray-50 p-2 sm:p-2.5 dark:bg-slate-900'>
-      <div className='flex h-full w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+    <div className='flex h-screen flex-col overflow-hidden bg-gray-50 p-2 sm:p-2.5 dark:bg-slate-950'>
+      <div className='flex h-full w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 ring-1 ring-black/5 dark:bg-slate-950 dark:ring-white/10'>
         <div className='flex h-full max-h-[min(92%,50rem)] min-h-0 w-full max-w-3xl flex-col'>
-          <div className='relative mx-auto min-h-0 w-full max-w-5xl flex-1 overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+          <div className='relative mx-auto min-h-0 w-full max-w-5xl flex-1 overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-800/25 dark:ring-white/10'>
             <div className='flex h-full min-h-0 flex-col'>
               <div className='shrink-0 px-6 pt-5 md:px-10'>
                 <ProgressBar
@@ -653,7 +666,7 @@ const Onboarding = () => {
                                 className={cn(
                                   'flex flex-col items-center justify-center rounded-xl px-4 py-5 ring-1 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800',
                                   isSelected
-                                    ? 'bg-indigo-50 ring-2 ring-indigo-500 dark:bg-indigo-900/20 dark:ring-indigo-400'
+                                    ? 'bg-indigo-50 ring-2 ring-indigo-500 dark:bg-slate-800 dark:ring-slate-200'
                                     : 'ring-gray-200 hover:bg-gray-50 hover:ring-gray-300 dark:ring-slate-700 dark:hover:bg-slate-700/50 dark:hover:ring-slate-600',
                                 )}
                               >
@@ -670,7 +683,7 @@ const Onboarding = () => {
                                   colour='inherit'
                                   className={cn(
                                     isSelected
-                                      ? 'text-indigo-700 dark:text-indigo-300'
+                                      ? 'text-indigo-700 dark:text-gray-50'
                                       : 'text-gray-900 dark:text-gray-100',
                                   )}
                                 >
@@ -698,10 +711,10 @@ const Onboarding = () => {
                           {t('onboarding.welcomeScreen.subtitle')}
                         </Text>
 
-                        <div className='rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-slate-700/70 dark:bg-slate-800/80'>
+                        <div className='rounded-2xl border border-gray-200 bg-slate-50 shadow-xs dark:border-slate-700/70 dark:bg-slate-900/80'>
                           <div className='relative overflow-hidden rounded-2xl'>
                             <div className='p-3'>
-                              <div className='rounded-2xl bg-white shadow-[0_24px_60px_rgba(15,23,42,0.12)] ring-1 ring-black/5 dark:bg-slate-800 dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)] dark:ring-white/10'>
+                              <div className='rounded-2xl bg-white shadow-[0_24px_60px_rgba(15,23,42,0.12)] dark:bg-slate-800 dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)] dark:ring-white/10'>
                                 <div className='overflow-hidden rounded-xl'>
                                   <img
                                     src={
@@ -715,7 +728,7 @@ const Onboarding = () => {
                                 </div>
                               </div>
                             </div>
-                            <div className='pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-white via-white/95 to-transparent dark:from-slate-800 dark:via-slate-800/95' />
+                            <div className='pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95' />
                             <div className='absolute inset-x-0 bottom-0 px-6 pt-4 pb-8 text-center'>
                               <Text
                                 as='h3'
@@ -741,9 +754,6 @@ const Onboarding = () => {
 
                     {currentStep === 'feature_traffic' && (
                       <div>
-                        <div className='mb-2 text-xs font-medium tracking-wider text-indigo-600 uppercase dark:text-indigo-400'>
-                          {t('onboarding.features.feature')} 1
-                        </div>
                         <Text
                           as='h1'
                           size='3xl'
@@ -761,15 +771,16 @@ const Onboarding = () => {
                           {t('onboarding.features.traffic.tip')}
                         </Alert>
 
-                        <FeatureVisualization type='traffic' />
+                        <FeatureVisualization
+                          type='traffic'
+                          deviceInfo={deviceInfo}
+                          country={metainfo.country}
+                        />
                       </div>
                     )}
 
                     {currentStep === 'feature_errors' && (
-                      <div className='py-6'>
-                        <div className='mb-2 text-xs font-medium tracking-wider text-rose-600 uppercase dark:text-rose-400'>
-                          {t('onboarding.features.feature')} 2
-                        </div>
+                      <div>
                         <Text
                           as='h1'
                           size='3xl'
@@ -783,7 +794,7 @@ const Onboarding = () => {
                           {t('onboarding.features.errors.desc')}
                         </Text>
 
-                        <Alert variant='error' className='mt-4'>
+                        <Alert variant='info' className='mt-4'>
                           {t('onboarding.features.errors.tip')}
                         </Alert>
 
@@ -793,9 +804,6 @@ const Onboarding = () => {
 
                     {currentStep === 'feature_sessions' && (
                       <div>
-                        <div className='mb-2 text-xs font-medium tracking-wider text-emerald-600 uppercase dark:text-emerald-400'>
-                          {t('onboarding.features.feature')} 3
-                        </div>
                         <Text
                           as='h1'
                           size='3xl'
@@ -809,7 +817,7 @@ const Onboarding = () => {
                           {t('onboarding.features.sessions.desc')}
                         </Text>
 
-                        <Alert variant='tip' className='mt-4'>
+                        <Alert variant='info' className='mt-4'>
                           {t('onboarding.features.sessions.tip')}
                         </Alert>
 
@@ -818,7 +826,7 @@ const Onboarding = () => {
                     )}
 
                     {currentStep === 'create_project' && (
-                      <form onSubmit={handleCreateProject} className='py-6'>
+                      <form onSubmit={handleCreateProject}>
                         <Text
                           as='h1'
                           size='3xl'
@@ -832,9 +840,9 @@ const Onboarding = () => {
                           {t('onboarding.createProject.desc')}
                         </Text>
 
-                        <ProjectVisualization />
+                        <ProjectVisualisation />
 
-                        <div className='mx-auto max-w-sm'>
+                        <div className='sm:max-w-1/2 w-full'>
                           <Input
                             label={t('project.settings.name')}
                             placeholder={t(
@@ -880,9 +888,9 @@ const Onboarding = () => {
                           />
                         </Text>
 
-                        <div className='rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-slate-700 dark:bg-slate-800/50'>
+                        <div className='rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-slate-700 dark:bg-slate-900'>
                           <div className='mb-4 flex items-center gap-3'>
-                            <div className='flex size-10 items-center justify-center rounded-lg bg-white dark:bg-slate-700'>
+                            <div className='flex size-10 items-center justify-center rounded-lg border border-gray-200 dark:border-slate-700'>
                               <CodeIcon className='size-5 text-gray-700 dark:text-gray-200' />
                             </div>
                             <div>
@@ -891,7 +899,7 @@ const Onboarding = () => {
                                   'onboarding.installTracking.websiteInstallation',
                                 )}
                               </Text>
-                              <Text as='p' size='xs' colour='muted'>
+                              <Text as='p' size='xs' colour='secondary'>
                                 <Trans
                                   t={t}
                                   i18nKey='modals.trackingSnippet.add'
@@ -919,7 +927,7 @@ const Onboarding = () => {
                           <Text
                             as='p'
                             size='xs'
-                            colour='muted'
+                            colour='secondary'
                             className='mt-4'
                           >
                             <Trans
@@ -990,78 +998,69 @@ const Onboarding = () => {
 
                     {currentStep === 'verify_email' && (
                       <div>
-                        <div className='mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl bg-linear-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20'>
-                          <EnvelopeIcon className='size-8 text-indigo-600 dark:text-indigo-400' />
-                        </div>
                         <Text
                           as='h1'
                           size='3xl'
                           weight='bold'
                           tracking='tight'
-                          className='mb-2 text-center'
+                          className='mb-2'
                         >
                           {t('onboarding.confirm.title')}
                         </Text>
-                        <Text
-                          as='p'
-                          colour='secondary'
-                          className='mx-auto max-w-md text-center'
-                        >
-                          {t('onboarding.confirm.linkSent', {
-                            email: user?.email,
-                          })}
+
+                        <Text as='h2' size='lg' weight='semibold' className='mb-4 mt-8'>
+                          {t('onboarding.confirm.emailVerification')}
                         </Text>
 
-                        <div className='mx-auto mt-8 max-w-sm rounded-xl bg-indigo-50 p-4 dark:bg-indigo-900/20'>
-                          <div className='flex items-start gap-3'>
-                            <EnvelopeIcon className='mt-0.5 size-5 shrink-0 text-indigo-600 dark:text-indigo-400' />
-                            <div>
-                              <Text as='h3' size='sm' weight='semibold'>
-                                {t('onboarding.confirm.verifyTitle')}
-                              </Text>
-                              <Text as='p' size='sm' colour='secondary'>
-                                {t('onboarding.confirm.spam')}
-                              </Text>
-                            </div>
-                          </div>
-                        </div>
-
-                        <Text
-                          as='p'
-                          size='sm'
-                          colour='muted'
-                          className='mt-6 text-center'
-                        >
+                        <Alert variant='info' title={t('onboarding.confirm.verifyTitle')}>
                           <Trans
                             t={t}
-                            i18nKey='onboarding.confirm.wrongEmail'
+                            i18nKey='onboarding.confirm.linkSent'
+                            values={{ email: user?.email }}
                             components={{
-                              url: (
-                                <button
-                                  type='button'
-                                  className='cursor-pointer rounded font-medium text-indigo-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 dark:text-indigo-400'
-                                  onClick={handleDeleteAccount}
-                                />
-                              ),
+                              email: <span className='font-semibold' />,
                             }}
                           />
-                        </Text>
+                        </Alert>
+
+                        <div className='mt-6'>
+                          <Text as='p' size='sm' colour='secondary' className='mb-2'>
+                            {t('onboarding.confirm.didNotReceive')}
+                          </Text>
+                          <Button
+                            onClick={handleResendEmail}
+                            disabled={hasResentEmail}
+                            secondary
+                            small
+                          >
+                            {hasResentEmail && (
+                              <CheckCircleIcon className='mr-2 size-4' />
+                            )}
+                            {hasResentEmail
+                              ? t('onboarding.confirm.emailResent')
+                              : t('onboarding.confirm.resend')}
+                          </Button>
+                        </div>
+
+                        <div className='mt-6'>
+                          <Text as='p' size='sm' colour='secondary' className='mb-2'>
+                            {t('onboarding.confirm.troubleOrChange')}
+                          </Text>
+                          <Button onClick={handleDeleteAccount} secondary small>
+                            {t('onboarding.confirm.logoutAndRegister')}
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </motion.div>
                 </AnimatePresence>
               </div>
 
-              <div className='shrink-0 border-t border-gray-200 px-6 py-4 dark:border-slate-700'>
+              <div className='shrink-0 border-t border-gray-200 px-6 py-4 dark:border-white/10'>
                 <div className='flex items-center justify-end gap-3'>
-                  {currentStepIndex > 0 && currentStep !== 'verify_email' && (
+                  {currentStepIndex > 0 && (
                     <Button onClick={goBack} secondary large>
                       {t('common.back')}
-                    </Button>
-                  )}
-                  {currentStep === 'setup_tracking' && (
-                    <Button onClick={handleSkipTracking} secondary large>
-                      {t('common.skip')}
                     </Button>
                   )}
                   {currentStep === 'language' && (
@@ -1118,7 +1117,7 @@ const Onboarding = () => {
                       primary
                       large
                     >
-                      {t('onboarding.finishOnboarding')}
+                      {t('onboarding.confirm.letsGo')}
                     </Button>
                   )}
                 </div>
