@@ -141,7 +141,7 @@ export class UserService {
           timezone: DEFAULT_TIMEZONE,
           timeFormat: TimeFormat['24-hour'],
           showLiveVisitorsInTitle: 0,
-          onboardingStep: OnboardingStep.CREATE_PROJECT,
+          onboardingStep: OnboardingStep.LANGUAGE,
           hasCompletedOnboarding: 0,
           apiKey: null,
         },

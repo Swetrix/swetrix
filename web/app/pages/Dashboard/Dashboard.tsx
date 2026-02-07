@@ -14,7 +14,6 @@ import React, { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   useLoaderData,
-  useNavigate,
   useSearchParams,
   useFetcher,
   useNavigation,
@@ -43,7 +42,6 @@ import Pagination from '~/ui/Pagination'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
 import { setCookie } from '~/utils/cookie'
-import routes from '~/utils/routes'
 
 import { AddProject } from './AddProject'
 import { NoProjects } from './NoProjects'
@@ -64,7 +62,6 @@ const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 const Dashboard = () => {
   const loaderData = useLoaderData<DashboardLoaderData>()
-  const navigate = useNavigate()
   const navigation = useNavigation()
   const revalidator = useRevalidator()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -272,14 +269,6 @@ const Dashboard = () => {
   const refetchProjects = () => {
     revalidator.revalidate()
   }
-
-  // Redirect to onboarding if user hasn't completed it
-  useEffect(() => {
-    if (user && !user.hasCompletedOnboarding) {
-      navigate(routes.onboarding)
-      return
-    }
-  }, [user, navigate])
 
   // Update URL when debounced search changes
   useEffect(() => {

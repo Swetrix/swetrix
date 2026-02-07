@@ -114,7 +114,7 @@ Swetrix.init(SWETRIX_PID, {
 const BLOG_PAGE_REGEX = /^\/blog\/.+$/
 
 export const trackViews = () => {
-  if (isSelfhosted || !isBrowser || isIframe) {
+  if (isSelfhosted || !isBrowser || isIframe || isDevelopment) {
     return
   }
 
@@ -155,7 +155,7 @@ export const trackPageview = (options: Swetrix.IPageviewOptions) => {
 }
 
 export const trackErrors = () => {
-  if (isSelfhosted || !isBrowser) {
+  if (isSelfhosted || !isBrowser || isDevelopment) {
     return
   }
 
@@ -181,7 +181,7 @@ export const trackErrors = () => {
 }
 
 export const trackError = (payload: Swetrix.IErrorEventPayload) => {
-  if (isSelfhosted || !isBrowser) {
+  if (isSelfhosted || !isBrowser || isDevelopment) {
     return
   }
 
@@ -192,7 +192,7 @@ export const trackCustom = (
   ev: string,
   meta?: Swetrix.TrackEventOptions['meta'],
 ) => {
-  if (isSelfhosted || !isBrowser) {
+  if (isSelfhosted || !isBrowser || isDevelopment) {
     return
   }
 

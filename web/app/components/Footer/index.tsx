@@ -51,8 +51,6 @@ import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 import { cn } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 
-export const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
-
 interface NavItem {
   key?: string
   name?: string

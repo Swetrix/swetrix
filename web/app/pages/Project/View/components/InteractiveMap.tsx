@@ -1,4 +1,9 @@
-import { ArrowsOutIcon, XIcon } from '@phosphor-icons/react'
+import {
+  ArrowsOutIcon,
+  MinusIcon,
+  PlusIcon,
+  XIcon,
+} from '@phosphor-icons/react'
 import cx from 'clsx'
 import { scalePow, scaleThreshold } from 'd3-scale'
 import { Feature, GeoJsonObject } from 'geojson'
@@ -14,14 +19,14 @@ import React, {
   useRef,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { GeoJSON, MapContainer, useMapEvent } from 'react-leaflet'
+import { GeoJSON, MapContainer, useMap, useMapEvent } from 'react-leaflet'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { isSelfhosted, PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
-import Spin from '~/ui/icons/Spin'
+import { MapLoader } from './MapLoader'
 import {
   getTimeFromSeconds,
   getStringFromTime,
@@ -428,6 +433,35 @@ const InteractiveMapCore = ({
     return null
   }
 
+  const MapZoomControls = ({ visible }: { visible: boolean }) => {
+    const map = useMap()
+
+    if (!visible) return null
+
+    return (
+      <div className='pointer-events-none absolute right-3 bottom-3 z-400 flex flex-col gap-1'>
+        <button
+          type='button'
+          onClick={() => map.zoomIn()}
+          className='pointer-events-auto rounded-md border border-gray-300 bg-gray-50 p-2 text-gray-700 shadow-sm transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+          aria-label='Zoom in'
+          title='Zoom in'
+        >
+          <PlusIcon className='size-4' />
+        </button>
+        <button
+          type='button'
+          onClick={() => map.zoomOut()}
+          className='pointer-events-auto rounded-md border border-gray-300 bg-gray-50 p-2 text-gray-700 shadow-sm transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+          aria-label='Zoom out'
+          title='Zoom out'
+        >
+          <MinusIcon className='size-4' />
+        </button>
+      </div>
+    )
+  }
+
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (!tooltipContent) return
@@ -460,28 +494,21 @@ const InteractiveMapCore = ({
 
       {/* Exit fullscreen button */}
       {isFullscreen && onFullscreenToggle ? (
-        <div className='pointer-events-none absolute inset-x-0 top-3 z-50 mx-auto w-full max-w-7xl px-4 py-2 sm:px-6 lg:px-8'>
-          <div className='relative flex w-full justify-end'>
-            <button
-              type='button'
-              onClick={() => onFullscreenToggle(false)}
-              className='pointer-events-auto flex items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-            >
-              <XIcon className='mr-1.5 h-4 w-4' />
-              {t('common.close')}
-            </button>
-          </div>
+        <div className='absolute top-3 right-3 z-50'>
+          <button
+            type='button'
+            onClick={() => onFullscreenToggle(false)}
+            className='flex items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+          >
+            <XIcon className='mr-1.5 h-4 w-4' />
+            {t('common.close')}
+          </button>
         </div>
       ) : null}
 
       {dataLoading || isGeoDataLoading ? (
-        <div className='absolute inset-0 z-10 flex items-center justify-center rounded-md bg-slate-900/20 backdrop-blur-sm'>
-          <div className='flex flex-col items-center gap-2'>
-            <Spin />
-            <span className='text-sm text-slate-900 dark:text-gray-50'>
-              {t('project.loadingMapData')}
-            </span>
-          </div>
+        <div className='absolute inset-0 z-10'>
+          <MapLoader />
         </div>
       ) : null}
 
@@ -534,6 +561,7 @@ const InteractiveMapCore = ({
               }}
             />
           ) : null}
+          <MapZoomControls visible={isFullscreen} />
         </MapContainer>
       ) : null}
 
@@ -588,21 +616,8 @@ const InteractiveMap = ({
   onFullscreenToggle,
   isFullscreen,
 }: InteractiveMapProps) => {
-  const { t } = useTranslation('common')
-
   return (
-    <ClientOnly
-      fallback={
-        <div className='relative flex h-full w-full items-center justify-center'>
-          <div className='flex flex-col items-center gap-2'>
-            <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent'></div>
-            <span className='text-sm text-neutral-600 dark:text-neutral-300'>
-              {t('project.loadingMapData')}
-            </span>
-          </div>
-        </div>
-      }
-    >
+    <ClientOnly fallback={<MapLoader />}>
       {() => (
         <InteractiveMapCore
           data={data}

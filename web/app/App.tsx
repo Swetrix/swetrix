@@ -16,6 +16,7 @@ const App = () => {
   const { theme } = useTheme()
 
   const isReferralPage = _startsWith(pathname, '/ref/')
+  const isOnboardingPage = pathname === routesPath.onboarding
   const isProjectViewPage =
     _startsWith(pathname, '/projects/') &&
     !_endsWith(pathname, '/new') &&
@@ -39,7 +40,8 @@ const App = () => {
     <>
       {!_includes(routesWithOutHeader, pathname) &&
       !isReferralPage &&
-      !isProjectViewPage ? (
+      !isProjectViewPage &&
+      !isOnboardingPage ? (
         <Header />
       ) : null}
       <Outlet />
@@ -49,7 +51,9 @@ const App = () => {
           duration: 5000,
         }}
       />
-      {!isReferralPage && !isProjectViewPage ? <Footer /> : null}
+      {!isReferralPage && !isProjectViewPage && !isOnboardingPage ? (
+        <Footer />
+      ) : null}
     </>
   )
 }

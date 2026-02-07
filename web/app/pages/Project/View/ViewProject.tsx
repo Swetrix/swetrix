@@ -291,6 +291,15 @@ const ViewProjectContent = () => {
 
   const [isMapFullscreen, setIsMapFullscreen] = useState(false)
 
+  useEffect(() => {
+    if (!isMapFullscreen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isMapFullscreen])
+
   const navigate = useNavigate()
 
   const [searchParams, setSearchParams] = useSearchParams()
@@ -1415,7 +1424,7 @@ const ViewProjectContent = () => {
                   },
                 )}
               >
-                {!isEmbedded ? <Header /> : null}
+                {!isEmbedded && !isMapFullscreen ? <Header /> : null}
 
                 <div className='grid flex-1 grid-cols-1'>
                   <div
@@ -1432,19 +1441,21 @@ const ViewProjectContent = () => {
                     )}
                   >
                     <div ref={ref} className='relative flex gap-4'>
-                      <ProjectSidebar
-                        tabs={tabs}
-                        activeTab={activeTab}
-                        onTabChange={setDashboardTab}
-                        projectId={id}
-                        projectName={project.name}
-                        websiteUrl={project.websiteUrl}
-                        dataLoading={dataLoading}
-                        searchParams={searchParams}
-                        allowedToManage={allowedToManage}
-                        className='pointer-events-auto z-20 hidden md:flex'
-                      />
-                      {isMobileSidebarOpen ? (
+                      {!isMapFullscreen ? (
+                        <ProjectSidebar
+                          tabs={tabs}
+                          activeTab={activeTab}
+                          onTabChange={setDashboardTab}
+                          projectId={id}
+                          projectName={project.name}
+                          websiteUrl={project.websiteUrl}
+                          dataLoading={dataLoading}
+                          searchParams={searchParams}
+                          allowedToManage={allowedToManage}
+                          className='pointer-events-auto z-20 hidden md:flex'
+                        />
+                      ) : null}
+                      {isMobileSidebarOpen && !isMapFullscreen ? (
                         <div className='pointer-events-auto'>
                           <ProjectSidebar
                             tabs={tabs}
@@ -1472,12 +1483,14 @@ const ViewProjectContent = () => {
                         ref={dashboardRef}
                       >
                         <EventsRunningOutBanner />
-                        <div className='pointer-events-auto'>
-                          <MobileSidebarTrigger
-                            onClick={openMobileSidebar}
-                            activeTabLabel={activeTabLabel}
-                          />
-                        </div>
+                        {!isMapFullscreen ? (
+                          <div className='pointer-events-auto'>
+                            <MobileSidebarTrigger
+                              onClick={openMobileSidebar}
+                              activeTabLabel={activeTabLabel}
+                            />
+                          </div>
+                        ) : null}
                         <AnimatePresence mode='wait'>
                           <motion.div
                             key={activeTab}
@@ -1567,7 +1580,7 @@ const ViewProjectContent = () => {
                           </motion.div>
                         </AnimatePresence>
 
-                        {isEmbedded ? null : (
+                        {isEmbedded || isMapFullscreen ? null : (
                           <>
                             <div className='flex-1' />
                             <div className='pointer-events-auto mt-4 flex w-full items-center justify-between gap-2'>
@@ -1685,7 +1698,9 @@ const ViewProjectContent = () => {
                   </div>
                 </div>
 
-                {isEmbedded ? null : <Footer showDBIPMessage />}
+                {isEmbedded || isMapFullscreen ? null : (
+                  <Footer showDBIPMessage />
+                )}
               </div>
               <ViewProjectHotkeys
                 isOpened={isHotkeysHelpOpened}

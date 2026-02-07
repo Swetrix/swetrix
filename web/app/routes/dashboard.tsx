@@ -4,10 +4,10 @@ import type {
   LoaderFunctionArgs,
   MetaFunction,
 } from 'react-router'
-import { data } from 'react-router'
+import { data, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
-import { serverFetch } from '~/api/api.server'
+import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
 import { Project } from '~/lib/models/Project'
 import Dashboard from '~/pages/Dashboard'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -194,6 +194,19 @@ export async function action({ request }: ActionFunctionArgs) {
 export async function loader({ request }: LoaderFunctionArgs) {
   redirectIfNotAuthenticated(request)
 
+  const authResult = await getAuthenticatedUser(request)
+  const authCookies = authResult?.cookies || []
+
+  if (authResult?.user?.user && !authResult.user.user.hasCompletedOnboarding) {
+    if (authCookies.length > 0) {
+      return redirect('/onboarding', {
+        headers: createHeadersWithCookies(authCookies),
+      })
+    }
+
+    return redirect('/onboarding')
+  }
+
   const url = new URL(request.url)
   const page = parseInt(url.searchParams.get('page') || '1', 10)
   const pageSize = parseInt(url.searchParams.get('pageSize') || '12', 10)
@@ -223,9 +236,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
     projects: projectsResult.data,
   }
 
-  if (projectsResult.cookies.length > 0) {
+  const allCookies = [...authCookies, ...projectsResult.cookies]
+
+  if (allCookies.length > 0) {
     return data(loaderData, {
-      headers: createHeadersWithCookies(projectsResult.cookies),
+      headers: createHeadersWithCookies(allCookies),
     })
   }
 

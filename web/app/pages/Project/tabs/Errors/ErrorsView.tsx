@@ -37,6 +37,8 @@ import {
   type LinkProps,
 } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
+
+import { MapLoader } from '~/pages/Project/View/components/MapLoader'
 import { toast } from 'sonner'
 
 import type {
@@ -1052,18 +1054,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                               )
 
                               return (
-                                <Suspense
-                                  fallback={
-                                    <div className='flex h-full items-center justify-center'>
-                                      <div className='flex flex-col items-center gap-2'>
-                                        <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
-                                        <span className='text-sm text-neutral-600 dark:text-neutral-300'>
-                                          Loading map...
-                                        </span>
-                                      </div>
-                                    </div>
-                                  }
-                                >
+                                <Suspense fallback={<MapLoader />}>
                                   <InteractiveMap
                                     data={countryData}
                                     regionData={regionData}

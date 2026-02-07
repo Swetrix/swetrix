@@ -316,10 +316,6 @@ export class ProjectController {
     })
     const { maxProjects = PROJECTS_MAXIMUM } = initiatingUser
 
-    if (!initiatingUser.isActive) {
-      throw new ForbiddenException('Please, verify your email address first')
-    }
-
     let user = initiatingUser
 
     if (projectDTO.organisationId) {

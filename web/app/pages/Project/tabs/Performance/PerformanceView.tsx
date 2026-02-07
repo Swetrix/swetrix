@@ -37,6 +37,7 @@ import CCRow from '~/pages/Project/View/components/CCRow'
 import { ChartContextMenu } from '~/pages/Project/View/components/ChartContextMenu'
 import DashboardHeader from '~/pages/Project/View/components/DashboardHeader'
 import Filters from '~/pages/Project/View/components/Filters'
+import { MapLoader } from '~/pages/Project/View/components/MapLoader'
 import NoEvents from '~/pages/Project/View/components/NoEvents'
 import { Panel } from '~/pages/Project/View/Panels'
 import {
@@ -551,18 +552,7 @@ const PerformanceViewInner = ({
                               )
 
                               return (
-                                <Suspense
-                                  fallback={
-                                    <div className='flex h-full items-center justify-center'>
-                                      <div className='flex flex-col items-center gap-2'>
-                                        <div className='h-8 w-8 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent'></div>
-                                        <span className='text-sm text-neutral-600 dark:text-neutral-300'>
-                                          Loading map...
-                                        </span>
-                                      </div>
-                                    </div>
-                                  }
-                                >
+                                <Suspense fallback={<MapLoader />}>
                                   <InteractiveMap
                                     data={countryData}
                                     regionData={regionData}
