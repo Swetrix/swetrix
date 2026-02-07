@@ -167,7 +167,7 @@ const MarketingPricing = ({
                       : BillingFrequency.yearly,
                   )
                 }
-                className='flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 transition-colors border-white/10 bg-slate-900 hover:bg-slate-800'
+                className='flex cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-slate-900 px-3 py-2 transition-colors hover:bg-slate-800'
               >
                 <span className='text-sm font-medium text-gray-100'>
                   {t('pricing.billedYearly')}
