@@ -62,7 +62,5 @@ The interface should feel reliable and professional without being cold or corpor
 - Use Framer Motion for complex sequences
 
 **Components**:
-- Buttons: HeadlessUI-based, primary uses `bg-slate-900` (light) / `bg-slate-800` (dark)
-- Inputs: Ring borders with `focus:ring-indigo-500`
 - Cards: Subtle ring borders, optional backdrop blur
 - Modals/Dropdowns: HeadlessUI with fade/slide transitions
