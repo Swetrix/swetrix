@@ -245,9 +245,9 @@ const FeatureVisualization = ({
         <div className='relative mt-4 flex justify-center'>
           <IconNode label='Visitor'>
             <UserIcon
-                className='size-8 text-indigo-600 dark:text-indigo-200'
-                weight='duotone'
-              />
+              className='size-8 text-indigo-600 dark:text-indigo-200'
+              weight='duotone'
+            />
           </IconNode>
         </div>
 
@@ -266,9 +266,9 @@ const FeatureVisualization = ({
 
   if (type === 'errors') {
     return (
-      <div className='ml-8 mt-12 w-full max-w-sm'>
+      <div className='mt-12 ml-8 w-full max-w-sm'>
         <div className='flex flex-col gap-6'>
-          <div className='flex size-20 items-center justify-center rounded-2xl bg-rose-50 ring-1 ring-inset ring-rose-200 dark:bg-rose-900/20 dark:ring-rose-800'>
+          <div className='flex size-20 items-center justify-center rounded-2xl bg-rose-50 ring-1 ring-rose-200 ring-inset dark:bg-rose-900/20 dark:ring-rose-800'>
             <BugIcon
               className='size-10 text-rose-500 dark:text-rose-400'
               weight='duotone'
@@ -306,14 +306,14 @@ const FeatureVisualization = ({
   }
 
   return (
-    <div className='ml-8 mt-12 w-full max-w-md'>
+    <div className='mt-12 ml-8 w-full max-w-md'>
       <div className='relative'>
-        <div className='absolute top-2.5 left-2.5 bottom-2.5 w-px bg-gray-200 dark:bg-slate-700' />
+        <div className='absolute top-2.5 bottom-2.5 left-2.5 w-px bg-gray-200 dark:bg-slate-700' />
 
         <div className='space-y-4'>
           <div className='flex items-center gap-4'>
             <CursorClickIcon
-              className='relative z-10 size-5 shrink-0 text-amber-500 bg-white dark:bg-slate-900'
+              className='relative z-10 size-5 shrink-0 bg-white text-amber-500 dark:bg-slate-900'
               weight='duotone'
             />
             <div className='min-w-0 flex-1'>
@@ -325,7 +325,7 @@ const FeatureVisualization = ({
                   SIGNUP_CLICK
                 </Text>
               </div>
-              <div className='flex items-center gap-1.5 mt-0.5'>
+              <div className='mt-0.5 flex items-center gap-1.5'>
                 <ClockIcon className='size-3.5 text-gray-400 dark:text-slate-500' />
                 <Text as='span' size='xs' colour='muted'>
                   1s
@@ -336,7 +336,7 @@ const FeatureVisualization = ({
 
           <div className='flex items-center gap-4'>
             <FileTextIcon
-              className='relative z-10 size-5 shrink-0 text-sky-500 bg-white dark:bg-slate-900'
+              className='relative z-10 size-5 shrink-0 bg-white text-sky-500 dark:bg-slate-900'
               weight='duotone'
             />
             <div className='min-w-0 flex-1'>
@@ -348,7 +348,7 @@ const FeatureVisualization = ({
                   /pricing
                 </Text>
               </div>
-              <div className='flex items-center gap-1.5 mt-0.5'>
+              <div className='mt-0.5 flex items-center gap-1.5'>
                 <ClockIcon className='size-3.5 text-gray-400 dark:text-slate-500' />
                 <Text as='span' size='xs' colour='muted'>
                   12s
@@ -359,7 +359,7 @@ const FeatureVisualization = ({
 
           <div className='flex items-center gap-4'>
             <FileTextIcon
-              className='relative z-10 size-5 shrink-0 text-emerald-500 bg-white dark:bg-slate-900'
+              className='relative z-10 size-5 shrink-0 bg-white text-emerald-500 dark:bg-slate-900'
               weight='duotone'
             />
             <div className='min-w-0 flex-1'>
@@ -371,7 +371,7 @@ const FeatureVisualization = ({
                   /checkout
                 </Text>
               </div>
-              <div className='flex items-center gap-1.5 mt-0.5'>
+              <div className='mt-0.5 flex items-center gap-1.5'>
                 <ClockIcon className='size-3.5 text-gray-400 dark:text-slate-500' />
                 <Text as='span' size='xs' colour='muted'>
                   5s
@@ -862,7 +862,7 @@ const Onboarding = () => {
 
                         <ProjectVisualisation />
 
-                        <div className='sm:max-w-1/2 w-full'>
+                        <div className='w-full sm:max-w-1/2'>
                           <Input
                             label={t('project.settings.name')}
                             placeholder={t(
@@ -1034,11 +1034,19 @@ const Onboarding = () => {
                           </Alert>
                         ) : (
                           <>
-                            <Text as='h2' size='lg' weight='semibold' className='mb-4 mt-8'>
+                            <Text
+                              as='h2'
+                              size='lg'
+                              weight='semibold'
+                              className='mt-8 mb-4'
+                            >
                               {t('onboarding.confirm.emailVerification')}
                             </Text>
 
-                            <Alert variant='info' title={t('onboarding.confirm.verifyTitle')}>
+                            <Alert
+                              variant='info'
+                              title={t('onboarding.confirm.verifyTitle')}
+                            >
                               <Trans
                                 t={t}
                                 i18nKey='onboarding.confirm.linkSent'
@@ -1050,7 +1058,12 @@ const Onboarding = () => {
                             </Alert>
 
                             <div className='mt-6'>
-                              <Text as='p' size='sm' colour='secondary' className='mb-2'>
+                              <Text
+                                as='p'
+                                size='sm'
+                                colour='secondary'
+                                className='mb-2'
+                              >
                                 {t('onboarding.confirm.didNotReceive')}
                               </Text>
                               <Button
@@ -1069,10 +1082,19 @@ const Onboarding = () => {
                             </div>
 
                             <div className='mt-6'>
-                              <Text as='p' size='sm' colour='secondary' className='mb-2'>
+                              <Text
+                                as='p'
+                                size='sm'
+                                colour='secondary'
+                                className='mb-2'
+                              >
                                 {t('onboarding.confirm.troubleOrChange')}
                               </Text>
-                              <Button onClick={handleDeleteAccount} secondary small>
+                              <Button
+                                onClick={handleDeleteAccount}
+                                secondary
+                                small
+                              >
                                 {t('onboarding.confirm.logoutAndRegister')}
                               </Button>
                             </div>

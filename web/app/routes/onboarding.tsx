@@ -97,7 +97,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const project = projectsResult.data?.results?.[0] || null
     const finalCookies = [...allCookies, ...projectsResult.cookies]
 
-    const loaderData: OnboardingLoaderData = { project, deviceInfo, metainfo, onboardingStep: onboardingStep ?? null }
+    const loaderData: OnboardingLoaderData = {
+      project,
+      deviceInfo,
+      metainfo,
+      onboardingStep: onboardingStep ?? null,
+    }
 
     if (finalCookies.length > 0) {
       return data(loaderData, {
@@ -110,14 +115,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (allCookies.length > 0) {
     return data(
-      { project: null, deviceInfo, metainfo, onboardingStep: onboardingStep ?? null } as OnboardingLoaderData,
+      {
+        project: null,
+        deviceInfo,
+        metainfo,
+        onboardingStep: onboardingStep ?? null,
+      } as OnboardingLoaderData,
       {
         headers: createHeadersWithCookies(allCookies),
       },
     )
   }
 
-  return { project: null, deviceInfo, metainfo, onboardingStep: onboardingStep ?? null } as OnboardingLoaderData
+  return {
+    project: null,
+    deviceInfo,
+    metainfo,
+    onboardingStep: onboardingStep ?? null,
+  } as OnboardingLoaderData
 }
 
 export interface OnboardingActionData {

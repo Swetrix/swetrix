@@ -26,7 +26,6 @@ import { isSelfhosted, PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
-import Spin from '~/ui/icons/Spin'
 import { MapLoader } from './MapLoader'
 import {
   getTimeFromSeconds,
