@@ -112,6 +112,9 @@
     "notConnected": "Nicht verbunden",
     "connected": "Verbunden",
     "goBack": "Zurück",
+    "back": "Zurück",
+    "next": "Weiter",
+    "skip": "Überspringen",
     "accept": "Akzeptieren",
     "reject": "Ablehnen",
     "delete": "Löschen",
@@ -957,8 +960,8 @@
     "settings": {
       "tabs": {
         "general": "Allgemein",
-        "generalDesc": "Namen der Organisation und grundlegende Details aktualisieren.",
-        "people": "Mitglieder",
+        "generalDesc": "Organisationsnamen und grundlegende Details aktualisieren.",
+        "people": "Personen",
         "peopleDesc": "Mitglieder und ihre Rollen verwalten.",
         "projects": "Projekte",
         "projectsDesc": "Projekte für diese Organisation hinzufügen oder entfernen.",
@@ -1749,7 +1752,6 @@
           "basic": "Einfach: Wir erkennen Bots basierend auf ihrem User-Agent (Googlebot, Bingbot, curl, etc.)"
         }
       },
-      "verify": "Bitte bestätigen Sie zunächst Ihre E-Mail-Adresse",
       "updated": "Die Projekteinstellungen wurden aktualisiert",
       "created": "Das Projekt wurde erstellt",
       "pxCharsError": "Der Projektname darf nicht länger als {{amount}} Zeichen sein.",
@@ -2085,19 +2087,57 @@
     "title": "Loslegen",
     "skipOnboarding": "Onboarding überspringen",
     "finishOnboarding": "Onboarding abschließen",
+    "selectLanguage": {
+      "title": "Sprache auswählen",
+      "subtitle": "Welche Sprache bevorzugen Sie?"
+    },
+    "welcomeScreen": {
+      "title": "Willkommen bei Swetrix!",
+      "subtitle": "Datenschutzorientierte, cookie-freie Analysen, die Ihnen die nötigen Einblicke liefern, ohne die Privatsphäre Ihrer Nutzer zu gefährden.",
+      "featureTitle": "A studio for your data",
+      "featureDesc": "A place to understand your traffic, track errors, and make data-driven decisions."
+    },
+    "features": {
+      "traffic": {
+        "title": "Traffic-Analyse",
+        "desc": "Verstehen Sie den Traffic Ihrer Website mit Echtzeit-Analysen. Sehen Sie, woher Ihre Besucher kommen, welche Seiten sie ansehen und wie sie mit Ihrer Website interagieren.",
+        "tip": "Erfassen Sie Besucher aus über 200 Ländern – ganz ohne Cookies."
+      },
+      "errors": {
+        "title": "Fehler-Tracking",
+        "desc": "Finden und beheben Sie Bugs, bevor Ihre Nutzer sie bemerken. Erhalten Sie detaillierte Fehlerberichte mit Stacktraces, Browser-Informationen und Nutzerkontext.",
+        "tip": "Erhalten Sie sofortige Benachrichtigungen, wenn neue Fehler auftreten."
+      },
+      "sessions": {
+        "title": "Nutzersitzungen",
+        "desc": "Sehen Sie genau, wie Nutzer durch Ihre Website navigieren. Verstehen Sie User Journeys, identifizieren Sie Absprungstellen und optimieren Sie das Erlebnis.",
+        "tip": "Sehen Sie sich Sitzungen in Echtzeit an, während sie stattfinden."
+      }
+    },
     "confirm": {
       "navTitle": "Bestätigen Sie Ihre E‑Mail-Adresse",
       "navDesc": "Prüfen Sie Ihren Posteingang und klicken Sie auf den Bestätigungslink.",
-      "title": "Posteingang prüfen",
-      "linkSent": "Wir haben einen Link zur Kontobestätigung an {{email}} gesendet. Bitte klicken Sie auf den Link, um Ihre E‑Mail-Adresse zu bestätigen.",
+      "title": "Nur noch ein Schritt, dann kann es losgehen! 🚀",
+      "emailVerification": "E-Mail-Verifizierung",
+      "verifyTitle": "Bitte bestätigen Sie Ihre E-Mail-Adresse",
+      "linkSent": "Wir haben eine E-Mail an <email>{{email}}</email> gesendet. Bitte bestätigen Sie Ihre E-Mail-Adresse, um fortzufahren.",
+      "didNotReceive": "Keine E-Mail erhalten?",
+      "resend": "Erneut senden",
+      "emailResent": "Angefordert",
+      "troubleOrChange": "Haben Sie Probleme oder möchten Sie Ihre E-Mail-Adresse ändern?",
+      "logoutAndRegister": "Abmelden und erneut registrieren",
+      "letsGo": "Los geht’s!",
+      "emailVerified": "Ihre E-Mail-Adresse ist verifiziert",
       "spam": "Sie sehen die E‑Mail nicht? Bitte prüfen Sie Ihren Spamordner.",
-      "wrongEmail": "Falsche E‑Mail? <url>Erstellen Sie ein neues Konto.</url>"
+      "wrongEmail": "Falsche E‑Mail? <url>Erstellen Sie ein neues Konto.</url>",
+      "checkVerification": "Ich habe meine E-Mail-Adresse verifiziert"
     },
     "createProject": {
       "navTitle": "Projekt erstellen",
       "navDesc": "Fügen Sie eine Website hinzu, um mit der Datenerfassung zu beginnen.",
       "title": "Lassen Sie uns Ihr erstes Projekt einrichten",
-      "desc": "Erstellen Sie ein Projekt, um mit dem Tracking der Website-Analysen zu beginnen. Geben Sie einen Namen ein, um fortzufahren."
+      "desc": "Erstellen Sie ein Projekt, um mit dem Tracking der Website-Analysen zu beginnen. Geben Sie einen Namen ein, um fortzufahren.",
+      "placeholder": "Meine großartige Website"
     },
     "installTracking": {
       "navTitle": "Tracking-Skript installieren",
@@ -2118,9 +2158,9 @@
       "onTheXProject": "Im Projekt {{project}}",
       "onYourProject": "In Ihrem Projekt",
       "perfect": "Perfekt!",
-      "perfectDesc": "Wir erhalten Daten 🎉",
+      "perfectDesc": "Wir empfangen Daten!",
       "waitingForAnEvent": "Wir warten auf Ihr erstes Event! Wenn Ihre Integration korrekt eingerichtet ist, sollten Sie es innerhalb von 1 Minute sehen.",
-      "eventReceived": "Wir haben Ihr erstes Event erhalten! Ihre Integration funktioniert korrekt. Willkommen bei Swetrix :)"
+      "eventReceived": "Wir haben Ihr erstes Ereignis erhalten! Ihre Integration funktioniert korrekt. Willkommen bei Swetrix!"
     }
   },
   "titles": {

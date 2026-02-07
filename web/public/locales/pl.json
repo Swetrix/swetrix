@@ -112,6 +112,9 @@
     "notConnected": "Brak połączenia",
     "connected": "Połączono",
     "goBack": "Wróć",
+    "back": "Wstecz",
+    "next": "Dalej",
+    "skip": "Pomiń",
     "accept": "Akceptuj",
     "reject": "Odmów",
     "delete": "Usuń",
@@ -958,11 +961,11 @@
       "tabs": {
         "general": "Ogólne",
         "generalDesc": "Zaktualizuj nazwę organizacji i podstawowe informacje.",
-        "people": "Członkowie",
+        "people": "Osoby",
         "peopleDesc": "Zarządzaj członkami i ich rolami.",
         "projects": "Projekty",
-        "projectsDesc": "Dodawaj lub usuwaj projekty w tej organizacji.",
-        "danger": "Strefa niebezpieczeństwa",
+        "projectsDesc": "Dodaj lub usuń projekty dla tej organizacji.",
+        "danger": "Strefa zagrożenia",
         "dangerDesc": "Nieodwracalne działania dla tej organizacji."
       }
     },
@@ -1749,7 +1752,6 @@
           "basic": "Podstawowe: wykrywamy boty na podstawie ich user agenta (Googlebot, Bingbot, curl itp.)"
         }
       },
-      "verify": "Zweryfikuj najpierw swój adres e-mail",
       "updated": "Ustawienia projektu zostały zaktualizowane",
       "created": "Projekt został utworzony",
       "pxCharsError": "Nazwa projektu nie może być dłuższa niż {{amount}} znaków.",
@@ -2085,19 +2087,57 @@
     "title": "Rozpocznij",
     "skipOnboarding": "Pomiń onboarding",
     "finishOnboarding": "Zakończ onboarding",
+    "selectLanguage": {
+      "title": "Wybierz język",
+      "subtitle": "Jaki jest Twój preferowany język?"
+    },
+    "welcomeScreen": {
+      "title": "Witamy w Swetrix!",
+      "subtitle": "Analityka stawiająca prywatność na pierwszym miejscu, bez plików cookie, która dostarcza potrzebnych informacji bez naruszania prywatności użytkowników.",
+      "featureTitle": "A studio for your data",
+      "featureDesc": "A place to understand your traffic, track errors, and make data-driven decisions."
+    },
+    "features": {
+      "traffic": {
+        "title": "Analityka ruchu",
+        "desc": "Poznaj ruch na swojej stronie dzięki analityce w czasie rzeczywistym. Zobacz, skąd pochodzą Twoi odwiedzający, jakie strony oglądają i jak wchodzą w interakcję z witryną.",
+        "tip": "Śledź odwiedzających z ponad 200 krajów — bez plików cookie."
+      },
+      "errors": {
+        "title": "Śledzenie błędów",
+        "desc": "Wykrywaj i naprawiaj błędy, zanim zauważą je użytkownicy. Otrzymuj szczegółowe raporty błędów ze śladami stosu, informacjami o przeglądarce i kontekstem użytkownika.",
+        "tip": "Otrzymuj natychmiastowe powiadomienia, gdy pojawią się nowe błędy."
+      },
+      "sessions": {
+        "title": "Sesje użytkowników",
+        "desc": "Zobacz dokładnie, jak użytkownicy poruszają się po Twojej stronie. Zrozum ścieżki użytkowników, zidentyfikuj miejsca porzucenia i zoptymalizuj doświadczenie.",
+        "tip": "Przeglądaj sesje w czasie rzeczywistym, gdy trwają."
+      }
+    },
     "confirm": {
       "navTitle": "Potwierdź swój adres e‑mail",
       "navDesc": "Sprawdź swoją skrzynkę odbiorczą i kliknij link potwierdzający.",
-      "title": "Sprawdź skrzynkę odbiorczą",
-      "linkSent": "Wysłaliśmy link potwierdzający konto na adres {{email}}. Kliknij go, aby potwierdzić swój adres e‑mail.",
+      "title": "Został tylko jeden krok i możesz zaczynać! 🚀",
+      "emailVerification": "Weryfikacja adresu e-mail",
+      "verifyTitle": "Zweryfikuj swój adres e-mail",
+      "linkSent": "Wysłaliśmy e-mail na adres <email>{{email}}</email>. Potwierdź swój adres e-mail, aby kontynuować.",
+      "didNotReceive": "Nie otrzymałeś(-aś) e-maila?",
+      "resend": "Wyślij ponownie",
+      "emailResent": "Wysłano prośbę",
+      "troubleOrChange": "Masz problem lub chcesz zmienić adres e-mail?",
+      "logoutAndRegister": "Wyloguj się i zarejestruj ponownie",
+      "letsGo": "Zaczynajmy!",
+      "emailVerified": "Twój adres e-mail jest zweryfikowany",
       "spam": "Nie widzisz wiadomości? Sprawdź folder spam.",
-      "wrongEmail": "Zły adres e‑mail? <url>Utwórz nowe konto.</url>"
+      "wrongEmail": "Zły adres e‑mail? <url>Utwórz nowe konto.</url>",
+      "checkVerification": "Zweryfikowałem(-am) swój adres e-mail"
     },
     "createProject": {
       "navTitle": "Utwórz projekt",
       "navDesc": "Dodaj stronę, aby zacząć zbierać dane analityczne.",
       "title": "Skonfigurujmy Twój pierwszy projekt",
-      "desc": "Utwórz projekt, aby rozpocząć śledzenie analityki swojej witryny. Wprowadź nazwę, aby kontynuować."
+      "desc": "Utwórz projekt, aby rozpocząć śledzenie analityki swojej witryny. Wprowadź nazwę, aby kontynuować.",
+      "placeholder": "Moja świetna strona internetowa"
     },
     "installTracking": {
       "navTitle": "Zainstaluj skrypt śledzący",
@@ -2118,9 +2158,9 @@
       "onTheXProject": "W projekcie {{project}}",
       "onYourProject": "W Twoim projekcie",
       "perfect": "Idealnie!",
-      "perfectDesc": "Otrzymujemy dane 🎉",
+      "perfectDesc": "Otrzymujemy dane!",
       "waitingForAnEvent": "Czekamy na Twoje pierwsze zdarzenie! Jeśli integracja jest poprawnie skonfigurowana, powinno być widoczne w ciągu 1 minuty.",
-      "eventReceived": "Otrzymaliśmy Twoje pierwsze zdarzenie! Integracja działa poprawnie. Witamy w Swetrix :)"
+      "eventReceived": "Otrzymaliśmy Twoje pierwsze zdarzenie! Integracja działa poprawnie. Witamy w Swetrix!"
     }
   },
   "titles": {
