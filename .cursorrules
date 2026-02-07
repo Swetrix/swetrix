@@ -39,8 +39,8 @@ The interface should feel reliable and professional without being cold or corpor
 
 **Colors**:
 - Primary/Accent: `indigo-600` (light), `indigo-500` (dark)
-- Backgrounds: `gray-50` (light), `slate-900` (dark)
-- Cards/Surfaces: `white` / `slate-800`
+- Backgrounds: `gray-50` (light), `slate-950` (dark)
+- Cards/Surfaces: `white` / `slate-900`
 - Borders: `ring-1 ring-black/5` (light), `ring-white/10` (dark)
 - Danger: `red-500/600`
 - Success: `emerald-500/600`
