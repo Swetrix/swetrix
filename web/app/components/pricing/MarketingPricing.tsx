@@ -193,7 +193,7 @@ const MarketingPricing = ({
               {_map(plans, (tier) => (
                 <div
                   key={tier.planCode}
-                  className='flex items-center justify-between rounded-xl border border-white/10 bg-white/2 dark:bg-slate-900 dark:hover:bg-slate-800 px-4 py-3 text-white backdrop-blur-sm transition-all hover:bg-white/10'
+                  className='flex items-center justify-between rounded-xl border border-white/10 bg-white/2 px-4 py-3 text-white backdrop-blur-sm transition-all hover:bg-white/10 dark:bg-slate-900 dark:hover:bg-slate-800'
                 >
                   <div>
                     <span className='text-base font-medium'>

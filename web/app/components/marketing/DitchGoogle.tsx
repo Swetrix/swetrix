@@ -11,7 +11,7 @@ export const DitchGoogle = () => {
     <div className='relative mx-auto max-w-7xl px-2 pt-10 pb-20 lg:px-8'>
       <div className='relative mx-auto max-w-7xl overflow-hidden rounded-4xl p-1 text-center sm:p-2 lg:p-3'>
         <div aria-hidden className='pointer-events-none absolute inset-0'>
-          <div className='absolute inset-0 rounded-4xl bg-linear-115 from-red-500/50 to-orange-300/30 sm:bg-linear-145 dark:from-red-500/40 dark:to-orange-300/20' />
+          <div className='absolute inset-0 rounded-4xl bg-linear-115 from-red-500/50 to-orange-300/30 sm:bg-linear-145 dark:from-red-500/40 dark:to-slate-800/50' />
         </div>
         <div className='rounded-xl p-8 backdrop-blur-xl sm:p-12 lg:p-16'>
           <div className='mx-auto max-w-4xl'>
