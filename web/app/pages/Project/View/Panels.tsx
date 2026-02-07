@@ -202,7 +202,7 @@ const PanelContainer = ({
       {onDetailsClick ? (
         <div className='mt-2 flex items-center justify-center'>
           <Button
-            className='max-w-max border border-transparent bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-200 hover:bg-gray-50 dark:text-gray-200 hover:dark:border-slate-700/80 hover:dark:bg-slate-900'
+            className='max-w-max border border-transparent bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-200 hover:bg-gray-50 dark:text-gray-200 hover:dark:border-slate-700/80 hover:dark:bg-slate-950'
             type='button'
             onClick={onDetailsClick}
           >
@@ -753,7 +753,7 @@ const CustomEvents = ({
               >
                 <td className='flex items-center py-1 text-left'>
                   <button
-                    className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-200 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                    className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-200 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
                     type='button'
                     onClick={toggleDetails(ev)}
                   >
@@ -851,7 +851,7 @@ const CustomEvents = ({
               return (
                 <div
                   key={`${ev}-${item.value}`}
-                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800/60'
+                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
                   onClick={() => {
                     navigate(link)
                   }}
@@ -1117,7 +1117,7 @@ const MetadataKeyPanel = ({
       return (
         <div className='max-h-[500px] overflow-y-auto'>
           <table className='w-full border-separate border-spacing-y-1'>
-            <thead className='sticky top-0 z-10 bg-white dark:bg-slate-900'>
+            <thead className='sticky top-0 z-10 bg-white dark:bg-slate-950'>
               <tr className='text-base text-gray-900 dark:text-gray-50'>
                 <th className='pl-2 text-left' style={{ width: '25%' }}>
                   {t('project.key')}
@@ -1170,7 +1170,7 @@ const MetadataKeyPanel = ({
     return (
       <div className='max-h-[500px] overflow-y-auto'>
         <table className='w-full border-separate border-spacing-y-1'>
-          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-900'>
+          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-950'>
             <tr className='text-base text-gray-900 dark:text-gray-50'>
               <th className='pl-2 text-left' style={{ width: '50%' }}>
                 {t('project.value')}
@@ -1287,7 +1287,7 @@ const MetadataKeyPanel = ({
                 return (
                   <div
                     key={`${key}-${value}`}
-                    className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800/60'
+                    className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
                     onClick={() => {
                       navigate(link)
                     }}
@@ -1376,7 +1376,7 @@ const MetadataKeyPanel = ({
               return (
                 <div
                   key={value}
-                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800/60'
+                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
                   onClick={() => {
                     navigate(link)
                   }}
@@ -1655,12 +1655,12 @@ const DetailsTable = ({
           placeholder={t('project.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className='w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-50'
+          className='w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-50'
         />
       </div>
       <div ref={parentRef} className='max-h-[500px] overflow-y-auto'>
         <table className='w-full border-separate border-spacing-y-1'>
-          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-900'>
+          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-950'>
             <tr className='text-base text-gray-900 dark:text-gray-50'>
               <th
                 className='flex cursor-pointer items-center pl-2 text-left hover:opacity-90'
@@ -1996,7 +1996,7 @@ const Panel = ({
                     className={cx(
                       'relative flex h-8 items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                       {
-                        'group hover:bg-gray-50 hover:dark:bg-slate-800/60':
+                        'group hover:bg-gray-50 dark:hover:bg-slate-900/60':
                           !hideFilters &&
                           !dataLoading &&
                           (link || hasVersionsForItem),
@@ -2116,7 +2116,7 @@ const Panel = ({
                             className={cx(
                               'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                               {
-                                'group cursor-pointer hover:bg-gray-50 hover:dark:bg-slate-800/60':
+                                'group cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-900/60':
                                   !disableRowClick &&
                                   !hideFilters &&
                                   !dataLoading &&

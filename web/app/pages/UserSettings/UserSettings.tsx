@@ -725,7 +725,7 @@ const UserSettings = () => {
   }
 
   return (
-    <div className='flex min-h-min-footer flex-col bg-gray-50 dark:bg-slate-900'>
+    <div className='flex min-h-min-footer flex-col bg-gray-50 dark:bg-slate-950'>
       <form
         className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'
         onSubmit={handleSubmit}
@@ -766,9 +766,9 @@ const UserSettings = () => {
                     className={cx(
                       'group flex items-center rounded-md px-3 py-2 text-left text-sm text-gray-900 transition-colors',
                       {
-                        'bg-gray-200 font-semibold dark:bg-slate-800 dark:text-gray-50':
+                        'bg-gray-200 font-semibold dark:bg-slate-900 dark:text-gray-50':
                           isCurrent,
-                        'hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-slate-800 dark:hover:text-gray-50':
+                        'hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-slate-900 dark:hover:text-gray-50':
                           !isCurrent,
                       },
                     )}
@@ -875,7 +875,12 @@ const UserSettings = () => {
                     </>
                   ) : (
                     <>
-                      <Text as='p' size='sm' colour='muted' className='mb-3'>
+                      <Text
+                        as='p'
+                        size='sm'
+                        colour='secondary'
+                        className='mb-3'
+                      >
                         {t('profileSettings.noApiKey')}
                       </Text>
                       <Button onClick={onApiKeyGenerate} primary large>
@@ -893,9 +898,9 @@ const UserSettings = () => {
                       description={t('profileSettings.sharedDesc')}
                     >
                       {!_isEmpty(user?.sharedProjects) ? (
-                        <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
-                          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-                            <thead className='bg-gray-50 dark:bg-slate-800'>
+                        <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
+                          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+                            <thead className='bg-gray-50 dark:bg-slate-900'>
                               <tr>
                                 <th
                                   scope='col'
@@ -918,7 +923,7 @@ const UserSettings = () => {
                                 <th scope='col' />
                               </tr>
                             </thead>
-                            <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+                            <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
                               {_map(user?.sharedProjects, (item) => (
                                 <ProjectList key={item.id} item={item} />
                               ))}
@@ -948,9 +953,9 @@ const UserSettings = () => {
                       description={t('profileSettings.sharedDesc')}
                     >
                       {!_isEmpty(user?.sharedProjects) ? (
-                        <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
-                          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-                            <thead className='bg-gray-50 dark:bg-slate-800'>
+                        <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
+                          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+                            <thead className='bg-gray-50 dark:bg-slate-900'>
                               <tr>
                                 <th
                                   scope='col'
@@ -973,7 +978,7 @@ const UserSettings = () => {
                                 <th scope='col' />
                               </tr>
                             </thead>
-                            <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+                            <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
                               {_map(user?.sharedProjects, (item) => (
                                 <ProjectList key={item.id} item={item} />
                               ))}
@@ -991,9 +996,9 @@ const UserSettings = () => {
                       description={t('profileSettings.organisationsDesc')}
                     >
                       {!_isEmpty(user?.organisationMemberships) ? (
-                        <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
-                          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-                            <thead className='bg-gray-50 dark:bg-slate-800'>
+                        <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
+                          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+                            <thead className='bg-gray-50 dark:bg-slate-900'>
                               <tr>
                                 <th
                                   scope='col'
@@ -1020,7 +1025,7 @@ const UserSettings = () => {
                                 <th scope='col' />
                               </tr>
                             </thead>
-                            <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+                            <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
                               {_map(
                                 user?.organisationMemberships,
                                 (membership) => (
@@ -1338,7 +1343,7 @@ const UserSettings = () => {
                         </Alert>
                       ) : null}
 
-                      <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800'>
+                      <div className='rounded-xl border border-gray-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950'>
                         <Text
                           as='p'
                           size='sm'
@@ -1489,19 +1494,24 @@ const UserSettings = () => {
                         />
 
                         <div className='mt-2 flex items-center justify-between'>
-                          <Text as='p' size='sm' colour='muted'>
+                          <Text as='p' size='sm' colour='secondary'>
                             {t('billing.xPercentUsed', {
                               percentage: totalUsage,
                             })}
                           </Text>
-                          <Text as='p' size='sm' colour='muted'>
+                          <Text as='p' size='sm' colour='secondary'>
                             {t('billing.xPercentRemaining', {
                               percentage: remainingUsage,
                             })}
                           </Text>
                         </div>
 
-                        <Text as='p' size='sm' colour='muted' className='mt-3'>
+                        <Text
+                          as='p'
+                          size='sm'
+                          colour='secondary'
+                          className='mt-3'
+                        >
                           {t('billing.resetDate', {
                             days: Math.ceil(
                               (new Date(
@@ -1677,8 +1687,8 @@ const UserSettings = () => {
                           className={cx(
                             'flex flex-col items-center justify-center rounded-lg px-4 py-6 ring-1 transition-all ring-inset',
                             isSelected
-                              ? 'bg-gray-100 ring-gray-300 dark:bg-slate-800 dark:ring-slate-600'
-                              : 'ring-gray-200 hover:bg-gray-50 hover:ring-gray-300 dark:ring-slate-700 dark:hover:bg-slate-800/50 dark:hover:ring-slate-600',
+                              ? 'bg-gray-100 ring-gray-300 dark:bg-slate-900 dark:ring-slate-700'
+                              : 'ring-gray-200 hover:bg-gray-50 hover:ring-gray-300 dark:ring-slate-800 dark:hover:bg-slate-900/50 dark:hover:ring-slate-700',
                           )}
                         >
                           <Flag

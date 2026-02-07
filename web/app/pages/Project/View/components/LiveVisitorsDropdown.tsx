@@ -58,7 +58,7 @@ const LiveVisitorsDropdown = () => {
           aria-expanded={isDropdownVisible}
           aria-controls='live-visitors-dropdown'
           className={cn(
-            'flex cursor-pointer items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-900 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+            'flex cursor-pointer items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-900 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200',
           )}
           onClick={onOpen}
         >
@@ -81,7 +81,7 @@ const LiveVisitorsDropdown = () => {
         <div
           id='live-visitors-dropdown'
           className={cn(
-            'scrollbar-thin absolute top-5 right-0 z-40 mt-2 origin-top-right transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white text-gray-900 shadow-lg transition duration-150 ease-out outline-none dark:border-slate-700/50 dark:bg-slate-900',
+            'scrollbar-thin absolute top-5 right-0 z-40 mt-2 origin-top-right transform cursor-auto overflow-hidden rounded-md border border-black/10 bg-white text-gray-900 shadow-lg transition duration-150 ease-out outline-none dark:border-slate-700/50 dark:bg-slate-950',
             liveInfo.length === 0 || isLoading ? 'min-w-[200px]' : 'min-w-max',
             isDropdownVisible
               ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
@@ -90,7 +90,7 @@ const LiveVisitorsDropdown = () => {
           aria-hidden={!isDropdownVisible}
         >
           <div className='flex w-full flex-col'>
-            <div className='flex items-center justify-between border-b border-black/10 bg-white p-2 dark:border-slate-700/50 dark:bg-slate-900'>
+            <div className='flex items-center justify-between border-b border-black/10 bg-white p-2 dark:border-slate-700/50 dark:bg-slate-950'>
               <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>
                 {t('dashboard.liveVisitors')}
               </p>

@@ -58,10 +58,10 @@ const Pagination = ({
           }}
           disabled={page === 1}
           className={cx(
-            'relative inline-flex items-center rounded-md border-0 bg-white px-4 py-2 text-sm font-medium text-gray-700 ring-1 ring-gray-300 ring-inset dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700/80',
+            'relative inline-flex items-center rounded-md border-0 bg-white px-4 py-2 text-sm font-medium text-gray-700 ring-1 ring-gray-300 ring-inset dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80',
             {
               'cursor-not-allowed opacity-50': page === 1,
-              'hover:bg-gray-50 dark:hover:bg-slate-800': page !== 1,
+              'hover:bg-gray-50 dark:hover:bg-slate-900': page !== 1,
             },
           )}
         >
@@ -78,10 +78,10 @@ const Pagination = ({
           }}
           disabled={page === pageAmount}
           className={cx(
-            'relative ml-3 inline-flex items-center rounded-md border-0 bg-white px-4 py-2 text-sm font-medium text-gray-700 ring-1 ring-gray-300 ring-inset dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700/80',
+            'relative ml-3 inline-flex items-center rounded-md border-0 bg-white px-4 py-2 text-sm font-medium text-gray-700 ring-1 ring-gray-300 ring-inset dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80',
             {
               'cursor-not-allowed opacity-50': page === pageAmount,
-              'hover:bg-gray-50 dark:hover:bg-slate-800': page !== pageAmount,
+              'hover:bg-gray-50 dark:hover:bg-slate-900': page !== pageAmount,
             },
           )}
         >
@@ -130,10 +130,10 @@ const Pagination = ({
               }}
               disabled={page === 1}
               className={cx(
-                'relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-2 py-2 text-gray-400 focus:z-20 dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-500',
+                'relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-2 py-2 text-gray-400 focus:z-20 dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-500',
                 {
                   'cursor-not-allowed opacity-50': page === 1,
-                  'hover:bg-gray-50 dark:hover:bg-slate-800': page !== 1,
+                  'hover:bg-gray-50 dark:hover:bg-slate-900': page !== 1,
                 },
               )}
             >
@@ -155,7 +155,7 @@ const Pagination = ({
 
                       setPage(middlePage)
                     }}
-                    className='relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
+                    className='relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-50 dark:hover:bg-slate-900'
                   >
                     {DOTS}
                   </button>
@@ -172,7 +172,7 @@ const Pagination = ({
                     {
                       'z-10 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900':
                         item === page,
-                      'bg-white text-gray-900 hover:bg-gray-50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800':
+                      'bg-white text-gray-900 hover:bg-gray-50 dark:bg-slate-950 dark:text-gray-50 dark:hover:bg-slate-900':
                         item !== page,
                     },
                   )}
@@ -192,10 +192,10 @@ const Pagination = ({
               }}
               disabled={page === pageAmount}
               className={cx(
-                'relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-gray-400 focus:z-20 dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-500',
+                'relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-gray-400 focus:z-20 dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-500',
                 {
                   'cursor-not-allowed opacity-50': page === pageAmount,
-                  'hover:bg-gray-50 dark:hover:bg-slate-800':
+                  'hover:bg-gray-50 dark:hover:bg-slate-900':
                     page !== pageAmount,
                 },
               )}

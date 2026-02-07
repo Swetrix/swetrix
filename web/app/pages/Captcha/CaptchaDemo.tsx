@@ -131,7 +131,7 @@ const CaptchaDemo = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 dark:bg-slate-900'>
+    <div className='min-h-screen bg-gray-50 dark:bg-slate-950'>
       <main className='mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12 lg:px-8'>
         {/* Header Section */}
         <div className='mb-8 md:mb-12'>
@@ -254,7 +254,7 @@ const CaptchaDemo = () => {
 
             {validationResult ? (
               <div className='mt-4'>
-                <pre className='overflow-x-auto rounded-md bg-gray-100 p-4 text-sm text-gray-800 dark:bg-slate-900 dark:text-gray-200'>
+                <pre className='overflow-x-auto rounded-md bg-gray-100 p-4 text-sm text-gray-800 dark:bg-slate-950 dark:text-gray-200'>
                   {validationResult}
                 </pre>
               </div>

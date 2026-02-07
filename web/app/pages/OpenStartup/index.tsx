@@ -417,7 +417,7 @@ const OpenStartup = ({ stats }: OpenStartupProps) => {
   }, [])
 
   return (
-    <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
+    <div className='min-h-page bg-gray-50 dark:bg-slate-950'>
       <div className='mx-auto px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>
           {t('titles.open')}

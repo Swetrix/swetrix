@@ -58,15 +58,15 @@ const Button = ({
       {
         'border-transparent bg-slate-900 text-gray-50 shadow-xs hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white':
           primary,
-        'border-transparent bg-slate-200 text-slate-900 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600':
+        'border border-gray-300 bg-gray-50 text-slate-900 hover:bg-slate-200 dark:border-slate-700/80 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-900':
           secondary,
         'border-transparent bg-white text-gray-700 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-100 dark:ring-1 dark:ring-slate-700 dark:hover:bg-slate-700':
           white,
         'border-transparent bg-red-500 text-gray-50 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500':
           danger,
-        'border border-red-500 text-red-600 hover:bg-red-500 hover:text-white dark:border-red-400 dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white':
+        'border border-red-500 text-red-600 hover:bg-red-100/80 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-500/20':
           semiDanger,
-        'border-transparent bg-transparent text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800 dark:hover:text-gray-100':
+        'border-transparent bg-transparent text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-900 dark:hover:text-gray-100':
           ghost,
         'border-none text-gray-700 focus:border-none focus:ring-0 focus:ring-offset-0 dark:text-gray-200':
           noBorder,

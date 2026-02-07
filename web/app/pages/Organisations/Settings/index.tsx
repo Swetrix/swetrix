@@ -197,14 +197,14 @@ const OrganisationSettings = () => {
 
   if (!organisation) {
     return (
-      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-950'>
         <Loader />
       </div>
     )
   }
 
   return (
-    <div className='flex min-h-min-footer flex-col bg-gray-50 pb-40 dark:bg-slate-900'>
+    <div className='flex min-h-min-footer flex-col bg-gray-50 pb-40 dark:bg-slate-950'>
       <form
         className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'
         onSubmit={handleSubmit}

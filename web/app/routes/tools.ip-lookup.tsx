@@ -267,7 +267,7 @@ export default function IpLookup() {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 dark:bg-slate-900'>
+    <div className='min-h-screen bg-gray-50 dark:bg-slate-950'>
       <main className='mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8'>
         <ToolsNavMobile className='mb-6 lg:hidden' />
 

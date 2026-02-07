@@ -172,9 +172,9 @@ const Socialisations = () => {
   }
 
   return (
-    <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-900'>
-      <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-        <thead className='bg-gray-50 dark:bg-slate-800'>
+    <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-950'>
+      <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+        <thead className='bg-gray-50 dark:bg-slate-900'>
           <tr>
             <th
               scope='col'
@@ -191,7 +191,7 @@ const Socialisations = () => {
             <th scope='col' className='px-4 py-3' />
           </tr>
         </thead>
-        <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+        <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
           {_map(AVAILABLE_SSO_PROVIDERS, ({ name, key, icons }) => {
             const [connected, unlinkable] = getStatusByUser(user, key)
             const { Light, Dark } = icons
@@ -200,7 +200,7 @@ const Socialisations = () => {
             return (
               <tr
                 key={key}
-                className='hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                className='hover:bg-gray-50 dark:hover:bg-slate-900/50'
               >
                 <td className='px-4 py-3 text-sm text-gray-900 dark:text-gray-100'>
                   <div className='flex items-center gap-3'>

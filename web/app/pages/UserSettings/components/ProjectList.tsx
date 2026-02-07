@@ -76,7 +76,7 @@ const ProjectList = ({ item }: ProjectListProps) => {
   }
 
   return (
-    <tr className='bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/50'>
+    <tr className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'>
       <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         {project.name}
       </td>

@@ -74,7 +74,7 @@ const StatusPage = ({
 
   if (loading) {
     return (
-      <div className='flex min-h-page items-center justify-center bg-gray-50 dark:bg-slate-900'>
+      <div className='flex min-h-page items-center justify-center bg-gray-50 dark:bg-slate-950'>
         <div className='flex flex-col items-center'>
           <Spin />
           <span className='sr-only'>{t('common.loading')}</span>
@@ -86,7 +86,7 @@ const StatusPage = ({
   const displayIcon = icon ?? iconMap[type]
 
   return (
-    <div className='flex min-h-page items-center justify-center bg-gray-50 px-4 dark:bg-slate-900'>
+    <div className='flex min-h-page items-center justify-center bg-gray-50 px-4 dark:bg-slate-950'>
       <div className='mx-auto w-full max-w-md text-center'>
         <div
           className={cn(

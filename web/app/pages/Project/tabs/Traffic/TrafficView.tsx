@@ -1013,7 +1013,7 @@ const TrafficViewInner = ({
                   />
                 )
               }}
-              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-900 focus:dark:ring-gray-200'
+              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-950 focus:dark:ring-gray-200'
               selectItemClassName='p-0'
               keyExtractor={(pair) => pair?.id || ''}
               onSelect={(pair, e) => {

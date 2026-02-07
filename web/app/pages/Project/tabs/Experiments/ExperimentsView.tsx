@@ -313,7 +313,7 @@ const ExperimentRow = ({
                       : t('common.edit')
                 }
                 className={cx(
-                  'rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300',
+                  'rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300',
                   isEditDisabled &&
                     'cursor-not-allowed opacity-50 hover:border-transparent hover:bg-transparent',
                 )}
@@ -324,7 +324,7 @@ const ExperimentRow = ({
                 type='button'
                 onClick={() => setShowDeleteModal(true)}
                 aria-label={t('common.delete')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
               >
                 <TrashIcon className='size-4' />
               </button>
@@ -732,7 +732,7 @@ const ExperimentsView = ({
                   placeholder={t('experiments.filterExperiments')}
                   value={filterQuery}
                   onChange={handleSearchChange}
-                  className='w-full rounded-lg border-0 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-1 ring-gray-300 ring-inset focus:ring-slate-900 focus:outline-none sm:w-64 dark:bg-slate-900 dark:text-gray-50 dark:placeholder-gray-400 dark:ring-slate-700/80 dark:focus:ring-slate-300'
+                  className='w-full rounded-lg border-0 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-1 ring-gray-300 ring-inset focus:ring-slate-900 focus:outline-none sm:w-64 dark:bg-slate-950 dark:text-gray-50 dark:placeholder-gray-400 dark:ring-slate-700/80 dark:focus:ring-slate-300'
                 />
               </div>
               <Button onClick={handleNewExperiment} primary regular>

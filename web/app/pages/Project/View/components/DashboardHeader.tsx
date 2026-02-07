@@ -142,7 +142,7 @@ const DashboardHeader = ({
   }
 
   return (
-    <div className='relative top-0 z-20 -mt-2 flex flex-col items-center justify-between bg-gray-50/50 py-2 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
+    <div className='relative top-0 z-20 -mt-2 flex flex-col items-center justify-between bg-gray-50/50 py-2 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-950/50'>
       <div className='flex flex-wrap items-center justify-center gap-2'>
         {backLink ? <BackButton to={backLink} label={backButtonLabel} /> : null}
         {onBack ? (
@@ -174,7 +174,7 @@ const DashboardHeader = ({
             onSelect={(item) => {
               onProfileTypeFilterChange(item.value as ProfileTypeFilter)
             }}
-            buttonClassName='rounded-md border border-gray-50/0 p-2 text-sm font-medium text-gray-700 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+            buttonClassName='rounded-md border border-gray-50/0 p-2 text-sm font-medium text-gray-700 transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
             chevron='mini'
             headless
           />
@@ -197,7 +197,7 @@ const DashboardHeader = ({
                 setShowFiltersSearch(true)
               }}
               className={cx(
-                'relative rounded-md border border-transparent p-2 text-sm font-medium transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                'relative rounded-md border border-transparent p-2 text-sm font-medium transition-colors ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200',
                 {
                   'cursor-not-allowed opacity-50': authLoading || dataLoading,
                 },

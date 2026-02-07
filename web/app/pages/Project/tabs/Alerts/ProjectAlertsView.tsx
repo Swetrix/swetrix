@@ -141,7 +141,7 @@ const AlertRow = ({
     <>
       <li
         onClick={() => openAlert(id)}
-        className='group relative mb-3 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100 dark:border-slate-800/60 dark:bg-slate-800/25 dark:hover:bg-slate-800/60'
+        className='group relative mb-3 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100 dark:border-slate-800/60 dark:bg-slate-800/25 dark:hover:bg-slate-900/60'
       >
         <div className='flex items-center justify-between gap-4 px-4 py-3 sm:px-5'>
           {/* Left section: Icon + Name + Badge */}

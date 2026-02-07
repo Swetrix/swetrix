@@ -69,7 +69,7 @@ const MetadataPanel = ({
   const remainingCount = metadata.length - INITIAL_SHOW_COUNT
 
   return (
-    <div className='mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white sm:ml-5 dark:border-slate-700 dark:bg-slate-900/50'>
+    <div className='mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white sm:ml-5 dark:border-slate-700 dark:bg-slate-950/50'>
       {/* Header */}
       <div className='border-b border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-800/50'>
         <span className='text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400'>
@@ -88,7 +88,7 @@ const MetadataPanel = ({
           return (
             <div
               key={`${key}${value}${index}`}
-              className='flex flex-col gap-1 px-3 py-2 transition-colors hover:bg-slate-50 sm:grid sm:grid-cols-[minmax(80px,auto)_1fr] sm:gap-3 dark:hover:bg-slate-800/30'
+              className='flex flex-col gap-1 px-3 py-2 transition-colors hover:bg-slate-50 sm:grid sm:grid-cols-[minmax(80px,auto)_1fr] sm:gap-3 dark:hover:bg-slate-900/30'
             >
               <div className='flex items-start'>
                 <span className='font-mono text-[11px] font-medium text-slate-500 dark:text-slate-400'>
@@ -474,7 +474,7 @@ export const Pageflow = ({
             <div className='relative pb-8'>
               <div className='relative flex space-x-3'>
                 <div>
-                  <span className='flex h-8 w-8 items-center justify-center rounded-full border-2 border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900'>
+                  <span className='flex h-8 w-8 items-center justify-center rounded-full border-2 border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-950'>
                     <CircleIcon
                       className='h-3 w-3 text-slate-400 dark:text-slate-500'
                       aria-hidden='true'

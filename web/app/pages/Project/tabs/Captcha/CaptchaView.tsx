@@ -221,7 +221,7 @@ const CaptchaView = ({ projectId }: CaptchaViewProps) => {
   if (analyticsLoading && !hasExistingData) {
     return (
       <div
-        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-950', {
           'min-h-including-header': !isEmbedded,
           'min-h-screen': isEmbedded,
         })}

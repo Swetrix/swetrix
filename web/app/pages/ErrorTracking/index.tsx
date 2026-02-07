@@ -16,7 +16,7 @@ const ErrorTracking = () => {
 
   return (
     <div className='overflow-hidden'>
-      <main className='bg-gray-50 dark:bg-slate-900'>
+      <main className='bg-gray-50 dark:bg-slate-950'>
         <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-800/50'>
           <div className='relative mx-2 overflow-hidden rounded-4xl'>
             <div
@@ -73,7 +73,7 @@ const ErrorTracking = () => {
                       href={ERROR_TRACKING_LIVE_DEMO_URL}
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+                      className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900'
                       aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
                     >
                       <ArrowRightIcon className='mr-2 h-4 w-4' />
@@ -97,7 +97,7 @@ const ErrorTracking = () => {
                         href={ERROR_TRACKING_LIVE_DEMO_URL}
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+                        className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900'
                         aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
                       >
                         <ArrowRightIcon className='mr-2 h-4 w-4' />
@@ -111,7 +111,7 @@ const ErrorTracking = () => {
           </div>
         </div>
 
-        <div className='mx-auto mt-12 max-w-7xl bg-white px-4 pb-16 whitespace-pre-line dark:bg-slate-900'>
+        <div className='mx-auto mt-12 max-w-7xl bg-white px-4 pb-16 whitespace-pre-line dark:bg-slate-950'>
           <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>
             {t('errors.fast.title')}
           </h2>

@@ -95,7 +95,7 @@ const MultiSelect = ({
         <input
           ref={inputRef}
           type='text'
-          className='w-full cursor-text rounded-md border-0 bg-white py-2 pr-10 pl-3 text-sm font-medium ring-1 ring-gray-300 transition-colors ring-inset placeholder:text-gray-400 hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700/80 dark:placeholder:text-gray-500 dark:hover:bg-slate-800 dark:focus:ring-slate-300'
+          className='w-full cursor-text rounded-md border-0 bg-white py-2 pr-10 pl-3 text-sm font-medium ring-1 ring-gray-300 transition-colors ring-inset placeholder:text-gray-400 hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:placeholder:text-gray-500 dark:hover:bg-slate-900 dark:focus:ring-slate-300'
           placeholder={placeholder}
           value={searchValue}
           onChange={handleInputChange}
@@ -111,7 +111,7 @@ const MultiSelect = ({
 
         <div
           className={cx(
-            'absolute top-full z-30 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-sm ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-700/80',
+            'absolute top-full z-30 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-sm ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-700/80',
             'transition-opacity duration-100 ease-in',
             isOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
           )}
@@ -136,7 +136,7 @@ const MultiSelect = ({
                     'relative mx-1 flex w-[calc(100%-0.5rem)] cursor-pointer items-center rounded-md py-2 pr-4 pl-8 text-left text-sm transition-colors select-none',
                     {
                       'bg-gray-200 dark:bg-slate-800/80': isSelected,
-                      'hover:bg-gray-100 dark:hover:bg-slate-800/80':
+                      'hover:bg-gray-100 dark:hover:bg-slate-900/80':
                         !isSelected,
                       'text-gray-900 dark:text-white': isSelected,
                       'text-gray-700 dark:text-gray-50': !isSelected,

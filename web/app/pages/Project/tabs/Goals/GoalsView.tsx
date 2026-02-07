@@ -323,7 +323,7 @@ const GoalRow = ({
         {/* Main row - clickable to expand */}
         <div
           onClick={() => onToggleExpand(goal.id)}
-          className='flex cursor-pointer justify-between gap-x-6 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:hover:bg-slate-800/60'
+          className='flex cursor-pointer justify-between gap-x-6 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:hover:bg-slate-900/60'
         >
           <div className='flex min-w-0 gap-x-4'>
             <div className='min-w-0 flex-auto'>
@@ -419,7 +419,7 @@ const GoalRow = ({
                   onEdit(goal.id)
                 }}
                 aria-label={t('common.edit')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
               >
                 <PencilIcon className='size-4' />
               </button>
@@ -431,7 +431,7 @@ const GoalRow = ({
                   setShowDeleteModal(true)
                 }}
                 aria-label={t('common.delete')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
               >
                 <TrashIcon className='size-4' />
               </button>
@@ -875,7 +875,7 @@ const GoalsViewInner = ({
                   placeholder={t('goals.filterGoals')}
                   value={filterQuery}
                   onChange={(e) => setFilterQuery(e.target.value)}
-                  className='w-full rounded-lg border-0 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-1 ring-gray-300 ring-inset focus:ring-slate-900 focus:outline-none sm:w-64 dark:bg-slate-900 dark:text-gray-50 dark:placeholder-gray-400 dark:ring-slate-700/80 dark:focus:ring-slate-300'
+                  className='w-full rounded-lg border-0 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-1 ring-gray-300 ring-inset focus:ring-slate-900 focus:outline-none sm:w-64 dark:bg-slate-950 dark:text-gray-50 dark:placeholder-gray-400 dark:ring-slate-700/80 dark:focus:ring-slate-300'
                 />
               </div>
               <Button onClick={handleNewGoal} primary regular>

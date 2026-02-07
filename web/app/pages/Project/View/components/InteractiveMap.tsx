@@ -443,7 +443,7 @@ const InteractiveMapCore = ({
         <button
           type='button'
           onClick={() => map.zoomIn()}
-          className='pointer-events-auto rounded-md border border-gray-300 bg-gray-50 p-2 text-gray-700 shadow-sm transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+          className='pointer-events-auto rounded-md border border-gray-300 bg-gray-50 p-2 text-gray-700 shadow-sm transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-200 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
           aria-label='Zoom in'
           title='Zoom in'
         >
@@ -452,7 +452,7 @@ const InteractiveMapCore = ({
         <button
           type='button'
           onClick={() => map.zoomOut()}
-          className='pointer-events-auto rounded-md border border-gray-300 bg-gray-50 p-2 text-gray-700 shadow-sm transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+          className='pointer-events-auto rounded-md border border-gray-300 bg-gray-50 p-2 text-gray-700 shadow-sm transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-200 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
           aria-label='Zoom out'
           title='Zoom out'
         >
@@ -485,7 +485,7 @@ const InteractiveMapCore = ({
             onClick={() => onFullscreenToggle(true)}
             aria-label='Fullscreen'
             title='Fullscreen'
-            className='rounded-md border border-gray-300 bg-gray-50 p-1.5 text-gray-700 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+            className='rounded-md border border-gray-300 bg-gray-50 p-1.5 text-gray-700 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-200 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
           >
             <ArrowsOutIcon className='size-4' />
           </button>
@@ -498,7 +498,7 @@ const InteractiveMapCore = ({
           <button
             type='button'
             onClick={() => onFullscreenToggle(false)}
-            className='flex items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+            className='flex items-center rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-200 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
           >
             <XIcon className='mr-1.5 h-4 w-4' />
             {t('common.close')}
@@ -568,7 +568,7 @@ const InteractiveMapCore = ({
       {tooltipContent ? (
         <div
           ref={tooltipRef}
-          className='pointer-events-none fixed z-50 rounded-md border border-gray-200 bg-white/95 p-2 text-sm text-gray-900 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/95 dark:text-white'
+          className='pointer-events-none fixed z-50 rounded-md border border-gray-200 bg-white/95 p-2 text-sm text-gray-900 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-950/95 dark:text-white'
           style={{ left: 0, top: 0, transform: 'translate(-50%, -100%)' }}
         >
           <div className='flex items-center gap-1.5 font-medium'>

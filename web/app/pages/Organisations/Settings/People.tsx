@@ -104,7 +104,7 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
             {roleEditDropdownId === member.id ? (
               <ul
                 ref={openRef}
-                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left focus:outline-hidden dark:divide-gray-700 dark:bg-slate-900'
+                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left focus:outline-hidden dark:divide-gray-700 dark:bg-slate-950'
               >
                 {_map(roles, (itRole, index) => (
                   <li
@@ -422,7 +422,7 @@ const People = ({ organisation }: PeopleProps) => {
               </label>
               <div
                 className={cx(
-                  'mt-1 -space-y-px rounded-md bg-white dark:bg-slate-900',
+                  'mt-1 -space-y-px rounded-md bg-white dark:bg-slate-950',
                   {
                     'border border-red-300': errors.role,
                   },

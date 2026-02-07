@@ -9,7 +9,7 @@ export const LoaderView = () => {
 
   return (
     <div
-      className={cn('flex flex-col bg-gray-50 dark:bg-slate-900', {
+      className={cn('flex flex-col bg-gray-50 dark:bg-slate-950', {
         'min-h-including-header': !isEmbedded,
         'min-h-screen': isEmbedded,
       })}

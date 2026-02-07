@@ -324,7 +324,7 @@ const BillingPricing = ({
                   : BillingFrequency.yearly,
               )
             }
-            className='flex cursor-pointer items-center gap-2 rounded-lg bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700'
+            className='flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200 dark:border-white/10 dark:bg-slate-950 dark:hover:bg-slate-900'
           >
             <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
               {t('pricing.billedYearly')}
@@ -357,7 +357,7 @@ const BillingPricing = ({
                   'border-gray-200 dark:border-white/10':
                     user?.planCode !== tier.planCode ||
                     isUnselectablePlanCode(tier.planCode),
-                  'border-indigo-500':
+                  'border-indigo-500 dark:border-gray-50':
                     user?.planCode === tier.planCode &&
                     !isUnselectablePlanCode(tier.planCode),
                 },
@@ -506,8 +506,8 @@ const BillingPricing = ({
                 <h2 className='text-base font-bold'>{t('billing.dueNow')}</h2>
                 <p className='text-sm'>{t('billing.dueNowDescription')}</p>
                 <div className='mt-2 overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
-                  <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
-                    <thead className='bg-gray-50 dark:bg-slate-800'>
+                  <table className='200 min-w-full divide-y divide-gray-300 dark:divide-slate-700'>
+                    <thead className='bg-gray-50 dark:bg-slate-900'>
                       <tr>
                         <th
                           scope='col'
@@ -523,7 +523,7 @@ const BillingPricing = ({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
+                    <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-950'>
                       <tr>
                         <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 sm:pl-6 dark:text-gray-50'>
                           {`${(subUpdatePreview as any).immediatePayment.symbol}${(subUpdatePreview as any).immediatePayment.amount}`}
@@ -573,8 +573,8 @@ const BillingPricing = ({
                   {t('billing.nextPayment')}
                 </h2>
                 <div className='mt-2 overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
-                  <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
-                    <thead className='bg-gray-50 dark:bg-slate-800'>
+                  <table className='200 min-w-full divide-y divide-gray-300 dark:divide-slate-700'>
+                    <thead className='bg-gray-50 dark:bg-slate-900'>
                       <tr>
                         <th
                           scope='col'
@@ -590,7 +590,7 @@ const BillingPricing = ({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
+                    <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-950'>
                       <tr>
                         <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 sm:pl-6 dark:text-gray-50'>
                           {`${(subUpdatePreview as any).nextPayment.symbol}${(subUpdatePreview as any).nextPayment.amount}`}

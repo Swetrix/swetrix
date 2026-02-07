@@ -333,7 +333,7 @@ const Dashboard = () => {
 
   return (
     <>
-      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
+      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-950'>
         <EventsRunningOutBanner />
         <div className='flex flex-col'>
           <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
@@ -348,7 +348,7 @@ const Dashboard = () => {
                   <span>{t('titles.dashboard')}</span>
                   {isSearchActive ? (
                     <button
-                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
+                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'
                       type='button'
                       onClick={() => {
                         setSearch('')
@@ -360,7 +360,7 @@ const Dashboard = () => {
                     </button>
                   ) : (
                     <button
-                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
+                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'
                       type='button'
                       onClick={() => {
                         setIsSearchActive(true)
@@ -389,7 +389,7 @@ const Dashboard = () => {
                         id='project-search'
                         onChange={onSearch}
                         value={search}
-                        className='block h-7 w-full rounded-lg border-none bg-white p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 ring-inset focus:ring-slate-900 sm:pl-10 dark:bg-slate-900 dark:text-gray-50 dark:placeholder-gray-400 dark:ring-slate-700/80 dark:focus:ring-slate-300'
+                        className='block h-7 w-full rounded-lg border-none bg-white p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 ring-inset focus:ring-slate-900 sm:pl-10 dark:bg-slate-950 dark:text-gray-50 dark:placeholder-gray-400 dark:ring-slate-700/80 dark:focus:ring-slate-300'
                         placeholder={t('project.search')}
                       />
                     </div>
@@ -413,7 +413,7 @@ const Dashboard = () => {
                       type='button'
                       title={t('dashboard.listView')}
                       onClick={() => handleViewModeChange(DASHBOARD_VIEW.LIST)}
-                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
+                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'
                     >
                       <RowsIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                     </button>
@@ -425,7 +425,7 @@ const Dashboard = () => {
                       onClick={() => {
                         handleViewModeChange(DASHBOARD_VIEW.GRID)
                       }}
-                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
+                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'
                     >
                       <SquaresFourIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                     </button>
@@ -451,7 +451,7 @@ const Dashboard = () => {
                     type='text'
                     onChange={onSearch}
                     value={search}
-                    className='block h-7 w-full rounded-lg border-none bg-gray-50 p-2.5 py-5 pl-10 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 dark:bg-slate-900 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200'
+                    className='block h-7 w-full rounded-lg border-none bg-gray-50 p-2.5 py-5 pl-10 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 dark:bg-slate-950 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200'
                     placeholder={t('project.search')}
                   />
                 </div>

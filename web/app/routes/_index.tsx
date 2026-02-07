@@ -318,7 +318,7 @@ const LiveDemoPreview = () => {
             href={LIVE_DEMO_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900'
             aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
           >
             <ArrowRightIcon className='mr-2 h-4 w-4' />
@@ -344,7 +344,7 @@ const LiveDemoPreview = () => {
             href={LIVE_DEMO_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900'
             aria-label={`${t('main.seeLiveDemo')} (opens in a new tab)`}
           >
             <ArrowRightIcon className='mr-2 h-4 w-4' />
@@ -446,7 +446,7 @@ const FeatureCard = ({
 }) => (
   <div
     className={cn(
-      'flex h-full flex-col overflow-hidden bg-white ring-1 ring-gray-200 dark:bg-slate-800/25 dark:ring-slate-800/60 dark:ring-white/10',
+      'flex h-full flex-col overflow-hidden bg-white ring-1 ring-gray-200 dark:bg-slate-800/25 dark:ring-slate-800/60',
       size === 'large' ? 'rounded-2xl' : 'rounded-xl',
     )}
   >
@@ -553,7 +553,7 @@ const AnalyticsLivePreview = () => {
           ].map((k) => (
             <div
               key={k.l}
-              className='rounded-md bg-white px-3 py-2 text-xs text-slate-900 ring-1 ring-black/5 dark:bg-slate-900 dark:text-gray-50 dark:ring-white/10'
+              className='rounded-md bg-white px-3 py-2 text-xs text-slate-900 ring-1 ring-black/5 dark:bg-slate-950 dark:text-gray-50 dark:ring-white/10'
             >
               <div className='text-xl font-bold'>{k.v}</div>
               <div>{k.l}</div>
@@ -569,7 +569,7 @@ const AnalyticsLivePreview = () => {
         </div>
       </div>
 
-      <div className='rounded-lg bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+      <div className='rounded-lg bg-white p-3 ring-1 ring-black/5 dark:bg-slate-950 dark:ring-white/10'>
         <svg viewBox={`0 0 ${width} ${height}`} className='h-40 w-full'>
           <defs>
             <linearGradient id='grad' x1='0' x2='0' y1='0' y2='1'>
@@ -629,7 +629,7 @@ const AnalyticsLivePreview = () => {
         ].map((k) => (
           <div
             key={k.l}
-            className='rounded-md bg-white p-3 text-xs ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'
+            className='rounded-md bg-white p-3 text-xs ring-1 ring-black/5 dark:bg-slate-950 dark:ring-white/10'
           >
             <div className='text-slate-600 dark:text-gray-300'>{k.l}</div>
             <div className='mt-1 flex items-baseline justify-between text-slate-900 dark:text-white'>
@@ -913,7 +913,7 @@ const PerformancePreview = () => {
         ? Math.abs(Math.round(((value - prevValue) / prevValue) * 100))
         : 0
     return (
-      <div className='min-w-0 flex-1 rounded-md bg-white px-2.5 py-1.5 text-[11px] text-slate-900 ring-1 ring-black/5 dark:bg-slate-900 dark:text-gray-50 dark:ring-white/10'>
+      <div className='min-w-0 flex-1 rounded-md bg-white px-2.5 py-1.5 text-[11px] text-slate-900 ring-1 ring-black/5 dark:bg-slate-950 dark:text-gray-50 dark:ring-white/10'>
         <div className='text-lg font-bold'>{fmt(value)}</div>
         <div className='mt-0.5 flex items-center justify-between'>
           <div className='text-[10px] text-slate-600 dark:text-gray-300'>
@@ -952,7 +952,7 @@ const PerformancePreview = () => {
         </div>
       </div>
 
-      <div className='relative rounded-lg bg-white p-2.5 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+      <div className='relative rounded-lg bg-white p-2.5 ring-1 ring-black/5 dark:bg-slate-950 dark:ring-white/10'>
         <svg viewBox={`0 0 ${width} ${height}`} className='h-28 w-full'>
           <defs>
             <linearGradient id='gridfade' x1='0' x2='0' y1='0' y2='1'>
@@ -1213,7 +1213,7 @@ const AlertsPreview = () => {
   const renderMessage = (it: ChatItem, index: number) => {
     if (it.kind === 'error') {
       return (
-        <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+        <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-950 dark:ring-white/10'>
           <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
             <WarningIcon className='size-4 text-rose-600 dark:text-rose-400' />
             <span className='text-sm'>
@@ -1240,7 +1240,7 @@ const AlertsPreview = () => {
       const online = 15 // Demo value
 
       return (
-        <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+        <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-950 dark:ring-white/10'>
           <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
             <BellRingingIcon className='size-4 text-amber-600 dark:text-amber-400' />
             <span className='text-sm'>
@@ -1260,7 +1260,7 @@ const AlertsPreview = () => {
     }
 
     return (
-      <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+      <div className='rounded-2xl bg-white p-3 ring-1 ring-black/5 dark:bg-slate-950 dark:ring-white/10'>
         <div className='mb-1 flex items-center gap-2 text-slate-900 dark:text-white'>
           <BellRingingIcon className='size-4 text-amber-600 dark:text-amber-400' />
           <span className='text-sm'>
@@ -1328,7 +1328,7 @@ const RevenuePreview = () => {
 
   return (
     <div className='h-full w-full bg-gradient-to-b from-white to-slate-50 p-4 dark:from-slate-800 dark:to-slate-900'>
-      <div className='mb-4 flex items-center justify-between rounded-xl bg-white p-4 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+      <div className='mb-4 flex items-center justify-between rounded-xl bg-white p-4 ring-1 ring-black/5 dark:bg-slate-950 dark:ring-white/10'>
         <div>
           <div className='flex items-center gap-1.5 text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-gray-400'>
             <CurrencyDollarIcon className='size-3' />
@@ -1530,7 +1530,7 @@ const ExperimentsPreview = () => {
         </div>
       </div>
 
-      <div className='rounded-lg bg-white p-3 ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+      <div className='rounded-lg bg-white p-3 ring-1 ring-black/5 dark:bg-slate-950 dark:ring-white/10'>
         <div className='mb-2 text-[10px] font-medium text-slate-600 dark:text-gray-300'>
           Probability of winning
         </div>
@@ -1903,7 +1903,7 @@ export default function Index() {
 
   return (
     <div className='overflow-hidden'>
-      <main className='bg-gray-50 dark:bg-slate-900'>
+      <main className='bg-gray-50 dark:bg-slate-950'>
         <Hero />
 
         <FeedbackDual />

@@ -77,7 +77,7 @@ function Select<T>({
           <div className={cx('relative', className)}>
             <ListboxButton
               className={cx(
-                'relative w-full rounded-md border-0 bg-white py-2 pr-10 pl-3 text-left font-medium ring-1 ring-gray-300 transition-colors ring-inset hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden sm:text-sm dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-800 dark:focus:ring-slate-300',
+                'relative w-full rounded-md border-0 bg-white py-2 pr-10 pl-3 text-left font-medium ring-1 ring-gray-300 transition-colors ring-inset hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden sm:text-sm dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-900 dark:focus:ring-slate-300',
                 buttonClassName,
               )}
             >
@@ -109,7 +109,7 @@ function Select<T>({
               <ListboxOptions
                 static
                 modal={false}
-                className='absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-900 dark:ring-slate-700/80'
+                className='absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-950 dark:ring-slate-700/80'
               >
                 {_map(items, (item, index) => {
                   const selected = isItemSelected(item)

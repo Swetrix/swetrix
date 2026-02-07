@@ -508,7 +508,7 @@ export const ErrorDetails = ({
               </div>
             </div>
 
-            <div className='rounded-lg border border-gray-100 bg-gray-50 dark:border-slate-700 dark:bg-slate-900/50'>
+            <div className='rounded-lg border border-gray-100 bg-gray-50 dark:border-slate-700 dark:bg-slate-950/50'>
               <div
                 className={
                   isStackTraceExpanded ? 'max-h-80 overflow-auto p-3' : 'p-3'

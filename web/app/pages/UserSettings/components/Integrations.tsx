@@ -418,9 +418,9 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
         {t('profileSettings.integrationsDesc')}
       </p>
-      <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700 dark:bg-slate-900'>
-        <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-          <thead className='bg-gray-50 dark:bg-slate-800'>
+      <div className='mt-2 overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-950'>
+        <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+          <thead className='bg-gray-50 dark:bg-slate-900'>
             <tr>
               <th
                 scope='col'
@@ -443,7 +443,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
               <th scope='col' className='px-4 py-3' />
             </tr>
           </thead>
-          <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+          <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
             {_map(available, ({ name, key, description, Icon }) => {
               const { connected, confirmed, id } = getIntegrationStatus(key)
               const status = connected
@@ -455,7 +455,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
               return (
                 <tr
                   key={key}
-                  className='hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                  className='hover:bg-gray-50 dark:hover:bg-slate-900/50'
                 >
                   <td className='px-4 py-3 text-sm text-gray-900 dark:text-gray-100'>
                     <div className='flex items-center gap-2'>

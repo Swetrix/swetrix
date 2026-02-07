@@ -114,7 +114,7 @@ const Captcha = () => {
 
   return (
     <div className='overflow-hidden'>
-      <main className='bg-gray-50 dark:bg-slate-900'>
+      <main className='bg-gray-50 dark:bg-slate-950'>
         <div className='relative isolate bg-gray-100/80 pt-2 dark:bg-slate-800/50'>
           <div className='relative mx-2 overflow-hidden rounded-4xl'>
             <div
@@ -163,7 +163,7 @@ const Captcha = () => {
           </div>
         </div>
 
-        <div className='mx-auto mt-20 max-w-7xl bg-gray-50 px-4 pb-16 dark:bg-slate-900'>
+        <div className='mx-auto mt-20 max-w-7xl bg-gray-50 px-4 pb-16 dark:bg-slate-950'>
           <div className='text-center'>
             <Text as='h2' size='3xl' weight='bold' className='sm:text-4xl'>
               {t('captchaPage.whySwetrix')}

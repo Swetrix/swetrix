@@ -383,21 +383,21 @@ const ExposuresTable = memo(
 
     return (
       <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-800/50'>
-        <div className='border-b border-gray-200 px-4 py-3 dark:border-slate-700'>
+        <div className='border-b border-gray-200 px-4 py-3 dark:border-slate-800'>
           <Text weight='semibold' size='sm'>
             {t('experiments.totalExposures')}
           </Text>
         </div>
         <div className='overflow-x-auto'>
-          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-            <thead className='bg-gray-50 dark:bg-slate-800'>
+          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+            <thead className='bg-gray-50 dark:bg-slate-900'>
               <tr>
                 <TableHeader>{t('experiments.variants')}</TableHeader>
                 <TableHeader>{t('experiments.exposures')}</TableHeader>
                 <TableHeader className='text-right'>%</TableHeader>
               </tr>
             </thead>
-            <tbody className='divide-y divide-gray-200 dark:divide-slate-700'>
+            <tbody className='divide-y divide-gray-200 dark:divide-slate-800'>
               {_map(variants, (variant) => {
                 const percentage =
                   totalExposures > 0
@@ -406,7 +406,7 @@ const ExposuresTable = memo(
                 return (
                   <tr
                     key={variant.key}
-                    className='hover:bg-gray-50 dark:hover:bg-slate-700/30'
+                    className='hover:bg-gray-50 dark:hover:bg-slate-900/50'
                   >
                     <TableCell>
                       <div className='flex items-center gap-2'>
@@ -433,7 +433,7 @@ const ExposuresTable = memo(
                   </tr>
                 )
               })}
-              <tr className='bg-gray-50 dark:bg-slate-800'>
+              <tr className='bg-gray-50 dark:bg-slate-900'>
                 <TableCell>
                   <Text weight='semibold' size='sm'>
                     Total
@@ -486,8 +486,8 @@ const MetricsTable = memo(
           </div>
         </div>
         <div className='overflow-x-auto'>
-          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-            <thead className='bg-gray-50 dark:bg-slate-800'>
+          <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+            <thead className='bg-gray-50 dark:bg-slate-900'>
               <tr>
                 <TableHeader>{t('experiments.variants')}</TableHeader>
                 <TableHeader>Value</TableHeader>
@@ -504,9 +504,9 @@ const MetricsTable = memo(
                 </TableHeader>
               </tr>
             </thead>
-            <tbody className='divide-y divide-gray-200 dark:divide-slate-700'>
+            <tbody className='divide-y divide-gray-200 dark:divide-slate-800'>
               {controlVariant ? (
-                <tr className='hover:bg-gray-50 dark:hover:bg-slate-700/30'>
+                <tr className='hover:bg-gray-50 dark:hover:bg-slate-900/50'>
                   <TableCell>
                     <div className='flex items-center gap-2'>
                       <Text weight='medium' size='sm'>
@@ -568,7 +568,7 @@ const MetricsTable = memo(
                   <tr
                     key={variant.key}
                     className={cx(
-                      'hover:bg-gray-50 dark:hover:bg-slate-700/30',
+                      'hover:bg-gray-50 dark:hover:bg-slate-900/50',
                       {
                         'bg-green-50/50 dark:bg-green-900/10': isWinner,
                       },

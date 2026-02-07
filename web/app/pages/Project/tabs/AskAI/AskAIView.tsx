@@ -203,7 +203,7 @@ const ToolsIndicator = () => {
     <Tooltip
       text={<ToolsTooltip />}
       tooltipNode={
-        <span className='flex cursor-help items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-300'>
+        <span className='flex cursor-help items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-900 dark:hover:text-gray-300'>
           {t('project.askAi.tools.count', { count: AVAILABLE_TOOLS.length })}
         </span>
       }
@@ -1111,14 +1111,14 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
   }
 
   return (
-    <div className='flex h-[calc(100vh-140px)] min-h-[600px] flex-col bg-gray-50 dark:bg-slate-900'>
+    <div className='flex h-[calc(100vh-140px)] min-h-[600px] flex-col bg-gray-50 dark:bg-slate-950'>
       {isChatActive ? (
         <>
           <div className='mx-auto flex w-full max-w-3xl items-center justify-between'>
             <button
               type='button'
               onClick={handleNewChat}
-              className='flex items-center gap-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-200 hover:bg-white hover:text-gray-900 dark:text-gray-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-white'
+              className='flex items-center gap-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-200 hover:bg-white hover:text-gray-900 dark:text-gray-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-white'
               aria-label={t('project.askAi.newChat')}
             >
               <ArrowLeftIcon className='h-4 w-4' />
@@ -1188,7 +1188,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                         key={idx}
                         type='button'
                         onClick={() => handleQuickAction(prompt)}
-                        className='relative rounded-md border border-gray-200 bg-gray-50 p-2 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                        className='relative rounded-md border border-gray-200 bg-gray-50 p-2 transition-colors ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:bg-slate-950 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
                       >
                         <Text as='span' size='sm'>
                           {prompt}
@@ -1264,7 +1264,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       </div>
 
       {!isEmpty ? (
-        <div className='border-t border-gray-200 bg-gray-50 px-4 py-4 dark:border-slate-800/60 dark:bg-slate-900'>
+        <div className='border-t border-gray-200 bg-gray-50 px-4 py-4 dark:border-slate-800/60 dark:bg-slate-950'>
           <div className='mx-auto max-w-3xl'>
             <div className='rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-800/25'>
               <form onSubmit={handleSubmit} className='relative'>

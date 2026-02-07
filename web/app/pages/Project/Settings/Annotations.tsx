@@ -204,9 +204,9 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
         </div>
       ) : (
         <>
-          <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
-            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-              <thead className='bg-gray-50 dark:bg-slate-800'>
+          <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
+            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+              <thead className='bg-gray-50 dark:bg-slate-900'>
                 <tr>
                   <th
                     scope='col'
@@ -223,11 +223,11 @@ const Annotations = ({ projectId, allowedToManage }: AnnotationsProps) => {
                   {allowedToManage ? <th /> : null}
                 </tr>
               </thead>
-              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-950'>
                 {_map(paginatedAnnotations, (annotation) => (
                   <tr
                     key={annotation.id}
-                    className='hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                    className='hover:bg-gray-50 dark:hover:bg-slate-900/50'
                   >
                     <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
                       {new Date(annotation.date).toLocaleDateString()}

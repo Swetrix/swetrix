@@ -212,7 +212,7 @@ const FeatureFlagRow = ({
         {/* Main row - clickable to expand */}
         <div
           onClick={() => onToggleExpand(flag.id)}
-          className='flex cursor-pointer justify-between gap-x-6 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:hover:bg-slate-800/60'
+          className='flex cursor-pointer justify-between gap-x-6 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:hover:bg-slate-900/60'
         >
           <div className='flex min-w-0 gap-x-4'>
             <div className='min-w-0 flex-auto'>
@@ -352,7 +352,7 @@ const FeatureFlagRow = ({
                   'rounded-md border border-transparent p-1.5 transition-colors',
                   flag.enabled
                     ? 'text-green-600 hover:border-green-300 hover:bg-green-50 dark:text-green-400 hover:dark:border-green-700/80 dark:hover:bg-green-900/30'
-                    : 'text-gray-400 hover:border-gray-300 hover:bg-gray-50 dark:text-gray-500 hover:dark:border-slate-700/80 dark:hover:bg-slate-800',
+                    : 'text-gray-400 hover:border-gray-300 hover:bg-gray-50 dark:text-gray-500 hover:dark:border-slate-700/80 dark:hover:bg-slate-900',
                 )}
               >
                 {flag.enabled ? (
@@ -369,7 +369,7 @@ const FeatureFlagRow = ({
                   onEdit(flag.id)
                 }}
                 aria-label={t('common.edit')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
               >
                 <PencilIcon className='size-4' />
               </button>
@@ -381,7 +381,7 @@ const FeatureFlagRow = ({
                   setShowDeleteModal(true)
                 }}
                 aria-label={t('common.delete')}
-                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
               >
                 <TrashIcon className='size-4' />
               </button>
@@ -442,7 +442,7 @@ const FeatureFlagRow = ({
                     }}
                     disabled={profilesLoading}
                     className={cx(
-                      'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                      'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200',
                       {
                         'cursor-not-allowed opacity-50': profilesLoading,
                       },
@@ -982,7 +982,7 @@ const FeatureFlagsViewInner = ({
                   placeholder={t('featureFlags.filterFlags')}
                   value={filterQuery}
                   onChange={handleSearchChange}
-                  className='w-full rounded-lg border-0 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-1 ring-gray-300 ring-inset focus:ring-slate-900 focus:outline-none sm:w-64 dark:bg-slate-900 dark:text-gray-50 dark:placeholder-gray-400 dark:ring-slate-700/80 dark:focus:ring-slate-300'
+                  className='w-full rounded-lg border-0 bg-white py-2 pr-4 pl-9 text-sm text-gray-900 placeholder-gray-500 ring-1 ring-gray-300 ring-inset focus:ring-slate-900 focus:outline-none sm:w-64 dark:bg-slate-950 dark:text-gray-50 dark:placeholder-gray-400 dark:ring-slate-700/80 dark:focus:ring-slate-300'
                 />
               </div>
               <Button onClick={handleNewFlag} primary regular>
