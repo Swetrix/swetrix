@@ -94,10 +94,12 @@ const slideVariants = {
   enter: (direction: number) => ({
     x: direction > 0 ? 40 : -40,
     opacity: 0,
+    z: 0,
   }),
   center: {
     x: 0,
     opacity: 1,
+    z: 0,
     transition: {
       duration: ANIMATION_DURATION,
       ease: EASE_OUT_QUART,
@@ -106,6 +108,7 @@ const slideVariants = {
   exit: (direction: number) => ({
     x: direction < 0 ? 40 : -40,
     opacity: 0,
+    z: 0,
     transition: {
       duration: EXIT_DURATION,
       ease: EASE_OUT_QUART,
@@ -651,6 +654,10 @@ const Onboarding = () => {
                     animate='center'
                     exit='exit'
                     className='px-6 py-6 md:px-10'
+                    style={{
+                      backfaceVisibility: 'hidden',
+                      willChange: 'transform, opacity',
+                    }}
                   >
                     {currentStep === 'language' && (
                       <div>
