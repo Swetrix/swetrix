@@ -554,8 +554,23 @@ const Onboarding = () => {
     setSelectedLanguage(lng)
   }
 
-  const handleLanguageConfirm = () => {
+  const handleLanguageConfirm = async () => {
     if (selectedLanguage !== i18n.language) {
+      const nextStep = STEPS[currentStepIndex + 1]
+      if (nextStep) {
+        const formData = new FormData()
+        formData.set('intent', 'update-step')
+        formData.set('step', nextStep)
+        try {
+          await fetch(routes.onboarding, {
+            method: 'post',
+            body: formData,
+            credentials: 'same-origin',
+          })
+        } catch {
+          // Best effort: continue with language change even if this fails.
+        }
+      }
       changeLanguage(selectedLanguage)
     } else {
       goNext()
@@ -1159,7 +1174,13 @@ const Onboarding = () => {
                       onClick={async () => {
                         setIsCheckingVerification(true)
                         try {
-                          await loadUser()
+                          const loadedUser = await loadUser()
+                          if (!loadedUser?.isActive) {
+                            toast.error(
+                              'Please, verify your email address first',
+                            )
+                            return
+                          }
                           handleCompleteOnboarding(false)
                         } finally {
                           setIsCheckingVerification(false)
