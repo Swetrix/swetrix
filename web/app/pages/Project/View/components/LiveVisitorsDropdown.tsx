@@ -129,7 +129,7 @@ const LiveVisitorsDropdown = () => {
                           className='group table-row cursor-pointer text-sm text-gray-900 dark:text-gray-50'
                           to={stringifiedUrl}
                         >
-                          <div className='table-cell rounded-l-lg bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'>
+                          <div className='table-cell rounded-l-lg bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-900 dark:group-hover:bg-slate-700'>
                             <Flag
                               className='m-2 rounded-xs'
                               country={cc}
@@ -138,13 +138,13 @@ const LiveVisitorsDropdown = () => {
                               aria-hidden='true'
                             />
                           </div>
-                          <div className='table-cell bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'>
+                          <div className='table-cell bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-900 dark:group-hover:bg-slate-700'>
                             {os}
                           </div>
-                          <div className='table-cell bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'>
+                          <div className='table-cell bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-900 dark:group-hover:bg-slate-700'>
                             {br}
                           </div>
-                          <div className='table-cell rounded-r-lg bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'>
+                          <div className='table-cell rounded-r-lg bg-gray-100 pr-2 align-middle transition-colors group-hover:bg-gray-200 dark:bg-slate-900 dark:group-hover:bg-slate-700'>
                             <p className='capitalize'>{dv}</p>
                           </div>
                         </Link>

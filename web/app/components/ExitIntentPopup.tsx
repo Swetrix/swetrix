@@ -101,7 +101,7 @@ export default function ExitIntentPopup({
       className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-xs'
       onClick={handleBackdropClick}
     >
-      <div className='relative w-full max-w-2xl rounded-xl bg-white p-8 dark:bg-slate-800'>
+      <div className='relative w-full max-w-2xl rounded-xl bg-white p-8 dark:bg-slate-900'>
         <button
           onClick={handleClose}
           className='fixed top-4 right-4 text-gray-50 hover:text-gray-300 dark:text-gray-400 dark:hover:text-gray-300'

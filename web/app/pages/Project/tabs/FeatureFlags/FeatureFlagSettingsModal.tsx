@@ -37,6 +37,7 @@ import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Select from '~/ui/Select'
 import { Text } from '~/ui/Text'
+import Textarea from '~/ui/Textarea'
 
 const FLAG_TYPES = [
   { value: 'boolean', label: 'Boolean (On/Off)' },
@@ -370,18 +371,13 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                       required
                     />
 
-                    <div>
-                      <label className='mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300'>
-                        {t('featureFlags.descriptionLabel')}
-                      </label>
-                      <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder={t('featureFlags.descriptionPlaceholder')}
-                        rows={2}
-                        className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-gray-400'
-                      />
-                    </div>
+                    <Textarea
+                      label={t('featureFlags.descriptionLabel')}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder={t('featureFlags.descriptionPlaceholder')}
+                      rows={2}
+                    />
 
                     <div>
                       <label className='mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300'>
@@ -460,7 +456,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                               >
                                 {({ open }) => (
                                   <div className='relative w-36'>
-                                    <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'>
+                                    <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'>
                                       <span className='flex items-center gap-2 truncate'>
                                         {rule.column
                                           ? filterCategoryIcons[rule.column]
@@ -485,7 +481,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                                     >
                                       <ListboxOptions
                                         static
-                                        className='absolute z-50 mt-1 max-h-60 w-full min-w-[160px] overflow-auto rounded-md bg-white py-1 text-sm ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-800'
+                                        className='absolute z-50 mt-1 max-h-60 w-full min-w-[160px] overflow-auto rounded-md bg-white py-1 text-sm ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-900'
                                       >
                                         {TARGETING_COLUMNS.map((col) => (
                                           <ListboxOption
@@ -546,7 +542,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                               >
                                 {({ open }) => (
                                   <div className='relative w-24'>
-                                    <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'>
+                                    <ListboxButton className='relative w-full rounded-md border border-gray-300 bg-white py-2 pr-8 pl-3 text-left text-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'>
                                       <span className='block truncate'>
                                         {rule.isExclusive
                                           ? t('featureFlags.isNot')
@@ -568,7 +564,7 @@ const flags = await swetrix.getFeatureFlags(undefined, true)`
                                     >
                                       <ListboxOptions
                                         static
-                                        className='absolute z-50 mt-1 w-full overflow-auto rounded-md bg-white py-1 text-sm ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-800'
+                                        className='absolute z-50 mt-1 w-full overflow-auto rounded-md bg-white py-1 text-sm ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-900'
                                       >
                                         <ListboxOption
                                           value='include'

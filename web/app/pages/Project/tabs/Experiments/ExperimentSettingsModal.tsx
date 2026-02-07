@@ -522,7 +522,7 @@ const ExperimentSettingsModal = ({
                             suggestedFlagKey ||
                             t('experiments.featureFlagKeyPlaceholder')
                           }
-                          className='mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 font-mono text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-gray-100'
+                          className='mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 font-mono text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none dark:border-slate-600 dark:bg-slate-900 dark:text-gray-100'
                         />
                         {!featureFlagKey && suggestedFlagKey ? (
                           <Text size='xs' colour='muted' className='mt-1'>
@@ -574,7 +574,7 @@ const ExperimentSettingsModal = ({
                               'flex items-center gap-3 rounded-lg border p-3',
                               variant.isControl
                                 ? 'border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-900/20'
-                                : 'border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800',
+                                : 'border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-900',
                             )}
                           >
                             <div
@@ -740,7 +740,7 @@ const ExperimentSettingsModal = ({
                                 'flex items-center gap-1 rounded-l-md px-3 py-2 text-sm transition-colors',
                                 goalDirection === 'increase'
                                   ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                  : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-400 dark:hover:bg-slate-700',
+                                  : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-slate-900 dark:text-gray-400 dark:hover:bg-slate-700',
                               )}
                             >
                               <TrendUpIcon className='size-4' />
@@ -753,7 +753,7 @@ const ExperimentSettingsModal = ({
                                 'flex items-center gap-1 rounded-r-md border-l border-gray-300 px-3 py-2 text-sm transition-colors dark:border-slate-600',
                                 goalDirection === 'decrease'
                                   ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                  : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-slate-800 dark:text-gray-400 dark:hover:bg-slate-700',
+                                  : 'bg-white text-gray-600 hover:bg-gray-50 dark:bg-slate-900 dark:text-gray-400 dark:hover:bg-slate-700',
                               )}
                             >
                               <TrendDownIcon className='size-4' />
@@ -817,7 +817,7 @@ const ExperimentSettingsModal = ({
                                   'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
                                   featureFlagMode === 'create'
                                     ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-300',
+                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-300',
                                 )}
                               >
                                 Create new
@@ -829,7 +829,7 @@ const ExperimentSettingsModal = ({
                                   'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
                                   featureFlagMode === 'link'
                                     ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-300',
+                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-300',
                                 )}
                               >
                                 Link existing
@@ -894,7 +894,7 @@ const ExperimentSettingsModal = ({
                                   'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
                                   exposureTrigger === 'feature_flag'
                                     ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-300',
+                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-300',
                                 )}
                               >
                                 Default
@@ -908,7 +908,7 @@ const ExperimentSettingsModal = ({
                                   'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
                                   exposureTrigger === 'custom_event'
                                     ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-300',
+                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-300',
                                 )}
                               >
                                 Custom event
@@ -970,7 +970,7 @@ const ExperimentSettingsModal = ({
                                   'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
                                   multipleVariantHandling === 'exclude'
                                     ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-300',
+                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-300',
                                 )}
                               >
                                 Exclude
@@ -984,7 +984,7 @@ const ExperimentSettingsModal = ({
                                   'flex-1 rounded-md border px-3 py-2 text-sm transition-colors',
                                   multipleVariantHandling === 'first_exposure'
                                     ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-300',
+                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-300',
                                 )}
                               >
                                 First only

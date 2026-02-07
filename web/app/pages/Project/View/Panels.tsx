@@ -64,7 +64,7 @@ const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
 
 const PanelEmptyState = ({ message }: { message: string }) => (
   <div className='flex flex-col items-center justify-center py-8 text-center'>
-    <div className='mb-3 flex size-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800'>
+    <div className='mb-3 flex size-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-900'>
       <StackIcon className='size-5 text-gray-400 dark:text-slate-500' />
     </div>
     <Text as='p' size='sm' colour='secondary'>
@@ -112,7 +112,7 @@ const PanelContainer = ({
   return (
     <div
       className={cx(
-        'isolate overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-800/25',
+        'isolate overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-900/25',
         hideHeader ? 'pt-3' : 'pt-5',
         {
           'col-span-full sm:col-span-2':
@@ -2419,7 +2419,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
               <div className='flex w-18 justify-between'>
                 <Button
                   className={cx(
-                    'border border-gray-200 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
+                    'border border-gray-200 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-900 dark:text-gray-200',
                     {
                       'cursor-not-allowed opacity-50': !canGoPrev(),
                       'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
@@ -2434,7 +2434,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                 </Button>
                 <Button
                   className={cx(
-                    'border border-gray-200 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
+                    'border border-gray-200 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-900 dark:text-gray-200',
                     {
                       'cursor-not-allowed opacity-50': !canGoNext(),
                       'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),

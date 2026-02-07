@@ -227,7 +227,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
             <button
               onClick={() => setOpen(!open)}
               type='button'
-              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
+              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`profileSettings.${_toLower(reportFrequency)}`)}
               <CaretDownIcon
@@ -281,7 +281,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
             />
             <Button
               type='button'
-              className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+              className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
               small
               onClick={onRemove}
             >

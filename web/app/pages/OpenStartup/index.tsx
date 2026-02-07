@@ -357,9 +357,9 @@ const getSettings = () => {
       },
       contents: {
         template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-900 rounded-md shadow-md px-3 py-1'>
             <li class='font-semibold'>{=TITLE}</li>
-            <hr class='border-gray-200 dark:border-gray-600' />
+            <hr class='border-gray-200 dark:border-slate-800' />
             {{
               <li class='flex justify-between'>
                 <div class='flex justify-items-start'>

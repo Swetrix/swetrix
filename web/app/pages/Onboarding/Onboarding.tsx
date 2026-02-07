@@ -162,7 +162,7 @@ const IconNode = ({
   className?: string
 }) => (
   <div className={cn('flex flex-col items-center gap-2', className)}>
-    <div className='flex size-14 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700'>
+    <div className='flex size-14 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-700'>
       {children}
     </div>
     <Text as='span' size='sm' weight='medium' colour='secondary'>
@@ -279,25 +279,25 @@ const FeatureVisualization = ({
             <div className='flex items-center gap-3 rounded-lg bg-gray-50 p-4 ring-1 ring-gray-100 dark:bg-slate-950 dark:ring-slate-800'>
               <div className='size-2 shrink-0 rounded-full bg-rose-500' />
               <div className='flex-1'>
-                <div className='h-2.5 w-24 rounded bg-gray-200 dark:bg-slate-800' />
+                <div className='h-2.5 w-24 rounded bg-gray-200 dark:bg-slate-900' />
               </div>
-              <div className='h-2 w-8 rounded bg-gray-200 dark:bg-slate-800' />
+              <div className='h-2 w-8 rounded bg-gray-200 dark:bg-slate-900' />
             </div>
 
             <div className='flex items-center gap-3 rounded-lg bg-gray-50 p-4 ring-1 ring-gray-100 dark:bg-slate-950 dark:ring-slate-800'>
               <div className='size-2 shrink-0 rounded-full bg-amber-500' />
               <div className='flex-1'>
-                <div className='h-2.5 w-32 rounded bg-gray-200 dark:bg-slate-800' />
+                <div className='h-2.5 w-32 rounded bg-gray-200 dark:bg-slate-900' />
               </div>
-              <div className='h-2 w-6 rounded bg-gray-200 dark:bg-slate-800' />
+              <div className='h-2 w-6 rounded bg-gray-200 dark:bg-slate-900' />
             </div>
 
             <div className='flex items-center gap-3 rounded-lg bg-gray-50 p-4 ring-1 ring-gray-100 dark:bg-slate-950 dark:ring-slate-800'>
               <div className='size-2 shrink-0 rounded-full bg-rose-500' />
               <div className='flex-1'>
-                <div className='h-2.5 w-20 rounded bg-gray-200 dark:bg-slate-800' />
+                <div className='h-2.5 w-20 rounded bg-gray-200 dark:bg-slate-900' />
               </div>
-              <div className='h-2 w-10 rounded bg-gray-200 dark:bg-slate-800' />
+              <div className='h-2 w-10 rounded bg-gray-200 dark:bg-slate-900' />
             </div>
           </div>
         </div>
@@ -396,9 +396,9 @@ const ProjectVisualisation = () => {
           />
         </div>
         <div className='min-w-0 flex-1 space-y-2 pt-1'>
-          <div className='h-5 w-48 rounded bg-gray-200 dark:bg-slate-800' />
-          <div className='h-3 w-full rounded bg-gray-100 dark:bg-slate-800/50' />
-          <div className='h-3 w-3/4 rounded bg-gray-100 dark:bg-slate-800/50' />
+          <div className='h-5 w-48 rounded bg-gray-200 dark:bg-slate-900' />
+          <div className='h-3 w-full rounded bg-gray-100 dark:bg-slate-900/50' />
+          <div className='h-3 w-3/4 rounded bg-gray-100 dark:bg-slate-900/50' />
         </div>
       </div>
     </div>
@@ -647,7 +647,7 @@ const Onboarding = () => {
     <div className='flex h-screen flex-col overflow-hidden bg-gray-50 p-2 sm:p-2.5 dark:bg-slate-950'>
       <div className='flex h-full w-full items-center justify-center overflow-hidden rounded-xl bg-gray-50 ring-1 ring-black/5 dark:bg-slate-950 dark:ring-white/10'>
         <div className='flex h-full max-h-[min(92%,50rem)] min-h-0 w-full max-w-3xl flex-col'>
-          <div className='relative mx-auto min-h-0 w-full max-w-5xl flex-1 overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-800/25 dark:ring-white/10'>
+          <div className='relative mx-auto min-h-0 w-full max-w-5xl flex-1 overflow-hidden rounded-2xl bg-white ring-1 ring-black/5 dark:bg-slate-900/25 dark:ring-white/10'>
             <div className='flex h-full min-h-0 flex-col'>
               <div className='shrink-0 px-6 pt-5 md:px-10'>
                 <ProgressBar
@@ -701,7 +701,7 @@ const Onboarding = () => {
                                 className={cn(
                                   'flex flex-col items-center justify-center rounded-xl px-4 py-5 ring-1 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800',
                                   isSelected
-                                    ? 'bg-indigo-50 ring-2 ring-indigo-500 dark:bg-slate-800 dark:ring-slate-200'
+                                    ? 'bg-indigo-50 ring-2 ring-indigo-500 dark:bg-slate-900 dark:ring-slate-200'
                                     : 'ring-gray-200 hover:bg-gray-50 hover:ring-gray-300 dark:ring-slate-700 dark:hover:bg-slate-700/50 dark:hover:ring-slate-600',
                                 )}
                               >
@@ -749,7 +749,7 @@ const Onboarding = () => {
                         <div className='rounded-2xl border border-gray-200 bg-slate-50 shadow-xs dark:border-slate-700/70 dark:bg-slate-950/80'>
                           <div className='relative overflow-hidden rounded-2xl'>
                             <div className='p-3'>
-                              <div className='rounded-2xl bg-white shadow-[0_24px_60px_rgba(15,23,42,0.12)] dark:bg-slate-800 dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)] dark:ring-white/10'>
+                              <div className='rounded-2xl bg-white shadow-[0_24px_60px_rgba(15,23,42,0.12)] dark:bg-slate-900 dark:shadow-[0_24px_60px_rgba(0,0,0,0.45)] dark:ring-white/10'>
                                 <div className='overflow-hidden rounded-xl'>
                                   <img
                                     src={

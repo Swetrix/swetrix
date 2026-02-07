@@ -56,7 +56,7 @@ const Combobox = ({
         <div className='relative w-full cursor-default rounded-lg'>
           <ComboboxInput
             className={cx(
-              'relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-left ring-inset focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden sm:text-sm dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50',
+              'relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-left ring-inset focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden sm:text-sm dark:border-gray-800 dark:bg-slate-900 dark:text-gray-50',
               buttonClassName,
             )}
             // @ts-expect-error
@@ -80,7 +80,7 @@ const Combobox = ({
           leaveTo='opacity-0'
           afterLeave={() => setQuery('')}
         >
-          <ComboboxOptions className='absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-800'>
+          <ComboboxOptions className='absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-900'>
             {_isEmpty(filteredItems) && !_isEmpty(query) ? (
               <div className='relative cursor-default px-4 py-2 text-gray-900 select-none dark:text-white'>
                 {t('common.nothingFound')}

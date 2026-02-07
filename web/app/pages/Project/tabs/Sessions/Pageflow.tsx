@@ -71,7 +71,7 @@ const MetadataPanel = ({
   return (
     <div className='mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white sm:ml-5 dark:border-slate-700 dark:bg-slate-950/50'>
       {/* Header */}
-      <div className='border-b border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-800/50'>
+      <div className='border-b border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900/50'>
         <span className='text-[10px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400'>
           {t('project.properties')}
         </span>
@@ -116,7 +116,7 @@ const MetadataPanel = ({
         <button
           type='button'
           onClick={() => setShowAll(!showAll)}
-          className='w-full border-t border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300'
+          className='w-full border-t border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300'
         >
           {showAll
             ? t('project.showLess')
@@ -182,7 +182,7 @@ const PageflowItem = ({
               className={cn(
                 'flex h-8 w-8 items-center justify-center rounded-full',
                 {
-                  'bg-slate-400 dark:bg-slate-800':
+                  'bg-slate-400 dark:bg-slate-900':
                     type === 'pageview' || type === 'event',
                   'bg-red-400 dark:bg-red-800': type === 'error',
                   'bg-green-500 dark:bg-green-700': type === 'sale',

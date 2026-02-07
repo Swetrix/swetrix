@@ -122,9 +122,9 @@ function Select<T>({
                         cx(
                           'relative mx-1 cursor-pointer rounded-md py-2 pr-4 pl-8 transition-colors select-none',
                           {
-                            'bg-gray-100 dark:bg-slate-800/80':
+                            'bg-gray-100 dark:bg-slate-900/80':
                               focus && !selected,
-                            'bg-gray-200 dark:bg-slate-800/80': selected,
+                            'bg-gray-200 dark:bg-slate-900/80': selected,
                             'text-gray-700 dark:text-gray-50':
                               !focus && !selected,
                             'text-gray-900 dark:text-white': focus || selected,

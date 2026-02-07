@@ -82,7 +82,7 @@ interface StatCardProps {
 }
 
 const StatCard = memo(({ icon, value, label, subValue }: StatCardProps) => (
-  <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
+  <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900'>
     <div className='pointer-events-none absolute -bottom-5 -left-5 opacity-10 [&>svg]:size-24'>
       {icon}
     </div>
@@ -192,13 +192,13 @@ const getWinProbabilityChartSettings = (
     tooltip: {
       contents: (items: any, _: any, __: any, color: any) => {
         if (!items || _isEmpty(items) || !items[0]) return ''
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-3 py-1'>
           <li class='font-semibold'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(items[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(items[0].x)
           }</li>
-          <hr class='border-gray-200 dark:border-gray-600' />
+          <hr class='border-gray-200 dark:border-slate-800' />
           ${_map(items, (el: { id: string; name: string; value: number }) => {
             return `
             <li class='flex justify-between'>
@@ -265,7 +265,7 @@ const WinProbabilityChart = memo(
 
     if (!chartOptions) {
       return (
-        <div className='flex h-[220px] items-center justify-center rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
+        <div className='flex h-[220px] items-center justify-center rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900'>
           <Text colour='muted' size='sm'>
             {t('experiments.noDataYet')}
           </Text>
@@ -274,7 +274,7 @@ const WinProbabilityChart = memo(
     }
 
     return (
-      <div className='rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800'>
+      <div className='rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900'>
         <Text as='h3' weight='semibold' size='sm' className='mb-2'>
           {t('experiments.probabilityOfWinning')}
         </Text>
@@ -382,7 +382,7 @@ const ExposuresTable = memo(
     const { t } = useTranslation()
 
     return (
-      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-800/50'>
+      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-900/50'>
         <div className='border-b border-gray-200 px-4 py-3 dark:border-slate-800'>
           <Text weight='semibold' size='sm'>
             {t('experiments.totalExposures')}
@@ -476,7 +476,7 @@ const MetricsTable = memo(
     const testVariants = variants.filter((v) => !v.isControl)
 
     return (
-      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-800/50'>
+      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-900/50'>
         <div className='border-b border-gray-200 px-4 py-3 dark:border-slate-700'>
           <div className='flex items-center gap-2'>
             <Text weight='semibold' size='sm'>
@@ -692,7 +692,7 @@ const CollapsibleSection = memo(
     const [isOpen, setIsOpen] = useState(defaultOpen)
 
     return (
-      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-800/50'>
+      <div className='overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-slate-700/50 dark:bg-slate-900/50'>
         <button
           type='button'
           onClick={() => setIsOpen(!isOpen)}

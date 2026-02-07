@@ -115,7 +115,7 @@ const FeatureFlagProfileRow = ({
 
   return (
     <Link to={{ search: params.toString() }}>
-      <li className='relative mb-2 flex cursor-pointer items-center justify-between gap-x-4 overflow-hidden rounded-lg border border-gray-200 bg-white px-3 py-2.5 transition-colors hover:bg-gray-100 dark:border-slate-700/50 dark:bg-slate-800/50 dark:hover:bg-slate-700/50'>
+      <li className='relative mb-2 flex cursor-pointer items-center justify-between gap-x-4 overflow-hidden rounded-lg border border-gray-200 bg-white px-3 py-2.5 transition-colors hover:bg-gray-100 dark:border-slate-700/50 dark:bg-slate-900/50 dark:hover:bg-slate-700/50'>
         <div className='flex min-w-0 items-center gap-x-3'>
           {/* Avatar */}
           <ProfileAvatar
@@ -208,7 +208,7 @@ const FeatureFlagRow = ({
 
   return (
     <>
-      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/60 dark:bg-slate-800/25'>
+      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/60 dark:bg-slate-900/25'>
         {/* Main row - clickable to expand */}
         <div
           onClick={() => onToggleExpand(flag.id)}

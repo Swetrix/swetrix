@@ -33,6 +33,7 @@ import { ProjectViewActionData } from '~/routes/projects.$id'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 import Modal from '~/ui/Modal'
 import { Text } from '~/ui/Text'
+import Textarea from '~/ui/Textarea'
 import Tooltip from '~/ui/Tooltip'
 import { cn } from '~/utils/generic'
 
@@ -329,7 +330,7 @@ const ThoughtProcess = ({
         onClick={onToggle}
         className='group flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
       >
-        <span className='flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 dark:border-gray-600'>
+        <span className='flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 dark:border-slate-800'>
           {isActivelyThinking ? (
             <SpinnerGapIcon className='h-3 w-3 animate-spin' />
           ) : (
@@ -379,7 +380,7 @@ const ToolCallBadge = ({
   const { label, icon: Icon } = getToolInfo(toolName, t)
 
   return (
-    <span className='inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-slate-800 dark:text-gray-300'>
+    <span className='inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-slate-900 dark:text-gray-300'>
       <Icon className='h-3.5 w-3.5' />
       <span>{label}</span>
       {isLoading ? (
@@ -524,7 +525,7 @@ const AssistantMessage = ({
 const UserMessage = ({ content }: { content: string }) => {
   return (
     <div className='flex justify-end'>
-      <div className='max-w-[85%] rounded-2xl bg-gray-900 px-4 py-2.5 text-white dark:bg-gray-700'>
+      <div className='max-w-[85%] rounded-lg bg-gray-900 px-4 py-2.5 text-white dark:bg-gray-800'>
         <p className='text-sm'>{content}</p>
       </div>
     </div>
@@ -546,7 +547,7 @@ const ScrollToBottomButton = ({
     <button
       type='button'
       onClick={scrollToBottom}
-      className='absolute bottom-4 left-1/2 z-10 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition-all hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+      className='absolute bottom-4 left-1/2 z-10 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition-all hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-900 dark:text-gray-200 hover:dark:bg-slate-700'
       aria-label={t('project.askAi.scrollToBottom')}
     >
       <ArrowDownIcon className='h-4 w-4' />
@@ -1126,13 +1127,13 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
             <button
               type='button'
               onClick={handleCopyLink}
-              className='flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700'
+              className='flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-700'
             >
               <LinkIcon className='h-4 w-4' />
               <span>{t('project.askAi.copyLink')}</span>
             </button>
           </div>
-          <hr className='mt-3 border-gray-200 dark:border-gray-600' />
+          <hr className='mt-3 border-gray-200 dark:border-slate-800' />
         </>
       ) : null}
 
@@ -1198,9 +1199,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                   </div>
 
                   <div className='w-full max-w-2xl'>
-                    <div className='rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-800/25'>
+                    <div className='rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-900/25'>
                       <form onSubmit={handleSubmit} className='relative'>
-                        <textarea
+                        <Textarea
                           ref={inputRef}
                           value={input}
                           onChange={(e) => setInput(e.target.value)}
@@ -1208,7 +1209,10 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                           placeholder={t('project.askAi.placeholder')}
                           disabled={isLoading}
                           rows={1}
-                          className='w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400'
+                          classes={{
+                            textarea:
+                              'w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder-gray-500 ring-0 focus:ring-0 focus:outline-none rounded-none dark:bg-transparent dark:text-white dark:placeholder-gray-400 dark:focus:ring-0',
+                          }}
                         />
                         <div className='flex items-center justify-between border-t border-gray-100 px-3 py-2 dark:border-slate-800'>
                           <div className='flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400'>
@@ -1223,7 +1227,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                           <button
                             type='submit'
                             disabled={!input.trim() || isLoading}
-                            className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+                            className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-900 dark:text-gray-200 hover:dark:bg-slate-700'
                           >
                             <PaperPlaneIcon className='h-3.5 w-3.5' />
                           </button>
@@ -1266,9 +1270,9 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
       {!isEmpty ? (
         <div className='border-t border-gray-200 bg-gray-50 px-4 py-4 dark:border-slate-800/60 dark:bg-slate-950'>
           <div className='mx-auto max-w-3xl'>
-            <div className='rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-800/25'>
+            <div className='rounded-lg border border-gray-200 bg-white dark:border-slate-800/60 dark:bg-slate-900/25'>
               <form onSubmit={handleSubmit} className='relative'>
-                <textarea
+                <Textarea
                   ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -1276,7 +1280,10 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                   placeholder={t('project.askAi.followUpPlaceholder')}
                   disabled={isLoading}
                   rows={1}
-                  className='w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:ring-0 focus:outline-none dark:text-white dark:placeholder-gray-400'
+                  classes={{
+                    textarea:
+                      'w-full resize-none border-0 bg-transparent px-4 py-3 text-sm text-gray-900 placeholder-gray-500 ring-0 focus:ring-0 focus:outline-none rounded-none dark:bg-transparent dark:text-white dark:placeholder-gray-400 dark:focus:ring-0',
+                  }}
                 />
                 <div className='flex items-center justify-between border-t border-gray-100 px-3 py-2 dark:border-slate-800'>
                   <div className='flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400'>
@@ -1293,7 +1300,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                       <button
                         type='button'
                         onClick={handleStop}
-                        className='flex h-7 items-center gap-1.5 rounded-lg border border-red-300 bg-white px-2.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800/50 dark:bg-slate-800 dark:text-red-400 hover:dark:bg-red-900/20'
+                        className='flex h-7 items-center gap-1.5 rounded-lg border border-red-300 bg-white px-2.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800/50 dark:bg-slate-900 dark:text-red-400 hover:dark:bg-red-900/20'
                       >
                         <StopCircleIcon className='h-3.5 w-3.5' />
                         <span>{t('project.askAi.stop')}</span>
@@ -1302,7 +1309,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                       <button
                         type='submit'
                         disabled={!input.trim()}
-                        className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+                        className='flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-900 dark:text-gray-200 hover:dark:bg-slate-700'
                       >
                         <PaperPlaneIcon className='h-3.5 w-3.5' />
                       </button>
@@ -1383,7 +1390,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                 {_map(allChats, (chat) => (
                   <div
                     key={chat.id}
-                    className='flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 transition-colors hover:bg-gray-50 dark:border-slate-800/60 dark:bg-slate-800/25 hover:dark:bg-slate-700'
+                    className='flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 transition-colors hover:bg-gray-50 dark:border-slate-800/60 dark:bg-slate-900/25 hover:dark:bg-slate-700'
                   >
                     <button
                       type='button'
@@ -1418,7 +1425,7 @@ const AskAIView = ({ projectId }: AskAIViewProps) => {
                     type='button'
                     onClick={() => loadAllChatsWithSkip(allChats.length)}
                     disabled={isLoadingChats}
-                    className='flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+                    className='flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-slate-800/50 dark:bg-slate-900 dark:text-gray-200 hover:dark:bg-slate-700'
                   >
                     {isLoadingChats ? (
                       <SpinnerGapIcon className='h-4 w-4 animate-spin' />

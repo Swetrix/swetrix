@@ -185,7 +185,7 @@ const DashboardHeader = ({
           <RefreshStatsButton onRefresh={refreshStats} />
         ) : null}
         {showSearchButton ? (
-          <div className='border-gray-200 dark:border-gray-600'>
+          <div className='border-gray-200 dark:border-slate-800'>
             <button
               type='button'
               title={t('project.search')}

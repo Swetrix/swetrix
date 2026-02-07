@@ -356,7 +356,7 @@ export const ProfileDetails = ({
   return (
     <div className='flex flex-col gap-3 lg:flex-row'>
       <div className='space-y-3 lg:w-[380px]'>
-        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-900/25'>
           <div className='flex items-center gap-4'>
             <div className='relative shrink-0'>
               <ProfileAvatar profileId={details.profileId} size={42} />
@@ -432,7 +432,7 @@ export const ProfileDetails = ({
           </div>
         </div>
 
-        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-900/25'>
           <Text
             as='h3'
             size='xs'
@@ -507,7 +507,7 @@ export const ProfileDetails = ({
           </div>
         </div>
 
-        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-900/25'>
           <Text
             as='h3'
             size='xs'
@@ -524,7 +524,7 @@ export const ProfileDetails = ({
 
       <div className='flex-1 space-y-3'>
         {details.chart && !_isEmpty(details.chart.x) ? (
-          <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+          <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-900/25'>
             <Text
               as='h3'
               size='xs'
@@ -546,7 +546,7 @@ export const ProfileDetails = ({
           </div>
         ) : null}
 
-        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-900/25'>
           <Text
             as='h3'
             size='xs'

@@ -151,7 +151,7 @@ export const Filter = ({
     <span
       title={truncatedFilter === displayFilter ? undefined : displayFilter}
       className={cn(
-        'm-1 inline-flex items-center rounded-md border border-gray-200 bg-white py-0.5 pr-1 pl-2.5 text-sm font-medium text-gray-700 dark:border-slate-700/60 dark:bg-slate-800/60 dark:text-gray-200',
+        'm-1 inline-flex items-center rounded-md border border-gray-200 bg-white py-0.5 pr-1 pl-2.5 text-sm font-medium text-gray-700 dark:border-slate-700/60 dark:bg-slate-900/60 dark:text-gray-200',
         {
           'pr-2': !removable,
         },
@@ -299,7 +299,7 @@ const Filters = ({ tnMapping, className }: FiltersProps) => {
   return (
     <div
       className={cn(
-        'flex items-center justify-between rounded-lg border border-gray-200 bg-white px-2 py-1 dark:border-slate-800/60 dark:bg-slate-800/25',
+        'flex items-center justify-between rounded-lg border border-gray-200 bg-white px-2 py-1 dark:border-slate-800/60 dark:bg-slate-900/25',
         className,
       )}
     >

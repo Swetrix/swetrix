@@ -331,7 +331,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
         {/* Funnel Chart */}
         <div
           className={cx(
-            'relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25',
+            'relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25',
             { hidden: analyticsLoading },
           )}
         >
@@ -430,7 +430,7 @@ const FunnelsViewInner = ({ deferredData }: FunnelsViewInnerProps) => {
   // Render empty state
   return (
     <>
-      <div className='mt-5 rounded-xl bg-gray-700 p-5'>
+      <div className='mt-5 rounded-xl bg-slate-700 p-5 dark:bg-slate-900'>
         <div className='flex items-center text-gray-50'>
           <FunnelIcon className='mr-2 h-8 w-8' />
           <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>

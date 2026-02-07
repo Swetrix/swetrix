@@ -158,7 +158,7 @@ const CustomEventsSubmenu: React.FC<CustomEventsSubmenuProps> = ({
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 className={cn(
-                  'fixed z-50 w-80 max-w-sm rounded-md bg-gray-50 p-1 ring-1 ring-black/10 dark:bg-slate-800',
+                  'fixed z-50 w-80 max-w-sm rounded-md bg-gray-50 p-1 ring-1 ring-black/10 dark:bg-slate-900',
                 )}
                 style={{
                   top: coords.top,

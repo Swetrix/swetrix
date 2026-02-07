@@ -582,7 +582,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
 
   return (
     <footer
-      className='relative overflow-hidden border-t border-white/10 bg-slate-900 pt-16 pb-8 dark:bg-slate-800/25'
+      className='relative overflow-hidden border-t border-white/10 bg-slate-900 pt-16 pb-8 dark:bg-slate-900/25'
       aria-labelledby='footer-heading'
     >
       <h2 id='footer-heading' className='sr-only'>

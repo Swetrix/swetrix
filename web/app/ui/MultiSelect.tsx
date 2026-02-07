@@ -135,7 +135,7 @@ const MultiSelect = ({
                   className={cx(
                     'relative mx-1 flex w-[calc(100%-0.5rem)] cursor-pointer items-center rounded-md py-2 pr-4 pl-8 text-left text-sm transition-colors select-none',
                     {
-                      'bg-gray-200 dark:bg-slate-800/80': isSelected,
+                      'bg-gray-200 dark:bg-slate-900/80': isSelected,
                       'hover:bg-gray-100 dark:hover:bg-slate-900/80':
                         !isSelected,
                       'text-gray-900 dark:text-white': isSelected,
@@ -168,7 +168,7 @@ const MultiSelect = ({
           {_map(label, (item) => (
             <span
               key={keyExtractor ? keyExtractor(item) : item}
-              className='inline-flex items-center gap-1.5 rounded-md bg-gray-100 py-1.5 pr-2 pl-2.5 text-sm font-medium text-gray-700 dark:bg-slate-800 dark:text-gray-200'
+              className='inline-flex items-center gap-1.5 rounded-md bg-gray-100 py-1.5 pr-2 pl-2.5 text-sm font-medium text-gray-700 dark:bg-slate-900 dark:text-gray-200'
             >
               <span className='flex items-center gap-1.5'>
                 {labelExtractor ? labelExtractor(item) : item}

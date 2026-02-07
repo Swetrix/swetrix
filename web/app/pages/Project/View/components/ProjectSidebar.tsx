@@ -186,7 +186,7 @@ const CollapsibleGroup: React.FC<{
                       className={cn(
                         'group flex items-center justify-center rounded-md p-2 transition-colors',
                         {
-                          'bg-gray-100 dark:bg-slate-800': isCurrent,
+                          'bg-gray-100 dark:bg-slate-900': isCurrent,
                           'hover:bg-gray-100 dark:hover:bg-slate-900/60':
                             !isCurrent,
                           'cursor-wait': dataLoading && tab.id !== 'settings',
@@ -284,7 +284,7 @@ const CollapsibleGroup: React.FC<{
                   className={cn(
                     'group flex items-center gap-1.5 rounded-md px-2.5 py-2 transition-colors',
                     {
-                      'bg-gray-100 dark:bg-slate-800': isCurrent,
+                      'bg-gray-100 dark:bg-slate-900': isCurrent,
                       'hover:bg-gray-100 dark:hover:bg-slate-900/60':
                         !isCurrent,
                       'cursor-wait': dataLoading && tab.id !== 'settings',
@@ -457,7 +457,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         isMobileOpen
           ? 'h-screen w-64 dark:bg-slate-950'
           : cn(
-              'rounded-lg transition-[width,height] duration-300 ease-in-out dark:bg-slate-800/25',
+              'rounded-lg transition-[width,height] duration-300 ease-in-out dark:bg-slate-900/25',
               isScrolled
                 ? 'h-[calc(100vh-var(--banner-height)-1.5rem)]'
                 : 'h-[calc(100vh-var(--header-total-height)-1rem)]',

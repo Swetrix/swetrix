@@ -371,7 +371,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     <div className='relative'>
                       <select
                         aria-label='Month'
-                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
+                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
                         value={anchorMonth.getMonth()}
                         onChange={(e) =>
                           setAnchor(
@@ -399,7 +399,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     <div className='relative'>
                       <select
                         aria-label='Year'
-                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
+                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
                         value={anchorMonth.getFullYear()}
                         onChange={(e) =>
                           setAnchor(
@@ -461,7 +461,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                               !isCurrentMonth || disabled,
                             'bg-indigo-600 text-white dark:bg-indigo-500':
                               isStart || isEnd,
-                            'bg-gray-100 dark:bg-slate-800':
+                            'bg-gray-100 dark:bg-slate-900':
                               isBetween && !isStart && !isEnd,
                             'cursor-not-allowed opacity-50': disabled,
                             'hover:bg-gray-200 dark:hover:bg-slate-700':
@@ -529,7 +529,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     <div className='relative'>
                       <select
                         aria-label='Month'
-                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
+                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
                         value={anchorMonth.getMonth()}
                         onChange={(e) =>
                           setAnchor(
@@ -557,7 +557,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     <div className='relative'>
                       <select
                         aria-label='Year'
-                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
+                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
                         value={anchorMonth.getFullYear()}
                         onChange={(e) =>
                           setAnchor(
@@ -619,7 +619,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                               !isCurrentMonth || disabled,
                             'bg-indigo-600 text-white dark:bg-indigo-500':
                               isStart || isEnd,
-                            'bg-gray-100 dark:bg-slate-800':
+                            'bg-gray-100 dark:bg-slate-900':
                               isBetween && !isStart && !isEnd,
                             'cursor-not-allowed opacity-50': disabled,
                             'hover:bg-gray-200 dark:hover:bg-slate-700':

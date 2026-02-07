@@ -88,7 +88,7 @@ const TBPeriodSelector = ({
                 <CurrentTime />
                 <div
                   className={cx(
-                    'relative z-0 mb-1 flex items-center space-x-1 rounded-md bg-gray-200 px-1 py-1.5 dark:bg-slate-800/25',
+                    'relative z-0 mb-1 flex items-center space-x-1 rounded-md bg-gray-200 px-1 py-1.5 dark:bg-slate-800/50',
                     classes?.timeBucket,
                   )}
                 >
@@ -106,7 +106,7 @@ const TBPeriodSelector = ({
                       className={cx(
                         'relative inline-flex items-center rounded px-2 py-1.5 text-sm font-medium capitalize transition-colors',
                         {
-                          'bg-gray-50 font-semibold text-gray-900 dark:bg-slate-800 dark:text-gray-50':
+                          'bg-gray-50 font-semibold text-gray-900 dark:bg-slate-900 dark:text-gray-50':
                             timeBucket === value,
                           'text-gray-800 hover:bg-gray-300 dark:text-gray-200 dark:hover:bg-slate-900':
                             available && timeBucket !== value,

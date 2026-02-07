@@ -487,7 +487,7 @@ const TrialBanner = ({ status, rawStatus }: TrialBannerProps) => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='header-banner w-full bg-slate-900 text-gray-100 dark:bg-slate-800/70'>
+    <div className='header-banner w-full bg-slate-900 text-gray-100 dark:bg-slate-900/70'>
       <div className='mx-auto max-w-7xl px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
         <span className='font-medium'>{status}</span>
         <span className='mx-1.5'>—</span>
@@ -872,7 +872,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
         onClose={setMobileMenuOpen}
       >
         <div className='fixed inset-0 z-10' />
-        <DialogPanel className='fixed inset-y-0 top-0 right-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl sm:max-w-sm sm:border dark:border-slate-900/80 dark:bg-slate-800/80'>
+        <DialogPanel className='fixed inset-y-0 top-0 right-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl sm:max-w-sm sm:border dark:border-slate-900/80 dark:bg-slate-900/80'>
           <div className='flex items-center justify-between'>
             <SwetrixLogo />
             <div className='flex items-center justify-center space-x-3'>

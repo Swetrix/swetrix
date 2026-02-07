@@ -25,7 +25,7 @@ export const NoProjects = ({ onClick, search }: NoProjectsProps) => {
 
   return (
     <div className='mx-auto w-full max-w-2xl py-16 text-center'>
-      <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800'>
+      <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900'>
         <FolderSimpleIcon className='size-7 text-gray-700 dark:text-gray-200' />
       </div>
       <Text as='h3' size='xl' weight='medium' className='tracking-tight'>
@@ -43,7 +43,7 @@ export const NoProjects = ({ onClick, search }: NoProjectsProps) => {
         <button
           type='button'
           onClick={onClick}
-          className='inline-flex items-center justify-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+          className='inline-flex items-center justify-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700 dark:border-gray-800 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
         >
           <FolderPlusIcon className='mr-2 h-5 w-5' />
           {t('dashboard.newProject')}

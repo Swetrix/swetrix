@@ -31,16 +31,16 @@ const Checkbox = ({
   classes,
 }: CheckboxProps) => (
   <Field disabled={disabled}>
-    <div className={cx('flex items-center gap-2', classes?.label)}>
+    <div className={cx('group flex items-center gap-2', classes?.label)}>
       <HeadlessCheckbox
         name={name}
         checked={checked}
         onChange={onChange}
-        className='group size-4 shrink-0 cursor-pointer rounded-sm bg-white ring-1 ring-gray-300 transition-colors duration-100 ease-out ring-inset data-[checked]:bg-slate-900 data-[checked]:ring-slate-900 dark:bg-slate-950 dark:ring-slate-700/80 dark:data-[checked]:bg-slate-100 dark:data-[checked]:ring-slate-100'
+        className='group/checkbox size-4 shrink-0 cursor-pointer rounded-sm bg-white ring-1 ring-gray-300 transition-colors duration-100 ease-out ring-inset group-hover:bg-gray-100 data-[checked]:bg-slate-900 data-[checked]:ring-slate-900 dark:bg-slate-950 dark:ring-slate-700/80 dark:group-hover:bg-slate-900/70 dark:data-[checked]:bg-slate-100 dark:data-[checked]:ring-slate-100'
       >
-        <CheckIcon className='pointer-events-none size-4 scale-90 text-white opacity-0 transition-all duration-100 group-data-[checked]:scale-100 group-data-[checked]:opacity-100 dark:text-slate-900' />
+        <CheckIcon className='pointer-events-none size-4 scale-90 text-white opacity-0 transition-all duration-100 group-data-[checked]/checkbox:scale-100 group-data-[checked]/checkbox:opacity-100 dark:text-slate-900' />
       </HeadlessCheckbox>
-      <Label className='cursor-pointer text-sm font-medium text-gray-900 dark:text-gray-200'>
+      <Label className='cursor-pointer text-sm font-medium text-gray-900 transition-colors duration-100 ease-out group-hover:text-gray-950 dark:text-gray-200 dark:group-hover:text-white'>
         {label}
       </Label>
     </div>

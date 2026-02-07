@@ -949,7 +949,7 @@ const TrafficViewInner = ({
         {!isPanelsDataEmpty ? (
           <Filters className='mb-3' tnMapping={tnMapping} />
         ) : null}
-        <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
+        <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
           <div className='mb-3 flex w-full items-center justify-end gap-1 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
             <Dropdown
               header={t('project.metricVis')}
@@ -1427,7 +1427,7 @@ const TrafficViewInner = ({
                                     ) ? (
                                       <Link
                                         to={`${routes.project_settings.replace(':id', id)}?tab=integrations`}
-                                        className='mt-2 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+                                        className='mt-2 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
                                       >
                                         {t('project.goToProjectSettings')}
                                       </Link>

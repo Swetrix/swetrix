@@ -103,7 +103,7 @@ const PasswordRequiredModal = ({
 
           <div className='flex flex-col-reverse gap-2 sm:flex-row sm:justify-end'>
             <Button
-              className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+              className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
               as={Link}
               // @ts-expect-error
               to={routes.main}

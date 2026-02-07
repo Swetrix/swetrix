@@ -1,4 +1,11 @@
 import cx from 'clsx'
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Transition,
+} from '@headlessui/react'
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
@@ -9,12 +16,11 @@ import {
   CaretDownIcon,
   CheckIcon,
 } from '@phosphor-icons/react'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { Fragment, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher } from 'react-router'
 import { toast } from 'sonner'
 
-import useOnClickOutside from '~/hooks/useOnClickOutside'
 import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
 import { DetailedOrganisation, Role } from '~/lib/models/Organisation'
 import { useAuth } from '~/providers/AuthProvider'
@@ -52,98 +58,99 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
   } = useTranslation('common')
   const { user } = useAuth()
 
-  const [roleEditDropdownId, setRoleEditDropdownId] = useState<string | null>(
-    null,
-  )
-  const openRef = useRef<HTMLUListElement>(null)
-  useOnClickOutside(openRef, () => setRoleEditDropdownId(null))
-
   const changeRole = (memberId: string, newRole: Role) => {
     const formData = new FormData()
     formData.set('intent', 'update-member-role')
     formData.set('memberId', memberId)
     formData.set('role', newRole)
     fetcher.submit(formData, { method: 'post' })
-    setRoleEditDropdownId(null)
   }
 
   return members.map((member) => (
-    <tr key={member.id} className='dark:bg-slate-800'>
-      <td className='py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white'>
+    <tr
+      key={member.id}
+      className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'
+    >
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         {member.user.email}
       </td>
-      <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white'>
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         {language === 'en'
           ? dayjs(member.created).locale(language).format('MMMM D, YYYY')
           : dayjs(member.created).locale(language).format('D MMMM, YYYY')}
       </td>
-      <td className='relative py-4 pr-2 text-right text-sm font-medium whitespace-nowrap'>
+      <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
         {member.confirmed ? (
-          <div>
-            <button
-              onClick={() =>
-                setRoleEditDropdownId((prev) =>
-                  prev === member.id ? null : member.id,
-                )
-              }
-              type='button'
-              disabled={
-                member.user.email === user?.email || member.role === 'owner'
-              }
-              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
-            >
-              {t(`organisations.role.${member.role}.name`)}
-              <CaretDownIcon
-                style={{
-                  transform:
-                    roleEditDropdownId === member.id ? 'rotate(180deg)' : '',
-                }}
-                className='ml-0.5 h-4 w-4 pt-px'
-              />
-            </button>
-            {roleEditDropdownId === member.id ? (
-              <ul
-                ref={openRef}
-                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left focus:outline-hidden dark:divide-gray-700 dark:bg-slate-950'
-              >
-                {_map(roles, (itRole, index) => (
-                  <li
-                    onClick={() => changeRole(member.id, itRole)}
-                    className={cx(
-                      'group relative cursor-pointer p-4 hover:bg-indigo-600',
-                      index === 0 && 'rounded-t-md',
-                    )}
-                    key={itRole}
-                  >
-                    <div className='flex justify-between'>
-                      <p className='truncate font-bold text-gray-700 group-hover:text-gray-200 dark:text-gray-200'>
-                        {t(`organisations.role.${itRole}.name`)}
-                      </p>
-                      {member.role === itRole ? (
-                        <span className='ml-3 flex-none text-indigo-600 group-hover:text-gray-200'>
-                          <CheckIcon className='size-5' />
-                        </span>
-                      ) : null}
-                    </div>
-                    <p className='mt-1 text-sm whitespace-normal text-gray-500 group-hover:text-gray-200'>
-                      {t(`organisations.role.${itRole}.desc`)}
-                    </p>
-                  </li>
-                ))}
-                <li
-                  onClick={() => {
-                    onRemove(member)
-                    setRoleEditDropdownId(null)
-                  }}
-                  className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
+          <Menu as='div' className='relative inline-block text-left'>
+            {({ open }) => (
+              <>
+                <MenuButton
+                  disabled={
+                    member.user.email === user?.email || member.role === 'owner'
+                  }
+                  className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
                 >
-                  <p className='font-bold text-red-600 dark:text-red-500'>
-                    {t('project.settings.removeMember')}
-                  </p>
-                </li>
-              </ul>
-            ) : null}
-          </div>
+                  {t(`organisations.role.${member.role}.name`)}
+                  <CaretDownIcon
+                    className={cx(
+                      'ml-0.5 h-4 w-4 transform-gpu transition-transform',
+                      { 'rotate-180': open },
+                    )}
+                    aria-hidden='true'
+                  />
+                </MenuButton>
+                <Transition
+                  show={open}
+                  as={Fragment}
+                  enter='transition ease-out duration-100'
+                  enterFrom='transform opacity-0 scale-95'
+                  enterTo='transform opacity-100 scale-100'
+                  leave='transition ease-in duration-75'
+                  leaveFrom='transform opacity-100 scale-100'
+                  leaveTo='transform opacity-0 scale-95'
+                >
+                  <MenuItems
+                    static
+                    anchor={{ to: 'bottom end', offset: 8 }}
+                    modal={false}
+                    className='z-50 w-72 rounded-lg bg-white p-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden dark:bg-slate-900 dark:ring-white/10'
+                  >
+                    {_map(roles, (itRole) => (
+                      <MenuItem key={itRole}>
+                        <button
+                          type='button'
+                          onClick={() => changeRole(member.id, itRole)}
+                          className='flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800'
+                        >
+                          <div>
+                            <p className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                              {t(`organisations.role.${itRole}.name`)}
+                            </p>
+                            <p className='mt-0.5 text-sm text-gray-500 dark:text-gray-400'>
+                              {t(`organisations.role.${itRole}.desc`)}
+                            </p>
+                          </div>
+                          {member.role === itRole ? (
+                            <CheckIcon className='ml-2 h-5 w-5 shrink-0 text-indigo-600 dark:text-indigo-500' />
+                          ) : null}
+                        </button>
+                      </MenuItem>
+                    ))}
+                    <div className='my-1 border-t border-gray-200 dark:border-slate-700' />
+                    <MenuItem>
+                      <button
+                        type='button'
+                        onClick={() => onRemove(member)}
+                        className='flex w-full items-center rounded-md px-3 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-500/10'
+                      >
+                        {t('project.settings.removeMember')}
+                      </button>
+                    </MenuItem>
+                  </MenuItems>
+                </Transition>
+              </>
+            )}
+          </Menu>
         ) : (
           <div className='flex items-center justify-end'>
             <Badge
@@ -151,12 +158,7 @@ const UsersList = ({ members, onRemove, fetcher }: UsersListProps) => {
               className='mr-3'
               label={t('common.pending')}
             />
-            <Button
-              type='button'
-              className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              small
-              onClick={() => onRemove(member)}
-            >
+            <Button type='button' white small onClick={() => onRemove(member)}>
               <TrashIcon className='h-4 w-4' />
             </Button>
           </div>
@@ -323,42 +325,36 @@ const People = ({ organisation }: PeopleProps) => {
         {_isEmpty(members) ? (
           <NoPeople />
         ) : (
-          <div className='mt-3 flex flex-col'>
-            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
-              <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                <div className='ring-1 ring-black/10 md:rounded-lg'>
-                  <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
-                    <thead>
-                      <tr className='dark:bg-slate-800'>
-                        <th
-                          scope='col'
-                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
-                        >
-                          {t('auth.common.email')}
-                        </th>
-                        <th
-                          scope='col'
-                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
-                        >
-                          {t('profileSettings.sharedTable.joinedOn')}
-                        </th>
-                        <th scope='col' />
-                      </tr>
-                    </thead>
-                    <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                      <UsersList
-                        members={members}
-                        onRemove={(member) => {
-                          setMemberToRemove(member)
-                          setShowDeleteModal(true)
-                        }}
-                        fetcher={fetcher}
-                      />
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+          <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
+            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+              <thead className='bg-gray-50 dark:bg-slate-900'>
+                <tr>
+                  <th
+                    scope='col'
+                    className='px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-900 uppercase dark:text-white'
+                  >
+                    {t('auth.common.email')}
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-900 uppercase dark:text-white'
+                  >
+                    {t('profileSettings.sharedTable.joinedOn')}
+                  </th>
+                  <th scope='col' />
+                </tr>
+              </thead>
+              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
+                <UsersList
+                  members={members}
+                  onRemove={(member) => {
+                    setMemberToRemove(member)
+                    setShowDeleteModal(true)
+                  }}
+                  fetcher={fetcher}
+                />
+              </tbody>
+            </table>
           </div>
         )}
       </div>

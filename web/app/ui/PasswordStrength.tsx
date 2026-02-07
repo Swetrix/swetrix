@@ -46,7 +46,7 @@ const PasswordStrength = ({ password, className }: PasswordStrengthProps) => {
       empty: {
         label: '',
         color: 'bg-gray-300 dark:bg-slate-700',
-        bgColor: 'bg-gray-200 dark:bg-slate-800',
+        bgColor: 'bg-gray-200 dark:bg-slate-900',
         segments: 0,
       },
       weak: {

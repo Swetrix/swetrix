@@ -957,6 +957,18 @@
     "noOrganisations": "No organisations yet",
     "createOrganisation": "You haven't created or joined any organisations yet. Get started by creating your first organisation.",
     "new": "New organisation",
+    "settings": {
+      "tabs": {
+        "general": "General",
+        "generalDesc": "Update organisation name and basic details.",
+        "people": "People",
+        "peopleDesc": "Manage members and their roles.",
+        "projects": "Projects",
+        "projectsDesc": "Add or remove projects for this organisation.",
+        "danger": "Danger zone",
+        "dangerDesc": "Irreversible actions for this organisation."
+      }
+    },
     "invite": {
       "title": "Invite a user to {{organisation}}",
       "desc": "Enter an email address and a role of the person registered on Swetrix that you want to invite to the organisation. The invitation will expire in {{expiresIn}} hours."

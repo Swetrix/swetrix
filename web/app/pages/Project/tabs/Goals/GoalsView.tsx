@@ -214,13 +214,13 @@ const getGoalChartSettings = (
         if (!item || _isEmpty(item) || !item[0]) {
           return ''
         }
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-3 py-1'>
           <li class='font-semibold'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
           }</li>
-          <hr class='border-gray-200 dark:border-gray-600' />
+          <hr class='border-gray-200 dark:border-slate-800' />
           ${_map(item, (el: { id: string; name: string; value: string }) => {
             return `
             <li class='flex justify-between'>
@@ -319,7 +319,7 @@ const GoalRow = ({
 
   return (
     <>
-      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/60 dark:bg-slate-800/25'>
+      <li className='relative mb-3 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors dark:border-slate-800/60 dark:bg-slate-900/25'>
         {/* Main row - clickable to expand */}
         <div
           onClick={() => onToggleExpand(goal.id)}
@@ -847,7 +847,7 @@ const GoalsViewInner = ({
       <div>
         {isLoading && !_isEmpty(goals) ? <LoadingBar /> : null}
         {_isEmpty(goals) && !filterQuery ? (
-          <div className='mt-5 rounded-lg bg-gray-700 p-5'>
+          <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
             <div className='flex items-center text-gray-50'>
               <TargetIcon className='mr-2 h-8 w-8' />
               <p className='text-3xl font-bold'>{t('goals.title')}</p>
