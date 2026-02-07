@@ -2115,6 +2115,7 @@
       "troubleOrChange": "Do you have trouble or want to change your email address?",
       "logoutAndRegister": "Logout and register again",
       "letsGo": "Let's go!",
+      "emailVerified": "Your email is verified",
       "spam": "Can't see the email? Please check your spam folder.",
       "wrongEmail": "Wrong email? <url>Create a new account.</url>",
       "checkVerification": "I've verified my email"

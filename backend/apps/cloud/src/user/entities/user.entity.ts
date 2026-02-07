@@ -204,9 +204,15 @@ export enum TimeFormat {
 }
 
 export enum OnboardingStep {
+  LANGUAGE = 'language',
+  WELCOME = 'welcome',
+  FEATURE_TRAFFIC = 'feature_traffic',
+  FEATURE_ERRORS = 'feature_errors',
+  FEATURE_SESSIONS = 'feature_sessions',
   CREATE_PROJECT = 'create_project',
   SETUP_TRACKING = 'setup_tracking',
   WAITING_FOR_EVENTS = 'waiting_for_events',
+  VERIFY_EMAIL = 'verify_email',
   COMPLETED = 'completed',
 }
 
@@ -390,7 +396,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: OnboardingStep,
-    default: OnboardingStep.CREATE_PROJECT,
+    default: OnboardingStep.LANGUAGE,
   })
   onboardingStep: OnboardingStep
 

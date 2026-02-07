@@ -4,7 +4,7 @@ import type {
   LoaderFunctionArgs,
   MetaFunction,
 } from 'react-router'
-import { data } from 'react-router'
+import { data, redirect } from 'react-router'
 import { SitemapFunction } from 'remix-sitemap'
 
 import { getAuthenticatedUser, serverFetch } from '~/api/api.server'
@@ -40,6 +40,7 @@ export interface OnboardingLoaderData {
     os: string | null
   }
   metainfo: Metainfo
+  onboardingStep: string | null
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -71,9 +72,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const metainfo = metainfoResult.data ?? DEFAULT_METAINFO
   const allCookies = [...cookies, ...metainfoResult.cookies]
 
+  if (user?.user?.hasCompletedOnboarding) {
+    if (allCookies.length > 0) {
+      return redirect('/dashboard', {
+        headers: createHeadersWithCookies(allCookies),
+      })
+    }
+
+    return redirect('/dashboard')
+  }
+
+  const onboardingStep = user?.user?.onboardingStep as string | undefined
+
   if (
-    user?.user?.onboardingStep === 'setup_tracking' ||
-    user?.user?.onboardingStep === 'waiting_for_events'
+    onboardingStep === 'setup_tracking' ||
+    onboardingStep === 'waiting_for_events' ||
+    onboardingStep === 'verify_email'
   ) {
     const projectsResult = await serverFetch<{
       results: Project[]
@@ -83,7 +97,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const project = projectsResult.data?.results?.[0] || null
     const finalCookies = [...allCookies, ...projectsResult.cookies]
 
-    const loaderData: OnboardingLoaderData = { project, deviceInfo, metainfo }
+    const loaderData: OnboardingLoaderData = { project, deviceInfo, metainfo, onboardingStep: onboardingStep ?? null }
 
     if (finalCookies.length > 0) {
       return data(loaderData, {
@@ -96,14 +110,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   if (allCookies.length > 0) {
     return data(
-      { project: null, deviceInfo, metainfo } as OnboardingLoaderData,
+      { project: null, deviceInfo, metainfo, onboardingStep: onboardingStep ?? null } as OnboardingLoaderData,
       {
         headers: createHeadersWithCookies(allCookies),
       },
     )
   }
 
-  return { project: null, deviceInfo, metainfo } as OnboardingLoaderData
+  return { project: null, deviceInfo, metainfo, onboardingStep: onboardingStep ?? null } as OnboardingLoaderData
 }
 
 export interface OnboardingActionData {

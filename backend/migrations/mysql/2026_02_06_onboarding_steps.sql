@@ -1,0 +1,1 @@
+ALTER TABLE user MODIFY COLUMN `onboardingStep` enum('language','welcome','feature_traffic','feature_errors','feature_sessions','create_project','setup_tracking','waiting_for_events','verify_email','completed') NOT NULL DEFAULT 'language';

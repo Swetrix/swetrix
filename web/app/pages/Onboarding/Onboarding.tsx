@@ -406,19 +406,33 @@ const Onboarding = () => {
   const { t, i18n } = useTranslation('common')
   const { theme } = useTheme()
   const prefersReducedMotion = useReducedMotion()
-  const { project: loaderProject, deviceInfo, metainfo } =
-    useLoaderData<OnboardingLoaderData>()
+  const {
+    project: loaderProject,
+    deviceInfo,
+    metainfo,
+    onboardingStep: loaderStep,
+  } = useLoaderData<OnboardingLoaderData>()
   const { user, loadUser, logout } = useAuth()
   const { authMe } = useAuthProxy()
   const navigate = useNavigate()
   const fetcher = useFetcher<OnboardingActionData>()
+  const stepFetcher = useFetcher()
   const lastHandledFetcherDataRef = useRef<OnboardingActionData | null>(null)
 
-  const [currentStepIndex, setCurrentStepIndex] = useState(0)
+  const [currentStepIndex, setCurrentStepIndex] = useState(() => {
+    if (!loaderStep) return 0
+    if (loaderStep === 'waiting_for_events') {
+      return STEPS.indexOf('setup_tracking')
+    }
+    const index = STEPS.indexOf(loaderStep as OnboardingStep)
+    return index !== -1 ? index : 0
+  })
   const [direction, setDirection] = useState(0)
   const [projectName, setProjectName] = useState('')
   const [project, setProject] = useState<Project | null>(loaderProject)
-  const [isWaitingForEvents, setIsWaitingForEvents] = useState(false)
+  const [isWaitingForEvents, setIsWaitingForEvents] = useState(
+    () => loaderStep === 'waiting_for_events',
+  )
   const [hasEvents, setHasEvents] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language)
 
@@ -449,7 +463,7 @@ const Onboarding = () => {
 
       if (intent === 'create-project' && newProject) {
         setTimeout(() => setProject(newProject), 0)
-        goToStep('setup_tracking')
+        goToStep('setup_tracking', { persist: true })
       } else if (intent === 'update-step') {
         loadUser()
       } else if (intent === 'complete-onboarding') {
@@ -475,24 +489,6 @@ const Onboarding = () => {
   }, [fetcher.data, fetcher.submit, loadUser, logout, navigate])
 
   useEffect(() => {
-    if (user?.hasCompletedOnboarding) {
-      navigate(routes.dashboard)
-      return
-    }
-
-    if (user?.onboardingStep === 'setup_tracking' && project) {
-      goToStep('setup_tracking')
-      return
-    }
-
-    if (user?.onboardingStep === 'waiting_for_events' && project) {
-      goToStep('setup_tracking')
-      setIsWaitingForEvents(true)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, navigate, project])
-
-  useEffect(() => {
     if (!isWaitingForEvents || !project) return
 
     const checkForEvents = async () => {
@@ -511,28 +507,45 @@ const Onboarding = () => {
     return () => clearInterval(interval)
   }, [isWaitingForEvents, project, authMe])
 
-  const goToStep = useCallback(
+  const persistStep = useCallback(
     (step: OnboardingStep) => {
+      const formData = new FormData()
+      formData.set('intent', 'update-step')
+      formData.set('step', step)
+      stepFetcher.submit(formData, { method: 'post' })
+    },
+    [stepFetcher],
+  )
+
+  const goToStep = useCallback(
+    (step: OnboardingStep, { persist = false } = {}) => {
       const newIndex = STEPS.indexOf(step)
       setDirection(newIndex > currentStepIndex ? 1 : -1)
       setCurrentStepIndex(newIndex)
+      if (persist) {
+        persistStep(step)
+      }
     },
-    [currentStepIndex],
+    [currentStepIndex, persistStep],
   )
 
   const goNext = useCallback(() => {
     if (currentStepIndex < STEPS.length - 1) {
+      const nextStep = STEPS[currentStepIndex + 1]
       setDirection(1)
       setCurrentStepIndex((prev) => prev + 1)
+      persistStep(nextStep)
     }
-  }, [currentStepIndex])
+  }, [currentStepIndex, persistStep])
 
   const goBack = useCallback(() => {
     if (currentStepIndex > 0) {
+      const prevStep = STEPS[currentStepIndex - 1]
       setDirection(-1)
       setCurrentStepIndex((prev) => prev - 1)
+      persistStep(prevStep)
     }
-  }, [currentStepIndex])
+  }, [currentStepIndex, persistStep])
 
   const handleLanguageSelect = (lng: string) => {
     setSelectedLanguage(lng)
@@ -1008,48 +1021,56 @@ const Onboarding = () => {
                           {t('onboarding.confirm.title')}
                         </Text>
 
-                        <Text as='h2' size='lg' weight='semibold' className='mb-4 mt-8'>
-                          {t('onboarding.confirm.emailVerification')}
-                        </Text>
+                        {user?.isActive ? (
+                          <Alert variant='success' className='mt-8'>
+                            {t('onboarding.confirm.emailVerified')}
+                          </Alert>
+                        ) : (
+                          <>
+                            <Text as='h2' size='lg' weight='semibold' className='mb-4 mt-8'>
+                              {t('onboarding.confirm.emailVerification')}
+                            </Text>
 
-                        <Alert variant='info' title={t('onboarding.confirm.verifyTitle')}>
-                          <Trans
-                            t={t}
-                            i18nKey='onboarding.confirm.linkSent'
-                            values={{ email: user?.email }}
-                            components={{
-                              email: <span className='font-semibold' />,
-                            }}
-                          />
-                        </Alert>
+                            <Alert variant='info' title={t('onboarding.confirm.verifyTitle')}>
+                              <Trans
+                                t={t}
+                                i18nKey='onboarding.confirm.linkSent'
+                                values={{ email: user?.email }}
+                                components={{
+                                  email: <span className='font-semibold' />,
+                                }}
+                              />
+                            </Alert>
 
-                        <div className='mt-6'>
-                          <Text as='p' size='sm' colour='secondary' className='mb-2'>
-                            {t('onboarding.confirm.didNotReceive')}
-                          </Text>
-                          <Button
-                            onClick={handleResendEmail}
-                            disabled={hasResentEmail}
-                            secondary
-                            small
-                          >
-                            {hasResentEmail && (
-                              <CheckCircleIcon className='mr-2 size-4' />
-                            )}
-                            {hasResentEmail
-                              ? t('onboarding.confirm.emailResent')
-                              : t('onboarding.confirm.resend')}
-                          </Button>
-                        </div>
+                            <div className='mt-6'>
+                              <Text as='p' size='sm' colour='secondary' className='mb-2'>
+                                {t('onboarding.confirm.didNotReceive')}
+                              </Text>
+                              <Button
+                                onClick={handleResendEmail}
+                                disabled={hasResentEmail}
+                                secondary
+                                small
+                              >
+                                {hasResentEmail && (
+                                  <CheckCircleIcon className='mr-2 size-4' />
+                                )}
+                                {hasResentEmail
+                                  ? t('onboarding.confirm.emailResent')
+                                  : t('onboarding.confirm.resend')}
+                              </Button>
+                            </div>
 
-                        <div className='mt-6'>
-                          <Text as='p' size='sm' colour='secondary' className='mb-2'>
-                            {t('onboarding.confirm.troubleOrChange')}
-                          </Text>
-                          <Button onClick={handleDeleteAccount} secondary small>
-                            {t('onboarding.confirm.logoutAndRegister')}
-                          </Button>
-                        </div>
+                            <div className='mt-6'>
+                              <Text as='p' size='sm' colour='secondary' className='mb-2'>
+                                {t('onboarding.confirm.troubleOrChange')}
+                              </Text>
+                              <Button onClick={handleDeleteAccount} secondary small>
+                                {t('onboarding.confirm.logoutAndRegister')}
+                              </Button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     )}
                   </motion.div>
@@ -1058,11 +1079,13 @@ const Onboarding = () => {
 
               <div className='shrink-0 border-t border-gray-200 px-6 py-4 dark:border-white/10'>
                 <div className='flex items-center justify-end gap-3'>
-                  {currentStepIndex > 0 && (
-                    <Button onClick={goBack} secondary large>
-                      {t('common.back')}
-                    </Button>
-                  )}
+                  {currentStepIndex > 0 &&
+                    STEPS.indexOf(currentStep) <
+                      STEPS.indexOf('setup_tracking') && (
+                      <Button onClick={goBack} secondary large>
+                        {t('common.back')}
+                      </Button>
+                    )}
                   {currentStep === 'language' && (
                     <Button onClick={handleLanguageConfirm} primary large>
                       {t('common.next')}
