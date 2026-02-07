@@ -14,7 +14,7 @@ const WaitingForCaptchaEvent = () => {
 
   return (
     <div className='mx-auto w-full max-w-2xl py-16 text-center'>
-      <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800'>
+      <div className='mx-auto mb-6 flex size-14 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-900'>
         <PulsatingCircle type='giant' />
       </div>
       <Text as='h3' size='xl' weight='medium' className='tracking-tight'>

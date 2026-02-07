@@ -20,7 +20,7 @@ const Marketers = () => {
   const { theme } = useTheme()
 
   return (
-    <main className='bg-white dark:bg-slate-900'>
+    <main className='bg-white dark:bg-slate-950'>
       <div className='relative isolate overflow-x-clip'>
         <svg
           className='absolute inset-0 -z-10 h-full w-full [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)] stroke-gray-200 dark:stroke-white/10'
@@ -98,7 +98,7 @@ const Marketers = () => {
                 </Link>
                 <a
                   href={LIVE_DEMO_URL}
-                  className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-xs ring-1 ring-slate-900 transition-all hover:bg-slate-200/60 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-slate-800/60'
+                  className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-xs ring-1 ring-slate-900 transition-all hover:bg-slate-200/60 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-slate-900/60'
                   target='_blank'
                   rel='noopener noreferrer'
                   aria-label={`${t('common.liveDemo')} (opens in a new tab)`}

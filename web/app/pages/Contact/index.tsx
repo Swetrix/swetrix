@@ -21,7 +21,7 @@ const Panel = ({ href, title, description }: PanelProps) => (
     href={href}
     target='_blank'
     rel='noopener noreferrer'
-    className='relative block rounded-2xl border border-gray-300/80 bg-gray-100 p-10 transition-colors hover:bg-gray-200 dark:border-slate-900/80 dark:bg-slate-800/80 dark:hover:bg-slate-800'
+    className='relative block rounded-2xl border border-gray-300/80 bg-gray-100 p-10 transition-colors hover:bg-gray-200 dark:border-slate-900/80 dark:bg-slate-800/80 dark:hover:bg-slate-900'
   >
     <ArrowSquareOutIcon className='absolute top-5 right-5 h-5 w-5 text-gray-900 dark:text-gray-100' />
     <h3 className='text-lg leading-7 font-semibold text-gray-900 dark:text-gray-100'>
@@ -37,7 +37,7 @@ const Contact = () => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
+    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-950'>
       <div className='mx-auto px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>
           {t('titles.contact')}

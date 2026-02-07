@@ -72,7 +72,7 @@ const ModalMessage = ({
         </legend>
         <div
           className={cx(
-            'mt-1 -space-y-px rounded-md bg-white dark:bg-slate-900',
+            'mt-1 -space-y-px rounded-md bg-white dark:bg-slate-950',
             {
               'border border-red-300': errors.reportFrequency,
             },
@@ -212,7 +212,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
   }
 
   return (
-    <tr className='bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/50'>
+    <tr className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'>
       <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         {email}
       </td>
@@ -227,7 +227,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
             <button
               onClick={() => setOpen(!open)}
               type='button'
-              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
+              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`profileSettings.${_toLower(reportFrequency)}`)}
               <CaretDownIcon
@@ -238,7 +238,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
             {open ? (
               <ul
                 ref={openRef}
-                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left focus:outline-hidden dark:divide-gray-700 dark:bg-slate-900'
+                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left focus:outline-hidden dark:divide-gray-700 dark:bg-slate-950'
               >
                 {_map(reportFrequencyForEmailsOptions, (item, index) => (
                   <li
@@ -281,7 +281,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
             />
             <Button
               type='button'
-              className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+              className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-700'
               small
               onClick={onRemove}
             >
@@ -535,9 +535,9 @@ const Emails = ({ projectId }: { projectId: string }) => {
         ) : _isEmpty(emails) ? (
           <NoSubscribers />
         ) : (
-          <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
-            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-              <thead className='bg-gray-50 dark:bg-slate-800'>
+          <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
+            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+              <thead className='bg-gray-50 dark:bg-slate-900'>
                 <tr>
                   <th
                     scope='col'
@@ -554,7 +554,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
                   <th scope='col' />
                 </tr>
               </thead>
-              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
                 {_map(emails, (email) => (
                   <EmailList
                     data={email}

@@ -17,7 +17,7 @@ export function renderTimeToSwitchCta(): string {
 <div class="not-prose relative mx-auto my-10 max-w-4xl px-2 lg:px-0">
   <div class="relative mx-auto overflow-hidden rounded-3xl p-1 text-center sm:p-2 lg:p-3">
     <div aria-hidden="true" class="pointer-events-none absolute inset-0">
-      <div class="absolute inset-0 rounded-4xl bg-linear-115 from-red-500/50 to-orange-300/30 sm:bg-linear-145 dark:from-red-500/40 dark:to-orange-300/20"></div>
+      <div class="absolute inset-0 rounded-4xl bg-linear-115 from-red-500/50 to-orange-300/30 sm:bg-linear-145 dark:from-red-500/40 dark:to-slate-800/50"></div>
     </div>
     <div class="rounded-xl p-8 backdrop-blur-xl sm:p-10 lg:p-12">
       <div class="mx-auto max-w-3xl">

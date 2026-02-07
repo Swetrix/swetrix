@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next'
 import { cn } from '~/utils/generic'
 
 import Spin from './icons/Spin'
+import Button from './Button'
 
 interface ModalProps {
   className?: string
@@ -71,7 +72,7 @@ const Modal = ({
           <DialogPanel
             transition
             className={cn(
-              'inline-block transform rounded-lg bg-white px-4 pt-5 pb-4 text-left align-bottom transition-all sm:my-8 sm:px-5 sm:py-4 sm:align-middle dark:bg-slate-900',
+              'inline-block transform rounded-lg bg-white px-4 pt-5 pb-4 text-left align-bottom transition-all sm:my-8 sm:px-5 sm:py-4 sm:align-middle dark:bg-slate-950',
               'transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:ease-out data-leave:duration-200 data-leave:ease-in',
               {
                 'w-[90vw] md:w-full md:max-w-lg': size === 'regular',
@@ -192,17 +193,17 @@ const Modal = ({
                 </button>
               ) : null}
               {closeText ? (
-                <button
-                  type='button'
-                  className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
-                  onClick={(e) => {
+                <Button
+                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.preventDefault()
                     e.stopPropagation()
                     onClose?.()
                   }}
+                  secondary
+                  large
                 >
                   {closeText}
-                </button>
+                </Button>
               ) : null}
             </div>
           </DialogPanel>

@@ -63,7 +63,7 @@ renderer.table = ({ header, rows }: Tokens.Table) => {
         return `<tr class="bg-slate-50 dark:bg-slate-800/70"><td colspan="${row.length}" class="px-4 py-3 text-sm font-semibold text-slate-900 dark:text-slate-100">${cellContent}</td></tr>`
       }
 
-      return `<tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">${row
+      return `<tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">${row
         .map((cell) => {
           return `<td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">${parseInlineMarkdown(cell.text)}</td>`
         })
@@ -74,7 +74,7 @@ renderer.table = ({ header, rows }: Tokens.Table) => {
   return `<div class="not-prose my-6 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
     <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
       <thead><tr>${headerCells}</tr></thead>
-      <tbody class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-900">${bodyRows}</tbody>
+      <tbody class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-950">${bodyRows}</tbody>
     </table>
   </div>`
 }

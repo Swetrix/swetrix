@@ -178,7 +178,7 @@ const Session = ({
 
   return (
     <Link to={{ search: params.toString() }}>
-      <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/60 dark:bg-slate-800/25 dark:hover:bg-slate-800/60'>
+      <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'>
         <div className='flex min-w-0 gap-x-3'>
           {hideUserDetails ? null : (
             <div className='relative shrink-0'>
@@ -357,7 +357,7 @@ export const Sessions: React.FC<SessionsProps> = ({
   return (
     <ClientOnly
       fallback={
-        <div className='bg-gray-50 dark:bg-slate-900'>
+        <div className='bg-gray-50 dark:bg-slate-950'>
           <Loader />
         </div>
       }

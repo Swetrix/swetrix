@@ -954,6 +954,18 @@
     "noOrganisations": "Aucune organisation pour le moment",
     "createOrganisation": "Vous n'avez encore créé ni rejoint aucune organisation. Commencez par créer votre première organisation.",
     "new": "Nouvelle organisation",
+    "settings": {
+      "tabs": {
+        "general": "Général",
+        "generalDesc": "Mettre à jour le nom de l'organisation et les informations de base.",
+        "people": "Membres",
+        "peopleDesc": "Gérer les membres et leurs rôles.",
+        "projects": "Projets",
+        "projectsDesc": "Ajouter ou supprimer des projets pour cette organisation.",
+        "danger": "Zone dangereuse",
+        "dangerDesc": "Actions irréversibles pour cette organisation."
+      }
+    },
     "invite": {
       "title": "Inviter un utilisateur à {{organisation}}",
       "desc": "Saisissez une adresse e-mail et le rôle de la personne inscrite sur Swetrix que vous souhaitez inviter dans l’organisation. L’invitation expirera dans {{expiresIn}} heures."

@@ -805,8 +805,8 @@ const getSettings = (
         }
 
         if (_isEmpty(compareChart)) {
-          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
-          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-gray-50 dark:bg-slate-800'>${
+          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
@@ -911,7 +911,7 @@ const getSettings = (
 
         // Build current period section
         const currentSection = `
-          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600'>${xDataValue}</li>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800'>${xDataValue}</li>
           ${_map(
             filteredItems,
             (el: { id: string; name: string; value: string }) => {
@@ -933,7 +933,7 @@ const getSettings = (
         // Build compare period section
         const compareSection = xDataValueCompare
           ? `
-          <li class='font-semibold pb-1 mb-1 mt-3 pt-2 border-t border-b border-gray-200 dark:border-gray-600'>${xDataValueCompare}</li>
+          <li class='font-semibold pb-1 mb-1 mt-3 pt-2 border-t border-b border-gray-200 dark:border-slate-800'>${xDataValueCompare}</li>
           ${_map(
             filteredItems,
             (el: { id: string; index: number; name: string }) => {
@@ -963,7 +963,7 @@ const getSettings = (
           : ''
 
         return `
-        <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+        <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
           ${currentSection}
           ${compareSection}
         </ul>`
@@ -1168,8 +1168,8 @@ const getSettingsCustomEventsStacked = (
           return ''
         }
 
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
-          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-gray-50 dark:bg-slate-800'>${
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
@@ -1349,8 +1349,8 @@ const getSettingsSession = (
         if (!item || _isEmpty(item) || !item[0]) {
           return ''
         }
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
-          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-gray-50 dark:bg-slate-800'>${
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
@@ -1549,8 +1549,8 @@ const getSettingsError = (
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
-          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-gray-50 dark:bg-slate-800'>${
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
@@ -1756,9 +1756,9 @@ const getSettingsFunnels = (
         `
 
         return `
-          <div class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-w-xs md:max-w-sm max-h-[300px] md:max-h-[400px] overflow-y-auto shadow-lg z-50'>
+          <div class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-w-xs md:max-w-sm max-h-[300px] md:max-h-[400px] overflow-y-auto shadow-lg z-50'>
             ${title}
-            <div class='border-b border-gray-200 dark:border-gray-600 my-1'></div>
+            <div class='border-b border-gray-200 dark:border-slate-800 my-1'></div>
             <table class='w-auto'>
               <tbody>
                 ${events}
@@ -1955,8 +1955,8 @@ const getSettingsPerf = (
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
         if (_isEmpty(compareChart)) {
-          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
-        <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-gray-50 dark:bg-slate-800'>${
+          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+        <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${
           timeFormat === TimeFormat['24-hour']
             ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
             : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
@@ -2016,7 +2016,7 @@ const getSettingsPerf = (
 
         // Build current period section
         const currentSection = `
-          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600'>${xDataValue}</li>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800'>${xDataValue}</li>
           ${_map(
             filteredItems,
             (el: { id: string; name: string; value: string }) => {
@@ -2034,7 +2034,7 @@ const getSettingsPerf = (
         // Build compare period section
         const compareSection = xDataValueCompare
           ? `
-          <li class='font-semibold pb-1 mb-1 mt-3 pt-2 border-t border-b border-gray-200 dark:border-gray-600'>${xDataValueCompare}</li>
+          <li class='font-semibold pb-1 mb-1 mt-3 pt-2 border-t border-b border-gray-200 dark:border-slate-800'>${xDataValueCompare}</li>
           ${_map(
             filteredItems,
             (el: { id: string; index: number; name: string }) => {
@@ -2057,7 +2057,7 @@ const getSettingsPerf = (
           : ''
 
         return `
-      <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+      <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
         ${currentSection}
         ${compareSection}
       </ul>`
@@ -2415,8 +2415,8 @@ const getSettingsCaptcha = (
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
-          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-gray-600 sticky top-0 bg-gray-50 dark:bg-slate-800'>${
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-2 py-1 text-xs md:text-sm max-h-[250px] md:max-h-[350px] overflow-y-auto shadow-lg z-50'>
+          <li class='font-semibold pb-1 mb-1 border-b border-gray-200 dark:border-slate-800 sticky top-0 bg-gray-50 dark:bg-slate-900'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)

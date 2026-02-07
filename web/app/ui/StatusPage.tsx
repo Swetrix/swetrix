@@ -74,7 +74,7 @@ const StatusPage = ({
 
   if (loading) {
     return (
-      <div className='flex min-h-page items-center justify-center bg-gray-50 dark:bg-slate-900'>
+      <div className='flex min-h-page items-center justify-center bg-gray-50 dark:bg-slate-950'>
         <div className='flex flex-col items-center'>
           <Spin />
           <span className='sr-only'>{t('common.loading')}</span>
@@ -86,7 +86,7 @@ const StatusPage = ({
   const displayIcon = icon ?? iconMap[type]
 
   return (
-    <div className='flex min-h-page items-center justify-center bg-gray-50 px-4 dark:bg-slate-900'>
+    <div className='flex min-h-page items-center justify-center bg-gray-50 px-4 dark:bg-slate-950'>
       <div className='mx-auto w-full max-w-md text-center'>
         <div
           className={cn(
@@ -119,8 +119,8 @@ const StatusPage = ({
                   className={cn(
                     'inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none',
                     action.primary
-                      ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-500 dark:bg-slate-800 dark:hover:bg-slate-700'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700',
+                      ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-500 dark:bg-slate-900 dark:hover:bg-slate-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-700',
                   )}
                 >
                   {action.label}
@@ -133,8 +133,8 @@ const StatusPage = ({
                   className={cn(
                     'inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none',
                     action.primary
-                      ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-500 dark:bg-slate-800 dark:hover:bg-slate-700'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700',
+                      ? 'bg-slate-900 text-white hover:bg-slate-700 focus:ring-slate-500 dark:bg-slate-900 dark:hover:bg-slate-700'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-700',
                   )}
                 >
                   {action.label}

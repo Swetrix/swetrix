@@ -24,14 +24,14 @@ const CreateNewPassword = () => {
 
   return (
     <div>
-      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-10 sm:px-6 lg:px-8 dark:bg-slate-900'>
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-10 sm:px-6 lg:px-8 dark:bg-slate-950'>
         <div className='sm:mx-auto sm:w-full sm:max-w-md'>
           <h2 className='text-center text-2xl leading-9 font-bold text-gray-900 dark:text-gray-50'>
             {t('auth.recovery.title')}
           </h2>
         </div>
         <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
-          <div className='bg-white px-6 py-12 shadow-xs ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-900 dark:ring-slate-800'>
+          <div className='bg-white px-6 py-12 shadow-xs ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-950 dark:ring-slate-800'>
             <Form method='post' className='space-y-6'>
               <Input
                 name='password'

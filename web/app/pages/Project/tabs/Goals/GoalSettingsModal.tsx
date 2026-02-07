@@ -179,7 +179,7 @@ const GoalSettingsModal = ({
         <div className='flex min-h-full items-center justify-center p-4'>
           <DialogPanel
             transition
-            className='w-full max-w-lg transform rounded-xl bg-white transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:ease-out data-leave:duration-200 data-leave:ease-in dark:bg-slate-900'
+            className='w-full max-w-lg transform rounded-xl bg-white transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:ease-out data-leave:duration-200 data-leave:ease-in dark:bg-slate-950'
           >
             {isLoading ? (
               <div className='flex min-h-[300px] items-center justify-center'>
@@ -195,7 +195,7 @@ const GoalSettingsModal = ({
                     <button
                       type='button'
                       onClick={onClose}
-                      className='rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-slate-800 dark:hover:text-gray-300'
+                      className='rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-slate-900 dark:hover:text-gray-300'
                     >
                       <XIcon className='h-5 w-5' />
                     </button>
@@ -325,7 +325,7 @@ const GoalSettingsModal = ({
                               <button
                                 type='button'
                                 onClick={() => removeMetadataFilter(index)}
-                                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                                className='rounded-md border border-transparent p-1.5 text-gray-800 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 dark:hover:text-slate-300'
                               >
                                 <TrashIcon className='h-4 w-4' />
                               </button>

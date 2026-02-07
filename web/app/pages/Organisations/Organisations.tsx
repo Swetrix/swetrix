@@ -174,7 +174,7 @@ const Organisations = () => {
 
   return (
     <>
-      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
+      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-950'>
         <EventsRunningOutBanner />
         <div className='flex flex-col'>
           <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
@@ -189,7 +189,7 @@ const Organisations = () => {
                   <span>{t('titles.organisations')}</span>
                   {isSearchActive ? (
                     <button
-                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
+                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'
                       type='button'
                       onClick={() => {
                         setSearch('')
@@ -201,7 +201,7 @@ const Organisations = () => {
                     </button>
                   ) : (
                     <button
-                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-900 hover:dark:border-slate-700/80 dark:hover:bg-slate-800'
+                      className='rounded-md border border-transparent bg-gray-50 p-2 transition-colors hover:border-gray-300 hover:bg-white dark:bg-slate-950 hover:dark:border-slate-700/80 dark:hover:bg-slate-900'
                       type='button'
                       onClick={() => {
                         setIsSearchActive(true)
@@ -230,7 +230,7 @@ const Organisations = () => {
                         id='organisation-search'
                         onChange={onSearch}
                         value={search}
-                        className='block h-7 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 sm:pl-10 dark:bg-slate-900 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200'
+                        className='block h-7 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 sm:pl-10 dark:bg-slate-950 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200'
                         placeholder={t('project.search')}
                       />
                     </div>
@@ -256,7 +256,7 @@ const Organisations = () => {
                     type='text'
                     onChange={onSearch}
                     value={search}
-                    className='block h-7 w-full rounded-lg border-none bg-gray-50 p-2.5 py-5 pl-10 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 dark:bg-slate-900 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200'
+                    className='block h-7 w-full rounded-lg border-none bg-gray-50 p-2.5 py-5 pl-10 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 dark:bg-slate-950 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200'
                     placeholder={t('project.search')}
                   />
                 </div>

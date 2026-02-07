@@ -64,7 +64,7 @@ const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
 
 const PanelEmptyState = ({ message }: { message: string }) => (
   <div className='flex flex-col items-center justify-center py-8 text-center'>
-    <div className='mb-3 flex size-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800'>
+    <div className='mb-3 flex size-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-900'>
       <StackIcon className='size-5 text-gray-400 dark:text-slate-500' />
     </div>
     <Text as='p' size='sm' colour='secondary'>
@@ -112,7 +112,7 @@ const PanelContainer = ({
   return (
     <div
       className={cx(
-        'isolate overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-800/25',
+        'isolate overflow-hidden rounded-lg border border-gray-200 bg-white px-4 pb-3 dark:border-slate-800/60 dark:bg-slate-900/25',
         hideHeader ? 'pt-3' : 'pt-5',
         {
           'col-span-full sm:col-span-2':
@@ -202,7 +202,7 @@ const PanelContainer = ({
       {onDetailsClick ? (
         <div className='mt-2 flex items-center justify-center'>
           <Button
-            className='max-w-max border border-transparent bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-200 hover:bg-gray-50 dark:text-gray-200 hover:dark:border-slate-700/80 hover:dark:bg-slate-900'
+            className='max-w-max border border-transparent bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-200 hover:bg-gray-50 dark:text-gray-200 hover:dark:border-slate-700/80 hover:dark:bg-slate-950'
             type='button'
             onClick={onDetailsClick}
           >
@@ -753,7 +753,7 @@ const CustomEvents = ({
               >
                 <td className='flex items-center py-1 text-left'>
                   <button
-                    className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-200 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                    className='peer z-10 -m-1 ml-1 rounded-md border border-transparent p-1 transition-colors hover:border-gray-200 hover:bg-white hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
                     type='button'
                     onClick={toggleDetails(ev)}
                   >
@@ -851,7 +851,7 @@ const CustomEvents = ({
               return (
                 <div
                   key={`${ev}-${item.value}`}
-                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800/60'
+                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
                   onClick={() => {
                     navigate(link)
                   }}
@@ -1117,7 +1117,7 @@ const MetadataKeyPanel = ({
       return (
         <div className='max-h-[500px] overflow-y-auto'>
           <table className='w-full border-separate border-spacing-y-1'>
-            <thead className='sticky top-0 z-10 bg-white dark:bg-slate-900'>
+            <thead className='sticky top-0 z-10 bg-white dark:bg-slate-950'>
               <tr className='text-base text-gray-900 dark:text-gray-50'>
                 <th className='pl-2 text-left' style={{ width: '25%' }}>
                   {t('project.key')}
@@ -1170,7 +1170,7 @@ const MetadataKeyPanel = ({
     return (
       <div className='max-h-[500px] overflow-y-auto'>
         <table className='w-full border-separate border-spacing-y-1'>
-          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-900'>
+          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-950'>
             <tr className='text-base text-gray-900 dark:text-gray-50'>
               <th className='pl-2 text-left' style={{ width: '50%' }}>
                 {t('project.value')}
@@ -1287,7 +1287,7 @@ const MetadataKeyPanel = ({
                 return (
                   <div
                     key={`${key}-${value}`}
-                    className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800/60'
+                    className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
                     onClick={() => {
                       navigate(link)
                     }}
@@ -1376,7 +1376,7 @@ const MetadataKeyPanel = ({
               return (
                 <div
                   key={value}
-                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800/60'
+                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-900/60'
                   onClick={() => {
                     navigate(link)
                   }}
@@ -1655,12 +1655,12 @@ const DetailsTable = ({
           placeholder={t('project.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className='w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-50'
+          className='w-full rounded-md border border-gray-200 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-slate-700/80 dark:bg-slate-950 dark:text-gray-50'
         />
       </div>
       <div ref={parentRef} className='max-h-[500px] overflow-y-auto'>
         <table className='w-full border-separate border-spacing-y-1'>
-          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-900'>
+          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-950'>
             <tr className='text-base text-gray-900 dark:text-gray-50'>
               <th
                 className='flex cursor-pointer items-center pl-2 text-left hover:opacity-90'
@@ -1996,7 +1996,7 @@ const Panel = ({
                     className={cx(
                       'relative flex h-8 items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                       {
-                        'group hover:bg-gray-50 hover:dark:bg-slate-800/60':
+                        'group hover:bg-gray-50 dark:hover:bg-slate-900/60':
                           !hideFilters &&
                           !dataLoading &&
                           (link || hasVersionsForItem),
@@ -2116,7 +2116,7 @@ const Panel = ({
                             className={cx(
                               'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
                               {
-                                'group cursor-pointer hover:bg-gray-50 hover:dark:bg-slate-800/60':
+                                'group cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-900/60':
                                   !disableRowClick &&
                                   !hideFilters &&
                                   !dataLoading &&
@@ -2419,7 +2419,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
               <div className='flex w-18 justify-between'>
                 <Button
                   className={cx(
-                    'border border-gray-200 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
+                    'border border-gray-200 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-900 dark:text-gray-200',
                     {
                       'cursor-not-allowed opacity-50': !canGoPrev(),
                       'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
@@ -2434,7 +2434,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                 </Button>
                 <Button
                   className={cx(
-                    'border border-gray-200 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
+                    'border border-gray-200 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-900 dark:text-gray-200',
                     {
                       'cursor-not-allowed opacity-50': !canGoNext(),
                       'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),

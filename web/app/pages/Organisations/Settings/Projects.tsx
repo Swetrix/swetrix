@@ -82,7 +82,7 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
           </div>
           <input
             type='text'
-            className='block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-gray-300 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm sm:leading-6 dark:bg-slate-800 dark:text-white dark:ring-slate-600 dark:focus:ring-slate-400'
+            className='block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-gray-300 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm sm:leading-6 dark:bg-slate-900 dark:text-white dark:ring-slate-600 dark:focus:ring-slate-400'
             placeholder={t('project.search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -155,8 +155,11 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
   const { user } = useAuth()
 
   return projects.map((project) => (
-    <tr key={project.id} className='dark:bg-slate-800'>
-      <td className='py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white'>
+    <tr
+      key={project.id}
+      className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'
+    >
+      <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         <Link
           to={_replace(routes.project, ':id', project.id)}
           className='hover:underline'
@@ -164,7 +167,7 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
           {project.name}
         </Link>
       </td>
-      <td className='relative py-4 pr-2 text-sm font-medium whitespace-nowrap'>
+      <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
         <div className='flex items-center justify-end'>
           {project.admin.email !== user?.email ? (
             <Tooltip
@@ -307,7 +310,7 @@ export const Projects = ({ organisation }: ProjectsProps) => {
               setCurrentPage(1)
             }}
             value={search}
-            className='block h-8 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 sm:pl-10 dark:bg-slate-900 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200'
+            className='block h-8 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 sm:pl-10 dark:bg-slate-950 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200'
             placeholder={t('project.search')}
           />
         </div>
@@ -316,48 +319,42 @@ export const Projects = ({ organisation }: ProjectsProps) => {
         {_isEmpty(filteredProjects) ? (
           <NoProjects />
         ) : (
-          <div className='mt-3 flex flex-col'>
-            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
-              <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                <div className='ring-1 ring-black/10 md:rounded-lg'>
-                  <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
-                    <thead>
-                      <tr className='dark:bg-slate-800'>
-                        <th
-                          scope='col'
-                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
-                        >
-                          {t('common.name')}
-                        </th>
-                        <th scope='col' />
-                      </tr>
-                    </thead>
-                    <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                      <ProjectList
-                        projects={filteredProjects.slice(
-                          (currentPage - 1) * PROJECT_LIST_PAGE_SIZE,
-                          currentPage * PROJECT_LIST_PAGE_SIZE,
-                        )}
-                        onRemove={(project) => {
-                          setProjectToRemove(project)
-                          setShowDeleteModal(true)
-                        }}
-                      />
-                    </tbody>
-                  </table>
-                </div>
-                {pageAmount > 1 ? (
-                  <Pagination
-                    className='mt-4 px-2'
-                    page={currentPage}
-                    pageAmount={pageAmount}
-                    setPage={setCurrentPage}
-                    total={projects.length}
-                    pageSize={PROJECT_LIST_PAGE_SIZE}
-                  />
-                ) : null}
-              </div>
-            </div>
+          <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
+            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+              <thead className='bg-gray-50 dark:bg-slate-900'>
+                <tr>
+                  <th
+                    scope='col'
+                    className='px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-900 uppercase dark:text-white'
+                  >
+                    {t('common.name')}
+                  </th>
+                  <th scope='col' />
+                </tr>
+              </thead>
+              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
+                <ProjectList
+                  projects={filteredProjects.slice(
+                    (currentPage - 1) * PROJECT_LIST_PAGE_SIZE,
+                    currentPage * PROJECT_LIST_PAGE_SIZE,
+                  )}
+                  onRemove={(project) => {
+                    setProjectToRemove(project)
+                    setShowDeleteModal(true)
+                  }}
+                />
+              </tbody>
+            </table>
+            {pageAmount > 1 ? (
+              <Pagination
+                className='mt-4 px-2'
+                page={currentPage}
+                pageAmount={pageAmount}
+                setPage={setCurrentPage}
+                total={projects.length}
+                pageSize={PROJECT_LIST_PAGE_SIZE}
+              />
+            ) : null}
           </div>
         )}
       </div>

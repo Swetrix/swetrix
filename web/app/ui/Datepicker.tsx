@@ -356,12 +356,12 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
             <div className='fixed inset-0 z-50 flex items-start justify-center bg-black/20 p-4'>
               <div
                 ref={popoverRef}
-                className='mt-10 w-[320px] rounded-xl border border-gray-200 bg-white p-3 shadow-xl dark:border-slate-800 dark:bg-slate-900'
+                className='mt-10 w-[320px] rounded-xl border border-gray-200 bg-white p-3 shadow-xl dark:border-slate-800 dark:bg-slate-950'
               >
                 <div className='flex items-center justify-between'>
                   <button
                     type='button'
-                    className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-800'
+                    className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-900'
                     onClick={handlePrevMonth}
                     aria-label='Previous month'
                   >
@@ -371,7 +371,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     <div className='relative'>
                       <select
                         aria-label='Month'
-                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
+                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
                         value={anchorMonth.getMonth()}
                         onChange={(e) =>
                           setAnchor(
@@ -399,7 +399,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     <div className='relative'>
                       <select
                         aria-label='Year'
-                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
+                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
                         value={anchorMonth.getFullYear()}
                         onChange={(e) =>
                           setAnchor(
@@ -423,7 +423,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                   </div>
                   <button
                     type='button'
-                    className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-800'
+                    className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-900'
                     onClick={handleNextMonth}
                     aria-label='Next month'
                   >
@@ -461,7 +461,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                               !isCurrentMonth || disabled,
                             'bg-indigo-600 text-white dark:bg-indigo-500':
                               isStart || isEnd,
-                            'bg-gray-100 dark:bg-slate-800':
+                            'bg-gray-100 dark:bg-slate-900':
                               isBetween && !isStart && !isEnd,
                             'cursor-not-allowed opacity-50': disabled,
                             'hover:bg-gray-200 dark:hover:bg-slate-700':
@@ -485,7 +485,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                   <div className='flex gap-2'>
                     <button
                       type='button'
-                      className='rounded-md px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-800'
+                      className='rounded-md px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-900'
                       onClick={() => {
                         setStart(null)
                         setEnd(null)
@@ -514,12 +514,12 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
             <div className='absolute top-7 right-0 z-50'>
               <div
                 ref={popoverRef}
-                className='w-[320px] rounded-xl border border-gray-200 bg-white p-3 shadow-xl dark:border-slate-800 dark:bg-slate-900'
+                className='w-[320px] rounded-xl border border-gray-200 bg-white p-3 shadow-xl dark:border-slate-800 dark:bg-slate-950'
               >
                 <div className='flex items-center justify-between'>
                   <button
                     type='button'
-                    className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-800'
+                    className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-900'
                     onClick={handlePrevMonth}
                     aria-label='Previous month'
                   >
@@ -529,7 +529,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     <div className='relative'>
                       <select
                         aria-label='Month'
-                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
+                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
                         value={anchorMonth.getMonth()}
                         onChange={(e) =>
                           setAnchor(
@@ -557,7 +557,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                     <div className='relative'>
                       <select
                         aria-label='Year'
-                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
+                        className='appearance-none rounded-md border border-gray-200 bg-white px-2 py-1 pr-7 text-sm text-gray-900 hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-50'
                         value={anchorMonth.getFullYear()}
                         onChange={(e) =>
                           setAnchor(
@@ -581,7 +581,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                   </div>
                   <button
                     type='button'
-                    className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-800'
+                    className='rounded-md p-2 hover:bg-gray-100 dark:hover:bg-slate-900'
                     onClick={handleNextMonth}
                     aria-label='Next month'
                   >
@@ -619,7 +619,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                               !isCurrentMonth || disabled,
                             'bg-indigo-600 text-white dark:bg-indigo-500':
                               isStart || isEnd,
-                            'bg-gray-100 dark:bg-slate-800':
+                            'bg-gray-100 dark:bg-slate-900':
                               isBetween && !isStart && !isEnd,
                             'cursor-not-allowed opacity-50': disabled,
                             'hover:bg-gray-200 dark:hover:bg-slate-700':
@@ -643,7 +643,7 @@ const DatePicker = forwardRef<DatePickerHandle, DatePickerProps>(
                   <div className='flex gap-2'>
                     <button
                       type='button'
-                      className='rounded-md px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-800'
+                      className='rounded-md px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-900'
                       onClick={() => {
                         setStart(null)
                         setEnd(null)

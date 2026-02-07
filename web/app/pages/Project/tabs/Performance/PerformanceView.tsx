@@ -413,7 +413,7 @@ const PerformanceViewInner = ({
         {!isPanelsDataEmpty ? (
           <Filters className='mb-3' tnMapping={tnMapping} />
         ) : null}
-        <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
+        <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
           <div className='mb-3 flex w-full items-center justify-end gap-1.5 lg:absolute lg:top-2 lg:right-2 lg:mb-0 lg:w-auto lg:justify-normal'>
             <Dropdown
               items={chartMetrics}
@@ -431,7 +431,7 @@ const PerformanceViewInner = ({
               onSelect={({ id: pairID }) => {
                 setActiveChartMetrics(pairID)
               }}
-              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-900 focus:dark:ring-gray-200'
+              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-950 focus:dark:ring-gray-200'
               chevron='mini'
               headless
             />
@@ -454,7 +454,7 @@ const PerformanceViewInner = ({
               onSelect={({ id: pairID }) => {
                 setActiveMeasure(pairID)
               }}
-              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-900 focus:dark:ring-gray-200'
+              buttonClassName='!p-1.5 rounded-md border border-transparent hover:border-gray-300 hover:bg-white hover:dark:border-slate-700/80 hover:dark:bg-slate-950 focus:dark:ring-gray-200'
               chevron='mini'
               headless
             />

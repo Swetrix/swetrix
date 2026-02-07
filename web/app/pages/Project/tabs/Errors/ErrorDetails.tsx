@@ -54,7 +54,7 @@ const StatItem = ({
   label: string
   value: string | number
 }) => (
-  <div className='flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
+  <div className='flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
     <Text
       size='xs'
       weight='medium'
@@ -119,7 +119,7 @@ const SessionRow = ({ session }: SessionRowProps) => {
   return (
     <Link
       to={sessionUrl}
-      className='group flex items-start justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3 transition-colors hover:border-gray-200 hover:bg-gray-100 dark:border-slate-700/50 dark:bg-slate-800/50 dark:hover:border-slate-600 dark:hover:bg-slate-700/50'
+      className='group flex items-start justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3 transition-colors hover:border-gray-200 hover:bg-gray-100 dark:border-slate-700/50 dark:bg-slate-900/50 dark:hover:border-slate-600 dark:hover:bg-slate-700/50'
     >
       <div className='flex min-w-0 flex-1 items-start gap-3'>
         <div className='flex shrink-0 items-center gap-2 pt-0.5'>
@@ -409,7 +409,7 @@ export const ErrorDetails = ({
 
         {details.filename ? (
           <div className='flex items-center gap-2'>
-            <div className='flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 font-mono text-xs text-gray-600 dark:bg-slate-800 dark:text-gray-300'>
+            <div className='flex items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 font-mono text-xs text-gray-600 dark:bg-slate-900 dark:text-gray-300'>
               <FileCodeIcon className='size-3.5 text-gray-500' />
               <span className='break-all'>{fileLocation}</span>
               <button
@@ -454,7 +454,7 @@ export const ErrorDetails = ({
 
       <div className='space-y-3'>
         {details.stackTrace ? (
-          <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+          <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-900/25'>
             <div className='mb-3 flex items-center justify-between gap-3'>
               <Text
                 as='h3'
@@ -508,7 +508,7 @@ export const ErrorDetails = ({
               </div>
             </div>
 
-            <div className='rounded-lg border border-gray-100 bg-gray-50 dark:border-slate-700 dark:bg-slate-900/50'>
+            <div className='rounded-lg border border-gray-100 bg-gray-50 dark:border-slate-700 dark:bg-slate-950/50'>
               <div
                 className={
                   isStackTraceExpanded ? 'max-h-80 overflow-auto p-3' : 'p-3'
@@ -539,7 +539,7 @@ export const ErrorDetails = ({
           </div>
         ) : null}
 
-        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+        <div className='rounded-lg border border-gray-200 bg-white p-5 dark:border-slate-800/60 dark:bg-slate-900/25'>
           <Text
             as='h3'
             size='xs'

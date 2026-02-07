@@ -954,6 +954,18 @@
     "noOrganisations": "Noch keine Organisationen",
     "createOrganisation": "Sie haben noch keine Organisationen erstellt oder sind keiner beigetreten. Legen Sie los, indem Sie Ihre erste Organisation erstellen.",
     "new": "Neue Organisation",
+    "settings": {
+      "tabs": {
+        "general": "Allgemein",
+        "generalDesc": "Namen der Organisation und grundlegende Details aktualisieren.",
+        "people": "Mitglieder",
+        "peopleDesc": "Mitglieder und ihre Rollen verwalten.",
+        "projects": "Projekte",
+        "projectsDesc": "Projekte für diese Organisation hinzufügen oder entfernen.",
+        "danger": "Gefahrenzone",
+        "dangerDesc": "Unumkehrbare Aktionen für diese Organisation."
+      }
+    },
     "invite": {
       "title": "Einen Benutzer zu {{organisation}} einladen",
       "desc": "Geben Sie eine E-Mail-Adresse und eine Rolle der Person ein, die bei Swetrix registriert ist und die Sie zur Organisation einladen möchten. Die Einladung verfällt in {{expiresIn}} Stunden."

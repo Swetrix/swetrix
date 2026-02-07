@@ -1,4 +1,10 @@
-import cx from 'clsx'
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Transition,
+} from '@headlessui/react'
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
@@ -9,12 +15,10 @@ import {
   CaretDownIcon,
   CheckIcon,
 } from '@phosphor-icons/react'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { Fragment, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFetcher, useRevalidator } from 'react-router'
 import { toast } from 'sonner'
-
-import useOnClickOutside from '~/hooks/useOnClickOutside'
 import { roles, INVITATION_EXPIRES_IN, isSelfhosted } from '~/lib/constants'
 import { Role } from '~/lib/models/Organisation'
 import { Project, ShareOwnerProject } from '~/lib/models/Project'
@@ -25,6 +29,7 @@ import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
+import { cn } from '~/utils/generic'
 import { isValidEmail } from '~/utils/validator'
 
 const NoPeople = () => {
@@ -57,9 +62,6 @@ const TableUserRow = ({
   projectId,
 }: TableUserRowProps) => {
   const { t } = useTranslation('common')
-  const [open, setOpen] = useState(false)
-  const openRef = useRef<HTMLUListElement>(null)
-  useOnClickOutside(openRef, () => setOpen(false))
   const fetcher = useFetcher<ProjectSettingsActionData>()
   const revalidator = useRevalidator()
   const { id, created, confirmed, role, user } = data || {}
@@ -82,11 +84,10 @@ const TableUserRow = ({
       { intent: 'change-share-role', shareId: id, role: newRole },
       { method: 'POST', action: `/projects/settings/${projectId}` },
     )
-    setOpen(false)
   }
 
   return (
-    <tr className='bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/50'>
+    <tr className='bg-white hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900/50'>
       <td className='px-4 py-3 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100'>
         {user?.email || 'N/A'}
       </td>
@@ -97,59 +98,74 @@ const TableUserRow = ({
       </td>
       <td className='px-4 py-3 text-right text-sm whitespace-nowrap'>
         {confirmed ? (
-          <div>
-            <button
-              onClick={() => setOpen(!open)}
-              type='button'
-              disabled={user?.email === authedUserEmail}
-              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
-            >
-              {t(`project.settings.roles.${role}.name`)}
-              <CaretDownIcon
-                style={{ transform: open ? 'rotate(180deg)' : '' }}
-                className='ml-0.5 h-4 w-4 pt-px'
-              />
-            </button>
-            {open ? (
-              <ul
-                ref={openRef}
-                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left focus:outline-hidden dark:divide-gray-700 dark:bg-slate-900'
-              >
-                {_map(roles, (itRole, index) => (
-                  <li
-                    onClick={() => changeRole(itRole)}
-                    className={cx(
-                      'group flex cursor-pointer items-center justify-between p-4 hover:bg-indigo-600',
-                      index === 0 && 'rounded-t-md',
-                    )}
-                    key={itRole}
-                  >
-                    <div>
-                      <p className='font-bold text-gray-700 group-hover:text-gray-200 dark:text-gray-200'>
-                        {t(`project.settings.roles.${itRole}.name`)}
-                      </p>
-                      <p className='mt-1 text-sm text-gray-500 group-hover:text-gray-200'>
-                        {t(`project.settings.roles.${itRole}.shortDesc`)}
-                      </p>
-                    </div>
-                    {role === itRole ? (
-                      <span className='text-indigo-600 group-hover:text-gray-200'>
-                        <CheckIcon className='ml-1 h-7 w-7 pt-px' />
-                      </span>
-                    ) : null}
-                  </li>
-                ))}
-                <li
-                  onClick={onRemove}
-                  className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
+          <Menu as='div' className='relative inline-block text-left'>
+            {({ open }) => (
+              <>
+                <MenuButton
+                  disabled={user?.email === authedUserEmail}
+                  className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800'
                 >
-                  <p className='font-bold text-red-600 dark:text-red-500'>
-                    {t('project.settings.removeMember')}
-                  </p>
-                </li>
-              </ul>
-            ) : null}
-          </div>
+                  {t(`project.settings.roles.${role}.name`)}
+                  <CaretDownIcon
+                    className={cn(
+                      'ml-0.5 h-4 w-4 transform-gpu transition-transform',
+                      { 'rotate-180': open },
+                    )}
+                    aria-hidden='true'
+                  />
+                </MenuButton>
+                <Transition
+                  show={open}
+                  as={Fragment}
+                  enter='transition ease-out duration-100'
+                  enterFrom='transform opacity-0 scale-95'
+                  enterTo='transform opacity-100 scale-100'
+                  leave='transition ease-in duration-75'
+                  leaveFrom='transform opacity-100 scale-100'
+                  leaveTo='transform opacity-0 scale-95'
+                >
+                  <MenuItems
+                    static
+                    anchor={{ to: 'bottom end', offset: 8 }}
+                    modal={false}
+                    className='z-50 w-72 rounded-lg bg-white p-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden dark:bg-slate-900 dark:ring-white/10'
+                  >
+                    {_map(roles, (itRole) => (
+                      <MenuItem key={itRole}>
+                        <button
+                          type='button'
+                          onClick={() => changeRole(itRole)}
+                          className='flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800'
+                        >
+                          <div>
+                            <p className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                              {t(`project.settings.roles.${itRole}.name`)}
+                            </p>
+                            <p className='mt-0.5 text-sm text-gray-500 dark:text-gray-400'>
+                              {t(`project.settings.roles.${itRole}.shortDesc`)}
+                            </p>
+                          </div>
+                          {role === itRole ? (
+                            <CheckIcon className='ml-2 h-5 w-5 shrink-0 text-indigo-600 dark:text-indigo-500' />
+                          ) : null}
+                        </button>
+                      </MenuItem>
+                    ))}
+                    <div className='my-1 border-t border-gray-200 dark:border-slate-700' />
+                    <MenuItem>
+                      <button
+                        type='button'
+                        onClick={onRemove}
+                        className='flex w-full items-center rounded-md px-3 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-500 dark:hover:bg-red-500/10'
+                      >
+                        {t('project.settings.removeMember')}
+                      </button>
+                    </MenuItem>
+                  </MenuItems>
+                </Transition>
+              </>
+            )}
+          </Menu>
         ) : (
           <div className='flex items-center justify-end'>
             <Badge
@@ -157,12 +173,7 @@ const TableUserRow = ({
               className='mr-3'
               label={t('common.pending')}
             />
-            <Button
-              type='button'
-              className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              small
-              onClick={onRemove}
-            >
+            <Button type='button' white small onClick={onRemove}>
               <TrashIcon className='h-4 w-4' />
             </Button>
           </div>
@@ -334,26 +345,26 @@ const People = ({ project }: PeopleProps) => {
         {_isEmpty(share) ? (
           <NoPeople />
         ) : (
-          <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700'>
-            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-700'>
-              <thead className='bg-gray-50 dark:bg-slate-800'>
+          <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-800'>
+            <table className='min-w-full divide-y divide-gray-200 dark:divide-slate-800'>
+              <thead className='bg-gray-50 dark:bg-slate-900'>
                 <tr>
                   <th
                     scope='col'
-                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                    className='px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-900 uppercase dark:text-white'
                   >
                     {t('auth.common.email')}
                   </th>
                   <th
                     scope='col'
-                    className='px-4 py-3 text-left text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white'
+                    className='px-4 py-3 text-left text-xs font-semibold tracking-wider text-gray-900 uppercase dark:text-white'
                   >
                     {t('profileSettings.sharedTable.joinedOn')}
                   </th>
                   <th scope='col' />
                 </tr>
               </thead>
-              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-900'>
+              <tbody className='divide-y divide-gray-200 bg-white dark:divide-slate-800 dark:bg-slate-950'>
                 {_map(share, (data) => (
                   <TableUserRow
                     data={data}
@@ -402,13 +413,14 @@ const People = ({ project }: PeopleProps) => {
       <Modal
         onClose={closeModal}
         customButtons={
-          <button
-            type='button'
-            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
+          <Button
+            primary
+            large
             onClick={handleSubmit}
+            className='w-full justify-center sm:ml-3 sm:w-auto'
           >
             {t('common.invite')}
-          </button>
+          </Button>
         }
         closeText={t('common.cancel')}
         message={
@@ -447,8 +459,8 @@ const People = ({ project }: PeopleProps) => {
                 {t('project.settings.role')}
               </label>
               <div
-                className={cx(
-                  'mt-1 -space-y-px rounded-md bg-white dark:bg-slate-900',
+                className={cn(
+                  'mt-1 -space-y-px rounded-md bg-white dark:bg-slate-950',
                   {
                     'border border-red-300': errors.role,
                   },
@@ -456,7 +468,7 @@ const People = ({ project }: PeopleProps) => {
               >
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                 <label
-                  className={cx(
+                  className={cn(
                     'relative flex cursor-pointer rounded-tl-md rounded-tr-md border border-gray-200 p-4 dark:border-slate-600',
                     {
                       'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
@@ -476,7 +488,7 @@ const People = ({ project }: PeopleProps) => {
                   />
                   <div className='ml-3 flex flex-col'>
                     <span
-                      className={cx('block text-sm font-medium', {
+                      className={cn('block text-sm font-medium', {
                         'text-indigo-900 dark:text-white':
                           form.role === 'admin',
                         'text-gray-700 dark:text-gray-200':
@@ -486,7 +498,7 @@ const People = ({ project }: PeopleProps) => {
                       {t('project.settings.roles.admin.name')}
                     </span>
                     <span
-                      className={cx('block text-sm', {
+                      className={cn('block text-sm', {
                         'text-indigo-700 dark:text-gray-100':
                           form.role === 'admin',
                         'text-gray-700 dark:text-gray-200':
@@ -499,7 +511,7 @@ const People = ({ project }: PeopleProps) => {
                 </label>
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                 <label
-                  className={cx(
+                  className={cn(
                     'relative flex cursor-pointer rounded-br-md rounded-bl-md border border-gray-200 p-4 dark:border-gray-500',
                     {
                       'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
@@ -519,7 +531,7 @@ const People = ({ project }: PeopleProps) => {
                   />
                   <div className='ml-3 flex flex-col'>
                     <span
-                      className={cx('block text-sm font-medium', {
+                      className={cn('block text-sm font-medium', {
                         'text-indigo-900 dark:text-white':
                           form.role === 'viewer',
                         'text-gray-700 dark:text-gray-200':
@@ -529,7 +541,7 @@ const People = ({ project }: PeopleProps) => {
                       {t('project.settings.roles.viewer.name')}
                     </span>
                     <span
-                      className={cx('block text-sm', {
+                      className={cn('block text-sm', {
                         'text-indigo-700 dark:text-gray-100':
                           form.role === 'viewer',
                         'text-gray-700 dark:text-gray-200':

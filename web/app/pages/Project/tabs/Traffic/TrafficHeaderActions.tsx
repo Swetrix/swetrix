@@ -138,7 +138,7 @@ const TrafficHeaderActions = ({
                       setIsAddAViewOpened(true)
                     }}
                     aria-label={t('common.settings')}
-                    className='rounded-md p-1 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                    className='rounded-md p-1 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-900 dark:hover:text-slate-200'
                   >
                     <PencilIcon className='size-3' />
                   </button>
@@ -158,7 +158,7 @@ const TrafficHeaderActions = ({
                       disabled={isDeleting}
                       aria-label={t('common.delete')}
                       className={cx(
-                        'rounded-md p-1 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-800 dark:hover:text-slate-200',
+                        'rounded-md p-1 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-900 dark:hover:text-slate-200',
                         {
                           'cursor-not-allowed opacity-50': isDeleting,
                         },
@@ -197,7 +197,7 @@ const TrafficHeaderActions = ({
           }
         }}
         chevron='mini'
-        buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200'
+        buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200'
         headless
       />
 
@@ -216,7 +216,7 @@ const TrafficHeaderActions = ({
           item.onClick()
         }}
         chevron='mini'
-        buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:dark:ring-gray-200'
+        buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:dark:ring-gray-200'
         headless
       />
     </>

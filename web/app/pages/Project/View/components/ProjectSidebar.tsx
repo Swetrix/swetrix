@@ -186,8 +186,8 @@ const CollapsibleGroup: React.FC<{
                       className={cn(
                         'group flex items-center justify-center rounded-md p-2 transition-colors',
                         {
-                          'bg-gray-100 dark:bg-slate-800': isCurrent,
-                          'hover:bg-gray-100 dark:hover:bg-slate-800/60':
+                          'bg-gray-100 dark:bg-slate-900': isCurrent,
+                          'hover:bg-gray-100 dark:hover:bg-slate-900/60':
                             !isCurrent,
                           'cursor-wait': dataLoading && tab.id !== 'settings',
                         },
@@ -220,7 +220,7 @@ const CollapsibleGroup: React.FC<{
             setIsExpanded(newValue)
             setGroupExpandedState(group.id, newValue)
           }}
-          className='group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-800/60'
+          className='group flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors hover:bg-gray-100 dark:hover:bg-slate-900/60'
         >
           <Text
             as='span'
@@ -284,8 +284,8 @@ const CollapsibleGroup: React.FC<{
                   className={cn(
                     'group flex items-center gap-1.5 rounded-md px-2.5 py-2 transition-colors',
                     {
-                      'bg-gray-100 dark:bg-slate-800': isCurrent,
-                      'hover:bg-gray-100 dark:hover:bg-slate-800/60':
+                      'bg-gray-100 dark:bg-slate-900': isCurrent,
+                      'hover:bg-gray-100 dark:hover:bg-slate-900/60':
                         !isCurrent,
                       'cursor-wait': dataLoading && tab.id !== 'settings',
                     },
@@ -455,9 +455,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       className={cn(
         'sticky top-2 flex shrink-0 flex-col self-start overflow-hidden border border-gray-200 bg-white dark:border-slate-800/60',
         isMobileOpen
-          ? 'h-screen w-64 dark:bg-slate-900'
+          ? 'h-screen w-64 dark:bg-slate-950'
           : cn(
-              'rounded-lg transition-[width,height] duration-300 ease-in-out dark:bg-slate-800/25',
+              'rounded-lg transition-[width,height] duration-300 ease-in-out dark:bg-slate-900/25',
               isScrolled
                 ? 'h-[calc(100vh-var(--banner-height)-1.5rem)]'
                 : 'h-[calc(100vh-var(--header-total-height)-1rem)]',
@@ -524,7 +524,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
           <button
             type='button'
             onClick={onMobileClose}
-            className='ml-2 rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-800 dark:hover:text-gray-200'
+            className='ml-2 rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-slate-900 dark:hover:text-gray-200'
             aria-label={t('common.close')}
           >
             <XIcon className='h-5 w-5' />
@@ -565,7 +565,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                           {
                             'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
                               isCurrent,
-                            'hover:bg-gray-100 dark:hover:bg-slate-800/60':
+                            'hover:bg-gray-100 dark:hover:bg-slate-900/60':
                               !isCurrent,
                             'cursor-wait': dataLoading,
                           },
@@ -594,7 +594,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                     {
                       'bg-linear-to-r from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20':
                         isCurrent,
-                      'hover:bg-gray-100 dark:hover:bg-slate-800/60':
+                      'hover:bg-gray-100 dark:hover:bg-slate-900/60':
                         !isCurrent,
                       'cursor-wait': dataLoading,
                     },
@@ -643,7 +643,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             onClick={toggleCollapsed}
             className={cn(
               'group flex w-full items-center rounded-md px-2.5 py-2 text-sm font-medium tracking-normal transition-colors',
-              'text-gray-900 hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-slate-800/60',
+              'text-gray-900 hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-slate-900/60',
               isCollapsed ? 'justify-center' : 'gap-2.5',
             )}
             aria-label={isCollapsed ? t('common.expand') : t('common.collapse')}
@@ -673,7 +673,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             onClick={onMobileClose}
             className={cn(
               'group flex w-full items-center rounded-md px-2.5 py-2 text-sm font-medium tracking-normal transition-colors',
-              'text-gray-900 hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-slate-800/60',
+              'text-gray-900 hover:bg-gray-100 dark:text-gray-50 dark:hover:bg-slate-900/60',
               isCollapsed && !isMobileOpen ? 'justify-center' : 'gap-2.5',
             )}
             aria-label={t('common.settings')}
@@ -726,7 +726,7 @@ export const MobileSidebarTrigger: React.FC<MobileSidebarTriggerProps> = ({
       <button
         type='button'
         onClick={onClick}
-        className='flex items-center justify-center rounded-md border border-gray-300 p-2 text-gray-700 transition-all ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:text-gray-200 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+        className='flex items-center justify-center rounded-md border border-gray-300 p-2 text-gray-700 transition-all ring-inset hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-slate-700/80 dark:text-gray-200 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
         aria-label={t('common.openMenu')}
       >
         <ListIcon className='h-5 w-5' />

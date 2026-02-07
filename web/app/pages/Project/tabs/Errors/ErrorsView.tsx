@@ -237,13 +237,13 @@ const getErrorTrendsChartSettings = (
         if (!item || _isEmpty(item) || !item[0]) {
           return ''
         }
-        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-900 rounded-md ring-1 ring-black/10 px-3 py-1'>
           <li class='font-semibold'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
           }</li>
-          <hr class='border-gray-200 dark:border-gray-600' />
+          <hr class='border-gray-200 dark:border-slate-800' />
           ${_map(item, (el: { id: string; name: string; value: string }) => {
             return `
             <li class='flex justify-between'>
@@ -292,7 +292,7 @@ interface StatCardProps {
 }
 
 const StatCard = ({ icon, value, label }: StatCardProps) => (
-  <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
+  <div className='relative overflow-hidden rounded-lg border border-gray-200 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-900/25'>
     <div className='pointer-events-none absolute -bottom-5 -left-5 opacity-10 [&>svg]:size-24'>
       {icon}
     </div>
@@ -362,7 +362,7 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
 
   return (
     <Link to={{ search: params.toString() }}>
-      <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/60 dark:bg-slate-800/25 dark:hover:bg-slate-800/60'>
+      <li className='relative mb-3 flex cursor-pointer justify-between gap-x-6 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-200/70 sm:px-6 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'>
         <div className='flex min-w-0 gap-x-4'>
           <div className='min-w-0 flex-auto'>
             <div className='flex items-center gap-x-2 leading-6'>
@@ -908,7 +908,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
           disabled={errorStatusUpdating}
           onClick={markErrorAsResolved}
           className={cx(
-            'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+            'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200',
             {
               'cursor-not-allowed opacity-50':
                 errorLoading && !errorStatusUpdating,
@@ -926,7 +926,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
           disabled={errorStatusUpdating}
           onClick={markErrorAsActive}
           className={cx(
-            'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+            'group relative rounded-md border border-transparent bg-transparent px-3 py-1.5 text-sm font-medium text-gray-700 transition-all ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200',
             {
               'cursor-not-allowed opacity-50':
                 errorLoading && !errorStatusUpdating,
@@ -1198,7 +1198,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
   ) {
     return (
       <div
-        className={cx('flex flex-col bg-gray-50 dark:bg-slate-900', {
+        className={cx('flex flex-col bg-gray-50 dark:bg-slate-950', {
           'min-h-including-header': !isEmbedded,
           'min-h-screen': isEmbedded,
         })}
@@ -1226,7 +1226,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
           />
         )
       }}
-      buttonClassName='rounded-md border border-transparent p-2 transition-all hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+      buttonClassName='rounded-md border border-transparent p-2 transition-all hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden ring-inset hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200'
       selectItemClassName='p-0'
       keyExtractor={(pair) => pair.id}
       onSelect={({ id: pairID }) => {
@@ -1260,7 +1260,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
         <>
           <div className='flex flex-col gap-2 lg:flex-row'>
             {chartOptions && overview?.chart ? (
-              <div className='w-full rounded-lg border border-gray-200 bg-white p-4 lg:w-[65%] dark:border-slate-800/60 dark:bg-slate-800/25'>
+              <div className='w-full rounded-lg border border-gray-200 bg-white p-4 lg:w-[65%] dark:border-slate-800/60 dark:bg-slate-900/25'>
                 <BillboardChart options={chartOptions} className='h-[220px]' />
               </div>
             ) : null}
@@ -1295,7 +1295,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
             </Text>
             <ClientOnly
               fallback={
-                <div className='bg-gray-50 dark:bg-slate-900'>
+                <div className='bg-gray-50 dark:bg-slate-950'>
                   <Loader />
                 </div>
               }
@@ -1315,7 +1315,7 @@ const ErrorsViewInner = ({ deferredData }: ErrorsViewInnerProps) => {
                 title={t('project.loadMore')}
                 onClick={loadMoreErrors}
                 className={cx(
-                  'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                  'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 ring-inset hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-950 dark:text-gray-50 hover:dark:border-slate-700/80 dark:hover:bg-slate-900 focus:dark:ring-gray-200',
                   {
                     'cursor-not-allowed opacity-50': errorsLoading,
                   },

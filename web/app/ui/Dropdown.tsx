@@ -77,7 +77,7 @@ function Dropdown<T>({
               {
                 'justify-between': aside,
                 'justify-center': !aside,
-                'inline-flex w-full rounded-md border-0 bg-white px-3 py-2 text-sm font-medium ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden md:px-4 dark:bg-slate-900 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-800 dark:focus:ring-slate-300':
+                'inline-flex w-full rounded-md border-0 bg-white px-3 py-2 text-sm font-medium ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-slate-900 focus:outline-hidden md:px-4 dark:bg-slate-950 dark:text-gray-50 dark:ring-slate-700/80 dark:hover:bg-slate-800 dark:focus:ring-slate-300':
                   !headless,
                 'group inline-flex w-full px-3 py-2 text-sm font-medium outline-hidden md:px-4':
                   headless,
@@ -129,7 +129,7 @@ function Dropdown<T>({
               }}
               modal={false}
               className={cn(
-                'z-50 w-40 min-w-max rounded-md bg-white p-1 ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-700/80',
+                'z-50 w-40 min-w-max rounded-md bg-white p-1 ring-1 ring-gray-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800',
                 menuItemsClassName,
               )}
             >

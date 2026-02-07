@@ -54,7 +54,7 @@ export const Switch = ({
             {
               'translate-x-3': checked,
               'translate-x-0': !checked,
-              'bg-white dark:bg-slate-900': checked,
+              'bg-white dark:bg-slate-950': checked,
               'bg-white': !checked,
             },
           )}

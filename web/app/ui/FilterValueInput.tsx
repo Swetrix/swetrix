@@ -347,7 +347,7 @@ const FilterValueInput = ({
           ref={inputRef}
           type='text'
           className={cx(
-            'w-full rounded-md border border-gray-300 bg-white py-2 pr-8 text-sm transition-colors ring-inset placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-gray-700 dark:bg-slate-800 dark:text-gray-50 dark:placeholder:text-gray-500',
+            'w-full rounded-md border border-gray-300 bg-white py-2 pr-8 text-sm transition-colors ring-inset placeholder:text-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:border-gray-700 dark:bg-slate-900 dark:text-gray-50 dark:placeholder:text-gray-500',
             {
               'cursor-not-allowed opacity-60': disabled,
               'pl-8': showIconInInput,
@@ -371,7 +371,7 @@ const FilterValueInput = ({
       </div>
 
       {isOpen && !disabled ? (
-        <div className='absolute z-50 mt-1 w-full min-w-[200px] rounded-md bg-white text-sm shadow-lg ring-1 ring-black/10 dark:bg-slate-800'>
+        <div className='absolute z-50 mt-1 w-full min-w-[200px] rounded-md bg-white text-sm shadow-lg ring-1 ring-black/10 dark:bg-slate-900'>
           {isLoading ? (
             <div className='flex items-center justify-center gap-2 px-4 py-3 text-gray-500 dark:text-gray-400'>
               <Spin className='size-4' />

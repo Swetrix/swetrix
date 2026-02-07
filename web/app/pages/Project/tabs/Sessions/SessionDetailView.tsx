@@ -202,7 +202,7 @@ export const SessionDetailView = ({
     <div className='space-y-3'>
       <div className='flex flex-col gap-3 lg:flex-row'>
         <div className='space-y-4 lg:w-[380px]'>
-          <div className='rounded-lg border border-gray-200 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+          <div className='rounded-lg border border-gray-200 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-900/25'>
             <Text
               as='h3'
               size='xs'
@@ -388,7 +388,7 @@ export const SessionDetailView = ({
             {details.profileId ? (
               <Link
                 to={`/projects/${projectId}?tab=${PROJECT_TABS.profiles}&profileId=${encodeURIComponent(details.profileId)}`}
-                className='mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700'
+                className='mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-slate-600 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-700'
               >
                 <UserIcon className='h-4 w-4' />
                 {t('project.goToProfile')}
@@ -399,7 +399,7 @@ export const SessionDetailView = ({
 
         <div className='flex-1'>
           {!_isEmpty(activeSession?.chart) ? (
-            <div className='rounded-lg border border-gray-200 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+            <div className='rounded-lg border border-gray-200 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-900/25'>
               <div className='mb-2 flex items-center justify-between'>
                 <Text
                   as='h3'
@@ -414,7 +414,7 @@ export const SessionDetailView = ({
                 {zoomedTimeRange && !isTouchDevice ? (
                   <button
                     onClick={resetZoom}
-                    className='rounded border bg-white px-2 py-1 text-xs text-gray-800 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+                    className='rounded border bg-white px-2 py-1 text-xs text-gray-800 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 hover:dark:bg-slate-700'
                   >
                     {t('project.resetZoom')}
                   </button>
@@ -434,7 +434,7 @@ export const SessionDetailView = ({
         </div>
       </div>
 
-      <div className='rounded-lg border border-gray-200 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25'>
+      <div className='rounded-lg border border-gray-200 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-900/25'>
         <h3 className='mb-4 text-xs font-semibold tracking-wide text-gray-900 uppercase dark:text-gray-50'>
           {t('project.pageflow')}
         </h3>

@@ -59,7 +59,7 @@ export function ToolsNav({ className }: ToolsNavProps) {
   return (
     <nav
       className={cn(
-        'overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700',
+        'overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-700',
         className,
       )}
     >
@@ -119,7 +119,7 @@ export function ToolsNavMobile({ className }: ToolsNavProps) {
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-700',
+        'overflow-hidden rounded-xl bg-white ring-1 ring-gray-200 dark:bg-slate-900 dark:ring-slate-700',
         className,
       )}
     >

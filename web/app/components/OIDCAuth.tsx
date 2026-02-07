@@ -17,7 +17,7 @@ const OIDCAuth = ({ onClick, className, disabled }: OIDCAuthProps) => {
     <Button
       className={cx(
         className,
-        'flex w-full items-center justify-center border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700',
+        'flex items-center justify-center border-indigo-100 dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800',
       )}
       onClick={onClick}
       secondary

@@ -160,7 +160,7 @@ const SolutionsMenu = () => {
             leaveTo='opacity-0 translate-y-1'
           >
             <PopoverPanel className='absolute z-40 mt-4 flex w-screen max-w-max backdrop-blur-md'>
-              <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-50/50 p-1.5 dark:divide-slate-700/60 dark:border-slate-700/60 dark:bg-slate-900/50'>
+              <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-50/50 p-1.5 dark:divide-slate-700/60 dark:border-slate-700/60 dark:bg-slate-950/50'>
                 <div className='grid w-full grid-cols-2 gap-1 p-4'>
                   {_map(solutions, (item) => (
                     <div
@@ -281,7 +281,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             </MenuButton>
           </div>
           <MenuItems
-            className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 transition duration-200 ease-out focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 dark:bg-slate-900 dark:ring-slate-800'
+            className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 transition duration-200 ease-out focus:outline-hidden data-closed:scale-95 data-closed:opacity-0 dark:bg-slate-950 dark:ring-slate-800'
             transition
             modal={false}
           >
@@ -305,7 +305,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             <Disclosure>
               {({ open }) => (
                 <>
-                  <DisclosureButton className='flex w-full justify-between rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'>
+                  <DisclosureButton className='flex w-full justify-between rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-900/60'>
                     <div className='flex'>
                       <Flag
                         className='mr-1.5 rounded-xs'
@@ -336,14 +336,14 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                     leaveTo='transform opacity-0 scale-95'
                   >
                     <DisclosurePanel
-                      className='absolute right-0 z-50 w-full min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-700/80'
+                      className='absolute right-0 z-50 w-full min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-950 dark:ring-slate-700/80'
                       static
                     >
                       {_map(whitelist, (lng) => (
                         <DisclosureButton
                           key={lng}
                           as='span'
-                          className='block cursor-pointer rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800'
+                          className='block cursor-pointer rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-900'
                           onClick={() => changeLanguage(lng)}
                         >
                           <div className='flex'>
@@ -371,7 +371,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                   href={CONTACT_US_URL}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
+                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-900/60'
                 >
                   <LifebuoyIcon className='h-4 w-4' />
                   {t('footer.support')}
@@ -381,7 +381,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <MenuItem>
                 <Link
                   to={routes.contact}
-                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
+                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-900/60'
                 >
                   <LifebuoyIcon className='h-4 w-4' />
                   {t('footer.support')}
@@ -392,7 +392,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <MenuItem>
                 <Link
                   to={routes.billing}
-                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
+                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-900/60'
                 >
                   <CreditCardIcon className='h-4 w-4' />
                   {t('common.billing')}
@@ -405,7 +405,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             <MenuItem>
               <Link
                 to={routes.user_settings}
-                className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
+                className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-900/60'
               >
                 <GearIcon className='h-4 w-4' />
                 {t('common.accountSettings')}
@@ -415,7 +415,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
               <MenuItem>
                 <Link
                   to={routes.organisations}
-                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
+                  className='flex items-center gap-2 rounded-md p-2 text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-900/60'
                 >
                   <BuildingsIcon className='h-4 w-4' />
                   {t('organisations.organisations')}
@@ -425,7 +425,7 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             <MenuItem>
               <button
                 type='button'
-                className='flex w-full items-center gap-2 rounded-md p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-800/60'
+                className='flex w-full items-center gap-2 rounded-md p-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-900/60'
                 onClick={logoutHandler}
               >
                 <SignOutIcon className='h-4 w-4' />
@@ -487,7 +487,7 @@ const TrialBanner = ({ status, rawStatus }: TrialBannerProps) => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='header-banner w-full bg-slate-900 text-gray-100 dark:bg-slate-800/70'>
+    <div className='header-banner w-full bg-slate-900 text-gray-100 dark:bg-slate-900/70'>
       <div className='mx-auto max-w-7xl px-4 py-2 text-center text-sm sm:px-6 lg:px-8'>
         <span className='font-medium'>{status}</span>
         <span className='mx-1.5'>—</span>
@@ -680,7 +680,7 @@ const AuthedHeader = ({
   return (
     <header
       className={cx('relative overflow-x-clip', {
-        'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900':
+        'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-950':
           colourBackground,
       })}
     >
@@ -746,7 +746,7 @@ const NotAuthedHeader = ({
   return (
     <header
       className={cx('relative overflow-x-clip', {
-        'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900':
+        'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-950':
           colourBackground,
       })}
     >
@@ -872,7 +872,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
         onClose={setMobileMenuOpen}
       >
         <div className='fixed inset-0 z-10' />
-        <DialogPanel className='fixed inset-y-0 top-0 right-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl sm:max-w-sm sm:border dark:border-slate-900/80 dark:bg-slate-800/80'>
+        <DialogPanel className='fixed inset-y-0 top-0 right-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl sm:max-w-sm sm:border dark:border-slate-900/80 dark:bg-slate-900/80'>
           <div className='flex items-center justify-between'>
             <SwetrixLogo />
             <div className='flex items-center justify-center space-x-3'>

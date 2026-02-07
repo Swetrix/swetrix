@@ -99,7 +99,7 @@ export const ComparisonTable = ({ className }: ComparisonTableProps) => {
           <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
             <div className='overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
               <table className='w-full min-w-full divide-y divide-slate-500'>
-                <thead className='bg-gray-100 dark:bg-slate-800'>
+                <thead className='bg-gray-100 dark:bg-slate-900'>
                   <tr>
                     <th className='sr-only'>{t('main.metric')}</th>
                     {_map(SWETRIX_AND_COMPETITORS_LIST, (item, key) => (
@@ -113,7 +113,7 @@ export const ComparisonTable = ({ className }: ComparisonTableProps) => {
                     ))}
                   </tr>
                 </thead>
-                <tbody className='divide-y divide-slate-300 bg-gray-50 dark:divide-slate-700 dark:bg-slate-800'>
+                <tbody className='divide-y divide-slate-300 bg-gray-50 dark:divide-slate-700 dark:bg-slate-900'>
                   {_map(COMPETITOR_FEATURE_TABLE.Swetrix, (_, key) => (
                     <tr key={key}>
                       <td className='w-1/6 px-3 py-4 text-sm text-slate-700 sm:pl-6 dark:text-gray-50'>

@@ -179,7 +179,7 @@ const ModalMessage = ({
             onChange={(date) => setDateRange(date)}
             options={{
               altInputClass:
-                ' focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-slate-800 rounded-md',
+                ' focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-slate-900 rounded-md',
             }}
             value={dateRange}
           />
@@ -874,7 +874,7 @@ const ProjectSettings = () => {
   }, [tabs, activeTab])
 
   return (
-    <div className='flex min-h-min-footer flex-col bg-gray-50 pb-40 dark:bg-slate-900'>
+    <div className='flex min-h-min-footer flex-col bg-gray-50 pb-40 dark:bg-slate-950'>
       <div className='mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8'>
         <Link
           to={_replace(routes.project, ':id', id)}
@@ -922,9 +922,9 @@ const ProjectSettings = () => {
                     className={cx(
                       'group flex items-center rounded-md px-3 py-2 text-left text-sm text-gray-900 transition-colors',
                       {
-                        'bg-gray-200 font-semibold dark:bg-slate-800 dark:text-gray-50':
+                        'bg-gray-200 font-semibold dark:bg-slate-900 dark:text-gray-50':
                           isCurrent,
-                        'hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-slate-800 dark:hover:text-gray-50':
+                        'hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-slate-900 dark:hover:text-gray-50':
                           !isCurrent,
                       },
                     )}

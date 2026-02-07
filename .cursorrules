@@ -39,8 +39,8 @@ The interface should feel reliable and professional without being cold or corpor
 
 **Colors**:
 - Primary/Accent: `indigo-600` (light), `indigo-500` (dark)
-- Backgrounds: `gray-50` (light), `slate-900` (dark)
-- Cards/Surfaces: `white` / `slate-800`
+- Backgrounds: `gray-50` (light), `slate-950` (dark)
+- Cards/Surfaces: `white` / `slate-900`
 - Borders: `ring-1 ring-black/5` (light), `ring-white/10` (dark)
 - Danger: `red-500/600`
 - Success: `emerald-500/600`
@@ -62,7 +62,5 @@ The interface should feel reliable and professional without being cold or corpor
 - Use Framer Motion for complex sequences
 
 **Components**:
-- Buttons: HeadlessUI-based, primary uses `bg-slate-900` (light) / `bg-slate-800` (dark)
-- Inputs: Ring borders with `focus:ring-indigo-500`
 - Cards: Subtle ring borders, optional backdrop blur
 - Modals/Dropdowns: HeadlessUI with fade/slide transitions

@@ -141,7 +141,7 @@ const AlertRow = ({
     <>
       <li
         onClick={() => openAlert(id)}
-        className='group relative mb-3 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100 dark:border-slate-800/60 dark:bg-slate-800/25 dark:hover:bg-slate-800/60'
+        className='group relative mb-3 cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-gray-50 transition-colors hover:bg-gray-100 dark:border-slate-800/60 dark:bg-slate-900/25 dark:hover:bg-slate-900/60'
       >
         <div className='flex items-center justify-between gap-4 px-4 py-3 sm:px-5'>
           {/* Left section: Icon + Name + Badge */}
@@ -455,7 +455,7 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
 
   if (!canManageAlerts) {
     return (
-      <div className='mt-5 rounded-lg bg-gray-700 p-5'>
+      <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
         <div className='flex items-center text-gray-50'>
           <BellRingingIcon className='mr-2 h-8 w-8' />
           <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
@@ -511,7 +511,7 @@ const ProjectAlertsInner = ({ deferredData }: ProjectAlertsInnerProps) => {
       {isLoading && !_isEmpty(alerts) ? <LoadingBar /> : null}
       <div className='mt-4'>
         {_isEmpty(alerts) ? (
-          <div className='mt-5 rounded-lg bg-gray-700 p-5'>
+          <div className='mt-5 rounded-lg bg-slate-700 p-5 dark:bg-slate-900'>
             <div className='flex items-center text-gray-50'>
               <BellRingingIcon className='mr-2 h-8 w-8' />
               <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>

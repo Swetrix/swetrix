@@ -6,42 +6,18 @@ import GoogleGSVG from '~/ui/icons/GoogleG'
 
 interface GoogleAuthProps {
   onClick: () => void
-  isMiniButton?: boolean
   className?: string
   disabled?: boolean
 }
 
-const GoogleAuth = ({
-  onClick,
-  isMiniButton,
-  className,
-  disabled,
-}: GoogleAuthProps) => {
+const GoogleAuth = ({ onClick, className, disabled }: GoogleAuthProps) => {
   const { t } = useTranslation()
-
-  if (isMiniButton) {
-    return (
-      <Button
-        title={t('auth.common.continueWithGoogle')}
-        className={cx(
-          className,
-          'bg-transparent ring-1 ring-slate-300 hover:bg-slate-100 dark:ring-slate-700 dark:hover:bg-slate-800/60',
-        )}
-        onClick={onClick}
-        disabled={disabled}
-        secondary
-        regular
-      >
-        <GoogleGSVG className='size-5' />
-      </Button>
-    )
-  }
 
   return (
     <Button
       className={cx(
         className,
-        'flex items-center justify-center border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700',
+        'flex items-center justify-center border-indigo-100 dark:border-slate-700/80 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800',
       )}
       onClick={onClick}
       secondary

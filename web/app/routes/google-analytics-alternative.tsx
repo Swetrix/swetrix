@@ -167,7 +167,7 @@ const LiveDemoPreview = () => {
             href={LIVE_DEMO_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900'
             aria-label={
               t('gaAlternative.hero.viewDemo') + ' (opens in a new tab)'
             }
@@ -195,7 +195,7 @@ const LiveDemoPreview = () => {
             href={LIVE_DEMO_URL}
             target='_blank'
             rel='noopener noreferrer'
-            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:bg-slate-900 dark:text-white dark:ring-white/10 dark:hover:bg-slate-800'
+            className='pointer-events-auto inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-black/10 transition-all hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none dark:bg-slate-950 dark:text-white dark:ring-white/10 dark:hover:bg-slate-900'
             aria-label={
               t('gaAlternative.hero.viewDemo') + ' (opens in a new tab)'
             }
@@ -321,7 +321,7 @@ const ComparisonTable = () => {
               {t('gaAlternative.comparison.title')}
             </caption>
             <thead>
-              <tr className='bg-slate-50 dark:bg-slate-900/40'>
+              <tr className='bg-slate-50 dark:bg-slate-950/40'>
                 <th className='px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-gray-50'>
                   {t('gaAlternative.comparison.table.headers.whatMatters')}
                 </th>
@@ -341,7 +341,7 @@ const ComparisonTable = () => {
                     'border-t border-slate-200 dark:border-white/10',
                     idx % 2 === 1
                       ? 'bg-white dark:bg-slate-800'
-                      : 'bg-slate-50/40 dark:bg-slate-900/10',
+                      : 'bg-slate-50/40 dark:bg-slate-950/10',
                   )}
                 >
                   <td className='px-6 py-4 text-sm font-medium text-slate-900 dark:text-gray-50'>
@@ -614,7 +614,7 @@ const Migration = () => {
 export default function GoogleAnalyticsAlternativeRoute() {
   return (
     <div className='overflow-hidden'>
-      <main className='bg-gray-50 dark:bg-slate-900'>
+      <main className='bg-gray-50 dark:bg-slate-950'>
         <Hero />
         <FeedbackDual />
         <WhySwitch />

@@ -45,7 +45,7 @@ const Input = ({
   const inputElement = (
     <HeadlessInput
       className={cx(
-        'w-full rounded-md border-0 ring-1 ring-inset focus:ring-slate-900 sm:text-sm dark:bg-slate-900 dark:text-gray-50 dark:placeholder-gray-400 dark:focus:ring-slate-300',
+        'w-full rounded-md border-0 ring-1 ring-inset focus:ring-slate-900 sm:text-sm dark:bg-slate-950 dark:text-gray-50 dark:placeholder-gray-400 dark:focus:ring-slate-300',
         {
           'text-red-900 placeholder-red-300 ring-red-600': isError,
           'ring-gray-300 dark:ring-slate-700/80': !isError,

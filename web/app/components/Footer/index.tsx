@@ -406,7 +406,7 @@ const LanguageSelector = () => {
     <Dropdown
       position='up'
       items={whitelist}
-      buttonClassName='!py-2 !px-3 inline-flex items-center rounded-md bg-transparent hover:bg-white/10 [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-white border border-white/20'
+      buttonClassName='!py-2 !px-3 inline-flex items-center rounded-md bg-transparent hover:bg-slate-800/50  [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-white border border-white/20'
       title={
         <span className='inline-flex items-center'>
           <Flag
@@ -486,7 +486,7 @@ const ThemeSelector = () => {
       onSelect={(item) => setTheme(item.key as 'light' | 'dark')}
       className='w-full sm:w-auto'
       headless
-      buttonClassName='!py-2 !px-3 inline-flex items-center rounded-md bg-transparent hover:bg-white/10 [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-white border border-white/20'
+      buttonClassName='!py-2 !px-3 inline-flex items-center rounded-md bg-transparent hover:bg-slate-800/50 [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-white border border-white/20'
     />
   )
 }
@@ -582,7 +582,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
 
   return (
     <footer
-      className='relative overflow-hidden border-t border-white/10 bg-slate-900 pt-16 pb-8'
+      className='relative overflow-hidden border-t border-white/10 bg-slate-900 pt-16 pb-8 dark:bg-slate-900/25'
       aria-labelledby='footer-heading'
     >
       <h2 id='footer-heading' className='sr-only'>

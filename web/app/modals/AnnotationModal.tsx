@@ -89,7 +89,7 @@ const AnnotationModal = ({
               type='button'
               onClick={_onDelete}
               disabled={loading}
-              className='inline-flex w-full justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-base font-medium text-red-700 transition-colors hover:bg-red-50 sm:w-auto sm:text-sm dark:border-red-600 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-900/20'
+              className='inline-flex w-full justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-base font-medium text-red-700 transition-colors hover:bg-red-50 sm:w-auto sm:text-sm dark:border-red-600 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-900/20'
             >
               {t('common.delete')}
             </button>
@@ -100,7 +100,7 @@ const AnnotationModal = ({
             <button
               type='button'
               onClick={_onClose}
-              className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto sm:text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-700'
+              className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto sm:text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-gray-700'
             >
               {t('common.cancel')}
             </button>
@@ -137,7 +137,7 @@ const AnnotationModal = ({
               }}
               options={{
                 altInputClass: cn(
-                  'w-full rounded-md border-0 bg-white px-3 py-2 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-indigo-500 dark:bg-slate-800 dark:text-gray-100 dark:ring-slate-800/50',
+                  'w-full rounded-md border-0 bg-white px-3 py-2 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-indigo-500 dark:bg-slate-900 dark:text-gray-100 dark:ring-slate-800/50',
                   {
                     'cursor-not-allowed opacity-50': !allowedToManage,
                   },

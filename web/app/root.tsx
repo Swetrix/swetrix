@@ -135,7 +135,7 @@ export function ErrorBoundary() {
         {/* Using style because for some reason min-h-screen doesn't work */}
         <div
           style={{ minHeight: '100vh' }}
-          className='flex flex-col bg-gray-50 pt-16 pb-12 dark:bg-slate-900'
+          className='flex flex-col bg-gray-50 pt-16 pb-12 dark:bg-slate-950'
         >
           <div className='mx-auto flex w-full max-w-7xl flex-grow flex-col justify-center px-4 sm:px-6 lg:px-8'>
             <div className='flex shrink-0 justify-center'>
@@ -281,7 +281,7 @@ const Body = () => {
     <body
       className={cx(theme, {
         'bg-gray-50': theme === 'light',
-        'bg-slate-900': theme === 'dark',
+        'bg-slate-950': theme === 'dark',
       })}
     >
       <AuthProvider

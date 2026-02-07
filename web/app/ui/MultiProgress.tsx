@@ -22,7 +22,7 @@ const MultiProgress = ({ progress, className }: MultiProgressProps) => {
     <div className='relative'>
       <div
         className={cx(
-          'flex h-5 overflow-hidden rounded-sm bg-gray-200 text-xs dark:bg-slate-600',
+          'flex h-5 overflow-hidden rounded-sm bg-gray-200 text-xs dark:bg-slate-900',
           className,
         )}
       >

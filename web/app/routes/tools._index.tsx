@@ -28,7 +28,7 @@ export async function loader() {
 
 export default function Tools() {
   return (
-    <div className='min-h-screen bg-gray-50 dark:bg-slate-900'>
+    <div className='min-h-screen bg-gray-50 dark:bg-slate-950'>
       <main className='mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8'>
         <div className='max-w-2xl'>
           <Text as='h1' size='4xl' weight='bold' tracking='tight'>
