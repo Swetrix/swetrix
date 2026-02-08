@@ -364,7 +364,7 @@ const KVTable = ({
             onClick={() => {
               onClick(listId, event)
             }}
-            className='group cursor-pointer py-3 text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+            className='group cursor-pointer py-3 text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800'
           >
             <td className='flex w-2/5 items-center py-1 pl-2 text-left sm:w-4/6'>
               {event}
@@ -742,7 +742,7 @@ const CustomEvents = ({
           {_map(keys, (ev) => (
             <Fragment key={ev}>
               <tr
-                className='group cursor-pointer text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+                className='group cursor-pointer text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800'
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
@@ -1142,7 +1142,7 @@ const MetadataKeyPanel = ({
                 return (
                   <tr
                     key={`${key}-${value}`}
-                    className='group cursor-pointer text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+                    className='group cursor-pointer text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800'
                     onClick={() => {
                       navigate(link)
                       setDetailsOpened(false)
@@ -1192,7 +1192,7 @@ const MetadataKeyPanel = ({
               return (
                 <tr
                   key={value}
-                  className='group cursor-pointer text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+                  className='group cursor-pointer text-base text-gray-900 transition-colors even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800'
                   onClick={() => {
                     navigate(link)
                     setDetailsOpened(false)
@@ -1779,7 +1779,7 @@ const DetailsTable = ({
                     display: 'flex',
                   }}
                   className={cx(
-                    'group cursor-pointer text-base text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700',
+                    'group cursor-pointer text-base text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800',
                     {
                       'cursor-default': disableRowClick,
                     },
@@ -2390,7 +2390,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
               {_map(metadataToDisplay, ({ key, value, count }, index) => (
                 <tr
                   key={`${key}-${value}-${count}-${index}`}
-                  className='text-sm text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+                  className='text-sm text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-900 hover:dark:bg-slate-800'
                 >
                   <td className='py-1 pl-2 text-left'>{key}</td>
                   <td className='w-[30%] py-1 text-right sm:w-1/6'>
