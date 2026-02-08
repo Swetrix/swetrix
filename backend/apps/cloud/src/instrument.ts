@@ -8,6 +8,8 @@ const isProduction = process.env.NODE_ENV === 'production'
 if (process.env.SENTRY_ENABLED === 'true') {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    profilesSampleRate: isProduction ? 0.2 : 1,
     integrations: [nodeProfilingIntegration()],
     tracesSampler: ({ name, attributes, parentSampled }) => {
       // Do not sample Telegram webhook-related traces
