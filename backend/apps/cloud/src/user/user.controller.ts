@@ -241,9 +241,11 @@ export class UserController {
       throw new BadRequestException('accountDeleteError')
     }
 
+    const feedback = deleteSelfDTO?.feedback
+
     try {
-      if (deleteSelfDTO.feedback) {
-        await this.userService.saveDeleteFeedback(deleteSelfDTO.feedback)
+      if (feedback) {
+        await this.userService.saveDeleteFeedback(feedback)
       }
     } catch (reason) {
       this.logger.error(
@@ -256,7 +258,7 @@ export class UserController {
     await trackCustom(ip, headers['user-agent'], {
       ev: 'ACCOUNT_DELETED',
       meta: {
-        reason_stated: !!deleteSelfDTO.feedback,
+        reason_stated: !!feedback,
       },
     })
 
