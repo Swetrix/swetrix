@@ -648,6 +648,8 @@ export class ProjectService implements OnModuleDestroy {
       ),
     )
 
+    await this.funnelRepository.delete({ project: { id: In(projectIds) } })
+    await this.annotationRepository.delete({ project: { id: In(projectIds) } })
     await this.deleteMultipleShare({ project: { id: In(projectIds) } })
     await this.deleteMultiple(projectIds)
     await deleteProjectsRedis(projectIds)
