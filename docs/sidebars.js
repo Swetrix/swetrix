@@ -22,6 +22,8 @@ module.exports = {
           'integrations/google-tag-manager',
           'integrations/google-search-console',
           'integrations/sveltekit',
+          'integrations/hugo',
+          'integrations/squarespace',
         ],
       },
       'troubleshooting',
