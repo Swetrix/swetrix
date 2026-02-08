@@ -15,6 +15,7 @@ module.exports = {
           'integrations/framer',
           'integrations/wix',
           'integrations/shopify',
+          'integrations/woocommerce',
           'integrations/ghost',
           'integrations/docusaurus',
           'integrations/django',
