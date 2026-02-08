@@ -2094,14 +2094,14 @@
     "welcomeScreen": {
       "title": "Bienvenue sur Swetrix !",
       "subtitle": "Des analyses respectueuses de la vie privée, sans cookies, qui vous fournissent les informations dont vous avez besoin sans compromettre la confidentialité de vos utilisateurs.",
-      "featureTitle": "A studio for your data",
-      "featureDesc": "A place to understand your traffic, track errors, and make data-driven decisions."
+      "featureTitle": "Un espace pour vos analyses",
+      "featureDesc": "Un endroit pour comprendre votre trafic, suivre les erreurs et prendre des décisions fondées sur les données."
     },
     "features": {
       "traffic": {
         "title": "Analyse du trafic",
         "desc": "Comprenez le trafic de votre site web grâce à des analyses en temps réel. Voyez d’où viennent vos visiteurs, quelles pages ils consultent et comment ils interagissent avec votre site.",
-        "tip": "Suivez les visiteurs de plus de 200 pays, sans cookies."
+        "tip": "Suivez les visiteurs dans le monde entier, sans cookies."
       },
       "errors": {
         "title": "Suivi des erreurs",

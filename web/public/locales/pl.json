@@ -2094,14 +2094,14 @@
     "welcomeScreen": {
       "title": "Witamy w Swetrix!",
       "subtitle": "Analityka stawiająca prywatność na pierwszym miejscu, bez plików cookie, która dostarcza potrzebnych informacji bez naruszania prywatności użytkowników.",
-      "featureTitle": "A studio for your data",
-      "featureDesc": "A place to understand your traffic, track errors, and make data-driven decisions."
+      "featureTitle": "Miejsce dla Twojej analityki",
+      "featureDesc": "Miejsce, w którym zrozumiesz ruch, będziesz śledzić błędy i podejmować decyzje oparte na danych."
     },
     "features": {
       "traffic": {
         "title": "Analityka ruchu",
         "desc": "Poznaj ruch na swojej stronie dzięki analityce w czasie rzeczywistym. Zobacz, skąd pochodzą Twoi odwiedzający, jakie strony oglądają i jak wchodzą w interakcję z witryną.",
-        "tip": "Śledź odwiedzających z ponad 200 krajów — bez plików cookie."
+        "tip": "Śledź odwiedzających na całym świecie — bez plików cookie."
       },
       "errors": {
         "title": "Śledzenie błędów",
