@@ -225,10 +225,7 @@ export class UserController {
 
     try {
       if (!_isEmpty(user.projects)) {
-        await this.projectService.update(
-          { admin: { id } },
-          { isArchived: true },
-        )
+        await this.projectService.deleteProjectsForUser(id)
       }
       await this.actionTokensService.deleteMultiple({ user: { id } })
       await this.userService.deleteAllRefreshTokens(id)

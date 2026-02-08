@@ -17,6 +17,7 @@ import {
   DeepPartial,
   Brackets,
   FindOptionsWhere,
+  In,
 } from 'typeorm'
 import handlebars from 'handlebars'
 import crypto from 'crypto'
@@ -614,6 +615,42 @@ export class ProjectService implements OnModuleDestroy {
       .delete()
       .whereInIds(pids)
       .execute()
+  }
+
+  async deleteProjectsForUser(userId: string) {
+    const projects = await this.projectsRepository.find({
+      where: { admin: { id: userId } },
+      select: ['id'],
+    })
+
+    if (_isEmpty(projects)) {
+      return
+    }
+
+    const projectIds = _map(projects, 'id')
+    const queries = [
+      'ALTER TABLE analytics DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+      'ALTER TABLE customEV DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+      'ALTER TABLE performance DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+      'ALTER TABLE errors DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+      'ALTER TABLE error_statuses DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+      'ALTER TABLE captcha DELETE WHERE pid IN ({pids:Array(FixedString(12))})',
+    ]
+
+    await Promise.all(
+      _map(queries, (query) =>
+        clickhouse.command({
+          query,
+          query_params: {
+            pids: projectIds,
+          },
+        }),
+      ),
+    )
+
+    await this.deleteMultipleShare({ project: { id: In(projectIds) } })
+    await this.deleteMultiple(projectIds)
+    await deleteProjectsRedis(projectIds)
   }
 
   async deleteMultipleShare(where: FindOptionsWhere<ProjectShare>) {
