@@ -312,7 +312,6 @@ export class ProjectController {
 
     const initiatingUser = await this.userService.findOne({
       where: { id: userId },
-      relations: ['projects'],
     })
     const { maxProjects = PROJECTS_MAXIMUM } = initiatingUser
 
@@ -349,7 +348,9 @@ export class ProjectController {
       )
     }
 
-    if (_size(user.projects) >= maxProjects) {
+    const projectCount = await this.projectService.countByAdminId(user.id)
+
+    if (projectCount >= maxProjects) {
       throw new ForbiddenException(
         `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
       )
@@ -419,7 +420,6 @@ export class ProjectController {
 
     const user = await this.userService.findOne({
       where: { id: userId },
-      relations: ['projects'],
     })
 
     if (!user.isActive) {
@@ -476,7 +476,6 @@ export class ProjectController {
 
     const user = await this.userService.findOne({
       where: { id: userId },
-      relations: ['projects'],
     })
 
     if (!user.isActive) {
@@ -617,7 +616,6 @@ export class ProjectController {
 
     const user = await this.userService.findOne({
       where: { id: userId },
-      relations: ['projects'],
     })
 
     if (!user.isActive) {
@@ -660,7 +658,6 @@ export class ProjectController {
 
     const user = await this.userService.findOne({
       where: { id: userId },
-      relations: ['projects'],
     })
 
     if (!user.isActive) {

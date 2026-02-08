@@ -594,6 +594,10 @@ export class ProjectService implements OnModuleDestroy {
     return this.projectsRepository.count()
   }
 
+  async countByAdminId(adminId: string): Promise<number> {
+    return this.projectsRepository.count({ where: { admin: { id: adminId } } })
+  }
+
   async create(project: DeepPartial<Project>) {
     return this.projectsRepository.save(project)
   }
