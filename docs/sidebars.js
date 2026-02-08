@@ -14,6 +14,7 @@ module.exports = {
           'integrations/webflow',
           'integrations/framer',
           'integrations/wix',
+          'integrations/shopify',
           'integrations/ghost',
           'integrations/docusaurus',
           'integrations/django',
