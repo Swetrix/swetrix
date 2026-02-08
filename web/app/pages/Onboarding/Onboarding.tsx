@@ -472,9 +472,6 @@ const Onboarding = () => {
       } else if (intent === 'complete-onboarding') {
         loadUser()
         navigate(routes.dashboard)
-      } else if (intent === 'delete-account') {
-        logout()
-        navigate(routes.main)
       } else if (intent === 'confirm-email') {
         setCookie(CONFIRMATION_TIMEOUT, true, 600)
         setHasResentEmail(true)

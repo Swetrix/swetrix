@@ -246,10 +246,7 @@ export async function action({ request }: ActionFunctionArgs) {
         )
       }
 
-      return data<OnboardingActionData>(
-        { intent, success: true },
-        { headers: createHeadersWithCookies(result.cookies) },
-      )
+      return redirect('/logout')
     }
 
     case 'confirm-email': {
