@@ -692,6 +692,11 @@ export class TaskManagerService {
 
         try {
           const projects = await this.projectService.getSubscriberProjects(id)
+
+          if (_isEmpty(projects)) {
+            return
+          }
+
           const unsubscribeUrl = this.generateUnsubscribeUrl(id, '3rdparty')
           const ids = projects.map((project) => project.id)
 

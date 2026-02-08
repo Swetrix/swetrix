@@ -1493,7 +1493,7 @@ export class ProjectService implements OnModuleDestroy {
       relations: ['project'],
       where: { id: subscriberId },
     })
-    return projects.map((project) => project.project)
+    return projects.map((p) => p.project).filter(Boolean)
   }
 
   async getOwnProject(projectId: string, userId: string) {
