@@ -22,6 +22,15 @@ module.exports = {
           'integrations/joomla',
           'integrations/laravel',
           'integrations/prestashop',
+          {
+            type: 'category',
+            label: 'React (Vite / CRA)',
+            items: [
+              'integrations/react',
+              'integrations/nextjs',
+              'integrations/remix',
+            ],
+          },
           'integrations/shopify',
           'integrations/squarespace',
           'integrations/sveltekit',
