@@ -28,6 +28,8 @@ module.exports = {
           'integrations/laravel',
           'integrations/gitbook',
           'integrations/prestashop',
+          'integrations/drupal',
+          'integrations/thrivecart',
         ],
       },
       'troubleshooting',
