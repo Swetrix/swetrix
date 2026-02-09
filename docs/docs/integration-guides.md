@@ -56,7 +56,7 @@ Swetrix integrates with a wide range of platforms, frameworks, and tools. Choose
 
 ## Google
 
-- [Google Search Console](/google-search-console)
+- [Google Search Console](/integrations/google-search-console)
 - [Google Tag Manager](/gtm-integration)
 
 ## Other tools
