@@ -66,8 +66,8 @@ const ExperimentSettingsModal = ({
   const { t } = useTranslation()
   const isEditing = !!experimentId
   const experimentProxy = useExperimentProxy()
-  const goalsProxy = useProjectGoalsProxy()
-  const featureFlagsProxy = useProjectFeatureFlagsProxy()
+  const { fetchGoals } = useProjectGoalsProxy()
+  const { fetchFeatureFlags } = useProjectFeatureFlagsProxy()
   const fetcher = useFetcher<ProjectViewActionData>()
   const processedRef = useRef<string | null>(null)
 
@@ -181,7 +181,7 @@ const ExperimentSettingsModal = ({
     const loadGoals = async () => {
       setGoalsLoading(true)
       try {
-        const result = await goalsProxy.fetchGoals(projectId, {
+        const result = await fetchGoals(projectId, {
           take: 100,
           skip: 0,
         })
@@ -196,7 +196,7 @@ const ExperimentSettingsModal = ({
     }
 
     loadGoals()
-  }, [isOpen, projectId, goalsProxy])
+  }, [isOpen, projectId, fetchGoals])
 
   useEffect(() => {
     if (!isOpen || featureFlagMode !== 'link') return
@@ -204,7 +204,7 @@ const ExperimentSettingsModal = ({
     const loadFeatureFlags = async () => {
       setFeatureFlagsLoading(true)
       try {
-        const result = await featureFlagsProxy.fetchFeatureFlags(projectId, {
+        const result = await fetchFeatureFlags(projectId, {
           take: 100,
           skip: 0,
         })
@@ -219,7 +219,7 @@ const ExperimentSettingsModal = ({
     }
 
     loadFeatureFlags()
-  }, [isOpen, projectId, featureFlagMode, featureFlagsProxy])
+  }, [isOpen, projectId, featureFlagMode, fetchFeatureFlags])
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
