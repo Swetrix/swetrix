@@ -24,6 +24,7 @@ module.exports = {
           'integrations/sveltekit',
           'integrations/hugo',
           'integrations/squarespace',
+          'integrations/joomla',
         ],
       },
       'troubleshooting',

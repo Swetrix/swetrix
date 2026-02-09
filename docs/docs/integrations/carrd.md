@@ -1,0 +1,93 @@
+---
+title: Carrd
+slug: /carrd-integration
+---
+
+Integrate Swetrix with your Carrd site to get privacy-friendly analytics on your one-page website.
+
+## Prerequisites
+
+Adding custom code to a Carrd site requires a **Pro** subscription (Pro Standard, Pro Plus, or Pro Max). If you're on the free plan, you'll need to upgrade before following this guide.
+
+## Installation
+
+### 1. Open your site settings
+
+1. Log in to [Carrd](https://carrd.co) and open the site you want to track in the editor.
+2. Click the **gear icon** (Settings) in the top-right corner of the editor.
+
+### 2. Add the tracking script
+
+1. In the settings panel, scroll down to the **Head** section under "Embed Code".
+2. Paste the following code:
+
+```html
+<script>
+  (function () {
+    var s = document.createElement('script')
+    s.src = 'https://swetrix.org/swetrix.js'
+    s.defer = true
+    s.onload = function () {
+      swetrix.init('YOUR_PROJECT_ID')
+      swetrix.trackViews()
+    }
+    document.head.appendChild(s)
+  })()
+</script>
+
+<noscript>
+  <img
+    src="https://api.swetrix.com/log/noscript?pid=YOUR_PROJECT_ID"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>
+```
+
+We use the JavaScript approach (dynamically creating the script element) instead of a plain `<script src="...">` tag because Carrd may strip `defer` or other attributes during processing.
+
+### 3. Publish your site
+
+Click **Save**, then **Publish** to apply the changes to your live site.
+
+:::caution
+Don't forget to replace `YOUR_PROJECT_ID` with your actual Project ID from the Swetrix dashboard, otherwise tracking won't work.
+:::
+
+## Check your installation
+
+Open your published Carrd site in a new tab (or an incognito window). Within a minute you should see a pageview appear in your Swetrix dashboard.
+
+:::tip
+The tracking script only runs on your published site. You won't see analytics data while previewing inside the Carrd editor.
+:::
+
+## Multiple pages
+
+If your Carrd site uses multiple pages (available on Pro Plus and Pro Max plans), the tracking script in the head code loads on every page automatically — no extra configuration needed.
+
+## Optional: track custom events
+
+You can use `swetrix.track()` to capture custom interactions such as button clicks or form submissions. Add the following in the same **Head** embed code section, after the main tracking snippet:
+
+```html
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var form = document.querySelector('form')
+    if (!form || typeof swetrix === 'undefined') return
+
+    form.addEventListener('submit', function () {
+      swetrix.track({ ev: 'form_submission' })
+    })
+  })
+</script>
+```
+
+Refer to the [tracking script reference](/swetrix-js-reference) for the full list of options and functions available.
+
+## Troubleshooting
+
+- **Script not loading.** Verify you have a Carrd Pro subscription — custom code is not available on the free plan.
+- **No data in dashboard.** Make sure you published the site after adding the embed code. Changes in the editor are not live until you publish.
+- **Check the source.** Open your published site, right-click and select "View Page Source", then search for `swetrix` to confirm the script is present.
+- **Console errors.** Open your browser's developer tools (F12) and check the Console tab for JavaScript errors. Look for network requests to `api.swetrix.com` to verify data is being sent.
