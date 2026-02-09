@@ -1600,6 +1600,103 @@ const ExperimentsPreview = () => {
   )
 }
 
+type IntegrationCategory = 'framework' | 'cms' | 'backend'
+
+const FEATURED_INTEGRATIONS: {
+  name: string
+  category: IntegrationCategory
+}[] = [
+  { name: 'WordPress', category: 'cms' },
+  { name: 'Next.js', category: 'framework' },
+  { name: 'React', category: 'framework' },
+  { name: 'Vue', category: 'framework' },
+  { name: 'Angular', category: 'framework' },
+  { name: 'Shopify', category: 'cms' },
+  { name: 'Webflow', category: 'cms' },
+  { name: 'Django', category: 'backend' },
+  { name: 'Laravel', category: 'backend' },
+  { name: 'Astro', category: 'framework' },
+  { name: 'Nuxt', category: 'framework' },
+  { name: 'Ghost', category: 'cms' },
+]
+
+const INTEGRATION_CATEGORY_DOT: Record<IntegrationCategory, string> = {
+  framework: 'bg-indigo-400',
+  cms: 'bg-emerald-400',
+  backend: 'bg-amber-400',
+}
+
+const Integrations = () => {
+  const { t } = useTranslation('common')
+
+  return (
+    <section className='px-2 py-12'>
+      <div className='relative overflow-hidden rounded-3xl bg-slate-900'>
+        <div aria-hidden className='pointer-events-none absolute inset-0'>
+          <div className='absolute -top-40 -left-40 size-112 rounded-full bg-[radial-gradient(closest-side,var(--color-indigo-500),transparent)]/12 blur-2xl' />
+          <div className='absolute -right-32 -bottom-32 size-96 rounded-full bg-[radial-gradient(closest-side,var(--color-emerald-500),transparent)]/8 blur-2xl' />
+        </div>
+
+        <div className='relative mx-auto max-w-7xl px-6 py-20 sm:py-24 lg:px-12'>
+          <div className='grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20'>
+            <div>
+              <span className='inline-flex items-center rounded-full bg-indigo-500/10 px-3.5 py-1 text-sm font-medium text-indigo-300 ring-1 ring-indigo-400/20'>
+                {t('main.integrations.badge')}
+              </span>
+              <h2 className='mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl'>
+                {t('main.integrations.title')}
+              </h2>
+              <p className='mt-5 text-lg leading-relaxed text-slate-300'>
+                {t('main.integrations.description')}
+              </p>
+              <p className='mt-3 text-base text-slate-400'>
+                {t('main.integrations.descriptionExtra')}
+              </p>
+              <a
+                href='https://docs.swetrix.com/integrations'
+                target='_blank'
+                rel='noopener noreferrer'
+                className='mt-8 inline-flex items-center gap-2 rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 transition-colors duration-200 hover:bg-slate-100'
+              >
+                {t('main.integrations.cta')}
+                <ArrowRightIcon className='h-4 w-4' />
+              </a>
+            </div>
+
+            <div className='grid grid-cols-2 gap-2.5 sm:grid-cols-3'>
+              {FEATURED_INTEGRATIONS.map((integration) => (
+                <div
+                  key={integration.name}
+                  className='flex items-center gap-2.5 rounded-xl bg-white/4 px-4 py-3.5 ring-1 ring-white/6 transition-colors duration-200 hover:bg-white/8'
+                >
+                  <span
+                    className={cn(
+                      'size-2 shrink-0 rounded-full',
+                      INTEGRATION_CATEGORY_DOT[integration.category],
+                    )}
+                  />
+                  <span className='text-sm font-medium text-slate-200'>
+                    {integration.name}
+                  </span>
+                </div>
+              ))}
+              <a
+                href='https://docs.swetrix.com/integrations'
+                target='_blank'
+                rel='noopener noreferrer'
+                className='flex items-center justify-center gap-1.5 rounded-xl bg-white/2 px-4 py-3.5 text-sm font-medium text-slate-400 ring-1 ring-white/4 transition-all duration-200 hover:bg-white/6 hover:text-slate-300'
+              >
+                {t('main.integrations.andMore', { count: 25 })}
+                <ArrowRightIcon className='h-3.5 w-3.5' />
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 const FeaturesShowcase = () => {
   const { theme } = useTheme()
   const {
@@ -1909,6 +2006,8 @@ export default function Index() {
         <FeedbackDual />
 
         <FeaturesShowcase />
+
+        <Integrations />
 
         <MarketingPricing metainfo={metainfo} />
 
