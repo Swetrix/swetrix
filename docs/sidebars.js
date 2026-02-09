@@ -34,6 +34,11 @@ module.exports = {
           'integrations/shopify',
           'integrations/squarespace',
           'integrations/sveltekit',
+          {
+            type: 'category',
+            label: 'Vue',
+            items: ['integrations/vue', 'integrations/nuxt'],
+          },
           'integrations/thrivecart',
           'integrations/webflow',
           'integrations/wix',
