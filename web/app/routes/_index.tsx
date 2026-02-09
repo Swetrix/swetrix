@@ -59,6 +59,7 @@ import {
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { useTheme } from '~/providers/ThemeProvider'
 import Flag from '~/ui/Flag'
+import { Text } from '~/ui/Text'
 import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
@@ -1621,19 +1622,17 @@ const FEATURES_ALT = [
 const DashboardMockup = () => (
   <div className='relative mx-auto h-[440px] w-full max-w-lg select-none' aria-hidden>
     {/* Chart card */}
-    <div className='absolute top-0 right-0 w-[290px] rotate-2 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+    <div className='absolute -top-4 -right-4 w-[290px] rotate-2 rounded-2xl bg-white p-5 shadow-xl ring-1 border-gray-200 dark:bg-slate-900 dark:border-slate-800/20'>
       <div className='mb-1 flex items-center justify-between'>
-        <span className='text-[11px] font-semibold tracking-wide text-gray-400 uppercase dark:text-gray-500'>
+        <Text size='xxs' weight='semibold' colour='muted' tracking='wide' className='uppercase'>
           Pageviews
-        </span>
+        </Text>
         <div className='flex items-center gap-1.5'>
-          <span className='text-xl font-bold text-slate-900 dark:text-white'>
-            24.5k
-          </span>
-          <span className='flex items-center text-[11px] font-medium text-emerald-600'>
+          <Text size='xl' weight='bold'>24.5k</Text>
+          <Text size='xxs' weight='medium' colour='success' className='flex items-center'>
             <CaretUpIcon weight='fill' className='size-3' />
             12%
-          </span>
+          </Text>
         </div>
       </div>
       <svg
@@ -1664,52 +1663,49 @@ const DashboardMockup = () => (
         />
         <circle cx='170' cy='22' r='3.5' fill='white' stroke='rgb(99 102 241)' strokeWidth='2' />
       </svg>
-      <div className='mt-1 flex justify-between text-[10px] text-gray-400 dark:text-gray-500'>
-        <span>Mon</span>
-        <span>Tue</span>
-        <span>Wed</span>
-        <span>Thu</span>
-        <span>Fri</span>
-        <span>Sat</span>
-        <span>Sun</span>
+      <div className='mt-1 flex justify-between'>
+        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+          <Text key={d} size='xxs' colour='muted'>{d}</Text>
+        ))}
       </div>
     </div>
 
     {/* Events card */}
-    <div className='absolute top-10 left-0 w-[260px] -rotate-3 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
-      <div className='mb-3 flex items-center gap-1.5'>
-        <TargetIcon className='size-3.5 text-gray-400 dark:text-gray-500' />
-        <span className='text-[11px] font-semibold tracking-wide text-gray-400 uppercase dark:text-gray-500'>
-          Custom Events
-        </span>
+    <div className='absolute top-6 left-0 w-[270px] -rotate-3 rounded-2xl bg-white p-5 shadow-xl ring-1 border-gray-200 dark:bg-slate-900 dark:border-slate-800/20'>
+      <Text as='h3' size='lg' weight='bold'>Events</Text>
+      <div className='mt-2 mb-1.5 flex items-center justify-between px-1'>
+        <Text size='xxs' weight='medium' colour='muted'>Event</Text>
+        <Text size='xxs' weight='medium' colour='muted'>Quantity</Text>
       </div>
-      <div className='space-y-2'>
+      <div className='space-y-0.5'>
         {[
-          { name: 'Signed up', count: '25.6k', pct: 68 },
-          { name: 'Newsletter sub', count: '19.2k', pct: 52 },
-          { name: 'Purchase', count: '11.8k', pct: 32 },
-          { name: 'Add to cart', count: '8.4k', pct: 22 },
-        ].map(({ name, count, pct }) => (
-          <div key={name}>
-            <div className='mb-0.5 flex items-center justify-between text-[13px]'>
-              <span className='text-slate-700 dark:text-gray-300'>{name}</span>
-              <span className='font-medium text-slate-900 dark:text-white'>
-                {count}
-              </span>
-            </div>
-            <div className='h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700/50'>
-              <div
-                className='h-full rounded-full bg-indigo-500/80'
-                style={{ width: `${pct}%` }}
-              />
-            </div>
+          { name: 'SIGNUP', count: 97, pct: 56, barW: 100 },
+          { name: 'AI_CHAT_CREATED', count: 12, pct: 7, barW: 42 },
+          { name: 'PURCHASE', count: 7, pct: 4, barW: 28 },
+          { name: 'NEWSLETTER_SUB', count: 4, pct: 2, barW: 18 },
+          { name: 'PROJECT_CREATED', count: 2, pct: 1, barW: 10 },
+        ].map(({ name, count, pct, barW }) => (
+          <div
+            key={name}
+            className='relative flex items-center justify-between rounded-sm px-1 py-1.5'
+          >
+            <div
+              className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+              style={{ width: `${barW}%` }}
+            />
+            <Text size='xs' className='relative z-10'>{name}</Text>
+            <span className='relative z-10'>
+              <Text size='xs' weight='medium'>{count}</Text>
+              <Text size='xs' colour='muted' className='mx-1.5'>|</Text>
+              <Text size='xs' colour='muted'>{pct}%</Text>
+            </span>
           </div>
         ))}
       </div>
     </div>
 
     {/* Metrics card */}
-    <div className='absolute bottom-4 left-6 w-[220px] rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
+    <div className='absolute bottom-0 left-6 w-[220px] rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 border-gray-200 dark:bg-slate-900 dark:border-slate-800/20'>
       <div className='space-y-2.5'>
         {[
           { label: 'Unique visitors', value: '125k', up: true },
@@ -1718,13 +1714,9 @@ const DashboardMockup = () => (
           { label: 'Bounce rate', value: '42%', up: false },
         ].map(({ label, value, up }) => (
           <div key={label} className='flex items-center justify-between'>
-            <span className='text-[12px] text-gray-500 dark:text-gray-400'>
-              {label}
-            </span>
+            <Text size='xs' colour='muted'>{label}</Text>
             <div className='flex items-center gap-1.5'>
-              <span className='text-[13px] font-semibold text-slate-900 dark:text-white'>
-                {value}
-              </span>
+              <Text size='sm' weight='semibold'>{value}</Text>
               {up ? (
                 <CaretUpIcon
                   weight='fill'
@@ -1742,25 +1734,30 @@ const DashboardMockup = () => (
       </div>
     </div>
 
-    {/* Traffic sources card - bottom right */}
-    <div className='absolute right-2 bottom-12 w-[200px] -rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 dark:bg-slate-900 dark:ring-white/10'>
-      <div className='mb-2.5 text-[11px] font-semibold tracking-wide text-gray-400 uppercase dark:text-gray-500'>
-        Top Pages
+    {/* Top pages card */}
+    <div className='absolute right-0 bottom-12 w-[220px] -rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 border-gray-200 dark:bg-slate-900 dark:border-slate-800/20'>
+      <Text as='h3' size='lg' weight='bold' className='mb-2'>Pages</Text>
+      <div className='mb-1 flex items-center justify-between px-1'>
+        <Text size='xs' weight='medium' colour='muted'>Page</Text>
+        <Text size='xs' weight='medium' colour='muted'>Visitors</Text>
       </div>
-      <div className='space-y-2'>
+      <div className='space-y-0.5'>
         {[
-          { page: '/home', views: '8.2k' },
-          { page: '/pricing', views: '3.1k' },
-          { page: '/blog', views: '2.4k' },
-        ].map(({ page, views }) => (
+          { page: '/', count: 512, barW: 100 },
+          { page: '/pricing', count: 407, barW: 79 },
+          { page: '/dashboard', count: 128, barW: 25 },
+          { page: '/blog', count: 65, barW: 13 },
+        ].map(({ page, count, barW }) => (
           <div
             key={page}
-            className='flex items-center justify-between text-[13px]'
+            className='relative flex h-7 items-center justify-between rounded-sm px-1'
           >
-            <span className='text-slate-600 dark:text-gray-300'>{page}</span>
-            <span className='font-medium text-slate-900 dark:text-white'>
-              {views}
-            </span>
+            <div
+              className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/30'
+              style={{ width: `${barW}%` }}
+            />
+            <Text size='xs' className='relative z-10'>{page}</Text>
+            <Text size='xs' weight='medium' className='relative z-10'>{count}</Text>
           </div>
         ))}
       </div>
@@ -1776,9 +1773,9 @@ const FeaturesGridAlt = () => {
       <div className='grid items-center gap-10 lg:grid-cols-2 lg:gap-16'>
         <DashboardMockup />
         <div>
-          <h2 className='text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white'>
+          <Text as='h2' size='3xl' weight='bold' tracking='tight' className='sm:text-4xl'>
             {t('main.featuresAlt.heading')}
-          </h2>
+          </Text>
           <div className='mt-8 grid grid-cols-1 gap-x-10 gap-y-6 sm:grid-cols-2'>
             {FEATURES_ALT.map(({ icon: Icon, key }) => (
               <div key={key}>
@@ -1787,13 +1784,13 @@ const FeaturesGridAlt = () => {
                     weight='duotone'
                     className='size-5 shrink-0 text-indigo-600 dark:text-indigo-400'
                   />
-                  <h3 className='font-semibold text-slate-900 dark:text-white'>
+                  <Text as='h3' weight='semibold'>
                     {t(`main.featuresAlt.${key}.title`)}
-                  </h3>
+                  </Text>
                 </div>
-                <p className='mt-1 pl-7 text-sm leading-relaxed text-gray-600 dark:text-gray-400'>
+                <Text as='p' size='sm' colour='muted' className='mt-1 pl-7 leading-relaxed'>
                   {t(`main.featuresAlt.${key}.desc`)}
-                </p>
+                </Text>
               </div>
             ))}
           </div>
