@@ -207,22 +207,8 @@ export interface ExperimentOptions {
   profileId?: string
 }
 
-/**
- * Cached feature flags and experiments with timestamp.
- */
-interface CachedData {
-  flags: Record<string, boolean>
-  experiments: Record<string, string>
-  timestamp: number
-  /** The profileId used when fetching this cached data */
-  profileId?: string
-}
-
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 const DEFAULT_API_BASE = 'https://api.swetrix.com'
-
-// Default cache duration: 5 minutes
-const DEFAULT_CACHE_DURATION = 5 * 60 * 1000
 
 /**
  * Server-side implementation of Swetrix tracking library.
@@ -231,8 +217,6 @@ const DEFAULT_CACHE_DURATION = 5 * 60 * 1000
  * @param options LibOptions
  */
 export class Swetrix {
-  private cachedData: CachedData | null = null
-
   constructor(private projectID: string, private options?: LibOptions) {
     this.heartbeat = this.heartbeat.bind(this)
   }
@@ -331,12 +315,10 @@ export class Swetrix {
 
   /**
    * Fetches all feature flags for the project.
-   * Results are cached for 5 minutes by default.
    *
    * @param ip IP address of the visitor
    * @param userAgent User agent of the visitor
    * @param options Options for evaluating feature flags (profileId).
-   * @param forceRefresh If true, bypasses the cache and fetches fresh flags.
    * @returns A promise that resolves to a record of flag keys to boolean values.
    *
    * @example
@@ -354,25 +336,13 @@ export class Swetrix {
     ip: string,
     userAgent: string,
     options?: FeatureFlagsOptions,
-    forceRefresh?: boolean,
   ): Promise<Record<string, boolean>> {
-    const requestedProfileId = options?.profileId ?? this.options?.profileId
-
-    // Check cache first - must match profileId and not be expired
-    if (!forceRefresh && this.cachedData) {
-      const now = Date.now()
-      const isSameProfile = this.cachedData.profileId === requestedProfileId
-      if (isSameProfile && now - this.cachedData.timestamp < DEFAULT_CACHE_DURATION) {
-        return this.cachedData.flags
-      }
-    }
-
     try {
-      await this.fetchFlagsAndExperiments(ip, userAgent, options)
-      return this.cachedData?.flags || {}
+      const data = await this.fetchFlagsAndExperiments(ip, userAgent, options)
+      return data.flags
     } catch (error) {
       this.debug(`Error fetching feature flags: ${error}`, true)
-      return this.cachedData?.flags || {}
+      return {}
     }
   }
 
@@ -407,21 +377,11 @@ export class Swetrix {
   }
 
   /**
-   * Clears the cached feature flags, forcing a fresh fetch on the next call.
-   * Useful when you know the user's context has changed significantly.
-   */
-  public clearFeatureFlagsCache(): void {
-    this.cachedData = null
-  }
-
-  /**
    * Fetches all A/B test experiments for the project.
-   * Results are cached for 5 minutes by default (shared cache with feature flags).
    *
    * @param ip IP address of the visitor
    * @param userAgent User agent of the visitor
    * @param options Options for evaluating experiments.
-   * @param forceRefresh If true, bypasses the cache and fetches fresh data.
    * @returns A promise that resolves to a record of experiment IDs to variant keys.
    *
    * @example
@@ -442,25 +402,13 @@ export class Swetrix {
     ip: string,
     userAgent: string,
     options?: ExperimentOptions,
-    forceRefresh?: boolean,
   ): Promise<Record<string, string>> {
-    const requestedProfileId = options?.profileId ?? this.options?.profileId
-
-    // Check cache first - must match profileId and not be expired
-    if (!forceRefresh && this.cachedData) {
-      const now = Date.now()
-      const isSameProfile = this.cachedData.profileId === requestedProfileId
-      if (isSameProfile && now - this.cachedData.timestamp < DEFAULT_CACHE_DURATION) {
-        return this.cachedData.experiments
-      }
-    }
-
     try {
-      await this.fetchFlagsAndExperiments(ip, userAgent, options)
-      return this.cachedData?.experiments || {}
+      const data = await this.fetchFlagsAndExperiments(ip, userAgent, options)
+      return data.experiments
     } catch (error) {
       this.debug(`Error fetching experiments: ${error}`, true)
-      return this.cachedData?.experiments || {}
+      return {}
     }
   }
 
@@ -499,14 +447,6 @@ export class Swetrix {
   ): Promise<string | null> {
     const experiments = await this.getExperiments(ip, userAgent, options)
     return experiments[experimentId] ?? defaultVariant
-  }
-
-  /**
-   * Clears the cached experiments, forcing a fresh fetch on the next call.
-   * This is an alias for clearFeatureFlagsCache since experiments and flags share the same cache.
-   */
-  public clearExperimentsCache(): void {
-    this.cachedData = null
   }
 
   /**
@@ -601,20 +541,16 @@ export class Swetrix {
     }
   }
 
-  /**
-   * Internal method to fetch both feature flags and experiments from the API.
-   */
   private async fetchFlagsAndExperiments(
     ip: string,
     userAgent: string,
     options?: FeatureFlagsOptions | ExperimentOptions,
-  ): Promise<void> {
+  ): Promise<{ flags: Record<string, boolean>; experiments: Record<string, string> }> {
     const apiBase = this.getApiBase()
     const body: { pid: string; profileId?: string } = {
       pid: this.projectID,
     }
 
-    // Use profileId from options, or fall back to global profileId
     const profileId = options?.profileId ?? this.options?.profileId
     if (profileId) {
       body.profileId = profileId
@@ -632,7 +568,7 @@ export class Swetrix {
 
     if (!response.ok) {
       this.debug(`Failed to fetch feature flags and experiments: ${response.status}`, true)
-      return
+      return { flags: {}, experiments: {} }
     }
 
     const data = (await response.json()) as {
@@ -640,15 +576,9 @@ export class Swetrix {
       experiments?: Record<string, string>
     }
 
-    // Use profileId from options, or fall back to global profileId
-    const cachedProfileId = options?.profileId ?? this.options?.profileId
-
-    // Update cache with both flags and experiments
-    this.cachedData = {
+    return {
       flags: data.flags || {},
       experiments: data.experiments || {},
-      timestamp: Date.now(),
-      profileId: cachedProfileId,
     }
   }
 
