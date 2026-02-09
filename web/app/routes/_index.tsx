@@ -21,6 +21,13 @@ import {
   CurrencyDollarIcon,
   ArrowRightIcon,
   StarIcon,
+  ShieldCheckIcon,
+  MegaphoneIcon,
+  BugIcon,
+  UsersThreeIcon,
+  CodeIcon,
+  TerminalWindowIcon,
+  ChartLineUpIcon,
 } from '@phosphor-icons/react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
@@ -1600,6 +1607,202 @@ const ExperimentsPreview = () => {
   )
 }
 
+const FEATURES_ALT = [
+  { icon: ShieldCheckIcon, key: 'privacy' },
+  { icon: CursorClickIcon, key: 'events' },
+  { icon: MegaphoneIcon, key: 'campaigns' },
+  { icon: GaugeIcon, key: 'perf' },
+  { icon: BugIcon, key: 'errors' },
+  { icon: UsersThreeIcon, key: 'sessions' },
+  { icon: CodeIcon, key: 'opensource' },
+  { icon: TerminalWindowIcon, key: 'devs' },
+] as const
+
+const DashboardMockup = () => (
+  <div className='relative mx-auto h-[440px] w-full max-w-lg select-none' aria-hidden>
+    {/* Chart card */}
+    <div className='absolute top-0 right-0 w-[290px] rotate-2 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+      <div className='mb-1 flex items-center justify-between'>
+        <span className='text-[11px] font-semibold tracking-wide text-gray-400 uppercase dark:text-gray-500'>
+          Pageviews
+        </span>
+        <div className='flex items-center gap-1.5'>
+          <span className='text-xl font-bold text-slate-900 dark:text-white'>
+            24.5k
+          </span>
+          <span className='flex items-center text-[11px] font-medium text-emerald-600'>
+            <CaretUpIcon weight='fill' className='size-3' />
+            12%
+          </span>
+        </div>
+      </div>
+      <svg
+        viewBox='0 0 260 90'
+        className='mt-2 w-full'
+        fill='none'
+        xmlns='http://www.w3.org/2000/svg'
+      >
+        <defs>
+          <linearGradient id='mockChartGrad' x1='0' y1='0' x2='0' y2='1'>
+            <stop offset='0%' stopColor='rgb(99 102 241)' stopOpacity='0.25' />
+            <stop
+              offset='100%'
+              stopColor='rgb(99 102 241)'
+              stopOpacity='0.01'
+            />
+          </linearGradient>
+        </defs>
+        <path
+          d='M0,72 C15,68 30,58 52,54 C74,50 88,62 110,44 C132,26 148,34 170,22 C192,10 210,16 230,12 L260,8 L260,90 L0,90 Z'
+          fill='url(#mockChartGrad)'
+        />
+        <path
+          d='M0,72 C15,68 30,58 52,54 C74,50 88,62 110,44 C132,26 148,34 170,22 C192,10 210,16 230,12 L260,8'
+          stroke='rgb(99 102 241)'
+          strokeWidth='2'
+          strokeLinecap='round'
+        />
+        <circle cx='170' cy='22' r='3.5' fill='white' stroke='rgb(99 102 241)' strokeWidth='2' />
+      </svg>
+      <div className='mt-1 flex justify-between text-[10px] text-gray-400 dark:text-gray-500'>
+        <span>Mon</span>
+        <span>Tue</span>
+        <span>Wed</span>
+        <span>Thu</span>
+        <span>Fri</span>
+        <span>Sat</span>
+        <span>Sun</span>
+      </div>
+    </div>
+
+    {/* Events card */}
+    <div className='absolute top-10 left-0 w-[260px] -rotate-3 rounded-2xl bg-white p-5 shadow-xl ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+      <div className='mb-3 flex items-center gap-1.5'>
+        <TargetIcon className='size-3.5 text-gray-400 dark:text-gray-500' />
+        <span className='text-[11px] font-semibold tracking-wide text-gray-400 uppercase dark:text-gray-500'>
+          Custom Events
+        </span>
+      </div>
+      <div className='space-y-2'>
+        {[
+          { name: 'Signed up', count: '25.6k', pct: 68 },
+          { name: 'Newsletter sub', count: '19.2k', pct: 52 },
+          { name: 'Purchase', count: '11.8k', pct: 32 },
+          { name: 'Add to cart', count: '8.4k', pct: 22 },
+        ].map(({ name, count, pct }) => (
+          <div key={name}>
+            <div className='mb-0.5 flex items-center justify-between text-[13px]'>
+              <span className='text-slate-700 dark:text-gray-300'>{name}</span>
+              <span className='font-medium text-slate-900 dark:text-white'>
+                {count}
+              </span>
+            </div>
+            <div className='h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700/50'>
+              <div
+                className='h-full rounded-full bg-indigo-500/80'
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Metrics card */}
+    <div className='absolute bottom-4 left-6 w-[220px] rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+      <div className='space-y-2.5'>
+        {[
+          { label: 'Unique visitors', value: '125k', up: true },
+          { label: 'Total pageviews', value: '85.1k', up: true },
+          { label: 'Avg. session', value: '3m 24s', up: true },
+          { label: 'Bounce rate', value: '42%', up: false },
+        ].map(({ label, value, up }) => (
+          <div key={label} className='flex items-center justify-between'>
+            <span className='text-[12px] text-gray-500 dark:text-gray-400'>
+              {label}
+            </span>
+            <div className='flex items-center gap-1.5'>
+              <span className='text-[13px] font-semibold text-slate-900 dark:text-white'>
+                {value}
+              </span>
+              {up ? (
+                <CaretUpIcon
+                  weight='fill'
+                  className='size-3 text-emerald-500'
+                />
+              ) : (
+                <CaretDownIcon
+                  weight='fill'
+                  className='size-3 text-red-500'
+                />
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Traffic sources card - bottom right */}
+    <div className='absolute right-2 bottom-12 w-[200px] -rotate-1 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10'>
+      <div className='mb-2.5 text-[11px] font-semibold tracking-wide text-gray-400 uppercase dark:text-gray-500'>
+        Top Pages
+      </div>
+      <div className='space-y-2'>
+        {[
+          { page: '/home', views: '8.2k' },
+          { page: '/pricing', views: '3.1k' },
+          { page: '/blog', views: '2.4k' },
+        ].map(({ page, views }) => (
+          <div
+            key={page}
+            className='flex items-center justify-between text-[13px]'
+          >
+            <span className='text-slate-600 dark:text-gray-300'>{page}</span>
+            <span className='font-medium text-slate-900 dark:text-white'>
+              {views}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)
+
+const FeaturesGridAlt = () => {
+  const { t } = useTranslation('common')
+
+  return (
+    <section className='relative mx-auto max-w-7xl px-4 py-14 lg:px-8'>
+      <div className='grid items-center gap-10 lg:grid-cols-2 lg:gap-16'>
+        <DashboardMockup />
+        <div>
+          <h2 className='text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white'>
+            {t('main.featuresAlt.heading')}
+          </h2>
+          <div className='mt-8 grid grid-cols-1 gap-x-10 gap-y-6 sm:grid-cols-2'>
+            {FEATURES_ALT.map(({ icon: Icon, key }) => (
+              <div key={key}>
+                <div className='flex items-center gap-2'>
+                  <Icon
+                    weight='duotone'
+                    className='size-5 shrink-0 text-indigo-600 dark:text-indigo-400'
+                  />
+                  <h3 className='font-semibold text-slate-900 dark:text-white'>
+                    {t(`main.featuresAlt.${key}.title`)}
+                  </h3>
+                </div>
+                <p className='mt-1 pl-7 text-sm leading-relaxed text-gray-600 dark:text-gray-400'>
+                  {t(`main.featuresAlt.${key}.desc`)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 const FeaturesShowcase = () => {
   const { theme } = useTheme()
   const {
@@ -1907,6 +2110,8 @@ export default function Index() {
         <Hero />
 
         <FeedbackDual />
+
+        <FeaturesGridAlt />
 
         <FeaturesShowcase />
 
